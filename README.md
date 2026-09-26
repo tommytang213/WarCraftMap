@@ -11,3 +11,6 @@ This repository is intentionally structured so large maps are developed as maint
 The first project is **Age of Sail: The World**, a single-player global historical sandbox targeting the latest Warcraft III.
 
 See the project folder for design and development documentation.
+
+Repository maintainers can use the conservative, quota-limited autonomous
+development worker documented in [automation/README.md](automation/README.md).
