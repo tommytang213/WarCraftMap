@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[3]
-VALIDATOR_PATH = ROOT / "_shared" / "tooling" / "validate_world.py"
+CATEGORY_ROOT = Path(__file__).resolve().parents[2]
+VALIDATOR_PATH = CATEGORY_ROOT / "_shared" / "tooling" / "validate_world.py"
 WORLD_PATH = Path(__file__).resolve().parents[1] / "scenario" / "world" / "world.json"
 
 spec = importlib.util.spec_from_file_location("validate_world", VALIDATOR_PATH)
