@@ -10,4 +10,3 @@ echo "Removed the user service and timer. Configuration and state were preserved
 echo "After review, they may be removed manually from:"
 echo "  $config_dir/warcraftmap-agent.env"
 echo "  ${XDG_STATE_HOME:-"$HOME/.local/state"}/warcraftmap-agent"
-
