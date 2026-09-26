@@ -1,0 +1,28 @@
+name: Wurst typecheck
+
+on:
+  push:
+    paths:
+      - "maps/historical-world-rpg/**"
+      - ".github/workflows/wurst-typecheck.yml"
+  pull_request:
+    paths:
+      - "maps/historical-world-rpg/**"
+      - ".github/workflows/wurst-typecheck.yml"
+  workflow_dispatch:
+
+jobs:
+  age-of-sail-world:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Typecheck Age of Sail
+        run: |
+          docker run --rm             -v "$PWD:/workspace"             -w /workspace/maps/historical-world-rpg/age-of-sail-world             frotty/wurstscript:latest             /bin/sh -lc '
+              set -eu
+              grill install wurstscript
+              grill install
+              grill typecheck
+            '

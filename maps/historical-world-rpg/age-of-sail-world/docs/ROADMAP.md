@@ -7,9 +7,13 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Repository initialized
 - [x] Category/map folder structure established
 - [x] Agreed design constraints recorded
-- [ ] Pin current WC3/toolchain versions
-- [ ] Establish reproducible build command
-- [ ] Establish CI/static validation
+- [x] Pin Warcraft/Wurst project patch target to `v3.0`
+- [x] Select Lua backend
+- [x] Add initial Wurst project configuration/bootstrap package
+- [x] Add CI typecheck workflow
+- [ ] Commit/create the clean source map folder
+- [ ] Establish reproducible source-map -> release `.w3x` packaging
+- [ ] Add full CI build artifact after the source map exists
 
 ## Phase 1 — Engine contracts
 
@@ -76,7 +80,17 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Regional and long-chain quests
 - [ ] Treasures/secrets
 
-## Phase 6 — Full-world integration and balancing
+## Phase 6 — Visual/content production
+
+- [ ] Stock/Reforged asset catalogue and historical-fit matrix
+- [ ] Country/unit visual language
+- [ ] Settlement/building visual sets
+- [ ] Custom icons/textures where needed
+- [ ] Custom 3D models where stock assets are insufficient
+- [ ] Sound/music/ambient pass
+- [ ] Placeholder-removal audit
+
+## Phase 7 — Full-world integration and balancing
 
 - [ ] Multi-century simulation soak tests
 - [ ] Performance budgets
@@ -86,7 +100,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Native WC3 save/load regression
 - [ ] City/world integrity recovery tests
 
-## Phase 7 — Player release candidate
+## Phase 8 — Player release candidate
 
 The first serious player test target: a substantially complete game intended to be played normally rather than as feature-by-feature QA.
 
