@@ -24,4 +24,3 @@ def budget_available(
     if len(recent) >= max_weekly:
         return False, f"rolling seven-day Codex budget exhausted ({len(recent)}/{max_weekly})"
     return True, "budget available"
-
