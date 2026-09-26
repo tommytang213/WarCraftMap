@@ -21,9 +21,10 @@ No installation is needed for a safe queue preview:
 ./automation/run_agent.sh --dry-run
 ```
 
-Review `automation/warcraftmap-agent.env.example`, then install the user units:
+Review `automation/warcraftmap-agent.env.example`, enable systemd user lingering once so the worker continues after SSH logout, then install the user units:
 
 ```sh
+sudo loginctl enable-linger "$USER"
 ./automation/install-user-service.sh
 systemctl --user status warcraftmap-agent.timer
 ```
