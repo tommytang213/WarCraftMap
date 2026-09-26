@@ -190,7 +190,7 @@ Return the required JSON result. Use outcome \"complete\" only when the implemen
 def invoke_codex(config: Config, worktree: Path, issue: dict[str, Any], record: dict[str, Any]) -> dict[str, str]:
     schema = config.repo_root / "automation" / "codex-result.schema.json"
     output = config.state_dir / "last-codex-result.json"
-    command = ["codex", "exec", "--sandbox", "workspace-write", "--approve-for-me", "--model", config.model, "--cd", str(worktree), "--output-schema", str(schema), "--output-last-message", str(output), "-"]
+    # In Codex CLI 0.153.x, --approve-for-me already routes approvals through\n    # the workspace-write sandbox and is mutually exclusive with --sandbox.\n    command = ["codex", "exec", "--ignore-user-config", "--ephemeral", "--approve-for-me", "--model", config.model, "--cd", str(worktree), "--output-schema", str(schema), "--output-last-message", str(output), "-"]
     env = os.environ.copy()
     process = subprocess.Popen(command, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, start_new_session=True, env=env)
     try:
@@ -281,10 +281,11 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             continue
         if view["mergeStateStatus"] not in {"CLEAN", "HAS_HOOKS", "UNSTABLE"}:
             continue
-        if checks:
-            result = run(["gh", "pr", "checks", str(pr), "--required"], cwd=config.repo_root, check=False)
-            if result.returncode != 0:
-                continue
+        # Never merge a PR that has not reported any CI checks. Repositories
+        # without branch-protection "required" checks are still gated by the
+        # complete successful statusCheckRollup above.
+        if not checks:
+            continue
         run(["gh", "pr", "merge", str(pr), "--merge", "--delete-branch"], cwd=config.repo_root)
         record["status"] = "merged"
         return True
