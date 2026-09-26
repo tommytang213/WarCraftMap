@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from automation.warcraftmap_agent.worker import check_state, load_env, select_issue
+from automation.warcraftmap_agent.worker import Config, build_codex_command, check_state, load_env, select_issue
 
 
 class WorkerTests(unittest.TestCase):
@@ -24,6 +24,22 @@ class WorkerTests(unittest.TestCase):
         issues = [{"number": 1, "title": "[agent-ready] task", "createdAt": "2026-01-01"}]
         state = {"issues": {"1": {"attempts": 1, "status": "pr_open"}}}
         self.assertIsNone(select_issue(issues, state, 3))
+
+
+    def test_codex_command_uses_approve_for_me_without_conflicting_sandbox_flag(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(repo_root=root, state_dir=root / "state")
+            command = build_codex_command(
+                config,
+                root / "worktree",
+                root / "schema.json",
+                root / "result.json",
+            )
+        self.assertIn("--approve-for-me", command)
+        self.assertIn("--ignore-user-config", command)
+        self.assertIn("--ephemeral", command)
+        self.assertNotIn("--sandbox", command)
 
     def test_normalizes_both_github_check_shapes(self):
         self.assertEqual(check_state({"status": "COMPLETED", "conclusion": "SUCCESS"}), "passed")
