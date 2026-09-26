@@ -11,15 +11,16 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Select Lua backend
 - [x] Add initial Wurst project configuration/bootstrap package
 - [x] Add CI typecheck workflow
+- [x] First Wurst CI typecheck passed
 - [ ] Commit/create the clean source map folder
 - [ ] Establish reproducible source-map -> release `.w3x` packaging
 - [ ] Add full CI build artifact after the source map exists
 
 ## Phase 1 — Engine contracts
 
-- [ ] Stable ID conventions
-- [ ] Polity/province/settlement schemas
-- [ ] Ownership/control model
+- [x] Stable ID conventions
+- [x] Initial polity/province/settlement data contract
+- [x] Ownership/control represented separately in starting world data
 - [ ] Unit/army/fleet model
 - [ ] Character/loyalty/relationship model
 - [ ] Technology/institution graph schema
@@ -29,8 +30,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 ## Phase 2 — Headless validation foundation
 
-- [ ] Data schema validator
-- [ ] Duplicate/missing reference detection
+- [x] Initial world data validator
+- [x] Duplicate/missing world-reference detection
 - [ ] Technology cycle/reachability checks
 - [ ] Quest/event reference checks
 - [ ] Economy invariant tests

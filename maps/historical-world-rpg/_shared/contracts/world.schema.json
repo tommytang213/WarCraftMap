@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/world.schema.json",
+  "title": "Historical World Scenario",
+  "type": "object",
+  "required": ["schemaVersion", "polities", "provinces", "settlements"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "polities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/polity" }
+    },
+    "provinces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/province" }
+    },
+    "settlements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/settlement" }
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "polity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "adjective", "sovereignTier",
+        "capitalSettlementId", "provinceIds"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "name": { "type": "string", "minLength": 1 },
+        "adjective": { "type": "string", "minLength": 1 },
+        "sovereignTier": {
+          "type": "string",
+          "enum": [
+            "none", "knight", "baron", "count", "marquess",
+            "duke", "prince", "king", "emperor"
+          ]
+        },
+        "nativeSovereignTitle": { "type": "string" },
+        "capitalSettlementId": { "$ref": "#/$defs/stableId" },
+        "provinceIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stableId" },
+          "uniqueItems": true
+        },
+        "specialUnitIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stableId" },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "province": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "administrativeType", "legalOwnerPolityId",
+        "controllerPolityId", "settlementIds"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "name": { "type": "string", "minLength": 1 },
+        "administrativeType": { "type": "string", "minLength": 1 },
+        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" },
+        "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "settlementIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stableId" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "settlement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "kind", "provinceId", "legalOwnerPolityId",
+        "controllerPolityId", "capturable", "civilianFacilitiesInvulnerable"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "capital", "major_city", "city", "town", "village",
+            "port", "fort", "trading_post", "mission", "mine",
+            "plantation", "pirate_haven"
+          ]
+        },
+        "provinceId": { "$ref": "#/$defs/stableId" },
+        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" },
+        "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "capturable": { "type": "boolean" },
+        "civilianFacilitiesInvulnerable": { "const": true },
+        "navigationZoneId": { "$ref": "#/$defs/stableId" },
+        "cityCoreId": { "$ref": "#/$defs/stableId" },
+        "defenseLayoutId": { "$ref": "#/$defs/stableId" }
+      }
+    }
+  }
+}

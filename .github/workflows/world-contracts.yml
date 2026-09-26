@@ -1,0 +1,30 @@
+name: World data contracts
+
+on:
+  push:
+    paths:
+      - "maps/historical-world-rpg/_shared/contracts/**"
+      - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
+      - ".github/workflows/world-contracts.yml"
+  pull_request:
+    paths:
+      - "maps/historical-world-rpg/_shared/contracts/**"
+      - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
+      - ".github/workflows/world-contracts.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate world cross-references
+        run: |
+          python maps/historical-world-rpg/_shared/tooling/validate_world.py             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+      - name: Run contract tests
+        run: |
+          python -m unittest             maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py

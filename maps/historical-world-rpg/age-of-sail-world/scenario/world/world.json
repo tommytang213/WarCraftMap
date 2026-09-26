@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "polities": [
+    {
+      "id": "england",
+      "name": "Kingdom of England",
+      "adjective": "English",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "King",
+      "capitalSettlementId": "london",
+      "provinceIds": ["greater_london", "kent"]
+    },
+    {
+      "id": "france",
+      "name": "Kingdom of France",
+      "adjective": "French",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "King",
+      "capitalSettlementId": "paris",
+      "provinceIds": ["ile_de_france", "normandy"]
+    }
+  ],
+  "provinces": [
+    {
+      "id": "greater_london",
+      "name": "London",
+      "administrativeType": "capital_region",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "settlementIds": ["london"]
+    },
+    {
+      "id": "kent",
+      "name": "Kent",
+      "administrativeType": "county",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "settlementIds": ["dover"]
+    },
+    {
+      "id": "ile_de_france",
+      "name": "Île-de-France",
+      "administrativeType": "province",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "settlementIds": ["paris"]
+    },
+    {
+      "id": "normandy",
+      "name": "Normandy",
+      "administrativeType": "province",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "settlementIds": ["rouen"]
+    }
+  ],
+  "settlements": [
+    {
+      "id": "london",
+      "name": "London",
+      "kind": "capital",
+      "provinceId": "greater_london",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "north_sea_atlantic",
+      "cityCoreId": "city_core_london",
+      "defenseLayoutId": "defense_london"
+    },
+    {
+      "id": "dover",
+      "name": "Dover",
+      "kind": "port",
+      "provinceId": "kent",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "english_channel",
+      "cityCoreId": "city_core_dover",
+      "defenseLayoutId": "defense_dover"
+    },
+    {
+      "id": "paris",
+      "name": "Paris",
+      "kind": "capital",
+      "provinceId": "ile_de_france",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_paris",
+      "defenseLayoutId": "defense_paris"
+    },
+    {
+      "id": "rouen",
+      "name": "Rouen",
+      "kind": "city",
+      "provinceId": "normandy",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_rouen",
+      "defenseLayoutId": "defense_rouen"
+    }
+  ]
+}
