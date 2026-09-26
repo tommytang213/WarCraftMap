@@ -6,6 +6,16 @@ config_dir=${XDG_CONFIG_HOME:-"$HOME/.config"}
 unit_dir="$config_dir/systemd/user"
 env_file="$config_dir/warcraftmap-agent.env"
 
+if command -v loginctl >/dev/null 2>&1; then
+  linger=$(loginctl show-user "$USER" -p Linger --value 2>/dev/null || true)
+  if [[ "$linger" != "yes" ]]; then
+    echo "ERROR: systemd user lingering is disabled for $USER." >&2
+    echo "Run: sudo loginctl enable-linger $USER" >&2
+    echo "Then rerun this installer." >&2
+    exit 3
+  fi
+fi
+
 mkdir -p "$unit_dir"
 escaped_root=${repo_root//\\/\\\\}
 escaped_root=${escaped_root//&/\\&}
