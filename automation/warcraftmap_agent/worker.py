@@ -187,10 +187,27 @@ Previous failure context, if any:
 Return the required JSON result. Use outcome \"complete\" only when the implementation is ready for repository validation."""
 
 
+def build_codex_command(config: Config, worktree: Path, schema: Path, output: Path) -> list[str]:
+    """Build the non-interactive Codex command for the installed CLI contract."""
+    # In Codex CLI 0.153.x, --approve-for-me already routes approvals through
+    # the workspace-write sandbox and is mutually exclusive with --sandbox.
+    return [
+        "codex", "exec",
+        "--ignore-user-config",
+        "--ephemeral",
+        "--approve-for-me",
+        "--model", config.model,
+        "--cd", str(worktree),
+        "--output-schema", str(schema),
+        "--output-last-message", str(output),
+        "-",
+    ]
+
+
 def invoke_codex(config: Config, worktree: Path, issue: dict[str, Any], record: dict[str, Any]) -> dict[str, str]:
     schema = config.repo_root / "automation" / "codex-result.schema.json"
     output = config.state_dir / "last-codex-result.json"
-    # In Codex CLI 0.153.x, --approve-for-me already routes approvals through\n    # the workspace-write sandbox and is mutually exclusive with --sandbox.\n    command = ["codex", "exec", "--ignore-user-config", "--ephemeral", "--approve-for-me", "--model", config.model, "--cd", str(worktree), "--output-schema", str(schema), "--output-last-message", str(output), "-"]
+    command = build_codex_command(config, worktree, schema, output)
     env = os.environ.copy()
     process = subprocess.Popen(command, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, start_new_session=True, env=env)
     try:
