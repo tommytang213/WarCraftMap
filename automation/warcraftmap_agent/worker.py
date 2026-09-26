@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .budget import budget_available, recent_invocations
+from .budget import budget_available, recent_runs, usage_summary
 
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
@@ -25,8 +25,10 @@ class Config:
     repo_root: Path
     state_dir: Path
     model: str = "gpt-5.6-sol"
-    max_daily: int = 1
-    max_weekly: int = 5
+    max_daily_tokens: int = 100_000_000
+    max_weekly_tokens: int = 500_000_000
+    max_daily_runs: int = 10
+    max_weekly_runs: int = 50
     timeout_minutes: int = 45
     max_attempts: int = 3
     checks_command: str = "./automation/run_checks.sh"
@@ -74,8 +76,10 @@ def make_config(repo_root: Path, env_path: Path) -> Config:
         repo_root=repo_root.resolve(),
         state_dir=state.resolve(),
         model=values.get("WARCRAFTMAP_AGENT_MODEL", "gpt-5.6-sol"),
-        max_daily=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY", 1),
-        max_weekly=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY", 5),
+        max_daily_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_TOKENS", 100_000_000),
+        max_weekly_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_TOKENS", 500_000_000),
+        max_daily_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_RUNS", 10),
+        max_weekly_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_RUNS", 50),
         timeout_minutes=positive_int(values, "WARCRAFTMAP_AGENT_TIMEOUT_MINUTES", 45),
         max_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_ATTEMPTS_PER_ISSUE", 3),
         checks_command=values.get("WARCRAFTMAP_AGENT_CHECKS_COMMAND", "./automation/run_checks.sh"),
@@ -93,11 +97,31 @@ def run(args: list[str], *, cwd: Path, check: bool = True, timeout: int | None =
 
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {"version": 1, "invocations": [], "issues": {}}
+        return {"version": 2, "runs": [], "issues": {}}
+
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("version") != 1:
+    version = data.get("version")
+
+    if version == 1:
+        # v1 stored only invocation timestamps. Preserve them as telemetry-missing
+        # runs so the emergency run caps still account for old activity.
+        data = {
+            "version": 2,
+            "runs": [
+                {
+                    "timestamp": timestamp,
+                    "tokens": None,
+                    "telemetry": "legacy_missing",
+                    "issue": None,
+                }
+                for timestamp in data.get("invocations", [])
+            ],
+            "issues": data.get("issues", {}),
+        }
+    elif version != 2:
         raise ValueError("unsupported worker state version")
-    data.setdefault("invocations", [])
+
+    data.setdefault("runs", [])
     data.setdefault("issues", {})
     return data
 
@@ -196,6 +220,7 @@ def build_codex_command(config: Config, worktree: Path, schema: Path, output: Pa
         "--ignore-user-config",
         "--ephemeral",
         "--approve-for-me",
+        "--json",
         "--model", config.model,
         "--cd", str(worktree),
         "--output-schema", str(schema),
@@ -204,27 +229,129 @@ def build_codex_command(config: Config, worktree: Path, schema: Path, output: Pa
     ]
 
 
-def invoke_codex(config: Config, worktree: Path, issue: dict[str, Any], record: dict[str, Any]) -> dict[str, str]:
+def parse_codex_token_usage(output: str) -> int | None:
+    """Return total tokens reported by one `codex exec --json` invocation.
+
+    Modern Codex emits a turn.completed event for each model turn. We sum those
+    per-turn usage values. A fallback understands older token_count-shaped
+    events, but is used only when no turn.completed usage was observed.
+    """
+    completed_total = 0
+    completed_seen = False
+    cumulative_fallback: list[int] = []
+
+    for raw in output.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if event.get("type") == "turn.completed":
+            usage = event.get("usage")
+            if isinstance(usage, dict):
+                total = usage.get("total_tokens")
+                if not isinstance(total, int):
+                    input_tokens = usage.get("input_tokens")
+                    output_tokens = usage.get("output_tokens")
+                    if isinstance(input_tokens, int) and isinstance(output_tokens, int):
+                        total = input_tokens + output_tokens
+                if isinstance(total, int) and total >= 0:
+                    completed_total += total
+                    completed_seen = True
+            continue
+
+        # Compatibility fallback for older JSON event envelopes.
+        candidates = []
+        payload = event.get("payload")
+        if isinstance(payload, dict):
+            candidates.append(payload)
+        msg = event.get("msg")
+        if isinstance(msg, dict):
+            candidates.append(msg)
+        for candidate in candidates:
+            if candidate.get("type") != "token_count":
+                continue
+            info = candidate.get("info")
+            if not isinstance(info, dict):
+                continue
+            usage = info.get("total_token_usage")
+            if not isinstance(usage, dict):
+                continue
+            total = usage.get("total_tokens")
+            if not isinstance(total, int):
+                input_tokens = usage.get("input_tokens")
+                output_tokens = usage.get("output_tokens")
+                if isinstance(input_tokens, int) and isinstance(output_tokens, int):
+                    total = input_tokens + output_tokens
+            if isinstance(total, int) and total >= 0:
+                cumulative_fallback.append(total)
+
+    if completed_seen:
+        return completed_total
+    if cumulative_fallback:
+        # token_count.total_token_usage is cumulative for the session.
+        return max(cumulative_fallback)
+    return None
+
+
+def invoke_codex(
+    config: Config,
+    worktree: Path,
+    issue: dict[str, Any],
+    record: dict[str, Any],
+    run_entry: dict[str, Any],
+) -> dict[str, str]:
     schema = config.repo_root / "automation" / "codex-result.schema.json"
     output = config.state_dir / "last-codex-result.json"
     command = build_codex_command(config, worktree, schema, output)
     env = os.environ.copy()
-    process = subprocess.Popen(command, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, start_new_session=True, env=env)
+    process = subprocess.Popen(
+        command,
+        cwd=worktree,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        start_new_session=True,
+        env=env,
+    )
+    stdout = ""
+    timed_out = False
     try:
-        stdout, _ = process.communicate(codex_prompt(issue, record.get("last_failure", "")), timeout=config.timeout_minutes * 60)
+        stdout, _ = process.communicate(
+            codex_prompt(issue, record.get("last_failure", "")),
+            timeout=config.timeout_minutes * 60,
+        )
     except subprocess.TimeoutExpired:
+        timed_out = True
         os.killpg(process.pid, signal.SIGTERM)
         try:
-            process.communicate(timeout=10)
+            stdout, _ = process.communicate(timeout=10)
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
-            process.communicate()
+            stdout, _ = process.communicate()
+    finally:
+        tokens = parse_codex_token_usage(stdout or "")
+        run_entry["tokens"] = tokens
+        run_entry["telemetry"] = "reported" if tokens is not None else "missing"
+        run_entry["completed_at"] = utcnow().isoformat().replace("+00:00", "Z")
+        log = (
+            config.state_dir
+            / "logs"
+            / f"issue-{issue['number']}-attempt-{record['attempts']}.jsonl"
+        )
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(stdout or "", encoding="utf-8")
+
+    if timed_out:
         raise RuntimeError(f"Codex exceeded {config.timeout_minutes}-minute timeout")
-    log = config.state_dir / "logs" / f"issue-{issue['number']}-attempt-{record['attempts']}.log"
-    log.parent.mkdir(parents=True, exist_ok=True)
-    log.write_text(stdout, encoding="utf-8")
     if process.returncode:
         raise RuntimeError(f"Codex exited {process.returncode}; see {log}")
+    if not output.exists():
+        raise RuntimeError(f"Codex produced no structured result; see {log}")
     return json.loads(output.read_text(encoding="utf-8"))
 
 
@@ -325,7 +452,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         state_path = config.state_dir / "state.json"
         state = load_state(state_path)
-        state["invocations"] = recent_invocations(state["invocations"], utcnow())
+        state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
         selected = select_issue(issues, state, config.max_attempts)
         if args.dry_run:
@@ -333,7 +460,14 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
             else:
                 print("no eligible [agent-ready] issue")
-            available, reason = budget_available(state["invocations"], utcnow(), config.max_daily, config.max_weekly)
+            available, reason = budget_available(
+                state["runs"],
+                utcnow(),
+                config.max_daily_tokens,
+                config.max_weekly_tokens,
+                config.max_daily_runs,
+                config.max_weekly_runs,
+            )
             print(reason)
             return 0
         if service_open_prs(config, state):
@@ -344,7 +478,14 @@ def main(argv: list[str] | None = None) -> int:
             save_state(state_path, state)
             print("no eligible [agent-ready] issue")
             return 0
-        available, reason = budget_available(state["invocations"], utcnow(), config.max_daily, config.max_weekly)
+        available, reason = budget_available(
+            state["runs"],
+            utcnow(),
+            config.max_daily_tokens,
+            config.max_weekly_tokens,
+            config.max_daily_runs,
+            config.max_weekly_runs,
+        )
         if not available:
             save_state(state_path, state)
             print(reason)
@@ -353,10 +494,20 @@ def main(argv: list[str] | None = None) -> int:
         worktree, branch = worktree_for(config, selected["number"])
         record["attempts"] = int(record.get("attempts", 0)) + 1
         record["status"] = "working"
-        state["invocations"].append(utcnow().isoformat().replace("+00:00", "Z"))
-        save_state(state_path, state)  # Charge quota before launch, including crashes/timeouts.
+        run_entry = {
+            "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
+            "tokens": None,
+            "telemetry": "pending",
+            "issue": selected["number"],
+            "model": config.model,
+        }
+        state["runs"].append(run_entry)
+        # Charge the emergency run cap before launch, including crashes/timeouts.
+        save_state(state_path, state)
         try:
-            result = invoke_codex(config, worktree, selected, record)
+            result = invoke_codex(config, worktree, selected, record, run_entry)
+            # Persist token telemetry before validation/PR work.
+            save_state(state_path, state)
             if result["outcome"] == "needs_design":
                 mark_needs_design(config, selected, result["question"])
                 record["status"] = "needs_design"
