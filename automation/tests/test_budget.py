@@ -15,7 +15,7 @@ class BudgetTests(unittest.TestCase):
     def stamp(self, delta):
         return (self.now - delta).isoformat().replace("+00:00", "Z")
 
-    def run(self, delta, tokens):
+    def entry(self, delta, tokens):
         return {
             "timestamp": self.stamp(delta),
             "tokens": tokens,
@@ -23,7 +23,7 @@ class BudgetTests(unittest.TestCase):
         }
 
     def test_daily_token_limit(self):
-        history = [self.run(timedelta(hours=1), 100_000_000)]
+        history = [self.entry(timedelta(hours=1), 100_000_000)]
         allowed, reason = budget_available(
             history, self.now, 100_000_000, 500_000_000, 10, 50
         )
@@ -32,7 +32,7 @@ class BudgetTests(unittest.TestCase):
 
     def test_rolling_week_token_limit(self):
         history = [
-            self.run(timedelta(days=day), 100_000_000)
+            self.entry(timedelta(days=day), 100_000_000)
             for day in range(1, 6)
         ]
         allowed, reason = budget_available(
@@ -43,7 +43,7 @@ class BudgetTests(unittest.TestCase):
 
     def test_daily_emergency_run_cap(self):
         history = [
-            self.run(timedelta(hours=hour + 1), 1)
+            self.entry(timedelta(hours=hour + 1), 1)
             for hour in range(10)
         ]
         allowed, reason = budget_available(
@@ -53,7 +53,7 @@ class BudgetTests(unittest.TestCase):
         self.assertIn("daily emergency", reason)
 
     def test_unknown_telemetry_counts_as_run_not_zero_token_claim(self):
-        history = [self.run(timedelta(hours=1), None)]
+        history = [self.entry(timedelta(hours=1), None)]
         summary = usage_summary(history, self.now)
         self.assertEqual(summary["daily_tokens"], 0)
         self.assertEqual(summary["daily_runs"], 1)
@@ -66,8 +66,8 @@ class BudgetTests(unittest.TestCase):
 
     def test_old_entries_are_discarded(self):
         history = [
-            self.run(timedelta(days=8), 400_000_000),
-            self.run(timedelta(days=2), 1_000),
+            self.entry(timedelta(days=8), 400_000_000),
+            self.entry(timedelta(days=2), 1_000),
         ]
         self.assertEqual(recent_runs(history, self.now), history[1:])
         self.assertTrue(
