@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: World data validation
         run: |
@@ -40,4 +42,4 @@ jobs:
           bash -n automation/uninstall-user-service.sh
 
       - name: Diff whitespace
-        run: git diff --check origin/main...HEAD
+        run: git diff --check HEAD^ HEAD
