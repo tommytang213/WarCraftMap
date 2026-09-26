@@ -6,12 +6,16 @@ process and one issue at a time, in a dedicated `agent/issue-N` branch and
 worktree. Codex runs with `workspace-write`, `--approve-for-me`, a 45-minute
 timeout, and no dangerous sandbox bypass.
 
-The default quota is one Codex invocation per UTC day and five in any rolling
-seven-day window. An invocation is charged immediately before launch, including
-timeouts and crashes. Each issue gets at most three invocations. CI failures are
-left for a later, budgeted repair attempt. Pull requests merge only when their
-check rollup is complete and successful and GitHub reports required checks as
-successful. The timer may wake hourly, but exhausted workers exit before Codex.
+The primary budget is token-based: 100,000,000 reported Codex tokens per UTC
+day and 500,000,000 in any rolling seven-day window. Codex is invoked with
+machine-readable JSON output and the worker records per-run usage. Because token
+telemetry can fail or change across Codex versions, emergency caps of 10 runs
+per day and 50 in a rolling seven-day window remain in force. A run is recorded
+before launch, including crashes and timeouts; missing telemetry is recorded as
+unknown rather than treated as a free run. Each issue gets at most three
+attempts. CI failures are left for a later, budgeted repair attempt. Pull
+requests merge only after reported CI checks complete successfully. The timer
+may wake hourly, but exhausted workers exit before Codex.
 
 ## Preview and installation
 
@@ -30,8 +34,10 @@ systemctl --user status warcraftmap-agent.timer
 ```
 
 The installer creates `~/.config/warcraftmap-agent.env` only when absent. Edit
-that file to adjust model, quotas, timeout, attempt cap, state directory, or the
-validation command. Logs, worktrees, and quota state live under
+that file to adjust the model, daily/weekly token ceilings, emergency run caps,
+timeout, attempt cap, state directory, or validation command. Existing v1
+timestamp-only state is migrated to the token-aware v2 state format without
+discarding prior invocation history. Logs, worktrees, and quota state live under
 `~/.local/state/warcraftmap-agent` by default. The service is deliberately
 low-priority (`Nice=19`, idle I/O scheduling, low CPU/I/O weights). It uses the
 already-authenticated `gh` and `codex` CLIs and never upgrades them.
