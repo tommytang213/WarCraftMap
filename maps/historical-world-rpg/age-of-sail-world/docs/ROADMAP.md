@@ -40,7 +40,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Save migration tests
 - [x] Inventory routing, validation, and over-capacity recovery tests
 - [x] Navigation graph/connectivity validation and recovery-policy tests
-- [ ] Long timeline simulation harness
+- [x] Long timeline simulation harness
 
 ## Phase 3 — Warcraft runtime foundation
 

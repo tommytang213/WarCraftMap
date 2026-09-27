@@ -17,3 +17,13 @@ Priority areas:
 - native Warcraft save/load regression
 
 Player testing is a late release gate, not the routine development loop.
+
+Run the reusable timeline fixture command with, for example:
+
+```sh
+python3 tooling/simulate_timeline.py tests/fixtures/timeline/soak.json
+```
+
+The command accepts fixed `--seed`, `--start`, `--end`, and `--step` values,
+repeatable `--checkpoint-at` values, `--resume`, `--compare-uninterrupted`, and
+`--summary-out`. Output and failure diagnostics are canonical JSON.
