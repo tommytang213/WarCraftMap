@@ -11,6 +11,8 @@ deliberately deferred to the runtime integration layer.
 `timeline_simulation.py` provides ordered system hooks, deterministic random streams,
 invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 
+`timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement

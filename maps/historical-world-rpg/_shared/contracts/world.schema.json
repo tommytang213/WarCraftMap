@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "schemaVersion",
+    "timeline",
     "navigationZones",
     "navigationSafePoints",
     "activeUnitNavigationStates",
@@ -36,12 +37,27 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "navigationZones": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/navigationZone"}},
-    "navigationSafePoints": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/safePoint"}},
-    "activeUnitNavigationStates": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/activeUnitNavigationState"}},
+    "navigationZones": {
+      "type": "array",
+      "items": {
+        "$ref": "navigation.schema.json#/$defs/navigationZone"
+      }
+    },
+    "navigationSafePoints": {
+      "type": "array",
+      "items": {
+        "$ref": "navigation.schema.json#/$defs/safePoint"
+      }
+    },
+    "activeUnitNavigationStates": {
+      "type": "array",
+      "items": {
+        "$ref": "navigation.schema.json#/$defs/activeUnitNavigationState"
+      }
+    },
     "schemaVersion": {
       "type": "integer",
-      "const": 6
+      "const": 7
     },
     "polities": {
       "type": "array",
@@ -183,11 +199,18 @@
     },
     "quests": {
       "type": "array",
-      "items": {"$ref": "quest-event.schema.json#/$defs/quest"}
+      "items": {
+        "$ref": "quest-event.schema.json#/$defs/quest"
+      }
     },
     "events": {
       "type": "array",
-      "items": {"$ref": "quest-event.schema.json#/$defs/event"}
+      "items": {
+        "$ref": "quest-event.schema.json#/$defs/event"
+      }
+    },
+    "timeline": {
+      "$ref": "timeline.schema.json"
     }
   },
   "$defs": {

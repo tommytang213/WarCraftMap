@@ -4,7 +4,12 @@ Reserved for build, validation, content-generation and simulation tools.
 
 The development target is a reproducible source-to-map pipeline with minimal routine dependence on manual World Editor work.
 
-Planned tooling:
+Shared tooling includes `package_wurst_map.py`, the scenario-configured,
+deterministic map build orchestrator and runtime-data generator. Map projects
+supply paths and release metadata through their `package.json`; no Age of Sail
+IDs or paths are embedded in the shared generator.
+
+Planned and implemented tooling:
 
 - map build/pack pipeline
 - schema/data validation

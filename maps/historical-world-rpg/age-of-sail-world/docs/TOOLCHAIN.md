@@ -75,3 +75,40 @@ after source and world validation. Successful workflow runs retain the packaged
 `AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. Maintainers
 can download it from the **Artifacts** section of that run's GitHub Actions summary.
 The artifact is CI output only and is never committed or published as a release.
+
+## Runtime map pipeline
+
+The scenario-configured `package.json` drives five explicit stages: contract
+validation, deterministic Wurst/runtime-data generation, Wurst compilation,
+folder-map assembly, and final archive inspection. Generated files carry SHA-256
+provenance for every authoritative input and are checked immediately before
+assembly, so stale or edited output cannot be packaged. The build works from an
+isolated copy under `_build/`; the canonical folder map, Wurst sources, and
+scenario JSON are never modified.
+
+Run a clean build from this map project directory with:
+
+```text
+./tooling/package_release.sh
+```
+
+Every invocation removes the previous `_build/` tree. To clean without building:
+
+```text
+./tooling/package_release.sh clean
+```
+
+Failures name their stage (`inputs`, `scenario validation`, `generation`,
+`provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
+
+The command publishes `_build/release/AgeOfSailWorld.w3x`. Inspect it with
+Wurst tooling or an MPQ-capable archive viewer: it must contain `war3map.lua`
+and the `runtime/` provenance payload. The command performs those structural
+and bootstrap-marker checks before publishing the release path.
+
+Authoritative inputs, generated runtime data, compiler settings, build order,
+and the release filename are deterministic. Wurst/StormLib controls MPQ block
+ordering, compression, and archive metadata that the repository tooling cannot
+normalize, so byte-for-byte `.w3x` identity is not promised across different
+Grill, JVM, or StormLib versions. Use the pinned CI container when archive-byte
+comparison matters.

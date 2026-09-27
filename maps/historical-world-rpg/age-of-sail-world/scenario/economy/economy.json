@@ -1,0 +1,50 @@
+{
+  "catalog": {
+    "schemaVersion": 1,
+    "currencies": [{"id": "pound_sterling", "minorUnitsPerMajor": 240}],
+    "goods": [
+      {"id": "grain", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "grain_bundle"},
+      {"id": "flour", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "flour_bundle"},
+      {"id": "ship_provisions", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "ship_provisions_bundle"}
+    ],
+    "stores": [
+      {"id": "london_settlement_store", "kind": "settlement", "owner": {"kind": "settlement", "id": "london"}, "capacityUnits": 100000, "allowedGoodIds": ["grain", "flour", "ship_provisions"]},
+      {"id": "dover_warehouse", "kind": "warehouse", "owner": {"kind": "settlement", "id": "dover"}, "capacityUnits": 50000, "allowedGoodIds": ["grain", "flour", "ship_provisions"]},
+      {"id": "english_patrol_ship_hold", "kind": "ship", "owner": {"kind": "strategic_unit", "id": "english_patrol_ship"}, "capacityUnits": 10000, "allowedGoodIds": ["ship_provisions"]},
+      {"id": "english_channel_fleet_cargo", "kind": "fleet", "owner": {"kind": "fleet", "id": "english_channel_fleet"}, "capacityUnits": 50000, "allowedGoodIds": ["ship_provisions"]}
+    ],
+    "recipes": [
+      {"id": "mill_grain_into_flour", "inputs": [{"goodId": "grain", "quantityUnits": 100}], "outputs": [{"goodId": "flour", "quantityUnits": 80}]},
+      {"id": "prepare_ship_provisions", "inputs": [{"goodId": "flour", "quantityUnits": 100}], "outputs": [{"goodId": "ship_provisions", "quantityUnits": 90}]}
+    ],
+    "producers": [
+      {"id": "london_mill", "storeId": "london_settlement_store", "recipeId": "mill_grain_into_flour", "owner": {"kind": "settlement", "id": "london"}},
+      {"id": "dover_provisioner", "storeId": "dover_warehouse", "recipeId": "prepare_ship_provisions", "owner": {"kind": "settlement", "id": "dover"}}
+    ],
+    "consumers": [{"id": "london_provision_consumption", "storeId": "london_settlement_store", "recipeId": "prepare_ship_provisions", "owner": {"kind": "settlement", "id": "london"}}],
+    "markets": [
+      {"id": "london_market", "storeId": "london_settlement_store", "owner": {"kind": "settlement", "id": "london"}},
+      {"id": "dover_market", "storeId": "dover_warehouse", "owner": {"kind": "settlement", "id": "dover"}}
+    ],
+    "prices": [
+      {"id": "london_grain_price", "marketId": "london_market", "goodId": "grain", "currencyId": "pound_sterling", "quantityUnits": 100, "amountMinor": 12},
+      {"id": "dover_provisions_price", "marketId": "dover_market", "goodId": "ship_provisions", "currencyId": "pound_sterling", "quantityUnits": 100, "amountMinor": 30}
+    ],
+    "obligations": [
+      {"id": "dover_warehouse_tax", "payerStoreId": "dover_warehouse", "payeeStoreId": "london_settlement_store", "currencyId": "pound_sterling", "amountMinor": 120, "intervalTicks": 30},
+      {"id": "patrol_fleet_upkeep", "payerStoreId": "english_channel_fleet_cargo", "sinkRuleId": "ordinary_operating_cost", "currencyId": "pound_sterling", "amountMinor": 60, "intervalTicks": 10}
+    ],
+    "sourceRules": [{"id": "scenario_initial_endowment", "assetKind": "currency", "assetIds": ["pound_sterling"], "storeKinds": ["settlement", "warehouse", "fleet"]}],
+    "sinkRules": [{"id": "ordinary_operating_cost", "assetKind": "currency", "assetIds": ["pound_sterling"], "storeKinds": ["settlement", "warehouse", "ship", "fleet"]}]
+  },
+  "state": {
+    "schemaVersion": 1,
+    "storeBalances": [
+      {"id": "london_settlement_store", "storeId": "london_settlement_store", "goods": [{"goodId": "grain", "quantityUnits": 10000}, {"goodId": "flour", "quantityUnits": 4000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 24000}]},
+      {"id": "dover_warehouse", "storeId": "dover_warehouse", "goods": [{"goodId": "grain", "quantityUnits": 3000}, {"goodId": "flour", "quantityUnits": 2000}, {"goodId": "ship_provisions", "quantityUnits": 1000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 6000}]},
+      {"id": "english_patrol_ship_hold", "storeId": "english_patrol_ship_hold", "goods": [{"goodId": "ship_provisions", "quantityUnits": 500}], "currencies": []},
+      {"id": "english_channel_fleet_cargo", "storeId": "english_channel_fleet_cargo", "goods": [{"goodId": "ship_provisions", "quantityUnits": 2000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 1200}]}
+    ],
+    "processedTransactionIds": []
+  }
+}
