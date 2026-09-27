@@ -1,0 +1,11 @@
+{
+  "polities": [], "provinces": [], "settlements": [], "characters": [],
+  "strategicUnits": [], "armies": [], "fleets": [], "technologies": [],
+  "institutions": [], "navigationZones": [],
+  "quests": [
+    {"id": "first_task", "title": "First Task", "summary": "Fixture task.", "initialStageId": "first_stage", "stages": [{"id": "first_stage", "title": "First", "objectiveIds": [], "nextStageIds": []}], "objectives": [], "prerequisites": [{"kind": "event_occurred", "id": "second_event"}], "outcomes": []}
+  ],
+  "events": [
+    {"id": "second_event", "title": "Second Event", "repeatable": false, "triggers": [{"id": "second_trigger", "conditionId": "always_available", "entityRefs": []}], "prerequisites": [{"kind": "quest_completed", "id": "first_task"}], "outcomes": []}
+  ]
+}

@@ -21,11 +21,12 @@ jobs:
       - name: Validate canonical map source
         run: python maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 
-      - name: Typecheck and package Age of Sail
+      - name: Typecheck and build Age of Sail
         run: |
           docker run --rm             --user root             -v "$PWD:/workspace"             -w /workspace/maps/historical-world-rpg/age-of-sail-world             frotty/wurstscript:latest             /bin/sh -lc '
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
-              su -s /bin/sh wurstuser -c "/home/wurstuser/.wurst/grill install wurstscript && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
+              grill install wurstscript
+              ./tooling/package_release.sh
             '

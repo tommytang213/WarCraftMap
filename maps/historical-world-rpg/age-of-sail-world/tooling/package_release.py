@@ -5,8 +5,7 @@ from pathlib import Path
 import sys
 
 PROJECT = Path(__file__).resolve().parents[1]
-SHARED = PROJECT.parent / "_shared" / "tooling"
-sys.path.insert(0, str(SHARED))
+sys.path.insert(0, str(PROJECT.parent / "_shared" / "tooling"))
 sys.path.insert(0, str(PROJECT / "tooling"))
 
 from package_wurst_map import main  # noqa: E402
@@ -18,4 +17,8 @@ if __name__ == "__main__":
     except ValidationError as error:
         print(f"packaging failed: invalid canonical source map: {error}", file=sys.stderr)
         raise SystemExit(1)
-    raise SystemExit(main([str(PROJECT / "package.json")]))
+    arguments = sys.argv[1:]
+    if arguments not in ([], ["clean"]):
+        print("usage: package_release.py [clean]", file=sys.stderr)
+        raise SystemExit(2)
+    raise SystemExit(main([*arguments, str(PROJECT / "package.json")]))

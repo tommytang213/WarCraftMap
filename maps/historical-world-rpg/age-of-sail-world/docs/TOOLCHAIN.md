@@ -32,19 +32,13 @@ grill typecheck
 grill test
 ```
 
-Build the validated canonical input into the release-named archive:
+Validate the canonical input, typecheck the bootstrap/runtime, and prove that Wurst can inspect and build the folder map:
 
 ```text
-./tooling/package_release.sh
+./tooling/validate_map_source.sh
 ```
 
-This repository-controlled command validates `map/map-source.json` and every required folder-map component, checks that the project remains pinned to the Lua backend and `wc3Patch: v3.0`, then runs `grill install`, `grill typecheck`, and `grill build map/AgeOfSailWorld.w3x`. It fails with a specific message if Grill, an authoritative input, the archive, the generated `war3map.lua`, or the expected bootstrap payload is absent. The inspected release is written to `_build/release/AgeOfSailWorld.w3x`.
-
-The reusable command implementation lives in `_shared/tooling/package_wurst_map.py`; `package.json` supplies this scenario's paths, release name, and bootstrap markers. The authoritative inputs are the folder map, `wurst/`, `scenario/`, `wurst.build`, and generated object data inside the folder map. `_build/`, Grill caches, and packed `.w3x` files are disposable and ignored by Git.
-
-Wurst/StormLib controls MPQ block ordering, compression, and archive metadata. Those details are not all exposed for normalization, so byte-for-byte archive identity is not promised across Grill, JVM, or StormLib versions. The repository makes source paths, compiler target, backend, build sequence, and final filename deterministic; use the same pinned toolchain image when byte comparison matters.
-
-No World Editor is needed. To inspect a release, use an MPQ-capable archive viewer or Wurst tooling, confirm `war3map.lua` exists, and search it for the bootstrap log text. The packaging command performs those payload checks against the generated script before publishing the release path. No player gameplay check is required.
+The script runs the repository-side binary/metadata validator, `grill typecheck`, and `grill build map/AgeOfSailWorld.w3x`. The build uses the Lua backend and `wc3Patch: v3.0` from `wurst.build`, injecting `wurst/Bootstrap.wurst` into generated output. Build output is generated under `_build/`; generated output is not the editable source of truth. No World Editor or player gameplay check is required.
 
 For a fast map-input check that does not require Wurst or Warcraft III:
 
@@ -73,4 +67,48 @@ Patch changes are treated as compatibility work, not casual dependency updates.
 
 GitHub CI performs Wurst typechecking using the official/community Wurst Docker workflow. It refreshes Wurst before checking so the CI toolchain understands the currently pinned `v3.0` target.
 
-CI validates the folder structure and runs the same release-packaging entry point, but does not retain `_build/` as source.
+CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
+
+The `Age of Sail map artifact` workflow runs the repository-controlled
+`./tooling/package_release.sh` command with an immutable Wurst container image,
+after source and world validation. Successful workflow runs retain the packaged
+`AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. Maintainers
+can download it from the **Artifacts** section of that run's GitHub Actions summary.
+The artifact is CI output only and is never committed or published as a release.
+
+## Runtime map pipeline
+
+The scenario-configured `package.json` drives five explicit stages: contract
+validation, deterministic Wurst/runtime-data generation, Wurst compilation,
+folder-map assembly, and final archive inspection. Generated files carry SHA-256
+provenance for every authoritative input and are checked immediately before
+assembly, so stale or edited output cannot be packaged. The build works from an
+isolated copy under `_build/`; the canonical folder map, Wurst sources, and
+scenario JSON are never modified.
+
+Run a clean build from this map project directory with:
+
+```text
+./tooling/package_release.sh
+```
+
+Every invocation removes the previous `_build/` tree. To clean without building:
+
+```text
+./tooling/package_release.sh clean
+```
+
+Failures name their stage (`inputs`, `scenario validation`, `generation`,
+`provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
+
+The command publishes `_build/release/AgeOfSailWorld.w3x`. Inspect it with
+Wurst tooling or an MPQ-capable archive viewer: it must contain `war3map.lua`
+and the `runtime/` provenance payload. The command performs those structural
+and bootstrap-marker checks before publishing the release path.
+
+Authoritative inputs, generated runtime data, compiler settings, build order,
+and the release filename are deterministic. Wurst/StormLib controls MPQ block
+ordering, compression, and archive metadata that the repository tooling cannot
+normalize, so byte-for-byte `.w3x` identity is not promised across different
+Grill, JVM, or StormLib versions. Use the pinned CI container when archive-byte
+comparison matters.

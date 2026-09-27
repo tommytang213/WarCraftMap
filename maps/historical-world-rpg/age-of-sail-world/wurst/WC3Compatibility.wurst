@@ -1,0 +1,94 @@
+package WC3Compatibility
+
+import ErrorHandling
+
+// Stable reusable boundary for Warcraft III patch-specific natives.
+public constant string WC3_COMPAT_PATCH_FAMILY = "v3.0"
+public constant string WC3_COMPAT_SCRIPT_BACKEND = "LUA"
+public constant boolean WC3_HAS_MODERN_INVENTORY = true
+public constant boolean WC3_HAS_NATIVE_SAVE_MANAGEMENT = true
+public constant boolean WC3_HAS_FRAME_UI = true
+public constant boolean WC3_HAS_PATHING_QUERIES = true
+public constant boolean WC3_HAS_MODERN_UNIT_FIELDS = true
+
+/** Abort initialization rather than silently degrading required behavior. */
+public function requireWC3Compatibility()
+	if not WC3_HAS_MODERN_INVENTORY or not WC3_HAS_NATIVE_SAVE_MANAGEMENT or not WC3_HAS_FRAME_UI or not WC3_HAS_PATHING_QUERIES or not WC3_HAS_MODERN_UNIT_FIELDS
+		error("WC3Compatibility: required Warcraft III " + WC3_COMPAT_PATCH_FAMILY + " / " + WC3_COMPAT_SCRIPT_BACKEND + " capabilities are unavailable")
+
+// Modern inventory/equipment.
+public function compatGetEquippedItem() returns item
+	return GetEquippedItem()
+public function compatGetUnequippedItem() returns item
+	return GetUnequippedItem()
+public function compatGetItemEquipmentType(item value) returns equipmentType
+	return GetItemEquipmentType(value)
+public function compatGetItemTag(item value) returns itemTag
+	return GetItemTag(value)
+public function compatIsItemEquipped(item value) returns boolean
+	return IsItemEquipped(value)
+public function compatIsItemInBag(item value) returns boolean
+	return IsItemInBag(value)
+public function compatEquipItem(unit holder, item value) returns boolean
+	return UnitEquipItem(holder, value)
+public function compatUnequipItem(unit holder, item value)
+	UnitUnequipItem(holder, value)
+public function compatUnequipItemFromSlot(unit holder, loadoutslot slot) returns item
+	return UnitUnequipItemFromSlot(holder, slot)
+public function compatExtendedInventorySize(unit holder) returns int
+	return UnitExtendedInventorySize(holder)
+public function compatItemInBagSlot(unit holder, int slot) returns item
+	return UnitItemInBagSlot(holder, slot)
+public function compatItemInEquipmentSlot(unit holder, loadoutslot slot) returns item
+	return UnitItemInEquipmentSlot(holder, slot)
+public function compatHasItemBagged(unit holder, item value) returns boolean
+	return UnitHasItemBagged(holder, value)
+public function compatHasItemEquipped(unit holder, item value) returns boolean
+	return UnitHasItemEquipped(holder, value)
+public function compatHasLoadoutSlotEmpty(unit holder, loadoutslot slot) returns boolean
+	return UnitHasLoadoutSlotEmpty(holder, slot)
+public function compatHasAnyItemEquipped(unit holder) returns boolean
+	return UnitHasAnyItemEquiped(holder)
+public function compatHasEquipmentType(unit holder, equipmentType value) returns boolean
+	return UnitHasItemEquipmentOfType(holder, value)
+public function compatCanEquipItemOfType(unit holder, equipmentType value) returns boolean
+	return UnitCanEquipItemOfEquipmentType(holder, value)
+
+// Native saves; campaign serialization remains engine-owned.
+public function compatSaveGame(string name)
+	SaveGame(name)
+public function compatLoadGame(string name, boolean scoreScreen)
+	LoadGame(name, scoreScreen)
+public function compatSaveGameExists(string name) returns boolean
+	return SaveGameExists(name)
+public function compatCopySaveGame(string source, string destination) returns boolean
+	return CopySaveGame(source, destination)
+public function compatRenameSaveDirectory(string source, string destination) returns boolean
+	return RenameSaveDirectory(source, destination)
+public function compatRemoveSaveDirectory(string name) returns boolean
+	return RemoveSaveDirectory(name)
+public function compatSaveCheckpoint(string name, boolean showWindow)
+	SaveGameCheckpoint(name, showWindow)
+
+// Frame UI.
+public function compatCreateFrame(string frameType, string name, framehandle owner, string inherits, int context) returns framehandle
+	return BlzCreateFrameByType(frameType, name, owner, inherits, context)
+public function compatSetFrameVisible(framehandle frame, boolean visible)
+	BlzFrameSetVisible(frame, visible)
+public function compatSetFrameEnabled(framehandle frame, boolean enabled)
+	BlzFrameSetEnable(frame, enabled)
+
+// Pathing, positioning, and modern unit fields.
+public function compatIsTerrainPathable(real x, real y, pathingtype kind) returns boolean
+	return IsTerrainPathable(x, y, kind)
+public function compatSetUnitPosition(unit target, real x, real y)
+	SetUnitPosition(target, x, y)
+public function compatSetUnitCoordinates(unit target, real x, real y)
+	SetUnitX(target, x)
+	SetUnitY(target, y)
+public function compatGetUnitMaxLife(unit target) returns int
+	return BlzGetUnitMaxHP(target)
+public function compatSetUnitMaxLife(unit target, int life)
+	BlzSetUnitMaxHP(target, life)
+public function compatGetUnitCollisionSize(unit target) returns real
+	return BlzGetUnitCollisionSize(target)

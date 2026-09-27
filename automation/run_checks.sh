@@ -17,21 +17,26 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
     ;;
   required)
     if command -v grill >/dev/null 2>&1; then
-      maps/historical-world-rpg/age-of-sail-world/tooling/package_release.sh
+      (cd maps/historical-world-rpg/age-of-sail-world && ./tooling/package_release.sh)
     elif command -v docker >/dev/null 2>&1; then
       docker run --rm \
         --user root \
+        --entrypoint /bin/sh \
         -v "$repo_root:/source:ro" \
         frotty/wurstscript:latest \
-        /bin/sh -lc '
+        -lc '
           set -eu
           apt-get update
           apt-get install -y --no-install-recommends python3
-          cp -R /source/maps/historical-world-rpg/age-of-sail-world /tmp/age-of-sail-world
-          cp -R /source/maps/historical-world-rpg/_shared /tmp/_shared
-          chown -R wurstuser:wurstuser /tmp/age-of-sail-world /tmp/_shared
-          cd /tmp/age-of-sail-world
-          su -s /bin/sh wurstuser -c "/home/wurstuser/.wurst/grill install wurstscript && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
+          mkdir -p /tmp/historical-world-rpg/age-of-sail-world
+          mkdir -p /tmp/historical-world-rpg/_shared
+          cd /source/maps/historical-world-rpg/age-of-sail-world
+          tar --exclude=./_build -cf - . | tar -C /tmp/historical-world-rpg/age-of-sail-world -xf -
+          cd /source/maps/historical-world-rpg/_shared
+          tar -cf - . | tar -C /tmp/historical-world-rpg/_shared -xf -
+          cd /tmp/historical-world-rpg/age-of-sail-world
+          grill install wurstscript
+          ./tooling/package_release.sh
         '
     else
       echo "ERROR: Wurst validation requires grill or Docker." >&2
