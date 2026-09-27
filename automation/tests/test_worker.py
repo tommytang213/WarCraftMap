@@ -6,6 +6,7 @@ from pathlib import Path
 from automation.warcraftmap_agent.worker import (
     Config,
     build_codex_command,
+    build_pr_merge_command,
     check_state,
     load_env,
     load_state,
@@ -67,6 +68,11 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertIsNone(select_issue(issues, state, 3))
+
+    def test_pr_merge_does_not_delete_branch_checked_out_by_worktree(self):
+        command = build_pr_merge_command(17)
+        self.assertEqual(command, ["gh", "pr", "merge", "17", "--merge"])
+        self.assertNotIn("--delete-branch", command)
 
     def test_codex_command_uses_json_and_no_conflicting_sandbox_flag(self):
         with tempfile.TemporaryDirectory() as directory:
