@@ -156,8 +156,21 @@ def list_issues(config: Config) -> list[dict[str, Any]]:
     return sorted((item for item in issues if READY.match(item["title"])), key=lambda item: (item["createdAt"], item["number"]))
 
 
-def queue_refill_count(open_ready_count: int) -> int:
+def list_needs_design_issues(config: Config) -> list[dict[str, Any]]:
+    issues = gh_json(
+        config.repo_root,
+        ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,url,createdAt"],
+    )
+    return sorted(
+        (item for item in issues if NEEDS_DESIGN.match(item["title"])),
+        key=lambda item: (item["createdAt"], item["number"]),
+    )
+
+
+def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> int:
     """Return the bounded number of issues needed to maintain the ready buffer."""
+    if design_blocked:
+        return 0
     return QUEUE_TARGET - open_ready_count if open_ready_count < QUEUE_REFILL_THRESHOLD else 0
 
 
@@ -693,10 +706,14 @@ def main(argv: list[str] | None = None) -> int:
         state = load_state(state_path)
         state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
+        needs_design = list_needs_design_issues(config)
         selected = select_issue(issues, state, config.max_attempts)
-        refill_count = queue_refill_count(len(issues))
+        refill_count = queue_refill_count(len(issues), bool(needs_design))
         if args.dry_run:
-            if refill_count:
+            if needs_design:
+                blocker = needs_design[0]
+                print(f"design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
+            elif refill_count:
                 print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
             elif selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")

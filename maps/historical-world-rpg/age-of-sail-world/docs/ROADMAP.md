@@ -13,7 +13,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Add CI typecheck workflow
 - [x] First Wurst CI typecheck passed
 - [x] Commit/create the clean source map folder
-- [ ] Establish reproducible source-map -> release `.w3x` packaging
+- [x] Establish reproducible source-map -> release `.w3x` packaging
 - [x] Add full CI build artifact after the source map exists
 
 ## Phase 1 — Engine contracts
@@ -35,17 +35,17 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Duplicate/missing world-reference detection
 - [x] Technology cycle/reachability checks
 - [x] Quest/event reference checks
-- [ ] Economy invariant tests
+- [x] Economy invariant tests
 - [x] Save round-trip tests
 - [x] Save migration tests
 - [x] Inventory routing, validation, and over-capacity recovery tests
 - [x] Navigation graph/connectivity validation and recovery-policy tests
-- [ ] Long timeline simulation harness
+- [x] Long timeline simulation harness
 
 ## Phase 3 — Warcraft runtime foundation
 
 - [x] Latest-WC3 compatibility module
-- [ ] Map build pipeline
+- [x] Map build pipeline
 - [x] Command router + paged /help
 - [ ] UI pause policy for management screens
 - [ ] Campaign save manager

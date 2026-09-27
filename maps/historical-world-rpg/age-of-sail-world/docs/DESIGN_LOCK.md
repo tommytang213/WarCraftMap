@@ -106,6 +106,15 @@ This file records requirements already agreed with the player. They are defaults
 - Release builds hide internal developer/debug commands.
 - A player-facing MC-only invulnerability command may be provided so native `whosyourdaddy` is unnecessary for recovery.
 
+## UI pause policy
+
+- The campaign is single-player, so opening a modal management screen pauses the entire campaign simulation.
+- While a modal management screen is open, campaign time progression, strategic AI actions, combat/travel simulation, economy ticks, and event progression are paused.
+- Inventory/equipment, character/companion management, technology, economy/trade management, titles/land/government, fleet/army management, journal/encyclopedia, and full strategic-management/map screens are modal for this policy unless deliberately reclassified later.
+- Passive/non-modal UI such as HUD panels, tooltips, notifications/toasts, and small informational overlays does not pause the campaign.
+- Nested/modal screen transitions keep the campaign paused until the final modal management screen closes.
+- Closing a management screen must restore the pause state that existed before the first modal management screen opened; it must not unpause a game that the player had already manually paused.
+
 ## Development workflow
 
 - The player is not expected to act as incremental QA.

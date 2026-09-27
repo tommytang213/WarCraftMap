@@ -23,10 +23,10 @@ jobs:
 
       - name: Typecheck and build Age of Sail
         run: |
-          docker run --rm             -v "$PWD:/workspace"             -w /workspace/maps/historical-world-rpg/age-of-sail-world             frotty/wurstscript:latest             /bin/sh -lc '
+          docker run --rm             --user root             -v "$PWD:/workspace"             -w /workspace/maps/historical-world-rpg/age-of-sail-world             frotty/wurstscript:latest             /bin/sh -lc '
               set -eu
+              apt-get update
+              apt-get install -y --no-install-recommends python3
               grill install wurstscript
-              grill install
-              grill typecheck
-              grill build map/AgeOfSailWorld.w3x
+              ./tooling/package_release.sh
             '
