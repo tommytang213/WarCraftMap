@@ -318,6 +318,11 @@ def default_branch(repo: Path) -> str:
 
 
 def codex_prompt(issue: dict[str, Any], repair_context: str) -> str:
+    conflict_instructions = ""
+    if repair_context.startswith("Merge conflict repair required:"):
+        conflict_instructions = """
+
+This is an integration repair. Current main has already been merged into this worktree and may have left unmerged paths. Resolve only actual merge conflicts, preserving the completed work from both main and the issue branch. Do not discard or broadly rewrite either work stream. After resolving the conflicts, make only the minimal integration changes needed for repository validation."""
     return f"""Implement GitHub issue #{issue['number']} in this isolated WarCraftMap worktree.
 
 Title: {issue['title']}
@@ -328,6 +333,7 @@ Follow AGENTS.md and the Age of Sail design documentation. Source and scenario d
 
 Previous failure context, if any:
 {repair_context or '(none)'}
+{conflict_instructions}
 
 Return the required JSON result. Use outcome \"complete\" only when the implementation is ready for repository validation."""
 
@@ -483,6 +489,38 @@ def run_checks(config: Config, worktree: Path) -> None:
     run(command, cwd=worktree, timeout=config.timeout_minutes * 60)
 
 
+def prepare_merge_conflict_repair(config: Config, worktree: Path) -> list[str]:
+    """Merge current upstream main, leaving genuine conflicts for Codex."""
+    run(["git", "fetch", "origin"], cwd=worktree)
+    merge_head = run(
+        ["git", "rev-parse", "--verify", "--quiet", "MERGE_HEAD"], cwd=worktree, check=False,
+    )
+    if merge_head.returncode not in {0, 1}:
+        raise RuntimeError(f"could not inspect merge state (git exited {merge_head.returncode})")
+    if merge_head.returncode == 1:
+        upstream = f"origin/{default_branch(config.repo_root)}"
+        merge = run(["git", "merge", "--no-edit", upstream], cwd=worktree, check=False)
+        if merge.returncode:
+            conflicts = run(
+                ["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree
+            ).stdout.splitlines()
+            if not conflicts:
+                detail = (merge.stderr or merge.stdout).strip()
+                raise RuntimeError(f"could not merge {upstream}: {detail}")
+    return run(
+        ["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree
+    ).stdout.splitlines()
+
+
+def push_existing_pr_repair(worktree: Path, issue_number: int, pr: int) -> None:
+    """Commit a resolved merge when needed, then update the existing PR branch."""
+    status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
+    if status.strip():
+        run(["git", "add", "-A"], cwd=worktree)
+        run(["git", "commit", "-m", f"Repair PR #{pr} for issue #{issue_number}"], cwd=worktree)
+    run(["git", "push"], cwd=worktree)
+
+
 def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str) -> int:
     status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
     if not status.strip():
@@ -598,6 +636,22 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         if view["state"] == "CLOSED":
             record["status"] = "failed"
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
+            return True
+        if view.get("mergeStateStatus") == "DIRTY":
+            attempts = int(record.get("attempts", 0))
+            if attempts >= config.max_attempts:
+                record["status"] = "failed"
+                record["last_failure"] = (
+                    f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
+                    f"and the per-issue attempt limit ({config.max_attempts}) is exhausted."
+                )
+            else:
+                record["status"] = "repair"
+                record["repair_kind"] = "merge_conflict"
+                record["last_failure"] = (
+                    f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
+                    "conflicts with the issue branch. Preserve completed work from both branches."
+                )
             return True
         checks = view.get("statusCheckRollup") or []
         failed = any(check_state(item) == "failed" for item in checks)
@@ -727,6 +781,13 @@ def main(argv: list[str] | None = None) -> int:
         # Charge the emergency run cap before launch, including crashes/timeouts.
         save_state(state_path, state)
         try:
+            if record.get("repair_kind") == "merge_conflict":
+                conflicts = prepare_merge_conflict_repair(config, worktree)
+                record["last_failure"] = (
+                    "Merge conflict repair required: current main was merged into the issue "
+                    f"worktree; resolve only these unmerged paths while preserving both work "
+                    f"streams: { ', '.join(conflicts) if conflicts else '(none remain)'}"
+                )
             result = invoke_codex(config, worktree, selected, record, run_entry)
             # Persist token telemetry before validation/PR work.
             save_state(state_path, state)
@@ -737,14 +798,13 @@ def main(argv: list[str] | None = None) -> int:
                 run_checks(config, worktree)
                 existing_pr = record.get("pr")
                 if existing_pr:
-                    run(["git", "add", "-A"], cwd=worktree)
-                    run(["git", "commit", "-m", f"Repair PR #{existing_pr} for issue #{selected['number']}"], cwd=worktree)
-                    run(["git", "push"], cwd=worktree)
+                    push_existing_pr_repair(worktree, selected["number"], int(existing_pr))
                     record["status"] = "pr_open"
                 else:
                     record["pr"] = publish(config, selected, worktree, branch)
                     record["status"] = "pr_open"
                 record.pop("last_failure", None)
+                record.pop("repair_kind", None)
         except Exception as exc:
             record["status"] = "failed" if record["attempts"] >= config.max_attempts else "repair"
             record["last_failure"] = str(exc)[-4000:]
