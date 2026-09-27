@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "polities": [
     {
       "id": "england",
@@ -8,7 +8,10 @@
       "sovereignTier": "king",
       "nativeSovereignTitle": "King",
       "capitalSettlementId": "london",
-      "provinceIds": ["greater_london", "kent"]
+      "provinceIds": [
+        "greater_london",
+        "kent"
+      ]
     },
     {
       "id": "france",
@@ -17,7 +20,10 @@
       "sovereignTier": "king",
       "nativeSovereignTitle": "King",
       "capitalSettlementId": "paris",
-      "provinceIds": ["ile_de_france", "normandy"]
+      "provinceIds": [
+        "ile_de_france",
+        "normandy"
+      ]
     }
   ],
   "provinces": [
@@ -27,7 +33,9 @@
       "administrativeType": "capital_region",
       "legalOwnerPolityId": "england",
       "controllerPolityId": "england",
-      "settlementIds": ["london"]
+      "settlementIds": [
+        "london"
+      ]
     },
     {
       "id": "kent",
@@ -35,7 +43,9 @@
       "administrativeType": "county",
       "legalOwnerPolityId": "england",
       "controllerPolityId": "england",
-      "settlementIds": ["dover"]
+      "settlementIds": [
+        "dover"
+      ]
     },
     {
       "id": "ile_de_france",
@@ -43,7 +53,9 @@
       "administrativeType": "province",
       "legalOwnerPolityId": "france",
       "controllerPolityId": "france",
-      "settlementIds": ["paris"]
+      "settlementIds": [
+        "paris"
+      ]
     },
     {
       "id": "normandy",
@@ -51,7 +63,9 @@
       "administrativeType": "province",
       "legalOwnerPolityId": "france",
       "controllerPolityId": "france",
-      "settlementIds": ["rouen"]
+      "settlementIds": [
+        "rouen"
+      ]
     }
   ],
   "settlements": [
@@ -107,43 +121,101 @@
     }
   ],
   "officers": [
-    { "id": "english_field_officer", "name": "English Field Officer" },
-    { "id": "english_naval_officer", "name": "English Naval Officer" }
+    {
+      "id": "english_field_officer",
+      "name": "English Field Officer"
+    },
+    {
+      "id": "english_naval_officer",
+      "name": "English Naval Officer"
+    }
   ],
   "strategicUnits": [
     {
-      "id": "english_guard_formation", "name": "English Guard Formation", "kind": "formation",
-      "legalOwnerPolityId": "england", "controllerPolityId": "england",
-      "representedStrength": 800, "strengthUnitId": "personnel",
-      "operationalState": { "morale": 80, "supply": 75, "readiness": 85 },
-      "runtimeInstantiation": { "state": "abstract", "runtimeTemplateId": "infantry_formation_default", "activeObjectCount": 0 },
-      "commanderOfficerId": "english_field_officer", "officerIds": ["english_field_officer"]
+      "id": "english_guard_formation",
+      "name": "English Guard Formation",
+      "kind": "formation",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "representedStrength": 800,
+      "strengthUnitId": "personnel",
+      "operationalState": {
+        "morale": 80,
+        "supply": 75,
+        "readiness": 85
+      },
+      "runtimeInstantiation": {
+        "state": "abstract",
+        "runtimeTemplateId": "infantry_formation_default",
+        "activeObjectCount": 0
+      },
+      "commanderOfficerId": "english_field_officer",
+      "officerIds": [
+        "english_field_officer"
+      ]
     },
     {
-      "id": "english_patrol_ship", "name": "English Patrol Ship", "kind": "ship",
-      "legalOwnerPolityId": "england", "controllerPolityId": "england",
-      "representedStrength": 1, "strengthUnitId": "vessels",
-      "operationalState": { "morale": 78, "supply": 70, "readiness": 82 },
-      "runtimeInstantiation": { "state": "active", "runtimeTemplateId": "sailing_ship_default", "activeObjectCount": 1 },
-      "commanderOfficerId": "english_naval_officer", "officerIds": ["english_naval_officer"]
+      "id": "english_patrol_ship",
+      "name": "English Patrol Ship",
+      "kind": "ship",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "representedStrength": 1,
+      "strengthUnitId": "vessels",
+      "operationalState": {
+        "morale": 78,
+        "supply": 70,
+        "readiness": 82
+      },
+      "runtimeInstantiation": {
+        "state": "active",
+        "runtimeTemplateId": "sailing_ship_default",
+        "activeObjectCount": 1
+      },
+      "commanderOfficerId": "english_naval_officer",
+      "officerIds": [
+        "english_naval_officer"
+      ]
     }
   ],
   "armies": [
     {
-      "id": "english_home_army", "name": "English Home Army",
-      "legalOwnerPolityId": "england", "controllerPolityId": "england",
-      "formationUnitIds": ["english_guard_formation"],
-      "operationalState": { "morale": 80, "supply": 75, "readiness": 85 },
-      "commanderOfficerId": "english_field_officer", "officerIds": ["english_field_officer"]
+      "id": "english_home_army",
+      "name": "English Home Army",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "formationUnitIds": [
+        "english_guard_formation"
+      ],
+      "operationalState": {
+        "morale": 80,
+        "supply": 75,
+        "readiness": 85
+      },
+      "commanderOfficerId": "english_field_officer",
+      "officerIds": [
+        "english_field_officer"
+      ]
     }
   ],
   "fleets": [
     {
-      "id": "english_channel_fleet", "name": "English Channel Fleet",
-      "legalOwnerPolityId": "england", "controllerPolityId": "england",
-      "shipUnitIds": ["english_patrol_ship"],
-      "operationalState": { "morale": 78, "supply": 70, "readiness": 82 },
-      "commanderOfficerId": "english_naval_officer", "officerIds": ["english_naval_officer"]
+      "id": "english_channel_fleet",
+      "name": "English Channel Fleet",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "shipUnitIds": [
+        "english_patrol_ship"
+      ],
+      "operationalState": {
+        "morale": 78,
+        "supply": 70,
+        "readiness": 82
+      },
+      "commanderOfficerId": "english_naval_officer",
+      "officerIds": [
+        "english_naval_officer"
+      ]
     }
   ],
   "traits": [],
@@ -154,42 +226,304 @@
   "relationshipThresholds": [],
   "companionRelationships": [],
   "researchBranches": [
-    {"id": "navigation", "name": "Navigation", "entryNodeIds": ["celestial_navigation"]},
-    {"id": "statecraft", "name": "Statecraft", "entryNodeIds": ["professional_bureaucracy"]}
+    {
+      "id": "navigation",
+      "name": "Navigation",
+      "entryNodeIds": [
+        "celestial_navigation"
+      ]
+    },
+    {
+      "id": "statecraft",
+      "name": "Statecraft",
+      "entryNodeIds": [
+        "professional_bureaucracy"
+      ]
+    }
   ],
   "technologies": [
     {
-      "id": "celestial_navigation", "name": "Celestial Navigation",
-      "description": "Systematic open-water position finding.", "branchId": "navigation",
+      "id": "celestial_navigation",
+      "name": "Celestial Navigation",
+      "description": "Systematic open-water position finding.",
+      "branchId": "navigation",
       "prerequisiteIds": [],
-      "timeCost": {"preferredYear": 1480, "baseCost": 100, "aheadOfTimeCostMultiplier": 12, "additionalMultiplierPerYearAhead": 0.25},
-      "unlocks": [{"kind": "ability", "contentId": "open_water_navigation"}]
+      "timeCost": {
+        "preferredYear": 1480,
+        "baseCost": 100,
+        "aheadOfTimeCostMultiplier": 12,
+        "additionalMultiplierPerYearAhead": 0.25
+      },
+      "unlocks": [
+        {
+          "kind": "ability",
+          "contentId": "open_water_navigation"
+        }
+      ]
     },
     {
-      "id": "standardized_charts", "name": "Standardized Charts",
-      "description": "Shared standards for producing and reading charts.", "branchId": "navigation",
-      "prerequisiteIds": ["celestial_navigation", "professional_bureaucracy"],
-      "timeCost": {"preferredYear": 1550, "baseCost": 180, "aheadOfTimeCostMultiplier": 20, "additionalMultiplierPerYearAhead": 0.5},
-      "unlocks": [{"kind": "modifier", "contentId": "fleet_navigation_efficiency"}]
+      "id": "standardized_charts",
+      "name": "Standardized Charts",
+      "description": "Shared standards for producing and reading charts.",
+      "branchId": "navigation",
+      "prerequisiteIds": [
+        "celestial_navigation",
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 180,
+        "aheadOfTimeCostMultiplier": 20,
+        "additionalMultiplierPerYearAhead": 0.5
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "fleet_navigation_efficiency"
+        }
+      ]
     }
   ],
   "institutions": [
     {
-      "id": "professional_bureaucracy", "name": "Professional Bureaucracy",
-      "description": "Permanent administrative offices and record keeping.", "branchId": "statecraft",
+      "id": "professional_bureaucracy",
+      "name": "Professional Bureaucracy",
+      "description": "Permanent administrative offices and record keeping.",
+      "branchId": "statecraft",
       "prerequisiteIds": [],
-      "timeCost": {"preferredYear": 1450, "baseCost": 120, "aheadOfTimeCostMultiplier": 15, "additionalMultiplierPerYearAhead": 0.3},
-      "unlocks": [{"kind": "policy", "contentId": "central_records"}]
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 120,
+        "aheadOfTimeCostMultiplier": 15,
+        "additionalMultiplierPerYearAhead": 0.3
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "central_records"
+        }
+      ]
     }
   ],
   "polityResearchStates": [
-    {"id": "england_research", "polityId": "england", "completedTechnologyIds": ["celestial_navigation"], "establishedInstitutionIds": ["professional_bureaucracy"], "researchProgress": [{"nodeId": "standardized_charts", "progress": 20}]},
-    {"id": "france_research", "polityId": "france", "completedTechnologyIds": [], "establishedInstitutionIds": ["professional_bureaucracy"], "researchProgress": [{"nodeId": "celestial_navigation", "progress": 65}]}
+    {
+      "id": "england_research",
+      "polityId": "england",
+      "completedTechnologyIds": [
+        "celestial_navigation"
+      ],
+      "establishedInstitutionIds": [
+        "professional_bureaucracy"
+      ],
+      "researchProgress": [
+        {
+          "nodeId": "standardized_charts",
+          "progress": 20
+        }
+      ]
+    },
+    {
+      "id": "france_research",
+      "polityId": "france",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [
+        "professional_bureaucracy"
+      ],
+      "researchProgress": [
+        {
+          "nodeId": "celestial_navigation",
+          "progress": 65
+        }
+      ]
+    }
   ],
   "provinceAdoptionStates": [
-    {"id": "greater_london_adoption", "provinceId": "greater_london", "adoption": [{"nodeId": "celestial_navigation", "level": 85}, {"nodeId": "professional_bureaucracy", "level": 90}]},
-    {"id": "kent_adoption", "provinceId": "kent", "adoption": [{"nodeId": "celestial_navigation", "level": 45}, {"nodeId": "professional_bureaucracy", "level": 60}]},
-    {"id": "ile_de_france_adoption", "provinceId": "ile_de_france", "adoption": [{"nodeId": "professional_bureaucracy", "level": 80}]},
-    {"id": "normandy_adoption", "provinceId": "normandy", "adoption": [{"nodeId": "professional_bureaucracy", "level": 35}]}
-  ]
+    {
+      "id": "greater_london_adoption",
+      "provinceId": "greater_london",
+      "adoption": [
+        {
+          "nodeId": "celestial_navigation",
+          "level": 85
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 90
+        }
+      ]
+    },
+    {
+      "id": "kent_adoption",
+      "provinceId": "kent",
+      "adoption": [
+        {
+          "nodeId": "celestial_navigation",
+          "level": 45
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 60
+        }
+      ]
+    },
+    {
+      "id": "ile_de_france_adoption",
+      "provinceId": "ile_de_france",
+      "adoption": [
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 80
+        }
+      ]
+    },
+    {
+      "id": "normandy_adoption",
+      "provinceId": "normandy",
+      "adoption": [
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 35
+        }
+      ]
+    }
+  ],
+  "titleStyles": [
+    {
+      "id": "english_king",
+      "polityId": "england",
+      "rankTier": "king",
+      "nativeName": "King",
+      "genericName": "King"
+    },
+    {
+      "id": "english_duke",
+      "polityId": "england",
+      "rankTier": "duke",
+      "nativeName": "Duke",
+      "genericName": "Duke"
+    },
+    {
+      "id": "french_king",
+      "polityId": "france",
+      "rankTier": "king",
+      "nativeName": "Roi",
+      "genericName": "King"
+    },
+    {
+      "id": "french_duke",
+      "polityId": "france",
+      "rankTier": "duke",
+      "nativeName": "Duc",
+      "genericName": "Duke"
+    }
+  ],
+  "titleGrants": [
+    {
+      "id": "crown_of_england",
+      "titleStyleId": "english_king",
+      "holder": {
+        "kind": "polity",
+        "id": "england"
+      },
+      "allegiancePolityId": "england",
+      "sovereign": true
+    },
+    {
+      "id": "crown_of_france",
+      "titleStyleId": "french_king",
+      "holder": {
+        "kind": "polity",
+        "id": "france"
+      },
+      "allegiancePolityId": "france",
+      "sovereign": true
+    }
+  ],
+  "territorialHoldings": [
+    {
+      "id": "holding_greater_london",
+      "territory": {
+        "kind": "province",
+        "id": "greater_london"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "england"
+      },
+      "controllerPolityId": "england",
+      "governingPolityId": "england",
+      "sovereignPolityId": "england",
+      "autonomyPercent": 10,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kent",
+      "territory": {
+        "kind": "province",
+        "id": "kent"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "england"
+      },
+      "controllerPolityId": "england",
+      "governingPolityId": "england",
+      "sovereignPolityId": "england",
+      "autonomyPercent": 35,
+      "overlordHoldingId": "holding_greater_london",
+      "overlordTaxRatePercent": 10,
+      "upkeepRatePercent": 5,
+      "obligations": [
+        {
+          "kind": "levy",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "holding_ile_de_france",
+      "territory": {
+        "kind": "province",
+        "id": "ile_de_france"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "france"
+      },
+      "controllerPolityId": "france",
+      "governingPolityId": "france",
+      "sovereignPolityId": "france",
+      "autonomyPercent": 10,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_normandy",
+      "territory": {
+        "kind": "province",
+        "id": "normandy"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "france"
+      },
+      "controllerPolityId": "france",
+      "governingPolityId": "france",
+      "sovereignPolityId": "france",
+      "autonomyPercent": 40,
+      "overlordHoldingId": "holding_ile_de_france",
+      "overlordTaxRatePercent": 10,
+      "upkeepRatePercent": 5,
+      "obligations": [
+        {
+          "kind": "service",
+          "value": 30
+        }
+      ]
+    }
+  ],
+  "allegiances": []
 }

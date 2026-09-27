@@ -78,6 +78,15 @@ class WorldContractTests(unittest.TestCase):
         finally:
             temp_path.unlink(missing_ok=True)
 
+    def assert_valid_data(self, data):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as f:
+            json.dump(data, f)
+            temp_path = Path(f.name)
+        try:
+            validator.validate(temp_path)
+        finally:
+            temp_path.unlink(missing_ok=True)
+
     def assert_invalid_data(self, data):
         with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as f:
             json.dump(data, f)
@@ -217,6 +226,90 @@ class WorldContractTests(unittest.TestCase):
         levels = [state["adoption"][0]["level"] for state in data["provinceAdoptionStates"][:2]]
         self.assertNotEqual(levels[0], levels[1])
         validator.validate(WORLD_PATH)
+
+
+    def test_scenario_defines_native_names_with_generic_tiers(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        french = next(style for style in data["titleStyles"] if style["id"] == "french_king")
+        self.assertEqual("Roi", french["nativeName"])
+        self.assertEqual("King", french["genericName"])
+        self.assertEqual("king", french["rankTier"])
+
+    def test_lower_rank_may_be_granted_by_sovereign(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["titleGrants"].append({
+            "id": "duchy_of_kent", "titleStyleId": "english_duke",
+            "holder": {"kind": "polity", "id": "england"},
+            "allegiancePolityId": "england", "sovereign": False,
+            "grantorTitleId": "crown_of_england"
+        })
+        self.assert_valid_data(data)
+
+    def test_empire_may_grant_subordinate_king_rank(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["titleStyles"].extend([
+            {"id": "imperial_emperor", "polityId": "england", "rankTier": "emperor", "nativeName": "Emperor", "genericName": "Emperor"},
+            {"id": "subordinate_king", "polityId": "england", "rankTier": "king", "nativeName": "King", "genericName": "King"}
+        ])
+        data["titleGrants"].extend([
+            {"id": "imperial_crown", "titleStyleId": "imperial_emperor", "holder": {"kind": "polity", "id": "england"}, "allegiancePolityId": "england", "sovereign": True},
+            {"id": "subordinate_crown", "titleStyleId": "subordinate_king", "holder": {"kind": "polity", "id": "england"}, "allegiancePolityId": "england", "sovereign": False, "grantorTitleId": "imperial_crown"}
+        ])
+        self.assert_valid_data(data)
+
+    def test_equal_or_higher_rank_grant_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["titleGrants"].append({
+            "id": "second_english_crown", "titleStyleId": "english_king",
+            "holder": {"kind": "polity", "id": "england"},
+            "allegiancePolityId": "england", "sovereign": False,
+            "grantorTitleId": "crown_of_england"
+        })
+        self.assert_invalid_data(data)
+
+    def test_title_hierarchy_cycle_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["titleGrants"][0]["sovereign"] = False
+        data["titleGrants"][0]["grantorTitleId"] = "crown_of_england"
+        self.assert_invalid_data(data)
+
+    def test_broken_territorial_reference_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["territorialHoldings"][0]["territory"]["id"] = "missing_province"
+        self.assert_invalid_data(data)
+
+    def test_broken_and_cyclic_overlord_references_are_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["territorialHoldings"][1]["overlordHoldingId"] = "missing_holding"
+        self.assert_invalid_data(data)
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["territorialHoldings"][0]["overlordHoldingId"] = "holding_kent"
+        data["territorialHoldings"][0]["overlordTaxRatePercent"] = 5
+        self.assert_invalid_data(data)
+
+    def test_independent_holding_has_no_overlord_tax_but_has_upkeep(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        independent = data["territorialHoldings"][0]
+        self.assertNotIn("overlordHoldingId", independent)
+        self.assertEqual(0, independent["overlordTaxRatePercent"])
+        self.assertGreater(independent["upkeepRatePercent"], 0)
+        independent["overlordTaxRatePercent"] = 1
+        self.assert_invalid_data(data)
+
+    def test_ownership_control_governance_sovereignty_and_autonomy_are_separate(self):
+        holding = json.loads(WORLD_PATH.read_text(encoding="utf-8"))["territorialHoldings"][0]
+        self.assertIn("legalOwner", holding)
+        self.assertIn("controllerPolityId", holding)
+        self.assertIn("governingPolityId", holding)
+        self.assertIn("sovereignPolityId", holding)
+        self.assertIn("autonomyPercent", holding)
+
+    def test_allegiance_can_change_to_any_referenced_polity(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        polities = {item["id"]: item for item in data["polities"]}
+        validator.validate_allegiance_transition("england", "france", polities, validator.fail)
+        with self.assertRaises(validator.ValidationError):
+            validator.validate_allegiance_transition("england", "england", polities, validator.fail)
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Unit/army/fleet model
 - [x] Character/loyalty/relationship model
 - [x] Technology/institution graph schema
-- [ ] Title/land/vassal model
+- [x] Title/land/vassal model
 - [ ] Save schema + migration registry
 - [ ] Navigation-zone/safe-position model
 

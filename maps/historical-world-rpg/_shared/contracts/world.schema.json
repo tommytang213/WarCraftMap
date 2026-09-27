@@ -3,50 +3,176 @@
   "$id": "https://warcraftmap.local/schemas/world.schema.json",
   "title": "Historical World Scenario",
   "type": "object",
-  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets", "traits", "skills", "professions", "personalQuests", "characters", "relationshipThresholds", "companionRelationships", "researchBranches", "technologies", "institutions", "polityResearchStates", "provinceAdoptionStates"],
+  "required": [
+    "schemaVersion",
+    "polities",
+    "provinces",
+    "settlements",
+    "officers",
+    "strategicUnits",
+    "armies",
+    "fleets",
+    "traits",
+    "skills",
+    "professions",
+    "personalQuests",
+    "characters",
+    "relationshipThresholds",
+    "companionRelationships",
+    "researchBranches",
+    "technologies",
+    "institutions",
+    "polityResearchStates",
+    "provinceAdoptionStates",
+    "titleStyles",
+    "titleGrants",
+    "territorialHoldings",
+    "allegiances"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 3 },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 4
+    },
     "polities": {
       "type": "array",
-      "items": { "$ref": "#/$defs/polity" }
+      "items": {
+        "$ref": "#/$defs/polity"
+      }
     },
     "provinces": {
       "type": "array",
-      "items": { "$ref": "#/$defs/province" }
+      "items": {
+        "$ref": "#/$defs/province"
+      }
     },
     "settlements": {
       "type": "array",
-      "items": { "$ref": "#/$defs/settlement" }
+      "items": {
+        "$ref": "#/$defs/settlement"
+      }
     },
     "officers": {
       "type": "array",
-      "items": { "$ref": "military.schema.json#/$defs/officer" }
+      "items": {
+        "$ref": "military.schema.json#/$defs/officer"
+      }
     },
     "strategicUnits": {
       "type": "array",
-      "items": { "$ref": "military.schema.json#/$defs/strategicUnit" }
+      "items": {
+        "$ref": "military.schema.json#/$defs/strategicUnit"
+      }
     },
     "armies": {
       "type": "array",
-      "items": { "$ref": "military.schema.json#/$defs/army" }
+      "items": {
+        "$ref": "military.schema.json#/$defs/army"
+      }
     },
     "fleets": {
       "type": "array",
-      "items": { "$ref": "military.schema.json#/$defs/fleet" }
+      "items": {
+        "$ref": "military.schema.json#/$defs/fleet"
+      }
     },
-    "traits": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
-    "skills": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
-    "professions": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
-    "personalQuests": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/personalQuest" } },
-    "characters": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/character" } },
-    "relationshipThresholds": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/relationshipThreshold" } },
-    "companionRelationships": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/companionRelationship" } },
-    "researchBranches": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchBranch" } },
-    "technologies": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchNode" } },
-    "institutions": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchNode" } },
-    "polityResearchStates": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/polityResearchState" } },
-    "provinceAdoptionStates": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/provinceAdoptionState" } }
+    "traits": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/displayDefinition"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/displayDefinition"
+      }
+    },
+    "professions": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/displayDefinition"
+      }
+    },
+    "personalQuests": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/personalQuest"
+      }
+    },
+    "characters": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/character"
+      }
+    },
+    "relationshipThresholds": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/relationshipThreshold"
+      }
+    },
+    "companionRelationships": {
+      "type": "array",
+      "items": {
+        "$ref": "character.schema.json#/$defs/companionRelationship"
+      }
+    },
+    "researchBranches": {
+      "type": "array",
+      "items": {
+        "$ref": "technology.schema.json#/$defs/researchBranch"
+      }
+    },
+    "technologies": {
+      "type": "array",
+      "items": {
+        "$ref": "technology.schema.json#/$defs/researchNode"
+      }
+    },
+    "institutions": {
+      "type": "array",
+      "items": {
+        "$ref": "technology.schema.json#/$defs/researchNode"
+      }
+    },
+    "polityResearchStates": {
+      "type": "array",
+      "items": {
+        "$ref": "technology.schema.json#/$defs/polityResearchState"
+      }
+    },
+    "provinceAdoptionStates": {
+      "type": "array",
+      "items": {
+        "$ref": "technology.schema.json#/$defs/provinceAdoptionState"
+      }
+    },
+    "titleStyles": {
+      "type": "array",
+      "items": {
+        "$ref": "government.schema.json#/$defs/titleStyle"
+      }
+    },
+    "titleGrants": {
+      "type": "array",
+      "items": {
+        "$ref": "government.schema.json#/$defs/titleGrant"
+      }
+    },
+    "territorialHoldings": {
+      "type": "array",
+      "items": {
+        "$ref": "government.schema.json#/$defs/territorialHolding"
+      }
+    },
+    "allegiances": {
+      "type": "array",
+      "items": {
+        "$ref": "government.schema.json#/$defs/allegiance"
+      }
+    }
   },
   "$defs": {
     "stableId": {
@@ -59,30 +185,57 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "name", "adjective", "sovereignTier",
-        "capitalSettlementId", "provinceIds"
+        "id",
+        "name",
+        "adjective",
+        "sovereignTier",
+        "capitalSettlementId",
+        "provinceIds"
       ],
       "properties": {
-        "id": { "$ref": "#/$defs/stableId" },
-        "name": { "type": "string", "minLength": 1 },
-        "adjective": { "type": "string", "minLength": 1 },
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adjective": {
+          "type": "string",
+          "minLength": 1
+        },
         "sovereignTier": {
           "type": "string",
           "enum": [
-            "none", "knight", "baron", "count", "marquess",
-            "duke", "prince", "king", "emperor"
+            "none",
+            "knight",
+            "baron",
+            "count",
+            "marquess",
+            "duke",
+            "prince",
+            "king",
+            "emperor"
           ]
         },
-        "nativeSovereignTitle": { "type": "string" },
-        "capitalSettlementId": { "$ref": "#/$defs/stableId" },
+        "nativeSovereignTitle": {
+          "type": "string"
+        },
+        "capitalSettlementId": {
+          "$ref": "#/$defs/stableId"
+        },
         "provinceIds": {
           "type": "array",
-          "items": { "$ref": "#/$defs/stableId" },
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
           "uniqueItems": true
         },
         "specialUnitIds": {
           "type": "array",
-          "items": { "$ref": "#/$defs/stableId" },
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
           "uniqueItems": true,
           "default": []
         }
@@ -92,18 +245,36 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "name", "administrativeType", "legalOwnerPolityId",
-        "controllerPolityId", "settlementIds"
+        "id",
+        "name",
+        "administrativeType",
+        "legalOwnerPolityId",
+        "controllerPolityId",
+        "settlementIds"
       ],
       "properties": {
-        "id": { "$ref": "#/$defs/stableId" },
-        "name": { "type": "string", "minLength": 1 },
-        "administrativeType": { "type": "string", "minLength": 1 },
-        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" },
-        "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "administrativeType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legalOwnerPolityId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "controllerPolityId": {
+          "$ref": "#/$defs/stableId"
+        },
         "settlementIds": {
           "type": "array",
-          "items": { "$ref": "#/$defs/stableId" },
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
           "uniqueItems": true
         }
       }
@@ -112,28 +283,64 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "name", "kind", "provinceId", "legalOwnerPolityId",
-        "controllerPolityId", "capturable", "civilianFacilitiesInvulnerable"
+        "id",
+        "name",
+        "kind",
+        "provinceId",
+        "legalOwnerPolityId",
+        "controllerPolityId",
+        "capturable",
+        "civilianFacilitiesInvulnerable"
       ],
       "properties": {
-        "id": { "$ref": "#/$defs/stableId" },
-        "name": { "type": "string", "minLength": 1 },
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
         "kind": {
           "type": "string",
           "enum": [
-            "capital", "major_city", "city", "town", "village",
-            "port", "fort", "trading_post", "mission", "mine",
-            "plantation", "pirate_haven"
+            "capital",
+            "major_city",
+            "city",
+            "town",
+            "village",
+            "port",
+            "fort",
+            "trading_post",
+            "mission",
+            "mine",
+            "plantation",
+            "pirate_haven"
           ]
         },
-        "provinceId": { "$ref": "#/$defs/stableId" },
-        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" },
-        "controllerPolityId": { "$ref": "#/$defs/stableId" },
-        "capturable": { "type": "boolean" },
-        "civilianFacilitiesInvulnerable": { "const": true },
-        "navigationZoneId": { "$ref": "#/$defs/stableId" },
-        "cityCoreId": { "$ref": "#/$defs/stableId" },
-        "defenseLayoutId": { "$ref": "#/$defs/stableId" }
+        "provinceId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "legalOwnerPolityId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "controllerPolityId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "capturable": {
+          "type": "boolean"
+        },
+        "civilianFacilitiesInvulnerable": {
+          "const": true
+        },
+        "navigationZoneId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "cityCoreId": {
+          "$ref": "#/$defs/stableId"
+        },
+        "defenseLayoutId": {
+          "$ref": "#/$defs/stableId"
+        }
       }
     }
   }
