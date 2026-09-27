@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/character.schema.json",
+  "title": "Generic Character and Relationship Contracts",
+  "$defs": {
+    "stableId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64 },
+    "displayDefinition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "skillRating": {
+      "type": "object", "additionalProperties": false,
+      "required": ["skillId", "rating"],
+      "properties": {
+        "skillId": { "$ref": "#/$defs/stableId" },
+        "rating": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "loyaltyState": {
+      "description": "Mutable authoritative loyalty. Oathbound is permanent: runtime transitions may only move none to oathbound.",
+      "type": "object", "additionalProperties": false,
+      "required": ["score", "permanentState"],
+      "properties": {
+        "score": { "type": "number", "minimum": -100, "maximum": 100 },
+        "permanentState": { "type": "string", "enum": ["none", "oathbound"] }
+      }
+    },
+    "character": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "displayName", "biography", "traitIds", "skills", "professionIds", "personalQuestIds", "loyalty"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "displayName": { "type": "string", "minLength": 1 },
+        "biography": { "type": "string", "minLength": 1 },
+        "epithet": { "type": "string", "minLength": 1 },
+        "traitIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "skills": { "type": "array", "items": { "$ref": "#/$defs/skillRating" } },
+        "professionIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "personalQuestIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "loyalty": { "$ref": "#/$defs/loyaltyState" }
+      }
+    },
+    "personalQuest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "summary", "characterId"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "title": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "characterId": { "$ref": "#/$defs/stableId" }
+      }
+    },
+    "thresholdConsequence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "contentId"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["buff", "debuff", "content_unlock"] },
+        "contentId": { "$ref": "#/$defs/stableId" }
+      }
+    },
+    "relationshipThreshold": {
+      "description": "Scenario-defined inclusive score band and its generic consequences.",
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "scope", "minimum", "maximum", "consequences"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "scope": { "type": "string", "enum": ["loyalty", "companion_relationship"] },
+        "minimum": { "type": "number", "minimum": -100, "maximum": 100 },
+        "maximum": { "type": "number", "minimum": -100, "maximum": 100 },
+        "consequences": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/thresholdConsequence" } }
+      }
+    },
+    "companionRelationship": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "characterAId", "characterBId", "score"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "characterAId": { "$ref": "#/$defs/stableId" },
+        "characterBId": { "$ref": "#/$defs/stableId" },
+        "score": { "type": "number", "minimum": -100, "maximum": 100 }
+      }
+    }
+  }
+}

@@ -48,6 +48,29 @@ def require_unique_refs(values, domain, targets, expected_kind=None):
             fail(f"{domain}: {ident!r} is not a {expected_kind}")
 
 
+def require_score(value, context):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not -100 <= value <= 100:
+        fail(f"{context}: must be a number between -100 and 100")
+
+
+def require_references(values, domain, targets):
+    if not isinstance(values, list):
+        fail(f"{domain}: must be an array")
+    seen = set()
+    for ident in values:
+        require_id(ident, domain)
+        if ident in seen:
+            fail(f"{domain}: duplicate reference {ident!r}")
+        seen.add(ident)
+        if ident not in targets:
+            fail(f"{domain}: missing reference {ident!r}")
+
+
+def validate_permanent_state_transition(current, requested):
+    if (current, requested) != ("none", "oathbound"):
+        fail(f"invalid permanent loyalty transition {current!r} -> {requested!r}")
+
+
 def validate_operational_state(value, domain):
     if not isinstance(value, dict):
         fail(f"{domain}: operationalState must be an object")
@@ -65,8 +88,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 1:
-        fail("schemaVersion must currently be 1")
+    if data.get("schemaVersion") != 2:
+        fail("schemaVersion must currently be 2")
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
@@ -75,6 +98,13 @@ def validate(path: Path) -> None:
     strategic_unit = unique_index(data.get("strategicUnits", []), "strategicUnits")
     army = unique_index(data.get("armies", []), "armies")
     fleet = unique_index(data.get("fleets", []), "fleets")
+    trait = unique_index(data.get("traits", []), "traits")
+    skill = unique_index(data.get("skills", []), "skills")
+    profession = unique_index(data.get("professions", []), "professions")
+    personal_quest = unique_index(data.get("personalQuests", []), "personalQuests")
+    character = unique_index(data.get("characters", []), "characters")
+    threshold = unique_index(data.get("relationshipThresholds", []), "relationshipThresholds")
+    relationship = unique_index(data.get("companionRelationships", []), "companionRelationships")
 
     if not polity:
         fail("at least one polity is required")
@@ -193,11 +223,95 @@ def validate(path: Path) -> None:
                 if officer_id not in officer:
                     fail(f"{domain}: missing officer {officer_id!r}")
 
+    for collection_name, definitions in (
+        ("trait", trait), ("skill", skill), ("profession", profession)
+    ):
+        for definition_id, definition in definitions.items():
+            for field in ("name", "description"):
+                if not isinstance(definition.get(field), str) or not definition[field]:
+                    fail(f"{collection_name} {definition_id}: {field} must be non-empty")
+
+    allowed_permanent_states = {"none", "oathbound"}
+    for character_id, value in character.items():
+        domain = f"character {character_id}"
+        for field in ("displayName", "biography"):
+            if not isinstance(value.get(field), str) or not value[field]:
+                fail(f"{domain}: {field} must be non-empty")
+        require_references(value.get("traitIds"), f"{domain}.traitIds", trait)
+        require_references(value.get("professionIds"), f"{domain}.professionIds", profession)
+        require_references(value.get("personalQuestIds"), f"{domain}.personalQuestIds", personal_quest)
+        ratings = value.get("skills")
+        if not isinstance(ratings, list):
+            fail(f"{domain}.skills: must be an array")
+        seen_skills = set()
+        for rating in ratings:
+            if not isinstance(rating, dict):
+                fail(f"{domain}.skills: every rating must be an object")
+            skill_id = rating.get("skillId")
+            require_id(skill_id, f"{domain}.skills.skillId")
+            if skill_id in seen_skills:
+                fail(f"{domain}.skills: duplicate skill {skill_id!r}")
+            seen_skills.add(skill_id)
+            if skill_id not in skill:
+                fail(f"{domain}.skills: missing skill {skill_id!r}")
+            score = rating.get("rating")
+            if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 100:
+                fail(f"{domain}.skills {skill_id}: rating must be between 0 and 100")
+        loyalty = value.get("loyalty")
+        if not isinstance(loyalty, dict):
+            fail(f"{domain}.loyalty: must be an object")
+        require_score(loyalty.get("score"), f"{domain}.loyalty.score")
+        if loyalty.get("permanentState") not in allowed_permanent_states:
+            fail(f"{domain}.loyalty: invalid permanentState")
+
+    for quest_id, quest in personal_quest.items():
+        character_id = quest.get("characterId")
+        if character_id not in character:
+            fail(f"personal quest {quest_id}: missing character {character_id!r}")
+        if quest_id not in character[character_id].get("personalQuestIds", []):
+            fail(f"personal quest {quest_id}: character {character_id!r} does not list the quest")
+
+    allowed_scopes = {"loyalty", "companion_relationship"}
+    allowed_consequences = {"buff", "debuff", "content_unlock"}
+    for threshold_id, value in threshold.items():
+        domain = f"relationship threshold {threshold_id}"
+        if value.get("scope") not in allowed_scopes:
+            fail(f"{domain}: invalid scope")
+        minimum, maximum = value.get("minimum"), value.get("maximum")
+        require_score(minimum, f"{domain}.minimum")
+        require_score(maximum, f"{domain}.maximum")
+        if minimum > maximum:
+            fail(f"{domain}: minimum cannot exceed maximum")
+        consequences = value.get("consequences")
+        if not isinstance(consequences, list) or not consequences:
+            fail(f"{domain}: at least one consequence is required")
+        for consequence in consequences:
+            if not isinstance(consequence, dict) or consequence.get("kind") not in allowed_consequences:
+                fail(f"{domain}: invalid consequence")
+            require_id(consequence.get("contentId"), f"{domain}.consequence.contentId")
+
+    seen_pairs = set()
+    for relationship_id, value in relationship.items():
+        domain = f"companion relationship {relationship_id}"
+        first, second = value.get("characterAId"), value.get("characterBId")
+        if first not in character:
+            fail(f"{domain}: missing character {first!r}")
+        if second not in character:
+            fail(f"{domain}: missing character {second!r}")
+        if first == second:
+            fail(f"{domain}: a character cannot have a relationship with itself")
+        pair = frozenset((first, second))
+        if pair in seen_pairs:
+            fail(f"{domain}: duplicate companion pair")
+        seen_pairs.add(pair)
+        require_score(value.get("score"), f"{domain}.score")
+
     print(
         f"OK: {path} | "
         f"{len(polity)} polities, {len(province)} provinces, "
         f"{len(settlement)} settlements, {len(strategic_unit)} strategic units, "
-        f"{len(army)} armies, {len(fleet)} fleets"
+        f"{len(army)} armies, {len(fleet)} fleets, {len(character)} characters, "
+        f"{len(relationship)} companion relationships"
     )
 
 
