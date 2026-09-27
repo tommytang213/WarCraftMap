@@ -31,6 +31,20 @@ class PackagingTests(unittest.TestCase):
         shutil.copytree(PROJECT_ROOT, self.project, ignore=shutil.ignore_patterns("_build", ".wurst"))
         self.fake = self.project / "fake-grill"; self.fake.write_text(FAKE_GRILL, encoding="utf-8"); self.fake.chmod(self.fake.stat().st_mode | stat.S_IXUSR)
 
+    def test_paths_and_output_name_are_resolved_from_scenario_config(self):
+        config = load_config(self.project / "package.json")
+        self.assertEqual(self.project.resolve(), config.project)
+        self.assertEqual("AgeOfSailWorld.w3x", config.output.name)
+        self.assertEqual(self.project / "_build/release/AgeOfSailWorld.w3x", config.output)
+
+    def test_path_escape_is_rejected(self):
+        config_path = self.project / "package.json"
+        raw = json.loads(config_path.read_text(encoding="utf-8"))
+        raw["sourceMap"] = "../other-map"
+        config_path.write_text(json.dumps(raw), encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "escapes"):
+            load_config(config_path)
+
     def test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures(self):
         output = build(self.project / "package.json", grill=str(self.fake))
         self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
@@ -76,5 +90,10 @@ class PackagingTests(unittest.TestCase):
         (self.project / "wurst.build").unlink()
         with self.assertRaisesRegex(PackagingError, "inputs stage failed.*wurst.build"):
             build(self.project / "package.json", grill=str(self.fake))
+
+    def test_generated_artifacts_are_ignored(self):
+        ignore = (PROJECT_ROOT.parents[2] / ".gitignore").read_text(encoding="utf-8")
+        self.assertIn("**/_build/", ignore)
+        self.assertIn("*.w3x", ignore)
 
 if __name__ == "__main__": unittest.main()

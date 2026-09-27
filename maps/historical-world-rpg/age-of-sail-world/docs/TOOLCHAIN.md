@@ -100,3 +100,15 @@ Every invocation removes the previous `_build/` tree. To clean without building:
 
 Failures name their stage (`inputs`, `scenario validation`, `generation`,
 `provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
+
+The command publishes `_build/release/AgeOfSailWorld.w3x`. Inspect it with
+Wurst tooling or an MPQ-capable archive viewer: it must contain `war3map.lua`
+and the `runtime/` provenance payload. The command performs those structural
+and bootstrap-marker checks before publishing the release path.
+
+Authoritative inputs, generated runtime data, compiler settings, build order,
+and the release filename are deterministic. Wurst/StormLib controls MPQ block
+ordering, compression, and archive metadata that the repository tooling cannot
+normalize, so byte-for-byte `.w3x` identity is not promised across different
+Grill, JVM, or StormLib versions. Use the pinned CI container when archive-byte
+comparison matters.

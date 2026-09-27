@@ -13,7 +13,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Add CI typecheck workflow
 - [x] First Wurst CI typecheck passed
 - [x] Commit/create the clean source map folder
-- [ ] Establish reproducible source-map -> release `.w3x` packaging
+- [x] Establish reproducible source-map -> release `.w3x` packaging
 - [x] Add full CI build artifact after the source map exists
 
 ## Phase 1 — Engine contracts
