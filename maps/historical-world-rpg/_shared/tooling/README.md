@@ -15,3 +15,5 @@ Planned tooling:
 - save round-trip and migration tests
 - generated developer/debug commands
 - release packaging
+
+`validate_world.py` also validates generic title rank/grant hierarchies, holder allegiances, territorial references, vassal cycles, and independent-versus-overlord taxation rules through `validate_government.py`.

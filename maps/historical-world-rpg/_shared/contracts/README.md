@@ -65,6 +65,14 @@ first. Warcraft object handles are not part of character state.
 
 Technologies and institutions share one directed graph, so prerequisites may cross branches and node kinds. Branch entry nodes define reachability. Historical timing uses a preferred year and finite scenario-defined ahead-of-time cost multipliers; it never supplies a hard earliest-year lock. Unlocks reference units, buildings, abilities, policies, or modifiers by stable ID. Polity research and establishment state is authoritative, while each province stores its own 0–100 adoption levels so diffusion may be uneven.
 
+## Government, title, and territorial contract
+
+Rank tiers are universal ordered identifiers from `none` through `emperor`; player-facing native and generic title names are scenario data in `titleStyles`. `titleGrants` link a title to a character or polity and record current allegiance independently. Sovereign grants have no grantor. Every non-sovereign grant names a strictly higher-ranked grantor, which permits an emperor to grant a subordinate king-tier title while rejecting equal-rank, upward, missing, and cyclic hierarchies.
+
+`territorialHoldings` keep legal ownership, military control, civil governance, sovereignty, and autonomy in separate fields. A holding may name an overlord holding and owe scenario-defined tax and obligations. A holding with no overlord must have zero overlord tax and no overlord obligations, while every holding retains a positive ordinary upkeep rate. Territory and holder references use stable IDs; neither titles nor land depend on Warcraft object instances.
+
+`allegiances` represent one current polity per subject without country-specific rules. `validate_allegiance_transition` accepts a change between any two existing, distinct polity IDs, allowing runtime systems to change allegiance without changing title or territory identity.
+
 ## Contract versions
 
 - World schema version 1 introduced geography and strategic military records.
@@ -74,3 +82,4 @@ Technologies and institutions share one directed graph, so prerequisites may cro
   `professions`, `personalQuests`, `characters`, `relationshipThresholds`, and
   `companionRelationships`; content can then be added without changing IDs.
 - World schema version 3 adds technology and institution definitions, graph branches, polity research state, and province adoption state. Version 2 migrates by setting `schemaVersion` to `3` and adding empty arrays for `researchBranches`, `technologies`, `institutions`, `polityResearchStates`, and `provinceAdoptionStates`.
+- World schema version 4 adds scenario-defined title styles, title grants, territorial holdings, overlord taxation/obligations, and mutable allegiance records. Version 3 migrates by setting `schemaVersion` to `4` and adding empty arrays for `titleStyles`, `titleGrants`, `territorialHoldings`, and `allegiances`; scenario content can then be added without changing prior stable IDs.

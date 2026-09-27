@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/government.schema.json",
+  "title": "Generic Government, Title, and Territorial Contracts",
+  "$defs": {
+    "stableId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "minLength": 1, "maxLength": 64 },
+    "rankTier": { "type": "string", "enum": ["none", "knight", "baron", "count", "marquess", "duke", "prince", "king", "emperor"] },
+    "holderReference": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["character", "polity"]}, "id": {"$ref": "#/$defs/stableId"}}},
+    "titleStyle": {"type": "object", "additionalProperties": false, "required": ["id", "polityId", "rankTier", "nativeName", "genericName"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "polityId": {"$ref": "#/$defs/stableId"}, "rankTier": {"$ref": "#/$defs/rankTier"}, "nativeName": {"type": "string", "minLength": 1}, "genericName": {"type": "string", "minLength": 1}}},
+    "titleGrant": {"type": "object", "additionalProperties": false, "required": ["id", "titleStyleId", "holder", "allegiancePolityId", "sovereign"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "titleStyleId": {"$ref": "#/$defs/stableId"}, "holder": {"$ref": "#/$defs/holderReference"}, "allegiancePolityId": {"$ref": "#/$defs/stableId"}, "sovereign": {"type": "boolean"}, "grantorTitleId": {"$ref": "#/$defs/stableId"}}},
+    "territoryReference": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["province", "settlement"]}, "id": {"$ref": "#/$defs/stableId"}}},
+    "obligation": {"type": "object", "additionalProperties": false, "required": ["kind", "value"], "properties": {"kind": {"enum": ["levy", "service", "tribute", "custom"]}, "value": {"type": "number", "minimum": 0}, "contentId": {"$ref": "#/$defs/stableId"}}},
+    "territorialHolding": {"type": "object", "additionalProperties": false, "required": ["id", "territory", "legalOwner", "controllerPolityId", "governingPolityId", "sovereignPolityId", "autonomyPercent", "overlordTaxRatePercent", "upkeepRatePercent", "obligations"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "territory": {"$ref": "#/$defs/territoryReference"}, "legalOwner": {"$ref": "#/$defs/holderReference"}, "controllerPolityId": {"$ref": "#/$defs/stableId"}, "governingPolityId": {"$ref": "#/$defs/stableId"}, "sovereignPolityId": {"$ref": "#/$defs/stableId"}, "autonomyPercent": {"type": "number", "minimum": 0, "maximum": 100}, "overlordHoldingId": {"$ref": "#/$defs/stableId"}, "overlordTaxRatePercent": {"type": "number", "minimum": 0, "maximum": 100}, "upkeepRatePercent": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}, "obligations": {"type": "array", "items": {"$ref": "#/$defs/obligation"}}}},
+    "allegiance": {"type": "object", "additionalProperties": false, "required": ["id", "subject", "polityId"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "subject": {"$ref": "#/$defs/holderReference"}, "polityId": {"$ref": "#/$defs/stableId"}}}
+  }
+}
