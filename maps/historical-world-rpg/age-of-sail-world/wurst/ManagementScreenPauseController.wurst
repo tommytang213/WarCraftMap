@@ -1,0 +1,95 @@
+package ManagementScreenPauseController
+
+/** Boundary that applies the complete campaign pause in the WC3 runtime. */
+public interface CampaignPauseRuntime
+	function setCampaignPaused(boolean paused)
+
+/** An idempotent ownership token for one open modal management screen. */
+public class ModalManagementScreen
+	ManagementScreenPauseController owner
+	boolean open = true
+
+	construct(ManagementScreenPauseController owner)
+		this.owner = owner
+
+	function close()
+		if open
+			open = false
+			owner.releaseModalManagementScreen()
+
+	function isOpen() returns boolean
+		return open
+
+/**
+ * Scenario-neutral campaign pause coordinator for the runtime/UI layer.
+ *
+ * All campaign/manual pause controls must use this controller so its state
+ * remains authoritative; UI code must not call PauseGame directly.
+ */
+public class ManagementScreenPauseController
+	CampaignPauseRuntime runtime
+	int modalOwnerCount = 0
+	boolean campaignPaused = false
+	boolean pausedBeforeFirstModal = false
+
+	construct(CampaignPauseRuntime runtime, boolean initiallyPaused)
+		this.runtime = runtime
+		campaignPaused = initiallyPaused
+
+	/** Open modal management UI and retain this token until that UI closes. */
+	function openModalManagementScreen() returns ModalManagementScreen
+		if modalOwnerCount == 0
+			pausedBeforeFirstModal = campaignPaused
+			applyPauseState(true)
+		modalOwnerCount++
+		return new ModalManagementScreen(this)
+
+	/** Passive HUD panels, tooltips, toasts, and small overlays never pause. */
+	function openPassiveUi()
+		skip
+
+	/** Route player/manual pause controls through this method. */
+	function setManuallyPaused(boolean paused)
+		if modalOwnerCount == 0
+			applyPauseState(paused)
+
+	function isCampaignPaused() returns boolean
+		return campaignPaused
+
+	function getModalOwnerCount() returns int
+		return modalOwnerCount
+
+	function releaseModalManagementScreen()
+		if modalOwnerCount <= 0
+			return
+		modalOwnerCount--
+		if modalOwnerCount == 0
+			applyPauseState(pausedBeforeFirstModal)
+
+	function applyPauseState(boolean paused)
+		if campaignPaused != paused
+			campaignPaused = paused
+			runtime.setCampaignPaused(paused)
+
+class WC3CampaignPauseRuntime implements CampaignPauseRuntime
+	override function setCampaignPaused(boolean paused)
+		PauseGame(paused)
+
+let campaignManagementPause = new ManagementScreenPauseController(new WC3CampaignPauseRuntime(), false)
+
+/** Explicit bootstrap hook for the runtime pause service. */
+public function initializeManagementScreenPauseController()
+	skip
+
+/** Runtime entry point for modal inventory, technology, economy, and peers. */
+public function openModalManagementScreen() returns ModalManagementScreen
+	return campaignManagementPause.openModalManagementScreen()
+
+/** Runtime entry point for passive/non-modal UI; never pauses the campaign. */
+public function openPassiveCampaignUi()
+	campaignManagementPause.openPassiveUi()
+
+/** Runtime entry point for player/manual pause controls. */
+public function setCampaignManuallyPaused(boolean paused)
+	campaignManagementPause.setManuallyPaused(paused)
+

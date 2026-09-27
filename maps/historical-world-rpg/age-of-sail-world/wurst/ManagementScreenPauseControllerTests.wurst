@@ -1,0 +1,68 @@
+package ManagementScreenPauseControllerTests
+
+import ManagementScreenPauseController
+
+class FakeCampaignPauseRuntime implements CampaignPauseRuntime
+	boolean paused = false
+	int writes = 0
+
+	override function setCampaignPaused(boolean paused)
+		this.paused = paused
+		writes++
+
+@test function firstModalAcquiresFullCampaignPause()
+	let runtime = new FakeCampaignPauseRuntime()
+	let subject = new ManagementScreenPauseController(runtime, false)
+	let screen = subject.openModalManagementScreen()
+	subject.isCampaignPaused().assertEquals(true)
+	runtime.paused.assertEquals(true)
+	runtime.writes.assertEquals(1)
+	subject.getModalOwnerCount().assertEquals(1)
+	screen.close()
+
+@test function nestedModalOwnershipHoldsUntilFinalClose()
+	let runtime = new FakeCampaignPauseRuntime()
+	let subject = new ManagementScreenPauseController(runtime, false)
+	let first = subject.openModalManagementScreen()
+	let nested = subject.openModalManagementScreen()
+	runtime.writes.assertEquals(1)
+	subject.getModalOwnerCount().assertEquals(2)
+	first.close()
+	subject.isCampaignPaused().assertEquals(true)
+	runtime.writes.assertEquals(1)
+	subject.getModalOwnerCount().assertEquals(1)
+	nested.close()
+	subject.isCampaignPaused().assertEquals(false)
+	runtime.paused.assertEquals(false)
+	runtime.writes.assertEquals(2)
+	subject.getModalOwnerCount().assertEquals(0)
+
+@test function closeIsIdempotentAndCannotReleaseAnotherOwner()
+	let runtime = new FakeCampaignPauseRuntime()
+	let subject = new ManagementScreenPauseController(runtime, false)
+	let first = subject.openModalManagementScreen()
+	let nested = subject.openModalManagementScreen()
+	first.close()
+	first.close()
+	subject.getModalOwnerCount().assertEquals(1)
+	subject.isCampaignPaused().assertEquals(true)
+	nested.close()
+
+@test function finalClosePreservesPreExistingManualPause()
+	let runtime = new FakeCampaignPauseRuntime()
+	let subject = new ManagementScreenPauseController(runtime, false)
+	subject.setManuallyPaused(true)
+	let screen = subject.openModalManagementScreen()
+	runtime.writes.assertEquals(1)
+	screen.close()
+	subject.isCampaignPaused().assertEquals(true)
+	runtime.paused.assertEquals(true)
+	runtime.writes.assertEquals(1)
+
+@test function passiveUiDoesNotAcquireOrChangePause()
+	let runtime = new FakeCampaignPauseRuntime()
+	let subject = new ManagementScreenPauseController(runtime, false)
+	subject.openPassiveUi()
+	subject.getModalOwnerCount().assertEquals(0)
+	subject.isCampaignPaused().assertEquals(false)
+	runtime.writes.assertEquals(0)

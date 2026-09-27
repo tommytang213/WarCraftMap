@@ -2,12 +2,14 @@ package Bootstrap
 import WC3Compatibility
 import CommandRouter
 import ScenarioData
+import ManagementScreenPauseController
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
 
 init
 	requireWC3Compatibility()
+	initializeManagementScreenPauseController()
 	installCommandRegistry(createCommandRegistry(false))
 	if SCENARIO_SCHEMA_VERSION <= 0
 		print("Scenario data failed to load.")
