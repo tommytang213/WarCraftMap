@@ -11,6 +11,7 @@ from validate_government import (
     validate_government,
 )
 from validate_navigation import validate as validate_navigation
+from validate_quest_events import validate as validate_quest_events
 
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
@@ -96,8 +97,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 5:
-        fail("schemaVersion must currently be 5")
+    if data.get("schemaVersion") != 6:
+        fail("schemaVersion must currently be 6")
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
@@ -120,6 +121,7 @@ def validate(path: Path) -> None:
     title_styles, title_grants, holdings, allegiances = validate_government(
         data, fail, require_id, unique_index, polity, province, settlement, character
     )
+    quests, events = validate_quest_events(data, fail, require_id, unique_index)
 
     if not polity:
         fail("at least one polity is required")
@@ -334,7 +336,8 @@ def validate(path: Path) -> None:
         f"{len(holdings)} territorial holdings, {len(allegiances)} allegiances, "
         f"{len(navigation_zones)} navigation zones, "
         f"{len(navigation_safe_points)} navigation safe points, "
-        f"{len(navigation_states)} active unit navigation states"
+        f"{len(navigation_states)} active unit navigation states, "
+        f"{len(quests)} quests, {len(events)} events"
     )
 
 
