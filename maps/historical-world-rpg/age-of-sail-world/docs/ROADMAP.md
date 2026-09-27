@@ -44,7 +44,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 ## Phase 3 — Warcraft runtime foundation
 
-- [ ] Latest-WC3 compatibility module
+- [x] Latest-WC3 compatibility module
 - [ ] Map build pipeline
 - [ ] Command router + paged /help
 - [ ] UI pause policy for management screens

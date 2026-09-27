@@ -21,9 +21,63 @@ EXPECTED_METADATA = {
     "wc3Patch": "v3.0",
 }
 
+COMPATIBILITY_FILE = "WC3Compatibility.wurst"
+COMPATIBILITY_FIXTURE = "WC3CompatibilityCompileFixture.wurst"
+WRAPPED_NATIVES = (
+    "GetEquippedItem", "GetUnequippedItem", "GetItemEquipmentType", "GetItemTag",
+    "IsItemEquipped", "IsItemInBag", "UnitEquipItem", "UnitUnequipItem",
+    "UnitUnequipItemFromSlot", "UnitExtendedInventorySize", "UnitItemInBagSlot",
+    "UnitItemInEquipmentSlot", "UnitHasItemBagged", "UnitHasItemEquipped",
+    "UnitHasLoadoutSlotEmpty", "UnitHasAnyItemEquiped",
+    "UnitHasItemEquipmentOfType", "UnitCanEquipItemOfEquipmentType", "SaveGame",
+    "LoadGame", "SaveGameExists", "CopySaveGame", "RenameSaveDirectory",
+    "RemoveSaveDirectory", "SaveGameCheckpoint", "BlzCreateFrameByType",
+    "BlzFrameSetVisible", "BlzFrameSetEnable", "IsTerrainPathable",
+    "SetUnitPosition", "SetUnitX", "SetUnitY", "BlzGetUnitMaxHP",
+    "BlzSetUnitMaxHP", "BlzGetUnitCollisionSize",
+)
+
 
 class ValidationError(ValueError):
     pass
+
+
+def validate_compatibility_boundary(project_root: Path = PROJECT_ROOT) -> None:
+    wurst_root = project_root / "wurst"
+    compatibility = wurst_root / COMPATIBILITY_FILE
+    fixture = wurst_root / COMPATIBILITY_FIXTURE
+    missing = [path.name for path in (compatibility, fixture) if not path.is_file()]
+    if missing:
+        raise ValidationError("WC3 compatibility source is missing: " + ", ".join(missing))
+    boundary_text = compatibility.read_text(encoding="utf-8")
+    for required in (
+        'WC3_COMPAT_PATCH_FAMILY = "v3.0"',
+        'WC3_COMPAT_SCRIPT_BACKEND = "LUA"',
+        "requireWC3Compatibility()",
+        "WC3_HAS_MODERN_INVENTORY",
+        "WC3_HAS_NATIVE_SAVE_MANAGEMENT",
+        "WC3_HAS_FRAME_UI",
+        "WC3_HAS_PATHING_QUERIES",
+        "WC3_HAS_MODERN_UNIT_FIELDS",
+    ):
+        if required not in boundary_text:
+            raise ValidationError(f"WC3 compatibility boundary is missing {required}")
+    native_pattern = re.compile(
+        r"\b(" + "|".join(map(re.escape, WRAPPED_NATIVES)) + r")\s*\("
+    )
+    violations = []
+    for source in sorted(wurst_root.rglob("*.wurst")):
+        if source == compatibility:
+            continue
+        for line_number, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
+            match = native_pattern.search(line)
+            if match:
+                violations.append(f"{source.relative_to(project_root)}:{line_number}: {match.group(1)}")
+    if violations:
+        raise ValidationError(
+            "wrapped Warcraft natives must only be used in "
+            + COMPATIBILITY_FILE + ": " + "; ".join(violations)
+        )
 
 
 def _read(path: Path) -> bytes:
@@ -129,6 +183,7 @@ def validate(manifest_path: Path) -> Path:
     missing_config = [entry for entry in required_config if entry not in build_config]
     if missing_config:
         raise ValidationError("wurst.build is not connected to canonical map metadata: " + ", ".join(missing_config))
+    validate_compatibility_boundary(PROJECT_ROOT)
 
     map_name = manifest.get("mapDirectory")
     if not isinstance(map_name, str) or not map_name.endswith(".w3x"):

@@ -1,7 +1,9 @@
 package Bootstrap
+import WC3Compatibility
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
 
 init
-    print("Age of Sail: The World - development bootstrap loaded.")
+	requireWC3Compatibility()
+	print("Age of Sail: The World - development bootstrap loaded.")
