@@ -68,3 +68,10 @@ Patch changes are treated as compatibility work, not casual dependency updates.
 GitHub CI performs Wurst typechecking using the official/community Wurst Docker workflow. It refreshes Wurst before checking so the CI toolchain understands the currently pinned `v3.0` target.
 
 CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
+
+The `Age of Sail map artifact` workflow runs the repository-controlled
+`./tooling/package_release.sh` command with an immutable Wurst container image,
+after source and world validation. Successful workflow runs retain the packaged
+`AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. Maintainers
+can download it from the **Artifacts** section of that run's GitHub Actions summary.
+The artifact is CI output only and is never committed or published as a release.
