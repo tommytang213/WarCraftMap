@@ -25,7 +25,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Character/loyalty/relationship model
 - [x] Technology/institution graph schema
 - [x] Title/land/vassal model
-- [ ] Save schema + migration registry
+- [x] Save schema + migration registry
 - [ ] Navigation-zone/safe-position model
 
 ## Phase 2 — Headless validation foundation
@@ -35,8 +35,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Technology cycle/reachability checks
 - [ ] Quest/event reference checks
 - [ ] Economy invariant tests
-- [ ] Save round-trip tests
-- [ ] Save migration tests
+- [x] Save round-trip tests
+- [x] Save migration tests
 - [ ] Long timeline simulation harness
 
 ## Phase 3 — Warcraft runtime foundation
