@@ -4,7 +4,12 @@ from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
-from automation.warcraftmap_agent.worker import Config, cleanup_merged_issue, service_open_prs
+from automation.warcraftmap_agent.worker import (
+    Config,
+    cleanup_merged_issue,
+    prepare_merge_conflict_repair,
+    service_open_prs,
+)
 
 
 class WorkerCleanupTests(unittest.TestCase):
@@ -69,6 +74,84 @@ class WorkerCleanupTests(unittest.TestCase):
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "merged")
             self.assertTrue(record["cleanup_errors"])
+
+    def test_dirty_pr_transitions_to_budgeted_conflict_repair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state", max_attempts=3)
+            state = {"issues": {"19": {"status": "pr_open", "pr": 42, "attempts": 1}}}
+            view = {
+                "state": "OPEN",
+                "mergeStateStatus": "DIRTY",
+                "statusCheckRollup": [{"status": "IN_PROGRESS"}],
+            }
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+                self.assertTrue(service_open_prs(config, state))
+            record = state["issues"]["19"]
+            self.assertEqual(record["status"], "repair")
+            self.assertEqual(record["repair_kind"], "merge_conflict")
+            self.assertIn("DIRTY", record["last_failure"])
+
+    def test_pending_and_clean_prs_are_not_sent_to_repair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+            pending = {"issues": {"19": {"status": "pr_open", "pr": 42, "attempts": 1}}}
+            pending_view = {
+                "state": "OPEN",
+                "mergeStateStatus": "BLOCKED",
+                "statusCheckRollup": [{"status": "IN_PROGRESS"}],
+            }
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=pending_view):
+                self.assertFalse(service_open_prs(config, pending))
+            self.assertEqual(pending["issues"]["19"]["status"], "pr_open")
+
+            clean = {"issues": {"20": {"status": "pr_open", "pr": 43, "attempts": 1}}}
+            clean_view = {
+                "state": "OPEN",
+                "mergeStateStatus": "CLEAN",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+            }
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=clean_view), patch(
+                "automation.warcraftmap_agent.worker.run", return_value=self.completed([])
+            ), patch("automation.warcraftmap_agent.worker.finish_merged_issue"):
+                self.assertTrue(service_open_prs(config, clean))
+            self.assertNotEqual(clean["issues"]["20"].get("status"), "repair")
+
+    def test_dirty_pr_at_attempt_limit_fails_with_clear_reason(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state", max_attempts=3)
+            state = {"issues": {"19": {"status": "pr_open", "pr": 42, "attempts": 3}}}
+            view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+                self.assertTrue(service_open_prs(config, state))
+            record = state["issues"]["19"]
+            self.assertEqual(record["status"], "failed")
+            self.assertIn("attempt limit (3) is exhausted", record["last_failure"])
+
+    def test_conflict_repair_fetches_and_merges_current_default_branch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+
+            def fake_run(args, **kwargs):
+                if args[1:4] == ["rev-parse", "--verify", "--quiet"]:
+                    return self.completed(args, returncode=1)
+                if args[:2] == ["gh", "repo"]:
+                    return self.completed(args, stdout="main\n")
+                if args[1:3] == ["merge", "--no-edit"]:
+                    return self.completed(args, returncode=1, stdout="conflict")
+                if args[1:4] == ["diff", "--name-only", "--diff-filter=U"]:
+                    return self.completed(args, stdout="automation/worker.py\n")
+                return self.completed(args)
+
+            with patch("automation.warcraftmap_agent.worker.run", side_effect=fake_run) as mocked:
+                conflicts = prepare_merge_conflict_repair(config, root / "worktree")
+            commands = [call.args[0] for call in mocked.call_args_list]
+            self.assertEqual(conflicts, ["automation/worker.py"])
+            self.assertIn(["git", "fetch", "origin"], commands)
+            self.assertIn(["git", "merge", "--no-edit", "origin/main"], commands)
 
 
 if __name__ == "__main__":

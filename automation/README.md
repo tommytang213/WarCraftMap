@@ -14,7 +14,11 @@ per day and 50 in a rolling seven-day window remain in force. A run is recorded
 before launch, including crashes and timeouts; missing telemetry is recorded as
 unknown rather than treated as a free run. Each issue gets at most three
 attempts. CI failures are left for a later, budgeted repair attempt. Pull
-requests merge only after reported CI checks complete successfully. The timer
+requests merge only after reported CI checks complete successfully. A PR that
+becomes unmergeable is moved to a budgeted repair attempt; the worker merges
+current main into its preserved issue worktree, asks Codex to resolve only
+genuine conflicts while retaining both work streams, validates, and pushes the
+repaired branch. The timer
 may wake hourly, but exhausted workers exit before Codex.
 
 After GitHub confirms a PR is merged, the worker removes its clean issue
