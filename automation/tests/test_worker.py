@@ -11,6 +11,8 @@ from automation.warcraftmap_agent.worker import (
     load_env,
     load_state,
     parse_codex_token_usage,
+    prepare_plan_items,
+    queue_refill_count,
     select_issue,
 )
 
@@ -173,6 +175,49 @@ class WorkerTests(unittest.TestCase):
         self.assertIsNone(state["runs"][0]["tokens"])
         self.assertEqual(state["runs"][0]["telemetry"], "legacy_missing")
         self.assertEqual(state["issues"]["1"]["attempts"], 1)
+
+    def test_low_queue_refills_to_ten(self):
+        self.assertEqual(queue_refill_count(0), 10)
+        self.assertEqual(queue_refill_count(2), 8)
+
+    def test_healthy_queue_is_a_noop(self):
+        self.assertEqual(queue_refill_count(3), 0)
+        self.assertEqual(queue_refill_count(10), 0)
+
+    def test_plan_prevents_issue_and_pr_title_duplicates(self):
+        plan = {
+            "outcome": "planned",
+            "issues": [
+                {"kind": "agent-ready", "title": "Existing work!", "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+                {"kind": "agent-ready", "title": "New work", "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+            ],
+        }
+        items = prepare_plan_items(plan, ["[agent-ready] Existing work"], 10)
+        self.assertEqual([item["title"] for item in items], ["[agent-ready] New work"])
+
+    def test_plan_preserves_phase_and_dependency_order(self):
+        plan = {
+            "outcome": "planned",
+            "issues": [
+                {"kind": "agent-ready", "title": "Phase 0 prerequisite", "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+                {"kind": "agent-ready", "title": "Phase 2 dependent", "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+            ],
+        }
+        items = prepare_plan_items(plan, [], 10)
+        self.assertEqual([item["title"] for item in items], ["[agent-ready] Phase 0 prerequisite", "[agent-ready] Phase 2 dependent"])
+
+    def test_design_block_stops_later_ready_work(self):
+        plan = {
+            "outcome": "planned",
+            "issues": [
+                {"kind": "needs-design", "title": "Choose map scale", "body": "A locked choice is required.", "question": "Which documented map scale should the source map use?"},
+                {"kind": "agent-ready", "title": "Build dependent map", "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+            ],
+        }
+        items = prepare_plan_items(plan, [], 10)
+        self.assertEqual(len(items), 1)
+        self.assertTrue(items[0]["title"].startswith("[needs-design]"))
+        self.assertIn("Which documented map scale", items[0]["body"])
 
     def test_normalizes_both_github_check_shapes(self):
         self.assertEqual(

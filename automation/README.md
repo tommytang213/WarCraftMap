@@ -42,6 +42,16 @@ discarding prior invocation history. Logs, worktrees, and quota state live under
 low-priority (`Nice=19`, idle I/O scheduling, low CPU/I/O weights). It uses the
 already-authenticated `gh` and `codex` CLIs and never upgrades them.
 
+When fewer than three open `[agent-ready]` issues remain, the worker uses one
+budgeted Codex planning run to refill the small queue toward ten issues. Planning
+reads the roadmap, design lock, architecture, agent rules, repository state, all
+available issue history, and PR history. It creates implementation-sized issues
+in dependency order, rechecks issue and PR titles before every creation, and
+stops at the first undocumented material design decision by creating one
+`[needs-design]` question. A healthy queue causes no planning invocation; an
+exhausted roadmap exits cleanly. Planning and implementation remain sequential,
+so worker concurrency is still one.
+
 Issue bodies should be implementation-ready and contain acceptance criteria.
 If Codex identifies a missing material design decision, the worker renames the
 issue to `[needs-design] ...` and comments the exact question. It does not ask

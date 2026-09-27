@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome", "summary", "issues"],
+  "properties": {
+    "outcome": {"enum": ["planned", "exhausted"]},
+    "summary": {"type": "string"},
+    "issues": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "title", "body", "question"],
+        "properties": {
+          "kind": {"enum": ["agent-ready", "needs-design"]},
+          "title": {"type": "string", "minLength": 1},
+          "body": {"type": "string"},
+          "question": {"type": "string"}
+        }
+      }
+    }
+  }
+}

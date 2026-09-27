@@ -20,6 +20,11 @@ from .budget import budget_available, recent_runs, usage_summary
 
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
+NEEDS_DESIGN = re.compile(r"^\[needs-design\]\s+", re.IGNORECASE)
+QUEUE_REFILL_THRESHOLD = 3
+QUEUE_TARGET = 10
+
+
 @dataclass
 class Config:
     repo_root: Path
@@ -149,6 +154,122 @@ def gh_json(repo: Path, args: list[str]) -> Any:
 def list_issues(config: Config) -> list[dict[str, Any]]:
     issues = gh_json(config.repo_root, ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,body,url,createdAt"])
     return sorted((item for item in issues if READY.match(item["title"])), key=lambda item: (item["createdAt"], item["number"]))
+
+
+def queue_refill_count(open_ready_count: int) -> int:
+    """Return the bounded number of issues needed to maintain the ready buffer."""
+    return QUEUE_TARGET - open_ready_count if open_ready_count < QUEUE_REFILL_THRESHOLD else 0
+
+
+def normalized_work_title(title: str) -> str:
+    title = READY.sub("", title.strip())
+    title = NEEDS_DESIGN.sub("", title)
+    return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
+
+
+def prepare_plan_items(plan: dict[str, Any], existing_titles: list[str], limit: int) -> list[dict[str, str]]:
+    """Validate/deduplicate a planner result while preserving roadmap order."""
+    if plan.get("outcome") == "exhausted":
+        return []
+    seen = {normalized_work_title(title) for title in existing_titles}
+    prepared: list[dict[str, str]] = []
+    for raw in plan.get("issues", []):
+        if len(prepared) >= limit:
+            break
+        kind = raw.get("kind")
+        clean_title = READY.sub("", NEEDS_DESIGN.sub("", str(raw.get("title", "")).strip())).strip()
+        key = normalized_work_title(clean_title)
+        if not clean_title or not key or key in seen:
+            continue
+        seen.add(key)
+        if kind == "needs-design":
+            question = str(raw.get("question", "")).strip()
+            if not question or question.count("?") != 1:
+                raise ValueError("a needs-design plan item must contain one exact question")
+            prepared.append({"title": f"[needs-design] {clean_title}", "body": str(raw.get("body", "")).strip() + "\n\n## Decision required\n\n" + question})
+            break
+        if kind != "agent-ready":
+            raise ValueError(f"unsupported planned issue kind: {kind!r}")
+        body = str(raw.get("body", "")).strip()
+        if "acceptance criteria" not in body.casefold() or "automated validation" not in body.casefold():
+            raise ValueError("agent-ready plan items require acceptance criteria and automated validation")
+        prepared.append({"title": f"[agent-ready] {clean_title}", "body": body})
+    return prepared
+
+
+def planning_context(config: Config) -> dict[str, Any]:
+    """Collect issue/PR history used with the authoritative repository files."""
+    issues = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,state,url,createdAt,closedAt"])
+    prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,state,url,createdAt,mergedAt,closedAt"])
+    history = run(["git", "log", "--oneline", "--decorate", "-100"], cwd=config.repo_root).stdout
+    status = run(["git", "status", "--short"], cwd=config.repo_root).stdout
+    return {"issues": issues, "pull_requests": prs, "git_history": history, "git_status": status}
+
+
+def planning_prompt(context: dict[str, Any], requested: int) -> str:
+    return f"""Plan the next implementation-sized GitHub issues for WarCraftMap.
+
+Read ROADMAP.md, DESIGN_LOCK.md, ARCHITECTURE.md, AGENTS.md, and the current repository before planning. Treat those files and the GitHub/repository history below as authoritative. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
+
+Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. If the next work requires a material decision not locked in the documentation, return a single needs-design item with exactly one decision question and no later work. If no planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
+
+GitHub and repository history:
+{json.dumps(context, sort_keys=True)}
+"""
+
+
+def invoke_planner(config: Config, context: dict[str, Any], requested: int, run_entry: dict[str, Any]) -> dict[str, Any]:
+    schema = config.repo_root / "automation" / "codex-plan.schema.json"
+    output = config.state_dir / "last-codex-plan.json"
+    output.unlink(missing_ok=True)
+    command = build_codex_command(config, config.repo_root, schema, output)
+    process = subprocess.Popen(
+        command, cwd=config.repo_root, stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        start_new_session=True, env=os.environ.copy(),
+    )
+    stream = ""
+    timed_out = False
+    try:
+        stream, _ = process.communicate(
+            planning_prompt(context, requested), timeout=config.timeout_minutes * 60,
+        )
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        os.killpg(process.pid, signal.SIGTERM)
+        try:
+            stream, _ = process.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            stream, _ = process.communicate()
+    finally:
+        tokens = parse_codex_token_usage(stream or "")
+        run_entry["tokens"] = tokens
+        run_entry["telemetry"] = "reported" if tokens is not None else "missing"
+        run_entry["completed_at"] = utcnow().isoformat().replace("+00:00", "Z")
+        log = config.state_dir / "logs" / f"planning-{run_entry['timestamp'].replace(':', '-')}.jsonl"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(stream or "", encoding="utf-8")
+    if timed_out:
+        raise RuntimeError(f"Codex planning exceeded {config.timeout_minutes}-minute timeout")
+    if process.returncode:
+        raise RuntimeError(f"Codex planning exited {process.returncode}; see {log}")
+    if not output.exists():
+        raise RuntimeError(f"Codex planning produced no structured result; see {log}")
+    return json.loads(output.read_text(encoding="utf-8"))
+
+
+def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
+    created = 0
+    for item in items:
+        current = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"])
+        prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"])
+        existing = {normalized_work_title(entry["title"]) for entry in [*current, *prs]}
+        if normalized_work_title(item["title"]) in existing:
+            continue
+        run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
+        created += 1
+    return created
 
 
 def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attempts: int) -> dict[str, Any] | None:
@@ -460,8 +581,11 @@ def main(argv: list[str] | None = None) -> int:
         state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
         selected = select_issue(issues, state, config.max_attempts)
+        refill_count = queue_refill_count(len(issues))
         if args.dry_run:
-            if selected:
+            if refill_count:
+                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
+            elif selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
             else:
                 print("no eligible [agent-ready] issue")
@@ -476,6 +600,40 @@ def main(argv: list[str] | None = None) -> int:
             print(reason)
             return 0
         if service_open_prs(config, state):
+            save_state(state_path, state)
+            return 0
+        if refill_count:
+            available, reason = budget_available(
+                state["runs"], utcnow(), config.max_daily_tokens,
+                config.max_weekly_tokens, config.max_daily_runs, config.max_weekly_runs,
+            )
+            if not available:
+                save_state(state_path, state)
+                print(reason)
+                return 0
+            run_entry = {
+                "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
+                "tokens": None,
+                "telemetry": "pending",
+                "issue": None,
+                "kind": "planning",
+                "model": config.model,
+            }
+            state["runs"].append(run_entry)
+            save_state(state_path, state)
+            try:
+                context = planning_context(config)
+                plan = invoke_planner(config, context, refill_count, run_entry)
+                existing_titles = [item["title"] for item in context["issues"]]
+                existing_titles.extend(item["title"] for item in context["pull_requests"])
+                items = prepare_plan_items(plan, existing_titles, refill_count)
+                created = create_plan_issues(config, items)
+                if plan.get("outcome") == "exhausted":
+                    print("roadmap exhausted; no further planned work remains")
+                else:
+                    print(f"queue replenishment created {created} issue(s)")
+            except Exception as exc:
+                print(f"planning failed: {exc}", file=sys.stderr)
             save_state(state_path, state)
             return 0
         selected = select_issue(issues, state, config.max_attempts)
