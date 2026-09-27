@@ -12,7 +12,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Protocol
 
 
 CURRENT_SCHEMA_VERSION = 1
@@ -35,6 +35,13 @@ class IntegrityError(SaveError):
 
 class IncompatibleSaveError(SaveError):
     """The save cannot be migrated to the current schema."""
+
+class SaveUnsafeError(SaveError):
+    """Persistence was requested while authoritative state was transitional."""
+
+
+class StorageError(SaveError):
+    """A transactional storage operation failed."""
 
 
 @dataclass(frozen=True)
@@ -255,3 +262,136 @@ def _validate_document(document: Mapping[str, Any], *, require_current: bool) ->
     if not isinstance(state, dict) or not isinstance(state.get("world"), dict) or not isinstance(state.get("players"), dict):
         raise SaveError("state.world and state.players must be objects")
     _reject_transient_values(state)
+
+
+class SaveStorage(Protocol):
+    """Small boundary implemented by Warcraft persistence compatibility code."""
+
+    def read(self, slot_id: str) -> bytes | None: ...
+
+    def write_transactional(self, slot_id: str, payload: bytes) -> None: ...
+
+
+class MemorySaveStorage:
+    """Deterministic atomic adapter used by headless tests and simulations."""
+
+    def __init__(self) -> None:
+        self._slots: dict[str, bytes] = {}
+        self.fail_next_write = False
+
+    def read(self, slot_id: str) -> bytes | None:
+        value = self._slots.get(slot_id)
+        return bytes(value) if value is not None else None
+
+    def write_transactional(self, slot_id: str, payload: bytes) -> None:
+        candidate = bytes(payload)
+        if self.fail_next_write:
+            self.fail_next_write = False
+            raise StorageError(f"transactional write failed for {slot_id}")
+        self._slots[slot_id] = candidate
+
+
+@dataclass(frozen=True)
+class SaveResult:
+    status: str
+    slot_id: str
+    diagnostic: str = ""
+
+    @property
+    def succeeded(self) -> bool:
+        return self.status == "saved"
+
+
+class CampaignSaveManager:
+    """Coordinate safe, transactional persistence of authoritative state."""
+
+    def __init__(
+        self,
+        *,
+        build_version: str,
+        scenario_id: str,
+        scenario_version: str,
+        storage: SaveStorage,
+        capture_state: Callable[[], tuple[Mapping[str, Any], Mapping[str, Any]]],
+        validate_state: Callable[[Mapping[str, Any], Mapping[str, Any]], None],
+        reconstruct_runtime: Callable[[Mapping[str, Any], Mapping[str, Any]], Any],
+        activate_state: Callable[[Mapping[str, Any], Mapping[str, Any], Any], None],
+        is_save_safe: Callable[[], bool],
+        registry: MigrationRegistry | None = None,
+    ) -> None:
+        _nonempty_version(build_version, "buildVersion")
+        _nonempty_version(scenario_id, "scenario.id")
+        _nonempty_version(scenario_version, "scenario.version")
+        self.build_version = build_version
+        self.scenario_id = scenario_id
+        self.scenario_version = scenario_version
+        self.storage = storage
+        self.capture_state = capture_state
+        self.validate_state = validate_state
+        self.reconstruct_runtime = reconstruct_runtime
+        self.activate_state = activate_state
+        self.is_save_safe = is_save_safe
+        self.registry = registry or MigrationRegistry()
+        self._deferred: tuple[SaveSlot, str] | None = None
+
+    @property
+    def has_deferred_save(self) -> bool:
+        return self._deferred is not None
+
+    def save(self, slot: SaveSlot, created_at: str, *, defer_if_unsafe: bool = True) -> SaveResult:
+        if not self.is_save_safe():
+            if defer_if_unsafe:
+                self._deferred = (slot, created_at)
+                return SaveResult("deferred", slot.stable_id, "authoritative state is transitional")
+            raise SaveUnsafeError("authoritative state is transitional")
+        world, players = self.capture_state()
+        payload = serialize_save(
+            build_version=self.build_version,
+            scenario_id=self.scenario_id,
+            scenario_version=self.scenario_version,
+            slot=slot,
+            created_at=created_at,
+            world_state=world,
+            player_state=players,
+        )
+        try:
+            self.storage.write_transactional(slot.stable_id, payload)
+        except Exception as exc:
+            if isinstance(exc, SaveError):
+                raise
+            raise StorageError(f"transactional write failed for {slot.stable_id}: {exc}") from exc
+        if self._deferred and self._deferred[0] == slot:
+            self._deferred = None
+        return SaveResult("saved", slot.stable_id)
+
+    def retry_deferred(self) -> SaveResult | None:
+        if self._deferred is None:
+            return None
+        slot, created_at = self._deferred
+        return self.save(slot, created_at)
+
+    def load(self, slot: SaveSlot) -> dict[str, Any]:
+        raw = self.storage.read(slot.stable_id)
+        if raw is None:
+            raise SaveError(f"campaign save slot {slot.stable_id} is empty")
+        document = load_save(raw, self.registry)
+        if document["scenario"]["id"] != self.scenario_id:
+            raise IncompatibleSaveError(
+                f"save scenario {document['scenario']['id']} is incompatible with {self.scenario_id}"
+            )
+        if document["scenario"]["version"] != self.scenario_version:
+            raise IncompatibleSaveError(
+                f"save scenario version {document['scenario']['version']} is incompatible with {self.scenario_version}"
+            )
+        if document["buildVersion"] != self.build_version:
+            raise IncompatibleSaveError(
+                f"save build {document['buildVersion']} is incompatible with {self.build_version}"
+            )
+        if document["slot"]["id"] != slot.stable_id:
+            raise IncompatibleSaveError("stored save slot metadata does not match the requested slot")
+        world = copy.deepcopy(document["state"]["world"])
+        players = copy.deepcopy(document["state"]["players"])
+        self.validate_state(world, players)
+        runtime = self.reconstruct_runtime(world, players)
+        self.activate_state(world, players, runtime)
+        return document

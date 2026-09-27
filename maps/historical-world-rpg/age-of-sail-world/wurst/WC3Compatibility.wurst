@@ -55,6 +55,18 @@ public function compatCanEquipItemOfType(unit holder, equipmentType value) retur
 	return UnitCanEquipItemOfEquipmentType(holder, value)
 
 // Native saves; campaign serialization remains engine-owned.
+public function compatInitGameCache(string name) returns gamecache
+	return InitGameCache(name)
+public function compatHaveStoredString(gamecache cache, string mission, string key) returns boolean
+	return HaveStoredString(cache, mission, key)
+public function compatGetStoredString(gamecache cache, string mission, string key) returns string
+	return GetStoredString(cache, mission, key)
+public function compatStoreString(gamecache cache, string mission, string key, string value)
+	StoreString(cache, mission, key, value)
+public function compatFlushStoredString(gamecache cache, string mission, string key)
+	FlushStoredString(cache, mission, key)
+public function compatSaveGameCache(gamecache cache) returns boolean
+	return SaveGameCache(cache)
 public function compatSaveGame(string name)
 	SaveGame(name)
 public function compatLoadGame(string name, boolean scoreScreen)
