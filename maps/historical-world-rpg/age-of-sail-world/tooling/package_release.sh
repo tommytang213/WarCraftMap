@@ -2,4 +2,4 @@
 set -euo pipefail
 
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-exec python3 "$project_root/tooling/package_release.py"
+exec python3 "$project_root/tooling/package_release.py" "$@"

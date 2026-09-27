@@ -17,4 +17,8 @@ if __name__ == "__main__":
     except ValidationError as error:
         print(f"packaging failed: invalid canonical source map: {error}", file=sys.stderr)
         raise SystemExit(1)
-    raise SystemExit(main([str(PROJECT / "package.json")]))
+    arguments = sys.argv[1:]
+    if arguments not in ([], ["clean"]):
+        print("usage: package_release.py [clean]", file=sys.stderr)
+        raise SystemExit(2)
+    raise SystemExit(main([*arguments, str(PROJECT / "package.json")]))
