@@ -12,6 +12,7 @@ from validate_government import (
 )
 from validate_navigation import validate as validate_navigation
 from validate_quest_events import validate as validate_quest_events
+from validate_timeline import validate as validate_timeline
 
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
@@ -97,8 +98,10 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 6:
-        fail("schemaVersion must currently be 6")
+    if data.get("schemaVersion") != 7:
+        fail("schemaVersion must currently be 7")
+
+    timeline = validate_timeline(data, fail)
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
@@ -337,7 +340,8 @@ def validate(path: Path) -> None:
         f"{len(navigation_zones)} navigation zones, "
         f"{len(navigation_safe_points)} navigation safe points, "
         f"{len(navigation_states)} active unit navigation states, "
-        f"{len(quests)} quests, {len(events)} events"
+        f"{len(quests)} quests, {len(events)} events, "
+        f"{len(timeline.get('schedules', []))} timeline schedules"
     )
 
 

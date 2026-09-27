@@ -8,6 +8,8 @@ deliberately deferred to the runtime integration layer.
 
 `inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
 
+`timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement
