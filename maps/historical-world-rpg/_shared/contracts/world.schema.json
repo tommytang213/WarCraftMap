@@ -5,6 +5,9 @@
   "type": "object",
   "required": [
     "schemaVersion",
+    "navigationZones",
+    "navigationSafePoints",
+    "activeUnitNavigationStates",
     "polities",
     "provinces",
     "settlements",
@@ -31,9 +34,12 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "navigationZones": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/navigationZone"}},
+    "navigationSafePoints": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/safePoint"}},
+    "activeUnitNavigationStates": {"type": "array", "items": {"$ref": "navigation.schema.json#/$defs/activeUnitNavigationState"}},
     "schemaVersion": {
       "type": "integer",
-      "const": 4
+      "const": 5
     },
     "polities": {
       "type": "array",

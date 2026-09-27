@@ -100,3 +100,26 @@ never rewrites source bytes, and persisting a migrated result is a separate acti
   `companionRelationships`; content can then be added without changing IDs.
 - World schema version 3 adds technology and institution definitions, graph branches, polity research state, and province adoption state. Version 2 migrates by setting `schemaVersion` to `3` and adding empty arrays for `researchBranches`, `technologies`, `institutions`, `polityResearchStates`, and `provinceAdoptionStates`.
 - World schema version 4 adds scenario-defined title styles, title grants, territorial holdings, overlord taxation/obligations, and mutable allegiance records. Version 3 migrates by setting `schemaVersion` to `4` and adding empty arrays for `titleStyles`, `titleGrants`, `territorialHoldings`, and `allegiances`; scenario content can then be added without changing prior stable IDs.
+- World schema version 5 adds movement-class navigation-zone graphs, safe points and recovery anchors, and last-known-safe zoned positions for important active units. Version 4 migrates by setting `schemaVersion` to `5` and adding `navigationZones`, `navigationSafePoints`, and `activeUnitNavigationStates`; scenario topology and tracked active-unit state must then be populated with valid stable references.
+
+## Navigation and recovery contract
+
+`navigationZones` form reciprocal graphs independently for `land`, `naval`,
+`amphibious`, and `flying` movement. A connection is usable only for its named
+movement class; pathability alone never establishes connectivity. Scenario safe
+points distinguish ordinary verified points from recovery anchors. Decorative or
+isolated zones may exist, but cannot become recovery destinations for a unit in a
+different graph component.
+
+`activeUnitNavigationStates` stores the current zone and last-known-safe zoned
+coordinates for each important physically active strategic unit. These records
+are authoritative data and contain no Warcraft handles. Formations use land
+movement and ships use naval movement in the current strategic-unit model;
+generic recovery policy also supports amphibious and flying mobile entities.
+Structures and dummy/system objects are never eligible.
+
+The headless selector returns a decision rather than moving anything. It checks
+verified safety, movement compatibility, and graph reachability in this fixed
+order: nearest-first nearby safe points, the stored last-safe position, connected
+recovery anchors, then failure with no destination. Runtime teleportation is not
+part of this contract and must re-verify a selected destination when implemented.

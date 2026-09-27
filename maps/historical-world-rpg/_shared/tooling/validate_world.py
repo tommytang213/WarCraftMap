@@ -10,6 +10,7 @@ from validate_government import (
     validate_allegiance_transition,
     validate_government,
 )
+from validate_navigation import validate as validate_navigation
 
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
@@ -95,8 +96,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 4:
-        fail("schemaVersion must currently be 4")
+    if data.get("schemaVersion") != 5:
+        fail("schemaVersion must currently be 5")
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
@@ -112,6 +113,9 @@ def validate(path: Path) -> None:
     character = unique_index(data.get("characters", []), "characters")
     threshold = unique_index(data.get("relationshipThresholds", []), "relationshipThresholds")
     relationship = unique_index(data.get("companionRelationships", []), "companionRelationships")
+    navigation_zones, navigation_safe_points, navigation_states = validate_navigation(
+        data, fail, require_id, unique_index, strategic_unit
+    )
     technologies, institutions = validate_research(data, fail, require_id, unique_index, polity, province)
     title_styles, title_grants, holdings, allegiances = validate_government(
         data, fail, require_id, unique_index, polity, province, settlement, character
@@ -185,6 +189,9 @@ def validate(path: Path) -> None:
             fail(
                 f"settlement {settlement_id}: civilianFacilitiesInvulnerable must be true"
             )
+        navigation_zone_id = s.get("navigationZoneId")
+        if navigation_zone_id is not None and navigation_zone_id not in navigation_zones:
+            fail(f"settlement {settlement_id}: missing navigation zone {navigation_zone_id!r}")
         if s.get("capturable"):
             for field in ("cityCoreId", "defenseLayoutId"):
                 value = s.get(field)
@@ -324,7 +331,10 @@ def validate(path: Path) -> None:
         f"{len(army)} armies, {len(fleet)} fleets, {len(character)} characters, "
         f"{len(relationship)} companion relationships, {len(technologies)} technologies, "
         f"{len(institutions)} institutions, {len(title_grants)} title grants, "
-        f"{len(holdings)} territorial holdings, {len(allegiances)} allegiances"
+        f"{len(holdings)} territorial holdings, {len(allegiances)} allegiances, "
+        f"{len(navigation_zones)} navigation zones, "
+        f"{len(navigation_safe_points)} navigation safe points, "
+        f"{len(navigation_states)} active unit navigation states"
     )
 
 

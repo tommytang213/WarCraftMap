@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/navigation.schema.json",
+  "title": "Generic navigation and recovery contract",
+  "$defs": {
+    "stableId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64},
+    "movementClass": {"enum": ["land", "naval", "amphibious", "flying"]},
+    "position": {
+      "type": "object", "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {"x": {"type": "number"}, "y": {"type": "number"}}
+    },
+    "zonedPosition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["zoneId", "x", "y"],
+      "properties": {"zoneId": {"$ref": "#/$defs/stableId"}, "x": {"type": "number"}, "y": {"type": "number"}}
+    },
+    "connections": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "land": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true},
+        "naval": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true},
+        "amphibious": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true},
+        "flying": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true}
+      }
+    },
+    "navigationZone": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "movementClasses", "connections"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"},
+        "movementClasses": {"type": "array", "items": {"$ref": "#/$defs/movementClass"}, "minItems": 1, "uniqueItems": true},
+        "connections": {"$ref": "#/$defs/connections"}
+      }
+    },
+    "safePoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "zoneId", "position", "movementClasses"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "kind": {"enum": ["safe_point", "recovery_anchor"]},
+        "zoneId": {"$ref": "#/$defs/stableId"}, "position": {"$ref": "#/$defs/position"},
+        "movementClasses": {"type": "array", "items": {"$ref": "#/$defs/movementClass"}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "activeUnitNavigationState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "unitId", "movementClass", "currentZoneId", "lastSafePosition"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "unitId": {"$ref": "#/$defs/stableId"},
+        "movementClass": {"$ref": "#/$defs/movementClass"}, "currentZoneId": {"$ref": "#/$defs/stableId"},
+        "lastSafePosition": {"$ref": "#/$defs/zonedPosition"}
+      }
+    }
+  }
+}
