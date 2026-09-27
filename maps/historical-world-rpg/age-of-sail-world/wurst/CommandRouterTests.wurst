@@ -1,0 +1,58 @@
+package CommandRouterTests
+import CommandRouter
+class Output implements CommandOutput
+	string last=""
+	override function show(player p,string message)
+		last=message
+class Handler implements CommandHandler
+	int calls=0
+	string last=""
+	override function execute(player p,string arguments)
+		calls++
+		last=arguments
+function router(boolean debug,int pageSize,Output output) returns CommandRegistry
+	let result=new CommandRegistry(debug,pageSize,new CommandText(),output)
+	result.register("help","commands","help [page|command]","Show help.","Help details.",0,1,COMMAND_RELEASE,null).assertEquals("")
+	return result
+@test function parsingAliasesAndArgumentValidation()
+	let output=new Output()
+	let handler=new Handler()
+	let subject=router(false,4,output)
+	subject.register("unstuck","recover,rescue","unstuck [all]","Recover.","Recovery details.",0,1,COMMAND_RELEASE,handler).assertEquals("")
+	normalizeCommandLine(" \t/HeLP   UnStUcK ").assertEquals("help UnStUcK")
+	subject.dispatch(null," /ReScUe   ALL ").assertEquals(true)
+	handler.calls.assertEquals(1)
+	handler.last.assertEquals("ALL")
+	subject.dispatch(null,"/unstuck all extra").assertEquals(false)
+	output.last.assertEquals("Invalid arguments. Usage: /unstuck [all]")
+@test function pagingTopicsAndMalformedHelp()
+	let output=new Output()
+	let handler=new Handler()
+	let subject=router(false,2,output)
+	subject.register("unstuck","recover","unstuck [all]","Recover.","Recovery details.",0,1,COMMAND_RELEASE,handler)
+	subject.register("invulnerable","god","invulnerable [on|off]","Protect.","Protection details.",0,1,COMMAND_RELEASE,handler)
+	subject.dispatch(null,"/help 2")
+	output.last.assertEquals("Available commands - Page 2/2\n/invulnerable [on|off] - Protect.")
+	subject.dispatch(null,"/help recover")
+	output.last.assertEquals("Usage: /unstuck [all]\nRecovery details.")
+	subject.dispatch(null,"/help 3")
+	output.last.assertEquals("Invalid help page. Enter a page number between 1 and 2.")
+	subject.dispatch(null,"/help nowhere")
+	output.last.assertEquals("Unknown help topic: nowhere. Enter /help to list available commands.")
+	subject.dispatch(null,"/help unstuck extra")
+	output.last.assertEquals("Malformed help request. Use /help, /help <page>, or /help <command>.")
+@test function conflictsAndBuildVisibility()
+	let releaseOutput=new Output()
+	let debugOutput=new Output()
+	let handler=new Handler()
+	let release=router(false,8,releaseOutput)
+	let debug=router(true,8,debugOutput)
+	release.register("probe","inspect","probe","Developer probe.","Probe.",0,0,COMMAND_DEBUG,handler).assertEquals("")
+	release.register("inspect","","inspect","Conflict.","Conflict.",0,0,COMMAND_RELEASE,handler).assertEquals("Ambiguous command registration: 'inspect' is already registered.")
+	debug.register("probe","inspect","probe","Developer probe.","Probe.",0,0,COMMAND_DEBUG,handler)
+	release.dispatch(null,"/help")
+	releaseOutput.last.assertEquals("Available commands - Page 1/1\n/help [page|command] - Show help.")
+	release.dispatch(null,"/probe").assertEquals(false)
+	releaseOutput.last.assertEquals("That command is unavailable in this build.")
+	debug.dispatch(null,"/help")
+	debugOutput.last.assertEquals("Available commands - Page 1/1\n/help [page|command] - Show help.\n/probe - Developer probe.")

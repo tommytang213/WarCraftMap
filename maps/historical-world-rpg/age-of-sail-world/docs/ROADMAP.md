@@ -46,7 +46,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 - [x] Latest-WC3 compatibility module
 - [x] Map build pipeline
-- [ ] Command router + paged /help
+- [x] Command router + paged /help
 - [ ] UI pause policy for management screens
 - [ ] Campaign save manager
 - [ ] 15-slot rolling autosave scheduler
