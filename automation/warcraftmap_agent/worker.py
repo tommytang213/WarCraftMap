@@ -400,6 +400,11 @@ def check_state(item: dict[str, Any]) -> str:
     return "pending"
 
 
+def build_pr_merge_command(pr: int) -> list[str]:
+    """Merge without asking gh to delete a branch still checked out by a worktree."""
+    return ["gh", "pr", "merge", str(pr), "--merge"]
+
+
 def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
     """Merge one ready PR. Failed/pending PRs remain for a later timer run."""
     for number, record in state["issues"].items():
@@ -430,7 +435,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         # complete successful statusCheckRollup above.
         if not checks:
             continue
-        run(["gh", "pr", "merge", str(pr), "--merge", "--delete-branch"], cwd=config.repo_root)
+        run(build_pr_merge_command(int(pr)), cwd=config.repo_root)
         record["status"] = "merged"
         return True
     return False
