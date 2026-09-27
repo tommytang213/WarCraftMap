@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/economy.schema.json",
+  "title": "Scenario-neutral deterministic economy contracts",
+  "oneOf": [
+    {"type": "object", "additionalProperties": false, "required": ["schemaVersion", "currencies", "goods", "stores", "recipes", "producers", "consumers", "markets", "prices", "obligations", "sourceRules", "sinkRules"], "properties": {
+      "schemaVersion": {"const": 1},
+      "currencies": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "minorUnitsPerMajor"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "minorUnitsPerMajor": {"type": "integer", "minimum": 1}}}},
+      "goods": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "quantityUnitsPerDisplayUnit"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "quantityUnitsPerDisplayUnit": {"type": "integer", "minimum": 1}, "itemTypeId": {"$ref": "#/$defs/stableId"}}}},
+      "stores": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "owner", "capacityUnits", "allowedGoodIds"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "kind": {"$ref": "#/$defs/storeKind"}, "owner": {"$ref": "#/$defs/owner"}, "capacityUnits": {"type": "integer", "minimum": 1}, "allowedGoodIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}}}},
+      "recipes": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "inputs", "outputs"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/goodLine"}}, "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/goodLine"}}}}},
+      "producers": {"$ref": "#/$defs/actors"}, "consumers": {"$ref": "#/$defs/actors"},
+      "markets": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "storeId", "owner"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "storeId": {"$ref": "#/$defs/stableId"}, "owner": {"$ref": "#/$defs/owner"}}}},
+      "prices": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "marketId", "goodId", "currencyId", "quantityUnits", "amountMinor"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "marketId": {"$ref": "#/$defs/stableId"}, "goodId": {"$ref": "#/$defs/stableId"}, "currencyId": {"$ref": "#/$defs/stableId"}, "quantityUnits": {"type": "integer", "minimum": 1}, "amountMinor": {"type": "integer", "minimum": 0}}}},
+      "obligations": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "payerStoreId", "currencyId", "amountMinor", "intervalTicks"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "payerStoreId": {"$ref": "#/$defs/stableId"}, "payeeStoreId": {"$ref": "#/$defs/stableId"}, "sinkRuleId": {"$ref": "#/$defs/stableId"}, "currencyId": {"$ref": "#/$defs/stableId"}, "amountMinor": {"type": "integer", "minimum": 0}, "intervalTicks": {"type": "integer", "minimum": 1}}}},
+      "sourceRules": {"type": "array", "items": {"$ref": "#/$defs/rule"}}, "sinkRules": {"type": "array", "items": {"$ref": "#/$defs/rule"}}
+    }},
+    {"type": "object", "additionalProperties": false, "required": ["schemaVersion", "storeBalances", "processedTransactionIds"], "properties": {"schemaVersion": {"const": 1}, "storeBalances": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "storeId", "goods", "currencies"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "storeId": {"$ref": "#/$defs/stableId"}, "goods": {"type": "array", "items": {"$ref": "#/$defs/goodLine"}}, "currencies": {"type": "array", "items": {"$ref": "#/$defs/currencyLine"}}}}}, "processedTransactionIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}}}
+  ],
+  "$defs": {
+    "stableId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64},
+    "owner": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["character", "polity", "province", "settlement", "strategic_unit", "army", "fleet", "territorial_holding"]}, "id": {"$ref": "#/$defs/stableId"}}},
+    "goodLine": {"type": "object", "additionalProperties": false, "required": ["goodId", "quantityUnits"], "properties": {"goodId": {"$ref": "#/$defs/stableId"}, "quantityUnits": {"type": "integer", "minimum": 1}}},
+    "currencyLine": {"type": "object", "additionalProperties": false, "required": ["currencyId", "amountMinor"], "properties": {"currencyId": {"$ref": "#/$defs/stableId"}, "amountMinor": {"type": "integer", "minimum": 0}}},
+    "storeKind": {"enum": ["personal_inventory", "settlement", "warehouse", "ship", "fleet"]},
+    "rule": {"type": "object", "additionalProperties": false, "required": ["id", "assetKind", "assetIds", "storeKinds"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "assetKind": {"enum": ["currency", "good"]}, "assetIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}, "storeKinds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/storeKind"}}}},
+    "actors": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "storeId", "recipeId", "owner"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "storeId": {"$ref": "#/$defs/stableId"}, "recipeId": {"$ref": "#/$defs/stableId"}, "owner": {"$ref": "#/$defs/owner"}}}}
+  }
+}
