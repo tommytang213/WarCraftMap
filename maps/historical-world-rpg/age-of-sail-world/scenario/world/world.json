@@ -1,5 +1,19 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
+  "navigationZones": [
+    {"id": "north_sea_atlantic", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": ["english_channel"], "amphibious": ["english_channel"], "flying": ["english_channel", "western_europe_land"]}},
+    {"id": "english_channel", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": ["north_sea_atlantic"], "amphibious": ["north_sea_atlantic", "western_europe_land"], "flying": ["north_sea_atlantic", "western_europe_land"]}},
+    {"id": "western_europe_land", "movementClasses": ["land", "amphibious", "flying"], "connections": {"land": [], "amphibious": ["english_channel"], "flying": ["north_sea_atlantic", "english_channel"]}},
+    {"id": "decorative_lake", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": [], "amphibious": [], "flying": []}}
+  ],
+  "navigationSafePoints": [
+    {"id": "channel_patrol_safe", "kind": "safe_point", "zoneId": "english_channel", "position": {"x": 41.5, "y": -3.25}, "movementClasses": ["naval"]},
+    {"id": "dover_naval_anchor", "kind": "recovery_anchor", "zoneId": "english_channel", "position": {"x": 38.0, "y": -2.0}, "movementClasses": ["naval", "amphibious"]},
+    {"id": "london_land_anchor", "kind": "recovery_anchor", "zoneId": "western_europe_land", "position": {"x": 10.0, "y": 12.0}, "movementClasses": ["land", "amphibious"]}
+  ],
+  "activeUnitNavigationStates": [
+    {"id": "english_patrol_ship_navigation", "unitId": "english_patrol_ship", "movementClass": "naval", "currentZoneId": "english_channel", "lastSafePosition": {"zoneId": "english_channel", "x": 41.5, "y": -3.25}}
+  ],
   "polities": [
     {
       "id": "england",
