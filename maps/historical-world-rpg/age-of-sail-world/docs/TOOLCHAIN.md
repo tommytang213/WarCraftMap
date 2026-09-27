@@ -6,7 +6,7 @@
 - WurstScript as the source language/toolchain.
 - Lua as the generated Warcraft scripting backend.
 - Wurst project patch target: `v3.0`.
-- Source-controlled map-folder workflow once the base terrain/map folder is created.
+- Source-controlled folder-map input at `map/AgeOfSailWorld.w3x/`.
 
 ## Why Wurst + Lua
 
@@ -32,13 +32,20 @@ grill typecheck
 grill test
 ```
 
-Once a valid source map/map-folder exists:
+Validate the canonical input, typecheck the bootstrap/runtime, and prove that Wurst can inspect and build the folder map:
 
 ```text
-grill build <source-map.w3x>
+./tooling/validate_map_source.sh
 ```
 
-Build output is generated under `_build/`; generated output is not the editable source of truth.
+The script runs the repository-side binary/metadata validator, `grill typecheck`, and `grill build map/AgeOfSailWorld.w3x`. The build uses the Lua backend and `wc3Patch: v3.0` from `wurst.build`, injecting `wurst/Bootstrap.wurst` into generated output. Build output is generated under `_build/`; generated output is not the editable source of truth. No World Editor or player gameplay check is required.
+
+For a fast map-input check that does not require Wurst or Warcraft III:
+
+```text
+python3 tooling/validate_map_source.py
+python3 -m unittest tests/test_map_source.py
+```
 
 ## Version policy
 
@@ -60,4 +67,4 @@ Patch changes are treated as compatibility work, not casual dependency updates.
 
 GitHub CI performs Wurst typechecking using the official/community Wurst Docker workflow. It refreshes Wurst before checking so the CI toolchain understands the currently pinned `v3.0` target.
 
-A full map-build job will be added after the source map folder is committed.
+CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
