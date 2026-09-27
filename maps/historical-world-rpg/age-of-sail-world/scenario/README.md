@@ -25,3 +25,5 @@ Planned data domains:
 - quests
 - treasures
 - starting configurations
+
+The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-01 through 1820-12-31 range and era labels are scenario content; the shared engine contains no Age of Sail year constants. Historical event definitions and schedules will be authored there in later content issues.
