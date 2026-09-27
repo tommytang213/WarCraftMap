@@ -105,5 +105,45 @@
       "cityCoreId": "city_core_rouen",
       "defenseLayoutId": "defense_rouen"
     }
+  ],
+  "officers": [
+    { "id": "english_field_officer", "name": "English Field Officer" },
+    { "id": "english_naval_officer", "name": "English Naval Officer" }
+  ],
+  "strategicUnits": [
+    {
+      "id": "english_guard_formation", "name": "English Guard Formation", "kind": "formation",
+      "legalOwnerPolityId": "england", "controllerPolityId": "england",
+      "representedStrength": 800, "strengthUnitId": "personnel",
+      "operationalState": { "morale": 80, "supply": 75, "readiness": 85 },
+      "runtimeInstantiation": { "state": "abstract", "runtimeTemplateId": "infantry_formation_default", "activeObjectCount": 0 },
+      "commanderOfficerId": "english_field_officer", "officerIds": ["english_field_officer"]
+    },
+    {
+      "id": "english_patrol_ship", "name": "English Patrol Ship", "kind": "ship",
+      "legalOwnerPolityId": "england", "controllerPolityId": "england",
+      "representedStrength": 1, "strengthUnitId": "vessels",
+      "operationalState": { "morale": 78, "supply": 70, "readiness": 82 },
+      "runtimeInstantiation": { "state": "active", "runtimeTemplateId": "sailing_ship_default", "activeObjectCount": 1 },
+      "commanderOfficerId": "english_naval_officer", "officerIds": ["english_naval_officer"]
+    }
+  ],
+  "armies": [
+    {
+      "id": "english_home_army", "name": "English Home Army",
+      "legalOwnerPolityId": "england", "controllerPolityId": "england",
+      "formationUnitIds": ["english_guard_formation"],
+      "operationalState": { "morale": 80, "supply": 75, "readiness": 85 },
+      "commanderOfficerId": "english_field_officer", "officerIds": ["english_field_officer"]
+    }
+  ],
+  "fleets": [
+    {
+      "id": "english_channel_fleet", "name": "English Channel Fleet",
+      "legalOwnerPolityId": "england", "controllerPolityId": "england",
+      "shipUnitIds": ["english_patrol_ship"],
+      "operationalState": { "morale": 78, "supply": 70, "readiness": 82 },
+      "commanderOfficerId": "english_naval_officer", "officerIds": ["english_naval_officer"]
+    }
   ]
 }

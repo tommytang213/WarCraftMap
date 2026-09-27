@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/military.schema.json",
+  "title": "Generic Strategic Military Contracts",
+  "$defs": {
+    "stableId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64 },
+    "operationalState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["morale", "supply", "readiness"],
+      "properties": {
+        "morale": { "type": "number", "minimum": 0, "maximum": 100 },
+        "supply": { "type": "number", "minimum": 0, "maximum": 100 },
+        "readiness": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "runtimeInstantiation": {
+      "description": "Reconstructible Warcraft representation metadata; never stores object handles.",
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "runtimeTemplateId", "activeObjectCount"],
+      "properties": {
+        "state": { "type": "string", "enum": ["abstract", "active"] },
+        "runtimeTemplateId": { "$ref": "#/$defs/stableId" },
+        "activeObjectCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "officer": {
+      "type": "object", "additionalProperties": false, "required": ["id", "name"],
+      "properties": { "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 } }
+    },
+    "strategicUnit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "kind", "legalOwnerPolityId", "controllerPolityId", "representedStrength", "strengthUnitId", "operationalState", "runtimeInstantiation", "officerIds"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["formation", "ship"] },
+        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" }, "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "representedStrength": { "type": "integer", "minimum": 1 }, "strengthUnitId": { "$ref": "#/$defs/stableId" },
+        "operationalState": { "$ref": "#/$defs/operationalState" }, "runtimeInstantiation": { "$ref": "#/$defs/runtimeInstantiation" },
+        "commanderOfficerId": { "$ref": "#/$defs/stableId" },
+        "officerIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } }
+      }
+    },
+    "army": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "legalOwnerPolityId", "controllerPolityId", "formationUnitIds", "operationalState", "commanderOfficerId", "officerIds"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
+        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" }, "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "formationUnitIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "operationalState": { "$ref": "#/$defs/operationalState" }, "commanderOfficerId": { "$ref": "#/$defs/stableId" },
+        "officerIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } }
+      }
+    },
+    "fleet": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "legalOwnerPolityId", "controllerPolityId", "shipUnitIds", "operationalState", "commanderOfficerId", "officerIds"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
+        "legalOwnerPolityId": { "$ref": "#/$defs/stableId" }, "controllerPolityId": { "$ref": "#/$defs/stableId" },
+        "shipUnitIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "operationalState": { "$ref": "#/$defs/operationalState" }, "commanderOfficerId": { "$ref": "#/$defs/stableId" },
+        "officerIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } }
+      }
+    }
+  }
+}

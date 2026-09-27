@@ -3,7 +3,7 @@
   "$id": "https://warcraftmap.local/schemas/world.schema.json",
   "title": "Historical World Scenario",
   "type": "object",
-  "required": ["schemaVersion", "polities", "provinces", "settlements"],
+  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets"],
   "additionalProperties": false,
   "properties": {
     "schemaVersion": { "type": "integer", "minimum": 1 },
@@ -18,6 +18,22 @@
     "settlements": {
       "type": "array",
       "items": { "$ref": "#/$defs/settlement" }
+    },
+    "officers": {
+      "type": "array",
+      "items": { "$ref": "military.schema.json#/$defs/officer" }
+    },
+    "strategicUnits": {
+      "type": "array",
+      "items": { "$ref": "military.schema.json#/$defs/strategicUnit" }
+    },
+    "armies": {
+      "type": "array",
+      "items": { "$ref": "military.schema.json#/$defs/army" }
+    },
+    "fleets": {
+      "type": "array",
+      "items": { "$ref": "military.schema.json#/$defs/fleet" }
     }
   },
   "$defs": {

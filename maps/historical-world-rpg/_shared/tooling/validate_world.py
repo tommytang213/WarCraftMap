@@ -33,6 +33,36 @@ def unique_index(items, domain):
     return result
 
 
+def require_unique_refs(values, domain, targets, expected_kind=None):
+    if not isinstance(values, list) or not values:
+        fail(f"{domain}: at least one member is required")
+    seen = set()
+    for ident in values:
+        require_id(ident, domain)
+        if ident in seen:
+            fail(f"{domain}: duplicate reference {ident!r}")
+        seen.add(ident)
+        if ident not in targets:
+            fail(f"{domain}: missing reference {ident!r}")
+        if expected_kind and targets[ident].get("kind") != expected_kind:
+            fail(f"{domain}: {ident!r} is not a {expected_kind}")
+
+
+def validate_operational_state(value, domain):
+    if not isinstance(value, dict):
+        fail(f"{domain}: operationalState must be an object")
+    for field in ("morale", "supply", "readiness"):
+        score = value.get(field)
+        if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 100:
+            fail(f"{domain}.{field}: must be a number between 0 and 100")
+
+
+def validate_owned_controlled(value, domain, polities):
+    for field in ("legalOwnerPolityId", "controllerPolityId"):
+        if value.get(field) not in polities:
+            fail(f"{domain}: {field} references {value.get(field)!r}")
+
+
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schemaVersion") != 1:
@@ -41,6 +71,10 @@ def validate(path: Path) -> None:
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
     settlement = unique_index(data.get("settlements", []), "settlements")
+    officer = unique_index(data.get("officers", []), "officers")
+    strategic_unit = unique_index(data.get("strategicUnits", []), "strategicUnits")
+    army = unique_index(data.get("armies", []), "armies")
+    fleet = unique_index(data.get("fleets", []), "fleets")
 
     if not polity:
         fail("at least one polity is required")
@@ -115,10 +149,55 @@ def validate(path: Path) -> None:
                 value = s.get(field)
                 require_id(value, f"settlement {settlement_id}.{field}")
 
+    for unit_id, unit in strategic_unit.items():
+        domain = f"strategic unit {unit_id}"
+        if unit.get("kind") not in {"formation", "ship"}:
+            fail(f"{domain}: invalid kind")
+        validate_owned_controlled(unit, domain, polity)
+        strength = unit.get("representedStrength")
+        if isinstance(strength, bool) or not isinstance(strength, int) or strength < 1:
+            fail(f"{domain}: representedStrength must be a positive integer")
+        require_id(unit.get("strengthUnitId"), f"{domain}.strengthUnitId")
+        validate_operational_state(unit.get("operationalState"), domain)
+        runtime = unit.get("runtimeInstantiation")
+        if not isinstance(runtime, dict):
+            fail(f"{domain}: runtimeInstantiation must be an object")
+        state, count = runtime.get("state"), runtime.get("activeObjectCount")
+        require_id(runtime.get("runtimeTemplateId"), f"{domain}.runtimeTemplateId")
+        if state not in {"abstract", "active"}:
+            fail(f"{domain}: invalid runtime state")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            fail(f"{domain}: activeObjectCount must be a non-negative integer")
+        if (state == "abstract" and count != 0) or (state == "active" and count < 1):
+            fail(f"{domain}: runtime state and activeObjectCount disagree")
+        for officer_id in unit.get("officerIds", []):
+            if officer_id not in officer:
+                fail(f"{domain}: missing officer {officer_id!r}")
+        commander_id = unit.get("commanderOfficerId")
+        if commander_id is not None and commander_id not in officer:
+            fail(f"{domain}: missing commander {commander_id!r}")
+
+    for collection_name, groups, member_field, kind in (
+        ("army", army, "formationUnitIds", "formation"),
+        ("fleet", fleet, "shipUnitIds", "ship"),
+    ):
+        for group_id, group in groups.items():
+            domain = f"{collection_name} {group_id}"
+            validate_owned_controlled(group, domain, polity)
+            validate_operational_state(group.get("operationalState"), domain)
+            require_unique_refs(group.get(member_field), f"{domain}.{member_field}", strategic_unit, kind)
+            commander_id = group.get("commanderOfficerId")
+            if commander_id not in officer:
+                fail(f"{domain}: missing commander {commander_id!r}")
+            for officer_id in group.get("officerIds", []):
+                if officer_id not in officer:
+                    fail(f"{domain}: missing officer {officer_id!r}")
+
     print(
         f"OK: {path} | "
         f"{len(polity)} polities, {len(province)} provinces, "
-        f"{len(settlement)} settlements"
+        f"{len(settlement)} settlements, {len(strategic_unit)} strategic units, "
+        f"{len(army)} armies, {len(fleet)} fleets"
     )
 
 

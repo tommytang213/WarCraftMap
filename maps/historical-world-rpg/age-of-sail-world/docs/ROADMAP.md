@@ -21,7 +21,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Stable ID conventions
 - [x] Initial polity/province/settlement data contract
 - [x] Ownership/control represented separately in starting world data
-- [ ] Unit/army/fleet model
+- [x] Unit/army/fleet model
 - [ ] Character/loyalty/relationship model
 - [ ] Technology/institution graph schema
 - [ ] Title/land/vassal model
