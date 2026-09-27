@@ -1,0 +1,94 @@
+package CampaignSaveManagerTests
+import CampaignSaveManager
+
+class Storage implements CampaignSaveStorage
+	string value = ""
+	boolean fail = false
+	override function contains(string slotId) returns boolean
+		return value != ""
+	override function read(string slotId) returns string
+		return value
+	override function writeTransactional(string slotId, string payload) returns boolean
+		if fail
+			return false
+		value = payload
+		return true
+	override function diagnostic() returns string
+		return "storage failure"
+
+class Codec implements CampaignSaveCodec
+	boolean valid = true
+	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string state) returns string
+		return slotId + "|" + state
+	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
+		if valid
+			return "validated"
+		return ""
+	override function diagnostic() returns string
+		return "metadata or integrity failure"
+
+class State implements CampaignStatePort
+	boolean safe = true
+	boolean valid = true
+	boolean rebuilt = true
+	int activations = 0
+	override function isSaveSafe() returns boolean
+		return safe
+	override function captureAuthoritativeState() returns string
+		return "stable-ids-only"
+	override function validateAuthoritativeState(string candidate) returns boolean
+		return valid
+	override function reconstructRuntime(string candidate) returns boolean
+		return rebuilt
+	override function activateAuthoritativeState(string candidate)
+		activations++
+	override function diagnostic() returns string
+		return "state failure"
+
+@test function slotsAndDeferredSave()
+	campaignSlotId(SAVE_SLOT_AUTOSAVE, 15).assertEquals("autosave_15")
+	campaignSlotId(SAVE_SLOT_MANUAL, 1).assertEquals("manual_01")
+	campaignSlotId(SAVE_SLOT_SESSION_START, 0).assertEquals("session_start")
+	campaignSlotId(SAVE_SLOT_MAJOR_MILESTONE, 0).assertEquals("major_milestone")
+	campaignSlotId(SAVE_SLOT_AUTOSAVE, 16).assertEquals("")
+	let storage = new Storage()
+	let state = new State()
+	let manager = new CampaignSaveManager(storage, new Codec(), state)
+	state.safe = false
+	manager.save(SAVE_SLOT_AUTOSAVE, 1, "now").assertEquals(false)
+	manager.hasDeferredSave().assertEquals(true)
+	storage.value.assertEquals("")
+	state.safe = true
+	manager.retryDeferred().assertEquals(true)
+	storage.value.assertEquals("autosave_01|stable-ids-only")
+
+@test function rejectedLoadNeverActivates()
+	let storage = new Storage()
+	let codec = new Codec()
+	let state = new State()
+	let manager = new CampaignSaveManager(storage, codec, state)
+	storage.value = "candidate"
+	codec.valid = false
+	manager.load(SAVE_SLOT_MANUAL, 1).assertEquals(false)
+	state.activations.assertEquals(0)
+	codec.valid = true
+	state.valid = false
+	manager.load(SAVE_SLOT_MANUAL, 1).assertEquals(false)
+	state.activations.assertEquals(0)
+	state.valid = true
+	state.rebuilt = false
+	manager.load(SAVE_SLOT_MANUAL, 1).assertEquals(false)
+	state.activations.assertEquals(0)
+	state.rebuilt = true
+	manager.load(SAVE_SLOT_MANUAL, 1).assertEquals(true)
+	state.activations.assertEquals(1)
+
+@test function transactionalFailurePreservesStorage()
+	let storage = new Storage()
+	let state = new State()
+	let manager = new CampaignSaveManager(storage, new Codec(), state)
+	storage.value = "previous"
+	storage.fail = true
+	manager.save(SAVE_SLOT_MANUAL, 2, "now").assertEquals(false)
+	storage.value.assertEquals("previous")
+
