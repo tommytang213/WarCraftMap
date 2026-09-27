@@ -1,13 +1,23 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "projectRoot": ".",
   "sourceMap": "map/AgeOfSailWorld.w3x",
   "sourceManifest": "map/map-source.json",
   "wurstSource": "wurst",
-  "scenarioData": "scenario",
+  "scenario": {
+    "data": "scenario/world/world.json",
+    "validator": "../_shared/tooling/validate_world.py",
+    "wurstPackage": "ScenarioData"
+  },
   "outputDirectory": "_build/release",
   "release": {
     "fileName": "AgeOfSailWorld",
+    "metadata": {
+      "name": "Age of Sail: The World",
+      "author": "WarCraftMap Project",
+      "scriptBackend": "lua",
+      "wc3Patch": "v3.0"
+    },
     "bootstrapMarkers": [
       "Age of Sail: The World - development bootstrap loaded.",
       "WC3Compatibility: required Warcraft III",

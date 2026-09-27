@@ -1,61 +1,80 @@
-import shutil
-import stat
-import sys
-import tempfile
-import unittest
-import zipfile
+import json, shutil, stat, sys, tempfile, unittest, zipfile
 from pathlib import Path
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
+from package_wurst_map import (PackagingError, build, generate, load_config, verify_generated)  # noqa: E402
 
-from package_wurst_map import build  # noqa: E402
-
+FAKE_GRILL = r'''#!/usr/bin/env python3
+import pathlib, sys, zipfile
+root = pathlib.Path.cwd()
+log = root.parent / "commands.txt"
+with log.open("a") as output: output.write(" ".join(sys.argv[1:]) + "\n")
+if sys.argv[1] == "build":
+    source = root / sys.argv[2]
+    out = root / "_build"; out.mkdir(parents=True, exist_ok=True)
+    generated = (root / "wurst/ScenarioData.wurst").read_text()
+    bootstrap = (root / "wurst/Bootstrap.wurst").read_text()
+    lua = "Age of Sail: The World - development bootstrap loaded.\nWC3Compatibility: required Warcraft III v3.0\n" + generated + bootstrap
+    (out / "war3map.lua").write_text(lua)
+    with zipfile.ZipFile(out / "tool-output.w3x", "w") as archive:
+        for path in sorted(source.rglob("*")):
+            if path.is_file(): archive.write(path, path.relative_to(source).as_posix())
+        archive.writestr("war3map.lua", lua)
+'''
 
 class PackagingTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
-        self.project = Path(self.temp.name) / "project"
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        category = Path(self.temp.name) / "historical-world-rpg"; self.project = category / "age-of-sail-world"
+        shutil.copytree(PROJECT_ROOT.parent / "_shared", category / "_shared")
         shutil.copytree(PROJECT_ROOT, self.project, ignore=shutil.ignore_patterns("_build", ".wurst"))
+        self.fake = self.project / "fake-grill"; self.fake.write_text(FAKE_GRILL, encoding="utf-8"); self.fake.chmod(self.fake.stat().st_mode | stat.S_IXUSR)
 
-    def test_fixture_build_contains_map_files_and_lua_bootstrap(self):
-        fake = self.project / "fake-grill"
-        fake.write_text(
-            """#!/usr/bin/env python3
-import pathlib, sys, zipfile
-pathlib.Path('_build/commands.txt').parent.mkdir(parents=True, exist_ok=True)
-with pathlib.Path('_build/commands.txt').open('a') as log:
-    log.write(' '.join(sys.argv[1:]) + '\\n')
-if sys.argv[1] == 'build':
-    root = pathlib.Path('_build/work')
-    root.mkdir(parents=True, exist_ok=True)
-    lua = 'Age of Sail: The World - development bootstrap loaded.\\nWC3Compatibility: required Warcraft III v3.0\\n'
-    (root / 'war3map.lua').write_text(lua)
-    with zipfile.ZipFile(root / 'tool-output.w3x', 'w') as archive:
-        for name in ('war3map.w3i', 'war3map.w3e', 'war3map.wpm'):
-            archive.writestr(name, b'fixture')
-        archive.writestr('war3map.lua', lua)
-""",
-            encoding="utf-8",
-        )
-        fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
-
-        output = build(self.project / "package.json", grill=str(fake))
-
-        self.assertEqual("AgeOfSailWorld.w3x", output.name)
-        self.assertEqual(
-            ["install", "typecheck", "build map/AgeOfSailWorld.w3x"],
-            (self.project / "_build/commands.txt").read_text().splitlines(),
-        )
+    def test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures(self):
+        output = build(self.project / "package.json", grill=str(self.fake))
+        self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
-            self.assertTrue({"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua"}.issubset(archive.namelist()))
-            lua = archive.read("war3map.lua").decode()
-        self.assertIn("Age of Sail: The World - development bootstrap loaded.", lua)
-        self.assertIn("WC3Compatibility: required Warcraft III", lua)
-        self.assertIn("v3.0", lua)
+            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json"))
+        self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
+        self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
+        self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
+    def test_generation_is_deterministic_and_clean_rebuilds_match(self):
+        first_path = build(self.project / "package.json", grill=str(self.fake))
+        with zipfile.ZipFile(first_path) as archive:
+            first = {name: archive.read(name) for name in sorted(archive.namelist())}
+        second_path = build(self.project / "package.json", grill=str(self.fake))
+        with zipfile.ZipFile(second_path) as archive:
+            second = {name: archive.read(name) for name in sorted(archive.namelist())}
+        self.assertEqual(first, second)
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_stale_output_is_rejected(self):
+        config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
+        generate(config, generated)
+        generated_wurst = (generated / "ScenarioData.wurst").read_text()
+        self.assertIn("public constant int SCENARIO_SCHEMA_VERSION", generated_wurst)
+        self.assertIn("public function getScenarioRuntimeData", generated_wurst)
+        (generated / "scenario-runtime.json").write_text("stale")
+        with self.assertRaisesRegex(PackagingError, "stale generated data"):
+            verify_generated(config, generated)
+
+    def test_changed_authoritative_input_is_rejected(self):
+        config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
+        generate(config, generated)
+        with (self.project / "wurst.build").open("a", encoding="utf-8") as build_file:
+            build_file.write("\n# changed after generation\n")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*wurst.build"):
+            verify_generated(config, generated)
+
+    def test_invalid_scenario_reports_validation_stage(self):
+        world = self.project / "scenario/world/world.json"; data = json.loads(world.read_text()); data["schemaVersion"] = -1; world.write_text(json.dumps(data))
+        with self.assertRaisesRegex(PackagingError, "scenario validation stage failed"):
+            build(self.project / "package.json", grill=str(self.fake))
+
+    def test_missing_stage_input_is_actionable(self):
+        (self.project / "wurst.build").unlink()
+        with self.assertRaisesRegex(PackagingError, "inputs stage failed.*wurst.build"):
+            build(self.project / "package.json", grill=str(self.fake))
+
+if __name__ == "__main__": unittest.main()

@@ -75,3 +75,28 @@ after source and world validation. Successful workflow runs retain the packaged
 `AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. Maintainers
 can download it from the **Artifacts** section of that run's GitHub Actions summary.
 The artifact is CI output only and is never committed or published as a release.
+
+## Runtime map pipeline
+
+The scenario-configured `package.json` drives five explicit stages: contract
+validation, deterministic Wurst/runtime-data generation, Wurst compilation,
+folder-map assembly, and final archive inspection. Generated files carry SHA-256
+provenance for every authoritative input and are checked immediately before
+assembly, so stale or edited output cannot be packaged. The build works from an
+isolated copy under `_build/`; the canonical folder map, Wurst sources, and
+scenario JSON are never modified.
+
+Run a clean build from this map project directory with:
+
+```text
+./tooling/package_release.sh
+```
+
+Every invocation removes the previous `_build/` tree. To clean without building:
+
+```text
+./tooling/package_release.sh clean
+```
+
+Failures name their stage (`inputs`, `scenario validation`, `generation`,
+`provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
