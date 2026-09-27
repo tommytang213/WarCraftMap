@@ -7,6 +7,7 @@ export PYTHONDONTWRITEBYTECODE=1
 
 python3 maps/historical-world-rpg/_shared/tooling/validate_world.py \
   maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'
 python3 -m unittest discover -s automation/tests -p 'test_*.py'
 
@@ -16,7 +17,7 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
     ;;
   required)
     if command -v grill >/dev/null 2>&1; then
-      (cd maps/historical-world-rpg/age-of-sail-world && grill install && grill typecheck)
+      (cd maps/historical-world-rpg/age-of-sail-world && grill install && grill typecheck && grill build map/AgeOfSailWorld.w3x)
     elif command -v docker >/dev/null 2>&1; then
       docker run --rm \
         -v "$repo_root:/source:ro" \
@@ -28,6 +29,7 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
           grill install wurstscript
           grill install
           grill typecheck
+          grill build map/AgeOfSailWorld.w3x
         '
     else
       echo "ERROR: Wurst validation requires grill or Docker." >&2
