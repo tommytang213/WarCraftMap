@@ -2,6 +2,10 @@
 
 Reusable systems live here. This layer must not know that the first scenario is Age of Sail.
 
+`campaign_save.py` implements the headless, scenario-independent save envelope,
+slot layout, integrity checks, and migration registry. Warcraft-native storage is
+deliberately deferred to the runtime integration layer.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement

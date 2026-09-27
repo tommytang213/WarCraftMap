@@ -75,6 +75,23 @@ Rank tiers are universal ordered identifiers from `none` through `emperor`; play
 
 ## Contract versions
 
+### Campaign saves
+
+Campaign saves use `campaign-save.schema.json` and `_shared/engine/campaign_save.py`.
+The envelope records independent schema, build, and scenario versions plus a SHA-256
+checksum of canonical UTF-8 JSON (computed with the checksum field empty).
+
+Stable slots are `autosave_01` through `autosave_15`, positive-numbered manual
+slots, `session_start`, and `major_milestone`. Only authoritative world/player JSON
+state is stored; Warcraft handles are rejected. Migrations are pure sequential
+`N -> N+1` functions applied to a deep copy after integrity verification. Loading
+never rewrites source bytes, and persisting a migrated result is a separate action.
+
+- Campaign save schema version 1 introduces the versioned envelope, slot model,
+  authoritative state, integrity metadata, and migration registry.
+
+### Scenario world
+
 - World schema version 1 introduced geography and strategic military records.
 - World schema version 2 adds character definitions and mutable
   loyalty/relationship records. A version-1 scenario migrates by setting
