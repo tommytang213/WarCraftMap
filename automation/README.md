@@ -47,6 +47,15 @@ discarding prior invocation history. Logs, worktrees, and quota state live under
 low-priority (`Nice=19`, idle I/O scheduling, low CPU/I/O weights). It uses the
 already-authenticated `gh` and `codex` CLIs and never upgrades them.
 
+Before each worker starts, the launcher fetches the configured controller
+branch (or `origin`'s default branch) and fast-forwards the controller checkout.
+It does this only from the primary checkout when that checkout is clean and on
+the expected branch. Dirty, detached, divergent, and isolated-worktree states
+are logged and preserved; update failures do not reset files or rewrite
+history. The updater exits before a fresh Python worker process starts, so code
+is never hot-reloaded. Set `WARCRAFTMAP_AGENT_CONTROLLER_BRANCH` only when the
+controller intentionally follows a branch other than the remote default.
+
 When fewer than three open `[agent-ready]` issues remain, the worker uses one
 budgeted Codex planning run to refill the small queue toward ten issues. Planning
 reads the roadmap, design lock, architecture, agent rules, repository state, all
