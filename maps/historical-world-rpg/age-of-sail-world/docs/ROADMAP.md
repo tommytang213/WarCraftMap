@@ -23,7 +23,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Ownership/control represented separately in starting world data
 - [x] Unit/army/fleet model
 - [x] Character/loyalty/relationship model
-- [ ] Technology/institution graph schema
+- [x] Technology/institution graph schema
 - [ ] Title/land/vassal model
 - [ ] Save schema + migration registry
 - [ ] Navigation-zone/safe-position model
@@ -32,7 +32,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 - [x] Initial world data validator
 - [x] Duplicate/missing world-reference detection
-- [ ] Technology cycle/reachability checks
+- [x] Technology cycle/reachability checks
 - [ ] Quest/event reference checks
 - [ ] Economy invariant tests
 - [ ] Save round-trip tests

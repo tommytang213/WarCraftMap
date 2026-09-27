@@ -1,0 +1,8 @@
+{
+  "researchBranches": [{"id": "test_branch", "name": "Test Branch", "entryNodeIds": ["node_a"]}],
+  "technologies": [
+    {"id": "node_a", "name": "Node A", "description": "Cycle fixture A.", "branchId": "test_branch", "prerequisiteIds": ["node_b"], "timeCost": {"preferredYear": 1, "baseCost": 1, "aheadOfTimeCostMultiplier": 2, "additionalMultiplierPerYearAhead": 1}, "unlocks": []},
+    {"id": "node_b", "name": "Node B", "description": "Cycle fixture B.", "branchId": "test_branch", "prerequisiteIds": ["node_a"], "timeCost": {"preferredYear": 1, "baseCost": 1, "aheadOfTimeCostMultiplier": 2, "additionalMultiplierPerYearAhead": 1}, "unlocks": []}
+  ],
+  "institutions": [], "polityResearchStates": [], "provinceAdoptionStates": []
+}

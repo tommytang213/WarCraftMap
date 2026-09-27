@@ -8,6 +8,7 @@ from pathlib import Path
 CATEGORY_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = CATEGORY_ROOT / "_shared" / "tooling" / "validate_world.py"
 WORLD_PATH = Path(__file__).resolve().parents[1] / "scenario" / "world" / "world.json"
+CYCLIC_RESEARCH_PATH = Path(__file__).resolve().parent / "fixtures" / "cyclic_research.json"
 
 spec = importlib.util.spec_from_file_location("validate_world", VALIDATOR_PATH)
 validator = importlib.util.module_from_spec(spec)
@@ -175,6 +176,47 @@ class WorldContractTests(unittest.TestCase):
         data["relationshipThresholds"][0]["minimum"] = 75
         data["relationshipThresholds"][0]["maximum"] = 50
         self.assert_invalid_data(data)
+
+
+    def test_cross_tree_prerequisite_is_valid(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        self.assertIn("professional_bureaucracy", data["technologies"][1]["prerequisiteIds"])
+        validator.validate(WORLD_PATH)
+
+    def test_duplicate_research_ids_are_rejected_across_node_kinds(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        duplicate = dict(data["technologies"][0])
+        data["institutions"].append(duplicate)
+        self.assert_invalid_data(data)
+
+    def test_missing_research_prerequisite_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["technologies"][1]["prerequisiteIds"] = ["missing_research"]
+        self.assert_invalid_data(data)
+
+    def test_deliberately_cyclic_fixture_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        fixture = json.loads(CYCLIC_RESEARCH_PATH.read_text(encoding="utf-8"))
+        data.update(fixture)
+        self.assert_invalid_data(data)
+
+    def test_unreachable_research_node_is_rejected(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        data["researchBranches"][0]["entryNodeIds"] = ["standardized_charts"]
+        self.assert_invalid_data(data)
+
+    def test_ahead_of_time_research_has_finite_cost_not_a_lock(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        cost = data["technologies"][1]["timeCost"]
+        self.assertGreater(cost["aheadOfTimeCostMultiplier"], 1)
+        self.assertGreaterEqual(cost["additionalMultiplierPerYearAhead"], 0)
+        self.assertNotIn("earliestYear", data["technologies"][1])
+
+    def test_polity_state_and_uneven_province_adoption_are_valid(self):
+        data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
+        levels = [state["adoption"][0]["level"] for state in data["provinceAdoptionStates"][:2]]
+        self.assertNotEqual(levels[0], levels[1])
+        validator.validate(WORLD_PATH)
 
 
 if __name__ == "__main__":

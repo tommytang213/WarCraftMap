@@ -3,10 +3,10 @@
   "$id": "https://warcraftmap.local/schemas/world.schema.json",
   "title": "Historical World Scenario",
   "type": "object",
-  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets", "traits", "skills", "professions", "personalQuests", "characters", "relationshipThresholds", "companionRelationships"],
+  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets", "traits", "skills", "professions", "personalQuests", "characters", "relationshipThresholds", "companionRelationships", "researchBranches", "technologies", "institutions", "polityResearchStates", "provinceAdoptionStates"],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 2 },
+    "schemaVersion": { "type": "integer", "const": 3 },
     "polities": {
       "type": "array",
       "items": { "$ref": "#/$defs/polity" }
@@ -41,7 +41,12 @@
     "personalQuests": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/personalQuest" } },
     "characters": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/character" } },
     "relationshipThresholds": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/relationshipThreshold" } },
-    "companionRelationships": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/companionRelationship" } }
+    "companionRelationships": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/companionRelationship" } },
+    "researchBranches": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchBranch" } },
+    "technologies": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchNode" } },
+    "institutions": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/researchNode" } },
+    "polityResearchStates": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/polityResearchState" } },
+    "provinceAdoptionStates": { "type": "array", "items": { "$ref": "technology.schema.json#/$defs/provinceAdoptionState" } }
   },
   "$defs": {
     "stableId": {

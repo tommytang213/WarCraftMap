@@ -4,6 +4,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate_research import validate as validate_research
+
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
 
@@ -88,8 +91,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 2:
-        fail("schemaVersion must currently be 2")
+    if data.get("schemaVersion") != 3:
+        fail("schemaVersion must currently be 3")
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
@@ -105,6 +108,7 @@ def validate(path: Path) -> None:
     character = unique_index(data.get("characters", []), "characters")
     threshold = unique_index(data.get("relationshipThresholds", []), "relationshipThresholds")
     relationship = unique_index(data.get("companionRelationships", []), "companionRelationships")
+    technologies, institutions = validate_research(data, fail, require_id, unique_index, polity, province)
 
     if not polity:
         fail("at least one polity is required")
@@ -311,7 +315,8 @@ def validate(path: Path) -> None:
         f"{len(polity)} polities, {len(province)} provinces, "
         f"{len(settlement)} settlements, {len(strategic_unit)} strategic units, "
         f"{len(army)} armies, {len(fleet)} fleets, {len(character)} characters, "
-        f"{len(relationship)} companion relationships"
+        f"{len(relationship)} companion relationships, {len(technologies)} technologies, "
+        f"{len(institutions)} institutions"
     )
 
 

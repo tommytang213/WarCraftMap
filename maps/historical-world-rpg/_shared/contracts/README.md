@@ -61,6 +61,10 @@ Companion relationships are unordered character pairs. A scenario may define at
 most one relationship for a given pair, regardless of which character is listed
 first. Warcraft object handles are not part of character state.
 
+## Technology and institution contract
+
+Technologies and institutions share one directed graph, so prerequisites may cross branches and node kinds. Branch entry nodes define reachability. Historical timing uses a preferred year and finite scenario-defined ahead-of-time cost multipliers; it never supplies a hard earliest-year lock. Unlocks reference units, buildings, abilities, policies, or modifiers by stable ID. Polity research and establishment state is authoritative, while each province stores its own 0–100 adoption levels so diffusion may be uneven.
+
 ## Contract versions
 
 - World schema version 1 introduced geography and strategic military records.
@@ -69,3 +73,4 @@ first. Warcraft object handles are not part of character state.
   `schemaVersion` to `2` and adding empty arrays for `traits`, `skills`,
   `professions`, `personalQuests`, `characters`, `relationshipThresholds`, and
   `companionRelationships`; content can then be added without changing IDs.
+- World schema version 3 adds technology and institution definitions, graph branches, polity research state, and province adoption state. Version 2 migrates by setting `schemaVersion` to `3` and adding empty arrays for `researchBranches`, `technologies`, `institutions`, `polityResearchStates`, and `provinceAdoptionStates`.
