@@ -87,3 +87,13 @@ Strategic ownership and physically instantiated Warcraft objects are separate. L
 ## Persistence rule
 
 Campaign persistence serializes authoritative simulation state, not raw references to transient Warcraft handles. Object instances are reconstructed from stable IDs/state on load where appropriate.
+
+## Management-screen pause controller
+
+`wurst/ManagementScreenPauseController.wurst` is the scenario-neutral runtime/UI
+pause boundary. Modal management screens retain an idempotent ownership token;
+the first token pauses the complete campaign and the last token restores the
+pre-existing player/manual pause state. Passive UI uses the separate
+`openPassiveCampaignUi` entry point and never acquires pause ownership. All
+manual pause controls must use `setCampaignManuallyPaused` rather than calling
+the Warcraft `PauseGame` native directly.
