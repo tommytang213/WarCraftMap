@@ -41,3 +41,31 @@ active objects; an `active` unit must have at least one.
 
 Morale, supply, and readiness use an inclusive 0–100 scale. Ownership and current
 control remain separate. Strategic ownership has no native Warcraft food field or
+equivalent cap.
+
+## Character contract
+
+Characters use immutable stable IDs while all player-facing names, biographies,
+traits, skills, professions, quests, thresholds, and consequences come from
+scenario data. Loyalty and companion relationship scores use an inclusive
+`-100..100` scale. Threshold records contain scenario-selected score bands and
+may identify buffs, debuffs, or content unlocks without teaching the shared
+contract what those effects mean.
+
+`oathbound` is the generic permanent high-investment loyalty state. It may be
+entered from `none`, but it cannot be removed or entered a second time. Runtime
+systems must call the same transition rule exposed by the validator before
+changing this authoritative state.
+
+Companion relationships are unordered character pairs. A scenario may define at
+most one relationship for a given pair, regardless of which character is listed
+first. Warcraft object handles are not part of character state.
+
+## Contract versions
+
+- World schema version 1 introduced geography and strategic military records.
+- World schema version 2 adds character definitions and mutable
+  loyalty/relationship records. A version-1 scenario migrates by setting
+  `schemaVersion` to `2` and adding empty arrays for `traits`, `skills`,
+  `professions`, `personalQuests`, `characters`, `relationshipThresholds`, and
+  `companionRelationships`; content can then be added without changing IDs.

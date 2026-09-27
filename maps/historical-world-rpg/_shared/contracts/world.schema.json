@@ -3,10 +3,10 @@
   "$id": "https://warcraftmap.local/schemas/world.schema.json",
   "title": "Historical World Scenario",
   "type": "object",
-  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets"],
+  "required": ["schemaVersion", "polities", "provinces", "settlements", "officers", "strategicUnits", "armies", "fleets", "traits", "skills", "professions", "personalQuests", "characters", "relationshipThresholds", "companionRelationships"],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "schemaVersion": { "type": "integer", "const": 2 },
     "polities": {
       "type": "array",
       "items": { "$ref": "#/$defs/polity" }
@@ -34,7 +34,14 @@
     "fleets": {
       "type": "array",
       "items": { "$ref": "military.schema.json#/$defs/fleet" }
-    }
+    },
+    "traits": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
+    "skills": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
+    "professions": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/displayDefinition" } },
+    "personalQuests": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/personalQuest" } },
+    "characters": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/character" } },
+    "relationshipThresholds": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/relationshipThreshold" } },
+    "companionRelationships": { "type": "array", "items": { "$ref": "character.schema.json#/$defs/companionRelationship" } }
   },
   "$defs": {
     "stableId": {

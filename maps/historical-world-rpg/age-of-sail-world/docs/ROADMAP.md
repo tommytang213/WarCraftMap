@@ -22,7 +22,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Initial polity/province/settlement data contract
 - [x] Ownership/control represented separately in starting world data
 - [x] Unit/army/fleet model
-- [ ] Character/loyalty/relationship model
+- [x] Character/loyalty/relationship model
 - [ ] Technology/institution graph schema
 - [ ] Title/land/vassal model
 - [ ] Save schema + migration registry
