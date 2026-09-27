@@ -4,6 +4,10 @@ Scenario-specific content belongs here and must be replaceable by another timeli
 
 Research content in this directory supplies scenario-specific names, dates, costs, prerequisites, and unlock IDs to the generic shared contracts.
 
+Quest and event content likewise supplies display text, declarative condition and
+outcome IDs, graph relationships, and typed world references. Executable logic
+belongs in engine adapters, never in scenario data.
+
 Planned data domains:
 
 - polities

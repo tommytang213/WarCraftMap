@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/quest-event.schema.json",
+  "title": "Reusable Quest and Event Contracts",
+  "$defs": {
+    "stableId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "minLength": 1, "maxLength": 64},
+    "worldEntityReference": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "id"],
+      "properties": {"kind": {"enum": ["polity", "province", "settlement", "character", "strategic_unit", "army", "fleet", "technology", "institution", "navigation_zone"]}, "id": {"$ref": "#/$defs/stableId"}}
+    },
+    "scenarioCondition": {
+      "type": "object", "required": ["conditionId", "entityRefs"],
+      "properties": {"conditionId": {"$ref": "#/$defs/stableId"}, "entityRefs": {"type": "array", "items": {"$ref": "#/$defs/worldEntityReference"}}}
+    },
+    "objective": {
+      "type": "object", "additionalProperties": false, "required": ["id", "description", "conditionId", "entityRefs"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "description": {"type": "string", "minLength": 1}, "conditionId": {"$ref": "#/$defs/stableId"}, "entityRefs": {"type": "array", "items": {"$ref": "#/$defs/worldEntityReference"}}}
+    },
+    "stage": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "objectiveIds", "nextStageIds"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "title": {"type": "string", "minLength": 1}, "objectiveIds": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true}, "nextStageIds": {"type": "array", "items": {"$ref": "#/$defs/stableId"}, "uniqueItems": true}}
+    },
+    "prerequisite": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"const": "quest_completed"}, "id": {"$ref": "#/$defs/stableId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"const": "event_occurred"}, "id": {"$ref": "#/$defs/stableId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "id", "stageId"], "properties": {"kind": {"const": "quest_stage_reached"}, "id": {"$ref": "#/$defs/stableId"}, "stageId": {"$ref": "#/$defs/stableId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "conditionId", "entityRefs"], "properties": {"kind": {"const": "scenario_condition"}, "conditionId": {"$ref": "#/$defs/stableId"}, "entityRefs": {"type": "array", "items": {"$ref": "#/$defs/worldEntityReference"}}}}
+      ]
+    },
+    "outcome": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["id", "kind", "questId"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "kind": {"const": "start_quest"}, "questId": {"$ref": "#/$defs/stableId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "kind", "questId", "fromStageId", "toStageId"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "kind": {"const": "advance_quest"}, "questId": {"$ref": "#/$defs/stableId"}, "fromStageId": {"$ref": "#/$defs/stableId"}, "toStageId": {"$ref": "#/$defs/stableId"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "kind", "eventId", "repeat"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "kind": {"const": "emit_event"}, "eventId": {"$ref": "#/$defs/stableId"}, "repeat": {"type": "boolean"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "kind", "outcomeId", "entityRefs"], "properties": {"id": {"$ref": "#/$defs/stableId"}, "kind": {"const": "scenario_outcome"}, "outcomeId": {"$ref": "#/$defs/stableId"}, "entityRefs": {"type": "array", "items": {"$ref": "#/$defs/worldEntityReference"}}}}
+      ]
+    },
+    "quest": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "summary", "initialStageId", "stages", "objectives", "prerequisites", "outcomes"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "title": {"type": "string", "minLength": 1}, "summary": {"type": "string", "minLength": 1}, "initialStageId": {"$ref": "#/$defs/stableId"}, "stages": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/stage"}}, "objectives": {"type": "array", "items": {"$ref": "#/$defs/objective"}}, "prerequisites": {"type": "array", "items": {"$ref": "#/$defs/prerequisite"}}, "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}}}
+    },
+    "trigger": {
+      "type": "object", "additionalProperties": false, "required": ["id", "conditionId", "entityRefs"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "conditionId": {"$ref": "#/$defs/stableId"}, "entityRefs": {"type": "array", "items": {"$ref": "#/$defs/worldEntityReference"}}}
+    },
+    "event": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "repeatable", "triggers", "prerequisites", "outcomes"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "title": {"type": "string", "minLength": 1}, "repeatable": {"type": "boolean"}, "triggers": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/trigger"}}, "prerequisites": {"type": "array", "items": {"$ref": "#/$defs/prerequisite"}}, "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}}}
+    }
+  }
+}

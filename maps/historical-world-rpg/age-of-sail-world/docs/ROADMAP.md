@@ -34,7 +34,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Initial world data validator
 - [x] Duplicate/missing world-reference detection
 - [x] Technology cycle/reachability checks
-- [ ] Quest/event reference checks
+- [x] Quest/event reference checks
 - [ ] Economy invariant tests
 - [x] Save round-trip tests
 - [x] Save migration tests
