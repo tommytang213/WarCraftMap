@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/inventory.schema.json",
+  "title": "Historical World RPG inventory catalog and owner state",
+  "$defs": {
+    "stableId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64},
+    "category": {"enum": ["equipment", "consumable", "quest", "artifact", "tool", "book_map", "valuable", "trade_good", "backpack", "miscellaneous"]},
+    "itemStack": {
+      "type": "object", "additionalProperties": false,
+      "required": ["instanceId", "itemTypeId", "quantity"],
+      "properties": {"instanceId": {"$ref": "#/$defs/stableId"}, "itemTypeId": {"$ref": "#/$defs/stableId"}, "quantity": {"type": "integer", "minimum": 1}}
+    },
+    "nullableStack": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/itemStack"}]},
+    "itemType": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "category", "stackable", "stackLimit", "equipmentSlotTypes"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "category": {"$ref": "#/$defs/category"},
+        "stackable": {"type": "boolean"}, "stackLimit": {"type": "integer", "minimum": 1},
+        "equipmentSlotTypes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
+      }
+    },
+    "backpackType": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "capacity", "allowedCategories", "traitIds"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "capacity": {"type": "integer", "minimum": 1, "maximum": 30},
+        "allowedCategories": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/category"}},
+        "traitIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
+      }
+    },
+    "equipmentSlot": {
+      "type": "object", "additionalProperties": false, "required": ["id", "slotType"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "slotType": {"$ref": "#/$defs/stableId"}}
+    },
+    "unlockTier": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "tier", "activeBackpackSlots", "maxUnlockedSlotsPerBackpack"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "tier": {"type": "integer", "minimum": 1},
+        "activeBackpackSlots": {"type": "integer", "minimum": 0, "maximum": 6},
+        "maxUnlockedSlotsPerBackpack": {"type": "integer", "minimum": 0, "maximum": 30}
+      }
+    },
+    "catalog": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "itemTypes", "backpackTypes", "equipmentSlots", "backpackUnlockTiers"],
+      "properties": {
+        "schemaVersion": {"const": 1}, "itemTypes": {"type": "array", "items": {"$ref": "#/$defs/itemType"}},
+        "backpackTypes": {"type": "array", "items": {"$ref": "#/$defs/backpackType"}},
+        "equipmentSlots": {"type": "array", "items": {"$ref": "#/$defs/equipmentSlot"}},
+        "backpackUnlockTiers": {"type": "array", "items": {"$ref": "#/$defs/unlockTier"}}
+      }
+    },
+    "activeBackpack": {
+      "type": "object", "additionalProperties": false,
+      "required": ["instanceId", "backpackTypeId", "unlockedSlots", "slots"],
+      "properties": {
+        "instanceId": {"$ref": "#/$defs/stableId"}, "backpackTypeId": {"$ref": "#/$defs/stableId"},
+        "unlockedSlots": {"type": "integer", "minimum": 1, "maximum": 30},
+        "slots": {"type": "array", "maxItems": 30, "items": {"$ref": "#/$defs/nullableStack"}}
+      }
+    },
+    "ownerInventory": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ownerId", "backpackUnlockTierId", "outerSlots", "activeBackpacks", "equipment"],
+      "properties": {
+        "ownerId": {"$ref": "#/$defs/stableId"},
+        "backpackUnlockTierId": {"$ref": "#/$defs/stableId"},
+        "outerSlots": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/nullableStack"}},
+        "activeBackpacks": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/activeBackpack"}},
+        "equipment": {"type": "object", "additionalProperties": {"$ref": "#/$defs/nullableStack"}}
+      }
+    }
+  },
+  "oneOf": [{"$ref": "#/$defs/catalog"}, {"$ref": "#/$defs/ownerInventory"}]
+}

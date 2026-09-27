@@ -6,6 +6,8 @@ Reusable systems live here. This layer must not know that the first scenario is 
 slot layout, integrity checks, and migration registry. Warcraft-native storage is
 deliberately deferred to the runtime integration layer.
 
+`inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement

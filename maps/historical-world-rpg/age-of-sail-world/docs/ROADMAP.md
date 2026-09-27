@@ -26,6 +26,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Technology/institution graph schema
 - [x] Title/land/vassal model
 - [x] Save schema + migration registry
+- [x] Personal inventory, equipment, and tiered backpack contract
 - [x] Navigation-zone/safe-position model
 
 ## Phase 2 — Headless validation foundation
@@ -37,6 +38,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Economy invariant tests
 - [x] Save round-trip tests
 - [x] Save migration tests
+- [x] Inventory routing, validation, and over-capacity recovery tests
 - [x] Navigation graph/connectivity validation and recovery-policy tests
 - [ ] Long timeline simulation harness
 

@@ -73,6 +73,10 @@ Rank tiers are universal ordered identifiers from `none` through `emperor`; play
 
 `allegiances` represent one current polity per subject without country-specific rules. `validate_allegiance_transition` accepts a change between any two existing, distinct polity IDs, allowing runtime systems to change allegiance without changing title or territory identity.
 
+## Inventory and equipment contract
+
+`inventory.schema.json` defines generic item types, data-driven stacks, equipment slots, backpack types, progression tiers, and stable-ID owner state. The executable validator and deterministic pickup/recovery rules live in `_shared/engine/inventory.py`. Storage never grants equipment bonuses; only the dedicated equipment map does. V1 has six outer slots plus at most six backpacks of at most 30 slots each, with no nested containers. See the scenario `docs/INVENTORY.md` for native Warcraft 3.0 adapter findings and persistence behavior.
+
 ## Contract versions
 
 ### Campaign saves
