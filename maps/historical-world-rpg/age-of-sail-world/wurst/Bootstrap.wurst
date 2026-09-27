@@ -1,9 +1,11 @@
 package Bootstrap
 import WC3Compatibility
+import CommandRouter
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
 
 init
 	requireWC3Compatibility()
+	installCommandRegistry(createCommandRegistry(false))
 	print("Age of Sail: The World - development bootstrap loaded.")
