@@ -526,6 +526,65 @@ def build_pr_merge_command(pr: int) -> list[str]:
     return ["gh", "pr", "merge", str(pr), "--merge"]
 
 
+def cleanup_merged_issue(config: Config, issue_number: int) -> list[str]:
+    """Best-effort cleanup after GitHub confirms an issue PR merged."""
+    worktree = config.state_dir / "worktrees" / f"issue-{issue_number}"
+    branch = f"agent/issue-{issue_number}"
+    errors: list[str] = []
+    worktree_removed = not worktree.exists()
+    if worktree.exists():
+        try:
+            status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
+            if status.strip():
+                errors.append(f"preserved dirty worktree {worktree}")
+            else:
+                run(["git", "worktree", "remove", str(worktree)], cwd=config.repo_root)
+                worktree_removed = True
+        except Exception as exc:
+            errors.append(f"could not remove worktree {worktree}: {exc}")
+    else:
+        try:
+            run(["git", "worktree", "prune"], cwd=config.repo_root)
+        except Exception as exc:
+            errors.append(f"could not prune missing worktree {worktree}: {exc}")
+    if worktree_removed:
+        try:
+            result = run(
+                ["git", "show-ref", "--verify", "--quiet", f"refs/heads/{branch}"],
+                cwd=config.repo_root, check=False,
+            )
+            if result.returncode not in {0, 1}:
+                raise RuntimeError(f"git show-ref exited {result.returncode}")
+            if result.returncode == 0:
+                run(["git", "branch", "--delete", "--force", branch], cwd=config.repo_root)
+        except Exception as exc:
+            errors.append(f"could not delete local branch {branch}: {exc}")
+    try:
+        result = run(
+            ["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+            cwd=config.repo_root, check=False,
+        )
+        if result.returncode not in {0, 2}:
+            raise RuntimeError(f"git ls-remote exited {result.returncode}")
+        if result.returncode == 0:
+            run(["git", "push", "origin", "--delete", branch], cwd=config.repo_root)
+    except Exception as exc:
+        errors.append(f"could not delete remote branch {branch}: {exc}")
+    for error in errors:
+        print(f"cleanup warning for issue #{issue_number}: {error}", file=sys.stderr)
+    return errors
+
+
+def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> None:
+    """Keep merge success authoritative even when cleanup reports warnings."""
+    record["status"] = "merged"
+    errors = cleanup_merged_issue(config, int(number))
+    if errors:
+        record["cleanup_errors"] = errors
+    else:
+        record.pop("cleanup_errors", None)
+
+
 def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
     """Merge one ready PR. Failed/pending PRs remain for a later timer run."""
     for number, record in state["issues"].items():
@@ -534,7 +593,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             continue
         view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
         if view["state"] == "MERGED":
-            record["status"] = "merged"
+            finish_merged_issue(config, number, record)
             return True
         if view["state"] == "CLOSED":
             record["status"] = "failed"
@@ -557,7 +616,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         if not checks:
             continue
         run(build_pr_merge_command(int(pr)), cwd=config.repo_root)
-        record["status"] = "merged"
+        finish_merged_issue(config, number, record)
         return True
     return False
 

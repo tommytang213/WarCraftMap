@@ -17,6 +17,11 @@ attempts. CI failures are left for a later, budgeted repair attempt. Pull
 requests merge only after reported CI checks complete successfully. The timer
 may wake hourly, but exhausted workers exit before Codex.
 
+After GitHub confirms a PR is merged, the worker removes its clean issue
+worktree, then its local agent branch, and separately tries to delete the remote
+agent branch. Dirty worktrees are preserved. Cleanup errors are logged and
+recorded without changing the issue's successful merged state.
+
 ## Preview and installation
 
 No installation is needed for a safe queue preview:
