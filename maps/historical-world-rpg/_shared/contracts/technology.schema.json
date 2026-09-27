@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/technology.schema.json",
+  "title": "Generic Technology and Institution Contracts",
+  "$defs": {
+    "stableId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$", "maxLength": 64 },
+    "unlock": { "type": "object", "additionalProperties": false, "required": ["kind", "contentId"], "properties": {
+      "kind": { "type": "string", "enum": ["unit", "building", "ability", "policy", "modifier"] },
+      "contentId": { "$ref": "#/$defs/stableId" }
+    } },
+    "timeCost": {
+      "description": "A preferred historical year changes cost but never locks research. Earlier years use finite cost multipliers.",
+      "type": "object", "additionalProperties": false,
+      "required": ["preferredYear", "baseCost", "aheadOfTimeCostMultiplier", "additionalMultiplierPerYearAhead"],
+      "properties": {
+        "preferredYear": { "type": "integer" }, "baseCost": { "type": "number", "exclusiveMinimum": 0 },
+        "aheadOfTimeCostMultiplier": { "type": "number", "minimum": 1 },
+        "additionalMultiplierPerYearAhead": { "type": "number", "minimum": 0 }
+      }
+    },
+    "researchNode": { "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "description", "branchId", "prerequisiteIds", "timeCost", "unlocks"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }, "branchId": { "$ref": "#/$defs/stableId" },
+        "prerequisiteIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "timeCost": { "$ref": "#/$defs/timeCost" },
+        "unlocks": { "type": "array", "items": { "$ref": "#/$defs/unlock" } }
+      }
+    },
+    "researchBranch": { "type": "object", "additionalProperties": false, "required": ["id", "name", "entryNodeIds"],
+      "properties": { "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
+        "entryNodeIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } } }
+    },
+    "polityResearchState": { "description": "Authoritative polity-wide research progress.", "type": "object", "additionalProperties": false,
+      "required": ["id", "polityId", "completedTechnologyIds", "establishedInstitutionIds", "researchProgress"], "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "polityId": { "$ref": "#/$defs/stableId" },
+        "completedTechnologyIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "establishedInstitutionIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "researchProgress": { "type": "array", "items": { "type": "object", "additionalProperties": false,
+          "required": ["nodeId", "progress"], "properties": { "nodeId": { "$ref": "#/$defs/stableId" },
+            "progress": { "type": "number", "minimum": 0, "exclusiveMaximum": 100 } } } }
+      }
+    },
+    "provinceAdoptionState": { "description": "Mutable local adoption allows uneven diffusion.", "type": "object", "additionalProperties": false,
+      "required": ["id", "provinceId", "adoption"], "properties": { "id": { "$ref": "#/$defs/stableId" }, "provinceId": { "$ref": "#/$defs/stableId" },
+        "adoption": { "type": "array", "items": { "type": "object", "additionalProperties": false,
+          "required": ["nodeId", "level"], "properties": { "nodeId": { "$ref": "#/$defs/stableId" },
+            "level": { "type": "number", "minimum": 0, "maximum": 100 } } } } }
+    }
+  }
+}

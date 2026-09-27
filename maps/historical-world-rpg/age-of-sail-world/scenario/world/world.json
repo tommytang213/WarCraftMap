@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "polities": [
     {
       "id": "england",
@@ -152,5 +152,44 @@
   "personalQuests": [],
   "characters": [],
   "relationshipThresholds": [],
-  "companionRelationships": []
+  "companionRelationships": [],
+  "researchBranches": [
+    {"id": "navigation", "name": "Navigation", "entryNodeIds": ["celestial_navigation"]},
+    {"id": "statecraft", "name": "Statecraft", "entryNodeIds": ["professional_bureaucracy"]}
+  ],
+  "technologies": [
+    {
+      "id": "celestial_navigation", "name": "Celestial Navigation",
+      "description": "Systematic open-water position finding.", "branchId": "navigation",
+      "prerequisiteIds": [],
+      "timeCost": {"preferredYear": 1480, "baseCost": 100, "aheadOfTimeCostMultiplier": 12, "additionalMultiplierPerYearAhead": 0.25},
+      "unlocks": [{"kind": "ability", "contentId": "open_water_navigation"}]
+    },
+    {
+      "id": "standardized_charts", "name": "Standardized Charts",
+      "description": "Shared standards for producing and reading charts.", "branchId": "navigation",
+      "prerequisiteIds": ["celestial_navigation", "professional_bureaucracy"],
+      "timeCost": {"preferredYear": 1550, "baseCost": 180, "aheadOfTimeCostMultiplier": 20, "additionalMultiplierPerYearAhead": 0.5},
+      "unlocks": [{"kind": "modifier", "contentId": "fleet_navigation_efficiency"}]
+    }
+  ],
+  "institutions": [
+    {
+      "id": "professional_bureaucracy", "name": "Professional Bureaucracy",
+      "description": "Permanent administrative offices and record keeping.", "branchId": "statecraft",
+      "prerequisiteIds": [],
+      "timeCost": {"preferredYear": 1450, "baseCost": 120, "aheadOfTimeCostMultiplier": 15, "additionalMultiplierPerYearAhead": 0.3},
+      "unlocks": [{"kind": "policy", "contentId": "central_records"}]
+    }
+  ],
+  "polityResearchStates": [
+    {"id": "england_research", "polityId": "england", "completedTechnologyIds": ["celestial_navigation"], "establishedInstitutionIds": ["professional_bureaucracy"], "researchProgress": [{"nodeId": "standardized_charts", "progress": 20}]},
+    {"id": "france_research", "polityId": "france", "completedTechnologyIds": [], "establishedInstitutionIds": ["professional_bureaucracy"], "researchProgress": [{"nodeId": "celestial_navigation", "progress": 65}]}
+  ],
+  "provinceAdoptionStates": [
+    {"id": "greater_london_adoption", "provinceId": "greater_london", "adoption": [{"nodeId": "celestial_navigation", "level": 85}, {"nodeId": "professional_bureaucracy", "level": 90}]},
+    {"id": "kent_adoption", "provinceId": "kent", "adoption": [{"nodeId": "celestial_navigation", "level": 45}, {"nodeId": "professional_bureaucracy", "level": 60}]},
+    {"id": "ile_de_france_adoption", "provinceId": "ile_de_france", "adoption": [{"nodeId": "professional_bureaucracy", "level": 80}]},
+    {"id": "normandy_adoption", "provinceId": "normandy", "adoption": [{"nodeId": "professional_bureaucracy", "level": 35}]}
+  ]
 }
