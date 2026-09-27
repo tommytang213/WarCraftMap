@@ -20,11 +20,14 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
       (cd maps/historical-world-rpg/age-of-sail-world && grill install && grill typecheck && grill build map/AgeOfSailWorld.w3x)
     elif command -v docker >/dev/null 2>&1; then
       docker run --rm \
+        --entrypoint /bin/sh \
         -v "$repo_root:/source:ro" \
         frotty/wurstscript:latest \
-        /bin/sh -lc '
+        -lc '
           set -eu
-          cp -R /source/maps/historical-world-rpg/age-of-sail-world /tmp/age-of-sail-world
+          mkdir /tmp/age-of-sail-world
+          cd /source/maps/historical-world-rpg/age-of-sail-world
+          tar --exclude=./_build -cf - . | tar -C /tmp/age-of-sail-world -xf -
           cd /tmp/age-of-sail-world
           grill install wurstscript
           grill install

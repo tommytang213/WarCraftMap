@@ -31,7 +31,7 @@ with pathlib.Path('_build/commands.txt').open('a') as log:
 if sys.argv[1] == 'build':
     root = pathlib.Path('_build/work')
     root.mkdir(parents=True, exist_ok=True)
-    lua = 'Age of Sail: The World - development bootstrap loaded.\\n'
+    lua = 'Age of Sail: The World - development bootstrap loaded.\\nWC3Compatibility: required Warcraft III v3.0\\n'
     (root / 'war3map.lua').write_text(lua)
     with zipfile.ZipFile(root / 'tool-output.w3x', 'w') as archive:
         for name in ('war3map.w3i', 'war3map.w3e', 'war3map.wpm'):
@@ -53,6 +53,8 @@ if sys.argv[1] == 'build':
             self.assertTrue({"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua"}.issubset(archive.namelist()))
             lua = archive.read("war3map.lua").decode()
         self.assertIn("Age of Sail: The World - development bootstrap loaded.", lua)
+        self.assertIn("WC3Compatibility: required Warcraft III", lua)
+        self.assertIn("v3.0", lua)
 
 
 if __name__ == "__main__":
