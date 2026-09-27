@@ -184,6 +184,10 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(queue_refill_count(3), 0)
         self.assertEqual(queue_refill_count(10), 0)
 
+    def test_open_design_block_suppresses_queue_replanning(self):
+        self.assertEqual(queue_refill_count(0, design_blocked=True), 0)
+        self.assertEqual(queue_refill_count(2, design_blocked=True), 0)
+
     def test_plan_prevents_issue_and_pr_title_duplicates(self):
         plan = {
             "outcome": "planned",
