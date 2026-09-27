@@ -1,7 +1,14 @@
 package Bootstrap
+import WC3Compatibility
+import ScenarioData
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
 
 init
-    print("Age of Sail: The World - development bootstrap loaded.")
+	requireWC3Compatibility()
+	if SCENARIO_SCHEMA_VERSION <= 0
+		print("Scenario data failed to load.")
+	if getScenarioRuntimeData() == ""
+		print("Scenario runtime data is empty.")
+	print("Age of Sail: The World - development bootstrap loaded.")

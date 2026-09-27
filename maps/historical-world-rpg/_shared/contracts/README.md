@@ -65,6 +65,29 @@ first. Warcraft object handles are not part of character state.
 
 Technologies and institutions share one directed graph, so prerequisites may cross branches and node kinds. Branch entry nodes define reachability. Historical timing uses a preferred year and finite scenario-defined ahead-of-time cost multipliers; it never supplies a hard earliest-year lock. Unlocks reference units, buildings, abilities, policies, or modifiers by stable ID. Polity research and establishment state is authoritative, while each province stores its own 0–100 adoption levels so diffusion may be uneven.
 
+## Quest and event contract
+
+`quest-event.schema.json` stores authored quests and events as declarative data.
+Quests own stable-ID stages and objectives; stage transitions form a reachable,
+acyclic graph. Events own stable-ID triggers and explicitly declare whether they
+are repeatable. Quest/event prerequisites share an acyclic dependency graph,
+while a repeatable event may explicitly emit itself with `repeat: true`.
+
+Built-in prerequisite and outcome kinds express graph operations such as a
+completed quest, an occurred event, reaching a stage, starting a quest, or
+advancing along an authored transition. Generic world references are typed pairs
+such as `{ "kind": "settlement", "id": "..." }` and are resolved against the
+authoritative world collections rather than Warcraft object instances.
+
+Scenarios extend behavior through `scenario_condition` prerequisites,
+objective/trigger `conditionId` values, and `scenario_outcome` records. Their
+IDs select handlers registered by runtime engine adapters; `entityRefs` supplies
+validated inputs. Data must never contain scripts, function names, expressions,
+or executable source. Adding a new shared world entity kind requires extending
+both the schema enum and `ENTITY_COLLECTIONS` in the validator. Adding a new
+generic behavior requires a schema/validator version change; scenario-only
+behavior should remain behind registered condition/outcome IDs.
+
 ## Government, title, and territorial contract
 
 Rank tiers are universal ordered identifiers from `none` through `emperor`; player-facing native and generic title names are scenario data in `titleStyles`. `titleGrants` link a title to a character or polity and record current allegiance independently. Sovereign grants have no grantor. Every non-sovereign grant names a strictly higher-ranked grantor, which permits an emperor to grant a subordinate king-tier title while rejecting equal-rank, upward, missing, and cyclic hierarchies.
@@ -105,6 +128,7 @@ never rewrites source bytes, and persisting a migrated result is a separate acti
 - World schema version 3 adds technology and institution definitions, graph branches, polity research state, and province adoption state. Version 2 migrates by setting `schemaVersion` to `3` and adding empty arrays for `researchBranches`, `technologies`, `institutions`, `polityResearchStates`, and `provinceAdoptionStates`.
 - World schema version 4 adds scenario-defined title styles, title grants, territorial holdings, overlord taxation/obligations, and mutable allegiance records. Version 3 migrates by setting `schemaVersion` to `4` and adding empty arrays for `titleStyles`, `titleGrants`, `territorialHoldings`, and `allegiances`; scenario content can then be added without changing prior stable IDs.
 - World schema version 5 adds movement-class navigation-zone graphs, safe points and recovery anchors, and last-known-safe zoned positions for important active units. Version 4 migrates by setting `schemaVersion` to `5` and adding `navigationZones`, `navigationSafePoints`, and `activeUnitNavigationStates`; scenario topology and tracked active-unit state must then be populated with valid stable references.
+- World schema version 6 adds declarative `quests` and `events`, including stable-ID stages, objectives, triggers, prerequisites, outcomes, and typed world references. Version 5 migrates by setting `schemaVersion` to `6` and adding empty `quests` and `events` arrays; authored content can then be added without changing existing IDs.
 
 ## Navigation and recovery contract
 
@@ -127,3 +151,9 @@ verified safety, movement compatibility, and graph reachability in this fixed
 order: nearest-first nearby safe points, the stored last-safe position, connected
 recovery anchors, then failure with no destination. Runtime teleportation is not
 part of this contract and must re-verify a selected destination when implemented.
+
+## Timeline contract
+
+`timeline.schema.json` defines the reusable proleptic-Gregorian calendar, eras, stable event and schedule IDs, and bounded day/month/year recurrence. Campaign bounds are scenario data (Age of Sail supplies 1450-01-01 through 1820-12-31), not engine constants. Simultaneous occurrences sort by date, ascending explicit priority, stable schedule ID, occurrence number, then event ID. The scheduler consumes no randomness, so a caller seed cannot change this sequence. Missing priority is invalid, so authored ordering metadata is never implicit.
+
+`timeline.py` advances over `(current, target]` pending occurrences (with initial-date occurrences processed on the first advance), so accelerated or skipped intervals emit the same sequence as incremental advancement. Persist `timelineStateVersion`, `currentDate`, and the stable `scheduleId`/`nextDate`/`occurrencesEmitted` records in authoritative world state; never persist runtime timers or handles. Future state-shape changes must increment `timelineStateVersion` and migrate stable fields before `validate_state`; incompatible or missing schedule references fail without mutating the source save. World schema version 7 adds the required timeline object; version 6 migrates by adding scenario-authored timeline data and changing `schemaVersion` to 7.

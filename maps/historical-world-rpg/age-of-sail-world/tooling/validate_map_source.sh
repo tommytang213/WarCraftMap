@@ -6,4 +6,4 @@ cd "$project_root"
 
 python3 tooling/validate_map_source.py
 grill typecheck
-grill build map/AgeOfSailWorld.w3x
+./tooling/package_release.sh

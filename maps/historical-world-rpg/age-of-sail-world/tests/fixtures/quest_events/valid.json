@@ -1,0 +1,34 @@
+{
+  "polities": [], "provinces": [], "settlements": [{"id": "sample_hub"}],
+  "characters": [], "strategicUnits": [], "armies": [], "fleets": [],
+  "technologies": [], "institutions": [], "navigationZones": [],
+  "quests": [
+    {
+      "id": "orientation", "title": "Orientation", "summary": "Learn the local process.",
+      "initialStageId": "receive_briefing",
+      "stages": [
+        {"id": "receive_briefing", "title": "Receive briefing", "objectiveIds": ["visit_hub"], "nextStageIds": ["report_back"]},
+        {"id": "report_back", "title": "Report back", "objectiveIds": [], "nextStageIds": []}
+      ],
+      "objectives": [
+        {"id": "visit_hub", "description": "Visit the sample hub.", "conditionId": "entity_visited", "entityRefs": [{"kind": "settlement", "id": "sample_hub"}]}
+      ],
+      "prerequisites": [],
+      "outcomes": [{"id": "advance_after_visit", "kind": "advance_quest", "questId": "orientation", "fromStageId": "receive_briefing", "toStageId": "report_back"}]
+    },
+    {
+      "id": "follow_up", "title": "Follow Up", "summary": "Continue after orientation.",
+      "initialStageId": "follow_up_start",
+      "stages": [{"id": "follow_up_start", "title": "Begin", "objectiveIds": [], "nextStageIds": []}],
+      "objectives": [], "prerequisites": [{"kind": "quest_completed", "id": "orientation"}], "outcomes": []
+    }
+  ],
+  "events": [
+    {
+      "id": "periodic_notice", "title": "Periodic Notice", "repeatable": true,
+      "triggers": [{"id": "notice_timer", "conditionId": "interval_elapsed", "entityRefs": []}],
+      "prerequisites": [{"kind": "quest_stage_reached", "id": "orientation", "stageId": "report_back"}],
+      "outcomes": [{"id": "schedule_next_notice", "kind": "emit_event", "eventId": "periodic_notice", "repeat": true}]
+    }
+  ]
+}

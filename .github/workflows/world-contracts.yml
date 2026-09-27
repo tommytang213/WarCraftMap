@@ -5,15 +5,21 @@ on:
     paths:
       - "maps/historical-world-rpg/_shared/contracts/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
+      - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_quest_events.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/fixtures/quest_events/**"
       - ".github/workflows/world-contracts.yml"
   pull_request:
     paths:
       - "maps/historical-world-rpg/_shared/contracts/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
+      - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_quest_events.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/fixtures/quest_events/**"
       - ".github/workflows/world-contracts.yml"
   workflow_dispatch:
 
@@ -27,4 +33,6 @@ jobs:
           python maps/historical-world-rpg/_shared/tooling/validate_world.py             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
       - name: Run contract tests
         run: |
-          python -m unittest             maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py
+          python -m unittest discover \
+            -s maps/historical-world-rpg/age-of-sail-world/tests \
+            -p 'test_*.py'
