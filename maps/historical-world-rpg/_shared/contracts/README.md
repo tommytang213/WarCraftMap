@@ -25,3 +25,19 @@ Examples:
 Scenario files define starting/static content. Runtime simulation state defines current ownership, control, damage, prosperity, technology adoption and other mutable values.
 
 Warcraft object handles are never persistent IDs.
+
+## Military contract
+
+`strategicUnits` are authoritative simulation records. A unit is either a generic
+`formation` or `ship`; an `army` contains formations and a `fleet` contains ships.
+Membership is expressed only through stable IDs. Officers are deliberately minimal
+identity records until the separate character contract is introduced.
+
+`representedStrength` and its scenario-defined `strengthUnitId` describe strategic
+scale without implying that every represented person or vessel is spawned. The
+`runtimeInstantiation` block contains only reconstructible template, state, and
+object-count metadata—never Warcraft handles. An `abstract` unit must have zero
+active objects; an `active` unit must have at least one.
+
+Morale, supply, and readiness use an inclusive 0–100 scale. Ownership and current
+control remain separate. Strategic ownership has no native Warcraft food field or
