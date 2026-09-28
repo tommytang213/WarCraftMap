@@ -145,6 +145,19 @@ This file records requirements already agreed with the player. They are defaults
 - Region transitions must preserve authoritative unit, party, fleet, quest, inventory, and campaign state; transient Warcraft objects are reconstructed from stable IDs/state after arrival.
 - Transition boundaries and entry points must be explicit scenario data so geography/navigation remains reusable and testable.
 
+## Quest location and map assistance
+
+- The quest journal must retain stable-ID location context for quest givers, turn-in locations, objectives, relevant settlements, regions, and other known destinations so the player is not required to remember where a quest originated.
+- Quest entries should provide a direct `Show on Map` / `Track` action where a meaningful destination exists.
+- Showing a quest on the map should open or focus the appropriate world/region map context, select the relevant region and settlement/location, and visibly mark the destination.
+- For cross-region objectives, the helper should show a useful route breadcrumb through known region transitions from the player's current physical region to the destination, e.g. current region -> ocean/adjacent region -> target region -> target settlement.
+- When the player reaches the destination region, the helper may provide a local marker, minimap ping, or directional indicator toward the known quest location.
+- Returning to a quest giver or turn-in point must be supported explicitly; completed objectives should still retain their return destination until the quest is actually turned in.
+- Visiting a settlement or accepting a quest there is sufficient to record that settlement as known for later navigation.
+- Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds. A quest may reveal an exact destination, only a region, or no marker at all according to its scenario data.
+- The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character.
+- Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel.
+
 ## Remote regional management
 
 - The player can manage owned or authorized holdings in other regions without physically traveling there.
