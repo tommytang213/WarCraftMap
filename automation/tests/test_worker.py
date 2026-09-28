@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from automation.warcraftmap_agent.worker import (
     Config,
@@ -11,6 +12,8 @@ from automation.warcraftmap_agent.worker import (
     load_env,
     load_state,
     parse_codex_token_usage,
+    create_plan_issues,
+    notify_design_blocker,
     prepare_plan_items,
     queue_refill_count,
     select_issue,
@@ -184,9 +187,9 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(queue_refill_count(3), 0)
         self.assertEqual(queue_refill_count(10), 0)
 
-    def test_open_design_block_suppresses_queue_replanning(self):
-        self.assertEqual(queue_refill_count(0, design_blocked=True), 0)
-        self.assertEqual(queue_refill_count(2, design_blocked=True), 0)
+    def test_open_design_block_allows_independent_queue_replanning(self):
+        self.assertEqual(queue_refill_count(0, design_blocked=True), 10)
+        self.assertEqual(queue_refill_count(2, design_blocked=True), 8)
 
     def test_plan_prevents_issue_and_pr_title_duplicates(self):
         plan = {
@@ -222,6 +225,46 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertTrue(items[0]["title"].startswith("[needs-design]"))
         self.assertIn("Which documented map scale", items[0]["body"])
+
+    def test_dependent_work_is_skipped_but_unrelated_work_continues(self):
+        issues = [
+            {"number": 1, "title": "[agent-ready] dependent", "body": "Blocked by: #9", "createdAt": "2026-01-01"},
+            {"number": 2, "title": "[agent-ready] independent", "body": "", "createdAt": "2026-01-02"},
+        ]
+        self.assertEqual(select_issue(issues, {"issues": {}}, 3, {9})["number"], 2)
+
+    def test_duplicate_design_question_is_not_prepared(self):
+        question = "Which map scale should be used?"
+        plan = {"outcome": "planned", "issues": [{"kind": "needs-design", "title": "Scale again", "body": "", "question": question}]}
+        self.assertEqual(prepare_plan_items(plan, [], 10, [question]), [])
+
+    def test_notification_payload_contains_required_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Config(repo_root=Path(directory), state_dir=Path(directory), design_notification_command="notify --stdin")
+            completed = mock.Mock(returncode=0, stdout="", stderr="")
+            with mock.patch("automation.warcraftmap_agent.worker.subprocess.run", return_value=completed) as invoked:
+                notify_design_blocker(config, {"number": 12, "title": "[needs-design] Scale", "url": "https://example/issues/12"}, "Which scale?")
+            payload = json.loads(invoked.call_args.kwargs["input"])
+            self.assertEqual(payload, {"issue_number": 12, "title": "[needs-design] Scale", "url": "https://example/issues/12", "question": "Which scale?"})
+
+    def test_notification_failure_does_not_undo_created_issue(self):
+        item = {"title": "[needs-design] Scale", "body": "## Decision required\n\nWhich scale?", "question": "Which scale?"}
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"), design_notification_command="notify")
+        created = mock.Mock(stdout="https://example/issues/12\n")
+        with mock.patch("automation.warcraftmap_agent.worker.gh_json", side_effect=[[], []]), \
+             mock.patch("automation.warcraftmap_agent.worker.run", return_value=created), \
+             mock.patch("automation.warcraftmap_agent.worker.notify_design_blocker", side_effect=RuntimeError("offline")) as notified:
+            self.assertEqual(create_plan_issues(config, [item]), 1)
+        notified.assert_called_once()
+
+
+    def test_plan_keeps_work_explicitly_independent_of_new_blocker(self):
+        plan = {"outcome": "planned", "issues": [
+            {"kind": "needs-design", "title": "Choose scale", "body": "", "question": "Which scale?"},
+            {"kind": "agent-ready", "title": "Unrelated tooling", "body": "This is independent of the scale decision.\n## Acceptance criteria\n- done\n## Automated validation\n- test", "question": ""},
+        ]}
+        self.assertEqual(len(prepare_plan_items(plan, [], 10)), 2)
+
 
     def test_normalizes_both_github_check_shapes(self):
         self.assertEqual(
