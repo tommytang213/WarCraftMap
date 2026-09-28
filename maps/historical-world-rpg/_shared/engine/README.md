@@ -17,6 +17,9 @@ invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 operational state, and stable-ID persistence. Warcraft objects are transient,
 locally relevant representations created only through a compatibility adapter.
 
+`quest_event.py` owns deterministic quest lifecycles, trigger ordering and
+deduplication, persistent discoveries, atomic scenario outcomes, and stable saves.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement
