@@ -32,4 +32,6 @@ The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-
 
 `geography/europe.json` is the editable authority for the 1450 Europe spatial slice. It defines regional instances, real-world control points, local affine transforms, paired seams, declared gameplay distortions, and complexity budgets. Run `python3 tooling/europe_geography.py` to validate it. Terrain/map inputs containing calculated local control points are deterministic derived artifacts and must not become an alternate source of truth.
 
+`geography/middle_east_india.json` is the editable authority for the Middle East and Indian spatial slice, including adjoining Central and Southeast Asian transitions. It records EPSG:4326 control points, compressed local transforms, paired natural seams, graph bindings, declared distortions, and per-instance complexity budgets. Run `python3 tooling/middle_east_india_geography.py` to validate it; generated local coordinates remain derived output.
+
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.

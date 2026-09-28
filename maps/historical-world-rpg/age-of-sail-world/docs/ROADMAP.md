@@ -85,6 +85,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Africa
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
 - [ ] Middle East / India
+  - [x] Regional instances and geographic reference data
 - [ ] Southeast Asia
 - [ ] East Asia
 - [ ] Americas / Caribbean
