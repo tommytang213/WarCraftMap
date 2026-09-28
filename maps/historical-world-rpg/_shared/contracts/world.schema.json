@@ -9,6 +9,7 @@
     "navigationZones",
     "navigationSafePoints",
     "activeUnitNavigationStates",
+    "regionalGeography",
     "polities",
     "provinces",
     "settlements",
@@ -59,9 +60,10 @@
         "$ref": "navigation.schema.json#/$defs/activeUnitNavigationState"
       }
     },
+    "regionalGeography": {"$ref": "regional-navigation.schema.json#/$defs/regionalGeography"},
     "schemaVersion": {
       "type": "integer",
-      "const": 8
+      "const": 9
     },
     "polities": {
       "type": "array",

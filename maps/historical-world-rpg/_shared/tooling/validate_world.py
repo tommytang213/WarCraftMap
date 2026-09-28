@@ -11,6 +11,7 @@ from validate_government import (
     validate_government,
 )
 from validate_navigation import validate as validate_navigation
+from validate_regional_navigation import validate as validate_regional_navigation
 from validate_quest_events import validate as validate_quest_events
 from validate_timeline import validate as validate_timeline
 
@@ -98,8 +99,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 8:
-        fail("schemaVersion must currently be 8")
+    if data.get("schemaVersion") != 9:
+        fail("schemaVersion must currently be 9")
 
     timeline = validate_timeline(data, fail)
 
@@ -125,6 +126,7 @@ def validate(path: Path) -> None:
     navigation_zones, navigation_safe_points, navigation_states = validate_navigation(
         data, fail, require_id, unique_index, strategic_unit
     )
+    regional = validate_regional_navigation(data, fail, require_id, unique_index)
     technologies, institutions = validate_research(data, fail, require_id, unique_index, polity, province)
     title_styles, title_grants, holdings, allegiances = validate_government(
         data, fail, require_id, unique_index, polity, province, settlement, character
@@ -416,6 +418,7 @@ def validate(path: Path) -> None:
         f"{len(navigation_zones)} navigation zones, "
         f"{len(navigation_safe_points)} navigation safe points, "
         f"{len(navigation_states)} active unit navigation states, "
+        f"{len(regional[0])} regional instances, {len(regional[3])} boundaries, {len(regional[4])} routes, "
         f"{len(quests)} quests, {len(events)} events, "
         f"{len(timeline.get('schedules', []))} timeline schedules"
     )
