@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 2
+GENERATOR_VERSION = 3
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -15,6 +15,7 @@ class BuildConfig:
     project: Path; config_path: Path; source_map: Path; manifest: Path; wurst_source: Path
     scenario_file: Path; scenario_validator: Path; output: Path; output_stem: str
     package_name: str; metadata: dict[str, str]; bootstrap_markers: tuple[str, ...]
+    regional_terrain: tuple[tuple[str, Path], ...]
 
 def _inside(root: Path, value: object, label: str, boundary: Path | None = None) -> Path:
     if not isinstance(value, str) or not value or Path(value).is_absolute():
@@ -38,7 +39,15 @@ def load_config(config_path: Path) -> BuildConfig:
     markers, metadata = release.get("bootstrapMarkers"), release.get("metadata")
     if not isinstance(markers, list) or not markers or not all(isinstance(x, str) and x for x in markers): raise PackagingError("configuration: release.bootstrapMarkers must be a non-empty string list")
     if not isinstance(metadata, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()): raise PackagingError("configuration: release.metadata must contain strings")
-    return BuildConfig(project, config_path, _inside(project, raw.get("sourceMap"), "sourceMap"), _inside(project, raw.get("sourceManifest"), "sourceManifest"), _inside(project, raw.get("wurstSource"), "wurstSource"), _inside(project, scenario.get("data"), "scenario.data"), _inside(project, scenario.get("validator"), "scenario.validator", project.parent), _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{stem}.w3x", stem, package_name, metadata, tuple(markers))
+    terrain = scenario.get("regionalTerrain", [])
+    if not isinstance(terrain, list) or any(not isinstance(item, dict) for item in terrain): raise PackagingError("configuration: scenario.regionalTerrain must be an array")
+    terrain_entries = []
+    for item in terrain:
+        terrain_id = item.get("id")
+        if not isinstance(terrain_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", terrain_id): raise PackagingError("configuration: regional terrain id is invalid")
+        terrain_entries.append((terrain_id, _inside(project, item.get("source"), f"regionalTerrain {terrain_id}.source")))
+    if len({item[0] for item in terrain_entries}) != len(terrain_entries): raise PackagingError("configuration: regional terrain ids must be unique")
+    return BuildConfig(project, config_path, _inside(project, raw.get("sourceMap"), "sourceMap"), _inside(project, raw.get("sourceManifest"), "sourceManifest"), _inside(project, raw.get("wurstSource"), "wurstSource"), _inside(project, scenario.get("data"), "scenario.data"), _inside(project, scenario.get("validator"), "scenario.validator", project.parent), _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{stem}.w3x", stem, package_name, metadata, tuple(markers), tuple(terrain_entries))
 
 def _fail(stage: str, message: object) -> PackagingError: return PackagingError(f"{stage} stage failed: {message}")
 def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -46,6 +55,7 @@ def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest(
 def validate_inputs(config: BuildConfig, grill: str | None = None) -> str:
     required = {"source map folder": config.source_map, "source manifest": config.manifest, "Wurst source folder": config.wurst_source, "scenario data": config.scenario_file, "scenario validator": config.scenario_validator, "wurst.build": config.project / "wurst.build"}
     missing = [f"{label} ({path})" for label, path in required.items() if not path.exists()]
+    missing.extend(f"regional terrain {terrain_id} ({path})" for terrain_id, path in config.regional_terrain if not path.is_file())
     if missing: raise _fail("inputs", "missing " + ", ".join(missing))
     build_text = (config.project / "wurst.build").read_text(encoding="utf-8")
     for setting in ("scriptMode: LUA", "wc3Patch: v3.0", f"fileName: {config.output_stem}"):
@@ -65,6 +75,18 @@ def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
     generated.mkdir(parents=True, exist_ok=True)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from generate_regional_terrain import canonical_bytes, generate as generate_terrain
+    terrain_outputs = {}
+    for terrain_id, terrain_path in config.regional_terrain:
+        try:
+            terrain_source = json.loads(terrain_path.read_text(encoding="utf-8"))
+            terrain = generate_terrain(terrain_source, world["regionalGeography"])
+        except (OSError, json.JSONDecodeError, KeyError, ValueError) as error:
+            raise _fail("terrain generation", f"{terrain_id}: {error}") from error
+        output_name = f"terrain-{terrain_id}.json"
+        (generated / output_name).write_bytes(canonical_bytes(terrain))
+        terrain_outputs[terrain_id] = output_name
     domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
     runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"]}
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
@@ -121,6 +143,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         config.scenario_validator,
         config.project / "wurst.build",
         Path(__file__).resolve(),
+        Path(__file__).resolve().with_name("generate_regional_terrain.py"),
+        *(path for _, path in config.regional_terrain),
     )
     inputs = {}
     for path in input_paths:
@@ -129,9 +153,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
         except ValueError:
             # Unit tests load this shared module before copying a fixture project.
             # The reserved key also avoids encoding machine-specific absolute paths.
-            key = "@generator"
+            key = f"@generator/{path.name}"
         inputs[key] = _sha(path)
-    outputs = {name: _sha(generated / name) for name in (GENERATED_WURST, GENERATED_DATA)}
+    outputs = {name: _sha(generated / name) for name in (GENERATED_WURST, GENERATED_DATA, *terrain_outputs.values())}
     provenance = {"formatVersion": 1, "generatorVersion": GENERATOR_VERSION, "inputs": inputs, "outputs": outputs}
     (generated / PROVENANCE).write_text(json.dumps(provenance, sort_keys=True, indent=2) + "\n", encoding="utf-8")
 
@@ -140,7 +164,10 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
     except (OSError, json.JSONDecodeError) as error: raise _fail("provenance", f"missing or invalid {PROVENANCE}: {error}") from error
     if provenance.get("generatorVersion") != GENERATOR_VERSION: raise _fail("provenance", "generated data uses a different generator version")
     for relative, expected in provenance.get("inputs", {}).items():
-        path = Path(__file__).resolve() if relative == "@generator" else config.project.parent / relative
+        if relative.startswith("@generator/"):
+            path = Path(__file__).resolve().with_name(relative.removeprefix("@generator/"))
+        else:
+            path = config.project.parent / relative
         if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: input changed: {relative}")
     for name, expected in provenance.get("outputs", {}).items():
         path = generated / name
@@ -158,6 +185,8 @@ def _assemble(config: BuildConfig, root: Path, generated: Path) -> Path:
     shutil.copy2(generated / GENERATED_WURST, compile_root / "wurst" / GENERATED_WURST)
     runtime_dir = compile_root / "map" / config.source_map.name / "runtime"; runtime_dir.mkdir()
     shutil.copy2(generated / GENERATED_DATA, runtime_dir / GENERATED_DATA); shutil.copy2(generated / PROVENANCE, runtime_dir / PROVENANCE)
+    for terrain_id, _source in config.regional_terrain:
+        shutil.copy2(generated / f"terrain-{terrain_id}.json", runtime_dir / f"terrain-{terrain_id}.json")
     return compile_root
 
 def _find_archive(root: Path) -> Path:
@@ -171,7 +200,7 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path) -> None:
     lua = ""
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as zipped:
-            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}"}
+            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id, _ in config.regional_terrain)}
             if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
             if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
             lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")

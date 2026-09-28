@@ -2,6 +2,8 @@
 
 Scenario-specific content belongs here and must be replaceable by another timeline without rewriting shared engine systems.
 
+Regional terrain sources under `terrain/` contain authoritative geography, traversal zones, declared gameplay distortions, transition anchors, and generation budgets. Generated terrain files are build outputs and must not be edited or committed.
+
 Research content in this directory supplies scenario-specific names, dates, costs, prerequisites, and unlock IDs to the generic shared contracts.
 
 Quest and event content likewise supplies display text, declarative condition and
