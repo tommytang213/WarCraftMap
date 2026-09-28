@@ -56,7 +56,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 ## Phase 4 — Core world simulation
 
 - [ ] Countries/polities
-- [ ] Provinces/states
+- [x] Provinces/states
 - [ ] Settlements
 - [ ] Timeline/eras
 - [ ] Technology/institutions
