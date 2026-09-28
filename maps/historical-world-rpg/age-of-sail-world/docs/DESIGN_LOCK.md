@@ -157,7 +157,10 @@ This file records requirements already agreed with the player. They are defaults
 - Port coverage should include historically/gameplay-significant coastal and river ports needed for naval movement, trade, exploration, diplomacy, and regional transitions.
 - Preserve recognizable major coastlines, islands, rivers, mountain systems, straits, and other navigation-defining terrain. Small-scale terrain detail and border wiggles may be generalized.
 - Political borders should broadly match the selected historical baseline at campaign start, then evolve through the normal ownership/control/war systems rather than remaining visually or logically fixed.
-- The same real-geography-first scaling rule should be reused for later world regions unless a deliberate scenario exception is recorded.
+- The same real-geography-first scaling rule is the default for every later Phase 5 world region, including Africa, the Middle East/India, Southeast Asia, East Asia, the Americas/Caribbean, and the Pacific.
+- Do not request a new player design decision merely to repeat the same regional-scope questions for each continent. Region boundaries, compression, included polities, provinces, settlements, ports, terrain, borders, and travel connections should be derived from these locked rules, historical/geographic evidence, gameplay relevance, and performance budgets.
+- Region-specific historical features such as trans-Saharan routes, Indian Ocean trade, major straits, island chains, caravan corridors, or similar geography are implementation/research details under this rule, not separate player design blockers unless they expose a genuinely new gameplay choice not covered here.
+- Create a new regional `needs-design` blocker only when a materially new player-facing design choice cannot be resolved from the existing design lock, historical/geographic evidence, or established performance constraints.
 
 ## Quest location and map assistance
 
