@@ -53,6 +53,8 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
         self.assertEqual(["england", "france"], [item["id"] for item in runtime["polityDefinitions"]])
+        self.assertEqual(["greater_london", "kent", "ile_de_france", "normandy"], [item["id"] for item in runtime["provinceDefinitions"]])
+        self.assertEqual(4, len(runtime["provinceHoldings"]))
         self.assertEqual("london", runtime["polityDefinitions"][0]["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
