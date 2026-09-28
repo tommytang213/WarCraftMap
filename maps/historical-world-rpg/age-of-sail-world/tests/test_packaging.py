@@ -49,10 +49,11 @@ class PackagingTests(unittest.TestCase):
         output = build(self.project / "package.json", grill=str(self.fake))
         self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
-            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json"))
+            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
         self.assertIn("runtime/terrain-europe.json", names)
-        self.assertEqual("europe", terrain["regionId"])
+        self.assertIn("runtime/terrain-africa.json", names)
+        self.assertEqual("europe", terrain["regionId"]); self.assertEqual("africa", africa["regionId"])
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
         self.assertEqual(49,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
         self.assertEqual(62,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))

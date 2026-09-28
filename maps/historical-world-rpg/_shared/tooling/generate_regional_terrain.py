@@ -115,7 +115,23 @@ def _validate(source: dict, regional_geography: dict | None) -> tuple[dict, dict
             raise TerrainGenerationError("navigation connection has incompatible movement classes")
         if connection.get("via") is not None and connection["via"] not in chokepoints:
             raise TerrainGenerationError("navigation connection references a missing chokepoint")
+    for chokepoint in chokepoints.values():
+        connected = chokepoint.get("connects")
+        if not isinstance(connected, list) or len(connected) != 2 or any(item not in waters for item in connected):
+            raise TerrainGenerationError(f"chokepoint {chokepoint['id']}: connects must reference two water bodies")
+    for crossing in source.get("crossings", []):
+        if crossing.get("featureId") not in features:
+            raise TerrainGenerationError(f"crossing {crossing.get('id', '<missing>')}: feature is missing")
     anchors = _index(source.get("transitionAnchors"), "transitionAnchors")
+    for anchor in anchors.values():
+        zone = zones.get(anchor.get("zoneId"))
+        if zone is None:
+            raise TerrainGenerationError(f"anchor {anchor['id']}: zone is missing")
+        if not set(anchor.get("movementClasses", [])) <= set(zone["movementClasses"]):
+            raise TerrainGenerationError(f"anchor {anchor['id']}: zone movement classes are incompatible")
+        x, y = anchor.get("at", [None, None])
+        if not all(isinstance(value, (int, float)) for value in (x, y)) or not (bounds[0] <= x <= bounds[2] and bounds[1] <= y <= bounds[3]):
+            raise TerrainGenerationError(f"anchor {anchor['id']}: position is outside coordinate bounds")
     if regional_geography is not None:
         runtime = {item["id"]: item for item in regional_geography.get("anchors", []) if item.get("regionId") == source["regionId"]}
         for anchor in anchors.values():
@@ -145,6 +161,8 @@ def generate(source: dict, regional_geography: dict | None = None) -> dict:
                 surface = "navigable_sea"
             if any(_point_in_polygon(px, py, item["polygon"]) for item in source["surfaces"] if item["kind"] == "land"):
                 surface = "land"
+            if any(_point_in_polygon(px, py, item["polygon"]) for item in source["waterBodies"] if item["kind"] == "navigable_sea" and item.get("overlaysLand") is True):
+                surface = "navigable_sea"
             if any(_point_in_polygon(px, py, item["polygon"]) for item in source["waterBodies"] if item["kind"] == "decorative_water"):
                 surface = "decorative_water"
             cells.append(SURFACES[surface])
