@@ -68,6 +68,10 @@ def validate(source, world):
     if source.get("graphRegionId") not in graph_regions:
         raise GeographyError(f"missing global region {source.get('graphRegionId')!r}")
 
+    required_feature_ids = source.get("requiredFeatureIds", {})
+    allowed_kinds = set(required_feature_ids)
+    if not KINDS <= allowed_kinds:
+        raise GeographyError(f"requiredFeatureIds must include {sorted(KINDS)}")
     instances = _index(source.get("instances", []), "instances")
     anchors = _index(source.get("boundaryAnchors", []), "boundaryAnchors")
     distortions = _index(source.get("distortions", []), "distortions")
@@ -94,7 +98,7 @@ def validate(source, world):
             if feature_id in all_ids:
                 raise GeographyError(f"stable ID {feature_id!r} is not globally unique")
             all_ids.add(feature_id)
-            if feature.get("kind") not in KINDS:
+            if feature.get("kind") not in allowed_kinds:
                 raise GeographyError(f"feature {feature_id}: invalid kind")
             points = feature.get("points")
             if not isinstance(points, list) or len(points) < 2:
@@ -117,7 +121,7 @@ def validate(source, world):
         if instance_anchor_count > budget.get("maxBoundaryAnchors", -1):
             raise GeographyError(f"instance {instance_id}: {instance_anchor_count} anchors exceed maxBoundaryAnchors {budget.get('maxBoundaryAnchors')}")
 
-    for kind in KINDS:
+    for kind in sorted(allowed_kinds):
         required = source.get("requiredFeatureIds", {}).get(kind)
         if not isinstance(required, list) or not required:
             raise GeographyError(f"requiredFeatureIds.{kind}: non-empty list required")

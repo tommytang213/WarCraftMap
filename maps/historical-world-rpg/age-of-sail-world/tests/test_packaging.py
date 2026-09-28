@@ -49,15 +49,16 @@ class PackagingTests(unittest.TestCase):
         output = build(self.project / "package.json", grill=str(self.fake))
         self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
-            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json"))
+            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
         self.assertIn("runtime/terrain-europe.json", names)
-        self.assertEqual("europe", terrain["regionId"])
+        self.assertIn("runtime/terrain-africa.json", names)
+        self.assertEqual("europe", terrain["regionId"]); self.assertEqual("africa", africa["regionId"])
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
-        self.assertEqual(49,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
-        self.assertEqual(62,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
-        self.assertEqual(62,len(runtime["provinceHoldings"]))
-        self.assertEqual("london",next(x for x in runtime["polityDefinitions"] if x["id"]=="england")["capitalSettlementId"])
+        self.assertEqual(96,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire","mali_empire","ethiopian_empire","kongo_kingdom"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
+        self.assertEqual(127,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy","manding","shewa","kongo_core"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
+        self.assertEqual(127,len(runtime["provinceHoldings"]))
+        self.assertEqual("london",next(x for x in runtime["polityDefinitions"] if x["id"]=="england")["capitalSettlementId"]); self.assertEqual("niani",next(x for x in runtime["polityDefinitions"] if x["id"]=="mali_empire")["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
     def test_generation_is_deterministic_and_clean_rebuilds_match(self):

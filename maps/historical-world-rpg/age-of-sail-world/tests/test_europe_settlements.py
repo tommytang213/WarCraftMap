@@ -38,7 +38,7 @@ class EuropeSettlementTests(unittest.TestCase):
 
     def test_regional_activation_retirement_capture_and_reconstruction_preserve_state(self):
         adapter=RecordingSettlementAdapter(); runtime=SettlementRuntime(self.world,adapter)
-        regional=sorted(s["id"] for s in self.world["settlements"] if s["regionalInstanceId"]=="europe_italy_central_med")
+        regional=sorted(s["id"] for s in self.world["settlements"] if s.get("regionalInstanceId")=="europe_italy_central_med")
         self.assertEqual(tuple(regional), runtime.activate_region("europe_italy_central_med"))
         runtime.update("venice",controllerPolityId="milan"); runtime.set_service_available("venice","market",False)
         saved=runtime.snapshot()
@@ -58,7 +58,7 @@ class EuropeSettlementTests(unittest.TestCase):
                 if current in seen: continue
                 seen.add(current); pending.extend(zones[current]["connections"].get(kind,[]))
             return seen
-        land={s["navigationZoneId"] for s in self.world["settlements"]}
+        land={s["navigationZoneId"] for s in self.world["settlements"] if "navigationZoneId" in s}
         sea={s["portAccess"]["maritimeZoneId"] for s in self.world["settlements"] if "portAccess" in s}
         self.assertTrue(land <= reached(next(iter(land)),"land"))
         self.assertTrue(sea <= reached(next(iter(sea)),"naval"))

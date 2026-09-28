@@ -32,4 +32,8 @@ The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-
 
 `geography/europe.json` is the editable authority for the 1450 Europe spatial slice. It defines regional instances, real-world control points, local affine transforms, paired seams, declared gameplay distortions, and complexity budgets. Run `python3 tooling/europe_geography.py` to validate it. Terrain/map inputs containing calculated local control points are deterministic derived artifacts and must not become an alternate source of truth.
 
+`geography/africa.json` is the editable authority for Africa regional instances and spatial reference data. It records source coordinates, deterministic local transforms, natural seams, transition corridors, declared compression, and bounded complexity budgets. Run `python3 tooling/africa_geography.py` to validate it.
+
+`politics/africa-1450.json` is the authority for Africa’s 1450 polities, playable provinces, capitals, sovereignty, tributary relationships, and deliberately neutral conflict baseline. Run `python3 tooling/validate_africa_politics.py scenario/politics/africa-1450.json` to validate it; `build_africa_politics.py` deterministically rebuilds its canonical world projection.
+
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.

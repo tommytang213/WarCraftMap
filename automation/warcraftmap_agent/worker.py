@@ -183,7 +183,22 @@ def normalized_work_title(title: str) -> str:
 
 
 def decision_question(body: str) -> str:
-    """Return only the first decision-question block from an issue body.\n\n    Planner/issue edits can accidentally duplicate the Decision required\n    section. Treat only the first paragraph after the first marker as the\n    canonical question so repeated headings cannot defeat duplicate detection.\n    """\n    marker = re.search(r"(?im)^## Decision required\\s*$", body)\n    if not marker:\n        return ""\n    remainder = body[marker.end():].lstrip()\n    if not remainder:\n        return ""\n    next_heading = re.search(r"(?m)^#{1,6}\\s+\\S.*$", remainder)\n    if next_heading:\n        remainder = remainder[:next_heading.start()]\n    return re.split(r"\\n\\s*\\n", remainder, maxsplit=1)[0].strip()\n
+    """Return only the first decision-question block from an issue body.
+
+    Planner/issue edits can accidentally duplicate the Decision required
+    section. Treat only the first paragraph after the first marker as the
+    canonical question so repeated headings cannot defeat duplicate detection.
+    """
+    marker = re.search(r"(?im)^## Decision required\s*$", body)
+    if not marker:
+        return ""
+    remainder = body[marker.end():].lstrip()
+    if not remainder:
+        return ""
+    next_heading = re.search(r"(?m)^#{1,6}\s+\S.*$", remainder)
+    if next_heading:
+        remainder = remainder[:next_heading.start()]
+    return re.split(r"\n\s*\n", remainder, maxsplit=1)[0].strip()
 def normalized_question(question: str) -> str:
     return re.sub(r"\s+", " ", question.casefold()).strip()
 
@@ -316,7 +331,13 @@ def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
             continue
         if NEEDS_DESIGN.match(item["title"]):
             question_key = normalized_question(item.get("question", ""))
-            historical_questions = {\n                normalized_question(question)\n                for entry in current\n                if (question := decision_question(entry.get("body") or ""))\n            }\n            if question_key and question_key in historical_questions:\n                continue
+            historical_questions = {
+                normalized_question(question)
+                for entry in current
+                if (question := decision_question(entry.get("body") or ""))
+            }
+            if question_key and question_key in historical_questions:
+                continue
         result = run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
         created += 1
         if NEEDS_DESIGN.match(item["title"]):
