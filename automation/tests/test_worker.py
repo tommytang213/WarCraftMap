@@ -293,6 +293,34 @@ class WorkerTests(unittest.TestCase):
             self.assertEqual(create_plan_issues(config, [item]), 0)
         invoked.assert_not_called()
 
+    def test_create_plan_issues_skips_question_from_closed_resolved_issue(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        existing = [{
+            "number": 108,
+            "title": "[resolved-design] Define Africa scope",
+            "body": (
+                "Context.\n\n"
+                "## Decision required\n\n"
+                f"{question}\n\n"
+                "## Resolved design\n\n"
+                "Use the global regional-content rules."
+            ),
+            "url": "https://example/issues/108",
+            "state": "CLOSED",
+        }]
+        item = {
+            "title": "[needs-design] Use existing issue #108: Define Africa scope",
+            "body": f"## Decision required\n\n{question}",
+            "question": question,
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"))
+        with mock.patch(
+            "automation.warcraftmap_agent.worker.gh_json",
+            side_effect=[existing, []],
+        ), mock.patch("automation.warcraftmap_agent.worker.run") as invoked:
+            self.assertEqual(create_plan_issues(config, [item]), 0)
+        invoked.assert_not_called()
+
     def test_notification_payload_contains_required_fields(self):
         with tempfile.TemporaryDirectory() as directory:
             config = Config(repo_root=Path(directory), state_dir=Path(directory), design_notification_command="notify --stdin")
