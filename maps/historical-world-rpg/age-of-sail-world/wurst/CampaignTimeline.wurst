@@ -1,0 +1,254 @@
+package CampaignTimeline
+
+/** Consumers in technology, economy, diplomacy, quests, and events implement this port. */
+public interface CampaignTimelineListener
+	function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
+
+/** Warcraft timers wake the clock but never own authoritative campaign time. */
+public interface CampaignTimerAdapter
+	function start(CampaignClock clock, real interval)
+	function stop()
+
+public class CampaignEra
+	string id
+	int firstDay
+	int lastDay
+	construct(string stableId, int first, int last)
+		id = stableId
+		firstDay = first
+		lastDay = last
+
+public class ScheduledCampaignEvent
+	string scheduleId
+	string eventId
+	int day
+	int occurrence
+	construct(string schedule, string eventIdValue, int atDay, int number)
+		scheduleId = schedule
+		eventId = eventIdValue
+		day = atDay
+		occurrence = number
+
+/** Scenario-neutral authoritative clock. Dates use Gregorian ordinal days. */
+public class CampaignClock
+	int startDay
+	int endDay
+	int currentDay
+	real fractionalDays = 0.
+	real daysPerSecond
+	real speed = 1.
+	boolean paused = false
+	boolean advancing = false
+	string lastDiagnostic = ""
+	CampaignEra array[64] eras
+	int eraCount = 0
+	ScheduledCampaignEvent array[4096] occurrences
+	int occurrenceCount = 0
+	int nextOccurrence = 0
+	CampaignTimelineListener array[32] listeners
+	int listenerCount = 0
+	CampaignTimerAdapter timerAdapter = null
+
+	construct(int first, int last, int initial, real configuredDaysPerSecond)
+		startDay = first
+		endDay = last
+		currentDay = initial
+		daysPerSecond = configuredDaysPerSecond
+
+	function addEra(string id, int first, int last)
+		eras[eraCount] = new CampaignEra(id, first, last)
+		eraCount++
+
+	/** Generated scenario occurrences are already in canonical deterministic order. */
+	function addOccurrence(string scheduleId, string eventId, int day, int occurrence)
+		occurrences[occurrenceCount] = new ScheduledCampaignEvent(scheduleId, eventId, day, occurrence)
+		occurrenceCount++
+
+	function subscribe(CampaignTimelineListener listener)
+		listeners[listenerCount] = listener
+		listenerCount++
+
+	function campaignDay() returns int
+		return currentDay
+
+	function campaignYear() returns int
+		var remaining = currentDay
+		var year = 1
+		while remaining > daysInYear(year)
+			remaining = remaining - daysInYear(year)
+			year++
+		return year
+
+	function campaignMonth() returns int
+		let year = campaignYear()
+		var remaining = currentDay - ordinalAtYearStart(year)
+		var month = 1
+		while remaining > daysInMonth(year, month)
+			remaining = remaining - daysInMonth(year, month)
+			month++
+		return month
+
+	function campaignMonthDay() returns int
+		let year = campaignYear()
+		var remaining = currentDay - ordinalAtYearStart(year)
+		var month = 1
+		while remaining > daysInMonth(year, month)
+			remaining = remaining - daysInMonth(year, month)
+			month++
+		return remaining
+
+	function campaignEra() returns string
+		for i = 0 to eraCount - 1
+			if currentDay >= eras[i].firstDay and currentDay <= eras[i].lastDay
+				return eras[i].id
+		return ""
+
+	function isPaused() returns boolean
+		return paused
+
+	function setPaused(boolean value)
+		paused = value
+
+	function setSpeed(real value) returns boolean
+		if value <= 0.
+			lastDiagnostic = "campaign speed must be positive"
+			return false
+		speed = value
+		lastDiagnostic = ""
+		return true
+
+	function diagnostic() returns string
+		return lastDiagnostic
+
+	function advanceElapsed(real elapsed) returns boolean
+		if elapsed < 0.
+			lastDiagnostic = "elapsed seconds must be non-negative"
+			return false
+		if paused or currentDay == endDay
+			return true
+		fractionalDays = fractionalDays + elapsed * daysPerSecond * speed
+		let wholeDays = fractionalDays.toInt()
+		if wholeDays <= 0
+			return true
+		fractionalDays = fractionalDays - wholeDays
+		var target = currentDay + wholeDays
+		if target > endDay
+			target = endDay
+			fractionalDays = 0.
+		return advanceTo(target)
+
+	function advanceTo(int target) returns boolean
+		if advancing
+			lastDiagnostic = "campaign clock advancement is already in progress"
+			return false
+		if target < currentDay or target > endDay
+			lastDiagnostic = "target campaign day is outside the current scenario range"
+			return false
+		advancing = true
+		while nextOccurrence < occurrenceCount and occurrences[nextOccurrence].day <= target
+			let scheduled = occurrences[nextOccurrence]
+			nextOccurrence++
+			for i = 0 to listenerCount - 1
+				listeners[i].onCampaignEvent(scheduled.eventId, scheduled.scheduleId, scheduled.occurrence, scheduled.day)
+		currentDay = target
+		advancing = false
+		lastDiagnostic = ""
+		return true
+
+	/** Stable payload embedded by the campaign save state's world section. */
+	function captureState() returns string
+		return "1|" + currentDay.toString() + "|" + nextOccurrence.toString() + "|" + fractionalDays.toString() + "|" + speed.toString()
+
+	function restoreState(int stateVersion, int savedDay, int savedNextOccurrence, real savedFraction, real savedSpeed) returns boolean
+		if stateVersion != 1 or savedDay < startDay or savedDay > endDay or savedNextOccurrence < 0 or savedNextOccurrence > occurrenceCount or savedFraction < 0. or savedFraction >= 1. or savedSpeed <= 0.
+			lastDiagnostic = "invalid campaign timeline save state"
+			return false
+		// All validation precedes mutation.
+		currentDay = savedDay
+		nextOccurrence = savedNextOccurrence
+		fractionalDays = savedFraction
+		speed = savedSpeed
+		lastDiagnostic = ""
+		return true
+
+	function attachTimer(CampaignTimerAdapter adapter, real interval)
+		if timerAdapter != null
+			timerAdapter.stop()
+		timerAdapter = adapter
+		adapter.start(this, interval)
+
+	function detachTimer()
+		if timerAdapter != null
+			timerAdapter.stop()
+			timerAdapter = null
+
+CampaignClock warcraftTimerClock = null
+real warcraftTimerInterval = 0.
+
+function campaignTimerWake()
+	if warcraftTimerClock != null
+		warcraftTimerClock.advanceElapsed(warcraftTimerInterval)
+
+public class WarcraftCampaignTimerAdapter implements CampaignTimerAdapter
+	timer wakeTimer = null
+	override function start(CampaignClock target, real seconds)
+		stop()
+		warcraftTimerClock = target
+		warcraftTimerInterval = seconds
+		wakeTimer = CreateTimer()
+		TimerStart(wakeTimer, warcraftTimerInterval, true, function campaignTimerWake)
+	override function stop()
+		if wakeTimer != null
+			PauseTimer(wakeTimer)
+			DestroyTimer(wakeTimer)
+			wakeTimer = null
+
+CampaignClock campaignClock = null
+
+function leapYear(int year) returns boolean
+	return year mod 4 == 0 and (year mod 100 != 0 or year mod 400 == 0)
+
+function daysInYear(int year) returns int
+	if leapYear(year)
+		return 366
+	return 365
+
+function daysInMonth(int year, int month) returns int
+	if month == 2
+		if leapYear(year)
+			return 29
+		return 28
+	if month == 4 or month == 6 or month == 9 or month == 11
+		return 30
+	return 31
+
+function ordinalAtYearStart(int year) returns int
+	let previous = year - 1
+	return previous * 365 + previous div 4 - previous div 100 + previous div 400
+
+public function installCampaignClock(CampaignClock value)
+	campaignClock = value
+
+public function getCampaignClock() returns CampaignClock
+	return campaignClock
+
+public function getCampaignDay() returns int
+	return campaignClock.campaignDay()
+
+public function getCampaignYear() returns int
+	return campaignClock.campaignYear()
+
+public function getCampaignMonth() returns int
+	return campaignClock.campaignMonth()
+
+public function getCampaignMonthDay() returns int
+	return campaignClock.campaignMonthDay()
+
+public function getCampaignEra() returns string
+	return campaignClock.campaignEra()
+
+public function advanceCampaignTo(int target) returns boolean
+	return campaignClock.advanceTo(target)
+
+public function setCampaignTimePaused(boolean paused)
+	campaignClock.setPaused(paused)
