@@ -58,8 +58,8 @@ class EuropeSettlementTests(unittest.TestCase):
                 if current in seen: continue
                 seen.add(current); pending.extend(zones[current]["connections"].get(kind,[]))
             return seen
-        land={s["navigationZoneId"] for s in self.world["settlements"]}
-        sea={s["portAccess"]["maritimeZoneId"] for s in self.world["settlements"] if "portAccess" in s}
+        land={s["navigationZoneId"] for s in self.world["settlements"] if s.get("regionalInstanceId", "").startswith("europe_")}
+        sea={s["portAccess"]["maritimeZoneId"] for s in self.world["settlements"] if s.get("regionalInstanceId", "").startswith("europe_") and "portAccess" in s}
         self.assertTrue(land <= reached(next(iter(land)),"land"))
         self.assertTrue(sea <= reached(next(iter(sea)),"naval"))
 

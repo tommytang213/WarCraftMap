@@ -74,7 +74,7 @@ def validate(source_path, world_path=None, geography_path=None):
             if neighbor not in provinces: fail(f"province {province_id}: missing adjacent province {neighbor!r}")
         projected=world_provinces.get(province_id)
         if projected is None or projected.get("legalOwnerPolityId")!=province_owner[province_id]: fail(f"province {province_id}: canonical ownership projection is missing or stale")
-    if set(provinces)!=set(world_provinces): fail("canonical world has overlapping or unassigned authoritative province coverage")
+    if set(provinces) != {ident for ident, item in world_provinces.items() if item.get("legalOwnerPolityId") in polities}: fail("canonical world has overlapping or unassigned authoritative province coverage")
     for domain, records in (("vassalage",data.get("vassalage",[])),("personal unions",data.get("personalUnions",[]))):
         for record in records:
             ident=record.get("id")
