@@ -1,0 +1,38 @@
+package CampaignAutosaveSchedulerTests
+import CampaignAutosaveScheduler
+import CampaignSaveManager
+import CampaignSaveManagerTests
+
+@test function rollingSlotsDeferralAndRestore()
+	let storage = new Storage()
+	let state = new State()
+	let manager = new CampaignSaveManager(storage, new Codec(), state)
+	let scheduler = new CampaignAutosaveScheduler(manager, 10.)
+	scheduler.isConfigurationValid().assertEquals(true)
+	scheduler.nextSlotIndex().assertEquals(1)
+	scheduler.advance(9., "early").assertEquals(false)
+	storage.value.assertEquals("")
+	state.safe = false
+	scheduler.advance(1., "due").assertEquals(false)
+	scheduler.nextSlotIndex().assertEquals(1)
+	state.safe = true
+	scheduler.advance(0., "retry").assertEquals(true)
+	storage.value.assertEquals("autosave_01|stable-ids-only")
+	scheduler.nextSlotIndex().assertEquals(2)
+	scheduler.restore(0, 15, 3.).assertEquals(true)
+	scheduler.nextSlotIndex().assertEquals(1)
+	scheduler.secondsUntilDue().assertEquals(3.)
+	scheduler.restore(1, 15, 0.).assertEquals(true)
+	scheduler.advance(0., "fifteen").assertEquals(true)
+	scheduler.nextSlotIndex().assertEquals(1)
+
+@test function failureDoesNotAdvanceRollingSlot()
+	let storage = new Storage()
+	let state = new State()
+	let scheduler = new CampaignAutosaveScheduler(new CampaignSaveManager(storage, new Codec(), state), 2.)
+	storage.value = "previous"
+	storage.fail = true
+	scheduler.advance(2., "now").assertEquals(false)
+	scheduler.nextSlotIndex().assertEquals(1)
+	storage.value.assertEquals("previous")
+	scheduler.diagnostic().assertEquals("transactional save failed: storage failure")
