@@ -362,13 +362,32 @@ def issue_record(state: dict[str, Any], number: int) -> dict[str, Any]:
     return state["issues"].setdefault(str(number), {"attempts": 0, "status": "queued"})
 
 
+def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, Any]) -> None:
+    """Allow externally resolved design issues to re-enter the implementation queue."""
+    for issue in issues:
+        record = state["issues"].get(str(issue["number"]))
+        if not record or record.get("status") != "needs_design":
+            continue
+        record["status"] = "queued"
+        record.pop("last_failure", None)
+        record.pop("repair_kind", None)
+
+
 def comment(config: Config, number: int, body: str) -> None:
     run(["gh", "issue", "comment", str(number), "--body", body], cwd=config.repo_root)
 
 
 def mark_needs_design(config: Config, issue: dict[str, Any], question: str) -> None:
     clean = READY.sub("", issue["title"]).strip()
-    run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[needs-design] {clean}"], cwd=config.repo_root)
+    body = (issue.get("body") or "").rstrip()
+    marker = re.search(r"(?im)^## Decision required\s*$", body)
+    if marker:
+        body = body[:marker.start()].rstrip()
+    body += "\n\n## Decision required\n\n" + question.strip() + "\n"
+    run(
+        ["gh", "issue", "edit", str(issue["number"]), "--title", f"[needs-design] {clean}", "--body", body],
+        cwd=config.repo_root,
+    )
     comment(config, issue["number"], "Autonomous work paused because a material design decision is required:\n\n" + question)
     try:
         notify_design_blocker(config, {**issue, "title": f"[needs-design] {clean}"}, question)
@@ -408,7 +427,7 @@ Title: {issue['title']}
 Body:
 {issue.get('body') or '(empty)'}
 
-Follow AGENTS.md and the Age of Sail design documentation. Source and scenario data are authoritative. Do not ask the player to perform incremental testing. Do not commit, push, create or edit GitHub issues/PRs, install services, alter global tooling, or touch anything outside this worktree. Run relevant automated tests. Never invent a material game-design choice: return outcome \"needs_design\" with one exact question if blocked by one.
+Follow AGENTS.md and the Age of Sail design documentation. Source and scenario data are authoritative. Do not ask the player to perform incremental testing. Do not commit, push, create or edit GitHub issues/PRs, install services, alter global tooling, or touch anything outside this worktree. Run relevant automated tests. Never invent a material game-design choice: use outcome \"needs_design\" ONLY when a material game-design decision is genuinely missing, with one exact player-facing design question. Tool availability, sandbox permissions, missing commands, patch/edit mechanics, CI problems, merge conflicts, and implementation failures are NOT design decisions; return outcome \"blocked\" for those instead and describe the technical blocker without asking the player to change tooling or permissions.
 
 Previous failure context, if any:
 {repair_context or '(none)'}
@@ -772,6 +791,7 @@ def main(argv: list[str] | None = None) -> int:
         state = load_state(state_path)
         state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
+        reconcile_ready_issue_states(issues, state)
         needs_design = list_needs_design_issues(config)
         design_numbers = {int(item["number"]) for item in needs_design}
         selected = select_issue(issues, state, config.max_attempts, design_numbers)
@@ -780,10 +800,10 @@ def main(argv: list[str] | None = None) -> int:
         if design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
             refill_count = 0
         if args.dry_run:
-            if refill_count:
-                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
-            elif selected:
+            if selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
+            elif refill_count:
+                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
             elif needs_design:
                 blocker = needs_design[0]
                 print(f"no independent work; design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
@@ -802,7 +822,9 @@ def main(argv: list[str] | None = None) -> int:
         if service_open_prs(config, state):
             save_state(state_path, state)
             return 0
-        if refill_count:
+        # Never let queue replenishment pre-empt implementation work that is
+        # already ready and independent of any open design blocker.
+        if refill_count and selected is None:
             available, reason = budget_available(
                 state["runs"], utcnow(), config.max_daily_tokens,
                 config.max_weekly_tokens, config.max_daily_runs, config.max_weekly_runs,
@@ -884,6 +906,9 @@ def main(argv: list[str] | None = None) -> int:
             if result["outcome"] == "needs_design":
                 mark_needs_design(config, selected, result["question"])
                 record["status"] = "needs_design"
+            elif result["outcome"] == "blocked":
+                detail = (result.get("summary") or result.get("question") or "technical blocker").strip()
+                raise RuntimeError(f"Codex implementation blocked: {detail}")
             else:
                 run_checks(config, worktree)
                 existing_pr = record.get("pr")
