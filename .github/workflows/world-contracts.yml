@@ -7,6 +7,8 @@ on:
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
       - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/geography/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/fixtures/quest_events/**"
@@ -17,6 +19,8 @@ on:
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
       - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/geography/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_world_contract.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/fixtures/quest_events/**"
@@ -31,6 +35,8 @@ jobs:
       - name: Validate world cross-references
         run: |
           python maps/historical-world-rpg/_shared/tooling/validate_world.py             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+      - name: Validate Europe geography
+        run: python3 maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py
       - name: Run contract tests
         run: |
           python -m unittest discover \
