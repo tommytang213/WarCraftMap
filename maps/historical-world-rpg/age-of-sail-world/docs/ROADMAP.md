@@ -80,7 +80,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Europe
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
-  - [x] Terrain generation, settlements, and playable content
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] Settlements and playable content
 - [ ] Africa
 - [ ] Middle East / India
 - [ ] Southeast Asia
