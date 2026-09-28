@@ -284,6 +284,8 @@ class WorldContractTests(unittest.TestCase):
         self.assert_invalid_data(data)
         data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
         data["territorialHoldings"][0]["overlordHoldingId"] = "holding_kent"
+        data["territorialHoldings"][1]["overlordHoldingId"] = "holding_greater_london"
+        data["territorialHoldings"][1]["overlordTaxRatePercent"] = 5
         data["territorialHoldings"][0]["overlordTaxRatePercent"] = 5
         self.assert_invalid_data(data)
 

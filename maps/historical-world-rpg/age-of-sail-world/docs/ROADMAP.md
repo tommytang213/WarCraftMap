@@ -79,7 +79,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
 - [ ] Europe
   - [x] Regional instances and geographic reference data
-  - [ ] Terrain generation, politics, settlements, and playable content
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
+  - [ ] Terrain generation, settlements, and playable content
 - [ ] Africa
 - [ ] Middle East / India
 - [ ] Southeast Asia
