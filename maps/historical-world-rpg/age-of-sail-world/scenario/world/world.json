@@ -20,7 +20,7 @@
   "events": [],
   "navigationZones": [
     {
-      "id": "north_sea_atlantic",
+      "id": "adriatic_sea",
       "movementClasses": [
         "naval",
         "amphibious",
@@ -28,14 +28,208 @@
       ],
       "connections": {
         "naval": [
-          "english_channel"
+          "western_mediterranean",
+          "aegean_black_sea"
         ],
         "amphibious": [
-          "english_channel"
+          "western_mediterranean",
+          "aegean_black_sea"
+        ],
+        "flying": [
+          "western_mediterranean",
+          "aegean_black_sea"
+        ]
+      }
+    },
+    {
+      "id": "aegean_black_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "western_mediterranean",
+          "adriatic_sea"
+        ],
+        "amphibious": [
+          "western_mediterranean",
+          "adriatic_sea"
+        ],
+        "flying": [
+          "western_mediterranean",
+          "adriatic_sea"
+        ]
+      }
+    },
+    {
+      "id": "atlantic_isles_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "france_low_countries_land"
+        ],
+        "amphibious": [
+          "france_low_countries_land"
+        ],
+        "flying": [
+          "france_low_countries_land"
+        ]
+      }
+    },
+    {
+      "id": "balkans_aegean_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "central_alpine_land",
+          "italy_land",
+          "eastern_europe_land"
+        ],
+        "amphibious": [
+          "central_alpine_land",
+          "italy_land",
+          "eastern_europe_land"
+        ],
+        "flying": [
+          "central_alpine_land",
+          "italy_land",
+          "eastern_europe_land"
+        ]
+      }
+    },
+    {
+      "id": "baltic_scandinavia_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "central_alpine_land"
+        ],
+        "amphibious": [
+          "central_alpine_land"
+        ],
+        "flying": [
+          "central_alpine_land"
+        ]
+      }
+    },
+    {
+      "id": "baltic_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "north_sea_atlantic"
+        ],
+        "amphibious": [
+          "north_sea_atlantic"
+        ],
+        "flying": [
+          "north_sea_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "bay_of_biscay",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "english_channel",
+          "iberian_atlantic"
+        ],
+        "amphibious": [
+          "english_channel",
+          "iberian_atlantic"
         ],
         "flying": [
           "english_channel",
-          "western_europe_land"
+          "iberian_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "central_alpine_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "france_low_countries_land",
+          "baltic_scandinavia_land",
+          "italy_land",
+          "balkans_aegean_land",
+          "eastern_europe_land"
+        ],
+        "amphibious": [
+          "france_low_countries_land",
+          "baltic_scandinavia_land",
+          "italy_land",
+          "balkans_aegean_land",
+          "eastern_europe_land"
+        ],
+        "flying": [
+          "france_low_countries_land",
+          "baltic_scandinavia_land",
+          "italy_land",
+          "balkans_aegean_land",
+          "eastern_europe_land"
+        ]
+      }
+    },
+    {
+      "id": "decorative_lake",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [],
+        "amphibious": [],
+        "flying": []
+      }
+    },
+    {
+      "id": "eastern_europe_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "central_alpine_land",
+          "balkans_aegean_land"
+        ],
+        "amphibious": [
+          "central_alpine_land",
+          "balkans_aegean_land"
+        ],
+        "flying": [
+          "central_alpine_land",
+          "balkans_aegean_land"
         ]
       }
     },
@@ -48,15 +242,129 @@
       ],
       "connections": {
         "naval": [
-          "north_sea_atlantic"
+          "north_sea_atlantic",
+          "bay_of_biscay"
         ],
         "amphibious": [
           "north_sea_atlantic",
-          "western_europe_land"
+          "western_europe_land",
+          "bay_of_biscay"
         ],
         "flying": [
           "north_sea_atlantic",
-          "western_europe_land"
+          "western_europe_land",
+          "bay_of_biscay"
+        ]
+      }
+    },
+    {
+      "id": "france_low_countries_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "atlantic_isles_land",
+          "iberia_land",
+          "central_alpine_land"
+        ],
+        "amphibious": [
+          "atlantic_isles_land",
+          "iberia_land",
+          "central_alpine_land"
+        ],
+        "flying": [
+          "atlantic_isles_land",
+          "iberia_land",
+          "central_alpine_land"
+        ]
+      }
+    },
+    {
+      "id": "iberia_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "france_low_countries_land"
+        ],
+        "amphibious": [
+          "france_low_countries_land"
+        ],
+        "flying": [
+          "france_low_countries_land"
+        ]
+      }
+    },
+    {
+      "id": "iberian_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "bay_of_biscay",
+          "western_mediterranean"
+        ],
+        "amphibious": [
+          "bay_of_biscay",
+          "western_mediterranean"
+        ],
+        "flying": [
+          "bay_of_biscay",
+          "western_mediterranean"
+        ]
+      }
+    },
+    {
+      "id": "italy_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "central_alpine_land",
+          "balkans_aegean_land"
+        ],
+        "amphibious": [
+          "central_alpine_land",
+          "balkans_aegean_land"
+        ],
+        "flying": [
+          "central_alpine_land",
+          "balkans_aegean_land"
+        ]
+      }
+    },
+    {
+      "id": "north_sea_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "english_channel",
+          "baltic_sea"
+        ],
+        "amphibious": [
+          "english_channel",
+          "baltic_sea"
+        ],
+        "flying": [
+          "english_channel",
+          "western_europe_land",
+          "baltic_sea"
         ]
       }
     },
@@ -79,16 +387,28 @@
       }
     },
     {
-      "id": "decorative_lake",
+      "id": "western_mediterranean",
       "movementClasses": [
         "naval",
         "amphibious",
         "flying"
       ],
       "connections": {
-        "naval": [],
-        "amphibious": [],
-        "flying": []
+        "naval": [
+          "iberian_atlantic",
+          "adriatic_sea",
+          "aegean_black_sea"
+        ],
+        "amphibious": [
+          "iberian_atlantic",
+          "adriatic_sea",
+          "aegean_black_sea"
+        ],
+        "flying": [
+          "iberian_atlantic",
+          "adriatic_sea",
+          "aegean_black_sea"
+        ]
       }
     }
   ],
@@ -717,7 +1037,8 @@
       "legalOwnerPolityId": "england",
       "controllerPolityId": "england",
       "settlementIds": [
-        "dover"
+        "dover",
+        "calais"
       ]
     },
     {
@@ -726,7 +1047,9 @@
       "administrativeType": "region",
       "legalOwnerPolityId": "england",
       "controllerPolityId": "england",
-      "settlementIds": []
+      "settlementIds": [
+        "bristol"
+      ]
     },
     {
       "id": "northern_england",
@@ -734,7 +1057,9 @@
       "administrativeType": "region",
       "legalOwnerPolityId": "england",
       "controllerPolityId": "england",
-      "settlementIds": []
+      "settlementIds": [
+        "york"
+      ]
     },
     {
       "id": "scottish_lowlands",
@@ -779,7 +1104,8 @@
       "legalOwnerPolityId": "norway",
       "controllerPolityId": "norway",
       "settlementIds": [
-        "oslo"
+        "oslo",
+        "bergen"
       ]
     },
     {
@@ -852,7 +1178,10 @@
       "administrativeType": "compressed_provinces",
       "legalOwnerPolityId": "france",
       "controllerPolityId": "france",
-      "settlementIds": []
+      "settlementIds": [
+        "bordeaux",
+        "lyon"
+      ]
     },
     {
       "id": "burgundy_duchy",
@@ -870,7 +1199,9 @@
       "administrativeType": "composite_lands",
       "legalOwnerPolityId": "burgundy",
       "controllerPolityId": "burgundy",
-      "settlementIds": []
+      "settlementIds": [
+        "bruges"
+      ]
     },
     {
       "id": "brittany",
@@ -909,7 +1240,8 @@
       "legalOwnerPolityId": "castile",
       "controllerPolityId": "castile",
       "settlementIds": [
-        "toledo"
+        "toledo",
+        "seville"
       ]
     },
     {
@@ -919,7 +1251,8 @@
       "legalOwnerPolityId": "aragon",
       "controllerPolityId": "aragon",
       "settlementIds": [
-        "zaragoza"
+        "zaragoza",
+        "barcelona"
       ]
     },
     {
@@ -928,7 +1261,9 @@
       "administrativeType": "crown_lands",
       "legalOwnerPolityId": "aragon",
       "controllerPolityId": "aragon",
-      "settlementIds": []
+      "settlementIds": [
+        "valencia"
+      ]
     },
     {
       "id": "navarre",
@@ -1017,7 +1352,11 @@
       "legalOwnerPolityId": "holy_roman_empire",
       "controllerPolityId": "holy_roman_empire",
       "settlementIds": [
-        "aachen"
+        "aachen",
+        "lubeck",
+        "hamburg",
+        "cologne",
+        "nuremberg"
       ]
     },
     {
@@ -1065,7 +1404,8 @@
       "legalOwnerPolityId": "teutonic_order",
       "controllerPolityId": "teutonic_order",
       "settlementIds": [
-        "marienburg"
+        "marienburg",
+        "danzig"
       ]
     },
     {
@@ -1125,7 +1465,8 @@
       "legalOwnerPolityId": "serbia",
       "controllerPolityId": "serbia",
       "settlementIds": [
-        "smederevo"
+        "smederevo",
+        "belgrade"
       ]
     },
     {
@@ -1145,7 +1486,9 @@
       "legalOwnerPolityId": "ottoman_empire",
       "controllerPolityId": "ottoman_empire",
       "settlementIds": [
-        "edirne"
+        "edirne",
+        "thessaloniki",
+        "athens"
       ]
     },
     {
@@ -1165,7 +1508,8 @@
       "legalOwnerPolityId": "venice",
       "controllerPolityId": "venice",
       "settlementIds": [
-        "venice"
+        "venice",
+        "ragusa"
       ]
     },
     {
@@ -1205,7 +1549,8 @@
       "legalOwnerPolityId": "naples",
       "controllerPolityId": "naples",
       "settlementIds": [
-        "naples"
+        "naples",
+        "palermo"
       ]
     },
     {
@@ -1215,7 +1560,8 @@
       "legalOwnerPolityId": "genoa",
       "controllerPolityId": "genoa",
       "settlementIds": [
-        "genoa"
+        "genoa",
+        "kaffa"
       ]
     },
     {
@@ -1315,6 +1661,10 @@
     {
       "id": "quest_hub",
       "name": "Quest Hub"
+    },
+    {
+      "id": "warehouse",
+      "name": "Warehouse"
     }
   ],
   "settlementObjectTemplates": [
@@ -1541,7 +1891,91 @@
       "objectTemplateId": "city_core"
     },
     {
+      "id": "city_core_york",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_bristol",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_bergen",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_lubeck",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_hamburg",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_bruges",
+      "objectTemplateId": "city_core"
+    },
+    {
       "id": "city_core_rouen",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_bordeaux",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_seville",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_barcelona",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_valencia",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_lyon",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_cologne",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_nuremberg",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_danzig",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_belgrade",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_ragusa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_thessaloniki",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_athens",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_palermo",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_kaffa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_calais",
       "objectTemplateId": "city_core"
     }
   ],
@@ -1843,13 +2277,139 @@
     {
       "id": "defense_dover",
       "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_york",
+      "objectTemplateIds": [
         "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_bristol",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_bergen",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_lubeck",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_hamburg",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_bruges",
+      "objectTemplateIds": [
+        "port_defenses"
       ]
     },
     {
       "id": "defense_rouen",
       "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_bordeaux",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_seville",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_barcelona",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_valencia",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_lyon",
+      "objectTemplateIds": [
         "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_cologne",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_nuremberg",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_danzig",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_belgrade",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_ragusa",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_thessaloniki",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_athens",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_palermo",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_kaffa",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_calais",
+      "objectTemplateIds": [
+        "port_defenses"
       ]
     }
   ],
@@ -1863,15 +2423,39 @@
       "controllerPolityId": "england",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
       "cityCoreId": "city_core_london",
       "defenseLayoutId": "defense_london",
       "serviceIds": [
         "market",
-        "quest_hub",
         "banking",
-        "port_services"
+        "port_services",
+        "warehouse",
+        "quest_hub"
       ],
-      "navigationZoneId": "north_sea_atlantic"
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 74.61,
+        "y": 49.53
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "london"
+      },
+      "productionRefs": [
+        "wool_cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "tidal_river"
+      }
     },
     {
       "id": "edinburgh",
@@ -1882,11 +2466,30 @@
       "controllerPolityId": "scotland",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
       "cityCoreId": "city_core_edinburgh",
       "defenseLayoutId": "defense_edinburgh",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 65.43,
+        "y": 62.85
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "edinburgh"
+      },
+      "productionRefs": [
+        "wool"
       ]
     },
     {
@@ -1898,12 +2501,37 @@
       "controllerPolityId": "ireland",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
       "cityCoreId": "city_core_dublin",
       "defenseLayoutId": "defense_dublin",
       "serviceIds": [
         "market",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 56.22,
+        "y": 55.05
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "dublin"
+      },
+      "productionRefs": [
+        "wool"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "coastal"
+      }
     },
     {
       "id": "oslo",
@@ -1914,12 +2542,37 @@
       "controllerPolityId": "norway",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
       "cityCoreId": "city_core_oslo",
       "defenseLayoutId": "defense_oslo",
       "serviceIds": [
         "market",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 17.25,
+        "y": 20.73
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "oslo"
+      },
+      "productionRefs": [
+        "timber"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "fjord"
+      }
     },
     {
       "id": "copenhagen",
@@ -1930,12 +2583,39 @@
       "controllerPolityId": "denmark",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
       "cityCoreId": "city_core_copenhagen",
       "defenseLayoutId": "defense_copenhagen",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 22.71,
+        "y": 8.04
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "copenhagen"
+      },
+      "productionRefs": [
+        "shipbuilding"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "baltic_sea",
+        "access": "strait"
+      }
     },
     {
       "id": "stockholm",
@@ -1946,12 +2626,37 @@
       "controllerPolityId": "sweden",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
       "cityCoreId": "city_core_stockholm",
       "defenseLayoutId": "defense_stockholm",
       "serviceIds": [
         "market",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 39.21,
+        "y": 18.99
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "stockholm"
+      },
+      "productionRefs": [
+        "iron"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "baltic_sea",
+        "access": "archipelago"
+      }
     },
     {
       "id": "paris",
@@ -1962,11 +2667,32 @@
       "controllerPolityId": "france",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
       "cityCoreId": "city_core_paris",
       "defenseLayoutId": "defense_paris",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 41.75,
+        "y": 29.3
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "paris"
+      },
+      "productionRefs": [
+        "luxury_goods"
       ]
     },
     {
@@ -1978,11 +2704,31 @@
       "controllerPolityId": "burgundy",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
       "cityCoreId": "city_core_dijon",
       "defenseLayoutId": "defense_dijon",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 55.2,
+        "y": 21.6
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "dijon"
+      },
+      "productionRefs": [
+        "wine"
       ]
     },
     {
@@ -1994,27 +2740,70 @@
       "controllerPolityId": "brittany",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
       "cityCoreId": "city_core_nantes",
       "defenseLayoutId": "defense_nantes",
       "serviceIds": [
         "market",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 22.25,
+        "y": 21.1
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nantes"
+      },
+      "productionRefs": [
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "bay_of_biscay",
+        "access": "tidal_river"
+      }
     },
     {
       "id": "aix_en_provence",
-      "name": "Aix En Provence",
+      "name": "Aix-en-Provence",
       "kind": "capital",
       "provinceId": "provence",
       "legalOwnerPolityId": "provence",
       "controllerPolityId": "provence",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
       "cityCoreId": "city_core_aix_en_provence",
       "defenseLayoutId": "defense_aix_en_provence",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 57.25,
+        "y": 2.65
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "aix_en_provence"
+      },
+      "productionRefs": [
+        "wine"
       ]
     },
     {
@@ -2026,12 +2815,39 @@
       "controllerPolityId": "portugal",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
       "cityCoreId": "city_core_lisbon",
       "defenseLayoutId": "defense_lisbon",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 7.44,
+        "y": 14.88
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lisbon"
+      },
+      "productionRefs": [
+        "shipbuilding"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "iberian_atlantic",
+        "access": "estuary"
+      }
     },
     {
       "id": "toledo",
@@ -2042,11 +2858,30 @@
       "controllerPolityId": "castile",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
       "cityCoreId": "city_core_toledo",
       "defenseLayoutId": "defense_toledo",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 27.88,
+        "y": 19.44
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "toledo"
+      },
+      "productionRefs": [
+        "steel"
       ]
     },
     {
@@ -2058,11 +2893,31 @@
       "controllerPolityId": "aragon",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
       "cityCoreId": "city_core_zaragoza",
       "defenseLayoutId": "defense_zaragoza",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 40.44,
+        "y": 26.6
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "zaragoza"
+      },
+      "productionRefs": [
+        "wool"
       ]
     },
     {
@@ -2074,11 +2929,31 @@
       "controllerPolityId": "navarre",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
       "cityCoreId": "city_core_pamplona",
       "defenseLayoutId": "defense_pamplona",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 37.44,
+        "y": 31.28
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "pamplona"
+      },
+      "productionRefs": [
+        "iron"
       ]
     },
     {
@@ -2090,11 +2965,32 @@
       "controllerPolityId": "granada",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
       "cityCoreId": "city_core_granada",
       "defenseLayoutId": "defense_granada",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 29.6,
+        "y": 8.72
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "granada"
+      },
+      "productionRefs": [
+        "silk"
       ]
     },
     {
@@ -2106,11 +3002,32 @@
       "controllerPolityId": "austria",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_vienna",
       "defenseLayoutId": "defense_vienna",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 45.48,
+        "y": 16.84
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "vienna"
+      },
+      "productionRefs": [
+        "arms"
       ]
     },
     {
@@ -2122,11 +3039,33 @@
       "controllerPolityId": "bohemia",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_prague",
       "defenseLayoutId": "defense_prague",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 37.68,
+        "y": 24.32
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "prague"
+      },
+      "productionRefs": [
+        "silver"
       ]
     },
     {
@@ -2138,11 +3077,29 @@
       "controllerPolityId": "brandenburg",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_berlin",
       "defenseLayoutId": "defense_berlin",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 33.6,
+        "y": 34.08
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "berlin"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2154,11 +3111,30 @@
       "controllerPolityId": "saxony",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_wittenberg",
       "defenseLayoutId": "defense_wittenberg",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 30.6,
+        "y": 31.48
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "wittenberg"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2170,11 +3146,31 @@
       "controllerPolityId": "bavaria",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_munich",
       "defenseLayoutId": "defense_munich",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 26.32,
+        "y": 16.56
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "munich"
+      },
+      "productionRefs": [
+        "cloth"
       ]
     },
     {
@@ -2186,11 +3182,30 @@
       "controllerPolityId": "palatinate",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_heidelberg",
       "defenseLayoutId": "defense_heidelberg",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 14.76,
+        "y": 21.64
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "heidelberg"
+      },
+      "productionRefs": [
+        "wine"
       ]
     },
     {
@@ -2202,11 +3217,30 @@
       "controllerPolityId": "holy_roman_empire",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_aachen",
       "defenseLayoutId": "defense_aachen",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 4.32,
+        "y": 27.12
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "aachen"
+      },
+      "productionRefs": [
+        "cloth"
       ]
     },
     {
@@ -2218,11 +3252,31 @@
       "controllerPolityId": "swiss_confederacy",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_lucerne",
       "defenseLayoutId": "defense_lucerne",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 13.24,
+        "y": 12.2
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lucerne"
+      },
+      "productionRefs": [
+        "mercenary_contracts"
       ]
     },
     {
@@ -2234,11 +3288,32 @@
       "controllerPolityId": "poland",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_krakow",
       "defenseLayoutId": "defense_krakow",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": -0.18,
+        "y": 21.18
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "krakow"
+      },
+      "productionRefs": [
+        "salt"
       ]
     },
     {
@@ -2250,11 +3325,30 @@
       "controllerPolityId": "lithuania",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_vilnius",
       "defenseLayoutId": "defense_vilnius",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 15.84,
+        "y": 35.07
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "vilnius"
+      },
+      "productionRefs": [
+        "timber"
       ]
     },
     {
@@ -2266,11 +3360,32 @@
       "controllerPolityId": "teutonic_order",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
       "cityCoreId": "city_core_marienburg",
       "defenseLayoutId": "defense_marienburg",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 42.09,
+        "y": 3.12
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "marienburg"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2282,12 +3397,39 @@
       "controllerPolityId": "livonian_confederation",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
       "cityCoreId": "city_core_riga",
       "defenseLayoutId": "defense_riga",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 57.33,
+        "y": 11.85
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "riga"
+      },
+      "productionRefs": [
+        "timber"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "baltic_sea",
+        "access": "estuary"
+      }
     },
     {
       "id": "buda",
@@ -2298,11 +3440,32 @@
       "controllerPolityId": "hungary",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_buda",
       "defenseLayoutId": "defense_buda",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 56.16,
+        "y": 14.0
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "buda"
+      },
+      "productionRefs": [
+        "copper"
       ]
     },
     {
@@ -2314,11 +3477,30 @@
       "controllerPolityId": "wallachia",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_targoviste",
       "defenseLayoutId": "defense_targoviste",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 37.3,
+        "y": 49.65
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "targoviste"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2330,11 +3512,30 @@
       "controllerPolityId": "moldavia",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_suceava",
       "defenseLayoutId": "defense_suceava",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 18.75,
+        "y": 13.95
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "suceava"
+      },
+      "productionRefs": [
+        "cattle"
       ]
     },
     {
@@ -2346,11 +3547,30 @@
       "controllerPolityId": "bosnia",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_jajce",
       "defenseLayoutId": "defense_jajce",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": -3.65,
+        "y": 46.7
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jajce"
+      },
+      "productionRefs": [
+        "silver"
       ]
     },
     {
@@ -2362,11 +3582,30 @@
       "controllerPolityId": "serbia",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_smederevo",
       "defenseLayoutId": "defense_smederevo",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 14.65,
+        "y": 48.3
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "smederevo"
+      },
+      "productionRefs": [
+        "silver"
       ]
     },
     {
@@ -2378,11 +3617,30 @@
       "controllerPolityId": "albania",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_lezhe",
       "defenseLayoutId": "defense_lezhe",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 8.2,
+        "y": 33.9
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lezhe"
+      },
+      "productionRefs": [
+        "timber"
       ]
     },
     {
@@ -2394,11 +3652,33 @@
       "controllerPolityId": "ottoman_empire",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_edirne",
       "defenseLayoutId": "defense_edirne",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 42.8,
+        "y": 33.4
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "edirne"
+      },
+      "productionRefs": [
+        "silk"
       ]
     },
     {
@@ -2410,12 +3690,42 @@
       "controllerPolityId": "byzantine_empire",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
       "cityCoreId": "city_core_constantinople",
       "defenseLayoutId": "defense_constantinople",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 54.9,
+        "y": 30.05
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town",
+        "historical_location",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "constantinople"
+      },
+      "productionRefs": [
+        "luxury_goods"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "aegean_black_sea",
+        "access": "strait"
+      }
     },
     {
       "id": "venice",
@@ -2426,12 +3736,39 @@
       "controllerPolityId": "venice",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_venice",
       "defenseLayoutId": "defense_venice",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 31.65,
+        "y": 47.2
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "venice"
+      },
+      "productionRefs": [
+        "shipbuilding"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "adriatic_sea",
+        "access": "lagoon"
+      }
     },
     {
       "id": "milan",
@@ -2442,11 +3779,32 @@
       "controllerPolityId": "milan",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_milan",
       "defenseLayoutId": "defense_milan",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 15.95,
+        "y": 47.3
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "milan"
+      },
+      "productionRefs": [
+        "arms"
       ]
     },
     {
@@ -2458,11 +3816,32 @@
       "controllerPolityId": "florence",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_florence",
       "defenseLayoutId": "defense_florence",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 26.25,
+        "y": 38.85
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "florence"
+      },
+      "productionRefs": [
+        "cloth"
       ]
     },
     {
@@ -2474,11 +3853,33 @@
       "controllerPolityId": "papal_states",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_rome",
       "defenseLayoutId": "defense_rome",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 32.5,
+        "y": 29.5
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "historical_location",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "rome"
+      },
+      "productionRefs": [
+        "luxury_goods"
       ]
     },
     {
@@ -2490,12 +3891,38 @@
       "controllerPolityId": "naples",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_naples",
       "defenseLayoutId": "defense_naples",
       "serviceIds": [
         "market",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 41.35,
+        "y": 24.25
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "naples"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "western_mediterranean",
+        "access": "coastal"
+      }
     },
     {
       "id": "genoa",
@@ -2506,12 +3933,39 @@
       "controllerPolityId": "genoa",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
       "cityCoreId": "city_core_genoa",
       "defenseLayoutId": "defense_genoa",
       "serviceIds": [
         "market",
+        "banking",
+        "port_services",
+        "warehouse",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 14.75,
+        "y": 42.05
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "genoa"
+      },
+      "productionRefs": [
+        "shipbuilding"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "western_mediterranean",
+        "access": "coastal"
+      }
     },
     {
       "id": "chambery",
@@ -2522,11 +3976,30 @@
       "controllerPolityId": "savoy",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
       "cityCoreId": "city_core_chambery",
       "defenseLayoutId": "defense_chambery",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 3.68,
+        "y": 6.28
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chambery"
+      },
+      "productionRefs": [
+        "iron"
       ]
     },
     {
@@ -2538,11 +4011,32 @@
       "controllerPolityId": "muscovy",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_moscow",
       "defenseLayoutId": "defense_moscow",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 52.86,
+        "y": 38.25
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "moscow"
+      },
+      "productionRefs": [
+        "furs"
       ]
     },
     {
@@ -2554,11 +4048,32 @@
       "controllerPolityId": "novgorod",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_novgorod",
       "defenseLayoutId": "defense_novgorod",
       "serviceIds": [
         "market",
+        "banking",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 33.84,
+        "y": 46.56
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "novgorod"
+      },
+      "productionRefs": [
+        "furs"
       ]
     },
     {
@@ -2570,11 +4085,30 @@
       "controllerPolityId": "tver",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_tver",
       "defenseLayoutId": "defense_tver",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 47.73,
+        "y": 41.58
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tver"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2586,11 +4120,30 @@
       "controllerPolityId": "ryazan",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_ryazan",
       "defenseLayoutId": "defense_ryazan",
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 59.22,
+        "y": 34.89
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ryazan"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2602,11 +4155,31 @@
       "controllerPolityId": "golden_horde",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_saray",
       "defenseLayoutId": "defense_saray",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 64.2,
+        "y": 17.1
+      },
+      "terrainClass": "steppe",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "saray"
+      },
+      "productionRefs": [
+        "horses"
       ]
     },
     {
@@ -2618,11 +4191,31 @@
       "controllerPolityId": "crimea",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_solkhat",
       "defenseLayoutId": "defense_solkhat",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 45.3,
+        "y": 6.15
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "solkhat"
+      },
+      "productionRefs": [
+        "grain"
       ]
     },
     {
@@ -2634,11 +4227,32 @@
       "controllerPolityId": "kazan",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
       "cityCoreId": "city_core_kazan",
       "defenseLayoutId": "defense_kazan",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 64.36,
+        "y": 38.37
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kazan"
+      },
+      "productionRefs": [
+        "furs"
       ]
     },
     {
@@ -2650,29 +4264,907 @@
       "controllerPolityId": "england",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
       "cityCoreId": "city_core_dover",
       "defenseLayoutId": "defense_dover",
       "serviceIds": [
         "market",
-        "port_services"
+        "port_services",
+        "warehouse"
       ],
-      "navigationZoneId": "english_channel"
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 78.93,
+        "y": 48.39
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "fortified_town",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "dover"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "english_channel",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "york",
+      "name": "York",
+      "kind": "fort",
+      "provinceId": "northern_england",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
+      "cityCoreId": "city_core_york",
+      "defenseLayoutId": "defense_york",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 71.76,
+        "y": 56.88
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "york"
+      },
+      "productionRefs": [
+        "wool"
+      ]
+    },
+    {
+      "id": "bristol",
+      "name": "Bristol",
+      "kind": "port",
+      "provinceId": "english_midlands",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "atlantic_isles_land",
+      "cityCoreId": "city_core_bristol",
+      "defenseLayoutId": "defense_bristol",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_atlantic_isles",
+      "localPosition": {
+        "x": 67.23,
+        "y": 49.35
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bristol"
+      },
+      "productionRefs": [
+        "wool_cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "tidal_river"
+      }
+    },
+    {
+      "id": "bergen",
+      "name": "Bergen",
+      "kind": "port",
+      "provinceId": "norway_proper",
+      "legalOwnerPolityId": "norway",
+      "controllerPolityId": "norway",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
+      "cityCoreId": "city_core_bergen",
+      "defenseLayoutId": "defense_bergen",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 0.96,
+        "y": 22.17
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bergen"
+      },
+      "productionRefs": [
+        "stockfish"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "fjord"
+      }
+    },
+    {
+      "id": "lubeck",
+      "name": "Lubeck",
+      "kind": "port",
+      "provinceId": "imperial_free_cities",
+      "legalOwnerPolityId": "holy_roman_empire",
+      "controllerPolityId": "holy_roman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
+      "cityCoreId": "city_core_lubeck",
+      "defenseLayoutId": "defense_lubeck",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 22.76,
+        "y": 39.48
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lubeck"
+      },
+      "productionRefs": [
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "baltic_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "hamburg",
+      "name": "Hamburg",
+      "kind": "port",
+      "provinceId": "imperial_free_cities",
+      "legalOwnerPolityId": "holy_roman_empire",
+      "controllerPolityId": "holy_roman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
+      "cityCoreId": "city_core_hamburg",
+      "defenseLayoutId": "defense_hamburg",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 19.96,
+        "y": 38.2
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hamburg"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "tidal_river"
+      }
+    },
+    {
+      "id": "bruges",
+      "name": "Bruges",
+      "kind": "port",
+      "provinceId": "burgundian_netherlands",
+      "legalOwnerPolityId": "burgundy",
+      "controllerPolityId": "burgundy",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
+      "cityCoreId": "city_core_bruges",
+      "defenseLayoutId": "defense_bruges",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 46.1,
+        "y": 41.05
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bruges"
+      },
+      "productionRefs": [
+        "cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_sea_atlantic",
+        "access": "canal"
+      }
     },
     {
       "id": "rouen",
       "name": "Rouen",
-      "kind": "major_city",
+      "kind": "port",
       "provinceId": "normandy",
       "legalOwnerPolityId": "france",
       "controllerPolityId": "france",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
       "cityCoreId": "city_core_rouen",
       "defenseLayoutId": "defense_rouen",
       "serviceIds": [
         "market",
-        "port_services"
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 35.5,
+        "y": 32.2
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "rouen"
+      },
+      "productionRefs": [
+        "cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "english_channel",
+        "access": "tidal_river"
+      }
+    },
+    {
+      "id": "bordeaux",
+      "name": "Bordeaux",
+      "kind": "port",
+      "provinceId": "loire_france",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
+      "cityCoreId": "city_core_bordeaux",
+      "defenseLayoutId": "defense_bordeaux",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 27.1,
+        "y": 9.2
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bordeaux"
+      },
+      "productionRefs": [
+        "wine"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "bay_of_biscay",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "seville",
+      "name": "Seville",
+      "kind": "port",
+      "provinceId": "castile_crown",
+      "legalOwnerPolityId": "castile",
+      "controllerPolityId": "castile",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
+      "cityCoreId": "city_core_seville",
+      "defenseLayoutId": "defense_seville",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 20.04,
+        "y": 9.56
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "seville"
+      },
+      "productionRefs": [
+        "olive_oil"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "iberian_atlantic",
+        "access": "tidal_river"
+      }
+    },
+    {
+      "id": "barcelona",
+      "name": "Barcelona",
+      "kind": "port",
+      "provinceId": "aragon_crown",
+      "legalOwnerPolityId": "aragon",
+      "controllerPolityId": "aragon",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
+      "cityCoreId": "city_core_barcelona",
+      "defenseLayoutId": "defense_barcelona",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 52.68,
+        "y": 25.56
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "barcelona"
+      },
+      "productionRefs": [
+        "cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "western_mediterranean",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "valencia",
+      "name": "Valencia",
+      "kind": "port",
+      "provinceId": "valencia_balearics",
+      "legalOwnerPolityId": "aragon",
+      "controllerPolityId": "aragon",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "iberia_land",
+      "cityCoreId": "city_core_valencia",
+      "defenseLayoutId": "defense_valencia",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_iberia_western_med",
+      "localPosition": {
+        "x": 42.48,
+        "y": 17.88
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "valencia"
+      },
+      "productionRefs": [
+        "silk"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "western_mediterranean",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "lyon",
+      "name": "Lyon",
+      "kind": "major_city",
+      "provinceId": "loire_france",
+      "legalOwnerPolityId": "france",
+      "controllerPolityId": "france",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
+      "cityCoreId": "city_core_lyon",
+      "defenseLayoutId": "defense_lyon",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 54.2,
+        "y": 13.8
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lyon"
+      },
+      "productionRefs": [
+        "cloth"
       ]
+    },
+    {
+      "id": "cologne",
+      "name": "Cologne",
+      "kind": "major_city",
+      "provinceId": "imperial_free_cities",
+      "legalOwnerPolityId": "holy_roman_empire",
+      "controllerPolityId": "holy_roman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
+      "cityCoreId": "city_core_cologne",
+      "defenseLayoutId": "defense_cologne",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 7.84,
+        "y": 27.76
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cologne"
+      },
+      "productionRefs": [
+        "wine"
+      ]
+    },
+    {
+      "id": "nuremberg",
+      "name": "Nuremberg",
+      "kind": "fort",
+      "provinceId": "imperial_free_cities",
+      "legalOwnerPolityId": "holy_roman_empire",
+      "controllerPolityId": "holy_roman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "central_alpine_land",
+      "cityCoreId": "city_core_nuremberg",
+      "defenseLayoutId": "defense_nuremberg",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_central_alpine",
+      "localPosition": {
+        "x": 24.32,
+        "y": 21.8
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nuremberg"
+      },
+      "productionRefs": [
+        "arms"
+      ]
+    },
+    {
+      "id": "danzig",
+      "name": "Danzig",
+      "kind": "port",
+      "provinceId": "prussia",
+      "legalOwnerPolityId": "teutonic_order",
+      "controllerPolityId": "teutonic_order",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "baltic_scandinavia_land",
+      "cityCoreId": "city_core_danzig",
+      "defenseLayoutId": "defense_danzig",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "localPosition": {
+        "x": 40.95,
+        "y": 4.05
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "danzig"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "baltic_sea",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "belgrade",
+      "name": "Belgrade",
+      "kind": "fort",
+      "provinceId": "serbia",
+      "legalOwnerPolityId": "serbia",
+      "controllerPolityId": "serbia",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
+      "cityCoreId": "city_core_belgrade",
+      "defenseLayoutId": "defense_belgrade",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 12.3,
+        "y": 49.1
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "fortified_town",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "belgrade"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "ragusa",
+      "name": "Ragusa",
+      "kind": "port",
+      "provinceId": "venetian_mainland",
+      "legalOwnerPolityId": "venice",
+      "controllerPolityId": "venice",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
+      "cityCoreId": "city_core_ragusa",
+      "defenseLayoutId": "defense_ragusa",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 0.45,
+        "y": 38.25
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ragusa"
+      },
+      "productionRefs": [
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "adriatic_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "thessaloniki",
+      "name": "Thessaloniki",
+      "kind": "port",
+      "provinceId": "ottoman_balkans",
+      "legalOwnerPolityId": "ottoman_empire",
+      "controllerPolityId": "ottoman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
+      "cityCoreId": "city_core_thessaloniki",
+      "defenseLayoutId": "defense_thessaloniki",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 24.7,
+        "y": 28.2
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "thessaloniki"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "aegean_black_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "athens",
+      "name": "Athens",
+      "kind": "port",
+      "provinceId": "ottoman_balkans",
+      "legalOwnerPolityId": "ottoman_empire",
+      "controllerPolityId": "ottoman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "balkans_aegean_land",
+      "cityCoreId": "city_core_athens",
+      "defenseLayoutId": "defense_athens",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_balkans_aegean",
+      "localPosition": {
+        "x": 28.65,
+        "y": 14.9
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "athens"
+      },
+      "productionRefs": [
+        "olive_oil"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "aegean_black_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "palermo",
+      "name": "Palermo",
+      "kind": "port",
+      "provinceId": "naples_sicily",
+      "legalOwnerPolityId": "naples",
+      "controllerPolityId": "naples",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "italy_land",
+      "cityCoreId": "city_core_palermo",
+      "defenseLayoutId": "defense_palermo",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_italy_central_med",
+      "localPosition": {
+        "x": 36.8,
+        "y": 10.6
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "palermo"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "western_mediterranean",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "kaffa",
+      "name": "Kaffa",
+      "kind": "port",
+      "provinceId": "liguria",
+      "legalOwnerPolityId": "genoa",
+      "controllerPolityId": "genoa",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "eastern_europe_land",
+      "cityCoreId": "city_core_kaffa",
+      "defenseLayoutId": "defense_kaffa",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "localPosition": {
+        "x": 46.14,
+        "y": 6.09
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kaffa"
+      },
+      "productionRefs": [
+        "grain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "aegean_black_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "calais",
+      "name": "Calais",
+      "kind": "port",
+      "provinceId": "kent",
+      "legalOwnerPolityId": "england",
+      "controllerPolityId": "england",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "france_low_countries_land",
+      "cityCoreId": "city_core_calais",
+      "defenseLayoutId": "defense_calais",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "europe_france_low_countries",
+      "localPosition": {
+        "x": 39.3,
+        "y": 39.75
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "fortified_town",
+        "transition_location",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "calais"
+      },
+      "productionRefs": [
+        "wool"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "english_channel",
+        "access": "coastal"
+      }
     }
   ],
   "officers": [

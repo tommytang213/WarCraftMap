@@ -113,5 +113,7 @@ def main():
     province_set={p["id"] for r in records for p in r["provinces"]}
     world["provinceAdoptionStates"]=[x for x in world.get("provinceAdoptionStates",[]) if x.get("provinceId") in province_set]
     WORLD.write_text(json.dumps(world,ensure_ascii=False,indent=2)+"\n")
+    from europe_settlements import main as build_settlements
+    if build_settlements(["--write"]): raise RuntimeError("Europe settlement projection failed")
 
 if __name__=="__main__": main()
