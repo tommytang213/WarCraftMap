@@ -1,0 +1,136 @@
+package PlayerGodMode
+import CommandRouter
+import CampaignSaveManager
+import ErrorHandling
+
+public interface GodModeRuntime
+	function refresh(int playerIndex)
+	function entityCount() returns int
+	function entityAt(int index) returns int
+	function ownerOf(int entity) returns int
+	function isInvulnerable(int entity) returns boolean
+	function setInvulnerable(int entity, boolean value)
+
+public class PlayerGodModeController implements CampaignLoadObserver
+	GodModeRuntime runtime
+	boolean array[24] enabled
+	hashtable leases = InitHashtable()
+	construct(GodModeRuntime r)
+		runtime = r
+	function isEnabled(int playerIndex) returns boolean
+		return enabled[playerIndex]
+	function ownsProtection(int entity) returns boolean
+		return HaveSavedBoolean(leases, 0, entity)
+	function protect(int playerIndex, int entity)
+		if runtime.ownerOf(entity) == playerIndex and not runtime.isInvulnerable(entity)
+			runtime.setInvulnerable(entity, true)
+			SaveBoolean(leases, 0, entity, true)
+	function release(int entity)
+		if ownsProtection(entity)
+			runtime.setInvulnerable(entity, false)
+			RemoveSavedBoolean(leases, 0, entity)
+	function setEnabled(int playerIndex, boolean value)
+		if enabled[playerIndex] == value
+			return
+		enabled[playerIndex] = value
+		runtime.refresh(playerIndex)
+		for i = 0 to runtime.entityCount() - 1
+			let entity = runtime.entityAt(i)
+			if value
+				protect(playerIndex, entity)
+			else
+				release(entity)
+	function toggle(int playerIndex) returns boolean
+		setEnabled(playerIndex, not enabled[playerIndex])
+		return enabled[playerIndex]
+	function entityBecameControlled(int entity)
+		let owner = runtime.ownerOf(entity)
+		if owner >= 0 and owner < bj_MAX_PLAYERS and enabled[owner]
+			protect(owner, entity)
+	function entityChangedOwner(int entity)
+		release(entity)
+		entityBecameControlled(entity)
+	function resetSessionState()
+		for playerIndex = 0 to bj_MAX_PLAYERS - 1
+			if enabled[playerIndex]
+				setEnabled(playerIndex, false)
+	override function afterCampaignLoad()
+		resetSessionState()
+
+public class GodModeCommand implements CommandHandler
+	PlayerGodModeController controller
+	CommandOutput output
+	construct(PlayerGodModeController c, CommandOutput o)
+		controller = c
+		output = o
+	override function execute(player sender, string arguments)
+		let index = GetPlayerId(sender)
+		let wanted = StringCase(arguments, false)
+		if wanted == ""
+			controller.toggle(index)
+		else if wanted == "on"
+			controller.setEnabled(index, true)
+		else if wanted == "off"
+			controller.setEnabled(index, false)
+		else
+			output.show(sender, "Invalid arguments. Usage: /god [on|off]")
+			return
+		if controller.isEnabled(index)
+			output.show(sender, "Player-wide god mode is ON.")
+		else
+			output.show(sender, "Player-wide god mode is OFF.")
+
+WarcraftGodModeRuntime activeRuntime
+PlayerGodModeController activeController
+public class WarcraftGodModeRuntime implements GodModeRuntime
+	hashtable handles = InitHashtable()
+	int array[8192] entities
+	int count
+	function remember(unit target) returns int
+		let id = GetHandleId(target)
+		SaveUnitHandle(handles, 0, id, target)
+		return id
+	override function refresh(int playerIndex)
+		count = 0
+		let units = CreateGroup()
+		GroupEnumUnitsOfPlayer(units, Player(playerIndex), null)
+		for target from units
+			entities[count] = remember(target)
+			count++
+		DestroyGroup(units)
+	override function entityCount() returns int
+		return count
+	override function entityAt(int index) returns int
+		return entities[index]
+	override function ownerOf(int entity) returns int
+		let target = LoadUnitHandle(handles, 0, entity)
+		if target == null
+			return -1
+		return GetPlayerId(GetOwningPlayer(target))
+	override function isInvulnerable(int entity) returns boolean
+		return BlzIsUnitInvulnerable(LoadUnitHandle(handles, 0, entity))
+	override function setInvulnerable(int entity, boolean value)
+		SetUnitInvulnerable(LoadUnitHandle(handles, 0, entity), value)
+
+function onGodModeEntityEvent()
+	activeController.entityChangedOwner(activeRuntime.remember(GetTriggerUnit()))
+
+public function installPlayerGodMode(CommandRegistry registry, CampaignSaveManager saveManager)
+	activeRuntime = new WarcraftGodModeRuntime()
+	activeController = new PlayerGodModeController(activeRuntime)
+	let output = new WarcraftOutput()
+	let problem = registry.register("god", "", "god [on|off]", "Toggle player-wide god mode.", "Toggle protection for all of your controllable runtime entities, or explicitly use /god on or /god off.", 0, 1, COMMAND_RELEASE, new GodModeCommand(activeController, output))
+	if problem != ""
+		error(problem)
+	if saveManager != null
+		saveManager.setLoadObserver(activeController)
+	let lifecycle = CreateTrigger()
+	let world = CreateRegion()
+	RegionAddRect(world, GetWorldBounds())
+	TriggerRegisterEnterRegion(lifecycle, world, null)
+	for i = 0 to bj_MAX_PLAYERS - 1
+		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CHANGE_OWNER, null)
+		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_SUMMON, null)
+		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_TRAIN_FINISH, null)
+		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, null)
+	TriggerAddAction(lifecycle, function onGodModeEntityEvent)
