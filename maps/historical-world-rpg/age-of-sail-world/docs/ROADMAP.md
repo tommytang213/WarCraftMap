@@ -65,7 +65,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Armies/fleets
 - [x] City capture/rebuild
 - [ ] Titles/land/taxation
-- [ ] Characters/relationships
+- [x] Characters/relationships
 - [ ] Quests/events/exploration
 
 ## Phase 5 — Age of Sail world content
