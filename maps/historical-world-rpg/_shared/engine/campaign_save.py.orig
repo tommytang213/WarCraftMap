@@ -125,7 +125,6 @@ class MigrationRegistry:
                 )
             result = migrated
             version += 1
-
         return result
 def _migrate_v1_to_v2(document: dict[str, Any]) -> dict[str, Any]:
     """Version 2 permits persisted regional-instance and pending-crossing state.

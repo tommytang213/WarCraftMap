@@ -1,29 +1,149 @@
 {
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "timeline": {
     "calendar": "proleptic_gregorian",
     "startDate": "1450-01-01",
     "endDate": "1820-12-31",
     "initialDate": "1450-01-01",
-    "eras": [{"id": "early_modern", "name": "Early Modern Era", "startDate": "1450-01-01", "endDate": "1820-12-31"}],
+    "eras": [
+      {
+        "id": "early_modern",
+        "name": "Early Modern Era",
+        "startDate": "1450-01-01",
+        "endDate": "1820-12-31"
+      }
+    ],
     "eventDefinitions": [],
     "schedules": []
   },
   "quests": [],
   "events": [],
   "navigationZones": [
-    {"id": "north_sea_atlantic", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": ["english_channel"], "amphibious": ["english_channel"], "flying": ["english_channel", "western_europe_land"]}},
-    {"id": "english_channel", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": ["north_sea_atlantic"], "amphibious": ["north_sea_atlantic", "western_europe_land"], "flying": ["north_sea_atlantic", "western_europe_land"]}},
-    {"id": "western_europe_land", "movementClasses": ["land", "amphibious", "flying"], "connections": {"land": [], "amphibious": ["english_channel"], "flying": ["north_sea_atlantic", "english_channel"]}},
-    {"id": "decorative_lake", "movementClasses": ["naval", "amphibious", "flying"], "connections": {"naval": [], "amphibious": [], "flying": []}}
+    {
+      "id": "north_sea_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "english_channel"
+        ],
+        "amphibious": [
+          "english_channel"
+        ],
+        "flying": [
+          "english_channel",
+          "western_europe_land"
+        ]
+      }
+    },
+    {
+      "id": "english_channel",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "north_sea_atlantic"
+        ],
+        "amphibious": [
+          "north_sea_atlantic",
+          "western_europe_land"
+        ],
+        "flying": [
+          "north_sea_atlantic",
+          "western_europe_land"
+        ]
+      }
+    },
+    {
+      "id": "western_europe_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [],
+        "amphibious": [
+          "english_channel"
+        ],
+        "flying": [
+          "north_sea_atlantic",
+          "english_channel"
+        ]
+      }
+    },
+    {
+      "id": "decorative_lake",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [],
+        "amphibious": [],
+        "flying": []
+      }
+    }
   ],
   "navigationSafePoints": [
-    {"id": "channel_patrol_safe", "kind": "safe_point", "zoneId": "english_channel", "position": {"x": 41.5, "y": -3.25}, "movementClasses": ["naval"]},
-    {"id": "dover_naval_anchor", "kind": "recovery_anchor", "zoneId": "english_channel", "position": {"x": 38.0, "y": -2.0}, "movementClasses": ["naval", "amphibious"]},
-    {"id": "london_land_anchor", "kind": "recovery_anchor", "zoneId": "western_europe_land", "position": {"x": 10.0, "y": 12.0}, "movementClasses": ["land", "amphibious"]}
+    {
+      "id": "channel_patrol_safe",
+      "kind": "safe_point",
+      "zoneId": "english_channel",
+      "position": {
+        "x": 41.5,
+        "y": -3.25
+      },
+      "movementClasses": [
+        "naval"
+      ]
+    },
+    {
+      "id": "dover_naval_anchor",
+      "kind": "recovery_anchor",
+      "zoneId": "english_channel",
+      "position": {
+        "x": 38.0,
+        "y": -2.0
+      },
+      "movementClasses": [
+        "naval",
+        "amphibious"
+      ]
+    },
+    {
+      "id": "london_land_anchor",
+      "kind": "recovery_anchor",
+      "zoneId": "western_europe_land",
+      "position": {
+        "x": 10.0,
+        "y": 12.0
+      },
+      "movementClasses": [
+        "land",
+        "amphibious"
+      ]
+    }
   ],
   "activeUnitNavigationStates": [
-    {"id": "english_patrol_ship_navigation", "unitId": "english_patrol_ship", "movementClass": "naval", "currentZoneId": "english_channel", "lastSafePosition": {"zoneId": "english_channel", "x": 41.5, "y": -3.25}}
+    {
+      "id": "english_patrol_ship_navigation",
+      "unitId": "english_patrol_ship",
+      "movementClass": "naval",
+      "currentZoneId": "english_channel",
+      "lastSafePosition": {
+        "zoneId": "english_channel",
+        "x": 41.5,
+        "y": -3.25
+      }
+    }
   ],
   "polities": [
     {
@@ -94,29 +214,88 @@
     }
   ],
   "settlementServiceDefinitions": [
-    {"id": "banking", "name": "Banking"},
-    {"id": "market", "name": "Market"},
-    {"id": "port_services", "name": "Port Services"},
-    {"id": "quest_hub", "name": "Quest Hub"}
+    {
+      "id": "banking",
+      "name": "Banking"
+    },
+    {
+      "id": "market",
+      "name": "Market"
+    },
+    {
+      "id": "port_services",
+      "name": "Port Services"
+    },
+    {
+      "id": "quest_hub",
+      "name": "Quest Hub"
+    }
   ],
   "settlementObjectTemplates": [
-    {"id": "capital_city_core", "kind": "city_core"},
-    {"id": "city_core", "kind": "city_core"},
-    {"id": "capital_defenses", "kind": "defense"},
-    {"id": "port_defenses", "kind": "defense"},
-    {"id": "city_defenses", "kind": "defense"}
+    {
+      "id": "capital_city_core",
+      "kind": "city_core"
+    },
+    {
+      "id": "city_core",
+      "kind": "city_core"
+    },
+    {
+      "id": "capital_defenses",
+      "kind": "defense"
+    },
+    {
+      "id": "port_defenses",
+      "kind": "defense"
+    },
+    {
+      "id": "city_defenses",
+      "kind": "defense"
+    }
   ],
   "cityCores": [
-    {"id": "city_core_london", "objectTemplateId": "capital_city_core"},
-    {"id": "city_core_dover", "objectTemplateId": "city_core"},
-    {"id": "city_core_paris", "objectTemplateId": "capital_city_core"},
-    {"id": "city_core_rouen", "objectTemplateId": "city_core"}
+    {
+      "id": "city_core_london",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_dover",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_paris",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_rouen",
+      "objectTemplateId": "city_core"
+    }
   ],
   "defenseLayouts": [
-    {"id": "defense_london", "objectTemplateIds": ["capital_defenses"]},
-    {"id": "defense_dover", "objectTemplateIds": ["port_defenses"]},
-    {"id": "defense_paris", "objectTemplateIds": ["capital_defenses"]},
-    {"id": "defense_rouen", "objectTemplateIds": ["city_defenses"]}
+    {
+      "id": "defense_london",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_dover",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_paris",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_rouen",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    }
   ],
   "settlements": [
     {
@@ -131,7 +310,12 @@
       "navigationZoneId": "north_sea_atlantic",
       "cityCoreId": "city_core_london",
       "defenseLayoutId": "defense_london",
-      "serviceIds": ["banking", "market", "port_services", "quest_hub"]
+      "serviceIds": [
+        "banking",
+        "market",
+        "port_services",
+        "quest_hub"
+      ]
     },
     {
       "id": "dover",
@@ -145,7 +329,11 @@
       "navigationZoneId": "english_channel",
       "cityCoreId": "city_core_dover",
       "defenseLayoutId": "defense_dover",
-      "serviceIds": ["market", "port_services", "quest_hub"]
+      "serviceIds": [
+        "market",
+        "port_services",
+        "quest_hub"
+      ]
     },
     {
       "id": "paris",
@@ -158,7 +346,11 @@
       "civilianFacilitiesInvulnerable": true,
       "cityCoreId": "city_core_paris",
       "defenseLayoutId": "defense_paris",
-      "serviceIds": ["banking", "market", "quest_hub"]
+      "serviceIds": [
+        "banking",
+        "market",
+        "quest_hub"
+      ]
     },
     {
       "id": "rouen",
@@ -171,7 +363,10 @@
       "civilianFacilitiesInvulnerable": true,
       "cityCoreId": "city_core_rouen",
       "defenseLayoutId": "defense_rouen",
-      "serviceIds": ["market", "quest_hub"]
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ]
     }
   ],
   "officers": [
@@ -595,5 +790,573 @@
       ]
     }
   ],
-  "allegiances": []
+  "allegiances": [],
+  "regionalGeography": {
+    "regions": [
+      {
+        "id": "europe",
+        "name": "Europe",
+        "orientation": "north_up"
+      },
+      {
+        "id": "africa",
+        "name": "Africa",
+        "orientation": "north_up"
+      },
+      {
+        "id": "middle_east_india",
+        "name": "Middle East and India",
+        "orientation": "north_up"
+      },
+      {
+        "id": "southeast_asia",
+        "name": "Southeast Asia",
+        "orientation": "north_up"
+      },
+      {
+        "id": "east_asia",
+        "name": "East Asia",
+        "orientation": "north_up"
+      },
+      {
+        "id": "americas_caribbean",
+        "name": "Americas and Caribbean",
+        "orientation": "north_up"
+      },
+      {
+        "id": "pacific",
+        "name": "Pacific",
+        "orientation": "north_up"
+      }
+    ],
+    "areas": [
+      {
+        "id": "europe_coarse",
+        "regionId": "europe",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "africa_coarse",
+        "regionId": "africa",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "middle_east_india_coarse",
+        "regionId": "middle_east_india",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "southeast_asia_coarse",
+        "regionId": "southeast_asia",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "east_asia_coarse",
+        "regionId": "east_asia",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "americas_caribbean_coarse",
+        "regionId": "americas_caribbean",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      },
+      {
+        "id": "pacific_coarse",
+        "regionId": "pacific",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 100,
+          "maxY": 100
+        }
+      }
+    ],
+    "anchors": [
+      {
+        "id": "europe_west",
+        "regionId": "europe",
+        "areaId": "europe_coarse",
+        "position": {
+          "x": 5,
+          "y": 55
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "europe_south",
+        "regionId": "europe",
+        "areaId": "europe_coarse",
+        "position": {
+          "x": 50,
+          "y": 5
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "europe_east",
+        "regionId": "europe",
+        "areaId": "europe_coarse",
+        "position": {
+          "x": 95,
+          "y": 45
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "africa_north",
+        "regionId": "africa",
+        "areaId": "africa_coarse",
+        "position": {
+          "x": 50,
+          "y": 95
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "africa_east",
+        "regionId": "africa",
+        "areaId": "africa_coarse",
+        "position": {
+          "x": 95,
+          "y": 45
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "africa_west",
+        "regionId": "africa",
+        "areaId": "africa_coarse",
+        "position": {
+          "x": 5,
+          "y": 45
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "middle_east_india_west",
+        "regionId": "middle_east_india",
+        "areaId": "middle_east_india_coarse",
+        "position": {
+          "x": 5,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "middle_east_india_east",
+        "regionId": "middle_east_india",
+        "areaId": "middle_east_india_coarse",
+        "position": {
+          "x": 95,
+          "y": 45
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "southeast_asia_west",
+        "regionId": "southeast_asia",
+        "areaId": "southeast_asia_coarse",
+        "position": {
+          "x": 5,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "southeast_asia_north",
+        "regionId": "southeast_asia",
+        "areaId": "southeast_asia_coarse",
+        "position": {
+          "x": 55,
+          "y": 95
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "southeast_asia_east",
+        "regionId": "southeast_asia",
+        "areaId": "southeast_asia_coarse",
+        "position": {
+          "x": 95,
+          "y": 45
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "east_asia_south",
+        "regionId": "east_asia",
+        "areaId": "east_asia_coarse",
+        "position": {
+          "x": 50,
+          "y": 5
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "east_asia_east",
+        "regionId": "east_asia",
+        "areaId": "east_asia_coarse",
+        "position": {
+          "x": 95,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "americas_caribbean_east",
+        "regionId": "americas_caribbean",
+        "areaId": "americas_caribbean_coarse",
+        "position": {
+          "x": 95,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "americas_caribbean_west",
+        "regionId": "americas_caribbean",
+        "areaId": "americas_caribbean_coarse",
+        "position": {
+          "x": 5,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "pacific_west",
+        "regionId": "pacific",
+        "areaId": "pacific_coarse",
+        "position": {
+          "x": 5,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "pacific_east",
+        "regionId": "pacific",
+        "areaId": "pacific_coarse",
+        "position": {
+          "x": 95,
+          "y": 50
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ]
+      }
+    ],
+    "boundaries": [
+      {
+        "id": "europe_africa_boundary",
+        "from": {
+          "regionId": "europe",
+          "anchorId": "europe_south"
+        },
+        "to": {
+          "regionId": "africa",
+          "anchorId": "africa_north"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      },
+      {
+        "id": "europe_middle_east_boundary",
+        "from": {
+          "regionId": "europe",
+          "anchorId": "europe_east"
+        },
+        "to": {
+          "regionId": "middle_east_india",
+          "anchorId": "middle_east_india_west"
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      },
+      {
+        "id": "africa_middle_east_boundary",
+        "from": {
+          "regionId": "africa",
+          "anchorId": "africa_east"
+        },
+        "to": {
+          "regionId": "middle_east_india",
+          "anchorId": "middle_east_india_west"
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      },
+      {
+        "id": "middle_east_southeast_asia_boundary",
+        "from": {
+          "regionId": "middle_east_india",
+          "anchorId": "middle_east_india_east"
+        },
+        "to": {
+          "regionId": "southeast_asia",
+          "anchorId": "southeast_asia_west"
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      },
+      {
+        "id": "southeast_east_asia_boundary",
+        "from": {
+          "regionId": "southeast_asia",
+          "anchorId": "southeast_asia_north"
+        },
+        "to": {
+          "regionId": "east_asia",
+          "anchorId": "east_asia_south"
+        },
+        "movementClasses": [
+          "land",
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      }
+    ],
+    "routes": [
+      {
+        "id": "north_atlantic_crossing",
+        "from": {
+          "regionId": "europe",
+          "anchorId": "europe_west"
+        },
+        "to": {
+          "regionId": "americas_caribbean",
+          "anchorId": "americas_caribbean_east"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false,
+        "durationDays": 35,
+        "encounterHookIds": [
+          "ocean_weather",
+          "open_ocean_encounter"
+        ]
+      },
+      {
+        "id": "south_atlantic_crossing",
+        "from": {
+          "regionId": "africa",
+          "anchorId": "africa_west"
+        },
+        "to": {
+          "regionId": "americas_caribbean",
+          "anchorId": "americas_caribbean_east"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false,
+        "durationDays": 42,
+        "encounterHookIds": [
+          "ocean_weather"
+        ]
+      },
+      {
+        "id": "east_asia_pacific_crossing",
+        "from": {
+          "regionId": "east_asia",
+          "anchorId": "east_asia_east"
+        },
+        "to": {
+          "regionId": "pacific",
+          "anchorId": "pacific_west"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false,
+        "durationDays": 28,
+        "encounterHookIds": [
+          "ocean_weather"
+        ]
+      },
+      {
+        "id": "southeast_asia_pacific_crossing",
+        "from": {
+          "regionId": "southeast_asia",
+          "anchorId": "southeast_asia_east"
+        },
+        "to": {
+          "regionId": "pacific",
+          "anchorId": "pacific_west"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false,
+        "durationDays": 24,
+        "encounterHookIds": [
+          "ocean_weather"
+        ]
+      },
+      {
+        "id": "pacific_americas_crossing",
+        "from": {
+          "regionId": "pacific",
+          "anchorId": "pacific_east"
+        },
+        "to": {
+          "regionId": "americas_caribbean",
+          "anchorId": "americas_caribbean_west"
+        },
+        "movementClasses": [
+          "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false,
+        "durationDays": 45,
+        "encounterHookIds": [
+          "ocean_weather",
+          "open_ocean_encounter"
+        ]
+      }
+    ]
+  }
 }

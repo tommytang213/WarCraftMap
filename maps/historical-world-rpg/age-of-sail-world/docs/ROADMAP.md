@@ -73,7 +73,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Early performance stress harness and provisional budgets
 - [ ] Synthetic large-world simulation tests before full content population
 - [ ] Maximum-reasonable local battle performance test
-- [ ] Global geography/navigation topology
+- [x] Global geography/navigation topology
 - [ ] Regional instance activation, boundary transitions, and cross-region travel
 - [ ] Cross-region troop command and remote regional building management
 - [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
