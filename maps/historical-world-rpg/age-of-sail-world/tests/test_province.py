@@ -15,7 +15,7 @@ class ProvinceRuntimeTests(unittest.TestCase):
         self.polities=PolityRuntime(self.source); self.runtime=ProvinceRuntime(self.source,self.polities)
 
     def test_initialization_keeps_governance_dimensions_distinct(self):
-        self.assertEqual(("greater_london","ile_de_france","kent","normandy"),self.runtime.ids())
+        self.assertEqual(62,len(self.runtime.ids())); self.assertIn("kent",self.runtime.ids()); self.assertIn("normandy",self.runtime.ids())
         kent=self.runtime.require("kent")
         self.assertEqual(("Kent","county",("dover",)),(kent.definition.name,kent.definition.administrative_type,kent.definition.settlement_ids))
         self.assertEqual(("england","england","england","england",35,False),(kent.legal_owner_polity_id,kent.controller_polity_id,kent.governing_polity_id,kent.sovereign_polity_id,kent.autonomy_percent,kent.occupied))
@@ -41,7 +41,7 @@ class ProvinceRuntimeTests(unittest.TestCase):
 
     def test_derived_indexes_reconstruct_after_transfers_and_are_not_persisted(self):
         self.runtime.transition("kent",controller_polity_id="france",legal_owner_polity_id="france",reason="annexation")
-        self.assertEqual(("ile_de_france","kent","normandy"),self.runtime.provinces_for("france","controller"))
+        self.assertEqual(("ile_de_france","kent","loire_france","normandy"),self.runtime.provinces_for("france","controller"))
         snapshot=self.runtime.snapshot(); self.assertNotIn("indexes",snapshot)
         restored=ProvinceRuntime(self.source,self.polities); restored.restore(snapshot)
         self.assertEqual(self.runtime.indexes_snapshot(),restored.indexes_snapshot())

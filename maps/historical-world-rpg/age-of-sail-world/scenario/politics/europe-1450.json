@@ -1,0 +1,1696 @@
+{
+  "schemaVersion": 1,
+  "id": "europe_political_baseline_1450",
+  "campaignStartDate": "1450-01-01",
+  "coverageRule": {
+    "kind": "exclusive_authoritative_provinces",
+    "exceptions": []
+  },
+  "polities": [
+    {
+      "id": "england",
+      "name": "Kingdom of England",
+      "adjective": "English",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "King",
+      "capitalSettlementId": "london",
+      "regionalInstanceId": "europe_atlantic_isles",
+      "geographicFeatureIds": [
+        "coast_british_isles",
+        "river_thames"
+      ],
+      "provinces": [
+        {
+          "id": "greater_london",
+          "name": "London",
+          "administrativeType": "capital_region",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles",
+            "river_thames"
+          ],
+          "adjacentProvinceIds": [
+            "kent",
+            "english_midlands"
+          ]
+        },
+        {
+          "id": "kent",
+          "name": "Kent",
+          "administrativeType": "county",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles",
+            "river_thames"
+          ],
+          "adjacentProvinceIds": [
+            "greater_london",
+            "normandy"
+          ]
+        },
+        {
+          "id": "english_midlands",
+          "name": "English Midlands",
+          "administrativeType": "region",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles",
+            "river_thames"
+          ],
+          "adjacentProvinceIds": [
+            "greater_london",
+            "northern_england"
+          ]
+        },
+        {
+          "id": "northern_england",
+          "name": "Northern England",
+          "administrativeType": "region",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles",
+            "river_thames"
+          ],
+          "adjacentProvinceIds": [
+            "english_midlands",
+            "scottish_lowlands"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scotland",
+      "name": "Kingdom of Scotland",
+      "adjective": "Scottish",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "King",
+      "capitalSettlementId": "edinburgh",
+      "regionalInstanceId": "europe_atlantic_isles",
+      "geographicFeatureIds": [
+        "coast_british_isles"
+      ],
+      "provinces": [
+        {
+          "id": "scottish_lowlands",
+          "name": "Scottish Lowlands",
+          "administrativeType": "region",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles"
+          ],
+          "adjacentProvinceIds": [
+            "northern_england",
+            "scottish_highlands"
+          ]
+        },
+        {
+          "id": "scottish_highlands",
+          "name": "Scottish Highlands",
+          "administrativeType": "region",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "coast_british_isles"
+          ],
+          "adjacentProvinceIds": [
+            "scottish_lowlands"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ireland",
+      "name": "Lordship of Ireland",
+      "adjective": "Irish",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Lord",
+      "capitalSettlementId": "dublin",
+      "regionalInstanceId": "europe_atlantic_isles",
+      "geographicFeatureIds": [
+        "island_ireland"
+      ],
+      "provinces": [
+        {
+          "id": "the_pale",
+          "name": "The Pale",
+          "administrativeType": "lordship",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "island_ireland"
+          ],
+          "adjacentProvinceIds": [
+            "gaelic_ireland"
+          ]
+        },
+        {
+          "id": "gaelic_ireland",
+          "name": "Gaelic Ireland",
+          "administrativeType": "compressed_lordships",
+          "regionalInstanceId": "europe_atlantic_isles",
+          "geographicFeatureIds": [
+            "island_ireland"
+          ],
+          "adjacentProvinceIds": [
+            "the_pale"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "norway",
+      "name": "Kingdom of Norway",
+      "adjective": "Norwegian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Konge",
+      "capitalSettlementId": "oslo",
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "geographicFeatureIds": [
+        "mountains_scandinavian",
+        "island_iceland"
+      ],
+      "provinces": [
+        {
+          "id": "norway_proper",
+          "name": "Norway",
+          "administrativeType": "kingdom_region",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "mountains_scandinavian",
+            "island_iceland"
+          ],
+          "adjacentProvinceIds": [
+            "swedish_gotaland",
+            "iceland"
+          ]
+        },
+        {
+          "id": "iceland",
+          "name": "Iceland",
+          "administrativeType": "dependency",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "mountains_scandinavian",
+            "island_iceland"
+          ],
+          "adjacentProvinceIds": [
+            "norway_proper"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "denmark",
+      "name": "Kingdom of Denmark",
+      "adjective": "Danish",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Konge",
+      "capitalSettlementId": "copenhagen",
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "geographicFeatureIds": [
+        "coast_jutland",
+        "strait_danish_belts"
+      ],
+      "provinces": [
+        {
+          "id": "denmark_proper",
+          "name": "Denmark",
+          "administrativeType": "kingdom_region",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "coast_jutland",
+            "strait_danish_belts"
+          ],
+          "adjacentProvinceIds": [
+            "schleswig_holstein",
+            "swedish_gotaland"
+          ]
+        },
+        {
+          "id": "schleswig_holstein",
+          "name": "Schleswig and Holstein",
+          "administrativeType": "duchies",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "coast_jutland",
+            "strait_danish_belts"
+          ],
+          "adjacentProvinceIds": [
+            "denmark_proper",
+            "imperial_free_cities"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sweden",
+      "name": "Kingdom of Sweden",
+      "adjective": "Swedish",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Konung",
+      "capitalSettlementId": "stockholm",
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "geographicFeatureIds": [
+        "mountains_scandinavian"
+      ],
+      "provinces": [
+        {
+          "id": "swedish_gotaland",
+          "name": "Gotaland and Svealand",
+          "administrativeType": "kingdom_region",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "mountains_scandinavian"
+          ],
+          "adjacentProvinceIds": [
+            "denmark_proper",
+            "norway_proper",
+            "swedish_finland"
+          ]
+        },
+        {
+          "id": "swedish_finland",
+          "name": "Finland",
+          "administrativeType": "realm_region",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "mountains_scandinavian"
+          ],
+          "adjacentProvinceIds": [
+            "swedish_gotaland",
+            "livonia"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "france",
+      "name": "Kingdom of France",
+      "adjective": "French",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Roi",
+      "capitalSettlementId": "paris",
+      "regionalInstanceId": "europe_france_low_countries",
+      "geographicFeatureIds": [
+        "river_seine",
+        "coast_channel_low_countries"
+      ],
+      "provinces": [
+        {
+          "id": "ile_de_france",
+          "name": "Ile-de-France",
+          "administrativeType": "royal_domain",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "river_seine",
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "normandy",
+            "burgundy_duchy",
+            "loire_france"
+          ]
+        },
+        {
+          "id": "normandy",
+          "name": "Normandy",
+          "administrativeType": "province",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "river_seine",
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "ile_de_france",
+            "brittany",
+            "kent"
+          ]
+        },
+        {
+          "id": "loire_france",
+          "name": "Loire and Languedoc",
+          "administrativeType": "compressed_provinces",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "river_seine",
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "ile_de_france",
+            "provence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "burgundy",
+      "name": "Burgundian State",
+      "adjective": "Burgundian",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Duc",
+      "capitalSettlementId": "dijon",
+      "regionalInstanceId": "europe_france_low_countries",
+      "geographicFeatureIds": [
+        "river_rhine",
+        "coast_channel_low_countries"
+      ],
+      "provinces": [
+        {
+          "id": "burgundy_duchy",
+          "name": "Duchy of Burgundy",
+          "administrativeType": "duchy",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "river_rhine",
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "ile_de_france",
+            "burgundian_netherlands"
+          ]
+        },
+        {
+          "id": "burgundian_netherlands",
+          "name": "Burgundian Netherlands",
+          "administrativeType": "composite_lands",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "river_rhine",
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "burgundy_duchy",
+            "imperial_free_cities"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brittany",
+      "name": "Duchy of Brittany",
+      "adjective": "Breton",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Duc",
+      "capitalSettlementId": "nantes",
+      "regionalInstanceId": "europe_france_low_countries",
+      "geographicFeatureIds": [
+        "coast_channel_low_countries"
+      ],
+      "provinces": [
+        {
+          "id": "brittany",
+          "name": "Brittany",
+          "administrativeType": "duchy",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "coast_channel_low_countries"
+          ],
+          "adjacentProvinceIds": [
+            "normandy",
+            "loire_france"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "provence",
+      "name": "County of Provence",
+      "adjective": "Provencal",
+      "sovereignTier": "count",
+      "nativeSovereignTitle": "Comte",
+      "capitalSettlementId": "aix_en_provence",
+      "regionalInstanceId": "europe_france_low_countries",
+      "geographicFeatureIds": [
+        "mountains_alps"
+      ],
+      "provinces": [
+        {
+          "id": "provence",
+          "name": "Provence",
+          "administrativeType": "county",
+          "regionalInstanceId": "europe_france_low_countries",
+          "geographicFeatureIds": [
+            "mountains_alps"
+          ],
+          "adjacentProvinceIds": [
+            "loire_france",
+            "savoy",
+            "liguria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "portugal",
+      "name": "Kingdom of Portugal",
+      "adjective": "Portuguese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Rei",
+      "capitalSettlementId": "lisbon",
+      "regionalInstanceId": "europe_iberia_western_med",
+      "geographicFeatureIds": [
+        "coast_atlantic_iberia",
+        "river_tagus"
+      ],
+      "provinces": [
+        {
+          "id": "portugal",
+          "name": "Portugal",
+          "administrativeType": "kingdom_region",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "coast_atlantic_iberia",
+            "river_tagus"
+          ],
+          "adjacentProvinceIds": [
+            "castile_crown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "castile",
+      "name": "Crown of Castile",
+      "adjective": "Castilian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Rey",
+      "capitalSettlementId": "toledo",
+      "regionalInstanceId": "europe_iberia_western_med",
+      "geographicFeatureIds": [
+        "coast_atlantic_iberia",
+        "river_tagus"
+      ],
+      "provinces": [
+        {
+          "id": "castile_crown",
+          "name": "Castile and Leon",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "coast_atlantic_iberia",
+            "river_tagus"
+          ],
+          "adjacentProvinceIds": [
+            "portugal",
+            "navarre",
+            "aragon_crown",
+            "granada"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aragon",
+      "name": "Crown of Aragon",
+      "adjective": "Aragonese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Rei",
+      "capitalSettlementId": "zaragoza",
+      "regionalInstanceId": "europe_iberia_western_med",
+      "geographicFeatureIds": [
+        "island_balearics",
+        "mountains_pyrenees"
+      ],
+      "provinces": [
+        {
+          "id": "aragon_crown",
+          "name": "Aragon and Catalonia",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "island_balearics",
+            "mountains_pyrenees"
+          ],
+          "adjacentProvinceIds": [
+            "castile_crown",
+            "navarre",
+            "valencia_balearics"
+          ]
+        },
+        {
+          "id": "valencia_balearics",
+          "name": "Valencia and the Balearics",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "island_balearics",
+            "mountains_pyrenees"
+          ],
+          "adjacentProvinceIds": [
+            "aragon_crown",
+            "liguria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "navarre",
+      "name": "Kingdom of Navarre",
+      "adjective": "Navarrese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Rey",
+      "capitalSettlementId": "pamplona",
+      "regionalInstanceId": "europe_iberia_western_med",
+      "geographicFeatureIds": [
+        "mountains_pyrenees"
+      ],
+      "provinces": [
+        {
+          "id": "navarre",
+          "name": "Navarre",
+          "administrativeType": "kingdom",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "mountains_pyrenees"
+          ],
+          "adjacentProvinceIds": [
+            "castile_crown",
+            "aragon_crown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "granada",
+      "name": "Emirate of Granada",
+      "adjective": "Granadan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Emir",
+      "capitalSettlementId": "granada",
+      "regionalInstanceId": "europe_iberia_western_med",
+      "geographicFeatureIds": [
+        "coast_atlantic_iberia",
+        "strait_gibraltar"
+      ],
+      "provinces": [
+        {
+          "id": "granada",
+          "name": "Granada",
+          "administrativeType": "emirate",
+          "regionalInstanceId": "europe_iberia_western_med",
+          "geographicFeatureIds": [
+            "coast_atlantic_iberia",
+            "strait_gibraltar"
+          ],
+          "adjacentProvinceIds": [
+            "castile_crown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "austria",
+      "name": "Archduchy of Austria",
+      "adjective": "Austrian",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Erzherzog",
+      "capitalSettlementId": "vienna",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_danube",
+        "mountains_alps"
+      ],
+      "provinces": [
+        {
+          "id": "austrian_lands",
+          "name": "Austrian Hereditary Lands",
+          "administrativeType": "archduchy",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_danube",
+            "mountains_alps"
+          ],
+          "adjacentProvinceIds": [
+            "bavaria",
+            "bohemian_crown",
+            "hungary",
+            "venetian_mainland"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bohemia",
+      "name": "Crown of Bohemia",
+      "adjective": "Bohemian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Kral",
+      "capitalSettlementId": "prague",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_danube"
+      ],
+      "provinces": [
+        {
+          "id": "bohemian_crown",
+          "name": "Bohemia and Moravia",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_danube"
+          ],
+          "adjacentProvinceIds": [
+            "austrian_lands",
+            "saxony",
+            "poland_crown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brandenburg",
+      "name": "Margraviate of Brandenburg",
+      "adjective": "Brandenburgish",
+      "sovereignTier": "marquess",
+      "nativeSovereignTitle": "Markgraf",
+      "capitalSettlementId": "berlin",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_rhine"
+      ],
+      "provinces": [
+        {
+          "id": "brandenburg",
+          "name": "Brandenburg",
+          "administrativeType": "margraviate",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_rhine"
+          ],
+          "adjacentProvinceIds": [
+            "saxony",
+            "imperial_free_cities",
+            "poland_crown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saxony",
+      "name": "Electorate of Saxony",
+      "adjective": "Saxon",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Kurfurst",
+      "capitalSettlementId": "wittenberg",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_rhine"
+      ],
+      "provinces": [
+        {
+          "id": "saxony",
+          "name": "Saxony",
+          "administrativeType": "electorate",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_rhine"
+          ],
+          "adjacentProvinceIds": [
+            "brandenburg",
+            "bohemian_crown",
+            "bavaria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bavaria",
+      "name": "Duchy of Bavaria",
+      "adjective": "Bavarian",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Herzog",
+      "capitalSettlementId": "munich",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_danube",
+        "mountains_alps"
+      ],
+      "provinces": [
+        {
+          "id": "bavaria",
+          "name": "Bavaria",
+          "administrativeType": "duchy",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_danube",
+            "mountains_alps"
+          ],
+          "adjacentProvinceIds": [
+            "saxony",
+            "austrian_lands",
+            "swiss_confederacy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "palatinate",
+      "name": "Electoral Palatinate",
+      "adjective": "Palatine",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Pfalzgraf",
+      "capitalSettlementId": "heidelberg",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_rhine"
+      ],
+      "provinces": [
+        {
+          "id": "rhine_palatinate",
+          "name": "Rhine Palatinate",
+          "administrativeType": "electorate",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_rhine"
+          ],
+          "adjacentProvinceIds": [
+            "imperial_free_cities",
+            "swiss_confederacy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "holy_roman_empire",
+      "name": "Holy Roman Empire",
+      "adjective": "Imperial",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Romischer Kaiser",
+      "capitalSettlementId": "aachen",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_rhine",
+        "river_danube"
+      ],
+      "provinces": [
+        {
+          "id": "imperial_free_cities",
+          "name": "Imperial Free Cities",
+          "administrativeType": "compressed_imperial_estates",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_rhine",
+            "river_danube"
+          ],
+          "adjacentProvinceIds": [
+            "schleswig_holstein",
+            "burgundian_netherlands",
+            "brandenburg",
+            "rhine_palatinate",
+            "swiss_confederacy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swiss_confederacy",
+      "name": "Old Swiss Confederacy",
+      "adjective": "Swiss",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Landammann",
+      "capitalSettlementId": "lucerne",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "mountains_alps",
+        "river_rhine"
+      ],
+      "provinces": [
+        {
+          "id": "swiss_confederacy",
+          "name": "Swiss Confederacy",
+          "administrativeType": "confederacy",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "mountains_alps",
+            "river_rhine"
+          ],
+          "adjacentProvinceIds": [
+            "bavaria",
+            "rhine_palatinate",
+            "savoy",
+            "milan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poland",
+      "name": "Kingdom of Poland",
+      "adjective": "Polish",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Krol",
+      "capitalSettlementId": "krakow",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "mountains_carpathians"
+      ],
+      "provinces": [
+        {
+          "id": "poland_crown",
+          "name": "Polish Crown Lands",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "mountains_carpathians"
+          ],
+          "adjacentProvinceIds": [
+            "bohemian_crown",
+            "brandenburg",
+            "prussia",
+            "lithuania_proper",
+            "hungary"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lithuania",
+      "name": "Grand Duchy of Lithuania",
+      "adjective": "Lithuanian",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Didysis Kunigaikstis",
+      "capitalSettlementId": "vilnius",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_dnieper"
+      ],
+      "provinces": [
+        {
+          "id": "lithuania_proper",
+          "name": "Lithuania",
+          "administrativeType": "grand_duchy",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_dnieper"
+          ],
+          "adjacentProvinceIds": [
+            "poland_crown",
+            "livonia",
+            "novgorod_lands",
+            "ruthenia"
+          ]
+        },
+        {
+          "id": "ruthenia",
+          "name": "Ruthenian Lands",
+          "administrativeType": "grand_ducal_lands",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_dnieper"
+          ],
+          "adjacentProvinceIds": [
+            "lithuania_proper",
+            "moldavia",
+            "golden_horde_steppe"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "teutonic_order",
+      "name": "State of the Teutonic Order",
+      "adjective": "Teutonic",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Hochmeister",
+      "capitalSettlementId": "marienburg",
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "geographicFeatureIds": [
+        "strait_danish_belts"
+      ],
+      "provinces": [
+        {
+          "id": "prussia",
+          "name": "Prussia",
+          "administrativeType": "monastic_state",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "strait_danish_belts"
+          ],
+          "adjacentProvinceIds": [
+            "poland_crown",
+            "livonia"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "livonian_confederation",
+      "name": "Livonian Confederation",
+      "adjective": "Livonian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Landmeister",
+      "capitalSettlementId": "riga",
+      "regionalInstanceId": "europe_baltic_scandinavia",
+      "geographicFeatureIds": [
+        "strait_danish_belts"
+      ],
+      "provinces": [
+        {
+          "id": "livonia",
+          "name": "Livonia",
+          "administrativeType": "confederation",
+          "regionalInstanceId": "europe_baltic_scandinavia",
+          "geographicFeatureIds": [
+            "strait_danish_belts"
+          ],
+          "adjacentProvinceIds": [
+            "prussia",
+            "swedish_finland",
+            "lithuania_proper",
+            "novgorod_lands"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hungary",
+      "name": "Kingdom of Hungary",
+      "adjective": "Hungarian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Kiraly",
+      "capitalSettlementId": "buda",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "river_danube",
+        "mountains_carpathians"
+      ],
+      "provinces": [
+        {
+          "id": "hungary",
+          "name": "Hungary and Croatia",
+          "administrativeType": "crown_lands",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "river_danube",
+            "mountains_carpathians"
+          ],
+          "adjacentProvinceIds": [
+            "austrian_lands",
+            "poland_crown",
+            "moldavia",
+            "bosnia",
+            "serbia"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wallachia",
+      "name": "Principality of Wallachia",
+      "adjective": "Wallachian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Voivode",
+      "capitalSettlementId": "targoviste",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "river_danube",
+        "mountains_carpathians"
+      ],
+      "provinces": [
+        {
+          "id": "wallachia",
+          "name": "Wallachia",
+          "administrativeType": "principality",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "river_danube",
+            "mountains_carpathians"
+          ],
+          "adjacentProvinceIds": [
+            "moldavia",
+            "hungary",
+            "ottoman_balkans"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moldavia",
+      "name": "Principality of Moldavia",
+      "adjective": "Moldavian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Voivode",
+      "capitalSettlementId": "suceava",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "mountains_carpathians",
+        "coast_black_sea"
+      ],
+      "provinces": [
+        {
+          "id": "moldavia",
+          "name": "Moldavia",
+          "administrativeType": "principality",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "mountains_carpathians",
+            "coast_black_sea"
+          ],
+          "adjacentProvinceIds": [
+            "wallachia",
+            "hungary",
+            "ruthenia",
+            "crimea"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bosnia",
+      "name": "Kingdom of Bosnia",
+      "adjective": "Bosnian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Kralj",
+      "capitalSettlementId": "jajce",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "mountains_dinaric",
+        "coast_adriatic_balkan"
+      ],
+      "provinces": [
+        {
+          "id": "bosnia",
+          "name": "Bosnia",
+          "administrativeType": "kingdom",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "mountains_dinaric",
+            "coast_adriatic_balkan"
+          ],
+          "adjacentProvinceIds": [
+            "hungary",
+            "serbia",
+            "venetian_mainland"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "serbia",
+      "name": "Serbian Despotate",
+      "adjective": "Serbian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Despot",
+      "capitalSettlementId": "smederevo",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "river_danube",
+        "mountains_dinaric"
+      ],
+      "provinces": [
+        {
+          "id": "serbia",
+          "name": "Serbia",
+          "administrativeType": "despotate",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "river_danube",
+            "mountains_dinaric"
+          ],
+          "adjacentProvinceIds": [
+            "bosnia",
+            "hungary",
+            "ottoman_balkans",
+            "albania"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "albania",
+      "name": "League of Lezhe",
+      "adjective": "Albanian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Princ",
+      "capitalSettlementId": "lezhe",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "coast_adriatic_balkan",
+        "strait_otranto"
+      ],
+      "provinces": [
+        {
+          "id": "albania",
+          "name": "Albania",
+          "administrativeType": "league",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "coast_adriatic_balkan",
+            "strait_otranto"
+          ],
+          "adjacentProvinceIds": [
+            "serbia",
+            "ottoman_balkans",
+            "venetian_mainland"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ottoman_empire",
+      "name": "Ottoman Empire",
+      "adjective": "Ottoman",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "edirne",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "strait_bosporus_dardanelles",
+        "river_danube"
+      ],
+      "provinces": [
+        {
+          "id": "ottoman_balkans",
+          "name": "Rumelia",
+          "administrativeType": "beylerbeylik",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "strait_bosporus_dardanelles",
+            "river_danube"
+          ],
+          "adjacentProvinceIds": [
+            "wallachia",
+            "serbia",
+            "albania",
+            "byzantine_thrace"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "byzantine_empire",
+      "name": "Roman Empire",
+      "adjective": "Roman",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Basileus",
+      "capitalSettlementId": "constantinople",
+      "regionalInstanceId": "europe_balkans_aegean",
+      "geographicFeatureIds": [
+        "strait_bosporus_dardanelles"
+      ],
+      "provinces": [
+        {
+          "id": "byzantine_thrace",
+          "name": "Constantinople and Morea",
+          "administrativeType": "compressed_remnant",
+          "regionalInstanceId": "europe_balkans_aegean",
+          "geographicFeatureIds": [
+            "strait_bosporus_dardanelles"
+          ],
+          "adjacentProvinceIds": [
+            "ottoman_balkans"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "venice",
+      "name": "Republic of Venice",
+      "adjective": "Venetian",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Doge",
+      "capitalSettlementId": "venice",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "coast_adriatic_balkan",
+        "strait_otranto",
+        "island_crete",
+        "island_cyprus"
+      ],
+      "provinces": [
+        {
+          "id": "venetian_mainland",
+          "name": "Terraferma and Stato da Mar",
+          "administrativeType": "republican_domains",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "coast_adriatic_balkan",
+            "strait_otranto",
+            "island_crete",
+            "island_cyprus"
+          ],
+          "adjacentProvinceIds": [
+            "austrian_lands",
+            "milan",
+            "papal_states",
+            "bosnia",
+            "albania"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "milan",
+      "name": "Duchy of Milan",
+      "adjective": "Milanese",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Duca",
+      "capitalSettlementId": "milan",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "river_po",
+        "mountains_alps"
+      ],
+      "provinces": [
+        {
+          "id": "milan",
+          "name": "Lombardy",
+          "administrativeType": "duchy",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "river_po",
+            "mountains_alps"
+          ],
+          "adjacentProvinceIds": [
+            "venetian_mainland",
+            "swiss_confederacy",
+            "savoy",
+            "tuscany"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "florence",
+      "name": "Republic of Florence",
+      "adjective": "Florentine",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Gonfaloniere",
+      "capitalSettlementId": "florence",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "mountains_apennines"
+      ],
+      "provinces": [
+        {
+          "id": "tuscany",
+          "name": "Tuscany",
+          "administrativeType": "republican_domain",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "mountains_apennines"
+          ],
+          "adjacentProvinceIds": [
+            "milan",
+            "papal_states",
+            "liguria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "papal_states",
+      "name": "Papal States",
+      "adjective": "Papal",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Papa",
+      "capitalSettlementId": "rome",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "mountains_apennines"
+      ],
+      "provinces": [
+        {
+          "id": "papal_states",
+          "name": "Papal States",
+          "administrativeType": "ecclesiastical_states",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "mountains_apennines"
+          ],
+          "adjacentProvinceIds": [
+            "tuscany",
+            "venetian_mainland",
+            "naples_sicily"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "naples",
+      "name": "Kingdom of Naples",
+      "adjective": "Neapolitan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Re",
+      "capitalSettlementId": "naples",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "coast_italian_peninsula",
+        "island_sicily",
+        "strait_messina"
+      ],
+      "provinces": [
+        {
+          "id": "naples_sicily",
+          "name": "Naples and Sicily",
+          "administrativeType": "kingdom",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "coast_italian_peninsula",
+            "island_sicily",
+            "strait_messina"
+          ],
+          "adjacentProvinceIds": [
+            "papal_states"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "genoa",
+      "name": "Republic of Genoa",
+      "adjective": "Genoese",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Doge",
+      "capitalSettlementId": "genoa",
+      "regionalInstanceId": "europe_italy_central_med",
+      "geographicFeatureIds": [
+        "coast_italian_peninsula",
+        "island_sardinia_corsica",
+        "coast_black_sea"
+      ],
+      "provinces": [
+        {
+          "id": "liguria",
+          "name": "Liguria and Genoese colonies",
+          "administrativeType": "republican_domains",
+          "regionalInstanceId": "europe_italy_central_med",
+          "geographicFeatureIds": [
+            "coast_italian_peninsula",
+            "island_sardinia_corsica",
+            "coast_black_sea"
+          ],
+          "adjacentProvinceIds": [
+            "provence",
+            "tuscany",
+            "savoy",
+            "crimea"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "savoy",
+      "name": "Duchy of Savoy",
+      "adjective": "Savoyard",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Duca",
+      "capitalSettlementId": "chambery",
+      "regionalInstanceId": "europe_central_alpine",
+      "geographicFeatureIds": [
+        "mountains_alps"
+      ],
+      "provinces": [
+        {
+          "id": "savoy",
+          "name": "Savoy and Piedmont",
+          "administrativeType": "duchy",
+          "regionalInstanceId": "europe_central_alpine",
+          "geographicFeatureIds": [
+            "mountains_alps"
+          ],
+          "adjacentProvinceIds": [
+            "provence",
+            "liguria",
+            "milan",
+            "swiss_confederacy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "muscovy",
+      "name": "Grand Principality of Moscow",
+      "adjective": "Muscovite",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Velikiy Knyaz",
+      "capitalSettlementId": "moscow",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper"
+      ],
+      "provinces": [
+        {
+          "id": "muscovy",
+          "name": "Muscovy",
+          "administrativeType": "grand_principality",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper"
+          ],
+          "adjacentProvinceIds": [
+            "tver",
+            "ryazan",
+            "novgorod_lands",
+            "golden_horde_steppe"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "novgorod",
+      "name": "Novgorod Republic",
+      "adjective": "Novgorodian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Posadnik",
+      "capitalSettlementId": "novgorod",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper"
+      ],
+      "provinces": [
+        {
+          "id": "novgorod_lands",
+          "name": "Novgorod Lands",
+          "administrativeType": "republican_lands",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper"
+          ],
+          "adjacentProvinceIds": [
+            "livonia",
+            "lithuania_proper",
+            "muscovy",
+            "tver"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tver",
+      "name": "Grand Principality of Tver",
+      "adjective": "Tverian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Velikiy Knyaz",
+      "capitalSettlementId": "tver",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper"
+      ],
+      "provinces": [
+        {
+          "id": "tver",
+          "name": "Tver",
+          "administrativeType": "grand_principality",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper"
+          ],
+          "adjacentProvinceIds": [
+            "novgorod_lands",
+            "muscovy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ryazan",
+      "name": "Grand Principality of Ryazan",
+      "adjective": "Ryazanian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Velikiy Knyaz",
+      "capitalSettlementId": "ryazan",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper"
+      ],
+      "provinces": [
+        {
+          "id": "ryazan",
+          "name": "Ryazan",
+          "administrativeType": "grand_principality",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper"
+          ],
+          "adjacentProvinceIds": [
+            "muscovy",
+            "golden_horde_steppe"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "golden_horde",
+      "name": "Golden Horde",
+      "adjective": "Tatar",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Khan",
+      "capitalSettlementId": "saray",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper",
+        "coast_black_sea"
+      ],
+      "provinces": [
+        {
+          "id": "golden_horde_steppe",
+          "name": "Pontic-Caspian Steppe",
+          "administrativeType": "khanate_lands",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper",
+            "coast_black_sea"
+          ],
+          "adjacentProvinceIds": [
+            "ruthenia",
+            "muscovy",
+            "ryazan",
+            "crimea",
+            "kazan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crimea",
+      "name": "Crimean Khanate",
+      "adjective": "Crimean Tatar",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Khan",
+      "capitalSettlementId": "solkhat",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "coast_black_sea"
+      ],
+      "provinces": [
+        {
+          "id": "crimea",
+          "name": "Crimea",
+          "administrativeType": "khanate",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "coast_black_sea"
+          ],
+          "adjacentProvinceIds": [
+            "moldavia",
+            "liguria",
+            "golden_horde_steppe"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kazan",
+      "name": "Khanate of Kazan",
+      "adjective": "Kazan Tatar",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Khan",
+      "capitalSettlementId": "kazan",
+      "regionalInstanceId": "europe_eastern_black_sea",
+      "geographicFeatureIds": [
+        "river_volga_upper"
+      ],
+      "provinces": [
+        {
+          "id": "kazan",
+          "name": "Kazan",
+          "administrativeType": "khanate",
+          "regionalInstanceId": "europe_eastern_black_sea",
+          "geographicFeatureIds": [
+            "river_volga_upper"
+          ],
+          "adjacentProvinceIds": [
+            "golden_horde_steppe"
+          ]
+        }
+      ]
+    }
+  ],
+  "vassalage": [
+    {
+      "id": "ireland_vassalage",
+      "subjectPolityId": "ireland",
+      "overlordPolityId": "england"
+    },
+    {
+      "id": "brandenburg_vassalage",
+      "subjectPolityId": "brandenburg",
+      "overlordPolityId": "holy_roman_empire"
+    },
+    {
+      "id": "saxony_vassalage",
+      "subjectPolityId": "saxony",
+      "overlordPolityId": "holy_roman_empire"
+    },
+    {
+      "id": "bavaria_vassalage",
+      "subjectPolityId": "bavaria",
+      "overlordPolityId": "holy_roman_empire"
+    },
+    {
+      "id": "palatinate_vassalage",
+      "subjectPolityId": "palatinate",
+      "overlordPolityId": "holy_roman_empire"
+    },
+    {
+      "id": "austria_vassalage",
+      "subjectPolityId": "austria",
+      "overlordPolityId": "holy_roman_empire"
+    },
+    {
+      "id": "bohemia_vassalage",
+      "subjectPolityId": "bohemia",
+      "overlordPolityId": "holy_roman_empire"
+    }
+  ],
+  "personalUnions": [
+    {
+      "id": "kalmar_union",
+      "seniorPolityId": "denmark",
+      "juniorPolityIds": [
+        "norway",
+        "sweden"
+      ]
+    },
+    {
+      "id": "polish_lithuanian_union",
+      "seniorPolityId": "poland",
+      "juniorPolityIds": [
+        "lithuania"
+      ]
+    }
+  ],
+  "activeConflicts": [
+    {
+      "id": "hundred_years_war",
+      "name": "Hundred Years' War",
+      "attackerPolityIds": [
+        "england"
+      ],
+      "defenderPolityIds": [
+        "france"
+      ],
+      "startDate": "1337-05-24"
+    },
+    {
+      "id": "ottoman_byzantine_war",
+      "name": "Ottoman-Byzantine War",
+      "attackerPolityIds": [
+        "ottoman_empire"
+      ],
+      "defenderPolityIds": [
+        "byzantine_empire"
+      ],
+      "startDate": "1450-01-01"
+    }
+  ]
+}

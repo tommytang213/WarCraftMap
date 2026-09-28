@@ -52,10 +52,10 @@ class PackagingTests(unittest.TestCase):
             names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
-        self.assertEqual(["england", "france"], [item["id"] for item in runtime["polityDefinitions"]])
-        self.assertEqual(["greater_london", "kent", "ile_de_france", "normandy"], [item["id"] for item in runtime["provinceDefinitions"]])
-        self.assertEqual(4, len(runtime["provinceHoldings"]))
-        self.assertEqual("london", runtime["polityDefinitions"][0]["capitalSettlementId"])
+        self.assertEqual(49,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
+        self.assertEqual(62,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
+        self.assertEqual(62,len(runtime["provinceHoldings"]))
+        self.assertEqual("london",next(x for x in runtime["polityDefinitions"] if x["id"]=="england")["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
     def test_generation_is_deterministic_and_clean_rebuilds_match(self):
