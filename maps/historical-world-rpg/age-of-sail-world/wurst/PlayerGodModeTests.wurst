@@ -1,0 +1,98 @@
+package PlayerGodModeTests
+import PlayerGodMode
+import CommandRouter
+
+class FakeRuntime implements GodModeRuntime
+	int array[16] owners
+	boolean array[16] invulnerable
+	int array[16] current
+	int size
+	int writes
+	function add(int entity, int owner, boolean initiallyInvulnerable)
+		owners[entity] = owner
+		invulnerable[entity] = initiallyInvulnerable
+	function select(int a, int b, int c)
+		current[0] = a
+		current[1] = b
+		current[2] = c
+		size = 3
+	override function refresh(int playerIndex)
+		size = 0
+		for entity = 1 to 12
+			if owners[entity] == playerIndex
+				current[size] = entity
+				size++
+	override function entityCount() returns int
+		return size
+	override function entityAt(int index) returns int
+		return current[index]
+	override function ownerOf(int entity) returns int
+		return owners[entity]
+	override function isInvulnerable(int entity) returns boolean
+		return invulnerable[entity]
+	override function setInvulnerable(int entity, boolean value)
+		invulnerable[entity] = value
+		writes++
+
+class Output implements CommandOutput
+	string last
+	override function show(player recipient, string message)
+		last = message
+
+@test function toggleExplicitFormsAndEntityCategories()
+	let runtime = new FakeRuntime()
+	// hero, ordinary unit, summon, ship, and structure are all opaque runtime entities.
+	for entity = 1 to 5
+		runtime.add(entity, 0, false)
+	let controller = new PlayerGodModeController(runtime)
+	let output = new Output()
+	let command = new GodModeCommand(controller, output)
+	command.execute(Player(0), "")
+	output.last.assertEquals("Player-wide god mode is ON.")
+	for entity = 1 to 5
+		runtime.invulnerable[entity].assertTrue()
+	let writes = runtime.writes
+	command.execute(Player(0), "on")
+	runtime.writes.assertEquals(writes)
+	command.execute(Player(0), "off")
+	output.last.assertEquals("Player-wide god mode is OFF.")
+	command.execute(Player(0), "off")
+	controller.isEnabled(0).assertFalse()
+
+@test function inheritanceTransfersAndOwnedProtection()
+	let runtime = new FakeRuntime()
+	runtime.add(1, 0, true) // unrelated invulnerability
+	runtime.add(2, 0, false)
+	let controller = new PlayerGodModeController(runtime)
+	controller.setEnabled(0, true)
+	controller.ownsProtection(1).assertFalse()
+	controller.ownsProtection(2).assertTrue()
+	runtime.add(3, 0, false)
+	controller.entityBecameControlled(3)
+	runtime.invulnerable[3].assertTrue()
+	runtime.owners[3] = 1
+	controller.entityChangedOwner(3)
+	runtime.invulnerable[3].assertFalse()
+	controller.setEnabled(0, false)
+	runtime.invulnerable[1].assertTrue()
+	runtime.invulnerable[2].assertFalse()
+
+@test function campaignLoadResetsSessionOnlyMode()
+	let runtime = new FakeRuntime()
+	runtime.add(1, 0, false)
+	let controller = new PlayerGodModeController(runtime)
+	controller.setEnabled(0, true)
+	controller.afterCampaignLoad()
+	controller.isEnabled(0).assertFalse()
+	runtime.invulnerable[1].assertFalse()
+
+@test function helpRegistrationAndFeedback()
+	let runtime = new FakeRuntime()
+	let output = new Output()
+	let registry = new CommandRegistry(false, 6, new CommandText(), output)
+	registry.register("help", "commands", "help [page|command]", "Show help.", "Help details.", 0, 1, COMMAND_RELEASE, null)
+	registry.register("god", "", "god [on|off]", "Toggle player-wide god mode.", "God mode details.", 0, 1, COMMAND_RELEASE, new GodModeCommand(new PlayerGodModeController(runtime), output))
+	registry.dispatch(Player(0), "/help god")
+	output.last.assertEquals("Usage: /god [on|off]\nGod mode details.")
+	registry.dispatch(Player(0), "/god on")
+	output.last.assertEquals("Player-wide god mode is ON.")
