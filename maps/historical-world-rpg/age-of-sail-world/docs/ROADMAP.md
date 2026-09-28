@@ -49,7 +49,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Command router + paged /help
 - [ ] UI pause policy for management screens
 - [x] Campaign save manager
-- [ ] 15-slot rolling autosave scheduler
+- [x] 15-slot rolling autosave scheduler
 - [ ] /unstuck + last-safe-position system
 - [ ] Player-only emergency invulnerability command
 

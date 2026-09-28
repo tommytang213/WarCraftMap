@@ -1,7 +1,7 @@
 package CampaignSaveManagerTests
 import CampaignSaveManager
 
-class Storage implements CampaignSaveStorage
+public class Storage implements CampaignSaveStorage
 	string value = ""
 	boolean fail = false
 	override function contains(string slotId) returns boolean
@@ -16,7 +16,7 @@ class Storage implements CampaignSaveStorage
 	override function diagnostic() returns string
 		return "storage failure"
 
-class Codec implements CampaignSaveCodec
+public class Codec implements CampaignSaveCodec
 	boolean valid = true
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string state) returns string
 		return slotId + "|" + state
@@ -27,7 +27,7 @@ class Codec implements CampaignSaveCodec
 	override function diagnostic() returns string
 		return "metadata or integrity failure"
 
-class State implements CampaignStatePort
+public class State implements CampaignStatePort
 	boolean safe = true
 	boolean valid = true
 	boolean rebuilt = true
@@ -91,4 +91,3 @@ class State implements CampaignStatePort
 	storage.fail = true
 	manager.save(SAVE_SLOT_MANUAL, 2, "now").assertEquals(false)
 	storage.value.assertEquals("previous")
-
