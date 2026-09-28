@@ -16,6 +16,7 @@ from automation.warcraftmap_agent.worker import (
     notify_design_blocker,
     prepare_plan_items,
     queue_refill_count,
+    reconcile_ready_issue_states,
     select_issue,
 )
 
@@ -55,6 +56,14 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 2)
+
+    def test_resolved_design_issue_reenters_queue(self):
+        issues = [{"number": 73, "title": "[agent-ready] resumed", "createdAt": "2026-01-01"}]
+        state = {"issues": {"73": {"attempts": 1, "status": "needs_design", "last_failure": "old question"}}}
+        reconcile_ready_issue_states(issues, state)
+        self.assertEqual(state["issues"]["73"]["status"], "queued")
+        self.assertNotIn("last_failure", state["issues"]["73"])
+        self.assertEqual(select_issue(issues, state, 3)["number"], 73)
 
     def test_skips_open_pr(self):
         issues = [
@@ -186,6 +195,12 @@ class WorkerTests(unittest.TestCase):
     def test_healthy_queue_is_a_noop(self):
         self.assertEqual(queue_refill_count(3), 0)
         self.assertEqual(queue_refill_count(10), 0)
+
+    def test_ready_work_is_selectable_even_when_refill_is_needed(self):
+        issues = [{"number": 75, "title": "[agent-ready] independent", "body": "", "createdAt": "2026-01-01"}]
+        selected = select_issue(issues, {"issues": {}}, 3, {73})
+        self.assertEqual(selected["number"], 75)
+        self.assertGreater(queue_refill_count(1, design_blocked=True), 0)
 
     def test_open_design_block_allows_independent_queue_replanning(self):
         self.assertEqual(queue_refill_count(0, design_blocked=True), 10)
