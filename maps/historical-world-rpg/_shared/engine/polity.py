@@ -108,10 +108,12 @@ class PolitySaveAdapter:
     def capture_world(self):
         result=copy.deepcopy(self.world_state); result[POLITY_WORLD_STATE_KEY]=self.runtime.snapshot(); return result
     def migrate_legacy_world(self,candidate):
+        """Upgrade a pre-polity world state without mutating the loaded save."""
         if not isinstance(candidate,Mapping): raise PolityError("legacy world state must be an object")
         migrated=copy.deepcopy(dict(candidate))
         if POLITY_WORLD_STATE_KEY not in migrated: migrated[POLITY_WORLD_STATE_KEY]=self.runtime.snapshot()
-        self.validate_world(migrated); return migrated
+        self.validate_world(migrated)
+        return migrated
     def validate_world(self,candidate):
         if not isinstance(candidate,Mapping) or POLITY_WORLD_STATE_KEY not in candidate: raise PolityError(f"world state is missing {POLITY_WORLD_STATE_KEY}")
         self.runtime.validate_snapshot(candidate[POLITY_WORLD_STATE_KEY])
