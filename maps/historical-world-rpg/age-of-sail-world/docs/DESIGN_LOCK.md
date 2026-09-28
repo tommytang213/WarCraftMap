@@ -158,6 +158,8 @@ This file records requirements already agreed with the player. They are defaults
 - Approximate quest knowledge should be visualized as a bounded search area rather than a false precise point. For example, a clue such as "somewhere in the Amazon" may highlight or ping a large circle/region covering the plausible search area.
 - Search areas may shrink, move, split, or become an exact marker as the player obtains better clues, explores, talks to characters, finds maps, or completes intermediate objectives.
 - The displayed uncertainty area is informational and should reflect only the precision of the clues actually known to the player.
+- Previously discovered exact locations may be shown precisely even when a later quest clue is broader. If the player has already visited or otherwise explicitly discovered the specific settlement, landmark, ruin, dungeon, port, or other destination and that knowledge is recorded in campaign state, the quest/map helper may use the exact known marker instead of downgrading it to a broad search area.
+- Revealing general fog-of-war or exploring a region does not automatically identify every hidden point of interest inside it; precise quest markers require that the destination itself is known or has been explicitly revealed by the quest/clue.
 - The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character.
 - Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel.
 
