@@ -161,11 +161,13 @@ This file records requirements already agreed with the player. They are defaults
 ## Remote regional management
 
 - The player can manage owned or authorized holdings in other regions without physically traveling there.
-- Remote management uses a regional management view: switch the camera and UI context to a selected region, click its buildings, and choose building upgrades or management actions directly.
+- Remote regional access supports both management and active command. Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there.
 - Entering a remote regional management view does not move the player's character, party, army, fleet, or physical campaign location.
 - Remote regional management is modal and follows the existing campaign pause policy.
-- A remote management view should instantiate only the regional representations needed for management and visual context rather than the full regional population.
-- Leaving the management view restores the camera and UI to the player's physical region and prior local context.
+- When a region becomes the active command region, instantiate the locally relevant military, building, character, and other runtime representations needed for normal play in that region. Do not require every abstract population or background entity to exist as a Warcraft object merely because the region is active.
+- The player's main character keeps a separate physical-region location from the current command/view region. Leaving remote command can return the camera and control context to the character's physical region without teleporting that character.
+- Multiple regions may contain player-owned troops and holdings at the same campaign time. Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active.
+- Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world.
 - The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation.
 - Remote management shows only campaign information the player is already authorized to know.
 
