@@ -145,6 +145,17 @@ This file records requirements already agreed with the player. They are defaults
 - Region transitions must preserve authoritative unit, party, fleet, quest, inventory, and campaign state; transient Warcraft objects are reconstructed from stable IDs/state after arrival.
 - Transition boundaries and entry points must be explicit scenario data so geography/navigation remains reusable and testable.
 
+## Remote regional management
+
+- The player can manage owned or authorized holdings in other regions without physically traveling there.
+- Remote management uses a regional management view: switch the camera and UI context to a selected region, click its buildings, and choose building upgrades or management actions directly.
+- Entering a remote regional management view does not move the player's character, party, army, fleet, or physical campaign location.
+- Remote regional management is modal and follows the existing campaign pause policy.
+- A remote management view should instantiate only the regional representations needed for management and visual context rather than the full regional population.
+- Leaving the management view restores the camera and UI to the player's physical region and prior local context.
+- The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation.
+- Remote management shows only campaign information the player is already authorized to know.
+
 ## Performance and simulation scale
 
 - Performance is a design constraint throughout content production, not a cleanup task deferred until final integration.
