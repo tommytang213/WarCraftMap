@@ -3,6 +3,8 @@ import WC3Compatibility
 import CommandRouter
 import ScenarioData
 import ManagementScreenPauseController
+import UnstuckRecovery
+import WarcraftRecoveryRuntime
 import PlayerGodMode
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
@@ -11,7 +13,9 @@ constant int SAVE_SCHEMA_VERSION = 1
 init
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
+	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
+	registerUnstuckCommand(commands, recoveryService)
 	installPlayerGodMode(commands, null)
 	installCommandRegistry(commands)
 	if SCENARIO_SCHEMA_VERSION <= 0

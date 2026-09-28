@@ -98,6 +98,8 @@ public function compatSetUnitPosition(unit target, real x, real y)
 public function compatSetUnitCoordinates(unit target, real x, real y)
 	SetUnitX(target, x)
 	SetUnitY(target, y)
+public function compatTeleportUnit(unit target, real x, real y)
+	SetUnitPosition(target, x, y)
 public function compatGetUnitMaxLife(unit target) returns int
 	return BlzGetUnitMaxHP(target)
 public function compatSetUnitMaxLife(unit target, int life)

@@ -50,6 +50,7 @@ function exerciseCompatibility(unit u, item i, equipmentType e, loadoutslot s, f
 	let _blocked = compatIsTerrainPathable(0., 0., t)
 	compatSetUnitPosition(u, 0., 0.)
 	compatSetUnitCoordinates(u, 0., 0.)
+	compatTeleportUnit(u, 0., 0.)
 	let _life = compatGetUnitMaxLife(u)
 	compatSetUnitMaxLife(u, _life)
 	let _collision = compatGetUnitCollisionSize(u)
