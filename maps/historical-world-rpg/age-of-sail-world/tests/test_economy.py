@@ -140,5 +140,72 @@ class EconomyTests(unittest.TestCase):
             self.assertEqual(before, total(current, "good", "grain"))
 
 
+    def test_market_trade_is_atomic_and_conserves_both_assets(self):
+        base = state(a_grain=30, a_coin=100, b_coin=20)
+        before_goods, before_money = total(base, "good", "grain"), total(base, "currency", "coin")
+        traded = economy.execute_trade(fixture(), base, {"id": "market_buy", "priceId": "grain_price", "buyerStoreId": "warehouse_b", "quantityUnits": 4}).state
+        self.assertEqual((before_goods, before_money), (total(traded, "good", "grain"), total(traded, "currency", "coin")))
+        self.assertEqual(13, next(x["amountMinor"] for s in traded["storeBalances"] if s["storeId"] == "warehouse_a" for x in s["currencies"] if x["currencyId"] == "coin") - 100)
+        poor = state(a_coin=100, b_coin=0)
+        with self.assertRaisesRegex(economy.EconomyError, "insufficient funds"):
+            economy.execute_trade(fixture(), poor, {"id": "failed_buy", "priceId": "grain_price", "buyerStoreId": "warehouse_b", "quantityUnits": 4})
+        self.assertEqual([], poor["processedTransactionIds"])
+
+    def test_personal_inventory_boundary_requires_typed_deliberate_transfer(self):
+        base = state()
+        moved = economy.transfer_personal_inventory(fixture(), base, {"id": "take_grain", "goodId": "grain", "itemTypeId": "grain_bundle", "quantityUnits": 3, "sourceStoreId": "warehouse_a", "destinationStoreId": "person"}).state
+        self.assertEqual(3, next(x["quantityUnits"] for s in moved["storeBalances"] if s["storeId"] == "person" for x in s["goods"] if x["goodId"] == "grain"))
+        for bad in (
+            {"id": "wrong_type", "goodId": "grain", "itemTypeId": "bread_loaf", "quantityUnits": 1, "sourceStoreId": "warehouse_a", "destinationStoreId": "person"},
+            {"id": "no_boundary", "goodId": "grain", "itemTypeId": "grain_bundle", "quantityUnits": 1, "sourceStoreId": "warehouse_a", "destinationStoreId": "warehouse_b"},
+        ):
+            with self.assertRaises(economy.EconomyError):
+                economy.transfer_personal_inventory(fixture(), base, bad)
+
+    def test_accelerated_ticks_equal_normal_ticks_and_do_not_drop_obligations(self):
+        base = state(a_coin=1000)
+        base = economy.initialize_scheduling(fixture(), base)
+        accelerated = economy.process_economy_until(fixture(), base, 120)
+        normal = base
+        transactions = []
+        for tick in range(1, 121):
+            advanced = economy.process_economy_until(fixture(), normal, tick)
+            normal = advanced.state; transactions.extend(advanced.transaction_ids)
+        self.assertEqual(accelerated.state, normal)
+        self.assertEqual(accelerated.transaction_ids, tuple(transactions))
+        self.assertEqual(16, len(transactions))
+        self.assertEqual({"tax": 4, "upkeep": 12}, {entry["obligationId"]: entry["occurrencesSettled"] for entry in normal["pendingObligations"]})
+
+    def test_failed_tick_is_atomic_and_checkpoint_resume_equivalent(self):
+        base = economy.initialize_scheduling(fixture(), state(a_coin=20))
+        snapshot = copy.deepcopy(base)
+        with self.assertRaisesRegex(economy.EconomyError, "insufficient balance"):
+            economy.process_economy_until(fixture(), base, 30)
+        self.assertEqual(snapshot, base)
+        funded = economy.initialize_scheduling(fixture(), state(a_coin=1000))
+        full = economy.process_economy_until(fixture(), funded, 120).state
+        checkpoint = economy.process_economy_until(fixture(), funded, 60).state
+        resumed = economy.process_economy_until(fixture(), json.loads(json.dumps(checkpoint)), 120).state
+        self.assertEqual(full, resumed)
+
+    def test_economy_state_and_pending_obligations_round_trip_campaign_save(self):
+        sys.path.insert(0, str(ROOT / "_shared" / "engine"))
+        import campaign_save
+        economic_state = economy.process_economy_until(fixture(), economy.initialize_scheduling(fixture(), state(a_coin=1000)), 35).state
+        raw = campaign_save.serialize_save(build_version="1", scenario_id="test", scenario_version="1", slot=campaign_save.SaveSlot("manual", 1), created_at="2026-09-28T00:00:00Z", world_state={"economy": economic_state}, player_state={})
+        restored = campaign_save.load_save(raw)["state"]["world"]["economy"]
+        economy.validate_state(fixture(), restored)
+        self.assertEqual(economic_state, restored)
+
+    def test_multi_century_simulation_is_deterministic(self):
+        # 200 years of daily campaign ticks, advanced in bounded annual chunks.
+        def run():
+            current = economy.initialize_scheduling(fixture(), state(a_coin=200000))
+            for tick in range(365, 365 * 200 + 1, 365):
+                current = economy.process_economy_until(fixture(), current, tick).state
+            return current
+        self.assertEqual(run(), run())
+
+
 if __name__ == "__main__":
     unittest.main()
