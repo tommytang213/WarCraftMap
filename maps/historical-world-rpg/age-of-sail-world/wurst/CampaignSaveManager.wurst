@@ -25,6 +25,8 @@ public interface CampaignStatePort
 	function reconstructRuntime(string candidate) returns boolean
 	function activateAuthoritativeState(string candidate)
 	function diagnostic() returns string
+public interface CampaignLoadObserver
+	function afterCampaignLoad()
 
 function paddedSlotIndex(int index) returns string
 	if index < 10
@@ -51,6 +53,7 @@ public class CampaignSaveManager
 	int deferredIndex = -1
 	string deferredCreatedAt = ""
 	string lastDiagnostic = ""
+	CampaignLoadObserver loadObserver = null
 
 	construct(CampaignSaveStorage saveStorage, CampaignSaveCodec saveCodec, CampaignStatePort statePort)
 		storage = saveStorage
@@ -65,6 +68,9 @@ public class CampaignSaveManager
 
 	function diagnostic() returns string
 		return lastDiagnostic
+
+	function setLoadObserver(CampaignLoadObserver observer)
+		loadObserver = observer
 
 	function save(int kind, int index, string createdAt) returns boolean
 		let slotId = campaignSlotId(kind, index)
@@ -111,6 +117,8 @@ public class CampaignSaveManager
 			lastDiagnostic = "runtime reconstruction failed: " + state.diagnostic()
 			return false
 		state.activateAuthoritativeState(candidate)
+		if loadObserver != null
+			loadObserver.afterCampaignLoad()
 		lastDiagnostic = ""
 		return true
 

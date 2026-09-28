@@ -7,7 +7,7 @@ public interface CommandHandler
 	function execute(player sender,string arguments)
 public interface CommandOutput
 	function show(player recipient,string message)
-class WarcraftOutput implements CommandOutput
+public class WarcraftOutput implements CommandOutput
 	override function show(player p,string message)
 		DisplayTimedTextToPlayer(p,0.,0.,12.,message)
 public class CommandText
