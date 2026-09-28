@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "timeline": {
     "calendar": "proleptic_gregorian",
     "startDate": "1450-01-01",
@@ -93,6 +93,31 @@
       ]
     }
   ],
+  "settlementServiceDefinitions": [
+    {"id": "banking", "name": "Banking"},
+    {"id": "market", "name": "Market"},
+    {"id": "port_services", "name": "Port Services"},
+    {"id": "quest_hub", "name": "Quest Hub"}
+  ],
+  "settlementObjectTemplates": [
+    {"id": "capital_city_core", "kind": "city_core"},
+    {"id": "city_core", "kind": "city_core"},
+    {"id": "capital_defenses", "kind": "defense"},
+    {"id": "port_defenses", "kind": "defense"},
+    {"id": "city_defenses", "kind": "defense"}
+  ],
+  "cityCores": [
+    {"id": "city_core_london", "objectTemplateId": "capital_city_core"},
+    {"id": "city_core_dover", "objectTemplateId": "city_core"},
+    {"id": "city_core_paris", "objectTemplateId": "capital_city_core"},
+    {"id": "city_core_rouen", "objectTemplateId": "city_core"}
+  ],
+  "defenseLayouts": [
+    {"id": "defense_london", "objectTemplateIds": ["capital_defenses"]},
+    {"id": "defense_dover", "objectTemplateIds": ["port_defenses"]},
+    {"id": "defense_paris", "objectTemplateIds": ["capital_defenses"]},
+    {"id": "defense_rouen", "objectTemplateIds": ["city_defenses"]}
+  ],
   "settlements": [
     {
       "id": "london",
@@ -105,7 +130,8 @@
       "civilianFacilitiesInvulnerable": true,
       "navigationZoneId": "north_sea_atlantic",
       "cityCoreId": "city_core_london",
-      "defenseLayoutId": "defense_london"
+      "defenseLayoutId": "defense_london",
+      "serviceIds": ["banking", "market", "port_services", "quest_hub"]
     },
     {
       "id": "dover",
@@ -118,7 +144,8 @@
       "civilianFacilitiesInvulnerable": true,
       "navigationZoneId": "english_channel",
       "cityCoreId": "city_core_dover",
-      "defenseLayoutId": "defense_dover"
+      "defenseLayoutId": "defense_dover",
+      "serviceIds": ["market", "port_services", "quest_hub"]
     },
     {
       "id": "paris",
@@ -130,7 +157,8 @@
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
       "cityCoreId": "city_core_paris",
-      "defenseLayoutId": "defense_paris"
+      "defenseLayoutId": "defense_paris",
+      "serviceIds": ["banking", "market", "quest_hub"]
     },
     {
       "id": "rouen",
@@ -142,7 +170,8 @@
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
       "cityCoreId": "city_core_rouen",
-      "defenseLayoutId": "defense_rouen"
+      "defenseLayoutId": "defense_rouen",
+      "serviceIds": ["market", "quest_hub"]
     }
   ],
   "officers": [

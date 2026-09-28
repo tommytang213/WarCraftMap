@@ -98,14 +98,18 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 7:
-        fail("schemaVersion must currently be 7")
+    if data.get("schemaVersion") != 8:
+        fail("schemaVersion must currently be 8")
 
     timeline = validate_timeline(data, fail)
 
     polity = unique_index(data.get("polities", []), "polities")
     province = unique_index(data.get("provinces", []), "provinces")
     settlement = unique_index(data.get("settlements", []), "settlements")
+    settlement_service = unique_index(data.get("settlementServiceDefinitions", []), "settlementServiceDefinitions")
+    settlement_template = unique_index(data.get("settlementObjectTemplates", []), "settlementObjectTemplates")
+    city_core = unique_index(data.get("cityCores", []), "cityCores")
+    defense_layout = unique_index(data.get("defenseLayouts", []), "defenseLayouts")
     officer = unique_index(data.get("officers", []), "officers")
     strategic_unit = unique_index(data.get("strategicUnits", []), "strategicUnits")
     army = unique_index(data.get("armies", []), "armies")
@@ -201,6 +205,31 @@ def validate(path: Path) -> None:
             for field in ("cityCoreId", "defenseLayoutId"):
                 value = s.get(field)
                 require_id(value, f"settlement {settlement_id}.{field}")
+        core_id = s.get("cityCoreId")
+        layout_id = s.get("defenseLayoutId")
+        if core_id is not None and core_id not in city_core:
+            fail(f"settlement {settlement_id}: missing city core {core_id!r}")
+        if layout_id is not None and layout_id not in defense_layout:
+            fail(f"settlement {settlement_id}: missing defense layout {layout_id!r}")
+        require_references(s.get("serviceIds"), f"settlement {settlement_id}.serviceIds", settlement_service)
+
+    for service_id, service in settlement_service.items():
+        if not isinstance(service.get("name"), str) or not service["name"].strip():
+            fail(f"settlement service {service_id}: name must be non-empty")
+    for template_id, template in settlement_template.items():
+        if template.get("kind") not in {"city_core", "defense"}:
+            fail(f"settlement object template {template_id}: invalid kind")
+    for core_id, core in city_core.items():
+        template_id = core.get("objectTemplateId")
+        if template_id not in settlement_template:
+            fail(f"city core {core_id}: missing object template {template_id!r}")
+        if settlement_template[template_id].get("kind") != "city_core":
+            fail(f"city core {core_id}: object template {template_id!r} is not a city core")
+    for layout_id, layout in defense_layout.items():
+        require_references(layout.get("objectTemplateIds"), f"defense layout {layout_id}.objectTemplateIds", settlement_template)
+        for template_id in layout["objectTemplateIds"]:
+            if settlement_template[template_id].get("kind") != "defense":
+                fail(f"defense layout {layout_id}: object template {template_id!r} is not a defense")
 
     for unit_id, unit in strategic_unit.items():
         domain = f"strategic unit {unit_id}"
@@ -332,7 +361,8 @@ def validate(path: Path) -> None:
     print(
         f"OK: {path} | "
         f"{len(polity)} polities, {len(province)} provinces, "
-        f"{len(settlement)} settlements, {len(strategic_unit)} strategic units, "
+        f"{len(settlement)} settlements, {len(city_core)} city cores, "
+        f"{len(defense_layout)} defense layouts, {len(strategic_unit)} strategic units, "
         f"{len(army)} armies, {len(fleet)} fleets, {len(character)} characters, "
         f"{len(relationship)} companion relationships, {len(technologies)} technologies, "
         f"{len(institutions)} institutions, {len(title_grants)} title grants, "
