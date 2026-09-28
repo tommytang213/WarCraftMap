@@ -44,7 +44,12 @@ systemctl --user status warcraftmap-agent.timer
 
 The installer creates `~/.config/warcraftmap-agent.env` only when absent. Edit
 that file to adjust the model, daily/weekly token ceilings, emergency run caps,
-timeout, attempt cap, state directory, or validation command. Existing v1
+timeout, attempt cap, state directory, or validation command. A generic optional
+`WARCRAFTMAP_AGENT_DESIGN_NOTIFICATION_COMMAND` receives a JSON object on standard
+input when a blocker is first created or an implementation issue first becomes a
+blocker. The object contains `issue_number`, `title`, `url`, and `question`; the
+command can forward it to ntfy or another transport without storing credentials in
+the worker. Delivery is best-effort and is never retried on timer wakes. Existing v1
 timestamp-only state is migrated to the token-aware v2 state format without
 discarding prior invocation history. Logs, worktrees, and quota state live under
 `~/.local/state/warcraftmap-agent` by default. The service is deliberately
@@ -65,8 +70,10 @@ budgeted Codex planning run to refill the small queue toward ten issues. Plannin
 reads the roadmap, design lock, architecture, agent rules, repository state, all
 available issue history, and PR history. It creates implementation-sized issues
 in dependency order, rechecks issue and PR titles before every creation, and
-stops at the first undocumented material design decision by creating one
-`[needs-design]` question. A healthy queue causes no planning invocation; an
+creates one `[needs-design]` question for an undocumented material decision, while
+continuing to plan only work that explicitly documents its independence from that
+decision. Existing ready work is skipped only when its body says `Blocked by: #N`
+or `Depends on: #N` for an open design blocker. A healthy queue causes no planning invocation; an
 exhausted roadmap exits cleanly. Planning and implementation remain sequential,
 so worker concurrency is still one.
 

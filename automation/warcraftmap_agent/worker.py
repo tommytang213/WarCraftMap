@@ -38,6 +38,7 @@ class Config:
     max_attempts: int = 3
     checks_command: str = "./automation/run_checks.sh"
     issue_limit: int = 100
+    design_notification_command: str = ""
 
 
 def utcnow() -> datetime:
@@ -89,6 +90,7 @@ def make_config(repo_root: Path, env_path: Path) -> Config:
         max_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_ATTEMPTS_PER_ISSUE", 3),
         checks_command=values.get("WARCRAFTMAP_AGENT_CHECKS_COMMAND", "./automation/run_checks.sh"),
         issue_limit=positive_int(values, "WARCRAFTMAP_AGENT_ISSUE_LIMIT", 100),
+        design_notification_command=values.get("WARCRAFTMAP_AGENT_DESIGN_NOTIFICATION_COMMAND", ""),
     )
 
 
@@ -159,7 +161,7 @@ def list_issues(config: Config) -> list[dict[str, Any]]:
 def list_needs_design_issues(config: Config) -> list[dict[str, Any]]:
     issues = gh_json(
         config.repo_root,
-        ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,url,createdAt"],
+        ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,body,url,createdAt"],
     )
     return sorted(
         (item for item in issues if NEEDS_DESIGN.match(item["title"])),
@@ -169,8 +171,8 @@ def list_needs_design_issues(config: Config) -> list[dict[str, Any]]:
 
 def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> int:
     """Return the bounded number of issues needed to maintain the ready buffer."""
-    if design_blocked:
-        return 0
+    # A design blocker affects its dependants, not the whole queue. The second
+    # argument is retained for compatibility with callers of the old gate.
     return QUEUE_TARGET - open_ready_count if open_ready_count < QUEUE_REFILL_THRESHOLD else 0
 
 
@@ -180,12 +182,26 @@ def normalized_work_title(title: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
 
 
-def prepare_plan_items(plan: dict[str, Any], existing_titles: list[str], limit: int) -> list[dict[str, str]]:
+def decision_question(body: str) -> str:
+    marker = re.search(r"(?im)^## Decision required\s*$", body)
+    return body[marker.end():].strip() if marker else ""
+
+
+def normalized_question(question: str) -> str:
+    return re.sub(r"\s+", " ", question.casefold()).strip()
+
+
+def prepare_plan_items(
+    plan: dict[str, Any], existing_titles: list[str], limit: int,
+    existing_questions: list[str] | None = None,
+) -> list[dict[str, str]]:
     """Validate/deduplicate a planner result while preserving roadmap order."""
     if plan.get("outcome") == "exhausted":
         return []
     seen = {normalized_work_title(title) for title in existing_titles}
+    seen_questions = {normalized_question(question) for question in (existing_questions or []) if question}
     prepared: list[dict[str, str]] = []
+    design_seen = False
     for raw in plan.get("issues", []):
         if len(prepared) >= limit:
             break
@@ -199,14 +215,21 @@ def prepare_plan_items(plan: dict[str, Any], existing_titles: list[str], limit: 
             question = str(raw.get("question", "")).strip()
             if not question or question.count("?") != 1:
                 raise ValueError("a needs-design plan item must contain one exact question")
-            prepared.append({"title": f"[needs-design] {clean_title}", "body": str(raw.get("body", "")).strip() + "\n\n## Decision required\n\n" + question})
-            break
+            question_key = normalized_question(question)
+            if question_key in seen_questions:
+                continue
+            seen_questions.add(question_key)
+            design_seen = True
+            prepared.append({"title": f"[needs-design] {clean_title}", "body": str(raw.get("body", "")).strip() + "\n\n## Decision required\n\n" + question, "question": question})
+            continue
         if kind != "agent-ready":
             raise ValueError(f"unsupported planned issue kind: {kind!r}")
         body = str(raw.get("body", "")).strip()
+        if design_seen and "independent of" not in body.casefold():
+            continue
         if "acceptance criteria" not in body.casefold() or "automated validation" not in body.casefold():
             raise ValueError("agent-ready plan items require acceptance criteria and automated validation")
-        prepared.append({"title": f"[agent-ready] {clean_title}", "body": body})
+        prepared.append({"title": f"[agent-ready] {clean_title}", "body": body, "question": ""})
     return prepared
 
 
@@ -224,7 +247,7 @@ def planning_prompt(context: dict[str, Any], requested: int) -> str:
 
 Read ROADMAP.md, DESIGN_LOCK.md, ARCHITECTURE.md, AGENTS.md, and the current repository before planning. Treat those files and the GitHub/repository history below as authoritative. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
 
-Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. If the next work requires a material decision not locked in the documentation, return a single needs-design item with exactly one decision question and no later work. If no planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
+Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue planning unrelated roadmap work, and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. If no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
 
 GitHub and repository history:
 {json.dumps(context, sort_keys=True)}
@@ -272,21 +295,60 @@ def invoke_planner(config: Config, context: dict[str, Any], requested: int, run_
     return json.loads(output.read_text(encoding="utf-8"))
 
 
+def notify_design_blocker(config: Config, issue: dict[str, Any], question: str) -> None:
+    """Best-effort one-shot delivery to a generic command via JSON stdin."""
+    if not config.design_notification_command:
+        return
+    command = shlex.split(config.design_notification_command)
+    if not command:
+        return
+    payload = {"issue_number": int(issue["number"]), "title": issue["title"], "url": issue["url"], "question": question}
+    result = subprocess.run(command, cwd=config.repo_root, input=json.dumps(payload) + "\n", text=True, capture_output=True, timeout=30)
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        raise RuntimeError(f"design notification failed ({result.returncode}): {detail}")
+
+
 def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
     created = 0
     for item in items:
-        current = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"])
-        prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"])
+        current = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,url,state"] )
+        prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"] )
         existing = {normalized_work_title(entry["title"]) for entry in [*current, *prs]}
         if normalized_work_title(item["title"]) in existing:
             continue
-        run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
+        if NEEDS_DESIGN.match(item["title"]):
+            question_key = normalized_question(item.get("question", ""))
+            open_questions = {normalized_question(decision_question(entry.get("body") or "")) for entry in current if entry.get("state") == "OPEN" and NEEDS_DESIGN.match(entry["title"])}
+            if question_key and question_key in open_questions:
+                continue
+        result = run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
         created += 1
+        if NEEDS_DESIGN.match(item["title"]):
+            url = result.stdout.strip().splitlines()[-1]
+            match = re.search(r"/(\d+)/?$", url)
+            if match:
+                try:
+                    notify_design_blocker(config, {"number": int(match.group(1)), "title": item["title"], "url": url}, item["question"])
+                except Exception as exc:
+                    print(f"notification warning for {url}: {exc}", file=sys.stderr)
     return created
 
 
-def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attempts: int) -> dict[str, Any] | None:
+def issue_blocker_numbers(issue: dict[str, Any]) -> set[int]:
+    explicit = issue.get("blockedBy") or issue.get("blocked_by") or []
+    numbers = {int(value) for value in explicit if str(value).isdigit()}
+    body = issue.get("body") or ""
+    for match in re.finditer(r"(?im)^\s*(?:blocked by|depends on)\s*:?[ \t]*#(\d+)\b", body):
+        numbers.add(int(match.group(1)))
+    return numbers
+
+
+def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attempts: int, open_design_numbers: set[int] | None = None) -> dict[str, Any] | None:
+    blockers = open_design_numbers or set()
     for issue in issues:
+        if issue_blocker_numbers(issue) & blockers:
+            continue
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
@@ -308,6 +370,10 @@ def mark_needs_design(config: Config, issue: dict[str, Any], question: str) -> N
     clean = READY.sub("", issue["title"]).strip()
     run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[needs-design] {clean}"], cwd=config.repo_root)
     comment(config, issue["number"], "Autonomous work paused because a material design decision is required:\n\n" + question)
+    try:
+        notify_design_blocker(config, {**issue, "title": f"[needs-design] {clean}"}, question)
+    except Exception as exc:
+        print(f"notification warning for issue #{issue['number']}: {exc}", file=sys.stderr)
 
 
 def worktree_for(config: Config, issue_number: int) -> tuple[Path, str]:
@@ -707,16 +773,20 @@ def main(argv: list[str] | None = None) -> int:
         state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
         needs_design = list_needs_design_issues(config)
-        selected = select_issue(issues, state, config.max_attempts)
-        refill_count = queue_refill_count(len(issues), bool(needs_design))
+        design_numbers = {int(item["number"]) for item in needs_design}
+        selected = select_issue(issues, state, config.max_attempts, design_numbers)
+        independent_ready_count = sum(not (issue_blocker_numbers(issue) & design_numbers) for issue in issues)
+        refill_count = queue_refill_count(independent_ready_count, bool(needs_design))
+        if design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
+            refill_count = 0
         if args.dry_run:
-            if needs_design:
-                blocker = needs_design[0]
-                print(f"design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
-            elif refill_count:
+            if refill_count:
                 print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
             elif selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
+            elif needs_design:
+                blocker = needs_design[0]
+                print(f"no independent work; design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
             else:
                 print("no eligible [agent-ready] issue")
             available, reason = budget_available(
@@ -756,17 +826,20 @@ def main(argv: list[str] | None = None) -> int:
                 plan = invoke_planner(config, context, refill_count, run_entry)
                 existing_titles = [item["title"] for item in context["issues"]]
                 existing_titles.extend(item["title"] for item in context["pull_requests"])
-                items = prepare_plan_items(plan, existing_titles, refill_count)
+                existing_questions = [decision_question(item.get("body") or "") for item in context["issues"] if item.get("state") == "OPEN" and NEEDS_DESIGN.match(item["title"])]
+                items = prepare_plan_items(plan, existing_titles, refill_count, existing_questions)
                 created = create_plan_issues(config, items)
                 if plan.get("outcome") == "exhausted":
+                    state["planning_exhausted_for_blockers"] = sorted(design_numbers)
                     print("roadmap exhausted; no further planned work remains")
                 else:
+                    state.pop("planning_exhausted_for_blockers", None)
                     print(f"queue replenishment created {created} issue(s)")
             except Exception as exc:
                 print(f"planning failed: {exc}", file=sys.stderr)
             save_state(state_path, state)
             return 0
-        selected = select_issue(issues, state, config.max_attempts)
+        selected = select_issue(issues, state, config.max_attempts, design_numbers)
         if not selected:
             save_state(state_path, state)
             print("no eligible [agent-ready] issue")
