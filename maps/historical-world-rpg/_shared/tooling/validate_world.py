@@ -111,6 +111,7 @@ def validate(path: Path) -> None:
     city_core = unique_index(data.get("cityCores", []), "cityCores")
     defense_layout = unique_index(data.get("defenseLayouts", []), "defenseLayouts")
     officer = unique_index(data.get("officers", []), "officers")
+    military_template = unique_index(data.get("militaryRuntimeTemplates", []), "militaryRuntimeTemplates")
     strategic_unit = unique_index(data.get("strategicUnits", []), "strategicUnits")
     army = unique_index(data.get("armies", []), "armies")
     fleet = unique_index(data.get("fleets", []), "fleets")
@@ -240,12 +241,24 @@ def validate(path: Path) -> None:
         if isinstance(strength, bool) or not isinstance(strength, int) or strength < 1:
             fail(f"{domain}: representedStrength must be a positive integer")
         require_id(unit.get("strengthUnitId"), f"{domain}.strengthUnitId")
+        location_id = unit.get("currentLocationId")
+        require_id(location_id, f"{domain}.currentLocationId")
+        if location_id not in navigation_zones:
+            fail(f"{domain}: missing location {location_id!r}")
+        movement_class = "land" if unit.get("kind") == "formation" else "naval"
+        if movement_class not in navigation_zones[location_id].get("movementClasses", []):
+            fail(f"{domain}: location {location_id!r} does not support {movement_class}")
         validate_operational_state(unit.get("operationalState"), domain)
         runtime = unit.get("runtimeInstantiation")
         if not isinstance(runtime, dict):
             fail(f"{domain}: runtimeInstantiation must be an object")
         state, count = runtime.get("state"), runtime.get("activeObjectCount")
         require_id(runtime.get("runtimeTemplateId"), f"{domain}.runtimeTemplateId")
+        template_id = runtime.get("runtimeTemplateId")
+        if template_id not in military_template:
+            fail(f"{domain}: missing runtime template {template_id!r}")
+        if military_template[template_id].get("unitKind") != unit.get("kind"):
+            fail(f"{domain}: incompatible runtime template {template_id!r}")
         if state not in {"abstract", "active"}:
             fail(f"{domain}: invalid runtime state")
         if isinstance(count, bool) or not isinstance(count, int) or count < 0:
@@ -274,6 +287,16 @@ def validate(path: Path) -> None:
             for officer_id in group.get("officerIds", []):
                 if officer_id not in officer:
                     fail(f"{domain}: missing officer {officer_id!r}")
+
+    for template_id, template in military_template.items():
+        if template.get("unitKind") not in {"formation", "ship"}:
+            fail(f"military runtime template {template_id}: invalid unitKind")
+        unit_type_id = template.get("warcraftUnitTypeId")
+        if not isinstance(unit_type_id, str) or len(unit_type_id) != 4:
+            fail(f"military runtime template {template_id}: warcraftUnitTypeId must contain four characters")
+        count = template.get("activeObjectCount")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+            fail(f"military runtime template {template_id}: activeObjectCount must be positive")
 
     for collection_name, definitions in (
         ("trait", trait), ("skill", skill), ("profession", profession)

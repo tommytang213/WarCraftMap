@@ -29,15 +29,27 @@
     },
     "strategicUnit": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "name", "kind", "legalOwnerPolityId", "controllerPolityId", "representedStrength", "strengthUnitId", "operationalState", "runtimeInstantiation", "officerIds"],
+      "required": ["id", "name", "kind", "legalOwnerPolityId", "controllerPolityId", "representedStrength", "strengthUnitId", "currentLocationId", "operationalState", "runtimeInstantiation", "officerIds"],
       "properties": {
         "id": { "$ref": "#/$defs/stableId" }, "name": { "type": "string", "minLength": 1 },
         "kind": { "type": "string", "enum": ["formation", "ship"] },
         "legalOwnerPolityId": { "$ref": "#/$defs/stableId" }, "controllerPolityId": { "$ref": "#/$defs/stableId" },
         "representedStrength": { "type": "integer", "minimum": 1 }, "strengthUnitId": { "$ref": "#/$defs/stableId" },
+        "currentLocationId": { "$ref": "#/$defs/stableId" },
         "operationalState": { "$ref": "#/$defs/operationalState" }, "runtimeInstantiation": { "$ref": "#/$defs/runtimeInstantiation" },
         "commanderOfficerId": { "$ref": "#/$defs/stableId" },
         "officerIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } }
+      }
+    },
+    "runtimeTemplate": {
+      "description": "Scenario-owned Warcraft representation and active-object balance data.",
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "unitKind", "warcraftUnitTypeId", "activeObjectCount"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableId" },
+        "unitKind": { "type": "string", "enum": ["formation", "ship"] },
+        "warcraftUnitTypeId": { "type": "string", "minLength": 4, "maxLength": 4 },
+        "activeObjectCount": { "type": "integer", "minimum": 1 }
       }
     },
     "army": {
