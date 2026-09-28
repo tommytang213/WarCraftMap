@@ -13,6 +13,7 @@ from automation.warcraftmap_agent.worker import (
     load_state,
     parse_codex_token_usage,
     create_plan_issues,
+    decision_question,
     notify_design_blocker,
     prepare_plan_items,
     queue_refill_count,
@@ -252,6 +253,45 @@ class WorkerTests(unittest.TestCase):
         question = "Which map scale should be used?"
         plan = {"outcome": "planned", "issues": [{"kind": "needs-design", "title": "Scale again", "body": "", "question": question}]}
         self.assertEqual(prepare_plan_items(plan, [], 10, [question]), [])
+
+    def test_decision_question_ignores_duplicated_decision_section(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        body = (
+            "Context.\n\n"
+            "## Decision required\n\n"
+            f"{question}\n\n"
+            "## Decision required\n\n"
+            f"{question}\n"
+        )
+        self.assertEqual(decision_question(body), question)
+
+    def test_create_plan_issues_skips_duplicate_question_even_if_existing_body_repeats_heading(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        existing = [{
+            "number": 108,
+            "title": "[needs-design] Define Africa scope",
+            "body": (
+                "Context.\n\n"
+                "## Decision required\n\n"
+                f"{question}\n\n"
+                "## Decision required\n\n"
+                f"{question}\n"
+            ),
+            "url": "https://example/issues/108",
+            "state": "OPEN",
+        }]
+        item = {
+            "title": "[needs-design] Use existing issue #108: Define Africa scope",
+            "body": f"## Decision required\n\n{question}",
+            "question": question,
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"))
+        with mock.patch(
+            "automation.warcraftmap_agent.worker.gh_json",
+            side_effect=[existing, []],
+        ), mock.patch("automation.warcraftmap_agent.worker.run") as invoked:
+            self.assertEqual(create_plan_issues(config, [item]), 0)
+        invoked.assert_not_called()
 
     def test_notification_payload_contains_required_fields(self):
         with tempfile.TemporaryDirectory() as directory:
