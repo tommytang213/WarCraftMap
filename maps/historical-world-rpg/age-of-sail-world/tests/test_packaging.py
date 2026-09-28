@@ -52,6 +52,8 @@ class PackagingTests(unittest.TestCase):
             names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
+        self.assertEqual(["england", "france"], [item["id"] for item in runtime["polityDefinitions"]])
+        self.assertEqual("london", runtime["polityDefinitions"][0]["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
     def test_generation_is_deterministic_and_clean_rebuilds_match(self):
