@@ -23,10 +23,16 @@ class DiplomaticEvent:
         return d
 
 class DiplomacyRuntime:
-    def __init__(self,polities,provinces=None,settlements=None):
+    def __init__(self,polities,provinces=None,settlements=None,initial_conflicts=()):
         self.polities,self.provinces,self.settlements=polities,provinces,settlements
         ids=polities.ids(); self._relations={_pair(a,b):"neutral" for i,a in enumerate(ids) for b in ids[i+1:]}
         self._conflicts={}; self._occupations={}; self._peace=[]; self._events=[]; self._next=1
+        for conflict in initial_conflicts:
+            attackers=conflict.get("attackerPolityIds",()); defenders=conflict.get("defenderPolityIds",())
+            if not attackers or not defenders: raise DiplomacyError("initial conflict sides must not be empty")
+            self.declare_war(conflict.get("id"),attackers[0],defenders[0])
+            for polity in attackers[1:]: self.join_conflict(conflict["id"],polity,"attacker")
+            for polity in defenders[1:]: self.join_conflict(conflict["id"],polity,"defender")
     @property
     def events(self):return tuple(self._events)
     @property

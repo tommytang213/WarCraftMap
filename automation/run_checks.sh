@@ -7,6 +7,7 @@ export PYTHONDONTWRITEBYTECODE=1
 
 python3 maps/historical-world-rpg/_shared/tooling/validate_world.py \
   maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+python3 maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py
 python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'
 python3 -m unittest discover -s automation/tests -p 'test_*.py'

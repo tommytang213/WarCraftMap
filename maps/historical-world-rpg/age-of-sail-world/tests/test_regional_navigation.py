@@ -5,6 +5,9 @@ ROOT = Path(__file__).resolve().parents[2]
 WORLD = Path(__file__).resolve().parents[1] / "scenario/world/world.json"
 spec = importlib.util.spec_from_file_location("regional_navigation", ROOT / "_shared/engine/regional_navigation.py")
 nav = importlib.util.module_from_spec(spec); sys.modules[spec.name] = nav; spec.loader.exec_module(nav)
+EUROPE = Path(__file__).resolve().parents[1] / "scenario/geography/europe.json"
+europe_spec = importlib.util.spec_from_file_location("europe_geography", Path(__file__).resolve().parents[1] / "tooling/europe_geography.py")
+europe_geo = importlib.util.module_from_spec(europe_spec); europe_spec.loader.exec_module(europe_geo)
 
 class Runtime:
     def __init__(self): self.objects = {"region": "europe"}; self.calls = []
@@ -95,5 +98,22 @@ class RegionalNavigationTests(unittest.TestCase):
         resumed.simulate_inactive(3, lambda state, region, days: inactive.append((region, days)))
         self.assertNotIn(resumed.state["activeRegionId"], {r for r, _ in inactive})
         self.assertEqual(6, len(inactive))
+
+    def test_europe_spatial_source_and_deterministic_generation(self):
+        source = json.loads(EUROPE.read_text()); world = json.loads(WORLD.read_text())
+        instances, anchors = europe_geo.validate(source, world)
+        self.assertEqual((8, 19), (len(instances), len(anchors)))
+        self.assertEqual(europe_geo.generate(source, world), europe_geo.generate(copy.deepcopy(source), copy.deepcopy(world)))
+        feature = json.loads(europe_geo.generate(source, world))["instances"][0]["features"][0]
+        self.assertTrue(feature["sourcePoints"] and feature["localPoints"])
+
+    def test_europe_seams_distortions_and_budgets_are_enforced(self):
+        source = json.loads(EUROPE.read_text()); world = json.loads(WORLD.read_text())
+        broken = copy.deepcopy(source); broken["boundaryAnchors"][1]["source"][0] += 1; broken["boundaryAnchors"][1]["local"][0] += 5
+        with self.assertRaisesRegex(europe_geo.GeographyError, "seam discontinuity"): europe_geo.validate(broken, world)
+        broken = copy.deepcopy(source); broken["distortions"][0]["orientationDeltaDegrees"] = 13
+        with self.assertRaisesRegex(europe_geo.GeographyError, "orientation exceeds"): europe_geo.validate(broken, world)
+        broken = copy.deepcopy(source); broken["instances"][0]["budget"]["maxControlPoints"] = 1
+        with self.assertRaisesRegex(europe_geo.GeographyError, "control points exceed"): europe_geo.validate(broken, world)
 
 if __name__ == "__main__": unittest.main()

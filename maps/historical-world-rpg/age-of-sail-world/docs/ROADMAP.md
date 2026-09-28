@@ -78,7 +78,10 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Cross-region troop command and remote regional building management
 - [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
 - [ ] Europe
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [ ] Settlements and playable content
 - [ ] Africa
 - [ ] Middle East / India
 - [ ] Southeast Asia

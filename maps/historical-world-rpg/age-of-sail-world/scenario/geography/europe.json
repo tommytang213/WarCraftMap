@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "id": "europe_spatial_1450",
+  "campaignStartDate": "1450-01-01",
+  "graphRegionId": "europe",
+  "coordinateRules": {
+    "sourceCrs": "EPSG:4326",
+    "axisOrder": ["longitude", "latitude"],
+    "localUnit": "terrain_cell",
+    "precisionDecimals": 2,
+    "transform": "local = round((source - sourceOrigin) * scale + offset + declaredDistortion, precisionDecimals)",
+    "seamSourceToleranceDegrees": 0.05,
+    "seamLocalToleranceCells": 0.25,
+    "orientationToleranceDegrees": 12,
+    "adjacencyToleranceCells": 8,
+    "maxUndeclaredDisplacementCells": 0.01
+  },
+  "requiredFeatureIds": {
+    "coastline": ["coast_british_isles", "coast_atlantic_iberia", "coast_channel_low_countries", "coast_jutland", "coast_italian_peninsula", "coast_adriatic_balkan", "coast_black_sea"],
+    "island": ["island_ireland", "island_great_britain", "island_iceland", "island_balearics", "island_sicily", "island_sardinia_corsica", "island_crete", "island_cyprus"],
+    "strait": ["strait_english_channel", "strait_gibraltar", "strait_danish_belts", "strait_messina", "strait_otranto", "strait_bosporus_dardanelles"],
+    "river": ["river_thames", "river_tagus", "river_seine", "river_rhine", "river_danube", "river_po", "river_dnieper", "river_volga_upper"],
+    "mountain_barrier": ["mountains_pyrenees", "mountains_alps", "mountains_scandinavian", "mountains_apennines", "mountains_dinaric", "mountains_carpathians", "mountains_caucasus"]
+  },
+  "instances": [
+    {
+      "id": "europe_atlantic_isles", "name": "Atlantic Isles and Channel Approaches", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Open Atlantic water, the English Channel, and sparsely settled northern seas provide maritime seams.",
+      "transform": {"sourceOrigin": [-25, 35], "scale": [3, 3], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 84, "maxY": 95},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 8},
+      "features": [
+        {"id": "coast_british_isles", "kind": "coastline", "points": [[-5.7,50.1],[-4.8,51.8],[-6.0,54.5],[-5.0,58.5],[-1.5,57.5],[1.4,52.9],[0.1,50.8]]},
+        {"id": "island_ireland", "kind": "island", "points": [[-10.5,51.5],[-10.0,54.2],[-7.2,55.3],[-6.0,53.3],[-8.0,51.4]]},
+        {"id": "island_great_britain", "kind": "island", "points": [[-5.7,50.1],[-5.0,58.5],[-1.5,57.5],[1.4,52.9],[0.1,50.8]]},
+        {"id": "island_iceland", "kind": "island", "points": [[-24.5,63.4],[-22.0,66.4],[-14.0,66.0],[-13.5,64.1],[-19.0,63.3]]},
+        {"id": "strait_english_channel", "kind": "strait", "points": [[-5.0,49.5],[1.5,50.9]]},
+        {"id": "river_thames", "kind": "river", "points": [[-1.7,51.6],[-0.1,51.5],[0.8,51.5]]}
+      ]
+    },
+    {
+      "id": "europe_iberia_western_med", "name": "Iberia and Western Mediterranean", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "The Pyrenees, Bay of Biscay, Gulf of Lion, and western Mediterranean form readable natural seams.",
+      "transform": {"sourceOrigin": [-11, 35], "scale": [4, 4], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 84, "maxY": 44},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 8},
+      "features": [
+        {"id": "coast_atlantic_iberia", "kind": "coastline", "points": [[-9.5,43.0],[-9.2,38.7],[-8.8,37.0],[-5.6,36.0],[-1.0,37.6],[3.3,42.3]]},
+        {"id": "island_balearics", "kind": "island", "points": [[1.2,38.7],[2.9,39.8],[4.2,39.9]]},
+        {"id": "strait_gibraltar", "kind": "strait", "points": [[-5.9,36.0],[-5.4,35.9]]},
+        {"id": "river_tagus", "kind": "river", "points": [[-1.7,40.0],[-5.0,39.7],[-9.1,38.7]]},
+        {"id": "mountains_pyrenees", "kind": "mountain_barrier", "points": [[-1.8,43.0],[0.5,42.7],[3.1,42.5]]}
+      ]
+    },
+    {
+      "id": "europe_france_low_countries", "name": "France and Low Countries", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Channel coast, Rhine corridor, Alpine foothills, and Pyrenean watershed avoid political borders.",
+      "transform": {"sourceOrigin": [-6, 43], "scale": [5, 5], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 90, "maxY": 50},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 8},
+      "features": [
+        {"id": "coast_channel_low_countries", "kind": "coastline", "points": [[-4.8,48.4],[-1.5,49.7],[1.5,50.9],[4.0,51.4],[6.0,53.0]]},
+        {"id": "river_seine", "kind": "river", "points": [[3.7,48.5],[2.3,48.9],[0.1,49.4]]},
+        {"id": "river_rhine", "kind": "river", "points": [[8.2,47.6],[7.6,49.5],[6.7,51.0],[4.1,52.0]]}
+      ]
+    },
+    {
+      "id": "europe_central_alpine", "name": "Central Europe and Alpine Basin", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Rhine, Baltic watershed, Carpathian approaches, and Alpine passes define practical transition corridors.",
+      "transform": {"sourceOrigin": [5, 44], "scale": [4, 4], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 80, "maxY": 48},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 10},
+      "features": [
+        {"id": "mountains_alps", "kind": "mountain_barrier", "points": [[6.8,45.8],[9.0,46.2],[12.0,46.7],[15.0,47.0]]},
+        {"id": "river_danube", "kind": "river", "points": [[8.2,47.9],[12.9,48.6],[16.4,48.2],[19.1,47.5],[22.5,45.3]]}
+      ]
+    },
+    {
+      "id": "europe_baltic_scandinavia", "name": "Baltic and Scandinavia", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Danish narrows, Baltic sea lanes, forests, and the Scandinavian watershed bound the instance.",
+      "transform": {"sourceOrigin": [5, 53], "scale": [3, 3], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 81, "maxY": 54},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 8},
+      "features": [
+        {"id": "coast_jutland", "kind": "coastline", "points": [[8.0,54.8],[8.5,57.7],[10.6,57.7],[12.6,55.6]]},
+        {"id": "strait_danish_belts", "kind": "strait", "points": [[10.6,55.5],[12.6,55.7]]},
+        {"id": "mountains_scandinavian", "kind": "mountain_barrier", "points": [[7.5,58.0],[8.0,62.0],[12.0,66.0],[18.0,68.5]]}
+      ]
+    },
+    {
+      "id": "europe_italy_central_med", "name": "Italy and Central Mediterranean", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Alpine crest and surrounding deep water isolate the peninsula while preserving island routes.",
+      "transform": {"sourceOrigin": [6, 36], "scale": [5, 5], "offset": [0, 0]},
+      "localBounds": {"minX": 0, "minY": 0, "maxX": 70, "maxY": 60},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 8},
+      "features": [
+        {"id": "coast_italian_peninsula", "kind": "coastline", "points": [[8.8,44.0],[12.4,45.5],[13.8,42.5],[16.0,38.0],[15.6,40.0],[12.0,43.0],[9.0,44.0]]},
+        {"id": "island_sicily", "kind": "island", "points": [[12.4,38.0],[15.6,38.2],[15.0,36.7],[12.5,37.5]]},
+        {"id": "island_sardinia_corsica", "kind": "island", "points": [[8.2,38.9],[9.5,41.2],[8.6,43.0],[9.5,43.0]]},
+        {"id": "strait_messina", "kind": "strait", "points": [[15.5,38.3],[15.7,38.2]]},
+        {"id": "river_po", "kind": "river", "points": [[7.0,44.7],[10.0,45.0],[12.3,45.0]]},
+        {"id": "mountains_apennines", "kind": "mountain_barrier", "points": [[9.5,44.2],[12.5,42.8],[15.5,39.5]]}
+      ]
+    },
+    {
+      "id": "europe_balkans_aegean", "name": "Balkans and Aegean", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Adriatic and Aegean waters, Carpathian arc, and Bosporus approaches provide natural boundaries.",
+      "transform": {"sourceOrigin": [18, 35], "scale": [5, 5], "offset": [0, 0]},
+      "localBounds": {"minX": -16, "minY": 0, "maxX": 75, "maxY": 70},
+      "budget": {"maxFeatures": 20, "maxControlPoints": 80, "maxBoundaryAnchors": 10},
+      "features": [
+        {"id": "coast_adriatic_balkan", "kind": "coastline", "points": [[18.5,42.0],[16.0,43.5],[15.0,45.0],[19.0,40.0],[23.0,37.0],[26.0,40.0]]},
+        {"id": "island_crete", "kind": "island", "points": [[23.5,35.3],[26.3,35.2],[25.0,35.0]]},
+        {"id": "island_cyprus", "kind": "island", "points": [[31.0,35.0],[32.5,35.2],[33.0,35.0]]},
+        {"id": "strait_otranto", "kind": "strait", "points": [[18.5,40.1],[19.3,40.0]]},
+        {"id": "strait_bosporus_dardanelles", "kind": "strait", "points": [[26.2,40.2],[29.0,41.1]]},
+        {"id": "mountains_dinaric", "kind": "mountain_barrier", "points": [[14.8,46.0],[17.5,43.5],[20.0,42.0]]}
+      ]
+    },
+    {
+      "id": "europe_eastern_black_sea", "name": "Eastern Europe and Black Sea", "graphRegionId": "europe", "graphAreaId": "europe_coarse",
+      "seamRationale": "Carpathians, Baltic watershed, steppe transition, Caucasus, and Black Sea approaches form broad natural seams.",
+      "transform": {"sourceOrigin": [20, 43], "scale": [3, 3], "offset": [0, 0]},
+      "localBounds": {"minX": -2, "minY": -6, "maxX": 66, "maxY": 51},
+      "budget": {"maxFeatures": 18, "maxControlPoints": 72, "maxBoundaryAnchors": 10},
+      "features": [
+        {"id": "coast_black_sea", "kind": "coastline", "points": [[28.9,43.4],[32.0,46.0],[38.0,47.0],[41.5,42.5],[35.0,41.0],[29.0,41.0]]},
+        {"id": "river_dnieper", "kind": "river", "points": [[30.5,54.5],[31.0,50.5],[33.5,46.5]]},
+        {"id": "river_volga_upper", "kind": "river", "points": [[33.0,58.0],[37.5,56.0],[40.0,52.0]]},
+        {"id": "mountains_carpathians", "kind": "mountain_barrier", "points": [[19.5,49.5],[23.0,48.0],[25.5,46.5]]},
+        {"id": "mountains_caucasus", "kind": "mountain_barrier", "points": [[39.0,43.5],[42.0,43.2]]}
+      ]
+    }
+  ],
+  "boundaryAnchors": [
+    {"id":"seam_channel_north","instanceId":"europe_atlantic_isles","pairId":"seam_channel_south","source":[1.5,50.9],"local":[79.5,47.7],"movementClasses":["naval","amphibious"]},
+    {"id":"seam_channel_south","instanceId":"europe_france_low_countries","pairId":"seam_channel_north","source":[1.5,50.9],"local":[37.5,39.5],"movementClasses":["naval","amphibious"]},
+    {"id":"seam_pyrenees_west","instanceId":"europe_iberia_western_med","pairId":"seam_pyrenees_east","source":[-1.8,43.0],"local":[36.8,32.0],"movementClasses":["land","amphibious"]},
+    {"id":"seam_pyrenees_east","instanceId":"europe_france_low_countries","pairId":"seam_pyrenees_west","source":[-1.8,43.0],"local":[21.0,0.0],"movementClasses":["land","amphibious"]},
+    {"id":"seam_rhine_west","instanceId":"europe_france_low_countries","pairId":"seam_rhine_east","source":[7.6,49.5],"local":[68.0,32.5],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_rhine_east","instanceId":"europe_central_alpine","pairId":"seam_rhine_west","source":[7.6,49.5],"local":[10.4,22.0],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_jutland_south","instanceId":"europe_central_alpine","pairId":"seam_jutland_north","source":[10.0,55.5],"local":[20.0,46.0],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_jutland_north","instanceId":"europe_baltic_scandinavia","pairId":"seam_jutland_south","source":[10.0,55.5],"local":[15.0,7.5],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_alps_north","instanceId":"europe_central_alpine","pairId":"seam_alps_south","source":[12.0,46.7],"local":[28.0,10.8],"movementClasses":["land","amphibious"]},
+    {"id":"seam_alps_south","instanceId":"europe_italy_central_med","pairId":"seam_alps_north","source":[12.0,46.7],"local":[30.0,53.5],"movementClasses":["land","amphibious"]},
+    {"id":"seam_adriatic_west","instanceId":"europe_italy_central_med","pairId":"seam_adriatic_east","source":[18.5,40.1],"local":[62.5,20.5],"movementClasses":["naval","amphibious"]},
+    {"id":"seam_adriatic_east","instanceId":"europe_balkans_aegean","pairId":"seam_adriatic_west","source":[18.5,40.1],"local":[2.5,25.5],"movementClasses":["naval","amphibious"]},
+    {"id":"seam_carpathian_west","instanceId":"europe_central_alpine","pairId":"seam_carpathian_east","source":[23.0,48.0],"local":[72.0,16.0],"movementClasses":["land","amphibious"]},
+    {"id":"seam_carpathian_east","instanceId":"europe_eastern_black_sea","pairId":"seam_carpathian_west","source":[23.0,48.0],"local":[9.0,15.0],"movementClasses":["land","amphibious"]},
+    {"id":"seam_bosporus_west","instanceId":"europe_balkans_aegean","pairId":"seam_bosporus_east","source":[29.0,41.1],"local":[55.0,30.5],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_bosporus_east","instanceId":"europe_eastern_black_sea","pairId":"seam_bosporus_west","source":[29.0,41.1],"local":[27.0,5.7],"movementClasses":["land","naval","amphibious"],"distortion":{"offset":[0,11.4],"reason":"Raise the Bosporus approach into the playable southern margin while retaining east-west ordering."}},
+    {"id":"europe_atlantic_global","instanceId":"europe_atlantic_isles","globalAnchorId":"europe_west","source":[-25.0,50.0],"local":[0.0,45.0],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"europe_africa_global","instanceId":"europe_iberia_western_med","globalAnchorId":"europe_south","source":[-5.6,36.0],"local":[21.6,4.0],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"europe_middle_east_global","instanceId":"europe_balkans_aegean","globalAnchorId":"europe_east","source":[29.0,41.1],"local":[55.0,30.5],"movementClasses":["land","naval","amphibious","flying"]}
+  ],
+  "distortions": [
+    {"id":"distortion_bosporus_playable_margin","anchorId":"seam_bosporus_east","displacementCells":11.4,"orientationDeltaDegrees":0,"adjacencyGapCells":0,"preservesOrientation":true,"preservesAdjacency":true,"reason":"The adjoining Middle East transition needs a navigable southern margin instead of a clipped coordinate."}
+  ]
+}
