@@ -70,6 +70,9 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 ## Phase 5 — Age of Sail world content
 
+- [ ] Early performance stress harness and provisional budgets
+- [ ] Synthetic large-world simulation tests before full content population
+- [ ] Maximum-reasonable local battle performance test
 - [ ] Global geography/navigation topology
 - [ ] Europe
 - [ ] Africa
@@ -97,7 +100,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 ## Phase 7 — Full-world integration and balancing
 
 - [ ] Multi-century simulation soak tests
-- [ ] Performance budgets
+- [ ] Finalize performance budgets against full-world content
 - [ ] Economy balancing
 - [ ] AI territorial warfare
 - [ ] Save/load stress testing
