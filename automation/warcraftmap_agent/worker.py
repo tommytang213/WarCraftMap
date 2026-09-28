@@ -316,9 +316,7 @@ def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
             continue
         if NEEDS_DESIGN.match(item["title"]):
             question_key = normalized_question(item.get("question", ""))
-            open_questions = {normalized_question(decision_question(entry.get("body") or "")) for entry in current if entry.get("state") == "OPEN" and NEEDS_DESIGN.match(entry["title"])}
-            if question_key and question_key in open_questions:
-                continue
+            historical_questions = {\n                normalized_question(question)\n                for entry in current\n                if (question := decision_question(entry.get("body") or ""))\n            }\n            if question_key and question_key in historical_questions:\n                continue
         result = run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
         created += 1
         if NEEDS_DESIGN.match(item["title"]):
@@ -845,7 +843,7 @@ def main(argv: list[str] | None = None) -> int:
                 plan = invoke_planner(config, context, refill_count, run_entry)
                 existing_titles = [item["title"] for item in context["issues"]]
                 existing_titles.extend(item["title"] for item in context["pull_requests"])
-                existing_questions = [decision_question(item.get("body") or "") for item in context["issues"] if item.get("state") == "OPEN" and NEEDS_DESIGN.match(item["title"])]
+                existing_questions = [question for item in context["issues"] if (question := decision_question(item.get("body") or ""))]
                 items = prepare_plan_items(plan, existing_titles, refill_count, existing_questions)
                 created = create_plan_issues(config, items)
                 if plan.get("outcome") == "exhausted":
