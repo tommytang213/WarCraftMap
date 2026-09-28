@@ -3,6 +3,8 @@ import WC3Compatibility
 import CommandRouter
 import ScenarioData
 import ManagementScreenPauseController
+import UnstuckRecovery
+import WarcraftRecoveryRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -10,7 +12,10 @@ constant int SAVE_SCHEMA_VERSION = 1
 init
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
-	installCommandRegistry(createCommandRegistry(false))
+	configureRecoveryScenario(recoveryService)
+	let commands = createCommandRegistry(false)
+	registerUnstuckCommand(commands, recoveryService)
+	installCommandRegistry(commands)
 	if SCENARIO_SCHEMA_VERSION <= 0
 		print("Scenario data failed to load.")
 	if getScenarioRuntimeData() == ""

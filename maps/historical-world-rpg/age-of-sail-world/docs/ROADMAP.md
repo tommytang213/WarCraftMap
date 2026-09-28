@@ -50,7 +50,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] UI pause policy for management screens
 - [x] Campaign save manager
 - [ ] 15-slot rolling autosave scheduler
-- [ ] /unstuck + last-safe-position system
+- [x] /unstuck + last-safe-position system
 - [ ] Player-only emergency invulnerability command
 
 ## Phase 4 — Core world simulation

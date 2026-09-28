@@ -1,0 +1,183 @@
+package UnstuckRecoveryTests
+
+import UnstuckRecovery
+
+class RecordingRecoveryRuntime implements RecoveryRuntime
+	string array[16] selected
+	int selectedSize = 0
+	string array[16] active
+	int activeSize = 0
+	string main = "hero"
+	string relevant = "europe"
+	string enemy = "enemy"
+	string missing = "missing"
+	string invalid = ""
+	string array[16] otherRegion
+	string array[32] moved
+	real array[32] movedX
+	int moveCount = 0
+	string lastMessage = ""
+	override function selectedCount(player owner) returns int
+		return selectedSize
+	override function selectedStableId(player owner, int index) returns string
+		return selected[index]
+	override function activeCount(player owner) returns int
+		return activeSize
+	override function activeStableId(player owner, int index) returns string
+		return active[index]
+	override function mainCharacterStableId(player owner) returns string
+		return main
+	override function isPresent(string id) returns boolean
+		return id != missing
+	override function isPlayerControlled(string id, player owner) returns boolean
+		return id != enemy
+	override function currentRegion(string id) returns string
+		for i = 0 to activeSize - 1
+			if active[i] == id and otherRegion[i] != null and otherRegion[i] != ""
+				return otherRegion[i]
+		return relevant
+	override function relevantRegion(player owner) returns string
+		return relevant
+	override function verifyDestination(string id, int movementClass, real x, real y) returns boolean
+		return id != missing and id != invalid
+	override function move(string id, real x, real y)
+		moved[moveCount] = id
+		movedX[moveCount] = x
+		moveCount++
+	override function feedback(player owner, string message)
+		lastMessage = message
+
+function addZone(UnstuckRecoveryService service, string id, int kind) returns RecoveryZone
+	let result = new RecoveryZone(id)
+	result.addMovement(kind)
+	service.addZone(result)
+	return result
+
+function addPoint(UnstuckRecoveryService service, string id, string zone, int kind, real x, boolean anchor) returns RecoveryPoint
+	let result = new RecoveryPoint(id, zone, x, 0., true, anchor)
+	result.addMovement(kind)
+	service.addPoint(result)
+	return result
+
+function standard(RecordingRecoveryRuntime runtime) returns UnstuckRecoveryService
+	let service = new UnstuckRecoveryService(runtime)
+	let land = addZone(service, "land", MOVE_LAND)
+	land.addMovement(MOVE_AMPHIBIOUS)
+	land.addMovement(MOVE_FLYING)
+	let water = addZone(service, "water", MOVE_NAVAL)
+	water.addMovement(MOVE_AMPHIBIOUS)
+	water.addMovement(MOVE_FLYING)
+	land.connect(MOVE_AMPHIBIOUS, "water")
+	water.connect(MOVE_AMPHIBIOUS, "land")
+	land.connect(MOVE_FLYING, "water")
+	water.connect(MOVE_FLYING, "land")
+	addPoint(service, "land_anchor", "land", MOVE_LAND, 30., true)
+	addPoint(service, "water_anchor", "water", MOVE_NAVAL, 40., true)
+	return service
+
+function mobile(string id, int kind, string zone) returns RecoveryEntity
+	return new RecoveryEntity(id, kind, zone, true, true, false, false, true)
+
+@test function emptySelectionUsesMainCharacter()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = standard(runtime)
+	service.addEntity(mobile("hero", MOVE_LAND, "land"))
+	service.recoverSelection(null).recovered.assertEquals(1)
+	runtime.moved[0].assertEquals("hero")
+
+@test function eligibleMixedAndIneligibleSelectionsAreDeterministic()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = standard(runtime)
+	service.addEntity(mobile("hero", MOVE_LAND, "land"))
+	service.addEntity(new RecoveryEntity("tower", MOVE_LAND, "land", false, true, false, false, false))
+	runtime.selected[0] = "hero"
+	runtime.selected[1] = "tower"
+	runtime.selectedSize = 2
+	let mixed = service.recoverSelection(null)
+	mixed.recovered.assertEquals(1)
+	mixed.skipped.assertEquals(1)
+	runtime.selected[0] = "tower"
+	runtime.selectedSize = 1
+	service.recoverSelection(null).recovered.assertEquals(0)
+	runtime.moveCount.assertEquals(1)
+
+@test function allFiltersRegionOwnershipAndPhysicalEligibility()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = standard(runtime)
+	runtime.active[0] = "land_unit"
+	runtime.active[1] = "remote"
+	runtime.active[2] = "enemy"
+	runtime.active[3] = "dummy"
+	runtime.active[4] = "inactive"
+	runtime.active[5] = "abstract"
+	runtime.activeSize = 6
+	service.addEntity(mobile("land_unit", MOVE_LAND, "land"))
+	service.addEntity(mobile("remote", MOVE_LAND, "land"))
+	service.addEntity(mobile("enemy", MOVE_LAND, "land"))
+	service.addEntity(new RecoveryEntity("dummy", MOVE_LAND, "land", true, true, true, false, false))
+	service.addEntity(new RecoveryEntity("inactive", MOVE_LAND, "land", true, false, false, false, false))
+	service.addEntity(new RecoveryEntity("abstract", MOVE_LAND, "land", true, true, false, true, false))
+	runtime.otherRegion[1] = "americas"
+	service.recoverAll(null).recovered.assertEquals(1)
+	runtime.moveCount.assertEquals(1)
+	runtime.moved[0].assertEquals("land_unit")
+
+@test function recoveryPriorityAndFailureDoNotMove()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = new UnstuckRecoveryService(runtime)
+	addZone(service, "land", MOVE_LAND)
+	let tracked = mobile("hero", MOVE_LAND, "land")
+	service.addEntity(tracked)
+	tracked.hasLastSafe = true
+	tracked.lastSafeZone = "land"
+	tracked.lastSafeX = 20.
+	addPoint(service, "nearby", "land", MOVE_LAND, 10., false)
+	addPoint(service, "anchor", "land", MOVE_LAND, 30., true)
+	service.recoverEntity("hero")
+	runtime.movedX[0].assertEquals(10.)
+	service.setPointVerified("nearby", false)
+	service.recoverEntity("hero")
+	runtime.movedX[1].assertEquals(20.)
+	tracked.hasLastSafe = false
+	service.recoverEntity("hero")
+	runtime.movedX[2].assertEquals(30.)
+	runtime.invalid = "hero"
+	service.recoverEntity("hero").assertEquals(false)
+	runtime.moveCount.assertEquals(3)
+
+@test function movementClassesPreserveConnectedComponents()
+	for kind = MOVE_LAND to MOVE_FLYING
+		let runtime = new RecordingRecoveryRuntime()
+		let service = new UnstuckRecoveryService(runtime)
+		let a = addZone(service, "a", kind)
+		addZone(service, "b", kind)
+		addZone(service, "island", kind)
+		a.connect(kind, "b")
+		service.zone("b").connect(kind, "a")
+		let id = "unit" + kind.toString()
+		service.addEntity(mobile(id, kind, "a"))
+		addPoint(service, "bad", "island", kind, 1., false)
+		addPoint(service, "good", "b", kind, 2., true)
+		service.recoverEntity(id).assertEquals(true)
+		runtime.movedX[0].assertEquals(2.)
+
+@test function lastSafeRoundTripStaleAndInvalidation()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = new UnstuckRecoveryService(runtime)
+	addZone(service, "land", MOVE_LAND)
+	service.addEntity(mobile("hero", MOVE_LAND, "land"))
+	service.updateLastSafe("hero", "land", 5., 6.).assertEquals(true)
+	service.exportLastSafe("hero").assertEquals("hero|land|5.0|6.0")
+	service.entity("hero").hasLastSafe = false
+	service.importLastSafe("hero", "land", 5., 6.).assertEquals(true)
+	service.importLastSafe("stale", "land", 1., 1.).assertEquals(false)
+	runtime.invalid = "hero"
+	service.clearInvalidLastSafe()
+	service.entity("hero").hasLastSafe.assertEquals(false)
+
+@test function commandValidatesAllKeywordAndPublishesHelp()
+	let runtime = new RecordingRecoveryRuntime()
+	let service = standard(runtime)
+	let command = new UnstuckCommand(service)
+	command.execute(null, "nearby")
+	runtime.lastMessage.assertEquals("Invalid arguments. Usage: /unstuck [all]")
