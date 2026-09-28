@@ -62,7 +62,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Technology/institutions
 - [x] Economy/trade
 - [x] Diplomacy/war
-- [ ] Armies/fleets
+- [x] Armies/fleets
 - [x] City capture/rebuild
 - [ ] Titles/land/taxation
 - [ ] Characters/relationships

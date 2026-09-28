@@ -13,6 +13,10 @@ invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 
 `timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
 
+`military.py` owns authoritative strategic units, armies, fleets, movement,
+operational state, and stable-ID persistence. Warcraft objects are transient,
+locally relevant representations created only through a compatibility adapter.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement
@@ -21,7 +25,6 @@ Planned modules include:
 - technology and institutions
 - economy, goods, trade, taxation
 - diplomacy, wars, occupations and peace settlements
-- armies and fleets
 - characters, loyalty, relationships and Oathbound progression
 - titles, peerage, land grants, vassalage and sovereignty
 - quests and historical events
