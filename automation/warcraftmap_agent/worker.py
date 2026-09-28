@@ -183,10 +183,7 @@ def normalized_work_title(title: str) -> str:
 
 
 def decision_question(body: str) -> str:
-    marker = re.search(r"(?im)^## Decision required\s*$", body)
-    return body[marker.end():].strip() if marker else ""
-
-
+    """Return only the first decision-question block from an issue body.\n\n    Planner/issue edits can accidentally duplicate the Decision required\n    section. Treat only the first paragraph after the first marker as the\n    canonical question so repeated headings cannot defeat duplicate detection.\n    """\n    marker = re.search(r"(?im)^## Decision required\\s*$", body)\n    if not marker:\n        return ""\n    remainder = body[marker.end():].lstrip()\n    if not remainder:\n        return ""\n    next_heading = re.search(r"(?m)^#{1,6}\\s+\\S.*$", remainder)\n    if next_heading:\n        remainder = remainder[:next_heading.start()]\n    return re.split(r"\\n\\s*\\n", remainder, maxsplit=1)[0].strip()\n
 def normalized_question(question: str) -> str:
     return re.sub(r"\s+", " ", question.casefold()).strip()
 
