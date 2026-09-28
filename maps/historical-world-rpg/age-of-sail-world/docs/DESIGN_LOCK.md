@@ -154,7 +154,10 @@ This file records requirements already agreed with the player. They are defaults
 - When the player reaches the destination region, the helper may provide a local marker, minimap ping, or directional indicator toward the known quest location.
 - Returning to a quest giver or turn-in point must be supported explicitly; completed objectives should still retain their return destination until the quest is actually turned in.
 - Visiting a settlement or accepting a quest there is sufficient to record that settlement as known for later navigation.
-- Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds. A quest may reveal an exact destination, only a region, or no marker at all according to its scenario data.
+- Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds. A quest may reveal an exact destination, only a region, an approximate search area, or no marker at all according to its scenario data.
+- Approximate quest knowledge should be visualized as a bounded search area rather than a false precise point. For example, a clue such as "somewhere in the Amazon" may highlight or ping a large circle/region covering the plausible search area.
+- Search areas may shrink, move, split, or become an exact marker as the player obtains better clues, explores, talks to characters, finds maps, or completes intermediate objectives.
+- The displayed uncertainty area is informational and should reflect only the precision of the clues actually known to the player.
 - The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character.
 - Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel.
 
