@@ -47,11 +47,11 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Latest-WC3 compatibility module
 - [x] Map build pipeline
 - [x] Command router + paged /help
-- [ ] UI pause policy for management screens
+- [x] UI pause policy for management screens
 - [x] Campaign save manager
 - [x] 15-slot rolling autosave scheduler
 - [x] /unstuck + last-safe-position system
-- [ ] Player-only emergency invulnerability command
+- [x] Player-only emergency invulnerability command
 
 ## Phase 4 — Core world simulation
 
@@ -74,6 +74,9 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Synthetic large-world simulation tests before full content population
 - [ ] Maximum-reasonable local battle performance test
 - [ ] Global geography/navigation topology
+- [ ] Regional instance activation, boundary transitions, and cross-region travel
+- [ ] Cross-region troop command and remote regional building management
+- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
 - [ ] Europe
 - [ ] Africa
 - [ ] Middle East / India
