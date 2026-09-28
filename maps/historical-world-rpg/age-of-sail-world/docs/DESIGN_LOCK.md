@@ -133,6 +133,18 @@ This file records requirements already agreed with the player. They are defaults
 - Nested/modal screen transitions keep the campaign paused until the final modal management screen closes.
 - Closing a management screen must restore the pause state that existed before the first modal management screen opened; it must not unpause a game that the player had already manually paused.
 
+## World-map representation and regional traversal
+
+- The global world uses separate logical regional map instances rather than one physically contiguous world terrain.
+- The initial implementation remains within the project's single packaged `.w3x`: regions are isolated playable terrain instances/areas managed by the scenario/runtime rather than separate Warcraft map files.
+- Crossing a valid land or sea boundary transitions the player and other locally relevant runtime representations to the geographically adjacent region and reconstructs them at the corresponding entry boundary.
+- Regional adjacency follows real-world geography and compass direction. For example, leaving Europe westward across the Atlantic leads toward eastern North America; leaving Europe eastward leads toward Asia/Middle East rather than America.
+- Long-distance ocean travel may use direct region-to-region routes with campaign-time advancement and encounter/event hooks rather than requiring one enormous continuously rendered ocean. Dedicated ocean/encounter instances may be used where gameplay benefits.
+- Each region uses gameplay-compressed geography rather than one rigid global projection or uniform scale. Preserve recognizable coastlines, relative direction, major geographic relationships, settlement ordering, and important travel routes while compressing empty distance aggressively.
+- Regions not currently active remain authoritative abstract campaign state. Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded.
+- Region transitions must preserve authoritative unit, party, fleet, quest, inventory, and campaign state; transient Warcraft objects are reconstructed from stable IDs/state after arrival.
+- Transition boundaries and entry points must be explicit scenario data so geography/navigation remains reusable and testable.
+
 ## Performance and simulation scale
 
 - Performance is a design constraint throughout content production, not a cleanup task deferred until final integration.
