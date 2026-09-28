@@ -338,6 +338,29 @@ def validate(path: Path) -> None:
         require_score(loyalty.get("score"), f"{domain}.loyalty.score")
         if loyalty.get("permanentState") not in allowed_permanent_states:
             fail(f"{domain}.loyalty: invalid permanentState")
+        allegiance_id = value.get("allegiancePolityId")
+        if allegiance_id is not None and allegiance_id not in polity:
+            fail(f"{domain}: missing allegiance polity {allegiance_id!r}")
+        for field in ("available", "recruited", "active"):
+            if field in value and not isinstance(value[field], bool):
+                fail(f"{domain}.{field}: must be boolean")
+        if value.get("recruited", False) and (not value.get("available", True) or not value.get("active", True)):
+            fail(f"{domain}: recruited character must be active and available")
+        costs = value.get("recruitmentCosts", [])
+        if not isinstance(costs, list): fail(f"{domain}.recruitmentCosts: must be an array")
+        seen_resources = set()
+        for cost in costs:
+            if not isinstance(cost, dict): fail(f"{domain}.recruitmentCosts: every entry must be an object")
+            resource_id = cost.get("resourceId"); require_id(resource_id, f"{domain}.recruitmentCosts.resourceId")
+            if resource_id in seen_resources: fail(f"{domain}.recruitmentCosts: duplicate resource {resource_id!r}")
+            seen_resources.add(resource_id); amount = cost.get("amount")
+            if isinstance(amount, bool) or not isinstance(amount, (int, float)) or amount < 0: fail(f"{domain}.recruitmentCosts.amount: must be non-negative")
+        for field in ("rewardIds", "titleGrantIds"):
+            values = value.get(field, [])
+            if not isinstance(values, list) or len(values) != len(set(values)): fail(f"{domain}.{field}: must contain unique stable IDs")
+            for ident in values: require_id(ident, f"{domain}.{field}")
+        for grant_id in value.get("titleGrantIds", []):
+            if grant_id not in title_grants: fail(f"{domain}: missing title grant {grant_id!r}")
 
     for quest_id, quest in personal_quest.items():
         character_id = quest.get("characterId")
@@ -347,7 +370,7 @@ def validate(path: Path) -> None:
             fail(f"personal quest {quest_id}: character {character_id!r} does not list the quest")
 
     allowed_scopes = {"loyalty", "companion_relationship"}
-    allowed_consequences = {"buff", "debuff", "content_unlock"}
+    allowed_consequences = {"buff", "debuff", "content_unlock", "unlock", "synergy", "friction", "content_availability"}
     for threshold_id, value in threshold.items():
         domain = f"relationship threshold {threshold_id}"
         if value.get("scope") not in allowed_scopes:

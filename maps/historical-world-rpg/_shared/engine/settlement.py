@@ -279,6 +279,11 @@ class SettlementRuntime:
         self._state[settlement_id]["services"][service_id] = available
         return changed
 
+    def representation_specification(self, settlement_id: str) -> dict[str, Any]:
+        """Return validated scenario-owned reconstruction data without runtime handles."""
+        self.require(settlement_id)
+        return copy.deepcopy(dict(self._representation_specs[settlement_id]))
+
     def create_representation(self, settlement_id: str) -> Any:
         view = self.require(settlement_id)
         if not view.operational:
