@@ -64,7 +64,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Diplomacy/war
 - [x] Armies/fleets
 - [ ] City capture/rebuild
-- [ ] Titles/land/taxation
+- [x] Titles/land/taxation
 - [ ] Characters/relationships
 - [ ] Quests/events/exploration
 
