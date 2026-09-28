@@ -104,7 +104,13 @@ This file records requirements already agreed with the player. They are defaults
 - Topic help is supported, e.g. `/help unstuck`.
 - Invalid page numbers produce a clear message.
 - Release builds hide internal developer/debug commands.
-- A player-facing MC-only invulnerability command may be provided so native `whosyourdaddy` is unnecessary for recovery.
+- A player-facing `/god` command is provided so native `whosyourdaddy` is unnecessary for recovery.
+- `/god` applies to all player-controlled runtime entities, not only the main character. This includes player-controlled heroes/companions, ordinary units, summons, ships, structures, and any other controllable Warcraft runtime objects.
+- While `/god` is enabled, newly created, spawned, acquired, or otherwise transferred player-controlled runtime entities inherit the same protection automatically.
+- `/god` toggles the mode; `/god on` and `/god off` are idempotent explicit forms.
+- The mode is a session/recovery convenience rather than campaign progression. It is excluded from custom campaign persistence and defaults to OFF for a new session and after loading campaign state.
+- If protected runtime objects are reconstructed while `/god` remains enabled in the same active session, protection is reapplied to their replacements.
+- Command feedback must clearly report whether player-wide god mode is ON or OFF.
 
 ## UI pause policy
 
