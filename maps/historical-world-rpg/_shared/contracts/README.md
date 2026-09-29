@@ -103,7 +103,7 @@ experience is controller/category state; derived runtime layers are not saved.
 
 ## Inventory and equipment contract
 
-`inventory.schema.json` defines generic item types, data-driven stacks, equipment slots, backpack types, progression tiers, and stable-ID owner state. The executable validator and deterministic pickup/recovery rules live in `_shared/engine/inventory.py`. Storage never grants equipment bonuses; only the dedicated equipment map does. V1 has six outer slots plus at most six backpacks of at most 30 slots each, with no nested containers. See the scenario `docs/INVENTORY.md` for native Warcraft 3.0 adapter findings and persistence behavior.
+`inventory.schema.json` defines generic item types, data-driven stacks, equipment slots, backpack types, progression tiers, stable-ID owner state, and scenario-neutral equipment-set pieces, thresholds, tier policies, and derived-effect references. The executable validator and deterministic pickup/recovery/set-resolution rules live in `_shared/engine/inventory.py`. Storage never grants equipment bonuses; only the dedicated equipment map does. Set results are derived and are not fields of owner state. V1 has six outer slots plus at most six backpacks of at most 30 slots each, with no nested containers. See the scenario `docs/INVENTORY.md` for native Warcraft 3.0 adapter findings and persistence behavior.
 
 ## Contract versions
 

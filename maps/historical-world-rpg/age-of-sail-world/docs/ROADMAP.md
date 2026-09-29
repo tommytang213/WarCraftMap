@@ -67,7 +67,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Titles/land/taxation
 - [x] Characters/relationships
 - [x] Controller military tradition / category combat-experience progression
-- [ ] Equipment set definitions and partial/full threshold-bonus resolution
+- [x] Equipment set definitions and partial/full threshold-bonus resolution
 - [x] Quests/events/exploration
 
 ## Phase 5 — Age of Sail world content

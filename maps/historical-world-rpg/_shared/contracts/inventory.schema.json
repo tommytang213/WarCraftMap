@@ -20,6 +20,36 @@
         "equipmentSlotTypes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
       }
     },
+    "derivedEffect": {
+      "type": "object", "additionalProperties": false, "required": ["id", "modifiers"],
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "modifiers": {"type": "object", "minProperties": 1}}
+    },
+    "equipmentSetPiece": {
+      "type": "object", "additionalProperties": false, "required": ["id", "itemTypeIds"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"},
+        "itemTypeIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}},
+        "equipmentSlotTypes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
+      }
+    },
+    "equipmentSetThreshold": {
+      "type": "object", "additionalProperties": false, "required": ["id", "pieceCount", "effectIds"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"}, "pieceCount": {"type": "integer", "minimum": 1},
+        "effectIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}},
+        "tierPolicy": {"enum": ["cumulative", "exclusive", "replacement"]},
+        "replacesThresholdIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
+      }
+    },
+    "equipmentSet": {
+      "type": "object", "additionalProperties": false, "required": ["id", "pieceIds", "thresholds"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"},
+        "pieceIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}},
+        "allowDuplicatePieces": {"type": "boolean", "default": false},
+        "thresholds": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/equipmentSetThreshold"}}
+      }
+    },
     "backpackType": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "capacity", "allowedCategories", "traitIds"],
@@ -49,7 +79,10 @@
         "schemaVersion": {"const": 1}, "itemTypes": {"type": "array", "items": {"$ref": "#/$defs/itemType"}},
         "backpackTypes": {"type": "array", "items": {"$ref": "#/$defs/backpackType"}},
         "equipmentSlots": {"type": "array", "items": {"$ref": "#/$defs/equipmentSlot"}},
-        "backpackUnlockTiers": {"type": "array", "items": {"$ref": "#/$defs/unlockTier"}}
+        "backpackUnlockTiers": {"type": "array", "items": {"$ref": "#/$defs/unlockTier"}},
+        "derivedEffects": {"type": "array", "items": {"$ref": "#/$defs/derivedEffect"}},
+        "equipmentSetPieces": {"type": "array", "items": {"$ref": "#/$defs/equipmentSetPiece"}},
+        "equipmentSets": {"type": "array", "items": {"$ref": "#/$defs/equipmentSet"}}
       }
     },
     "activeBackpack": {
