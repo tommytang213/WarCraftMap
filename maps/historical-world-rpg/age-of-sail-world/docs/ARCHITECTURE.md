@@ -109,3 +109,17 @@ pre-existing player/manual pause state. Passive UI uses the separate
 `openPassiveCampaignUi` entry point and never acquires pause ownership. All
 manual pause controls must use `setCampaignManuallyPaused` rather than calling
 the Warcraft `PauseGame` native directly.
+
+## Map and discovery boundary
+
+`_shared/engine/map_discovery.py` owns scenario-neutral, authoritative location
+knowledge and deterministic world/regional render models. Knowledge for regions,
+settlements, landmarks, routes, boundaries, and other points of interest is
+stored independently by stable ID. Approximate clues persist mutable circle or
+polygon search areas and may move, shrink, split, or resolve to exact knowledge.
+
+`scenario/maps/world-map.json` owns world layout, regional-instance assignments,
+landmark geometry, and English labels. Canonical settlements, routes, and
+boundaries are consumed from validated world data. The runtime map-screen
+controller owns a modal pause token while either view is open; focusing changes
+presentation only and cannot move units or change the physical region.

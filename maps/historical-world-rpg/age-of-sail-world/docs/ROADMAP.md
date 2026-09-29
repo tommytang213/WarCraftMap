@@ -78,7 +78,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
 - [ ] Regional instance activation, boundary transitions, and cross-map/cross-region travel
 - [x] Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)
-- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
+- [x] World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
+- [ ] Custom quest journal and quest-to-map tracking integration
 - [x] Europe
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
