@@ -20,6 +20,17 @@ An item grants gear bonuses only when its instance is present in `equipment`.
 in outer or backpack storage grant no equipment stats. Runtime adapters must suppress
 ordinary passive bonuses while stored and reconcile from authoritative equip state.
 
+## Equipment sets and threshold bonuses
+
+- Equipment may belong to a scenario-defined set through stable set IDs; the shared inventory engine must not hardcode Age of Sail set names.
+- Set bonuses are based only on qualifying pieces currently present in equipment slots. Matching pieces in outer inventory, backpacks, cargo, warehouses, or other storage do not count.
+- Sets may define multiple piece-count thresholds rather than requiring the complete set. For example, a four-piece set may grant a small 2/4 bonus, a stronger 3/4 bonus, and a major 4/4 bonus.
+- Thresholds and effects are data-driven per set. By default, reached threshold effects may coexist cumulatively (for example 4/4 can retain its 2/4 and 3/4 effects while adding the 4/4 effect); a set may explicitly define replacement/exclusive tiers where appropriate.
+- Count distinct qualifying equipped set pieces by default. Equipping duplicate copies of the same named/set-piece identity must not multiply the piece count unless that set explicitly allows duplicates.
+- Partial-set bonuses must be useful enough to support mixed equipment builds; completing a set is an additional reward, not the only point at which the set does anything.
+- Set effects may grant stats, resistances, resource changes, ability/passive unlocks, conditional effects, or other character/equipment modifiers through the same derived-bonus layer as ordinary equipped-item bonuses.
+- Set bonuses are derived from authoritative equipped-item state and should be recomputed on equip/unequip, load/migration, character reconstruction, and physical-map transition rather than persisted as an independent mutable bonus total.
+
 ## Pickup order and overflow
 
 Routing is transactional and does not mutate its input:
