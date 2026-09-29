@@ -721,12 +721,55 @@
       }
     },
     {
+      "id": "node_central_asia_gate",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_china"
+        ],
+        "amphibious": [
+          "node_north_china"
+        ],
+        "flying": [
+          "node_north_china"
+        ]
+      }
+    },
+    {
       "id": "node_decorative_inland_water",
       "movementClasses": [
         "flying"
       ],
       "connections": {
         "flying": []
+      }
+    },
+    {
+      "id": "node_east_china_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_china_sea",
+          "node_japan_sea"
+        ],
+        "amphibious": [
+          "node_south_china_sea",
+          "node_korea_land",
+          "node_japan_sea"
+        ],
+        "flying": [
+          "node_south_china_sea",
+          "node_korea_land",
+          "node_japan_sea"
+        ]
       }
     },
     {
@@ -745,6 +788,68 @@
         ],
         "flying": [
           "node_celebes_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_gobi_isolated_water",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_isolated_crater_lake",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_japan_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_japan_sea"
+        ],
+        "amphibious": [
+          "node_japan_sea"
+        ],
+        "flying": [
+          "node_japan_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_japan_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_east_china_sea",
+          "node_japan_coast",
+          "node_okhotsk_sea"
+        ],
+        "amphibious": [
+          "node_east_china_sea",
+          "node_japan_coast",
+          "node_okhotsk_sea"
+        ],
+        "flying": [
+          "node_east_china_sea",
+          "node_japan_coast",
+          "node_okhotsk_sea"
         ]
       }
     },
@@ -789,6 +894,27 @@
           "node_malacca_sea",
           "node_celebes_sea",
           "node_java_coast"
+        ]
+      }
+    },
+    {
+      "id": "node_korea_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_china"
+        ],
+        "amphibious": [
+          "node_north_china",
+          "node_east_china_sea"
+        ],
+        "flying": [
+          "node_north_china",
+          "node_east_china_sea"
         ]
       }
     },
@@ -861,6 +987,72 @@
       }
     },
     {
+      "id": "node_north_china",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_central_asia_gate",
+          "node_south_china",
+          "node_korea_land"
+        ],
+        "amphibious": [
+          "node_central_asia_gate",
+          "node_south_china",
+          "node_korea_land"
+        ],
+        "flying": [
+          "node_central_asia_gate",
+          "node_south_china",
+          "node_korea_land"
+        ]
+      }
+    },
+    {
+      "id": "node_north_pacific",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_okhotsk_sea"
+        ],
+        "amphibious": [
+          "node_okhotsk_sea"
+        ],
+        "flying": [
+          "node_okhotsk_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_okhotsk_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_japan_sea",
+          "node_north_pacific"
+        ],
+        "amphibious": [
+          "node_japan_sea",
+          "node_north_pacific"
+        ],
+        "flying": [
+          "node_japan_sea",
+          "node_north_pacific"
+        ]
+      }
+    },
+    {
       "id": "node_philippine_sea",
       "movementClasses": [
         "naval",
@@ -883,6 +1075,27 @@
       }
     },
     {
+      "id": "node_south_china",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_china"
+        ],
+        "amphibious": [
+          "node_north_china",
+          "node_south_china_sea"
+        ],
+        "flying": [
+          "node_north_china",
+          "node_south_china_sea"
+        ]
+      }
+    },
+    {
       "id": "node_south_china_sea",
       "movementClasses": [
         "naval",
@@ -892,15 +1105,23 @@
       "connections": {
         "naval": [
           "node_malacca_sea",
-          "node_philippine_sea"
+          "node_philippine_sea",
+          "node_taiwan_coast",
+          "node_east_china_sea"
         ],
         "amphibious": [
           "node_malacca_sea",
-          "node_philippine_sea"
+          "node_philippine_sea",
+          "node_south_china",
+          "node_taiwan_coast",
+          "node_east_china_sea"
         ],
         "flying": [
           "node_malacca_sea",
-          "node_philippine_sea"
+          "node_philippine_sea",
+          "node_south_china",
+          "node_taiwan_coast",
+          "node_east_china_sea"
         ]
       }
     },
@@ -921,6 +1142,34 @@
         "flying": [
           "node_malacca_sea"
         ]
+      }
+    },
+    {
+      "id": "node_taiwan_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_china_sea"
+        ],
+        "amphibious": [
+          "node_south_china_sea"
+        ],
+        "flying": [
+          "node_south_china_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_tibetan_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
       }
     },
     {
@@ -5111,7 +5360,9 @@
       "administrativeType": "provincial_administration",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "kaifeng"
+      ]
     },
     {
       "id": "ming_shanxi_shaanxi",
@@ -5119,7 +5370,9 @@
       "administrativeType": "frontier_provincial_administration",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "xian"
+      ]
     },
     {
       "id": "ming_nanzhili",
@@ -5127,7 +5380,10 @@
       "administrativeType": "directly_administered_region",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "nanjing",
+        "suzhou"
+      ]
     },
     {
       "id": "ming_huguang_sichuan",
@@ -5135,7 +5391,9 @@
       "administrativeType": "provincial_administration",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "chengdu"
+      ]
     },
     {
       "id": "ming_fujian_zhejiang",
@@ -5143,7 +5401,10 @@
       "administrativeType": "coastal_provincial_administration",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "hangzhou",
+        "quanzhou"
+      ]
     },
     {
       "id": "ming_lingnan",
@@ -5151,7 +5412,9 @@
       "administrativeType": "southern_provincial_administration",
       "legalOwnerPolityId": "ming_empire",
       "controllerPolityId": "ming_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "guangzhou"
+      ]
     },
     {
       "id": "oirat_dzungaria",
@@ -5275,7 +5538,9 @@
       "administrativeType": "southern_provinces",
       "legalOwnerPolityId": "joseon_kingdom",
       "controllerPolityId": "joseon_kingdom",
-      "settlementIds": []
+      "settlementIds": [
+        "busan"
+      ]
     },
     {
       "id": "joseon_jeju",
@@ -5283,7 +5548,9 @@
       "administrativeType": "island_mok",
       "legalOwnerPolityId": "joseon_kingdom",
       "controllerPolityId": "joseon_kingdom",
-      "settlementIds": []
+      "settlementIds": [
+        "jeju"
+      ]
     },
     {
       "id": "ashikaga_kinai",
@@ -5292,7 +5559,8 @@
       "legalOwnerPolityId": "ashikaga_shogunate",
       "controllerPolityId": "ashikaga_shogunate",
       "settlementIds": [
-        "kyoto"
+        "kyoto",
+        "sakai"
       ]
     },
     {
@@ -5309,7 +5577,9 @@
       "administrativeType": "compressed_shugo_provinces",
       "legalOwnerPolityId": "ashikaga_shogunate",
       "controllerPolityId": "ashikaga_shogunate",
-      "settlementIds": []
+      "settlementIds": [
+        "hakata"
+      ]
     },
     {
       "id": "ashikaga_eastern_honshu",
@@ -5317,7 +5587,9 @@
       "administrativeType": "kanto_and_tohoku_shugo_provinces",
       "legalOwnerPolityId": "ashikaga_shogunate",
       "controllerPolityId": "ashikaga_shogunate",
-      "settlementIds": []
+      "settlementIds": [
+        "kamakura"
+      ]
     },
     {
       "id": "ryukyu_islands",
@@ -6318,6 +6590,46 @@
       "objectTemplateId": "capital_city_core"
     },
     {
+      "id": "city_core_nanjing",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_suzhou",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_hangzhou",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_quanzhou",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_guangzhou",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_xian",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_kaifeng",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_chengdu",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_oirat_mobile_court",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_northern_yuan_mobile_court",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
       "id": "city_core_hami",
       "objectTemplateId": "capital_city_core"
     },
@@ -6330,30 +6642,6 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_liaoyang",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_hanseong",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_kyoto",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_shuri",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_oirat_mobile_court",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_northern_yuan_mobile_court",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_jianzhou_court",
       "objectTemplateId": "capital_city_core"
     },
@@ -6363,6 +6651,42 @@
     },
     {
       "id": "city_core_wild_jurchen_court",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_liaoyang",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_hanseong",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_busan",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_jeju",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_kyoto",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_sakai",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_hakata",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_kamakura",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_shuri",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -7748,6 +8072,66 @@
       ]
     },
     {
+      "id": "defense_nanjing",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_suzhou",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_hangzhou",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_quanzhou",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_guangzhou",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_xian",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_kaifeng",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_chengdu",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_oirat_mobile_court",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_northern_yuan_mobile_court",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
       "id": "defense_hami",
       "objectTemplateIds": [
         "capital_defenses"
@@ -7766,42 +8150,6 @@
       ]
     },
     {
-      "id": "defense_liaoyang",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_hanseong",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_kyoto",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_shuri",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_oirat_mobile_court",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_northern_yuan_mobile_court",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_jianzhou_court",
       "objectTemplateIds": [
         "capital_defenses"
@@ -7815,6 +8163,60 @@
     },
     {
       "id": "defense_wild_jurchen_court",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_liaoyang",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_hanseong",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_busan",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_jeju",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_kyoto",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_sakai",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_hakata",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_kamakura",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_shuri",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -15426,18 +15828,573 @@
       "controllerPolityId": "ming_empire",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
       "cityCoreId": "city_core_beijing",
       "defenseLayoutId": "defense_beijing",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 52,
+        "y": 45
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "beijing"
+      },
+      "economicProfile": {
+        "production": [
+          "grain",
+          "porcelain"
+        ],
+        "imports": [
+          "horses",
+          "spices"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "grain",
+        "porcelain"
+      ]
+    },
+    {
+      "id": "nanjing",
+      "name": "Nanjing",
+      "kind": "port",
+      "provinceId": "ming_nanzhili",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china",
+      "cityCoreId": "city_core_nanjing",
+      "defenseLayoutId": "defense_nanjing",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 54,
+        "y": 35
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nanjing"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "porcelain"
+        ],
+        "imports": [
+          "horses",
+          "spices"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "porcelain"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_east_china_sea",
+        "access": "river_estuary"
       }
+    },
+    {
+      "id": "suzhou",
+      "name": "Suzhou",
+      "kind": "major_city",
+      "provinceId": "ming_nanzhili",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china",
+      "cityCoreId": "city_core_suzhou",
+      "defenseLayoutId": "defense_suzhou",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 59,
+        "y": 39
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "suzhou"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "textiles"
+        ],
+        "imports": [
+          "metals",
+          "horses"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "textiles"
+      ]
+    },
+    {
+      "id": "hangzhou",
+      "name": "Hangzhou",
+      "kind": "port",
+      "provinceId": "ming_fujian_zhejiang",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china",
+      "cityCoreId": "city_core_hangzhou",
+      "defenseLayoutId": "defense_hangzhou",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 65,
+        "y": 35
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hangzhou"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "tea"
+        ],
+        "imports": [
+          "horses",
+          "spices"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "tea"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_east_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "quanzhou",
+      "name": "Quanzhou",
+      "kind": "port",
+      "provinceId": "ming_fujian_zhejiang",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_quanzhou",
+      "defenseLayoutId": "defense_quanzhou",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 58,
+        "y": 24
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "quanzhou"
+      },
+      "economicProfile": {
+        "production": [
+          "ceramics",
+          "tea"
+        ],
+        "imports": [
+          "spices",
+          "silver"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "ceramics",
+        "tea"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "guangzhou",
+      "name": "Guangzhou",
+      "kind": "port",
+      "provinceId": "ming_lingnan",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_guangzhou",
+      "defenseLayoutId": "defense_guangzhou",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 43,
+        "y": 18
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "guangzhou"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "ceramics"
+        ],
+        "imports": [
+          "spices",
+          "silver"
+        ],
+        "shortages": [
+          "horses"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "ceramics"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_china_sea",
+        "access": "river_estuary"
+      }
+    },
+    {
+      "id": "xian",
+      "name": "Xi'an",
+      "kind": "fort",
+      "provinceId": "ming_shanxi_shaanxi",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
+      "cityCoreId": "city_core_xian",
+      "defenseLayoutId": "defense_xian",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 30,
+        "y": 34
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "trade_center",
+        "fortified_town",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "xian"
+      },
+      "economicProfile": {
+        "production": [
+          "grain",
+          "textiles"
+        ],
+        "imports": [
+          "tea",
+          "horses"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "grain",
+        "textiles"
+      ]
+    },
+    {
+      "id": "kaifeng",
+      "name": "Kaifeng",
+      "kind": "fort",
+      "provinceId": "ming_shandong_henan",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
+      "cityCoreId": "city_core_kaifeng",
+      "defenseLayoutId": "defense_kaifeng",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 62,
+        "y": 31
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kaifeng"
+      },
+      "economicProfile": {
+        "production": [
+          "grain",
+          "paper"
+        ],
+        "imports": [
+          "horses",
+          "tea"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "grain",
+        "paper"
+      ]
+    },
+    {
+      "id": "chengdu",
+      "name": "Chengdu",
+      "kind": "fort",
+      "provinceId": "ming_huguang_sichuan",
+      "legalOwnerPolityId": "ming_empire",
+      "controllerPolityId": "ming_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china",
+      "cityCoreId": "city_core_chengdu",
+      "defenseLayoutId": "defense_chengdu",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 25,
+        "y": 31
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chengdu"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "grain"
+        ],
+        "imports": [
+          "salt",
+          "horses"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "grain"
+      ]
+    },
+    {
+      "id": "oirat_mobile_court",
+      "name": "Oirat Mobile Court",
+      "kind": "capital",
+      "provinceId": "oirat_dzungaria",
+      "legalOwnerPolityId": "oirat_confederation",
+      "controllerPolityId": "oirat_confederation",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_asia_gate",
+      "cityCoreId": "city_core_oirat_mobile_court",
+      "defenseLayoutId": "defense_oirat_mobile_court",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "east_asia_interior",
+      "physicalMapId": "east_asia_interior",
+      "localPosition": {
+        "x": 35,
+        "y": 54
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "oirat_mobile_court"
+      },
+      "economicProfile": {
+        "production": [
+          "horses",
+          "wool"
+        ],
+        "imports": [
+          "grain",
+          "tea"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "horses",
+        "wool"
+      ]
+    },
+    {
+      "id": "northern_yuan_mobile_court",
+      "name": "Northern Yuan Mobile Court",
+      "kind": "capital",
+      "provinceId": "northern_yuan_domains",
+      "legalOwnerPolityId": "northern_yuan_khanate",
+      "controllerPolityId": "northern_yuan_khanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_asia_gate",
+      "cityCoreId": "city_core_northern_yuan_mobile_court",
+      "defenseLayoutId": "defense_northern_yuan_mobile_court",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "east_asia_interior",
+      "physicalMapId": "east_asia_interior",
+      "localPosition": {
+        "x": 81,
+        "y": 57
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "northern_yuan_mobile_court"
+      },
+      "economicProfile": {
+        "production": [
+          "horses",
+          "wool"
+        ],
+        "imports": [
+          "grain",
+          "silk"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "horses",
+        "wool"
+      ]
     },
     {
       "id": "hami",
@@ -15448,18 +16405,49 @@
       "controllerPolityId": "kara_del_hami",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_asia_gate",
       "cityCoreId": "city_core_hami",
       "defenseLayoutId": "defense_hami",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_interior",
+      "physicalMapId": "east_asia_interior",
+      "localPosition": {
+        "x": 12,
+        "y": 38
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "transition_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "hami"
-      }
+      },
+      "economicProfile": {
+        "production": [
+          "horses",
+          "fruit"
+        ],
+        "imports": [
+          "grain",
+          "silk"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "horses",
+        "fruit"
+      ]
     },
     {
       "id": "nedong",
@@ -15470,6 +16458,7 @@
       "controllerPolityId": "phagmodrupa_dynasty",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_asia_gate",
       "cityCoreId": "city_core_nedong",
       "defenseLayoutId": "defense_nedong",
       "serviceIds": [
@@ -15477,11 +16466,38 @@
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_interior",
+      "physicalMapId": "east_asia_interior",
+      "localPosition": {
+        "x": 48,
+        "y": 18
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "religious_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "nedong"
-      }
+      },
+      "economicProfile": {
+        "production": [
+          "wool",
+          "barley"
+        ],
+        "imports": [
+          "tea",
+          "silk"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "wool",
+        "barley"
+      ]
     },
     {
       "id": "rinpung",
@@ -15492,6 +16508,7 @@
       "controllerPolityId": "rinpungpa_house",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_asia_gate",
       "cityCoreId": "city_core_rinpung",
       "defenseLayoutId": "defense_rinpung",
       "serviceIds": [
@@ -15499,11 +16516,188 @@
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_interior",
+      "physicalMapId": "east_asia_interior",
+      "localPosition": {
+        "x": 34,
+        "y": 16
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "rinpung"
-      }
+      },
+      "economicProfile": {
+        "production": [
+          "wool",
+          "barley"
+        ],
+        "imports": [
+          "tea",
+          "metals"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "wool",
+        "barley"
+      ]
+    },
+    {
+      "id": "jianzhou_court",
+      "name": "Jianzhou Court",
+      "kind": "capital",
+      "provinceId": "jianzhou_jurchen_domains",
+      "legalOwnerPolityId": "jianzhou_jurchen",
+      "controllerPolityId": "jianzhou_jurchen",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
+      "cityCoreId": "city_core_jianzhou_court",
+      "defenseLayoutId": "defense_jianzhou_court",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 83,
+        "y": 51
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jianzhou_court"
+      },
+      "economicProfile": {
+        "production": [
+          "ginseng",
+          "furs"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "salt"
+        ]
+      },
+      "productionRefs": [
+        "ginseng",
+        "furs"
+      ]
+    },
+    {
+      "id": "haixi_court",
+      "name": "Haixi Court",
+      "kind": "capital",
+      "provinceId": "haixi_jurchen_domains",
+      "legalOwnerPolityId": "haixi_jurchen",
+      "controllerPolityId": "haixi_jurchen",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
+      "cityCoreId": "city_core_haixi_court",
+      "defenseLayoutId": "defense_haixi_court",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 72,
+        "y": 59
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "haixi_court"
+      },
+      "economicProfile": {
+        "production": [
+          "furs",
+          "horses"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "salt"
+        ]
+      },
+      "productionRefs": [
+        "furs",
+        "horses"
+      ]
+    },
+    {
+      "id": "wild_jurchen_court",
+      "name": "Wild Jurchen Council Place",
+      "kind": "capital",
+      "provinceId": "wild_jurchen_domains",
+      "legalOwnerPolityId": "wild_jurchen_confederacies",
+      "controllerPolityId": "wild_jurchen_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
+      "cityCoreId": "city_core_wild_jurchen_court",
+      "defenseLayoutId": "defense_wild_jurchen_court",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 94,
+        "y": 67
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "wild_jurchen_court"
+      },
+      "economicProfile": {
+        "production": [
+          "furs",
+          "fish"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "salt"
+        ]
+      },
+      "productionRefs": [
+        "furs",
+        "fish"
+      ]
     },
     {
       "id": "liaoyang",
@@ -15514,18 +16708,48 @@
       "controllerPolityId": "ming_liaodong_command",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_china",
       "cityCoreId": "city_core_liaoyang",
       "defenseLayoutId": "defense_liaoyang",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_china_north",
+      "physicalMapId": "east_asia_china_north",
+      "localPosition": {
+        "x": 78,
+        "y": 39
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "liaoyang"
-      }
+      },
+      "economicProfile": {
+        "production": [
+          "grain",
+          "iron"
+        ],
+        "imports": [
+          "horses",
+          "salt"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "grain",
+        "iron"
+      ]
     },
     {
       "id": "hanseong",
@@ -15536,17 +16760,156 @@
       "controllerPolityId": "joseon_kingdom",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_korea_land",
       "cityCoreId": "city_core_hanseong",
       "defenseLayoutId": "defense_hanseong",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_korea",
+      "physicalMapId": "east_asia_korea",
+      "localPosition": {
+        "x": 43,
+        "y": 43
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "hanseong"
+      },
+      "economicProfile": {
+        "production": [
+          "grain",
+          "paper"
+        ],
+        "imports": [
+          "horses",
+          "copper"
+        ],
+        "shortages": [
+          "salt"
+        ]
+      },
+      "productionRefs": [
+        "grain",
+        "paper"
+      ]
+    },
+    {
+      "id": "busan",
+      "name": "Busan",
+      "kind": "port",
+      "provinceId": "joseon_southern_provinces",
+      "legalOwnerPolityId": "joseon_kingdom",
+      "controllerPolityId": "joseon_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_east_china_sea",
+      "cityCoreId": "city_core_busan",
+      "defenseLayoutId": "defense_busan",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_korea",
+      "physicalMapId": "east_asia_korea",
+      "localPosition": {
+        "x": 42,
+        "y": 25
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "busan"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "ceramics"
+        ],
+        "imports": [
+          "copper",
+          "silk"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "ceramics"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_east_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "jeju",
+      "name": "Jeju",
+      "kind": "port",
+      "provinceId": "joseon_jeju",
+      "legalOwnerPolityId": "joseon_kingdom",
+      "controllerPolityId": "joseon_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_east_china_sea",
+      "cityCoreId": "city_core_jeju",
+      "defenseLayoutId": "defense_jeju",
+      "serviceIds": [
+        "market",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_korea",
+      "physicalMapId": "east_asia_korea",
+      "localPosition": {
+        "x": 35,
+        "y": 10
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jeju"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "horses"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "horses"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_east_china_sea",
+        "access": "island_harbor"
       }
     },
     {
@@ -15558,17 +16921,212 @@
       "controllerPolityId": "ashikaga_shogunate",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_japan_coast",
       "cityCoreId": "city_core_kyoto",
       "defenseLayoutId": "defense_kyoto",
       "serviceIds": [
         "market",
+        "warehouse",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_japan",
+      "physicalMapId": "east_asia_japan",
+      "localPosition": {
+        "x": 38,
+        "y": 34
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "kyoto"
+      },
+      "economicProfile": {
+        "production": [
+          "textiles",
+          "sake"
+        ],
+        "imports": [
+          "horses",
+          "silk"
+        ],
+        "shortages": [
+          "iron"
+        ]
+      },
+      "productionRefs": [
+        "textiles",
+        "sake"
+      ]
+    },
+    {
+      "id": "sakai",
+      "name": "Sakai",
+      "kind": "port",
+      "provinceId": "ashikaga_kinai",
+      "legalOwnerPolityId": "ashikaga_shogunate",
+      "controllerPolityId": "ashikaga_shogunate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_japan_coast",
+      "cityCoreId": "city_core_sakai",
+      "defenseLayoutId": "defense_sakai",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_japan",
+      "physicalMapId": "east_asia_japan",
+      "localPosition": {
+        "x": 34,
+        "y": 29
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "sakai"
+      },
+      "economicProfile": {
+        "production": [
+          "sake",
+          "metalware"
+        ],
+        "imports": [
+          "silk",
+          "spices"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "sake",
+        "metalware"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_japan_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "hakata",
+      "name": "Hakata",
+      "kind": "port",
+      "provinceId": "ashikaga_kyushu",
+      "legalOwnerPolityId": "ashikaga_shogunate",
+      "controllerPolityId": "ashikaga_shogunate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_japan_coast",
+      "cityCoreId": "city_core_hakata",
+      "defenseLayoutId": "defense_hakata",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_japan",
+      "physicalMapId": "east_asia_japan",
+      "localPosition": {
+        "x": 12,
+        "y": 22
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hakata"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "metalware"
+        ],
+        "imports": [
+          "silk",
+          "copper"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "metalware"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_japan_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "kamakura",
+      "name": "Kamakura",
+      "kind": "port",
+      "provinceId": "ashikaga_eastern_honshu",
+      "legalOwnerPolityId": "ashikaga_shogunate",
+      "controllerPolityId": "ashikaga_shogunate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_japan_coast",
+      "cityCoreId": "city_core_kamakura",
+      "defenseLayoutId": "defense_kamakura",
+      "serviceIds": [
+        "market",
+        "port_services"
+      ],
+      "regionalInstanceId": "east_asia_japan",
+      "physicalMapId": "east_asia_japan",
+      "localPosition": {
+        "x": 53,
+        "y": 37
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "fortified_town",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kamakura"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "textiles"
+        ],
+        "imports": [
+          "silk",
+          "copper"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "textiles"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_japan_sea",
+        "access": "coastal"
       }
     },
     {
@@ -15580,127 +17138,52 @@
       "controllerPolityId": "ryukyu_kingdom",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_taiwan_coast",
       "cityCoreId": "city_core_shuri",
       "defenseLayoutId": "defense_shuri",
       "serviceIds": [
         "market",
+        "warehouse",
+        "port_services",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 76,
+        "y": 22
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "shuri"
-      }
-    },
-    {
-      "id": "oirat_mobile_court",
-      "name": "Oirat Mobile Court",
-      "kind": "capital",
-      "provinceId": "oirat_dzungaria",
-      "legalOwnerPolityId": "oirat_confederation",
-      "controllerPolityId": "oirat_confederation",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_oirat_mobile_court",
-      "defenseLayoutId": "defense_oirat_mobile_court",
-      "serviceIds": [
-        "market",
-        "quest_hub"
+      },
+      "economicProfile": {
+        "production": [
+          "sulfur",
+          "lacquerware"
+        ],
+        "imports": [
+          "silk",
+          "iron"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "sulfur",
+        "lacquerware"
       ],
-      "regionalInstanceId": "east_asia_interior",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "oirat_mobile_court"
-      }
-    },
-    {
-      "id": "northern_yuan_mobile_court",
-      "name": "Northern Yuan Mobile Court",
-      "kind": "capital",
-      "provinceId": "northern_yuan_domains",
-      "legalOwnerPolityId": "northern_yuan_khanate",
-      "controllerPolityId": "northern_yuan_khanate",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_northern_yuan_mobile_court",
-      "defenseLayoutId": "defense_northern_yuan_mobile_court",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "east_asia_interior",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "northern_yuan_mobile_court"
-      }
-    },
-    {
-      "id": "jianzhou_court",
-      "name": "Jianzhou Court",
-      "kind": "capital",
-      "provinceId": "jianzhou_jurchen_domains",
-      "legalOwnerPolityId": "jianzhou_jurchen",
-      "controllerPolityId": "jianzhou_jurchen",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_jianzhou_court",
-      "defenseLayoutId": "defense_jianzhou_court",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "east_asia_china_north",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "jianzhou_court"
-      }
-    },
-    {
-      "id": "haixi_court",
-      "name": "Haixi Court",
-      "kind": "capital",
-      "provinceId": "haixi_jurchen_domains",
-      "legalOwnerPolityId": "haixi_jurchen",
-      "controllerPolityId": "haixi_jurchen",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_haixi_court",
-      "defenseLayoutId": "defense_haixi_court",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "east_asia_china_north",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "haixi_court"
-      }
-    },
-    {
-      "id": "wild_jurchen_court",
-      "name": "Wild Jurchen Court",
-      "kind": "capital",
-      "provinceId": "wild_jurchen_domains",
-      "legalOwnerPolityId": "wild_jurchen_confederacies",
-      "controllerPolityId": "wild_jurchen_confederacies",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_wild_jurchen_court",
-      "defenseLayoutId": "defense_wild_jurchen_court",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "east_asia_china_north",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "wild_jurchen_court"
+      "portAccess": {
+        "maritimeZoneId": "node_taiwan_coast",
+        "access": "island_harbor"
       }
     },
     {
@@ -15712,17 +17195,51 @@
       "controllerPolityId": "taiwan_indigenous_domains",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_taiwan_coast",
       "cityCoreId": "city_core_taiwan_council_place",
       "defenseLayoutId": "defense_taiwan_council_place",
       "serviceIds": [
         "market",
+        "port_services",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_china_south",
+      "physicalMapId": "east_asia_china_south",
+      "localPosition": {
+        "x": 72,
+        "y": 31
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "historical_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "taiwan_council_place"
+      },
+      "economicProfile": {
+        "production": [
+          "camphor",
+          "deer_hides"
+        ],
+        "imports": [
+          "iron",
+          "textiles"
+        ],
+        "shortages": [
+          "grain"
+        ]
+      },
+      "productionRefs": [
+        "camphor",
+        "deer_hides"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_taiwan_coast",
+        "access": "island_harbor"
       }
     },
     {
@@ -15734,17 +17251,51 @@
       "controllerPolityId": "ainu_moshir",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_japan_coast",
       "cityCoreId": "city_core_ainu_council_place",
       "defenseLayoutId": "defense_ainu_council_place",
       "serviceIds": [
         "market",
+        "port_services",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_japan",
+      "physicalMapId": "east_asia_japan",
+      "localPosition": {
+        "x": 60,
+        "y": 55
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "historical_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "ainu_council_place"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "furs"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "textiles"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "furs"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_okhotsk_sea",
+        "access": "island_harbor"
       }
     },
     {
@@ -15756,17 +17307,51 @@
       "controllerPolityId": "sakhalin_communities",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_okhotsk_sea",
       "cityCoreId": "city_core_sakhalin_council_place",
       "defenseLayoutId": "defense_sakhalin_council_place",
       "serviceIds": [
         "market",
+        "port_services",
         "quest_hub"
       ],
       "regionalInstanceId": "east_asia_northeast_pacific",
+      "physicalMapId": "east_asia_northeast_pacific",
+      "localPosition": {
+        "x": 52,
+        "y": 49
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "transition_location"
+      ],
       "activation": {
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "sakhalin_council_place"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "furs"
+        ],
+        "imports": [
+          "grain",
+          "iron"
+        ],
+        "shortages": [
+          "textiles"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "furs"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_north_pacific",
+        "access": "island_harbor"
       }
     }
   ],
