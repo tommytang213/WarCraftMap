@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import time
@@ -222,6 +223,11 @@ def _generate_instance_collection(source: dict, regional_geography: dict | None,
         item["statistics"]["outputBytes"] = encoded_bytes; total_cells += len(cells); total_bytes += encoded_bytes; results.append(item)
     anchors = sorted(authority["boundaryAnchors"], key=lambda a:a["id"])
     return {"formatVersion": 2, "regionId": source["regionId"], "authorityId": authority["id"],
+            "provenance": {
+                "generator": "generate_regional_terrain.py/v2",
+                "terrainSourceSha256": hashlib.sha256(canonical_bytes(source)).hexdigest(),
+                "authoritySha256": hashlib.sha256(canonical_bytes(authority)).hexdigest(),
+            },
             "declaredDistortions": source["declaredDistortions"], "instances": results,
             "navigation": {"nodes": list(nodes.values()), "links": list(links.values()),
                 "connectivity": {kind: {node: sorted(_reachable(graph, node)) for node in sorted(graph)} for kind, graph in graphs.items()}},
@@ -320,11 +326,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--world", type=Path)
+    parser.add_argument("--authority", type=Path)
     args = parser.parse_args(argv)
     try:
         source = json.loads(args.source.read_text(encoding="utf-8"))
         world = json.loads(args.world.read_text(encoding="utf-8"))["regionalGeography"] if args.world else None
-        result = generate(source, world)
+        authority = json.loads(args.authority.read_text(encoding="utf-8")) if args.authority else None
+        result = generate(source, world, authority)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(canonical_bytes(result))
     except (OSError, json.JSONDecodeError, KeyError, TerrainGenerationError) as error:
