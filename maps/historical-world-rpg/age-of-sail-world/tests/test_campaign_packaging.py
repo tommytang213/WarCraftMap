@@ -65,7 +65,7 @@ class CampaignPackagingTests(unittest.TestCase):
         content[0]["id"] = "whole_world"; content[0]["packagePath"] = "Maps/WholeWorld.w3x"
         for key in ("logicalRegionIds", "regionalInstanceIds", "generatedTerrainIds"):
             content[0]["assignments"][key] = sorted({v for item in content for v in item["assignments"][key]})
-        content[0]["terrainBudget"] = {"maximumCells": 49152, "maximumOutputBytes": 3145728}
+        content[0]["terrainBudget"] = {"maximumCells": 76800, "maximumOutputBytes": 4194304}
         raw["physicalMaps"] = [raw["physicalMaps"][0], content[0]]
         self.manifest.write_text(json.dumps(raw), encoding="utf-8")
         validate_campaign(load_campaign_config(self.manifest))
@@ -116,6 +116,15 @@ class CampaignPackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data.*physical-maps.json"):
             verify_generated(base, generated)
 
+    def test_generated_output_detects_stale_southeast_asia_authority(self):
+        base = load_config(load_campaign_config(self.manifest).map_config_path)
+        generated = self.project / "_build/generated"
+        generate(base, generated); verify_generated(base, generated)
+        authority = self.project / "scenario/geography/southeast_asia.json"
+        authority.write_text(authority.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*southeast_asia.json"):
+            verify_generated(base, generated)
+
     @staticmethod
     def structure(path):
         with zipfile.ZipFile(path) as archive:
@@ -143,7 +152,7 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         with zipfile.ZipFile(first) as campaign:
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            self.assertEqual(5, len(campaign_manifest["maps"]))
+            self.assertEqual(6, len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
