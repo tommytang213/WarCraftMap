@@ -131,7 +131,9 @@ def generate_fixture(profile):
     scheduled = []
     for i in range(profile.duration // profile.step_size * profile.scheduled_per_step):
         scheduled.append({"id": _ident("scheduled", i), "due": (i // profile.scheduled_per_step + 1) * profile.step_size, "kind": ("economy", "military", "event")[i % 3], "targetId": _ident("polity", i % c["polities"]), "processed": False})
-    fixture = {"format": FORMAT, "seed": seed, "time": 0, "regions": region_ids, "activeRegionId": profile.active_region if profile.active_region in region_ids else region_ids[0], "entities": records, "scheduledWork": scheduled, "processedWork": 0}
+    traditions = [{"controllerId": _ident("polity", i), "categoryId": category, "experience": 0}
+                  for i in range(c["polities"]) for category in ("land", "naval")]
+    fixture = {"format": FORMAT, "seed": seed, "time": 0, "regions": region_ids, "activeRegionId": profile.active_region if profile.active_region in region_ids else region_ids[0], "entities": records, "traditionTracks": traditions, "scheduledWork": scheduled, "processedWork": 0}
     validate_fixture(fixture)
     return fixture
 
@@ -158,6 +160,15 @@ def validate_fixture(fixture):
     """Validate references, hierarchy, ownership/control and conservation."""
     benchmark.validate_snapshot(fixture)
     idx = _indexes(fixture)
+    tracks = fixture.get("traditionTracks")
+    if not isinstance(tracks, list) or len(tracks) != 2 * len(idx["polities"]):
+        raise InvariantFailure("tradition", "tracks", "controller/category coverage differs")
+    keys = set()
+    for track in tracks:
+        key = (track.get("controllerId"), track.get("categoryId"))
+        if key[0] not in idx["polities"] or key[1] not in {"land", "naval"} or key in keys or not isinstance(track.get("experience"), int) or track["experience"] < 0:
+            raise InvariantFailure("tradition", str(key), "invalid controller/category experience")
+        keys.add(key)
     references = (
         ("provinces", "ownerId", "polities"), ("provinces", "controllerId", "polities"),
         ("settlements", "provinceId", "provinces"), ("settlements", "ownerId", "polities"),
@@ -226,6 +237,11 @@ def advance(fixture, target_time, step_size, representation_limit):
             polity = fixture["entities"]["polities"][int(work["targetId"].rsplit("_", 1)[1])]
             polity["treasury"] += 1
             fixture["processedWork"] += 1
+            if work["kind"] == "military":
+                ordinal = int(work["id"].rsplit("_", 1)[1])
+                category = "land" if ordinal % 2 == 0 else "naval"
+                track = next(x for x in fixture["traditionTracks"] if x["controllerId"] == work["targetId"] and x["categoryId"] == category)
+                track["experience"] += 1 + ordinal % 7
         for obligation in fixture["entities"]["obligations"]:
             while obligation["nextDue"] <= fixture["time"]:
                 payer = fixture["entities"]["markets"][int(obligation["payerMarketId"].rsplit("_", 1)[1])]

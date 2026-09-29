@@ -110,12 +110,14 @@ class MilitaryRuntime:
         world_definitions: Mapping[str, Any],
         adapter: MilitaryRuntimeAdapter,
         conflict_is_active: Callable[[str, str], bool],
+        tradition_runtime: Any | None = None,
     ) -> None:
         if not isinstance(world_definitions, Mapping):
             raise MilitaryError("world definitions must be an object")
         self._world = copy.deepcopy(dict(world_definitions))
         self._adapter = adapter
         self._conflict_is_active = conflict_is_active
+        self._traditions = tradition_runtime
         self._polities = _index(self._world, "polities")
         self._officers = _index(self._world, "officers")
         self._zones = _index(self._world, "navigationZones")
@@ -330,7 +332,12 @@ class MilitaryRuntime:
             for unit in candidate["units"]:
                 if unit["id"] in entity["memberUnitIds"]:
                     unit["legalOwnerPolityId"], unit["controllerPolityId"] = legal_owner_polity_id, controller_polity_id
-        return self._commit(candidate)
+        changed = self._commit(candidate)
+        if changed and self._traditions is not None:
+            targets = entity["memberUnitIds"] if entity in candidate["groups"] else [entity_id]
+            for unit_id in targets:
+                self._traditions.change_unit(unit_id, controller_id=controller_polity_id)
+        return changed
 
     def update_unit(self, unit_id: str, *, represented_strength: int | None = None, morale: int | None = None, supply: int | None = None, readiness: int | None = None) -> bool:
         candidate = self.snapshot()
@@ -429,11 +436,15 @@ class MilitaryRuntime:
             created = self._create_for(validated, unit_id)
             self._state = validated
             self._representations[unit_id] = created
+            if self._traditions is not None:
+                self._traditions.set_runtime_active(unit_id, True)
         else:
             old = self._representations.pop(unit_id, [])
             self._state = validated
             for handle in old:
                 self._adapter.retire(handle)
+            if self._traditions is not None:
+                self._traditions.set_runtime_active(unit_id, False)
         return True
 
     def _create_for(self, state: Mapping[str, Any], unit_id: str) -> list[Any]:
@@ -480,6 +491,8 @@ class MilitaryRuntime:
         for handles in old.values():
             for handle in handles:
                 self._adapter.retire(handle)
+        if self._traditions is not None:
+            self._traditions.reconstruct(sorted(staged))
 
     def restore(self, candidate: Any, *, reconstruct: bool = True) -> None:
         restored = self.validate_snapshot(candidate)

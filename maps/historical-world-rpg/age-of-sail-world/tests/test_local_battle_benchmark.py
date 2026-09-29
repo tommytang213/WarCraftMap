@@ -47,6 +47,7 @@ class LocalBattleBenchmarkTests(unittest.TestCase):
         self.assertEqual(adapter.counts["handles_created"], adapter.counts["handles_retired"])
         self.assertEqual(adapter.counts["effects_created"], adapter.counts["effects_retired"])
         self.assertEqual(profile.units + profile.effects, adapter.counts["peak_active_objects"])
+        self.assertGreater(sum(x["experience"] for x in result["traditionState"]), 0)
 
     def test_repeated_run_stability_uses_fresh_fully_retired_adapters(self):
         adapters = []

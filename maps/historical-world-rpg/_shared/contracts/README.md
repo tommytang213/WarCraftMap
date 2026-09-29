@@ -94,6 +94,11 @@ Rank tiers are universal ordered identifiers from `none` through `emperor`; play
 
 `territorialHoldings` keep legal ownership, military control, civil governance, sovereignty, and autonomy in separate fields. A holding may name an overlord holding and owe scenario-defined tax and obligations. A holding with no overlord must have zero overlord tax and no overlord obligations, while every holding retains a positive ordinary upkeep rate. Territory and holder references use stable IDs; neither titles nor land depend on Warcraft object instances.
 
+`military-tradition.schema.json` defines scenario-neutral stable IDs for eligible
+controllers, categories, weighted combat sources, rational continuous
+coefficients, milestone effects, and strategic-unit assignments. Persistent
+experience is controller/category state; derived runtime layers are not saved.
+
 `allegiances` represent one current polity per subject without country-specific rules. `validate_allegiance_transition` accepts a change between any two existing, distinct polity IDs, allowing runtime systems to change allegiance without changing title or territory identity.
 
 ## Inventory and equipment contract

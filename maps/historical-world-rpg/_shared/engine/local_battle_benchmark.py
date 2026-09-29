@@ -191,11 +191,16 @@ def generate_fixture(profile: BattleProfile) -> dict[str, Any]:
             "representedStrength": profile.represented_strength_per_unit + index % 7,
             "morale": 80, "supply": 90, "casualties": 0,
             "active": index >= profile.reinforcements,
+            "traditionCategoryId": "land" if kind == "formation" else "naval",
         })
     return {
         "format": "warcraftmap_local_battle_fixture_v1", "fixtureVersion": 1,
         "seed": profile.seed, "profile": profile.id,
         "conflict": {"id": "benchmark_conflict", "status": "active"},
+        "traditionTracks": [
+            {"controllerId": side, "categoryId": category, "experience": 0}
+            for side in ("attacker", "defender") for category in ("land", "naval")
+        ],
         "authoritativeUnits": units,
     }
 
@@ -203,6 +208,7 @@ def generate_fixture(profile: BattleProfile) -> dict[str, Any]:
 def run_once(profile: BattleProfile, adapter: BattleRuntimeAdapter) -> dict[str, Any]:
     fixture = generate_fixture(profile)
     state = copy.deepcopy(fixture["authoritativeUnits"])
+    tradition_tracks = copy.deepcopy(fixture["traditionTracks"])
     handles: dict[str, Any] = {}
     effects: list[Any] = []
     initial_strength = sum(unit["representedStrength"] for unit in state)
@@ -242,6 +248,8 @@ def run_once(profile: BattleProfile, adapter: BattleRuntimeAdapter) -> dict[str,
             loss = 1 + ((profile.seed + index * 13) % max(1, unit["representedStrength"] // 5))
             unit["casualties"] += loss
             unit["representedStrength"] -= loss
+            track = next(x for x in tradition_tracks if x["controllerId"] == unit["side"] and x["categoryId"] == unit["traditionCategoryId"])
+            track["experience"] += loss * (2 if index % 3 == 0 else 1)
 
     def morale_supply() -> None:
         for unit in state:
@@ -278,6 +286,7 @@ def run_once(profile: BattleProfile, adapter: BattleRuntimeAdapter) -> dict[str,
     measured["update_duration_ms"] = max(stage_durations.values())
     return {
         "profile": profile.id, "fixture": fixture, "authoritativeState": state,
+        "traditionState": tradition_tracks,
         "stageDurationsMs": stage_durations, "stageMetrics": stage_metrics, "metrics": measured,
         "representedStrength": sum(unit["representedStrength"] for unit in state),
         "spawnedObjectCount": int(measured["handles_created"]),
