@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "id": "pacific_political_baseline_1450",
+  "campaignStartDate": "1450-01-01",
+  "coverageRule": {
+    "kind": "exclusive_authoritative_provinces",
+    "exceptions": [
+      "Ocean passages, uninhabited islands, and small autonomous communities omitted by the selective coverage rule have no fictitious territorial owner.",
+      "Named network seats represent distributed kinship, council, or ritual authority where no unitary state capital existed in 1450."
+    ]
+  },
+  "historicalEvidence": [
+    {
+      "id": "evidence_polynesia",
+      "scope": "polynesian_chiefdoms_voyaging",
+      "citation": "Patrick Vinton Kirch, On the Road of the Winds: An Archaeological History of the Pacific Islands before European Contact (2000).",
+      "note": "Supports the selected Polynesian ritual centers, chiefly landscapes, settlement chronology, and voyaging connections."
+    },
+    {
+      "id": "evidence_micronesia",
+      "scope": "micronesian_island_societies",
+      "citation": "Glenn Petersen, Traditional Micronesian Societies: Adaptation, Integration, and Political Organization (2009).",
+      "note": "Supports non-unitary island authority and the selected Mariana, Palauan, and Caroline centers."
+    },
+    {
+      "id": "evidence_melanesia",
+      "scope": "melanesian_exchange_networks",
+      "citation": "Patrick Vinton Kirch, The Lapita Peoples: Ancestors of the Oceanic World (1997).",
+      "note": "Supports long-lived Melanesian exchange corridors and avoids imposing later colonial capitals."
+    },
+    {
+      "id": "evidence_aotearoa",
+      "scope": "aotearoa_pa_and_hapū",
+      "citation": "Janet Davidson, The Prehistory of New Zealand (1984).",
+      "note": "Supports fifteenth-century Māori settlement, pā landscapes, and decentralized territorial authority."
+    }
+  ],
+  "sovereigntyRelationships": [],
+  "diplomaticRelations": [],
+  "activeConflicts": [],
+  "polities": [
+    {
+      "id": "hawaiian_ali_i_networks",
+      "name": "Hawaiian Aliʻi Networks",
+      "adjective": "Hawaiian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Aliʻi Nui",
+      "capitalSettlementId": "waipio",
+      "capitalException": "Authority was divided among island chiefdoms rather than a single archipelago capital.",
+      "structure": "chiefdom",
+      "regionalInstanceId": "pacific_north_hawaii",
+      "geographicFeatureIds": [
+        "island_hawaii"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "hawaii_island_chiefdoms",
+          "name": "Hawaiʻi Island Chiefdoms",
+          "administrativeType": "chiefly_districts",
+          "geographicFeatureIds": [
+            "island_hawaii"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "chamorro_clan_networks",
+      "name": "Chamorro Clan Networks",
+      "adjective": "Chamorro",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Maga'låhi",
+      "capitalSettlementId": "hagatna_anchorage",
+      "capitalException": "Autonomous clan districts had no single territorial capital.",
+      "structure": "decentralized",
+      "regionalInstanceId": "pacific_micronesia",
+      "geographicFeatureIds": [
+        "island_guam"
+      ],
+      "evidenceIds": [
+        "evidence_micronesia"
+      ],
+      "provinces": [
+        {
+          "id": "guam_clan_districts",
+          "name": "Guam Clan Districts",
+          "administrativeType": "clan_territories",
+          "geographicFeatureIds": [
+            "island_guam"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "palauan_village_leagues",
+      "name": "Palauan Village Leagues",
+      "adjective": "Palauan",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Reklai",
+      "capitalSettlementId": "koror",
+      "capitalException": "Village leagues and chiefly councils were polycentric.",
+      "structure": "confederated",
+      "regionalInstanceId": "pacific_micronesia",
+      "geographicFeatureIds": [
+        "island_palau"
+      ],
+      "evidenceIds": [
+        "evidence_micronesia"
+      ],
+      "provinces": [
+        {
+          "id": "palau_village_territories",
+          "name": "Palau Village Territories",
+          "administrativeType": "village_leagues",
+          "geographicFeatureIds": [
+            "island_palau"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "saudeleur_dynasty",
+      "name": "Saudeleur Dynasty",
+      "adjective": "Pohnpeian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Saudeleur",
+      "capitalSettlementId": "nan_madol",
+      "structure": "ritual_state",
+      "regionalInstanceId": "pacific_micronesia",
+      "geographicFeatureIds": [
+        "archipelago_caroline"
+      ],
+      "evidenceIds": [
+        "evidence_micronesia"
+      ],
+      "provinces": [
+        {
+          "id": "pohnpei_domains",
+          "name": "Pohnpei Domains",
+          "administrativeType": "ritual_domains",
+          "geographicFeatureIds": [
+            "archipelago_caroline"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "melanesian_exchange_communities",
+      "name": "Melanesian Exchange Communities",
+      "adjective": "Melanesian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Clan Leader",
+      "capitalSettlementId": "rabaul_exchange_harbor",
+      "capitalException": "The content node represents connected autonomous coastal communities, not a unitary polity.",
+      "structure": "decentralized",
+      "regionalInstanceId": "pacific_melanesia",
+      "geographicFeatureIds": [
+        "archipelago_bismarck"
+      ],
+      "evidenceIds": [
+        "evidence_melanesia"
+      ],
+      "provinces": [
+        {
+          "id": "bismarck_solomon_exchange_coasts",
+          "name": "Bismarck and Solomon Exchange Coasts",
+          "administrativeType": "clan_exchange_network",
+          "geographicFeatureIds": [
+            "archipelago_bismarck"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "tongan_tu_i_tonga",
+      "name": "Tuʻi Tonga",
+      "adjective": "Tongan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Tuʻi Tonga",
+      "capitalSettlementId": "mua",
+      "structure": "ritual_state",
+      "regionalInstanceId": "pacific_west_polynesia",
+      "geographicFeatureIds": [
+        "archipelago_tonga"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "tonga_sacred_domains",
+          "name": "Tongan Sacred Domains",
+          "administrativeType": "maritime_chiefdom",
+          "geographicFeatureIds": [
+            "archipelago_tonga"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "fijian_vanua_networks",
+      "name": "Fijian Vanua Networks",
+      "adjective": "Fijian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ratu",
+      "capitalSettlementId": "lakeba_voyaging_center",
+      "capitalException": "Vanua and island chiefdoms had no single archipelago capital.",
+      "structure": "confederated",
+      "regionalInstanceId": "pacific_west_polynesia",
+      "geographicFeatureIds": [
+        "island_fiji"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "fiji_island_chiefdoms",
+          "name": "Fiji Island Chiefdoms",
+          "administrativeType": "vanua_network",
+          "geographicFeatureIds": [
+            "island_fiji"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "samoan_faamatai",
+      "name": "Samoan Fa'amatai",
+      "adjective": "Samoan",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Tui",
+      "capitalSettlementId": "apia_anchorage",
+      "capitalException": "District and title networks were not governed from one permanent capital.",
+      "structure": "confederated",
+      "regionalInstanceId": "pacific_east_polynesia",
+      "geographicFeatureIds": [
+        "archipelago_samoa"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "samoan_districts",
+          "name": "Samoan Districts",
+          "administrativeType": "title_districts",
+          "geographicFeatureIds": [
+            "archipelago_samoa"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "society_islands_chiefdoms",
+      "name": "Society Islands Chiefdoms",
+      "adjective": "Society Islander",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Ariʻi",
+      "capitalSettlementId": "taputapuatea",
+      "capitalException": "Taputapuātea is modeled as a shared ritual-voyaging center, not a centralized political capital.",
+      "structure": "confederated",
+      "regionalInstanceId": "pacific_east_polynesia",
+      "geographicFeatureIds": [
+        "archipelago_society"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "society_island_domains",
+          "name": "Society Island Domains",
+          "administrativeType": "island_chiefdoms",
+          "geographicFeatureIds": [
+            "archipelago_society"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "rapa_nui_mata",
+      "name": "Rapa Nui Mata",
+      "adjective": "Rapa Nui",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ariki Mau",
+      "capitalSettlementId": "hanga_roa_anchorage",
+      "capitalException": "Clan territories and ritual sites had no urban capital.",
+      "structure": "confederated",
+      "regionalInstanceId": "pacific_east_polynesia",
+      "geographicFeatureIds": [
+        "island_rapa_nui"
+      ],
+      "evidenceIds": [
+        "evidence_polynesia"
+      ],
+      "provinces": [
+        {
+          "id": "rapa_nui_clan_territories",
+          "name": "Rapa Nui Clan Territories",
+          "administrativeType": "mata_territories",
+          "geographicFeatureIds": [
+            "island_rapa_nui"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    },
+    {
+      "id": "maori_iwi_hapu",
+      "name": "Māori Iwi and Hapū",
+      "adjective": "Māori",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ariki",
+      "capitalSettlementId": "tamaki_makaurau",
+      "capitalException": "Independent iwi and hapū authority had no country-wide capital.",
+      "structure": "decentralized",
+      "regionalInstanceId": "pacific_new_zealand",
+      "geographicFeatureIds": [
+        "coast_new_zealand_north"
+      ],
+      "evidenceIds": [
+        "evidence_aotearoa"
+      ],
+      "provinces": [
+        {
+          "id": "aotearoa_northern_iwi",
+          "name": "Northern Iwi Territories",
+          "administrativeType": "iwi_hapu_territories",
+          "geographicFeatureIds": [
+            "coast_new_zealand_north"
+          ],
+          "adjacentProvinceIds": []
+        }
+      ]
+    }
+  ]
+}
