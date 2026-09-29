@@ -230,7 +230,10 @@ def _validate_budget(base, physical: PhysicalMap, generated: Path) -> None:
     for terrain_id in physical.terrain_ids:
         source = dict(base.regional_terrain)[terrain_id]
         raw = json.loads(source.read_text(encoding="utf-8"))
-        cells += raw["grid"]["width"] * raw["grid"]["height"]
+        if raw.get("formatVersion") == 2:
+            cells += sum(item["grid"][0] * item["grid"][1] for item in raw["instancePolicies"])
+        else:
+            cells += raw["grid"]["width"] * raw["grid"]["height"]
         output_bytes += (generated / f"terrain-{terrain_id}.json").stat().st_size
     if cells > physical.maximum_cells or output_bytes > physical.maximum_output_bytes:
         raise PackagingError(
