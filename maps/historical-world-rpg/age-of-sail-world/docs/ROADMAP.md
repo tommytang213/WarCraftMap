@@ -71,7 +71,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 ## Phase 5 — Age of Sail world content
 
 - [ ] Early performance stress harness and provisional budgets
-- [ ] Synthetic large-world simulation tests before full content population
+- [x] Synthetic large-world simulation tests before full content population
 - [ ] Maximum-reasonable local battle performance test
 - [x] Global geography/navigation topology
 - [ ] Regional instance activation, boundary transitions, and cross-region travel

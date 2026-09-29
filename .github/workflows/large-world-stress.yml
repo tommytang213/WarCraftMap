@@ -1,0 +1,40 @@
+name: Synthetic large-world stress
+on:
+  pull_request:
+    paths:
+      - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
+      - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
+      - ".github/workflows/large-world-stress.yml"
+  push:
+    branches: [main]
+    paths:
+      - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
+      - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
+      - ".github/workflows/large-world-stress.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+permissions:
+  contents: read
+jobs:
+  maximum-reasonable-world:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run maximum-reasonable synthetic world
+        run: |
+          python3 maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py \
+            --profile maximum_reasonable_world \
+            --summary-out maps/historical-world-rpg/age-of-sail-world/_build/stress/maximum-reasonable.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maximum-reasonable-world-summary
+          path: maps/historical-world-rpg/age-of-sail-world/_build/stress/maximum-reasonable.json
+          if-no-files-found: error
