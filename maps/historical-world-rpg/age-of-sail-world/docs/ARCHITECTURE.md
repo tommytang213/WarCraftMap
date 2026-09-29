@@ -123,3 +123,13 @@ landmark geometry, and English labels. Canonical settlements, routes, and
 boundaries are consumed from validated world data. The runtime map-screen
 controller owns a modal pause token while either view is open; focusing changes
 presentation only and cannot move units or change the physical region.
+# Controller military traditions
+
+`_shared/engine/military_tradition.py` owns controller/category experience and
+derives continuous integer modifiers plus milestone effects from the separate
+scenario `military-traditions.json` document. Combat systems submit validated
+contribution batches instead of relying on Warcraft death events. Strategic
+units retain only stable controller/category assignments; transient Warcraft
+objects receive a replaceable, namespaced tradition layer from the runtime
+adapter on activation or reconstruction. Campaign saves store
+`militaryTraditionState`; handles and derived modifiers are reconstructed.
