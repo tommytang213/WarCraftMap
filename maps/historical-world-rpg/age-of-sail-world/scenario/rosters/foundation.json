@@ -1,0 +1,62 @@
+{
+  "format": "age_of_sail_ordinary_roster_v1",
+  "schemaVersion": 1,
+  "campaignYears": {"start": 1450, "end": 1820},
+  "movementClasses": [
+    {"id":"foot","domain":"land"},{"id":"mounted","domain":"land"},{"id":"wheeled","domain":"land"},{"id":"coastal_sail","domain":"naval"},{"id":"ocean_sail","domain":"naval"}
+  ],
+  "weapons": [
+    {"id":"polearm","compatibleCategories":["infantry","marine"]},{"id":"matchlock","compatibleCategories":["infantry","specialist","marine"]},
+    {"id":"sabre","compatibleCategories":["cavalry","marine"]},{"id":"field_cannon","compatibleCategories":["artillery"]},
+    {"id":"boarding_arms","compatibleCategories":["marine","warship"]},{"id":"naval_guns","compatibleCategories":["merchant","warship"]},
+    {"id":"unarmed_cargo","compatibleCategories":["transport","merchant"]}
+  ],
+  "armor": [
+    {"id":"cloth_uniform","compatibleCategories":["infantry","artillery","specialist","marine"]},{"id":"riding_coat","compatibleCategories":["cavalry"]},
+    {"id":"timber_hull","compatibleCategories":["transport","merchant","warship"]}
+  ],
+  "abilities": [
+    {"id":"veteran_habits","mechanic":"passive","compatibleCategories":["infantry","cavalry","artillery","specialist","marine","transport","merchant","warship"]},
+    {"id":"ordered_ranks","mechanic":"formation","compatibleCategories":["infantry","cavalry","artillery","marine"]},
+    {"id":"volley_fire","mechanic":"weapon","compatibleCategories":["infantry","marine"]},
+    {"id":"rallying_presence","mechanic":"morale","compatibleCategories":["infantry","cavalry","artillery","specialist","marine"]},
+    {"id":"steady_drill","mechanic":"discipline","compatibleCategories":["infantry","artillery","marine"]},
+    {"id":"cavalry_shock","mechanic":"counter","compatibleCategories":["cavalry"]},{"id":"field_siege","mechanic":"siege","compatibleCategories":["artillery"]},
+    {"id":"field_repair","mechanic":"logistics","compatibleCategories":["specialist"]},{"id":"amphibious_assault","mechanic":"terrain","compatibleCategories":["marine"]},
+    {"id":"boarding_action","mechanic":"boarding","compatibleCategories":["marine","warship"]},{"id":"cargo_capacity","mechanic":"logistics","compatibleCategories":["transport","merchant"]},
+    {"id":"trade_convoy","mechanic":"aura","compatibleCategories":["merchant"]},{"id":"broadside","mechanic":"active","compatibleCategories":["warship"]},
+    {"id":"weatherly_hull","mechanic":"resistance","compatibleCategories":["warship"]},{"id":"forest_screen","mechanic":"terrain","compatibleCategories":["specialist"]}
+  ],
+  "formations": [
+    {"id":"close_order","compatibleCategories":["infantry","marine"]},{"id":"mounted_wedge","compatibleCategories":["cavalry"]},
+    {"id":"gun_battery","compatibleCategories":["artillery"]},{"id":"loose_order","compatibleCategories":["specialist"]}
+  ],
+  "ships": [
+    {"id":"coastal_transport_hull","category":"transport","crewStrength":30},{"id":"merchantman_hull","category":"merchant","crewStrength":55},
+    {"id":"armed_sailing_hull","category":"warship","crewStrength":180}
+  ],
+  "runtimeTemplates": [
+    {"id":"foot_company_runtime","domain":"land","warcraftUnitTypeId":"hfoo","strengthPerObject":100,"maxActiveObjects":4},
+    {"id":"mounted_company_runtime","domain":"land","warcraftUnitTypeId":"hkni","strengthPerObject":80,"maxActiveObjects":3},
+    {"id":"gun_battery_runtime","domain":"land","warcraftUnitTypeId":"hmtm","strengthPerObject":40,"maxActiveObjects":3},
+    {"id":"specialist_runtime","domain":"land","warcraftUnitTypeId":"hrif","strengthPerObject":50,"maxActiveObjects":2},
+    {"id":"small_ship_runtime","domain":"naval","warcraftUnitTypeId":"hbot","strengthPerObject":100,"maxActiveObjects":2},
+    {"id":"large_ship_runtime","domain":"naval","warcraftUnitTypeId":"hbsh","strengthPerObject":200,"maxActiveObjects":3}
+  ],
+  "archetypes": [
+    {"id":"ordinary_land_base","abstract":true,"name":"Ordinary land base","movementClassId":"foot","weaponIds":["polearm"],"armorIds":["cloth_uniform"],"abilityIds":[],"formationIds":[],"strategicStrength":500,"runtimeTemplateId":"foot_company_runtime","cost":100,"upkeep":10,"supply":10,"availability":{"historicalStartYear":1450,"historicalEndYear":1820,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"upgradeToIds":[],"replacementIds":[],"militaryTraditionIds":["land_formation_drill"],"technologyIds":[],"countryId":null},
+    {"id":"pike_foot","extends":"ordinary_land_base","inheritance":{"mode":"replace_lists"},"name":"Pike Foot","category":"infantry","abilityIds":["steady_drill"],"formationIds":["close_order"],"upgradeToIds":["drilled_foot"],"replacementIds":["drilled_foot"]},
+    {"id":"drilled_foot","extends":"pike_foot","inheritance":{"mode":"replace_lists"},"name":"Drilled Foot","weaponIds":["matchlock"],"technologyIds":["flintlock_drill"],"availability":{"historicalStartYear":1660,"historicalEndYear":1820,"earlyAccessTechnologyIds":["flintlock_drill"],"earlyAccessYear":1630},"upgradeToIds":[],"replacementIds":[],"cost":160,"upkeep":16},
+    {"id":"sabre_cavalry","extends":"ordinary_land_base","inheritance":{"mode":"replace_lists"},"name":"Sabre Cavalry","category":"cavalry","movementClassId":"mounted","weaponIds":["sabre"],"armorIds":["riding_coat"],"abilityIds":["cavalry_shock"],"formationIds":["mounted_wedge"],"runtimeTemplateId":"mounted_company_runtime","strategicStrength":320,"cost":220,"upkeep":24,"supply":18},
+    {"id":"field_artillery_battery","extends":"ordinary_land_base","inheritance":{"mode":"replace_lists"},"name":"Field Artillery Battery","category":"artillery","movementClassId":"wheeled","weaponIds":["field_cannon"],"abilityIds":["field_siege","steady_drill"],"formationIds":["gun_battery"],"runtimeTemplateId":"gun_battery_runtime","technologyIds":["cast_cannon"],"strategicStrength":120,"cost":280,"upkeep":28,"supply":30},
+    {"id":"field_engineers","extends":"ordinary_land_base","inheritance":{"mode":"replace_lists"},"name":"Field Engineers","category":"specialist","weaponIds":["matchlock"],"abilityIds":["field_repair","forest_screen"],"formationIds":["loose_order"],"runtimeTemplateId":"specialist_runtime","strategicStrength":100,"cost":180,"upkeep":18,"supply":15},
+    {"id":"shipboard_marines","extends":"ordinary_land_base","inheritance":{"mode":"replace_lists"},"name":"Shipboard Marines","category":"marine","weaponIds":["boarding_arms"],"abilityIds":["amphibious_assault","boarding_action"],"formationIds":["close_order"],"strategicStrength":180,"cost":190,"upkeep":20,"supply":16},
+    {"id":"coastal_transport","name":"Coastal Transport","category":"transport","movementClassId":"coastal_sail","weaponIds":["unarmed_cargo"],"armorIds":["timber_hull"],"abilityIds":["cargo_capacity"],"formationIds":[],"shipId":"coastal_transport_hull","strategicStrength":120,"runtimeTemplateId":"small_ship_runtime","cost":240,"upkeep":12,"supply":14,"availability":{"historicalStartYear":1450,"historicalEndYear":1820,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"upgradeToIds":[],"replacementIds":[],"militaryTraditionIds":[],"technologyIds":[],"countryId":null},
+    {"id":"ocean_merchantman","name":"Ocean Merchantman","category":"merchant","movementClassId":"ocean_sail","weaponIds":["naval_guns"],"armorIds":["timber_hull"],"abilityIds":["cargo_capacity","trade_convoy"],"formationIds":[],"shipId":"merchantman_hull","strategicStrength":220,"runtimeTemplateId":"small_ship_runtime","cost":420,"upkeep":22,"supply":25,"availability":{"historicalStartYear":1500,"historicalEndYear":1820,"earlyAccessTechnologyIds":["oceanic_seamanship"],"earlyAccessYear":1470},"upgradeToIds":[],"replacementIds":[],"militaryTraditionIds":["sailing_naval_practice"],"technologyIds":["oceanic_seamanship"],"countryId":null},
+    {"id":"armed_sailing_warship","name":"Armed Sailing Warship","category":"warship","movementClassId":"ocean_sail","weaponIds":["naval_guns","boarding_arms"],"armorIds":["timber_hull"],"abilityIds":["broadside","boarding_action","weatherly_hull"],"formationIds":[],"shipId":"armed_sailing_hull","strategicStrength":600,"runtimeTemplateId":"large_ship_runtime","cost":900,"upkeep":55,"supply":45,"availability":{"historicalStartYear":1560,"historicalEndYear":1820,"earlyAccessTechnologyIds":["galleon_design"],"earlyAccessYear":1530},"upgradeToIds":[],"replacementIds":[],"militaryTraditionIds":["sailing_naval_practice"],"technologyIds":["galleon_design"],"countryId":null}
+  ],
+  "historicalEvidence": [
+    {"id":"ordinary_roster_scope","citation":"Geoffrey Parker, The Military Revolution; N. A. M. Rodger, The Safeguard of the Sea.","note":"Supports broad land and sailing-warship roles and availability windows; this foundation is not a country roster."},
+    {"id":"merchant_shipping","citation":"Richard W. Unger, The Ship in the Medieval Economy 600–1600.","note":"Supports the distinction between coastal transport, ocean merchant shipping, and armed naval vessels."}
+  ]
+}

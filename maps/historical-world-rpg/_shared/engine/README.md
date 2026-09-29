@@ -26,6 +26,11 @@ province adoption, and campaign-save snapshots.
 operational state, and stable-ID persistence. Warcraft objects are transient,
 locally relevant representations created only through a compatibility adapter.
 
+`unit_roster.py` validates scenario roster catalogs, resolves controlled
+archetype inheritance, evaluates historical and technology availability, and
+deterministically projects roster-instance strength into bounded local proxies.
+It contains no Age of Sail content or balance values.
+
 `quest_event.py` owns deterministic quest lifecycles, trigger ordering and
 deduplication, persistent discoveries, atomic scenario outcomes, and stable saves.
 

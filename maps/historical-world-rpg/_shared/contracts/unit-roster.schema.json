@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/unit-roster.schema.json",
+  "title": "Scenario-owned ordinary-unit roster contract",
+  "$defs": {
+    "id": {"type":"string","pattern":"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$","maxLength":64},
+    "ids": {"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/id"}},
+    "categories": {"enum":["infantry","cavalry","artillery","specialist","marine","transport","merchant","warship"]},
+    "compatible": {"type":"object","additionalProperties":false,"required":["id","compatibleCategories"],"properties":{"id":{"$ref":"#/$defs/id"},"compatibleCategories":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/categories"}}}},
+    "availability": {"type":"object","additionalProperties":false,"required":["historicalStartYear","historicalEndYear","earlyAccessTechnologyIds","earlyAccessYear"],"properties":{"historicalStartYear":{"type":"integer"},"historicalEndYear":{"type":"integer"},"earlyAccessTechnologyIds":{"$ref":"#/$defs/ids"},"earlyAccessYear":{"type":"integer"}}},
+    "archetype": {
+      "description":"Concrete rows require all gameplay fields after inheritance resolution; the executable validator performs resolved cross-reference checks.",
+      "type":"object","required":["id","name"],
+      "properties": {
+        "id":{"$ref":"#/$defs/id"},"name":{"type":"string","minLength":1},"abstract":{"type":"boolean"},"extends":{"$ref":"#/$defs/id"},
+        "inheritance":{"type":"object","additionalProperties":false,"required":["mode"],"properties":{"mode":{"enum":["replace_lists","append_lists"]}}},
+        "category":{"$ref":"#/$defs/categories"},"movementClassId":{"$ref":"#/$defs/id"},"weaponIds":{"$ref":"#/$defs/ids"},"armorIds":{"$ref":"#/$defs/ids"},
+        "abilityIds":{"$ref":"#/$defs/ids"},"formationIds":{"$ref":"#/$defs/ids"},"shipId":{"$ref":"#/$defs/id"},"strategicStrength":{"type":"integer","minimum":1},
+        "runtimeTemplateId":{"$ref":"#/$defs/id"},"cost":{"type":"integer","minimum":1},"upkeep":{"type":"integer","minimum":0},"supply":{"type":"integer","minimum":0},
+        "availability":{"$ref":"#/$defs/availability"},"upgradeToIds":{"$ref":"#/$defs/ids"},"replacementIds":{"$ref":"#/$defs/ids"},
+        "militaryTraditionIds":{"$ref":"#/$defs/ids"},"technologyIds":{"$ref":"#/$defs/ids"},"countryId":{"anyOf":[{"$ref":"#/$defs/id"},{"type":"null"}]}
+      }
+    }
+  },
+  "type":"object","additionalProperties":false,
+  "required":["format","schemaVersion","campaignYears","movementClasses","weapons","armor","abilities","formations","ships","runtimeTemplates","archetypes","historicalEvidence"],
+  "properties": {
+    "format":{"const":"age_of_sail_ordinary_roster_v1"},"schemaVersion":{"const":1},
+    "campaignYears":{"type":"object","additionalProperties":false,"required":["start","end"],"properties":{"start":{"type":"integer"},"end":{"type":"integer"}}},
+    "movementClasses":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","domain"],"properties":{"id":{"$ref":"#/$defs/id"},"domain":{"enum":["land","naval"]}}}},
+    "weapons":{"type":"array","items":{"$ref":"#/$defs/compatible"}},"armor":{"type":"array","items":{"$ref":"#/$defs/compatible"}},
+    "abilities":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","mechanic","compatibleCategories"],"properties":{"id":{"$ref":"#/$defs/id"},"mechanic":{"enum":["passive","active","aura","formation","weapon","morale","discipline","resistance","counter","logistics","terrain","boarding","siege"]},"compatibleCategories":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/categories"}}}}},
+    "formations":{"type":"array","items":{"$ref":"#/$defs/compatible"}},
+    "ships":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","category","crewStrength"],"properties":{"id":{"$ref":"#/$defs/id"},"category":{"enum":["transport","merchant","warship"]},"crewStrength":{"type":"integer","minimum":1}}}},
+    "runtimeTemplates":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","domain","warcraftUnitTypeId","strengthPerObject","maxActiveObjects"],"properties":{"id":{"$ref":"#/$defs/id"},"domain":{"enum":["land","naval"]},"warcraftUnitTypeId":{"type":"string","minLength":4,"maxLength":4},"strengthPerObject":{"type":"integer","minimum":1},"maxActiveObjects":{"type":"integer","minimum":1}}}},
+    "archetypes":{"type":"array","items":{"$ref":"#/$defs/archetype"}},
+    "historicalEvidence":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["id","citation","note"],"properties":{"id":{"$ref":"#/$defs/id"},"citation":{"type":"string","minLength":1},"note":{"type":"string","minLength":1}}}}
+  }
+}
