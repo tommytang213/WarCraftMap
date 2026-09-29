@@ -76,7 +76,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Global geography/navigation topology
 - [ ] Regional instance activation, boundary transitions, and cross-region travel
 - [ ] Cross-region troop command and remote regional building management
-- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
+- [x] World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
+- [ ] Custom quest journal and quest-to-map tracking integration
 - [x] Europe
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)

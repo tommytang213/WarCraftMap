@@ -29,7 +29,7 @@ class CampaignSaveTests(unittest.TestCase):
         loaded = campaign_save.load_save(make_save())
         self.assertEqual(WORLD_STATE, loaded["state"]["world"])
         self.assertEqual(PLAYER_STATE, loaded["state"]["players"])
-        self.assertEqual((2, "0.1.0+test"), (loaded["schemaVersion"], loaded["buildVersion"]))
+        self.assertEqual((3, "0.1.0+test"), (loaded["schemaVersion"], loaded["buildVersion"]))
         self.assertEqual({"id": "age_of_sail_world", "version": "0.1.0"}, loaded["scenario"])
         self.assertEqual("autosave_15", loaded["slot"]["id"])
         self.assertEqual(64, len(loaded["integrity"]["checksum"]))
@@ -89,7 +89,8 @@ class CampaignSaveTests(unittest.TestCase):
         registry = campaign_save.MigrationRegistry()
         registry.register(0, migrate_v0)
         loaded = campaign_save.load_save(json.dumps(old), registry)
-        self.assertEqual((2, PLAYER_STATE), (loaded["schemaVersion"], loaded["state"]["players"]))
+        self.assertEqual((3, PLAYER_STATE), (loaded["schemaVersion"], loaded["state"]["players"]))
+        self.assertEqual(1, loaded["state"]["world"]["mapKnowledge"]["version"])
         self.assertEqual(snapshot, old)
 
     def test_missing_or_invalid_migration_is_rejected(self):
