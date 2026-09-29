@@ -196,6 +196,34 @@ class CampaignMap:
         self.focus = MapFocus("regional", area["regionId"], None, "approximate", (copy.deepcopy(area),))
         return self.render()
 
+    def focus_guidance(self, guidance: Mapping):
+        """Focus scenario-authorized quest guidance without changing knowledge."""
+        if not isinstance(guidance, Mapping):
+            raise MapDiscoveryError("quest guidance must be an object")
+        precision = guidance.get("precision")
+        if precision not in PRECISIONS:
+            raise MapDiscoveryError("quest guidance has no visible precision")
+        region_id = guidance.get("regionId")
+        if region_id not in self.indexes["regions"]:
+            raise MapDiscoveryError("quest guidance has an invalid region")
+        target_id = guidance.get("locationId") if precision == "exact" else None
+        if target_id is not None:
+            record = None
+            for kind in ("settlements", "landmarks", "pointsOfInterest"):
+                record = self.indexes[kind].get(target_id) or record
+            if record is None or record["regionId"] != region_id:
+                raise MapDiscoveryError("quest guidance has an invalid location")
+        areas = copy.deepcopy(guidance.get("searchAreas", [])) if precision == "approximate" else []
+        for area in areas:
+            if not isinstance(area, Mapping) or not all(
+                isinstance(area.get(key), (int, float)) and not isinstance(area.get(key), bool)
+                for key in ("x", "y", "radius")
+            ) or area["radius"] <= 0:
+                raise MapDiscoveryError("quest guidance has an invalid bounded search area")
+        self.is_open = True
+        self.focus = MapFocus("regional", region_id, target_id, precision, tuple(areas))
+        return self.render()
+
     def render(self):
         if not self.is_open:
             raise MapDiscoveryError("map is closed")
