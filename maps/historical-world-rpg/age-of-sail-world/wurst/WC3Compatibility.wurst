@@ -106,3 +106,21 @@ public function compatSetUnitMaxLife(unit target, int life)
 	BlzSetUnitMaxHP(target, life)
 public function compatGetUnitCollisionSize(unit target) returns real
 	return BlzGetUnitCollisionSize(target)
+
+// Development benchmark operations. Keeping these natives here makes the
+// benchmark compile against the pinned patch without creating a second
+// version-specific boundary.
+public function compatBenchmarkCreateUnit(player owner, int unitType, real x, real y) returns unit
+	return CreateUnit(owner, unitType, x, y, 0.)
+public function compatBenchmarkRemoveUnit(unit target)
+	RemoveUnit(target)
+public function compatBenchmarkCreateEffect(string modelPath, real x, real y) returns effect
+	return AddSpecialEffect(modelPath, x, y)
+public function compatBenchmarkDestroyEffect(effect target)
+	DestroyEffect(target)
+public function compatBenchmarkIssuePointOrder(unit target, string order, real x, real y) returns boolean
+	return IssuePointOrder(target, order, x, y)
+public function compatBenchmarkIsTerrainPathable(real x, real y, pathingtype kind) returns boolean
+	return IsTerrainPathable(x, y, kind)
+public function compatBenchmarkClockMilliseconds() returns real
+	return TimerGetElapsed(bj_gameStartedTimer) * 1000.
