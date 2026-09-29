@@ -103,11 +103,15 @@ def validate(source_path=SOURCE, politics_path=POLITICS, geography_path=GEOGRAPH
     ids = sorted(settlements); minimum = source["placementRules"]["minimumSeparationCells"]
     for n, left in enumerate(ids):
         for right in ids[n+1:]:
+            if settlements[left]["regionalInstanceId"] != settlements[right]["regionalInstanceId"]:
+                continue
             if math.dist(tuple(positions[left].values()), tuple(positions[right].values())) < minimum:
                 raise AfricaContentError(f"settlements overlap: {left} and {right}")
     clearance = source["placementRules"]["entryAnchorClearanceCells"]
     for anchor in anchors.values():
         for ident, pos in positions.items():
+            if settlements[ident]["regionalInstanceId"] != anchor["instanceId"]:
+                continue
             if "transition_location" not in settlements[ident]["roles"] and math.dist(tuple(pos.values()), tuple(anchor["local"])) < clearance:
                 raise AfricaContentError(f"settlement {ident}: obstructs entry anchor {anchor['id']}")
     routes = _index(source.get("tradeRoutes"), "trade routes")
