@@ -9,6 +9,7 @@ from automation.warcraftmap_agent.worker import (
     build_codex_command,
     build_pr_merge_command,
     check_state,
+    codex_prompt,
     load_env,
     load_state,
     parse_codex_token_usage,
@@ -129,6 +130,13 @@ class WorkerTests(unittest.TestCase):
         command = build_pr_merge_command(17)
         self.assertEqual(command, ["gh", "pr", "merge", "17", "--merge"])
         self.assertNotIn("--delete-branch", command)
+
+    def test_codex_prompt_defers_unavailable_repository_validation_to_outer_worker(self):
+        issue = {"number": 131, "title": "[agent-ready] travel", "body": "Implement it."}
+        prompt = codex_prompt(issue, "")
+        self.assertIn("outer worker performs the authoritative repository validation", prompt)
+        self.assertIn('do NOT return "blocked" solely because', prompt)
+        self.assertIn("Grill is unavailable", prompt)
 
     def test_codex_command_uses_json_and_no_conflicting_sandbox_flag(self):
         with tempfile.TemporaryDirectory() as directory:
