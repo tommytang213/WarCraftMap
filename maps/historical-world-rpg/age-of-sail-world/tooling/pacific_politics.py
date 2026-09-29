@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import sys
 from collections import deque
 from pathlib import Path
@@ -13,6 +14,25 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "scenario/politics/pacific-1450.json"
 GEOGRAPHY = ROOT / "scenario/geography/pacific.json"
 WORLD = ROOT / "scenario/world/world.json"
+
+# Main gained a smaller Pacific content projection while this authoritative
+# baseline was in flight.  Its political records represented the same island
+# communities under provisional IDs.  Remove only those superseded records
+# before projecting the authoritative IDs; its settlements and navigation
+# content are retained and remapped by pacific_content.py.
+SUPERSEDED_POLITY_IDS = {
+    "hawaiian_ali_i_networks", "chamorro_clan_networks",
+    "palauan_village_leagues", "melanesian_exchange_communities",
+    "tongan_tu_i_tonga", "fijian_vanua_networks", "samoan_faamatai",
+    "society_islands_chiefdoms", "rapa_nui_mata",
+}
+SUPERSEDED_PROVINCE_IDS = {
+    "hawaii_island_chiefdoms", "guam_clan_districts",
+    "palau_village_territories", "pohnpei_domains",
+    "bismarck_solomon_exchange_coasts", "tonga_sacred_domains",
+    "fiji_island_chiefdoms", "society_island_domains",
+    "rapa_nui_clan_territories", "aotearoa_northern_iwi",
+}
 
 
 def validate(source_path=SOURCE, world_path=WORLD, geography_path=GEOGRAPHY, require_projection=True):
@@ -60,6 +80,19 @@ def validate(source_path=SOURCE, world_path=WORLD, geography_path=GEOGRAPHY, req
 
 
 def project(data, world):
+    world = copy.deepcopy(world)
+    authoritative_polity_ids = {row["id"] for row in data["polities"]}
+    replaced_polity_ids = SUPERSEDED_POLITY_IDS | authoritative_polity_ids
+    # Recreate authoritative records instead of allowing the generic projector
+    # to union provisional provinceIds into the two IDs shared by both streams.
+    world["polities"] = [row for row in world["polities"] if row["id"] not in replaced_polity_ids]
+    world["provinces"] = [row for row in world["provinces"] if row["id"] not in SUPERSEDED_PROVINCE_IDS]
+    world["titleStyles"] = [row for row in world["titleStyles"] if row["polityId"] not in replaced_polity_ids]
+    world["titleGrants"] = [row for row in world["titleGrants"] if row["id"].removeprefix("grant_") not in replaced_polity_ids]
+    world["territorialHoldings"] = [
+        row for row in world["territorialHoldings"]
+        if row["territory"]["id"] not in SUPERSEDED_PROVINCE_IDS
+    ]
     return _project(data, world)
 
 
