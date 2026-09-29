@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 3
+GENERATOR_VERSION = 4
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -78,10 +78,15 @@ def generate(config: BuildConfig, generated: Path) -> None:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from generate_regional_terrain import canonical_bytes, generate as generate_terrain
     terrain_outputs = {}
+    terrain_authorities = []
     for terrain_id, terrain_path in config.regional_terrain:
         try:
             terrain_source = json.loads(terrain_path.read_text(encoding="utf-8"))
-            terrain = generate_terrain(terrain_source, world["regionalGeography"])
+            authority = None
+            if terrain_source.get("authority"):
+                authority_path = _inside(config.project, terrain_source["authority"], f"regionalTerrain {terrain_id}.authority")
+                authority = json.loads(authority_path.read_text(encoding="utf-8")); terrain_authorities.append(authority_path)
+            terrain = generate_terrain(terrain_source, world["regionalGeography"], authority)
         except (OSError, json.JSONDecodeError, KeyError, ValueError) as error:
             raise _fail("terrain generation", f"{terrain_id}: {error}") from error
         output_name = f"terrain-{terrain_id}.json"
@@ -145,6 +150,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         Path(__file__).resolve(),
         Path(__file__).resolve().with_name("generate_regional_terrain.py"),
         *(path for _, path in config.regional_terrain),
+        *terrain_authorities,
     )
     inputs = {}
     for path in input_paths:
