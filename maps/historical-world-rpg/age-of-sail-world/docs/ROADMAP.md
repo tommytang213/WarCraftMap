@@ -87,6 +87,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 focused political baseline, settlements, ports, caravan routes, and regional entry content
 - [ ] Middle East / India
   - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
 - [ ] Southeast Asia
 - [ ] East Asia
 - [ ] Americas / Caribbean
