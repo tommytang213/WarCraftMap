@@ -147,15 +147,22 @@ This file records requirements already agreed with the player. They are defaults
 
 ## World-map representation and regional traversal
 
-- The global world uses separate logical regional map instances rather than one physically contiguous world terrain.
-- The initial implementation remains within the project's single packaged `.w3x`: regions are isolated playable terrain instances/areas managed by the scenario/runtime rather than separate Warcraft map files.
-- Crossing a valid land or sea boundary transitions the player and other locally relevant runtime representations to the geographically adjacent region and reconstructs them at the corresponding entry boundary.
+- The purpose of regional partitioning is to make the playable world physically larger than Warcraft III's single-map terrain ceiling. The full world must therefore not be packed into one physical `.w3x`.
+- A logical world region is backed by one or more separate physical Warcraft map files/submaps. Each physical map receives its own terrain-size budget, and a large logical region such as Europe may use multiple physical maps when needed for geographic scale, density, or performance.
+- The current single `AgeOfSailWorld.w3x` remains only a bootstrap/runtime-validation map while the multi-map campaign pipeline is implemented; it is not the intended final container for all world terrain.
+- Crossing a valid land or sea boundary saves/commits authoritative campaign state, changes to the geographically adjacent physical map, and reconstructs the player and other locally relevant runtime representations at the corresponding entry boundary.
 - Regional adjacency follows real-world geography and compass direction. For example, leaving Europe westward across the Atlantic leads toward eastern North America; leaving Europe eastward leads toward Asia/Middle East rather than America.
-- Long-distance ocean travel may use direct region-to-region routes with campaign-time advancement and encounter/event hooks rather than requiring one enormous continuously rendered ocean. Dedicated ocean/encounter instances may be used where gameplay benefits.
-- Each region uses gameplay-compressed geography rather than one rigid global projection or uniform scale. Preserve recognizable coastlines, relative direction, major geographic relationships, settlement ordering, and important travel routes while compressing empty distance aggressively.
-- Regions not currently active remain authoritative abstract campaign state. Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded.
-- Region transitions must preserve authoritative unit, party, fleet, quest, inventory, and campaign state; transient Warcraft objects are reconstructed from stable IDs/state after arrival.
-- Transition boundaries and entry points must be explicit scenario data so geography/navigation remains reusable and testable.
+- Ordinary geographic transitions should be edge-to-edge rather than requiring the player to enter an arbitrary trigger circle: reaching a valid shared map boundary transfers to the corresponding boundary of the adjacent physical map.
+- Preserve the player's position along the shared boundary using a normalized/correspondence coordinate rather than assuming identical raw Warcraft coordinates. For example, crossing 37% of the way along one map's west edge should normally place the player about 37% of the way along the geographically corresponding east edge of the destination map; reverse or transform the coordinate where edge orientation/geographic projection requires it.
+- If neighboring maps deliberately use identical aligned edge scales, the raw coordinate may remain effectively unchanged (for example source y=100 -> destination y=100).
+- Boundary arrival may snap only as much as necessary to the nearest valid connected land/water/pathable entry point, avoiding cliffs, blocked terrain, decorative water, or other invalid spawn positions while retaining the intended geographic correspondence.
+- Long-distance ocean travel may use direct region-to-region routes with campaign-time advancement and encounter/event hooks rather than requiring enormous continuously rendered oceans. Dedicated ocean/encounter maps may be used where gameplay benefits.
+- Each physical map uses gameplay-compressed geography while preserving recognizable coastlines, relative direction, major geographic relationships, settlement ordering, and important travel routes. Empty distance may be compressed, but splitting into maps should be preferred over crushing an entire continent into an implausibly small area merely to fit one map.
+- Regions/maps not currently loaded remain authoritative abstract campaign state. Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded.
+- Cross-map transitions must preserve authoritative character, unit, party, fleet, quest, inventory, settlement, diplomacy, economy, technology, and campaign state. Transient Warcraft objects are reconstructed from stable IDs/state after a map loads.
+- Revisiting a previously visited physical map should restore/reconstruct its authoritative changed state rather than reset conquered cities, destroyed/rebuilt defenses, moved armies, completed quests, market state, or other persistent campaign changes.
+- Prefer versioned authoritative campaign-state serialization/reconstruction over depending on opaque raw Warcraft map-save state as the sole source of truth. Native campaign/game-cache or map-transition facilities may be used as transport/bootstrap mechanisms where reliable.
+- Transition boundaries, physical-map IDs, adjacency, entry points, and map-package paths must be explicit scenario data so geography/navigation remains reusable and testable.
 
 ## Geographic fidelity and Europe content scope
 
@@ -196,10 +203,10 @@ This file records requirements already agreed with the player. They are defaults
 
 - The player can manage owned or authorized holdings in other regions without physically traveling there.
 - Remote regional access supports both management and active command. Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there.
-- Entering a remote regional management view does not move the player's character, party, army, fleet, or physical campaign location.
+- Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location.
 - Remote regional management is modal and follows the existing campaign pause policy.
-- When a region becomes the active command region, instantiate the locally relevant military, building, character, and other runtime representations needed for normal play in that region. Do not require every abstract population or background entity to exist as a Warcraft object merely because the region is active.
-- The player's main character keeps a separate physical-region location from the current command/view region. Leaving remote command can return the camera and control context to the character's physical region without teleporting that character.
+- If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. The main character's authoritative location remains unchanged unless the character actually travels.
+- The player's main character keeps a separate physical-region/map location from the current command/view region. Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model.
 - Multiple regions may contain player-owned troops and holdings at the same campaign time. Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active.
 - Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world.
 - The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation.

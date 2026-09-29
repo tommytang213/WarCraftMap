@@ -6,7 +6,7 @@
 - WurstScript as the source language/toolchain.
 - Lua as the generated Warcraft scripting backend.
 - Wurst project patch target: `v3.0`.
-- Source-controlled folder-map input at `map/AgeOfSailWorld.w3x/`.
+- Current bootstrap/source-controlled folder-map input at `map/AgeOfSailWorld.w3x/`; the final world target is a multi-map single-player custom-campaign package so each regional/subregional physical map receives its own terrain budget.
 
 ## Why Wurst + Lua
 
@@ -71,10 +71,13 @@ CI validates the folder structure and performs a full Wurst build from the canon
 
 The `Age of Sail map artifact` workflow runs the repository-controlled
 `./tooling/package_release.sh` command with an immutable Wurst container image,
-after source and world validation. Successful workflow runs retain the packaged
-`AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. Maintainers
-can download it from the **Artifacts** section of that run's GitHub Actions summary.
-The artifact is CI output only and is never committed or published as a release.
+after source and world validation. Successful workflow runs currently retain the packaged
+`AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. This is a
+bootstrap/runtime-validation artifact, not the intended final whole-world release
+format. The final release pipeline must package multiple physical regional/subregional
+maps into a single-player custom-campaign experience and validate cross-map state
+transfer and transitions. Maintainers can download CI artifacts from the **Artifacts**
+section of the run's GitHub Actions summary. CI output is never committed as a release.
 
 ## Runtime map pipeline
 

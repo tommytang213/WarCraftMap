@@ -71,12 +71,15 @@ The player should not be pulled into repetitive feature testing. Development gat
 ## Phase 5 — Age of Sail world content
 
 - [x] Early performance stress harness and provisional budgets
-- [ ] Synthetic large-world simulation tests before full content population
+- [x] Synthetic large-world simulation tests before full content population
 - [x] Maximum-reasonable local battle performance test
 - [x] Global geography/navigation topology
-- [ ] Regional instance activation, boundary transitions, and cross-region travel
-- [ ] Cross-region troop command and remote regional building management
-- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
+- [ ] Multi-map campaign packaging and per-region/subregion physical map build pipeline
+- [ ] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
+- [ ] Regional instance activation, boundary transitions, and cross-map/cross-region travel
+- [x] Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)
+- [x] World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
+- [x] Custom quest journal and quest-to-map tracking integration
 - [x] Europe
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)

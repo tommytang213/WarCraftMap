@@ -80,6 +80,18 @@ Age of Sail data will define, rather than hardcode into engine logic:
 - terrain/navigation topology
 - models/assets
 
+## Physical map partition
+
+The authoritative world is larger than a single Warcraft terrain. Logical regions are therefore partitioned into one or more separate physical Warcraft map files rather than tiled inside one giant `.w3x`.
+
+The currently source-controlled `map/AgeOfSailWorld.w3x/` remains a bootstrap/runtime-validation map until the multi-map campaign pipeline is complete. Final world packaging must support multiple physical maps under one single-player campaign experience.
+
+A physical map is only the currently loaded presentation/runtime slice. Global campaign state remains authoritative outside that map: polity state, ownership/control, economy, technology, diplomacy, characters, armies/fleets, quests, discovery, and persistent settlement state survive map changes. Entering a map reconstructs locally relevant Warcraft objects from stable IDs and authoritative state.
+
+A logical region may span multiple physical maps. Physical-map boundaries should follow practical geographic seams and preserve corresponding entry position/direction where practical. This lets the world exceed the per-map terrain ceiling without sacrificing the real-geography-first design.
+
+Remote command of forces in another physical map is modeled as a command-context map load: the target map becomes the active runtime slice while the main character's authoritative physical location remains stored elsewhere. Returning to the character loads/reconstructs that physical map again.
+
 ## Performance rule
 
 Strategic ownership and physically instantiated Warcraft objects are separate. Large fleets/armies may exist in simulation while only locally relevant entities are instantiated.
@@ -97,3 +109,17 @@ pre-existing player/manual pause state. Passive UI uses the separate
 `openPassiveCampaignUi` entry point and never acquires pause ownership. All
 manual pause controls must use `setCampaignManuallyPaused` rather than calling
 the Warcraft `PauseGame` native directly.
+
+## Map and discovery boundary
+
+`_shared/engine/map_discovery.py` owns scenario-neutral, authoritative location
+knowledge and deterministic world/regional render models. Knowledge for regions,
+settlements, landmarks, routes, boundaries, and other points of interest is
+stored independently by stable ID. Approximate clues persist mutable circle or
+polygon search areas and may move, shrink, split, or resolve to exact knowledge.
+
+`scenario/maps/world-map.json` owns world layout, regional-instance assignments,
+landmark geometry, and English labels. Canonical settlements, routes, and
+boundaries are consumed from validated world data. The runtime map-screen
+controller owns a modal pause token while either view is open; focusing changes
+presentation only and cannot move units or change the physical region.
