@@ -74,7 +74,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Synthetic large-world simulation tests before full content population
 - [x] Maximum-reasonable local battle performance test
 - [x] Global geography/navigation topology
-- [ ] Multi-map campaign packaging and per-region/subregion physical map build pipeline
+- [x] Multi-map campaign packaging and per-region/subregion physical map build pipeline
 - [ ] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
 - [ ] Regional instance activation, boundary transitions, and cross-map/cross-region travel
 - [x] Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)

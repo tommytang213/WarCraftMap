@@ -112,5 +112,6 @@ class PackagingTests(unittest.TestCase):
         ignore = (PROJECT_ROOT.parents[2] / ".gitignore").read_text(encoding="utf-8")
         self.assertIn("**/_build/", ignore)
         self.assertIn("*.w3x", ignore)
+        self.assertIn("*.w3n", ignore)
 
 if __name__ == "__main__": unittest.main()
