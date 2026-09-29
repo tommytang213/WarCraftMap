@@ -1,0 +1,49 @@
+package MapDiscoveryScreenTests
+
+import ManagementScreenPauseController
+import MapDiscoveryScreen
+
+class MapPauseRuntime implements CampaignPauseRuntime
+	boolean paused = false
+	override function setCampaignPaused(boolean value)
+		paused = value
+
+class FakeMapPresentation implements MapPresentationRuntime
+	string shown = ""
+	string focused = ""
+	override function showWorldMap(string physicalRegionId, string commandRegionId)
+		shown = "world:" + physicalRegionId + ":" + commandRegionId
+	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
+		shown = "regional:" + regionId + ":" + physicalRegionId + ":" + commandRegionId
+	override function focusExact(string locationId)
+		focused = "exact:" + locationId
+	override function focusSearchArea(string searchAreaId)
+		focused = "area:" + searchAreaId
+	override function hideMap()
+		shown = "hidden"
+
+@test function worldAndRegionalViewsAreModalAndKeepPhysicalRegion()
+	let pauseRuntime = new MapPauseRuntime()
+	let pauses = new ManagementScreenPauseController(pauseRuntime, false)
+	let presentation = new FakeMapPresentation()
+	let subject = new MapDiscoveryScreenController(pauses, presentation, "europe", "africa")
+	subject.openWorldMap()
+	pauseRuntime.paused.assertEquals(true)
+	presentation.shown.assertEquals("world:europe:africa")
+	subject.openRegionalMap("africa")
+	subject.getPhysicalRegionId().assertEquals("europe")
+	subject.getFocusedRegionId().assertEquals("africa")
+	pauses.getModalOwnerCount().assertEquals(1)
+	subject.close()
+	pauseRuntime.paused.assertEquals(false)
+
+@test function focusApisOnlyUpdatePresentation()
+	let pauseRuntime = new MapPauseRuntime()
+	let presentation = new FakeMapPresentation()
+	let subject = new MapDiscoveryScreenController(new ManagementScreenPauseController(pauseRuntime, false), presentation, "europe", "europe")
+	subject.focusKnownLocation("europe", "london")
+	presentation.focused.assertEquals("exact:london")
+	subject.focusKnownSearchArea("africa", "desert_clue")
+	presentation.focused.assertEquals("area:desert_clue")
+	subject.getPhysicalRegionId().assertEquals("europe")
+	subject.close()

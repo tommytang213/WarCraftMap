@@ -190,6 +190,13 @@ class QuestJournal:
     def clear_tracking(self):
         self.state["trackedQuestId"] = None
 
+    def show_on_map(self, quest_id, quest_state, *, physical_region_id, campaign_map):
+        """Focus the map from derived guidance without changing quest or travel state."""
+        view = self._entry(quest_id, quest_state, physical_region_id)
+        if not view["actions"]["showOnMap"]:
+            raise QuestJournalError("quest has no useful known guidance")
+        return campaign_map.focus_guidance(view["guidance"])
+
     def reconstruct(self, quest_snapshot, *, physical_region_id, command_region_id=None):
         """Build an entirely derived UI model; command region never affects routes."""
         if physical_region_id not in self.regions:
