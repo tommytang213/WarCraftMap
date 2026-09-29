@@ -25,6 +25,12 @@ Planned data domains:
 - technologies
 - institutions
 - historical events
+
+`historical-events.json` owns the selective 1450–1820 dated and recurring pressure
+catalogue, including English narrative/evidence, stable references, conditions,
+weighted alternate outcomes, and balance values. Run
+`python3 tooling/historical_events.py`; pass `--write` to rebuild the canonical world
+event and schedule projection deterministically.
 - characters
 - native title names and generic rank mappings
 - special/national units
