@@ -685,6 +685,25 @@
       }
     },
     {
+      "id": "node_americas_approach",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_east_polynesia_sea"
+        ],
+        "amphibious": [
+          "node_east_polynesia_sea"
+        ],
+        "flying": [
+          "node_east_polynesia_sea"
+        ]
+      }
+    },
+    {
       "id": "node_andes_barrier",
       "movementClasses": [
         "flying"
@@ -872,6 +891,15 @@
       }
     },
     {
+      "id": "node_decorative_open_ocean",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
       "id": "node_east_china_sea",
       "movementClasses": [
         "naval",
@@ -896,6 +924,31 @@
       }
     },
     {
+      "id": "node_east_polynesia_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_west_polynesia_sea",
+          "node_tahiti_coast",
+          "node_americas_approach"
+        ],
+        "amphibious": [
+          "node_west_polynesia_sea",
+          "node_tahiti_coast",
+          "node_americas_approach"
+        ],
+        "flying": [
+          "node_west_polynesia_sea",
+          "node_tahiti_coast",
+          "node_americas_approach"
+        ]
+      }
+    },
+    {
       "id": "node_eastern_sea",
       "movementClasses": [
         "naval",
@@ -915,7 +968,35 @@
       }
     },
     {
+      "id": "node_fiji_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_west_polynesia_sea"
+        ],
+        "amphibious": [
+          "node_west_polynesia_sea"
+        ],
+        "flying": [
+          "node_west_polynesia_sea"
+        ]
+      }
+    },
+    {
       "id": "node_gobi_isolated_water",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_great_barrier_reef",
       "movementClasses": [
         "flying"
       ],
@@ -939,6 +1020,25 @@
         ],
         "flying": [
           "node_north_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "node_hawaii_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_pacific"
+        ],
+        "amphibious": [
+          "node_north_pacific"
+        ],
+        "flying": [
+          "node_north_pacific"
         ]
       }
     },
@@ -1151,6 +1251,74 @@
       }
     },
     {
+      "id": "node_melanesia_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_micronesia_sea",
+          "node_west_polynesia_sea"
+        ],
+        "amphibious": [
+          "node_micronesia_sea",
+          "node_new_guinea_land",
+          "node_west_polynesia_sea"
+        ],
+        "flying": [
+          "node_micronesia_sea",
+          "node_new_guinea_land",
+          "node_west_polynesia_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_micronesia_islands",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_micronesia_sea"
+        ],
+        "amphibious": [
+          "node_micronesia_sea"
+        ],
+        "flying": [
+          "node_micronesia_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_micronesia_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_pacific",
+          "node_micronesia_islands",
+          "node_melanesia_sea"
+        ],
+        "amphibious": [
+          "node_north_pacific",
+          "node_micronesia_islands",
+          "node_melanesia_sea"
+        ],
+        "flying": [
+          "node_north_pacific",
+          "node_micronesia_islands",
+          "node_melanesia_sea"
+        ]
+      }
+    },
+    {
       "id": "node_mississippi",
       "movementClasses": [
         "naval",
@@ -1166,6 +1334,61 @@
         ],
         "flying": [
           "node_caribbean_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_new_guinea_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [],
+        "amphibious": [
+          "node_melanesia_sea"
+        ],
+        "flying": [
+          "node_melanesia_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_new_zealand_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [],
+        "amphibious": [
+          "node_new_zealand_sea"
+        ],
+        "flying": [
+          "node_new_zealand_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_new_zealand_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_west_polynesia_sea"
+        ],
+        "amphibious": [
+          "node_west_polynesia_sea",
+          "node_new_zealand_land"
+        ],
+        "flying": [
+          "node_west_polynesia_sea",
+          "node_new_zealand_land"
         ]
       }
     },
@@ -1291,17 +1514,23 @@
       "connections": {
         "naval": [
           "node_okhotsk_sea",
-          "node_central_pacific"
+          "node_central_pacific",
+          "node_micronesia_sea",
+          "node_hawaii_coast"
         ],
         "amphibious": [
           "node_okhotsk_sea",
           "node_north_america_west_land",
-          "node_central_pacific"
+          "node_central_pacific",
+          "node_micronesia_sea",
+          "node_hawaii_coast"
         ],
         "flying": [
           "node_okhotsk_sea",
           "node_north_america_west_land",
-          "node_central_pacific"
+          "node_central_pacific",
+          "node_micronesia_sea",
+          "node_hawaii_coast"
         ]
       }
     },
@@ -1517,6 +1746,25 @@
       }
     },
     {
+      "id": "node_tahiti_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_east_polynesia_sea"
+        ],
+        "amphibious": [
+          "node_east_polynesia_sea"
+        ],
+        "flying": [
+          "node_east_polynesia_sea"
+        ]
+      }
+    },
+    {
       "id": "node_taiwan_coast",
       "movementClasses": [
         "naval",
@@ -1542,6 +1790,34 @@
       ],
       "connections": {
         "flying": []
+      }
+    },
+    {
+      "id": "node_west_polynesia_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_melanesia_sea",
+          "node_fiji_coast",
+          "node_east_polynesia_sea",
+          "node_new_zealand_sea"
+        ],
+        "amphibious": [
+          "node_melanesia_sea",
+          "node_fiji_coast",
+          "node_east_polynesia_sea",
+          "node_new_zealand_sea"
+        ],
+        "flying": [
+          "node_melanesia_sea",
+          "node_fiji_coast",
+          "node_east_polynesia_sea",
+          "node_new_zealand_sea"
+        ]
       }
     },
     {
@@ -4100,6 +4376,127 @@
       "capitalSettlementId": "fuegian_seasonal_camps",
       "provinceIds": [
         "fuegian_archipelago"
+      ]
+    },
+    {
+      "id": "hawaiian_ali_i_networks",
+      "name": "Hawaiian Aliʻi Networks",
+      "adjective": "Hawaiian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Aliʻi Nui",
+      "capitalSettlementId": "waipio",
+      "provinceIds": [
+        "hawaii_island_chiefdoms"
+      ]
+    },
+    {
+      "id": "chamorro_clan_networks",
+      "name": "Chamorro Clan Networks",
+      "adjective": "Chamorro",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Maga'låhi",
+      "capitalSettlementId": "hagatna_anchorage",
+      "provinceIds": [
+        "guam_clan_districts"
+      ]
+    },
+    {
+      "id": "palauan_village_leagues",
+      "name": "Palauan Village Leagues",
+      "adjective": "Palauan",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Reklai",
+      "capitalSettlementId": "koror",
+      "provinceIds": [
+        "palau_village_territories"
+      ]
+    },
+    {
+      "id": "saudeleur_dynasty",
+      "name": "Saudeleur Dynasty",
+      "adjective": "Pohnpeian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Saudeleur",
+      "capitalSettlementId": "nan_madol",
+      "provinceIds": [
+        "pohnpei_domains"
+      ]
+    },
+    {
+      "id": "melanesian_exchange_communities",
+      "name": "Melanesian Exchange Communities",
+      "adjective": "Melanesian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Clan Leader",
+      "capitalSettlementId": "rabaul_exchange_harbor",
+      "provinceIds": [
+        "bismarck_solomon_exchange_coasts"
+      ]
+    },
+    {
+      "id": "tongan_tu_i_tonga",
+      "name": "Tuʻi Tonga",
+      "adjective": "Tongan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Tuʻi Tonga",
+      "capitalSettlementId": "mua",
+      "provinceIds": [
+        "tonga_sacred_domains"
+      ]
+    },
+    {
+      "id": "fijian_vanua_networks",
+      "name": "Fijian Vanua Networks",
+      "adjective": "Fijian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ratu",
+      "capitalSettlementId": "lakeba_voyaging_center",
+      "provinceIds": [
+        "fiji_island_chiefdoms"
+      ]
+    },
+    {
+      "id": "samoan_faamatai",
+      "name": "Samoan Fa'amatai",
+      "adjective": "Samoan",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Tui",
+      "capitalSettlementId": "apia_anchorage",
+      "provinceIds": [
+        "samoan_districts"
+      ]
+    },
+    {
+      "id": "society_islands_chiefdoms",
+      "name": "Society Islands Chiefdoms",
+      "adjective": "Society Islander",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Ariʻi",
+      "capitalSettlementId": "taputapuatea",
+      "provinceIds": [
+        "society_island_domains"
+      ]
+    },
+    {
+      "id": "rapa_nui_mata",
+      "name": "Rapa Nui Mata",
+      "adjective": "Rapa Nui",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ariki Mau",
+      "capitalSettlementId": "hanga_roa_anchorage",
+      "provinceIds": [
+        "rapa_nui_clan_territories"
+      ]
+    },
+    {
+      "id": "maori_iwi_hapu",
+      "name": "Māori Iwi and Hapū",
+      "adjective": "Māori",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ariki",
+      "capitalSettlementId": "tamaki_makaurau",
+      "provinceIds": [
+        "aotearoa_northern_iwi"
       ]
     }
   ],
@@ -6683,6 +7080,121 @@
       "settlementIds": [
         "fuegian_seasonal_camps"
       ]
+    },
+    {
+      "id": "hawaii_island_chiefdoms",
+      "name": "Hawaiʻi Island Chiefdoms",
+      "administrativeType": "chiefly_districts",
+      "legalOwnerPolityId": "hawaiian_ali_i_networks",
+      "controllerPolityId": "hawaiian_ali_i_networks",
+      "settlementIds": [
+        "waipio",
+        "honolulu_anchorage"
+      ]
+    },
+    {
+      "id": "guam_clan_districts",
+      "name": "Guam Clan Districts",
+      "administrativeType": "clan_territories",
+      "legalOwnerPolityId": "chamorro_clan_networks",
+      "controllerPolityId": "chamorro_clan_networks",
+      "settlementIds": [
+        "hagatna_anchorage"
+      ]
+    },
+    {
+      "id": "palau_village_territories",
+      "name": "Palau Village Territories",
+      "administrativeType": "village_leagues",
+      "legalOwnerPolityId": "palauan_village_leagues",
+      "controllerPolityId": "palauan_village_leagues",
+      "settlementIds": [
+        "koror"
+      ]
+    },
+    {
+      "id": "pohnpei_domains",
+      "name": "Pohnpei Domains",
+      "administrativeType": "ritual_domains",
+      "legalOwnerPolityId": "saudeleur_dynasty",
+      "controllerPolityId": "saudeleur_dynasty",
+      "settlementIds": [
+        "nan_madol"
+      ]
+    },
+    {
+      "id": "bismarck_solomon_exchange_coasts",
+      "name": "Bismarck and Solomon Exchange Coasts",
+      "administrativeType": "clan_exchange_network",
+      "legalOwnerPolityId": "melanesian_exchange_communities",
+      "controllerPolityId": "melanesian_exchange_communities",
+      "settlementIds": [
+        "rabaul_exchange_harbor",
+        "new_guinea_coastal_exchange",
+        "nggela_canoe_harbor",
+        "vanuatu_exchange_anchorage"
+      ]
+    },
+    {
+      "id": "tonga_sacred_domains",
+      "name": "Tongan Sacred Domains",
+      "administrativeType": "maritime_chiefdom",
+      "legalOwnerPolityId": "tongan_tu_i_tonga",
+      "controllerPolityId": "tongan_tu_i_tonga",
+      "settlementIds": [
+        "mua"
+      ]
+    },
+    {
+      "id": "fiji_island_chiefdoms",
+      "name": "Fiji Island Chiefdoms",
+      "administrativeType": "vanua_network",
+      "legalOwnerPolityId": "fijian_vanua_networks",
+      "controllerPolityId": "fijian_vanua_networks",
+      "settlementIds": [
+        "lakeba_voyaging_center"
+      ]
+    },
+    {
+      "id": "samoan_districts",
+      "name": "Samoan Districts",
+      "administrativeType": "title_districts",
+      "legalOwnerPolityId": "samoan_faamatai",
+      "controllerPolityId": "samoan_faamatai",
+      "settlementIds": [
+        "apia_anchorage"
+      ]
+    },
+    {
+      "id": "society_island_domains",
+      "name": "Society Island Domains",
+      "administrativeType": "island_chiefdoms",
+      "legalOwnerPolityId": "society_islands_chiefdoms",
+      "controllerPolityId": "society_islands_chiefdoms",
+      "settlementIds": [
+        "taputapuatea"
+      ]
+    },
+    {
+      "id": "rapa_nui_clan_territories",
+      "name": "Rapa Nui Clan Territories",
+      "administrativeType": "mata_territories",
+      "legalOwnerPolityId": "rapa_nui_mata",
+      "controllerPolityId": "rapa_nui_mata",
+      "settlementIds": [
+        "hanga_roa_anchorage"
+      ]
+    },
+    {
+      "id": "aotearoa_northern_iwi",
+      "name": "Northern Iwi Territories",
+      "administrativeType": "iwi_hapu_territories",
+      "legalOwnerPolityId": "maori_iwi_hapu",
+      "controllerPolityId": "maori_iwi_hapu",
+      "settlementIds": [
+        "tamaki_makaurau",
+        "kaiapoi_pa"
+      ]
     }
   ],
   "settlementServiceDefinitions": [
@@ -6705,6 +7217,22 @@
     {
       "id": "warehouse",
       "name": "Warehouse"
+    },
+    {
+      "id": "storage",
+      "name": "Storage"
+    },
+    {
+      "id": "crafting",
+      "name": "Crafting"
+    },
+    {
+      "id": "ship_repair",
+      "name": "Ship Repair"
+    },
+    {
+      "id": "ritual_services",
+      "name": "Ritual Services"
     }
   ],
   "settlementObjectTemplates": [
@@ -7880,6 +8408,22 @@
     },
     {
       "id": "city_core_mapuche_rewe_assemblies",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_waipio",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nan_madol",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_mua",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kaiapoi_pa",
       "objectTemplateId": "capital_city_core"
     }
   ],
@@ -9610,6 +10154,30 @@
       "id": "defense_mapuche_rewe_assemblies",
       "objectTemplateIds": [
         "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_waipio",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nan_madol",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_mua",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_kaiapoi_pa",
+      "objectTemplateIds": [
+        "city_defenses"
       ]
     }
   ],
@@ -20195,6 +20763,1121 @@
         "cotton",
         "cacao"
       ]
+    },
+    {
+      "id": "waipio",
+      "name": "Waipiʻo",
+      "kind": "capital",
+      "provinceId": "hawaii_island_chiefdoms",
+      "legalOwnerPolityId": "hawaiian_ali_i_networks",
+      "controllerPolityId": "hawaiian_ali_i_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_hawaii_coast",
+      "serviceIds": [
+        "market",
+        "storage",
+        "crafting"
+      ],
+      "regionalInstanceId": "pacific_north_hawaii",
+      "physicalMapId": "pacific_north",
+      "localPosition": {
+        "x": 16,
+        "y": 12
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "political_center",
+        "fortified_settlement",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "waipio"
+      },
+      "economicProfile": {
+        "production": [
+          "taro",
+          "sweet_potato",
+          "barkcloth"
+        ],
+        "imports": [
+          "basalt_adzes",
+          "feathers"
+        ],
+        "shortages": [
+          "iron_goods",
+          "gunpowder"
+        ],
+        "tradeEndpointIds": [
+          "hawaii_internal_exchange"
+        ]
+      },
+      "productionRefs": [
+        "taro",
+        "sweet_potato",
+        "barkcloth"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "cityCoreId": "city_core_waipio",
+      "defenseLayoutId": "defense_waipio"
+    },
+    {
+      "id": "honolulu_anchorage",
+      "name": "Honolulu Anchorage",
+      "kind": "port",
+      "provinceId": "hawaii_island_chiefdoms",
+      "legalOwnerPolityId": "hawaiian_ali_i_networks",
+      "controllerPolityId": "hawaiian_ali_i_networks",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_hawaii_coast",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_north_hawaii",
+      "physicalMapId": "pacific_north",
+      "localPosition": {
+        "x": 34,
+        "y": 58
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "anchorage",
+        "trade_center",
+        "voyaging_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "honolulu_anchorage"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "salt",
+          "ship_provisions"
+        ],
+        "imports": [
+          "barkcloth",
+          "timber"
+        ],
+        "shortages": [
+          "iron_goods",
+          "canvas"
+        ],
+        "tradeEndpointIds": [
+          "north_pacific_exchange"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "salt",
+        "ship_provisions"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_hawaii_coast",
+        "access": "island_anchorage"
+      }
+    },
+    {
+      "id": "hagatna_anchorage",
+      "name": "Hagåtña Anchorage",
+      "kind": "capital",
+      "provinceId": "guam_clan_districts",
+      "legalOwnerPolityId": "chamorro_clan_networks",
+      "controllerPolityId": "chamorro_clan_networks",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_micronesia_islands",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_micronesia",
+      "physicalMapId": "pacific_west",
+      "localPosition": {
+        "x": 45,
+        "y": 74
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hagatna_anchorage"
+      },
+      "economicProfile": {
+        "production": [
+          "breadfruit",
+          "fish",
+          "coconut_fiber"
+        ],
+        "imports": [
+          "shell_valuables",
+          "hardwood"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "mariana_caroline_exchange"
+        ]
+      },
+      "productionRefs": [
+        "breadfruit",
+        "fish",
+        "coconut_fiber"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_micronesia_islands",
+        "access": "reef_passage"
+      }
+    },
+    {
+      "id": "koror",
+      "name": "Koror",
+      "kind": "capital",
+      "provinceId": "palau_village_territories",
+      "legalOwnerPolityId": "palauan_village_leagues",
+      "controllerPolityId": "palauan_village_leagues",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_micronesia_islands",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_micronesia",
+      "physicalMapId": "pacific_west",
+      "localPosition": {
+        "x": 15,
+        "y": 12
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "koror"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "shell_valuables",
+          "coconut_fiber"
+        ],
+        "imports": [
+          "stone_adzes",
+          "barkcloth"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "palau_caroline_exchange"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "shell_valuables",
+        "coconut_fiber"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_micronesia_islands",
+        "access": "lagoon_anchorage"
+      }
+    },
+    {
+      "id": "nan_madol",
+      "name": "Nan Madol",
+      "kind": "capital",
+      "provinceId": "pohnpei_domains",
+      "legalOwnerPolityId": "saudeleur_dynasty",
+      "controllerPolityId": "saudeleur_dynasty",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_micronesia_islands",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ritual_services"
+      ],
+      "regionalInstanceId": "pacific_micronesia",
+      "physicalMapId": "pacific_west",
+      "localPosition": {
+        "x": 68,
+        "y": 9
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "fortified_settlement",
+        "religious_location",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nan_madol"
+      },
+      "economicProfile": {
+        "production": [
+          "breadfruit",
+          "taro",
+          "shell_valuables"
+        ],
+        "imports": [
+          "basalt_adzes",
+          "barkcloth"
+        ],
+        "shortages": [
+          "iron_goods",
+          "timber"
+        ],
+        "tradeEndpointIds": [
+          "caroline_ritual_exchange"
+        ]
+      },
+      "productionRefs": [
+        "breadfruit",
+        "taro",
+        "shell_valuables"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_micronesia_islands",
+        "access": "canal_anchorage"
+      },
+      "cityCoreId": "city_core_nan_madol",
+      "defenseLayoutId": "defense_nan_madol"
+    },
+    {
+      "id": "rabaul_exchange_harbor",
+      "name": "Rabaul Exchange Harbor",
+      "kind": "capital",
+      "provinceId": "bismarck_solomon_exchange_coasts",
+      "legalOwnerPolityId": "melanesian_exchange_communities",
+      "controllerPolityId": "melanesian_exchange_communities",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_melanesia_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_melanesia",
+      "physicalMapId": "pacific_melanesia",
+      "localPosition": {
+        "x": 34,
+        "y": 62
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "political_center",
+        "major_port",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "rabaul_exchange_harbor"
+      },
+      "economicProfile": {
+        "production": [
+          "obsidian",
+          "taro",
+          "canoes"
+        ],
+        "imports": [
+          "shell_valuables",
+          "barkcloth"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "bismarck_exchange"
+        ]
+      },
+      "productionRefs": [
+        "obsidian",
+        "taro",
+        "canoes"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_melanesia_sea",
+        "access": "caldera_harbor"
+      }
+    },
+    {
+      "id": "new_guinea_coastal_exchange",
+      "name": "New Guinea Coastal Exchange",
+      "kind": "fort",
+      "provinceId": "bismarck_solomon_exchange_coasts",
+      "legalOwnerPolityId": "melanesian_exchange_communities",
+      "controllerPolityId": "melanesian_exchange_communities",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_new_guinea_land",
+      "serviceIds": [
+        "market",
+        "storage",
+        "crafting"
+      ],
+      "regionalInstanceId": "pacific_melanesia",
+      "physicalMapId": "pacific_melanesia",
+      "localPosition": {
+        "x": 15,
+        "y": 62
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "new_guinea_coastal_exchange"
+      },
+      "economicProfile": {
+        "production": [
+          "sago",
+          "taro",
+          "bird_plumes"
+        ],
+        "imports": [
+          "obsidian",
+          "shell_valuables"
+        ],
+        "shortages": [
+          "iron_goods",
+          "salt"
+        ],
+        "tradeEndpointIds": [
+          "new_guinea_coastal_exchange"
+        ]
+      },
+      "productionRefs": [
+        "sago",
+        "taro",
+        "bird_plumes"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      }
+    },
+    {
+      "id": "nggela_canoe_harbor",
+      "name": "Nggela Canoe Harbor",
+      "kind": "port",
+      "provinceId": "bismarck_solomon_exchange_coasts",
+      "legalOwnerPolityId": "melanesian_exchange_communities",
+      "controllerPolityId": "melanesian_exchange_communities",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_melanesia_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_melanesia",
+      "physicalMapId": "pacific_melanesia",
+      "localPosition": {
+        "x": 58,
+        "y": 48
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "anchorage",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nggela_canoe_harbor"
+      },
+      "economicProfile": {
+        "production": [
+          "shell_valuables",
+          "fish",
+          "canoes"
+        ],
+        "imports": [
+          "obsidian",
+          "taro"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "solomon_exchange"
+        ]
+      },
+      "productionRefs": [
+        "shell_valuables",
+        "fish",
+        "canoes"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_melanesia_sea",
+        "access": "island_anchorage"
+      }
+    },
+    {
+      "id": "vanuatu_exchange_anchorage",
+      "name": "Vanuatu Exchange Anchorage",
+      "kind": "port",
+      "provinceId": "bismarck_solomon_exchange_coasts",
+      "legalOwnerPolityId": "melanesian_exchange_communities",
+      "controllerPolityId": "melanesian_exchange_communities",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_melanesia_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_melanesia",
+      "physicalMapId": "pacific_melanesia",
+      "localPosition": {
+        "x": 85,
+        "y": 24
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "anchorage",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "vanuatu_exchange_anchorage"
+      },
+      "economicProfile": {
+        "production": [
+          "pigs",
+          "yams",
+          "mats"
+        ],
+        "imports": [
+          "shell_valuables",
+          "obsidian"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "vanuatu_exchange"
+        ]
+      },
+      "productionRefs": [
+        "pigs",
+        "yams",
+        "mats"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_melanesia_sea",
+        "access": "island_anchorage"
+      }
+    },
+    {
+      "id": "mua",
+      "name": "Muʻa",
+      "kind": "capital",
+      "provinceId": "tonga_sacred_domains",
+      "legalOwnerPolityId": "tongan_tu_i_tonga",
+      "controllerPolityId": "tongan_tu_i_tonga",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_west_polynesia_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ritual_services"
+      ],
+      "regionalInstanceId": "pacific_west_polynesia",
+      "physicalMapId": "pacific_polynesia",
+      "localPosition": {
+        "x": 40,
+        "y": 16
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "major_port",
+        "fortified_settlement",
+        "religious_location",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mua"
+      },
+      "economicProfile": {
+        "production": [
+          "taro",
+          "barkcloth",
+          "ship_provisions"
+        ],
+        "imports": [
+          "red_feathers",
+          "sandalwood"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "tongan_maritime_network"
+        ]
+      },
+      "productionRefs": [
+        "taro",
+        "barkcloth",
+        "ship_provisions"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_west_polynesia_sea",
+        "access": "lagoon_anchorage"
+      },
+      "cityCoreId": "city_core_mua",
+      "defenseLayoutId": "defense_mua"
+    },
+    {
+      "id": "lakeba_voyaging_center",
+      "name": "Lakeba Voyaging Center",
+      "kind": "capital",
+      "provinceId": "fiji_island_chiefdoms",
+      "legalOwnerPolityId": "fijian_vanua_networks",
+      "controllerPolityId": "fijian_vanua_networks",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_fiji_coast",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_west_polynesia",
+      "physicalMapId": "pacific_polynesia",
+      "localPosition": {
+        "x": 52,
+        "y": 34
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lakeba_voyaging_center"
+      },
+      "economicProfile": {
+        "production": [
+          "canoes",
+          "sandalwood",
+          "barkcloth"
+        ],
+        "imports": [
+          "red_feathers",
+          "shell_valuables"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "fiji_tonga_exchange"
+        ]
+      },
+      "productionRefs": [
+        "canoes",
+        "sandalwood",
+        "barkcloth"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_fiji_coast",
+        "access": "reef_passage"
+      }
+    },
+    {
+      "id": "apia_anchorage",
+      "name": "Apia Anchorage",
+      "kind": "capital",
+      "provinceId": "samoan_districts",
+      "legalOwnerPolityId": "samoan_faamatai",
+      "controllerPolityId": "samoan_faamatai",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_east_polynesia_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_east_polynesia",
+      "physicalMapId": "pacific_polynesia",
+      "localPosition": {
+        "x": 10,
+        "y": 48
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "apia_anchorage"
+      },
+      "economicProfile": {
+        "production": [
+          "barkcloth",
+          "coconut_fiber",
+          "ship_provisions"
+        ],
+        "imports": [
+          "red_feathers",
+          "canoes"
+        ],
+        "shortages": [
+          "iron_goods",
+          "grain"
+        ],
+        "tradeEndpointIds": [
+          "samoa_tonga_exchange"
+        ]
+      },
+      "productionRefs": [
+        "barkcloth",
+        "coconut_fiber",
+        "ship_provisions"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_east_polynesia_sea",
+        "access": "island_anchorage"
+      }
+    },
+    {
+      "id": "taputapuatea",
+      "name": "Taputapuātea",
+      "kind": "capital",
+      "provinceId": "society_island_domains",
+      "legalOwnerPolityId": "society_islands_chiefdoms",
+      "controllerPolityId": "society_islands_chiefdoms",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_tahiti_coast",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services",
+        "ritual_services"
+      ],
+      "regionalInstanceId": "pacific_east_polynesia",
+      "physicalMapId": "pacific_polynesia",
+      "localPosition": {
+        "x": 37,
+        "y": 39
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "voyaging_center",
+        "religious_location",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "taputapuatea"
+      },
+      "economicProfile": {
+        "production": [
+          "red_feathers",
+          "barkcloth",
+          "ship_provisions"
+        ],
+        "imports": [
+          "basalt_adzes",
+          "shell_valuables"
+        ],
+        "shortages": [
+          "iron_goods",
+          "timber"
+        ],
+        "tradeEndpointIds": [
+          "central_polynesian_voyaging"
+        ]
+      },
+      "productionRefs": [
+        "red_feathers",
+        "barkcloth",
+        "ship_provisions"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_tahiti_coast",
+        "access": "reef_passage"
+      }
+    },
+    {
+      "id": "hanga_roa_anchorage",
+      "name": "Hanga Roa Anchorage",
+      "kind": "capital",
+      "provinceId": "rapa_nui_clan_territories",
+      "legalOwnerPolityId": "rapa_nui_mata",
+      "controllerPolityId": "rapa_nui_mata",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_americas_approach",
+      "serviceIds": [
+        "market",
+        "storage",
+        "port_services"
+      ],
+      "regionalInstanceId": "pacific_east_polynesia",
+      "physicalMapId": "pacific_polynesia",
+      "localPosition": {
+        "x": 92,
+        "y": 9
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "political_center",
+        "anchorage",
+        "historical_location",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hanga_roa_anchorage"
+      },
+      "economicProfile": {
+        "production": [
+          "sweet_potato",
+          "fish",
+          "stonework"
+        ],
+        "imports": [
+          "timber",
+          "barkcloth"
+        ],
+        "shortages": [
+          "iron_goods",
+          "canoes"
+        ],
+        "tradeEndpointIds": [
+          "eastern_pacific_endpoint"
+        ]
+      },
+      "productionRefs": [
+        "sweet_potato",
+        "fish",
+        "stonework"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_americas_approach",
+        "access": "open_roadstead"
+      }
+    },
+    {
+      "id": "tamaki_makaurau",
+      "name": "Tāmaki Makaurau",
+      "kind": "capital",
+      "provinceId": "aotearoa_northern_iwi",
+      "legalOwnerPolityId": "maori_iwi_hapu",
+      "controllerPolityId": "maori_iwi_hapu",
+      "capturable": false,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_new_zealand_sea",
+      "serviceIds": [
+        "market",
+        "storage",
+        "warehouse",
+        "port_services",
+        "ship_repair"
+      ],
+      "regionalInstanceId": "pacific_new_zealand",
+      "physicalMapId": "pacific_new_zealand",
+      "localPosition": {
+        "x": 60,
+        "y": 38
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "political_center",
+        "major_port",
+        "trade_center",
+        "voyaging_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tamaki_makaurau"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "kumara",
+          "flax"
+        ],
+        "imports": [
+          "greenstone",
+          "obsidian"
+        ],
+        "shortages": [
+          "iron_goods",
+          "tropical_foods"
+        ],
+        "tradeEndpointIds": [
+          "aotearoa_coastal_exchange"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "kumara",
+        "flax"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "portAccess": {
+        "maritimeZoneId": "node_new_zealand_sea",
+        "access": "estuary_harbor"
+      }
+    },
+    {
+      "id": "kaiapoi_pa",
+      "name": "Kaiapoi Pā",
+      "kind": "fort",
+      "provinceId": "aotearoa_northern_iwi",
+      "legalOwnerPolityId": "maori_iwi_hapu",
+      "controllerPolityId": "maori_iwi_hapu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_new_zealand_land",
+      "serviceIds": [
+        "market",
+        "storage",
+        "crafting"
+      ],
+      "regionalInstanceId": "pacific_new_zealand",
+      "physicalMapId": "pacific_new_zealand",
+      "localPosition": {
+        "x": 28,
+        "y": 18
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "fortified_settlement",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kaiapoi_pa"
+      },
+      "economicProfile": {
+        "production": [
+          "greenstone",
+          "flax",
+          "kumara"
+        ],
+        "imports": [
+          "obsidian",
+          "dried_fish"
+        ],
+        "shortages": [
+          "iron_goods",
+          "tropical_foods"
+        ],
+        "tradeEndpointIds": [
+          "aotearoa_overland_exchange"
+        ]
+      },
+      "productionRefs": [
+        "greenstone",
+        "flax",
+        "kumara"
+      ],
+      "stateProjection": {
+        "activation": "instantiate_from_authoritative_settlement_state",
+        "retirement": "discard_representation_preserve_authoritative_state",
+        "reconstruction": "rebuild_by_stable_id_and_deterministic_key",
+        "capture": "apply_only_to_city_core_models",
+        "inactiveMutation": "mutate_authoritative_state_without_warcraft_objects",
+        "saveProjection": "serialize_authoritative_state_and_reconstruct_representations"
+      },
+      "cityCoreId": "city_core_kaiapoi_pa",
+      "defenseLayoutId": "defense_kaiapoi_pa"
     }
   ],
   "officers": [
@@ -21928,6 +23611,83 @@
       "polityId": "selknam_yaghan_communities",
       "rankTier": "prince",
       "nativeName": "Kin Group Elder",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_hawaiian_ali_i_networks",
+      "polityId": "hawaiian_ali_i_networks",
+      "rankTier": "prince",
+      "nativeName": "Aliʻi Nui",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_chamorro_clan_networks",
+      "polityId": "chamorro_clan_networks",
+      "rankTier": "prince",
+      "nativeName": "Maga'låhi",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_palauan_village_leagues",
+      "polityId": "palauan_village_leagues",
+      "rankTier": "prince",
+      "nativeName": "Reklai",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_saudeleur_dynasty",
+      "polityId": "saudeleur_dynasty",
+      "rankTier": "king",
+      "nativeName": "Saudeleur",
+      "genericName": "King"
+    },
+    {
+      "id": "title_melanesian_exchange_communities",
+      "polityId": "melanesian_exchange_communities",
+      "rankTier": "prince",
+      "nativeName": "Clan Leader",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_tongan_tu_i_tonga",
+      "polityId": "tongan_tu_i_tonga",
+      "rankTier": "king",
+      "nativeName": "Tuʻi Tonga",
+      "genericName": "King"
+    },
+    {
+      "id": "title_fijian_vanua_networks",
+      "polityId": "fijian_vanua_networks",
+      "rankTier": "prince",
+      "nativeName": "Ratu",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_samoan_faamatai",
+      "polityId": "samoan_faamatai",
+      "rankTier": "prince",
+      "nativeName": "Tui",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_society_islands_chiefdoms",
+      "polityId": "society_islands_chiefdoms",
+      "rankTier": "prince",
+      "nativeName": "Ariʻi",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_rapa_nui_mata",
+      "polityId": "rapa_nui_mata",
+      "rankTier": "prince",
+      "nativeName": "Ariki Mau",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_maori_iwi_hapu",
+      "polityId": "maori_iwi_hapu",
+      "rankTier": "prince",
+      "nativeName": "Ariki",
       "genericName": "Prince"
     }
   ],
@@ -24002,6 +25762,116 @@
         "id": "selknam_yaghan_communities"
       },
       "allegiancePolityId": "selknam_yaghan_communities",
+      "sovereign": true
+    },
+    {
+      "id": "grant_hawaiian_ali_i_networks",
+      "titleStyleId": "title_hawaiian_ali_i_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "hawaiian_ali_i_networks"
+      },
+      "allegiancePolityId": "hawaiian_ali_i_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_chamorro_clan_networks",
+      "titleStyleId": "title_chamorro_clan_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "chamorro_clan_networks"
+      },
+      "allegiancePolityId": "chamorro_clan_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_palauan_village_leagues",
+      "titleStyleId": "title_palauan_village_leagues",
+      "holder": {
+        "kind": "polity",
+        "id": "palauan_village_leagues"
+      },
+      "allegiancePolityId": "palauan_village_leagues",
+      "sovereign": true
+    },
+    {
+      "id": "grant_saudeleur_dynasty",
+      "titleStyleId": "title_saudeleur_dynasty",
+      "holder": {
+        "kind": "polity",
+        "id": "saudeleur_dynasty"
+      },
+      "allegiancePolityId": "saudeleur_dynasty",
+      "sovereign": true
+    },
+    {
+      "id": "grant_melanesian_exchange_communities",
+      "titleStyleId": "title_melanesian_exchange_communities",
+      "holder": {
+        "kind": "polity",
+        "id": "melanesian_exchange_communities"
+      },
+      "allegiancePolityId": "melanesian_exchange_communities",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tongan_tu_i_tonga",
+      "titleStyleId": "title_tongan_tu_i_tonga",
+      "holder": {
+        "kind": "polity",
+        "id": "tongan_tu_i_tonga"
+      },
+      "allegiancePolityId": "tongan_tu_i_tonga",
+      "sovereign": true
+    },
+    {
+      "id": "grant_fijian_vanua_networks",
+      "titleStyleId": "title_fijian_vanua_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "fijian_vanua_networks"
+      },
+      "allegiancePolityId": "fijian_vanua_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_samoan_faamatai",
+      "titleStyleId": "title_samoan_faamatai",
+      "holder": {
+        "kind": "polity",
+        "id": "samoan_faamatai"
+      },
+      "allegiancePolityId": "samoan_faamatai",
+      "sovereign": true
+    },
+    {
+      "id": "grant_society_islands_chiefdoms",
+      "titleStyleId": "title_society_islands_chiefdoms",
+      "holder": {
+        "kind": "polity",
+        "id": "society_islands_chiefdoms"
+      },
+      "allegiancePolityId": "society_islands_chiefdoms",
+      "sovereign": true
+    },
+    {
+      "id": "grant_rapa_nui_mata",
+      "titleStyleId": "title_rapa_nui_mata",
+      "holder": {
+        "kind": "polity",
+        "id": "rapa_nui_mata"
+      },
+      "allegiancePolityId": "rapa_nui_mata",
+      "sovereign": true
+    },
+    {
+      "id": "grant_maori_iwi_hapu",
+      "titleStyleId": "title_maori_iwi_hapu",
+      "holder": {
+        "kind": "polity",
+        "id": "maori_iwi_hapu"
+      },
+      "allegiancePolityId": "maori_iwi_hapu",
       "sovereign": true
     }
   ],
@@ -28753,6 +30623,204 @@
       "controllerPolityId": "selknam_yaghan_communities",
       "governingPolityId": "selknam_yaghan_communities",
       "sovereignPolityId": "selknam_yaghan_communities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_hawaii_island_chiefdoms",
+      "territory": {
+        "kind": "province",
+        "id": "hawaii_island_chiefdoms"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "hawaiian_ali_i_networks"
+      },
+      "controllerPolityId": "hawaiian_ali_i_networks",
+      "governingPolityId": "hawaiian_ali_i_networks",
+      "sovereignPolityId": "hawaiian_ali_i_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_guam_clan_districts",
+      "territory": {
+        "kind": "province",
+        "id": "guam_clan_districts"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "chamorro_clan_networks"
+      },
+      "controllerPolityId": "chamorro_clan_networks",
+      "governingPolityId": "chamorro_clan_networks",
+      "sovereignPolityId": "chamorro_clan_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_palau_village_territories",
+      "territory": {
+        "kind": "province",
+        "id": "palau_village_territories"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "palauan_village_leagues"
+      },
+      "controllerPolityId": "palauan_village_leagues",
+      "governingPolityId": "palauan_village_leagues",
+      "sovereignPolityId": "palauan_village_leagues",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_pohnpei_domains",
+      "territory": {
+        "kind": "province",
+        "id": "pohnpei_domains"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "saudeleur_dynasty"
+      },
+      "controllerPolityId": "saudeleur_dynasty",
+      "governingPolityId": "saudeleur_dynasty",
+      "sovereignPolityId": "saudeleur_dynasty",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_bismarck_solomon_exchange_coasts",
+      "territory": {
+        "kind": "province",
+        "id": "bismarck_solomon_exchange_coasts"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "melanesian_exchange_communities"
+      },
+      "controllerPolityId": "melanesian_exchange_communities",
+      "governingPolityId": "melanesian_exchange_communities",
+      "sovereignPolityId": "melanesian_exchange_communities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tonga_sacred_domains",
+      "territory": {
+        "kind": "province",
+        "id": "tonga_sacred_domains"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tongan_tu_i_tonga"
+      },
+      "controllerPolityId": "tongan_tu_i_tonga",
+      "governingPolityId": "tongan_tu_i_tonga",
+      "sovereignPolityId": "tongan_tu_i_tonga",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_fiji_island_chiefdoms",
+      "territory": {
+        "kind": "province",
+        "id": "fiji_island_chiefdoms"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "fijian_vanua_networks"
+      },
+      "controllerPolityId": "fijian_vanua_networks",
+      "governingPolityId": "fijian_vanua_networks",
+      "sovereignPolityId": "fijian_vanua_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_samoan_districts",
+      "territory": {
+        "kind": "province",
+        "id": "samoan_districts"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "samoan_faamatai"
+      },
+      "controllerPolityId": "samoan_faamatai",
+      "governingPolityId": "samoan_faamatai",
+      "sovereignPolityId": "samoan_faamatai",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_society_island_domains",
+      "territory": {
+        "kind": "province",
+        "id": "society_island_domains"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "society_islands_chiefdoms"
+      },
+      "controllerPolityId": "society_islands_chiefdoms",
+      "governingPolityId": "society_islands_chiefdoms",
+      "sovereignPolityId": "society_islands_chiefdoms",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_rapa_nui_clan_territories",
+      "territory": {
+        "kind": "province",
+        "id": "rapa_nui_clan_territories"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "rapa_nui_mata"
+      },
+      "controllerPolityId": "rapa_nui_mata",
+      "governingPolityId": "rapa_nui_mata",
+      "sovereignPolityId": "rapa_nui_mata",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_aotearoa_northern_iwi",
+      "territory": {
+        "kind": "province",
+        "id": "aotearoa_northern_iwi"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "maori_iwi_hapu"
+      },
+      "controllerPolityId": "maori_iwi_hapu",
+      "governingPolityId": "maori_iwi_hapu",
+      "sovereignPolityId": "maori_iwi_hapu",
       "autonomyPercent": 35,
       "overlordTaxRatePercent": 0,
       "upkeepRatePercent": 5,
