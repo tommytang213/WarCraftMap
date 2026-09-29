@@ -16,6 +16,7 @@ from europe_settlements import validate as validate_europe_settlements  # noqa: 
 from middle_east_india_content import MiddleEastIndiaContentError, validate as validate_middle_east_india_content  # noqa: E402
 from southeast_asia_politics import PoliticsError, validate as validate_southeast_asia_politics  # noqa: E402
 from east_asia_politics import validate as validate_east_asia_politics  # noqa: E402
+from pacific_politics import validate as validate_pacific_politics  # noqa: E402
 from east_asia_content import EastAsiaContentError, validate as validate_east_asia_content  # noqa: E402
 
 if __name__ == "__main__":
@@ -27,6 +28,7 @@ if __name__ == "__main__":
         validate_middle_east_india_content(PROJECT / "scenario" / "settlements" / "middle-east-india-1450.json")
         validate_southeast_asia_politics()
         validate_east_asia_politics()
+        validate_pacific_politics()
         validate_east_asia_content()
     except (ValidationError, MiddleEastIndiaContentError, EastAsiaContentError, PoliticsError) as error:
         print(f"packaging failed: invalid canonical source map: {error}", file=sys.stderr)

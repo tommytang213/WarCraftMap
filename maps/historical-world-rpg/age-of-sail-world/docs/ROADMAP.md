@@ -113,8 +113,9 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political baseline (polities, provinces, sovereignty, relationships, and conflicts)
   - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
-- [x] Pacific
+- [ ] Pacific
   - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (island polities, chiefdoms, confederated and decentralized communities, diplomacy, and political-center exceptions)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political authority, priority settlements, ports, routes, transitions, economies, and abstract activation data
 - [ ] Historical tech/event timeline
