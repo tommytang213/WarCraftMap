@@ -1,0 +1,46 @@
+{
+  "format": "warcraftmap_military_traditions_v1",
+  "schemaVersion": 1,
+  "eligibleControllerIds": ["england", "france"],
+  "categories": [
+    {"id": "land_formation", "name": "Land Formation"},
+    {"id": "sailing_naval", "name": "Sailing Naval"}
+  ],
+  "experienceSources": [
+    {"id": "enemy_kill", "weightNumerator": 1, "weightDenominator": 1},
+    {"id": "combat_assist", "weightNumerator": 1, "weightDenominator": 2},
+    {"id": "battle_objective", "weightNumerator": 3, "weightDenominator": 4}
+  ],
+  "traditions": [
+    {
+      "id": "land_formation_drill",
+      "categoryId": "land_formation",
+      "startingExperience": 0,
+      "coefficients": [
+        {"attributeId": "attack_basis_points", "numerator": 1, "denominator": 10},
+        {"attributeId": "discipline_basis_points", "numerator": 1, "denominator": 20}
+      ],
+      "milestones": [
+        {"id": "land_drill_one", "threshold": 1000, "effect": {"effectId": "ordered_volley", "mode": "additive", "replacesEffectId": null}},
+        {"id": "land_drill_two", "threshold": 3000, "effect": {"effectId": "platoon_fire", "mode": "upgrade", "replacesEffectId": "ordered_volley"}}
+      ]
+    },
+    {
+      "id": "sailing_naval_practice",
+      "categoryId": "sailing_naval",
+      "startingExperience": 0,
+      "coefficients": [
+        {"attributeId": "naval_damage_basis_points", "numerator": 1, "denominator": 8},
+        {"attributeId": "maneuver_basis_points", "numerator": 1, "denominator": 16}
+      ],
+      "milestones": [
+        {"id": "naval_practice_one", "threshold": 1200, "effect": {"effectId": "disciplined_gunnery", "mode": "additive", "replacesEffectId": null}},
+        {"id": "naval_practice_two", "threshold": 3600, "effect": {"effectId": "line_of_battle", "mode": "replacement", "replacesEffectId": "disciplined_gunnery"}}
+      ]
+    }
+  ],
+  "unitAssignments": [
+    {"id": "english_guard_formation", "controllerId": "england", "categoryId": "land_formation"},
+    {"id": "english_patrol_ship", "controllerId": "england", "categoryId": "sailing_naval"}
+  ]
+}
