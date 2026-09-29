@@ -67,6 +67,15 @@ entities are never duplicated between map-local runtime payloads.
 
 `politics/east-asia-1450.json` and `settlements/east-asia-1450.json` are the authorities for East Asia's 1450 political baseline and selective playable settlement content. They cover historical provinces and frontier regions, capitals and documented council/mobile courts, ports, trade corridors, transition endpoints, services, production, and abstract settlement representations. Run `python3 tooling/east_asia_politics.py` and `python3 tooling/east_asia_content.py`; pass `--write` to the content command to deterministically rebuild the canonical world and economy projections.
 
+`rosters/foundation.json` is the scenario authority for the ordinary-unit and
+ship roster format and representative cross-category fixtures. It deliberately
+does not complete any country roster. Run `python3 tooling/validate_unit_roster.py`
+to validate references, inheritance, availability, mechanics, and runtime data.
+
+`rosters/europe-africa-middle-east-india.json` is the first selective country
+slice. It keeps regional history, assignments, statistics, requirements, and
+evidence in scenario data; it does not mark the overall roster roadmap complete.
+
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
 
 `politics/africa-1450.json`, `geography/africa.json`, and `settlements/africa-1450.json` together provide the focused Africa authority for selected capitals, ports, caravan centers, trade endpoints, transition locations, placement, services, and abstract representations. Run `python3 tooling/africa_content.py` to validate all references and topology or add `--write` to rebuild the canonical world and economy projections.

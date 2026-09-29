@@ -1,0 +1,89 @@
+{
+  "format":"age_of_sail_roster_slice_v1",
+  "weapons":[
+    {"id":"composite_bow","compatibleCategories":["infantry","cavalry","specialist"]},
+    {"id":"musket_bayonet","compatibleCategories":["infantry","marine"]},
+    {"id":"light_cannon","compatibleCategories":["artillery","warship"]},
+    {"id":"heavy_siege_gun","compatibleCategories":["artillery"]}
+  ],
+  "armor":[
+    {"id":"plate_harness","compatibleCategories":["infantry","cavalry"]},
+    {"id":"quilted_armor","compatibleCategories":["infantry","cavalry","specialist","marine"]}
+  ],
+  "abilities":[
+    {"id":"pike_square","mechanic":"counter","compatibleCategories":["infantry"]},
+    {"id":"skirmish_screen","mechanic":"terrain","compatibleCategories":["infantry","cavalry","artillery","specialist"]},
+    {"id":"desert_mobility","mechanic":"terrain","compatibleCategories":["infantry","cavalry","specialist"]},
+    {"id":"highland_mobility","mechanic":"terrain","compatibleCategories":["infantry","specialist"]},
+    {"id":"fortress_artillery","mechanic":"siege","compatibleCategories":["artillery"]},
+    {"id":"line_of_battle","mechanic":"formation","compatibleCategories":["warship"]},
+    {"id":"galley_tactics","mechanic":"boarding","compatibleCategories":["warship"]},
+    {"id":"ocean_endurance","mechanic":"logistics","compatibleCategories":["transport","merchant","warship"]}
+  ],
+  "formations":[
+    {"id":"pike_square_formation","compatibleCategories":["infantry"]},
+    {"id":"linear_formation","compatibleCategories":["infantry","marine"]},
+    {"id":"skirmish_order","compatibleCategories":["infantry","cavalry","specialist"]}
+  ],
+  "ships":[
+    {"id":"oared_galley_hull","category":"warship","crewStrength":220},
+    {"id":"ship_of_line_hull","category":"warship","crewStrength":650},
+    {"id":"ocean_transport_hull","category":"transport","crewStrength":90}
+  ],
+  "archetypes":[
+    {"id":"european_pike_company","extends":"ordinary_land_base","name":"European Pike Company","category":"infantry","abilityIds":["steady_drill","pike_square"],"formationIds":["pike_square_formation"],"strategicStrength":600,"cost":115,"upkeep":11,"supply":11,"upgradeToIds":["european_musket_battalion"],"replacementIds":["european_musket_battalion"],"countryId":null},
+    {"id":"european_musket_battalion","extends":"ordinary_land_base","name":"European Musket Battalion","category":"infantry","weaponIds":["musket_bayonet"],"abilityIds":["volley_fire","steady_drill"],"formationIds":["linear_formation"],"strategicStrength":700,"cost":180,"upkeep":18,"supply":16,"technologyIds":["flintlock_drill","linear_tactics"],"institutionIds":[],"equipmentIds":["flintlock_musket"],"reformIds":["standing_army_reform"],"resourceIds":["grain"],"availability":{"historicalStartYear":1680,"historicalEndYear":1820,"earlyAccessTechnologyIds":["flintlock_drill","linear_tactics"],"earlyAccessYear":1650},"countryId":null},
+    {"id":"french_gendarme","extends":"sabre_cavalry","name":"French Gendarme","armorIds":["plate_harness"],"abilityIds":["cavalry_shock","rallying_presence"],"strategicStrength":360,"cost":285,"upkeep":31,"supply":22,"availability":{"historicalStartYear":1450,"historicalEndYear":1600,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"france"},
+    {"id":"english_longbow_retinue","extends":"ordinary_land_base","name":"English Longbow Retinue","category":"specialist","weaponIds":["composite_bow"],"abilityIds":["veteran_habits","skirmish_screen"],"formationIds":["loose_order"],"runtimeTemplateId":"specialist_runtime","strategicStrength":420,"cost":135,"upkeep":13,"supply":10,"availability":{"historicalStartYear":1450,"historicalEndYear":1580,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"england"},
+    {"id":"swiss_pike_column","extends":"european_pike_company","name":"Swiss Pike Column","abilityIds":["pike_square","rallying_presence","steady_drill"],"strategicStrength":680,"cost":155,"upkeep":18,"supply":12,"countryId":"swiss_confederacy"},
+    {"id":"polish_hussar_banner","extends":"sabre_cavalry","name":"Polish Hussar Banner","armorIds":["plate_harness"],"abilityIds":["cavalry_shock","rallying_presence"],"strategicStrength":390,"cost":310,"upkeep":34,"supply":24,"availability":{"historicalStartYear":1570,"historicalEndYear":1775,"earlyAccessTechnologyIds":["pike_and_shot"],"earlyAccessYear":1540},"countryId":"poland"},
+    {"id":"russian_streltsy","extends":"ordinary_land_base","name":"Streltsy","category":"infantry","weaponIds":["matchlock"],"abilityIds":["volley_fire","steady_drill"],"formationIds":["close_order"],"strategicStrength":620,"cost":145,"upkeep":15,"supply":14,"technologyIds":["pike_and_shot"],"availability":{"historicalStartYear":1550,"historicalEndYear":1720,"earlyAccessTechnologyIds":["pike_and_shot"],"earlyAccessYear":1525},"countryId":"muscovy"},
+    {"id":"venetian_galley","extends":"armed_sailing_warship","name":"Venetian War Galley","movementClassId":"coastal_sail","weaponIds":["light_cannon","boarding_arms"],"abilityIds":["galley_tactics","boarding_action"],"shipId":"oared_galley_hull","strategicStrength":520,"cost":720,"upkeep":58,"supply":38,"technologyIds":["cast_cannon"],"availability":{"historicalStartYear":1450,"historicalEndYear":1700,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"venice"},
+    {"id":"portuguese_carrack","extends":"armed_sailing_warship","name":"Portuguese Oceanic Carrack","abilityIds":["boarding_action","ocean_endurance","weatherly_hull"],"strategicStrength":570,"cost":820,"upkeep":49,"supply":52,"technologyIds":["oceanic_seamanship","celestial_navigation"],"equipmentIds":["naval_ordnance"],"resourceIds":["ship_provisions"],"portRequired":true,"availability":{"historicalStartYear":1490,"historicalEndYear":1620,"earlyAccessTechnologyIds":["oceanic_seamanship"],"earlyAccessYear":1470},"countryId":"portugal"},
+    {"id":"british_ship_of_line","extends":"armed_sailing_warship","name":"British Ship of the Line","abilityIds":["broadside","line_of_battle","weatherly_hull"],"shipId":"ship_of_line_hull","strategicStrength":980,"cost":1450,"upkeep":92,"supply":72,"technologyIds":["battlefleet_doctrine"],"institutionIds":["public_credit"],"equipmentIds":["naval_ordnance"],"reformIds":["permanent_naval_board"],"resourceIds":["ship_provisions"],"portRequired":true,"availability":{"historicalStartYear":1660,"historicalEndYear":1820,"earlyAccessTechnologyIds":["battlefleet_doctrine"],"earlyAccessYear":1630},"countryId":"england"},
+    {"id":"ottoman_janissary_orta","extends":"ordinary_land_base","name":"Janissary Orta","category":"infantry","weaponIds":["matchlock"],"armorIds":["quilted_armor"],"abilityIds":["volley_fire","rallying_presence","steady_drill"],"formationIds":["close_order"],"strategicStrength":680,"cost":170,"upkeep":20,"supply":15,"technologyIds":["pike_and_shot","professional_bureaucracy"],"institutionIds":[],"equipmentIds":["matchlock_firearm"],"reformIds":["kapikulu_recruitment"],"availability":{"historicalStartYear":1450,"historicalEndYear":1820,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"ottoman_empire"},
+    {"id":"ottoman_sipahi","extends":"sabre_cavalry","name":"Timariot Sipahi","armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","desert_mobility"],"strategicStrength":350,"cost":230,"upkeep":22,"supply":17,"reformIds":["timar_system"],"countryId":"ottoman_empire"},
+    {"id":"mamluk_cavalry","extends":"sabre_cavalry","name":"Mamluk Household Cavalry","weaponIds":["sabre","composite_bow"],"armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","desert_mobility","veteran_habits"],"strategicStrength":370,"cost":295,"upkeep":30,"supply":20,"availability":{"historicalStartYear":1450,"historicalEndYear":1600,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"mamluk_sultanate"},
+    {"id":"persian_qizilbash","extends":"sabre_cavalry","name":"Qizilbash Tribal Cavalry","weaponIds":["sabre","composite_bow"],"armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","desert_mobility","rallying_presence"],"strategicStrength":355,"cost":255,"upkeep":25,"supply":18,"availability":{"historicalStartYear":1500,"historicalEndYear":1750,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"aq_qoyunlu"},
+    {"id":"rajput_sowar","extends":"sabre_cavalry","name":"Rajput Sowar","armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","rallying_presence"],"strategicStrength":345,"cost":245,"upkeep":24,"supply":18,"countryId":"rajput_confederacies"},
+    {"id":"vijayanagara_rocket_corps","extends":"field_artillery_battery","name":"Vijayanagara Rocket Corps","weaponIds":["light_cannon"],"abilityIds":["field_siege","skirmish_screen"],"formationIds":["gun_battery"],"strategicStrength":135,"cost":250,"upkeep":25,"supply":24,"technologyIds":["cast_cannon"],"availability":{"historicalStartYear":1520,"historicalEndYear":1650,"earlyAccessTechnologyIds":["cast_cannon"],"earlyAccessYear":1490},"countryId":"vijayanagara_empire"},
+    {"id":"ethiopian_chewa","extends":"ordinary_land_base","name":"Ethiopian Chewa Regiment","category":"infantry","weaponIds":["polearm","matchlock"],"armorIds":["quilted_armor"],"abilityIds":["highland_mobility","rallying_presence"],"formationIds":["close_order"],"strategicStrength":560,"cost":125,"upkeep":13,"supply":9,"availability":{"historicalStartYear":1450,"historicalEndYear":1750,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":"ethiopian_empire"},
+    {"id":"songhai_cavalry","extends":"sabre_cavalry","name":"Songhai Armored Cavalry","armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","desert_mobility"],"strategicStrength":340,"cost":235,"upkeep":23,"supply":17,"countryId":"songhai_kingdom"},
+    {"id":"mossi_horsemen","extends":"sabre_cavalry","name":"Mossi Horsemen","armorIds":["quilted_armor"],"abilityIds":["cavalry_shock","desert_mobility"],"strategicStrength":310,"cost":205,"upkeep":20,"supply":15,"countryId":"mossi_kingdoms"},
+    {"id":"kongo_shield_company","extends":"ordinary_land_base","name":"Kongo Shield Company","category":"infantry","armorIds":["quilted_armor"],"abilityIds":["highland_mobility","rallying_presence"],"formationIds":["skirmish_order"],"strategicStrength":520,"cost":105,"upkeep":10,"supply":8,"countryId":"kongo_kingdom"},
+    {"id":"moroccan_abid_guard","extends":"european_musket_battalion","name":"Moroccan Abid Guard","abilityIds":["volley_fire","steady_drill","desert_mobility"],"formationIds":["linear_formation"],"strategicStrength":660,"cost":175,"upkeep":19,"supply":14,"institutionIds":[],"reformIds":["standing_army_reform"],"availability":{"historicalStartYear":1680,"historicalEndYear":1820,"earlyAccessTechnologyIds":["flintlock_drill"],"earlyAccessYear":1650},"countryId":"marinid_morocco"},
+    {"id":"swahili_dhow_transport","extends":"coastal_transport","name":"Swahili Dhow Transport","abilityIds":["cargo_capacity","ocean_endurance"],"shipId":"ocean_transport_hull","strategicStrength":150,"cost":270,"upkeep":13,"supply":20,"resourceIds":["ship_provisions"],"portRequired":true,"countryId":"kilwa_sultanate"},
+    {"id":"mediterranean_galley","extends":"armed_sailing_warship","name":"Mediterranean War Galley","movementClassId":"coastal_sail","weaponIds":["light_cannon","boarding_arms"],"abilityIds":["galley_tactics","boarding_action"],"shipId":"oared_galley_hull","strategicStrength":500,"cost":690,"upkeep":55,"supply":36,"technologyIds":["cast_cannon"],"availability":{"historicalStartYear":1450,"historicalEndYear":1720,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":null}
+  ],
+  "equipment":["matchlock_firearm","flintlock_musket","naval_ordnance"],
+  "reforms":["standing_army_reform","permanent_naval_board","kapikulu_recruitment","timar_system"],
+  "assignments":[
+    {"polityIds":["france","burgundy","castile","aragon","austria","bohemia","brandenburg","saxony","bavaria","hungary"],"archetypeIds":["european_pike_company","european_musket_battalion","field_artillery_battery","sabre_cavalry"]},
+    {"polityIds":["england"],"archetypeIds":["english_longbow_retinue","european_pike_company","european_musket_battalion","british_ship_of_line","shipboard_marines"]},
+    {"polityIds":["france"],"archetypeIds":["french_gendarme"]},
+    {"polityIds":["swiss_confederacy"],"archetypeIds":["swiss_pike_column"]},
+    {"polityIds":["poland"],"archetypeIds":["polish_hussar_banner"]},
+    {"polityIds":["muscovy"],"archetypeIds":["russian_streltsy"]},
+    {"polityIds":["venice"],"archetypeIds":["venetian_galley"]},
+    {"polityIds":["portugal"],"archetypeIds":["portuguese_carrack","ocean_merchantman","shipboard_marines"]},
+    {"polityIds":["ottoman_empire"],"archetypeIds":["ottoman_janissary_orta","ottoman_sipahi","field_artillery_battery","mediterranean_galley"]},
+    {"polityIds":["mamluk_sultanate"],"archetypeIds":["mamluk_cavalry","mediterranean_galley"]},
+    {"polityIds":["aq_qoyunlu"],"archetypeIds":["persian_qizilbash"]},
+    {"polityIds":["rajput_confederacies"],"archetypeIds":["rajput_sowar"]},
+    {"polityIds":["vijayanagara_empire"],"archetypeIds":["vijayanagara_rocket_corps"]},
+    {"polityIds":["ethiopian_empire"],"archetypeIds":["ethiopian_chewa"]},
+    {"polityIds":["songhai_kingdom"],"archetypeIds":["songhai_cavalry"]},
+    {"polityIds":["mossi_kingdoms"],"archetypeIds":["mossi_horsemen"]},
+    {"polityIds":["kongo_kingdom"],"archetypeIds":["kongo_shield_company"]},
+    {"polityIds":["marinid_morocco"],"archetypeIds":["moroccan_abid_guard","mediterranean_galley"]},
+    {"polityIds":["kilwa_sultanate"],"archetypeIds":["swahili_dhow_transport"]}
+  ],
+  "historicalEvidence":[
+    {"id":"european_land_warfare","citation":"Geoffrey Parker, The Military Revolution (2nd ed., 1996).","note":"Pike-and-shot, artillery, drill, fortification, and fiscal constraints in early modern Europe."},
+    {"id":"european_naval_warfare","citation":"N. A. M. Rodger, The Command of the Ocean (2004).","note":"Sailing battle fleets, naval administration, manpower, and ship-of-the-line development."},
+    {"id":"ottoman_warfare","citation":"Gabor Agoston, Guns for the Sultan (2005).","note":"Ottoman firearms, artillery logistics, Janissaries, and military institutions."},
+    {"id":"indian_warfare","citation":"Jos Gommans, Mughal Warfare (2002).","note":"South Asian cavalry, gunpowder forces, logistics, and regional military labor markets."},
+    {"id":"african_warfare","citation":"John Thornton, Warfare in Atlantic Africa, 1500–1800 (1999).","note":"African infantry, cavalry, firearms adoption, organization, and environmental constraints."},
+    {"id":"indian_ocean_shipping","citation":"K. N. Chaudhuri, Trade and Civilisation in the Indian Ocean (1985).","note":"Indian Ocean ports, provisioning, dhow traffic, and long-distance shipping."}
+  ]
+}
