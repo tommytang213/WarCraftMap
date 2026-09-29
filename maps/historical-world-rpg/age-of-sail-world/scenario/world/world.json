@@ -64,6 +64,103 @@
       }
     },
     {
+      "id": "africa_mainland_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [],
+        "amphibious": [],
+        "flying": []
+      }
+    },
+    {
+      "id": "africa_transition",
+      "movementClasses": [
+        "land",
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "arabia_land"
+        ],
+        "naval": [
+          "red_sea_navigation"
+        ],
+        "amphibious": [
+          "arabia_land",
+          "red_sea_navigation"
+        ],
+        "flying": [
+          "arabia_land",
+          "red_sea_navigation"
+        ]
+      }
+    },
+    {
+      "id": "arabia_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "middle_east_india_mainland_land",
+          "africa_transition"
+        ],
+        "amphibious": [
+          "middle_east_india_mainland_land",
+          "africa_transition",
+          "red_sea_navigation",
+          "persian_gulf_navigation",
+          "arabian_sea_navigation"
+        ],
+        "flying": [
+          "middle_east_india_mainland_land",
+          "africa_transition",
+          "red_sea_navigation",
+          "persian_gulf_navigation",
+          "arabian_sea_navigation"
+        ]
+      }
+    },
+    {
+      "id": "arabian_sea_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "red_sea_navigation",
+          "persian_gulf_navigation",
+          "bay_of_bengal_navigation"
+        ],
+        "amphibious": [
+          "red_sea_navigation",
+          "persian_gulf_navigation",
+          "bay_of_bengal_navigation",
+          "arabia_land",
+          "india_land",
+          "islands_land"
+        ],
+        "flying": [
+          "red_sea_navigation",
+          "persian_gulf_navigation",
+          "bay_of_bengal_navigation",
+          "arabia_land",
+          "india_land",
+          "islands_land"
+        ]
+      }
+    },
+    {
       "id": "atlantic_isles_land",
       "movementClasses": [
         "land",
@@ -146,6 +243,32 @@
       }
     },
     {
+      "id": "bay_of_bengal_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "arabian_sea_navigation",
+          "southeast_asia_transition"
+        ],
+        "amphibious": [
+          "arabian_sea_navigation",
+          "southeast_asia_transition",
+          "india_land",
+          "islands_land"
+        ],
+        "flying": [
+          "arabian_sea_navigation",
+          "southeast_asia_transition",
+          "india_land",
+          "islands_land"
+        ]
+      }
+    },
+    {
       "id": "bay_of_biscay",
       "movementClasses": [
         "naval",
@@ -164,6 +287,25 @@
         "flying": [
           "english_channel",
           "iberian_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "black_sea_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "mediterranean_navigation"
+        ],
+        "amphibious": [
+          "mediterranean_navigation"
+        ],
+        "flying": [
+          "mediterranean_navigation"
         ]
       }
     },
@@ -258,6 +400,31 @@
       }
     },
     {
+      "id": "europe_transition",
+      "movementClasses": [
+        "land",
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "middle_east_india_mainland_land"
+        ],
+        "naval": [
+          "mediterranean_navigation"
+        ],
+        "amphibious": [
+          "middle_east_india_mainland_land",
+          "mediterranean_navigation"
+        ],
+        "flying": [
+          "middle_east_india_mainland_land",
+          "mediterranean_navigation"
+        ]
+      }
+    },
+    {
       "id": "france_low_countries_land",
       "movementClasses": [
         "land",
@@ -324,6 +491,83 @@
       }
     },
     {
+      "id": "india_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "middle_east_india_mainland_land",
+          "southeast_asia_transition"
+        ],
+        "amphibious": [
+          "middle_east_india_mainland_land",
+          "southeast_asia_transition",
+          "arabian_sea_navigation",
+          "bay_of_bengal_navigation"
+        ],
+        "flying": [
+          "middle_east_india_mainland_land",
+          "southeast_asia_transition",
+          "arabian_sea_navigation",
+          "bay_of_bengal_navigation"
+        ]
+      }
+    },
+    {
+      "id": "indian_ocean_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "south_atlantic_navigation",
+          "mozambique_channel_navigation",
+          "red_sea_navigation"
+        ],
+        "amphibious": [
+          "south_atlantic_navigation",
+          "mozambique_channel_navigation",
+          "red_sea_navigation"
+        ],
+        "flying": [
+          "south_atlantic_navigation",
+          "mozambique_channel_navigation",
+          "red_sea_navigation"
+        ]
+      }
+    },
+    {
+      "id": "islands_land",
+      "movementClasses": [
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "amphibious": [
+          "arabian_sea_navigation",
+          "bay_of_bengal_navigation"
+        ],
+        "flying": [
+          "arabian_sea_navigation",
+          "bay_of_bengal_navigation"
+        ]
+      }
+    },
+    {
+      "id": "isolated_inland_water",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
       "id": "italy_land",
       "movementClasses": [
         "land",
@@ -342,6 +586,104 @@
         "flying": [
           "central_alpine_land",
           "balkans_aegean_land"
+        ]
+      }
+    },
+    {
+      "id": "mediterranean_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "north_atlantic_navigation",
+          "red_sea_navigation",
+          "black_sea_navigation",
+          "europe_transition"
+        ],
+        "amphibious": [
+          "north_atlantic_navigation",
+          "red_sea_navigation",
+          "black_sea_navigation",
+          "europe_transition",
+          "middle_east_india_mainland_land"
+        ],
+        "flying": [
+          "north_atlantic_navigation",
+          "red_sea_navigation",
+          "black_sea_navigation",
+          "europe_transition",
+          "middle_east_india_mainland_land"
+        ]
+      }
+    },
+    {
+      "id": "middle_east_india_mainland_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "arabia_land",
+          "india_land",
+          "europe_transition"
+        ],
+        "amphibious": [
+          "arabia_land",
+          "india_land",
+          "europe_transition",
+          "mediterranean_navigation"
+        ],
+        "flying": [
+          "arabia_land",
+          "india_land",
+          "europe_transition",
+          "mediterranean_navigation"
+        ]
+      }
+    },
+    {
+      "id": "mozambique_channel_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "indian_ocean_navigation"
+        ],
+        "amphibious": [
+          "indian_ocean_navigation"
+        ],
+        "flying": [
+          "indian_ocean_navigation"
+        ]
+      }
+    },
+    {
+      "id": "north_atlantic_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "mediterranean_navigation",
+          "south_atlantic_navigation"
+        ],
+        "amphibious": [
+          "mediterranean_navigation",
+          "south_atlantic_navigation"
+        ],
+        "flying": [
+          "mediterranean_navigation",
+          "south_atlantic_navigation"
         ]
       }
     },
@@ -365,6 +707,104 @@
           "english_channel",
           "western_europe_land",
           "baltic_sea"
+        ]
+      }
+    },
+    {
+      "id": "persian_gulf_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "arabian_sea_navigation"
+        ],
+        "amphibious": [
+          "arabian_sea_navigation",
+          "arabia_land"
+        ],
+        "flying": [
+          "arabian_sea_navigation",
+          "arabia_land"
+        ]
+      }
+    },
+    {
+      "id": "red_sea_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "indian_ocean_navigation",
+          "mediterranean_navigation",
+          "arabian_sea_navigation",
+          "africa_transition"
+        ],
+        "amphibious": [
+          "indian_ocean_navigation",
+          "mediterranean_navigation",
+          "arabian_sea_navigation",
+          "africa_transition",
+          "arabia_land"
+        ],
+        "flying": [
+          "indian_ocean_navigation",
+          "mediterranean_navigation",
+          "arabian_sea_navigation",
+          "africa_transition",
+          "arabia_land"
+        ]
+      }
+    },
+    {
+      "id": "south_atlantic_navigation",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "north_atlantic_navigation",
+          "indian_ocean_navigation"
+        ],
+        "amphibious": [
+          "north_atlantic_navigation",
+          "indian_ocean_navigation"
+        ],
+        "flying": [
+          "north_atlantic_navigation",
+          "indian_ocean_navigation"
+        ]
+      }
+    },
+    {
+      "id": "southeast_asia_transition",
+      "movementClasses": [
+        "land",
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "india_land"
+        ],
+        "naval": [
+          "bay_of_bengal_navigation"
+        ],
+        "amphibious": [
+          "india_land",
+          "bay_of_bengal_navigation"
+        ],
+        "flying": [
+          "india_land",
+          "bay_of_bengal_navigation"
         ]
       }
     },
@@ -850,7 +1290,8 @@
       "nativeSovereignTitle": "Sultan",
       "capitalSettlementId": "edirne",
       "provinceIds": [
-        "ottoman_balkans"
+        "ottoman_balkans",
+        "ottoman_anatolia"
       ]
     },
     {
@@ -1019,6 +1460,394 @@
       ]
     },
     {
+      "id": "karamanids",
+      "name": "Karamanid Emirate",
+      "adjective": "Karamanid",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Bey",
+      "capitalSettlementId": "konya",
+      "provinceIds": [
+        "karaman"
+      ]
+    },
+    {
+      "id": "trebizond_empire",
+      "name": "Empire of Trebizond",
+      "adjective": "Trapezuntine",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Basileus",
+      "capitalSettlementId": "trebizond",
+      "provinceIds": [
+        "trebizond"
+      ]
+    },
+    {
+      "id": "dulkadirids",
+      "name": "Dulkadirid Principality",
+      "adjective": "Dulkadirid",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Bey",
+      "capitalSettlementId": "el_bistan",
+      "provinceIds": [
+        "dulkadir"
+      ]
+    },
+    {
+      "id": "georgia",
+      "name": "Kingdom of Georgia",
+      "adjective": "Georgian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Mepe",
+      "capitalSettlementId": "tbilisi",
+      "provinceIds": [
+        "georgia"
+      ]
+    },
+    {
+      "id": "cyprus",
+      "name": "Kingdom of Cyprus",
+      "adjective": "Cypriot",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Roi",
+      "capitalSettlementId": "nicosia",
+      "provinceIds": [
+        "cyprus"
+      ]
+    },
+    {
+      "id": "sharifate_mecca",
+      "name": "Sharifate of Mecca",
+      "adjective": "Meccan",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Sharif",
+      "capitalSettlementId": "mecca",
+      "provinceIds": [
+        "hejaz"
+      ]
+    },
+    {
+      "id": "yemen",
+      "name": "Rasulid Sultanate",
+      "adjective": "Rasulid",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "taizz",
+      "provinceIds": [
+        "yemen"
+      ]
+    },
+    {
+      "id": "kathiri",
+      "name": "Kathiri Sultanate",
+      "adjective": "Kathiri",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "seiyun",
+      "provinceIds": [
+        "hadramawt"
+      ]
+    },
+    {
+      "id": "nabhanid_oman",
+      "name": "Nabhanid Kingdom of Oman",
+      "adjective": "Omani",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Malik",
+      "capitalSettlementId": "nizwa",
+      "provinceIds": [
+        "oman"
+      ]
+    },
+    {
+      "id": "jabrids",
+      "name": "Jabrid Emirate",
+      "adjective": "Jabrid",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Amir",
+      "capitalSettlementId": "al_ahsa",
+      "provinceIds": [
+        "najd_bahrain"
+      ]
+    },
+    {
+      "id": "kingdom_hormuz",
+      "name": "Kingdom of Hormuz",
+      "adjective": "Hormuzi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Malik",
+      "capitalSettlementId": "hormuz",
+      "provinceIds": [
+        "hormuz"
+      ]
+    },
+    {
+      "id": "qara_qoyunlu",
+      "name": "Qara Qoyunlu Confederation",
+      "adjective": "Qara Qoyunlu",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Shah",
+      "capitalSettlementId": "tabriz",
+      "provinceIds": [
+        "qara_qoyunlu_azerbaijan",
+        "qara_qoyunlu_iraq"
+      ]
+    },
+    {
+      "id": "aq_qoyunlu",
+      "name": "Aq Qoyunlu Confederation",
+      "adjective": "Aq Qoyunlu",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Beg",
+      "capitalSettlementId": "amid",
+      "provinceIds": [
+        "aq_qoyunlu_diyar_bakr"
+      ]
+    },
+    {
+      "id": "shirvan",
+      "name": "Shirvanshah State",
+      "adjective": "Shirvani",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Shirvanshah",
+      "capitalSettlementId": "shamakhi",
+      "provinceIds": [
+        "shirvan"
+      ]
+    },
+    {
+      "id": "timurid_empire",
+      "name": "Timurid Empire",
+      "adjective": "Timurid",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Mirza",
+      "capitalSettlementId": "samarkand",
+      "provinceIds": [
+        "transoxiana",
+        "khurasan",
+        "fars"
+      ]
+    },
+    {
+      "id": "samma_sindh",
+      "name": "Samma Sultanate of Sindh",
+      "adjective": "Samma",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Jam",
+      "capitalSettlementId": "thatta",
+      "provinceIds": [
+        "sindh"
+      ]
+    },
+    {
+      "id": "langah_multan",
+      "name": "Langah Sultanate",
+      "adjective": "Langah",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "multan",
+      "provinceIds": [
+        "multan"
+      ]
+    },
+    {
+      "id": "delhi_sultanate",
+      "name": "Delhi Sultanate",
+      "adjective": "Delhi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "delhi",
+      "provinceIds": [
+        "punjab_delhi"
+      ]
+    },
+    {
+      "id": "kashmir_sultanate",
+      "name": "Kashmir Sultanate",
+      "adjective": "Kashmiri",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "srinagar",
+      "provinceIds": [
+        "kashmir"
+      ]
+    },
+    {
+      "id": "rajput_confederacies",
+      "name": "Rajput Kingdoms",
+      "adjective": "Rajput",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Maharana",
+      "capitalSettlementId": "chittor",
+      "provinceIds": [
+        "rajputana"
+      ]
+    },
+    {
+      "id": "gujarat_sultanate",
+      "name": "Gujarat Sultanate",
+      "adjective": "Gujarati",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "ahmadabad",
+      "provinceIds": [
+        "gujarat"
+      ]
+    },
+    {
+      "id": "malwa_sultanate",
+      "name": "Malwa Sultanate",
+      "adjective": "Malwi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "mandu",
+      "provinceIds": [
+        "malwa"
+      ]
+    },
+    {
+      "id": "khandesh_sultanate",
+      "name": "Faruqi Sultanate of Khandesh",
+      "adjective": "Khandeshi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "burhanpur",
+      "provinceIds": [
+        "khandesh"
+      ]
+    },
+    {
+      "id": "bahmani_sultanate",
+      "name": "Bahmani Sultanate",
+      "adjective": "Bahmani",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "bidar",
+      "provinceIds": [
+        "bahmani_deccan"
+      ]
+    },
+    {
+      "id": "vijayanagara_empire",
+      "name": "Vijayanagara Empire",
+      "adjective": "Vijayanagara",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Maharaya",
+      "capitalSettlementId": "vijayanagara",
+      "provinceIds": [
+        "vijayanagara"
+      ]
+    },
+    {
+      "id": "gond_kingdoms",
+      "name": "Gond Kingdoms",
+      "adjective": "Gond",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "garha",
+      "provinceIds": [
+        "gondwana"
+      ]
+    },
+    {
+      "id": "jaunpur_sultanate",
+      "name": "Jaunpur Sultanate",
+      "adjective": "Sharqi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "jaunpur",
+      "provinceIds": [
+        "jaunpur"
+      ]
+    },
+    {
+      "id": "nepal_malla",
+      "name": "Malla Kingdom of Nepal",
+      "adjective": "Nepalese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "kathmandu",
+      "provinceIds": [
+        "nepal"
+      ]
+    },
+    {
+      "id": "western_himalayan_states",
+      "name": "Western Himalayan Kingdoms",
+      "adjective": "Himalayan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "jumla",
+      "provinceIds": [
+        "western_himalaya"
+      ]
+    },
+    {
+      "id": "bengal_sultanate",
+      "name": "Bengal Sultanate",
+      "adjective": "Bengali",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "gaur",
+      "provinceIds": [
+        "bengal"
+      ]
+    },
+    {
+      "id": "gajapati_empire",
+      "name": "Gajapati Empire",
+      "adjective": "Odia",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Gajapati",
+      "capitalSettlementId": "cuttack",
+      "provinceIds": [
+        "gajapati_orissa"
+      ]
+    },
+    {
+      "id": "kamata_ahom_states",
+      "name": "Kamata and Ahom Kingdoms",
+      "adjective": "Assamese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "kamatapur",
+      "provinceIds": [
+        "kamata_ahom"
+      ]
+    },
+    {
+      "id": "kotte",
+      "name": "Kingdom of Kotte",
+      "adjective": "Kotte",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "sri_jayawardenepura_kotte",
+      "provinceIds": [
+        "kotte"
+      ]
+    },
+    {
+      "id": "jaffna",
+      "name": "Kingdom of Jaffna",
+      "adjective": "Jaffna Tamil",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Cinkaiariyan",
+      "capitalSettlementId": "nallur",
+      "provinceIds": [
+        "jaffna"
+      ]
+    },
+    {
+      "id": "maldives_sultanate",
+      "name": "Sultanate of the Maldives",
+      "adjective": "Maldivian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "male",
+      "provinceIds": [
+        "maldives"
+      ]
+    },
+    {
       "id": "marinid_morocco",
       "name": "Marinid Sultanate",
       "adjective": "Marinid",
@@ -1064,7 +1893,8 @@
       "nativeSovereignTitle": "Sultan",
       "capitalSettlementId": "cairo",
       "provinceIds": [
-        "mamluk_egypt"
+        "mamluk_egypt",
+        "mamluk_syria"
       ]
     },
     {
@@ -2195,7 +3025,9 @@
       "administrativeType": "mountain_region",
       "legalOwnerPolityId": "marinid_morocco",
       "controllerPolityId": "marinid_morocco",
-      "settlementIds": []
+      "settlementIds": [
+        "ceuta"
+      ]
     },
     {
       "id": "central_morocco",
@@ -2211,7 +3043,9 @@
       "administrativeType": "oasis_region",
       "legalOwnerPolityId": "marinid_morocco",
       "controllerPolityId": "marinid_morocco",
-      "settlementIds": []
+      "settlementIds": [
+        "sijilmasa"
+      ]
     },
     {
       "id": "tlemcen",
@@ -2247,7 +3081,9 @@
       "administrativeType": "province",
       "legalOwnerPolityId": "hafsid_sultanate",
       "controllerPolityId": "hafsid_sultanate",
-      "settlementIds": []
+      "settlementIds": [
+        "tripoli"
+      ]
     },
     {
       "id": "mamluk_egypt",
@@ -2256,7 +3092,9 @@
       "legalOwnerPolityId": "mamluk_sultanate",
       "controllerPolityId": "mamluk_sultanate",
       "settlementIds": [
-        "cairo"
+        "cairo",
+        "alexandria",
+        "aswan"
       ]
     },
     {
@@ -2284,7 +3122,8 @@
       "legalOwnerPolityId": "ethiopian_empire",
       "controllerPolityId": "ethiopian_empire",
       "settlementIds": [
-        "ethiopian_royal_camp"
+        "ethiopian_royal_camp",
+        "debre_berhan"
       ]
     },
     {
@@ -2301,7 +3140,9 @@
       "administrativeType": "province",
       "legalOwnerPolityId": "ethiopian_empire",
       "controllerPolityId": "ethiopian_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "axum"
+      ]
     },
     {
       "id": "medri_bahri",
@@ -2358,7 +3199,8 @@
       "legalOwnerPolityId": "ajuran_sultanate",
       "controllerPolityId": "ajuran_sultanate",
       "settlementIds": [
-        "mareeg"
+        "mareeg",
+        "meregh"
       ]
     },
     {
@@ -2378,7 +3220,8 @@
       "legalOwnerPolityId": "kilwa_sultanate",
       "controllerPolityId": "kilwa_sultanate",
       "settlementIds": [
-        "kilwa_kisiwani"
+        "kilwa_kisiwani",
+        "kilwa"
       ]
     },
     {
@@ -2387,7 +3230,9 @@
       "administrativeType": "island_domains",
       "legalOwnerPolityId": "kilwa_sultanate",
       "controllerPolityId": "kilwa_sultanate",
-      "settlementIds": []
+      "settlementIds": [
+        "zanzibar"
+      ]
     },
     {
       "id": "sofala_coast",
@@ -2395,7 +3240,9 @@
       "administrativeType": "tributary_port_region",
       "legalOwnerPolityId": "kilwa_sultanate",
       "controllerPolityId": "kilwa_sultanate",
-      "settlementIds": []
+      "settlementIds": [
+        "sofala"
+      ]
     },
     {
       "id": "mombasa",
@@ -2404,7 +3251,8 @@
       "legalOwnerPolityId": "mombasa",
       "controllerPolityId": "mombasa",
       "settlementIds": [
-        "mombasa_city"
+        "mombasa_city",
+        "mombasa"
       ]
     },
     {
@@ -2443,7 +3291,9 @@
       "administrativeType": "province",
       "legalOwnerPolityId": "mali_empire",
       "controllerPolityId": "mali_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "walata"
+      ]
     },
     {
       "id": "middle_niger",
@@ -2451,7 +3301,10 @@
       "administrativeType": "imperial_province",
       "legalOwnerPolityId": "mali_empire",
       "controllerPolityId": "mali_empire",
-      "settlementIds": []
+      "settlementIds": [
+        "timbuktu",
+        "taghaza"
+      ]
     },
     {
       "id": "songhai_realm",
@@ -2527,7 +3380,9 @@
       "administrativeType": "imperial_heartland",
       "legalOwnerPolityId": "kanem_bornu",
       "controllerPolityId": "kanem_bornu",
-      "settlementIds": []
+      "settlementIds": [
+        "ngazargamu"
+      ]
     },
     {
       "id": "hausa_north",
@@ -2536,7 +3391,8 @@
       "legalOwnerPolityId": "kano",
       "controllerPolityId": "kano",
       "settlementIds": [
-        "kano_city"
+        "kano_city",
+        "kano"
       ]
     },
     {
@@ -2546,7 +3402,8 @@
       "legalOwnerPolityId": "katsina",
       "controllerPolityId": "katsina",
       "settlementIds": [
-        "katsina_city"
+        "katsina_city",
+        "katsina"
       ]
     },
     {
@@ -2576,7 +3433,8 @@
       "legalOwnerPolityId": "benin_kingdom",
       "controllerPolityId": "benin_kingdom",
       "settlementIds": [
-        "benin_city"
+        "benin_city",
+        "ughoton"
       ]
     },
     {
@@ -2636,7 +3494,8 @@
       "legalOwnerPolityId": "kongo_kingdom",
       "controllerPolityId": "kongo_kingdom",
       "settlementIds": [
-        "mbanza_kongo"
+        "mbanza_kongo",
+        "mpinda"
       ]
     },
     {
@@ -2724,7 +3583,8 @@
       "legalOwnerPolityId": "great_zimbabwe",
       "controllerPolityId": "great_zimbabwe",
       "settlementIds": [
-        "great_zimbabwe_city"
+        "great_zimbabwe_city",
+        "great_zimbabwe"
       ]
     },
     {
@@ -2792,6 +3652,415 @@
       "legalOwnerPolityId": "madagascar_coastal_polities",
       "controllerPolityId": "madagascar_coastal_polities",
       "settlementIds": []
+    },
+    {
+      "id": "ottoman_anatolia",
+      "name": "Ottoman Anatolia",
+      "administrativeType": "beylerbeylik",
+      "legalOwnerPolityId": "ottoman_empire",
+      "controllerPolityId": "ottoman_empire",
+      "settlementIds": [
+        "bursa"
+      ]
+    },
+    {
+      "id": "karaman",
+      "name": "Karaman",
+      "administrativeType": "beylik",
+      "legalOwnerPolityId": "karamanids",
+      "controllerPolityId": "karamanids",
+      "settlementIds": [
+        "konya"
+      ]
+    },
+    {
+      "id": "trebizond",
+      "name": "Trebizond",
+      "administrativeType": "imperial_remnant",
+      "legalOwnerPolityId": "trebizond_empire",
+      "controllerPolityId": "trebizond_empire",
+      "settlementIds": [
+        "trebizond"
+      ]
+    },
+    {
+      "id": "dulkadir",
+      "name": "Dulkadir",
+      "administrativeType": "beylik",
+      "legalOwnerPolityId": "dulkadirids",
+      "controllerPolityId": "dulkadirids",
+      "settlementIds": [
+        "el_bistan"
+      ]
+    },
+    {
+      "id": "georgia",
+      "name": "Georgia",
+      "administrativeType": "kingdom",
+      "legalOwnerPolityId": "georgia",
+      "controllerPolityId": "georgia",
+      "settlementIds": [
+        "tbilisi"
+      ]
+    },
+    {
+      "id": "cyprus",
+      "name": "Cyprus",
+      "administrativeType": "tributary_kingdom",
+      "legalOwnerPolityId": "cyprus",
+      "controllerPolityId": "cyprus",
+      "settlementIds": [
+        "nicosia"
+      ]
+    },
+    {
+      "id": "mamluk_syria",
+      "name": "Bilad al-Sham",
+      "administrativeType": "niyaba",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "settlementIds": [
+        "aleppo",
+        "damascus",
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "hejaz",
+      "name": "Hejaz",
+      "administrativeType": "sharifate",
+      "legalOwnerPolityId": "sharifate_mecca",
+      "controllerPolityId": "sharifate_mecca",
+      "settlementIds": [
+        "jeddah",
+        "mecca"
+      ]
+    },
+    {
+      "id": "yemen",
+      "name": "Yemen",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "yemen",
+      "controllerPolityId": "yemen",
+      "settlementIds": [
+        "taizz",
+        "zabid",
+        "aden"
+      ]
+    },
+    {
+      "id": "hadramawt",
+      "name": "Hadramawt and Mahra",
+      "administrativeType": "compressed_sultanates",
+      "legalOwnerPolityId": "kathiri",
+      "controllerPolityId": "kathiri",
+      "settlementIds": [
+        "seiyun"
+      ]
+    },
+    {
+      "id": "oman",
+      "name": "Oman",
+      "administrativeType": "kingdom",
+      "legalOwnerPolityId": "nabhanid_oman",
+      "controllerPolityId": "nabhanid_oman",
+      "settlementIds": [
+        "nizwa"
+      ]
+    },
+    {
+      "id": "najd_bahrain",
+      "name": "Najd and Bahrain",
+      "administrativeType": "tribal_emirate",
+      "legalOwnerPolityId": "jabrids",
+      "controllerPolityId": "jabrids",
+      "settlementIds": [
+        "al_ahsa"
+      ]
+    },
+    {
+      "id": "hormuz",
+      "name": "Hormuz and the Gulf Ports",
+      "administrativeType": "maritime_tributary_kingdom",
+      "legalOwnerPolityId": "kingdom_hormuz",
+      "controllerPolityId": "kingdom_hormuz",
+      "settlementIds": [
+        "hormuz"
+      ]
+    },
+    {
+      "id": "qara_qoyunlu_azerbaijan",
+      "name": "Azerbaijan",
+      "administrativeType": "confederation_core",
+      "legalOwnerPolityId": "qara_qoyunlu",
+      "controllerPolityId": "qara_qoyunlu",
+      "settlementIds": [
+        "tabriz"
+      ]
+    },
+    {
+      "id": "qara_qoyunlu_iraq",
+      "name": "Iraq-i Arab",
+      "administrativeType": "governorate",
+      "legalOwnerPolityId": "qara_qoyunlu",
+      "controllerPolityId": "qara_qoyunlu",
+      "settlementIds": [
+        "baghdad"
+      ]
+    },
+    {
+      "id": "aq_qoyunlu_diyar_bakr",
+      "name": "Diyar Bakr",
+      "administrativeType": "tribal_confederation",
+      "legalOwnerPolityId": "aq_qoyunlu",
+      "controllerPolityId": "aq_qoyunlu",
+      "settlementIds": [
+        "amid"
+      ]
+    },
+    {
+      "id": "shirvan",
+      "name": "Shirvan",
+      "administrativeType": "shahdom",
+      "legalOwnerPolityId": "shirvan",
+      "controllerPolityId": "shirvan",
+      "settlementIds": [
+        "shamakhi"
+      ]
+    },
+    {
+      "id": "transoxiana",
+      "name": "Transoxiana",
+      "administrativeType": "appanage",
+      "legalOwnerPolityId": "timurid_empire",
+      "controllerPolityId": "timurid_empire",
+      "settlementIds": [
+        "samarkand"
+      ]
+    },
+    {
+      "id": "khurasan",
+      "name": "Khurasan",
+      "administrativeType": "appanage",
+      "legalOwnerPolityId": "timurid_empire",
+      "controllerPolityId": "timurid_empire",
+      "settlementIds": [
+        "herat"
+      ]
+    },
+    {
+      "id": "fars",
+      "name": "Fars and Persian Iraq",
+      "administrativeType": "appanage",
+      "legalOwnerPolityId": "timurid_empire",
+      "controllerPolityId": "timurid_empire",
+      "settlementIds": []
+    },
+    {
+      "id": "sindh",
+      "name": "Sindh",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "samma_sindh",
+      "controllerPolityId": "samma_sindh",
+      "settlementIds": [
+        "thatta"
+      ]
+    },
+    {
+      "id": "multan",
+      "name": "Multan",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "langah_multan",
+      "controllerPolityId": "langah_multan",
+      "settlementIds": [
+        "multan"
+      ]
+    },
+    {
+      "id": "punjab_delhi",
+      "name": "Punjab and Delhi",
+      "administrativeType": "sultanate_core",
+      "legalOwnerPolityId": "delhi_sultanate",
+      "controllerPolityId": "delhi_sultanate",
+      "settlementIds": [
+        "lahore",
+        "delhi"
+      ]
+    },
+    {
+      "id": "kashmir",
+      "name": "Kashmir",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "kashmir_sultanate",
+      "controllerPolityId": "kashmir_sultanate",
+      "settlementIds": [
+        "srinagar"
+      ]
+    },
+    {
+      "id": "rajputana",
+      "name": "Mewar, Marwar, and Rajputana",
+      "administrativeType": "compressed_sovereign_kingdoms",
+      "legalOwnerPolityId": "rajput_confederacies",
+      "controllerPolityId": "rajput_confederacies",
+      "settlementIds": [
+        "chittor"
+      ]
+    },
+    {
+      "id": "gujarat",
+      "name": "Gujarat",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "gujarat_sultanate",
+      "controllerPolityId": "gujarat_sultanate",
+      "settlementIds": [
+        "ahmadabad",
+        "khambhat"
+      ]
+    },
+    {
+      "id": "malwa",
+      "name": "Malwa",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "malwa_sultanate",
+      "controllerPolityId": "malwa_sultanate",
+      "settlementIds": [
+        "mandu"
+      ]
+    },
+    {
+      "id": "khandesh",
+      "name": "Khandesh",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "khandesh_sultanate",
+      "controllerPolityId": "khandesh_sultanate",
+      "settlementIds": [
+        "burhanpur"
+      ]
+    },
+    {
+      "id": "bahmani_deccan",
+      "name": "Bahmani Deccan",
+      "administrativeType": "taraf_provinces",
+      "legalOwnerPolityId": "bahmani_sultanate",
+      "controllerPolityId": "bahmani_sultanate",
+      "settlementIds": [
+        "bidar",
+        "goa"
+      ]
+    },
+    {
+      "id": "vijayanagara",
+      "name": "Vijayanagara and the Tamil Country",
+      "administrativeType": "imperial_provinces",
+      "legalOwnerPolityId": "vijayanagara_empire",
+      "controllerPolityId": "vijayanagara_empire",
+      "settlementIds": [
+        "vijayanagara",
+        "calicut"
+      ]
+    },
+    {
+      "id": "gondwana",
+      "name": "Gondwana",
+      "administrativeType": "compressed_forest_kingdoms",
+      "legalOwnerPolityId": "gond_kingdoms",
+      "controllerPolityId": "gond_kingdoms",
+      "settlementIds": [
+        "garha"
+      ]
+    },
+    {
+      "id": "jaunpur",
+      "name": "Jaunpur and the Middle Ganges",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "jaunpur_sultanate",
+      "controllerPolityId": "jaunpur_sultanate",
+      "settlementIds": [
+        "jaunpur"
+      ]
+    },
+    {
+      "id": "nepal",
+      "name": "Nepal Mandala",
+      "administrativeType": "kingdom",
+      "legalOwnerPolityId": "nepal_malla",
+      "controllerPolityId": "nepal_malla",
+      "settlementIds": [
+        "kathmandu"
+      ]
+    },
+    {
+      "id": "western_himalaya",
+      "name": "Khas and Western Himalaya",
+      "administrativeType": "compressed_kingdoms",
+      "legalOwnerPolityId": "western_himalayan_states",
+      "controllerPolityId": "western_himalayan_states",
+      "settlementIds": [
+        "jumla"
+      ]
+    },
+    {
+      "id": "bengal",
+      "name": "Bengal",
+      "administrativeType": "sultanate",
+      "legalOwnerPolityId": "bengal_sultanate",
+      "controllerPolityId": "bengal_sultanate",
+      "settlementIds": [
+        "gaur",
+        "chittagong"
+      ]
+    },
+    {
+      "id": "gajapati_orissa",
+      "name": "Kalinga and Andhra Coast",
+      "administrativeType": "imperial_province",
+      "legalOwnerPolityId": "gajapati_empire",
+      "controllerPolityId": "gajapati_empire",
+      "settlementIds": [
+        "cuttack"
+      ]
+    },
+    {
+      "id": "kamata_ahom",
+      "name": "Kamata and the Brahmaputra Valley",
+      "administrativeType": "compressed_sovereign_kingdoms",
+      "legalOwnerPolityId": "kamata_ahom_states",
+      "controllerPolityId": "kamata_ahom_states",
+      "settlementIds": [
+        "kamatapur"
+      ]
+    },
+    {
+      "id": "kotte",
+      "name": "Kotte and Southern Lanka",
+      "administrativeType": "kingdom",
+      "legalOwnerPolityId": "kotte",
+      "controllerPolityId": "kotte",
+      "settlementIds": [
+        "sri_jayawardenepura_kotte",
+        "kotte"
+      ]
+    },
+    {
+      "id": "jaffna",
+      "name": "Jaffna",
+      "administrativeType": "kingdom",
+      "legalOwnerPolityId": "jaffna",
+      "controllerPolityId": "jaffna",
+      "settlementIds": [
+        "nallur"
+      ]
+    },
+    {
+      "id": "maldives",
+      "name": "Maldive Islands",
+      "administrativeType": "island_sultanate",
+      "legalOwnerPolityId": "maldives_sultanate",
+      "controllerPolityId": "maldives_sultanate",
+      "settlementIds": [
+        "male"
+      ]
     }
   ],
   "settlementServiceDefinitions": [
@@ -3128,19 +4397,103 @@
       "objectTemplateId": "city_core"
     },
     {
-      "id": "city_core_fez",
+      "id": "city_core_trebizond",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_el_bistan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tbilisi",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nicosia",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_taizz",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_seiyun",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nizwa",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_al_ahsa",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_amid",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_shamakhi",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_thatta",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_multan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_srinagar",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_chittor",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_burhanpur",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_garha",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_jaunpur",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kathmandu",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_jumla",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_cuttack",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kamatapur",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_sri_jayawardenepura_kotte",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nallur",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_male",
       "objectTemplateId": "capital_city_core"
     },
     {
       "id": "city_core_tlemcen_city",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_tunis",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_cairo",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -3172,10 +4525,6 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_mogadishu",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_kilwa_kisiwani",
       "objectTemplateId": "capital_city_core"
     },
@@ -3192,14 +4541,6 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_niani",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_gao",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_linguere",
       "objectTemplateId": "capital_city_core"
     },
@@ -3209,10 +4550,6 @@
     },
     {
       "id": "city_core_ouagadougou",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_agadez",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -3236,10 +4573,6 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_benin_city",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_oyo_ile",
       "objectTemplateId": "capital_city_core"
     },
@@ -3257,10 +4590,6 @@
     },
     {
       "id": "city_core_begho",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_mbanza_kongo",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -3314,6 +4643,230 @@
     {
       "id": "city_core_vohemar",
       "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_bursa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_konya",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_aleppo",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_damascus",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_jerusalem",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_jeddah",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_mecca",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_zabid",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_aden",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_baghdad",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_tabriz",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_hormuz",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_herat",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_samarkand",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_lahore",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_delhi",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ahmadabad",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_khambhat",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_mandu",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_bidar",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_goa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_vijayanagara",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_calicut",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_gaur",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_chittagong",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_kotte",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_fez",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ceuta",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_sijilmasa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_tunis",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tripoli",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_cairo",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_alexandria",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_aswan",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_niani",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_timbuktu",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_walata",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_taghaza",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_gao",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_agadez",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kano",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_katsina",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_ngazargamu",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_debre_berhan",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_axum",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_meregh",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_mogadishu",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kilwa",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_mombasa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_zanzibar",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_great_zimbabwe",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_sofala",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_mbanza_kongo",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_mpinda",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_benin_city",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ughoton",
+      "objectTemplateId": "city_core"
     }
   ],
   "defenseLayouts": [
@@ -3750,25 +5303,151 @@
       ]
     },
     {
-      "id": "defense_fez",
+      "id": "defense_trebizond",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_el_bistan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tbilisi",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nicosia",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_taizz",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_seiyun",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nizwa",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_al_ahsa",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_amid",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_shamakhi",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_thatta",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_multan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_srinagar",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_chittor",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_burhanpur",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_garha",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_jaunpur",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_kathmandu",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_jumla",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_cuttack",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_kamatapur",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_sri_jayawardenepura_kotte",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nallur",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_male",
       "objectTemplateIds": [
         "capital_defenses"
       ]
     },
     {
       "id": "defense_tlemcen_city",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_tunis",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_cairo",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -3816,12 +5495,6 @@
       ]
     },
     {
-      "id": "defense_mogadishu",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_kilwa_kisiwani",
       "objectTemplateIds": [
         "capital_defenses"
@@ -3846,18 +5519,6 @@
       ]
     },
     {
-      "id": "defense_niani",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_gao",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_linguere",
       "objectTemplateIds": [
         "capital_defenses"
@@ -3871,12 +5532,6 @@
     },
     {
       "id": "defense_ouagadougou",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_agadez",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -3912,12 +5567,6 @@
       ]
     },
     {
-      "id": "defense_benin_city",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_oyo_ile",
       "objectTemplateIds": [
         "capital_defenses"
@@ -3943,12 +5592,6 @@
     },
     {
       "id": "defense_begho",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_mbanza_kongo",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -4029,6 +5672,342 @@
       "id": "defense_vohemar",
       "objectTemplateIds": [
         "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_bursa",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_konya",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_aleppo",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_damascus",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_jerusalem",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_jeddah",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_mecca",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_zabid",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_aden",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_baghdad",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_tabriz",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_hormuz",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_herat",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_samarkand",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_lahore",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_delhi",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ahmadabad",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_khambhat",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_mandu",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_bidar",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_goa",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_vijayanagara",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_calicut",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_gaur",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_chittagong",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_kotte",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_fez",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ceuta",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_sijilmasa",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_tunis",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tripoli",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_cairo",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_alexandria",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_aswan",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_niani",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_timbuktu",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_walata",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_taghaza",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_gao",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_agadez",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_kano",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_katsina",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_ngazargamu",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_debre_berhan",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_axum",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_meregh",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_mogadishu",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_kilwa",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_mombasa",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_zanzibar",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_great_zimbabwe",
+      "objectTemplateIds": [
+        "city_defenses"
+      ]
+    },
+    {
+      "id": "defense_sofala",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_mbanza_kongo",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_mpinda",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_benin_city",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ughoton",
+      "objectTemplateIds": [
+        "port_defenses"
       ]
     }
   ],
@@ -6786,20 +8765,532 @@
       }
     },
     {
-      "id": "fez",
-      "name": "Fez",
+      "id": "trebizond",
+      "name": "Trebizond",
       "kind": "capital",
-      "provinceId": "fez_meknes",
-      "legalOwnerPolityId": "marinid_morocco",
-      "controllerPolityId": "marinid_morocco",
+      "provinceId": "trebizond",
+      "legalOwnerPolityId": "trebizond_empire",
+      "controllerPolityId": "trebizond_empire",
       "capturable": true,
       "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_fez",
-      "defenseLayoutId": "defense_fez",
+      "cityCoreId": "city_core_trebizond",
+      "defenseLayoutId": "defense_trebizond",
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "trebizond"
+      }
+    },
+    {
+      "id": "el_bistan",
+      "name": "El Bistan",
+      "kind": "capital",
+      "provinceId": "dulkadir",
+      "legalOwnerPolityId": "dulkadirids",
+      "controllerPolityId": "dulkadirids",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_el_bistan",
+      "defenseLayoutId": "defense_el_bistan",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "el_bistan"
+      }
+    },
+    {
+      "id": "tbilisi",
+      "name": "Tbilisi",
+      "kind": "capital",
+      "provinceId": "georgia",
+      "legalOwnerPolityId": "georgia",
+      "controllerPolityId": "georgia",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_tbilisi",
+      "defenseLayoutId": "defense_tbilisi",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tbilisi"
+      }
+    },
+    {
+      "id": "nicosia",
+      "name": "Nicosia",
+      "kind": "capital",
+      "provinceId": "cyprus",
+      "legalOwnerPolityId": "cyprus",
+      "controllerPolityId": "cyprus",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_nicosia",
+      "defenseLayoutId": "defense_nicosia",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nicosia"
+      }
+    },
+    {
+      "id": "taizz",
+      "name": "Taizz",
+      "kind": "capital",
+      "provinceId": "yemen",
+      "legalOwnerPolityId": "yemen",
+      "controllerPolityId": "yemen",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_taizz",
+      "defenseLayoutId": "defense_taizz",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "taizz"
+      }
+    },
+    {
+      "id": "seiyun",
+      "name": "Seiyun",
+      "kind": "capital",
+      "provinceId": "hadramawt",
+      "legalOwnerPolityId": "kathiri",
+      "controllerPolityId": "kathiri",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_seiyun",
+      "defenseLayoutId": "defense_seiyun",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "seiyun"
+      }
+    },
+    {
+      "id": "nizwa",
+      "name": "Nizwa",
+      "kind": "capital",
+      "provinceId": "oman",
+      "legalOwnerPolityId": "nabhanid_oman",
+      "controllerPolityId": "nabhanid_oman",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_nizwa",
+      "defenseLayoutId": "defense_nizwa",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nizwa"
+      }
+    },
+    {
+      "id": "al_ahsa",
+      "name": "Al Ahsa",
+      "kind": "capital",
+      "provinceId": "najd_bahrain",
+      "legalOwnerPolityId": "jabrids",
+      "controllerPolityId": "jabrids",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_al_ahsa",
+      "defenseLayoutId": "defense_al_ahsa",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "al_ahsa"
+      }
+    },
+    {
+      "id": "amid",
+      "name": "Amid",
+      "kind": "capital",
+      "provinceId": "aq_qoyunlu_diyar_bakr",
+      "legalOwnerPolityId": "aq_qoyunlu",
+      "controllerPolityId": "aq_qoyunlu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_amid",
+      "defenseLayoutId": "defense_amid",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "amid"
+      }
+    },
+    {
+      "id": "shamakhi",
+      "name": "Shamakhi",
+      "kind": "capital",
+      "provinceId": "shirvan",
+      "legalOwnerPolityId": "shirvan",
+      "controllerPolityId": "shirvan",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_shamakhi",
+      "defenseLayoutId": "defense_shamakhi",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "shamakhi"
+      }
+    },
+    {
+      "id": "thatta",
+      "name": "Thatta",
+      "kind": "capital",
+      "provinceId": "sindh",
+      "legalOwnerPolityId": "samma_sindh",
+      "controllerPolityId": "samma_sindh",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_thatta",
+      "defenseLayoutId": "defense_thatta",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "thatta"
+      }
+    },
+    {
+      "id": "multan",
+      "name": "Multan",
+      "kind": "capital",
+      "provinceId": "multan",
+      "legalOwnerPolityId": "langah_multan",
+      "controllerPolityId": "langah_multan",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_multan",
+      "defenseLayoutId": "defense_multan",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "multan"
+      }
+    },
+    {
+      "id": "srinagar",
+      "name": "Srinagar",
+      "kind": "capital",
+      "provinceId": "kashmir",
+      "legalOwnerPolityId": "kashmir_sultanate",
+      "controllerPolityId": "kashmir_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_srinagar",
+      "defenseLayoutId": "defense_srinagar",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "srinagar"
+      }
+    },
+    {
+      "id": "chittor",
+      "name": "Chittor",
+      "kind": "capital",
+      "provinceId": "rajputana",
+      "legalOwnerPolityId": "rajput_confederacies",
+      "controllerPolityId": "rajput_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_chittor",
+      "defenseLayoutId": "defense_chittor",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chittor"
+      }
+    },
+    {
+      "id": "burhanpur",
+      "name": "Burhanpur",
+      "kind": "capital",
+      "provinceId": "khandesh",
+      "legalOwnerPolityId": "khandesh_sultanate",
+      "controllerPolityId": "khandesh_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_burhanpur",
+      "defenseLayoutId": "defense_burhanpur",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "burhanpur"
+      }
+    },
+    {
+      "id": "garha",
+      "name": "Garha",
+      "kind": "capital",
+      "provinceId": "gondwana",
+      "legalOwnerPolityId": "gond_kingdoms",
+      "controllerPolityId": "gond_kingdoms",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_garha",
+      "defenseLayoutId": "defense_garha",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "garha"
+      }
+    },
+    {
+      "id": "jaunpur",
+      "name": "Jaunpur",
+      "kind": "capital",
+      "provinceId": "jaunpur",
+      "legalOwnerPolityId": "jaunpur_sultanate",
+      "controllerPolityId": "jaunpur_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_jaunpur",
+      "defenseLayoutId": "defense_jaunpur",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jaunpur"
+      }
+    },
+    {
+      "id": "kathmandu",
+      "name": "Kathmandu",
+      "kind": "capital",
+      "provinceId": "nepal",
+      "legalOwnerPolityId": "nepal_malla",
+      "controllerPolityId": "nepal_malla",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_kathmandu",
+      "defenseLayoutId": "defense_kathmandu",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kathmandu"
+      }
+    },
+    {
+      "id": "jumla",
+      "name": "Jumla",
+      "kind": "capital",
+      "provinceId": "western_himalaya",
+      "legalOwnerPolityId": "western_himalayan_states",
+      "controllerPolityId": "western_himalayan_states",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_jumla",
+      "defenseLayoutId": "defense_jumla",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jumla"
+      }
+    },
+    {
+      "id": "cuttack",
+      "name": "Cuttack",
+      "kind": "capital",
+      "provinceId": "gajapati_orissa",
+      "legalOwnerPolityId": "gajapati_empire",
+      "controllerPolityId": "gajapati_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_cuttack",
+      "defenseLayoutId": "defense_cuttack",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cuttack"
+      }
+    },
+    {
+      "id": "kamatapur",
+      "name": "Kamatapur",
+      "kind": "capital",
+      "provinceId": "kamata_ahom",
+      "legalOwnerPolityId": "kamata_ahom_states",
+      "controllerPolityId": "kamata_ahom_states",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_kamatapur",
+      "defenseLayoutId": "defense_kamatapur",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kamatapur"
+      }
+    },
+    {
+      "id": "sri_jayawardenepura_kotte",
+      "name": "Sri Jayawardenepura Kotte",
+      "kind": "capital",
+      "provinceId": "kotte",
+      "legalOwnerPolityId": "kotte",
+      "controllerPolityId": "kotte",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_sri_jayawardenepura_kotte",
+      "defenseLayoutId": "defense_sri_jayawardenepura_kotte",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "sri_jayawardenepura_kotte"
+      }
+    },
+    {
+      "id": "nallur",
+      "name": "Nallur",
+      "kind": "capital",
+      "provinceId": "jaffna",
+      "legalOwnerPolityId": "jaffna",
+      "controllerPolityId": "jaffna",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_nallur",
+      "defenseLayoutId": "defense_nallur",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nallur"
+      }
+    },
+    {
+      "id": "male",
+      "name": "Male",
+      "kind": "capital",
+      "provinceId": "maldives",
+      "legalOwnerPolityId": "maldives_sultanate",
+      "controllerPolityId": "maldives_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_male",
+      "defenseLayoutId": "defense_male",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "male"
+      }
     },
     {
       "id": "tlemcen_city",
@@ -6815,39 +9306,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "tunis",
-      "name": "Tunis",
-      "kind": "capital",
-      "provinceId": "hafsid_ifriqiya",
-      "legalOwnerPolityId": "hafsid_sultanate",
-      "controllerPolityId": "hafsid_sultanate",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_tunis",
-      "defenseLayoutId": "defense_tunis",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
-    },
-    {
-      "id": "cairo",
-      "name": "Cairo",
-      "kind": "capital",
-      "provinceId": "mamluk_egypt",
-      "legalOwnerPolityId": "mamluk_sultanate",
-      "controllerPolityId": "mamluk_sultanate",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_cairo",
-      "defenseLayoutId": "defense_cairo",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic"
     },
     {
       "id": "soba",
@@ -6863,7 +9323,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_nile_red_sea"
     },
     {
       "id": "ethiopian_royal_camp",
@@ -6879,7 +9340,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_nile_red_sea"
     },
     {
       "id": "debarwa",
@@ -6895,7 +9357,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_nile_red_sea"
     },
     {
       "id": "suakin",
@@ -6911,7 +9374,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_nile_red_sea"
     },
     {
       "id": "dakkar",
@@ -6927,7 +9391,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_nile_red_sea"
     },
     {
       "id": "las_khorey",
@@ -6943,7 +9408,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "mareeg",
@@ -6959,23 +9425,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "mogadishu",
-      "name": "Mogadishu",
-      "kind": "capital",
-      "provinceId": "mogadishu_hinterland",
-      "legalOwnerPolityId": "mogadishu_sultanate",
-      "controllerPolityId": "mogadishu_sultanate",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_mogadishu",
-      "defenseLayoutId": "defense_mogadishu",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "kilwa_kisiwani",
@@ -6991,7 +9442,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "mombasa_city",
@@ -7007,7 +9459,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "malindi_city",
@@ -7023,7 +9476,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "pate",
@@ -7039,39 +9493,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "niani",
-      "name": "Niani",
-      "kind": "capital",
-      "provinceId": "manding",
-      "legalOwnerPolityId": "mali_empire",
-      "controllerPolityId": "mali_empire",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_niani",
-      "defenseLayoutId": "defense_niani",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
-    },
-    {
-      "id": "gao",
-      "name": "Gao",
-      "kind": "capital",
-      "provinceId": "songhai_realm",
-      "legalOwnerPolityId": "songhai_kingdom",
-      "controllerPolityId": "songhai_kingdom",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_gao",
-      "defenseLayoutId": "defense_gao",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_horn_swahili"
     },
     {
       "id": "linguere",
@@ -7087,7 +9510,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "timbo",
@@ -7103,7 +9527,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "ouagadougou",
@@ -7119,23 +9544,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "agadez",
-      "name": "Agadez",
-      "kind": "capital",
-      "provinceId": "air",
-      "legalOwnerPolityId": "air_sultanate",
-      "controllerPolityId": "air_sultanate",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_agadez",
-      "defenseLayoutId": "defense_agadez",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "njimi",
@@ -7151,7 +9561,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "kano_city",
@@ -7167,7 +9578,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "katsina_city",
@@ -7183,7 +9595,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "gobir_city",
@@ -7199,7 +9612,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "zazzau_city",
@@ -7215,23 +9629,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "benin_city",
-      "name": "Benin City",
-      "kind": "capital",
-      "provinceId": "benin_realm",
-      "legalOwnerPolityId": "benin_kingdom",
-      "controllerPolityId": "benin_kingdom",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_benin_city",
-      "defenseLayoutId": "defense_benin_city",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_sahara_sahel"
     },
     {
       "id": "oyo_ile",
@@ -7247,7 +9646,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "nupeko",
@@ -7263,7 +9663,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "idah",
@@ -7279,7 +9680,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "wukari",
@@ -7295,7 +9697,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "begho",
@@ -7311,23 +9714,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
-    },
-    {
-      "id": "mbanza_kongo",
-      "name": "Mbanza Kongo",
-      "kind": "capital",
-      "provinceId": "kongo_core",
-      "legalOwnerPolityId": "kongo_kingdom",
-      "controllerPolityId": "kongo_kingdom",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_mbanza_kongo",
-      "defenseLayoutId": "defense_mbanza_kongo",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "buali",
@@ -7343,7 +9731,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo"
     },
     {
       "id": "mwibele",
@@ -7359,7 +9748,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "lunda_royal_camp",
@@ -7375,7 +9765,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "mengo",
@@ -7391,7 +9782,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "bigo_bya_mugenyi",
@@ -7407,7 +9799,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "nyanza",
@@ -7423,7 +9816,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "zvongombe",
@@ -7439,7 +9833,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "great_zimbabwe_city",
@@ -7455,7 +9850,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_southern_cape"
     },
     {
       "id": "mankhamba",
@@ -7471,7 +9867,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_great_lakes_rift"
     },
     {
       "id": "mapungubwe",
@@ -7487,7 +9884,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_southern_cape"
     },
     {
       "id": "khoi_san_seasonal_camp",
@@ -7503,7 +9901,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_southern_cape"
     },
     {
       "id": "alasora",
@@ -7519,7 +9918,8 @@
       "serviceIds": [
         "market",
         "quest_hub"
-      ]
+      ],
+      "regionalInstanceId": "africa_madagascar_indian_ocean"
     },
     {
       "id": "vohemar",
@@ -7535,7 +9935,2173 @@
       "serviceIds": [
         "market",
         "quest_hub"
+      ],
+      "regionalInstanceId": "africa_madagascar_indian_ocean"
+    },
+    {
+      "id": "bursa",
+      "name": "Bursa",
+      "kind": "major_city",
+      "provinceId": "ottoman_anatolia",
+      "legalOwnerPolityId": "ottoman_empire",
+      "controllerPolityId": "ottoman_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_bursa",
+      "defenseLayoutId": "defense_bursa",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "localPosition": {
+        "x": 10,
+        "y": 72
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "trade_center",
+        "historical_location",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bursa"
+      },
+      "productionRefs": [
+        "cloth"
       ]
+    },
+    {
+      "id": "konya",
+      "name": "Konya",
+      "kind": "capital",
+      "provinceId": "karaman",
+      "legalOwnerPolityId": "karamanids",
+      "controllerPolityId": "karamanids",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_konya",
+      "defenseLayoutId": "defense_konya",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "localPosition": {
+        "x": 16,
+        "y": 67
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "konya"
+      },
+      "productionRefs": [
+        "horses"
+      ]
+    },
+    {
+      "id": "aleppo",
+      "name": "Aleppo",
+      "kind": "fort",
+      "provinceId": "mamluk_syria",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_aleppo",
+      "defenseLayoutId": "defense_aleppo",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "localPosition": {
+        "x": 23,
+        "y": 62
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "aleppo"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "damascus",
+      "name": "Damascus",
+      "kind": "fort",
+      "provinceId": "mamluk_syria",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_damascus",
+      "defenseLayoutId": "defense_damascus",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "localPosition": {
+        "x": 20,
+        "y": 55
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town",
+        "pilgrimage_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "damascus"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "jerusalem",
+      "name": "Jerusalem",
+      "kind": "fort",
+      "provinceId": "mamluk_syria",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_jerusalem",
+      "defenseLayoutId": "defense_jerusalem",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_anatolia_levant",
+      "localPosition": {
+        "x": 17,
+        "y": 51
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "pilgrimage_location",
+        "historical_location",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jerusalem"
+      },
+      "productionRefs": [
+        "olive_oil"
+      ]
+    },
+    {
+      "id": "jeddah",
+      "name": "Jeddah",
+      "kind": "port",
+      "provinceId": "hejaz",
+      "legalOwnerPolityId": "sharifate_mecca",
+      "controllerPolityId": "sharifate_mecca",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "arabia_land",
+      "cityCoreId": "city_core_jeddah",
+      "defenseLayoutId": "defense_jeddah",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "localPosition": {
+        "x": 17,
+        "y": 34
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "pilgrimage_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jeddah"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "red_sea_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "mecca",
+      "name": "Mecca",
+      "kind": "capital",
+      "provinceId": "hejaz",
+      "legalOwnerPolityId": "sharifate_mecca",
+      "controllerPolityId": "sharifate_mecca",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "arabia_land",
+      "cityCoreId": "city_core_mecca",
+      "defenseLayoutId": "defense_mecca",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "localPosition": {
+        "x": 20,
+        "y": 35
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "capital",
+        "pilgrimage_location",
+        "trade_center",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mecca"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "zabid",
+      "name": "Zabid",
+      "kind": "fort",
+      "provinceId": "yemen",
+      "legalOwnerPolityId": "yemen",
+      "controllerPolityId": "yemen",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "arabia_land",
+      "cityCoreId": "city_core_zabid",
+      "defenseLayoutId": "defense_zabid",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "localPosition": {
+        "x": 22,
+        "y": 23
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "historical_location",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "zabid"
+      },
+      "productionRefs": [
+        "coffee"
+      ]
+    },
+    {
+      "id": "aden",
+      "name": "Aden",
+      "kind": "port",
+      "provinceId": "yemen",
+      "legalOwnerPolityId": "yemen",
+      "controllerPolityId": "yemen",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "arabia_land",
+      "cityCoreId": "city_core_aden",
+      "defenseLayoutId": "defense_aden",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "localPosition": {
+        "x": 27,
+        "y": 18
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "aden"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "baghdad",
+      "name": "Baghdad",
+      "kind": "trading_post",
+      "provinceId": "qara_qoyunlu_iraq",
+      "legalOwnerPolityId": "qara_qoyunlu",
+      "controllerPolityId": "qara_qoyunlu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_baghdad",
+      "defenseLayoutId": "defense_baghdad",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "localPosition": {
+        "x": 36,
+        "y": 57
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "baghdad"
+      },
+      "productionRefs": [
+        "manuscripts"
+      ]
+    },
+    {
+      "id": "tabriz",
+      "name": "Tabriz",
+      "kind": "capital",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "legalOwnerPolityId": "qara_qoyunlu",
+      "controllerPolityId": "qara_qoyunlu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_tabriz",
+      "defenseLayoutId": "defense_tabriz",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "localPosition": {
+        "x": 38,
+        "y": 72
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tabriz"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "hormuz",
+      "name": "Hormuz",
+      "kind": "capital",
+      "provinceId": "hormuz",
+      "legalOwnerPolityId": "kingdom_hormuz",
+      "controllerPolityId": "kingdom_hormuz",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "islands_land",
+      "cityCoreId": "city_core_hormuz",
+      "defenseLayoutId": "defense_hormuz",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "localPosition": {
+        "x": 49,
+        "y": 36
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hormuz"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "herat",
+      "name": "Herat",
+      "kind": "fort",
+      "provinceId": "khurasan",
+      "legalOwnerPolityId": "timurid_empire",
+      "controllerPolityId": "timurid_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_herat",
+      "defenseLayoutId": "defense_herat",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "localPosition": {
+        "x": 54,
+        "y": 68
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "herat"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "samarkand",
+      "name": "Samarkand",
+      "kind": "capital",
+      "provinceId": "transoxiana",
+      "legalOwnerPolityId": "timurid_empire",
+      "controllerPolityId": "timurid_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "middle_east_india_mainland_land",
+      "cityCoreId": "city_core_samarkand",
+      "defenseLayoutId": "defense_samarkand",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_central_asia",
+      "localPosition": {
+        "x": 58,
+        "y": 82
+      },
+      "terrainClass": "steppe",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "samarkand"
+      },
+      "productionRefs": [
+        "horses"
+      ]
+    },
+    {
+      "id": "lahore",
+      "name": "Lahore",
+      "kind": "fort",
+      "provinceId": "punjab_delhi",
+      "legalOwnerPolityId": "delhi_sultanate",
+      "controllerPolityId": "delhi_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_lahore",
+      "defenseLayoutId": "defense_lahore",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "localPosition": {
+        "x": 64,
+        "y": 62
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "lahore"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "delhi",
+      "name": "Delhi",
+      "kind": "capital",
+      "provinceId": "punjab_delhi",
+      "legalOwnerPolityId": "delhi_sultanate",
+      "controllerPolityId": "delhi_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_delhi",
+      "defenseLayoutId": "defense_delhi",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "localPosition": {
+        "x": 72,
+        "y": 59
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "delhi"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "ahmadabad",
+      "name": "Ahmadabad",
+      "kind": "capital",
+      "provinceId": "gujarat",
+      "legalOwnerPolityId": "gujarat_sultanate",
+      "controllerPolityId": "gujarat_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_ahmadabad",
+      "defenseLayoutId": "defense_ahmadabad",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 68,
+        "y": 49
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ahmadabad"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "khambhat",
+      "name": "Khambhat",
+      "kind": "port",
+      "provinceId": "gujarat",
+      "legalOwnerPolityId": "gujarat_sultanate",
+      "controllerPolityId": "gujarat_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_khambhat",
+      "defenseLayoutId": "defense_khambhat",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 67,
+        "y": 45
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "khambhat"
+      },
+      "productionRefs": [
+        "cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "mandu",
+      "name": "Mandu",
+      "kind": "capital",
+      "provinceId": "malwa",
+      "legalOwnerPolityId": "malwa_sultanate",
+      "controllerPolityId": "malwa_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_mandu",
+      "defenseLayoutId": "defense_mandu",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 73,
+        "y": 50
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mandu"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "bidar",
+      "name": "Bidar",
+      "kind": "capital",
+      "provinceId": "bahmani_deccan",
+      "legalOwnerPolityId": "bahmani_sultanate",
+      "controllerPolityId": "bahmani_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_bidar",
+      "defenseLayoutId": "defense_bidar",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 76,
+        "y": 39
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bidar"
+      },
+      "productionRefs": [
+        "horses"
+      ]
+    },
+    {
+      "id": "goa",
+      "name": "Goa",
+      "kind": "port",
+      "provinceId": "bahmani_deccan",
+      "legalOwnerPolityId": "bahmani_sultanate",
+      "controllerPolityId": "bahmani_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_goa",
+      "defenseLayoutId": "defense_goa",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 70,
+        "y": 34
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "goa"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "vijayanagara",
+      "name": "Vijayanagara",
+      "kind": "capital",
+      "provinceId": "vijayanagara",
+      "legalOwnerPolityId": "vijayanagara_empire",
+      "controllerPolityId": "vijayanagara_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_vijayanagara",
+      "defenseLayoutId": "defense_vijayanagara",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 76,
+        "y": 31
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "vijayanagara"
+      },
+      "productionRefs": [
+        "horses"
+      ]
+    },
+    {
+      "id": "calicut",
+      "name": "Calicut",
+      "kind": "port",
+      "provinceId": "vijayanagara",
+      "legalOwnerPolityId": "vijayanagara_empire",
+      "controllerPolityId": "vijayanagara_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_calicut",
+      "defenseLayoutId": "defense_calicut",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_indus_deccan",
+      "localPosition": {
+        "x": 71,
+        "y": 27
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "calicut"
+      },
+      "productionRefs": [
+        "pepper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "gaur",
+      "name": "Gaur",
+      "kind": "capital",
+      "provinceId": "bengal",
+      "legalOwnerPolityId": "bengal_sultanate",
+      "controllerPolityId": "bengal_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_gaur",
+      "defenseLayoutId": "defense_gaur",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "localPosition": {
+        "x": 88,
+        "y": 57
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "gaur"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "chittagong",
+      "name": "Chittagong",
+      "kind": "port",
+      "provinceId": "bengal",
+      "legalOwnerPolityId": "bengal_sultanate",
+      "controllerPolityId": "bengal_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "india_land",
+      "cityCoreId": "city_core_chittagong",
+      "defenseLayoutId": "defense_chittagong",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "localPosition": {
+        "x": 94,
+        "y": 48
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chittagong"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "kotte",
+      "name": "Kotte",
+      "kind": "port",
+      "provinceId": "kotte",
+      "legalOwnerPolityId": "kotte",
+      "controllerPolityId": "kotte",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "islands_land",
+      "cityCoreId": "city_core_kotte",
+      "defenseLayoutId": "defense_kotte",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "localPosition": {
+        "x": 79,
+        "y": 15
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kotte"
+      },
+      "productionRefs": [
+        "cinnamon"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "fez",
+      "name": "Fez",
+      "kind": "capital",
+      "provinceId": "fez_meknes",
+      "legalOwnerPolityId": "marinid_morocco",
+      "controllerPolityId": "marinid_morocco",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_fez",
+      "defenseLayoutId": "defense_fez",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic",
+      "localPosition": {
+        "x": 30,
+        "y": 35
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "fez"
+      },
+      "productionRefs": [
+        "leather"
+      ]
+    },
+    {
+      "id": "ceuta",
+      "name": "Ceuta",
+      "kind": "port",
+      "provinceId": "rif",
+      "legalOwnerPolityId": "marinid_morocco",
+      "controllerPolityId": "marinid_morocco",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_ceuta",
+      "defenseLayoutId": "defense_ceuta",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic",
+      "localPosition": {
+        "x": 37.2,
+        "y": 48
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "fortified_town",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ceuta"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "mediterranean_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "sijilmasa",
+      "name": "Sijilmasa",
+      "kind": "trading_post",
+      "provinceId": "sijilmasa",
+      "legalOwnerPolityId": "marinid_morocco",
+      "controllerPolityId": "marinid_morocco",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_sijilmasa",
+      "defenseLayoutId": "defense_sijilmasa",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic",
+      "localPosition": {
+        "x": 27,
+        "y": 15
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "sijilmasa"
+      },
+      "productionRefs": [
+        "salt"
+      ]
+    },
+    {
+      "id": "tunis",
+      "name": "Tunis",
+      "kind": "capital",
+      "provinceId": "hafsid_ifriqiya",
+      "legalOwnerPolityId": "hafsid_sultanate",
+      "controllerPolityId": "hafsid_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_tunis",
+      "defenseLayoutId": "defense_tunis",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic",
+      "localPosition": {
+        "x": 70,
+        "y": 38
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tunis"
+      },
+      "productionRefs": [
+        "olive_oil"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "mediterranean_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "tripoli",
+      "name": "Tripoli",
+      "kind": "port",
+      "provinceId": "tripolitania",
+      "legalOwnerPolityId": "hafsid_sultanate",
+      "controllerPolityId": "hafsid_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_tripoli",
+      "defenseLayoutId": "defense_tripoli",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_maghreb_med_atlantic",
+      "localPosition": {
+        "x": 88,
+        "y": 28
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tripoli"
+      },
+      "productionRefs": [
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "mediterranean_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "cairo",
+      "name": "Cairo",
+      "kind": "capital",
+      "provinceId": "mamluk_egypt",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_cairo",
+      "defenseLayoutId": "defense_cairo",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_nile_red_sea",
+      "localPosition": {
+        "x": 0,
+        "y": 75
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cairo"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "alexandria",
+      "name": "Alexandria",
+      "kind": "port",
+      "provinceId": "mamluk_egypt",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_alexandria",
+      "defenseLayoutId": "defense_alexandria",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_nile_red_sea",
+      "localPosition": {
+        "x": -8,
+        "y": 85
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "alexandria"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "mediterranean_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "aswan",
+      "name": "Aswan",
+      "kind": "fort",
+      "provinceId": "mamluk_egypt",
+      "legalOwnerPolityId": "mamluk_sultanate",
+      "controllerPolityId": "mamluk_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_aswan",
+      "defenseLayoutId": "defense_aswan",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_nile_red_sea",
+      "localPosition": {
+        "x": 5,
+        "y": 55
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "fortified_town",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "aswan"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "niani",
+      "name": "Niani",
+      "kind": "capital",
+      "provinceId": "manding",
+      "legalOwnerPolityId": "mali_empire",
+      "controllerPolityId": "mali_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_niani",
+      "defenseLayoutId": "defense_niani",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 10,
+        "y": 10
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "niani"
+      },
+      "productionRefs": [
+        "gold"
+      ]
+    },
+    {
+      "id": "timbuktu",
+      "name": "Timbuktu",
+      "kind": "trading_post",
+      "provinceId": "middle_niger",
+      "legalOwnerPolityId": "mali_empire",
+      "controllerPolityId": "mali_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_timbuktu",
+      "defenseLayoutId": "defense_timbuktu",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 28,
+        "y": 20
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "timbuktu"
+      },
+      "productionRefs": [
+        "manuscripts"
+      ]
+    },
+    {
+      "id": "walata",
+      "name": "Walata",
+      "kind": "trading_post",
+      "provinceId": "upper_senegal",
+      "legalOwnerPolityId": "mali_empire",
+      "controllerPolityId": "mali_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_walata",
+      "defenseLayoutId": "defense_walata",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 20,
+        "y": 22
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "trade_center",
+        "caravan_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "walata"
+      },
+      "productionRefs": [
+        "salt"
+      ]
+    },
+    {
+      "id": "taghaza",
+      "name": "Taghaza",
+      "kind": "trading_post",
+      "provinceId": "middle_niger",
+      "legalOwnerPolityId": "mali_empire",
+      "controllerPolityId": "mali_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_taghaza",
+      "defenseLayoutId": "defense_taghaza",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 30,
+        "y": 30
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "taghaza"
+      },
+      "productionRefs": [
+        "salt"
+      ]
+    },
+    {
+      "id": "gao",
+      "name": "Gao",
+      "kind": "capital",
+      "provinceId": "songhai_realm",
+      "legalOwnerPolityId": "songhai_kingdom",
+      "controllerPolityId": "songhai_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_gao",
+      "defenseLayoutId": "defense_gao",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 40,
+        "y": 19
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "gao"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "agadez",
+      "name": "Agadez",
+      "kind": "capital",
+      "provinceId": "air",
+      "legalOwnerPolityId": "air_sultanate",
+      "controllerPolityId": "air_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_agadez",
+      "defenseLayoutId": "defense_agadez",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 55,
+        "y": 24
+      },
+      "terrainClass": "desert",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "agadez"
+      },
+      "productionRefs": [
+        "salt"
+      ]
+    },
+    {
+      "id": "kano",
+      "name": "Kano",
+      "kind": "capital",
+      "provinceId": "hausa_north",
+      "legalOwnerPolityId": "kano",
+      "controllerPolityId": "kano",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_kano",
+      "defenseLayoutId": "defense_kano",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 65,
+        "y": 12
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kano"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "katsina",
+      "name": "Katsina",
+      "kind": "fort",
+      "provinceId": "katsina",
+      "legalOwnerPolityId": "katsina",
+      "controllerPolityId": "katsina",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_katsina",
+      "defenseLayoutId": "defense_katsina",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 62,
+        "y": 16
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "katsina"
+      },
+      "productionRefs": [
+        "cloth"
+      ]
+    },
+    {
+      "id": "ngazargamu",
+      "name": "Ngazargamu",
+      "kind": "capital",
+      "provinceId": "bornu",
+      "legalOwnerPolityId": "kanem_bornu",
+      "controllerPolityId": "kanem_bornu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_ngazargamu",
+      "defenseLayoutId": "defense_ngazargamu",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_sahara_sahel",
+      "localPosition": {
+        "x": 78,
+        "y": 13
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ngazargamu"
+      },
+      "productionRefs": [
+        "horses"
+      ]
+    },
+    {
+      "id": "debre_berhan",
+      "name": "Debre Berhan",
+      "kind": "fort",
+      "provinceId": "shewa",
+      "legalOwnerPolityId": "ethiopian_empire",
+      "controllerPolityId": "ethiopian_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_debre_berhan",
+      "defenseLayoutId": "defense_debre_berhan",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_nile_red_sea",
+      "localPosition": {
+        "x": 38,
+        "y": 38
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "debre_berhan"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "axum",
+      "name": "Axum",
+      "kind": "trading_post",
+      "provinceId": "tigray",
+      "legalOwnerPolityId": "ethiopian_empire",
+      "controllerPolityId": "ethiopian_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_axum",
+      "defenseLayoutId": "defense_axum",
+      "serviceIds": [
+        "market",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_nile_red_sea",
+      "localPosition": {
+        "x": 32,
+        "y": 48
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "axum"
+      },
+      "productionRefs": [
+        "coffee"
+      ]
+    },
+    {
+      "id": "meregh",
+      "name": "Meregh",
+      "kind": "capital",
+      "provinceId": "ajuran_realm",
+      "legalOwnerPolityId": "ajuran_sultanate",
+      "controllerPolityId": "ajuran_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_meregh",
+      "defenseLayoutId": "defense_meregh",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 42,
+        "y": 55
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "meregh"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mogadishu",
+      "name": "Mogadishu",
+      "kind": "capital",
+      "provinceId": "mogadishu_hinterland",
+      "legalOwnerPolityId": "mogadishu_sultanate",
+      "controllerPolityId": "mogadishu_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_mogadishu",
+      "defenseLayoutId": "defense_mogadishu",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 45,
+        "y": 69
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mogadishu"
+      },
+      "productionRefs": [
+        "cloth"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "indian_ocean_navigation",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "kilwa",
+      "name": "Kilwa Kisiwani",
+      "kind": "capital",
+      "provinceId": "kilwa_coast",
+      "legalOwnerPolityId": "kilwa_sultanate",
+      "controllerPolityId": "kilwa_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_kilwa",
+      "defenseLayoutId": "defense_kilwa",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 40,
+        "y": 25
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kilwa"
+      },
+      "productionRefs": [
+        "gold"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "indian_ocean_navigation",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "mombasa",
+      "name": "Mombasa",
+      "kind": "port",
+      "provinceId": "mombasa",
+      "legalOwnerPolityId": "mombasa",
+      "controllerPolityId": "mombasa",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_mombasa",
+      "defenseLayoutId": "defense_mombasa",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 38,
+        "y": 40
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mombasa"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "indian_ocean_navigation",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "zanzibar",
+      "name": "Zanzibar",
+      "kind": "port",
+      "provinceId": "zanzibar_pemba",
+      "legalOwnerPolityId": "kilwa_sultanate",
+      "controllerPolityId": "kilwa_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_zanzibar",
+      "defenseLayoutId": "defense_zanzibar",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 43,
+        "y": 32
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "zanzibar"
+      },
+      "productionRefs": [
+        "ivory"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "indian_ocean_navigation",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "great_zimbabwe",
+      "name": "Great Zimbabwe",
+      "kind": "fort",
+      "provinceId": "great_zimbabwe",
+      "legalOwnerPolityId": "great_zimbabwe",
+      "controllerPolityId": "great_zimbabwe",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_great_zimbabwe",
+      "defenseLayoutId": "defense_great_zimbabwe",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_southern_cape",
+      "localPosition": {
+        "x": 35,
+        "y": 45
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "trade_center",
+        "fortified_town",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "great_zimbabwe"
+      },
+      "productionRefs": [
+        "gold"
+      ]
+    },
+    {
+      "id": "sofala",
+      "name": "Sofala",
+      "kind": "port",
+      "provinceId": "sofala_coast",
+      "legalOwnerPolityId": "kilwa_sultanate",
+      "controllerPolityId": "kilwa_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_sofala",
+      "defenseLayoutId": "defense_sofala",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_horn_swahili",
+      "localPosition": {
+        "x": 43,
+        "y": 5
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "sofala"
+      },
+      "productionRefs": [
+        "gold"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "mozambique_channel_navigation",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "mbanza_kongo",
+      "name": "Mbanza Kongo",
+      "kind": "capital",
+      "provinceId": "kongo_core",
+      "legalOwnerPolityId": "kongo_kingdom",
+      "controllerPolityId": "kongo_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_mbanza_kongo",
+      "defenseLayoutId": "defense_mbanza_kongo",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo",
+      "localPosition": {
+        "x": 60,
+        "y": 24
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mbanza_kongo"
+      },
+      "productionRefs": [
+        "copper"
+      ]
+    },
+    {
+      "id": "mpinda",
+      "name": "Mpinda",
+      "kind": "port",
+      "provinceId": "kongo_core",
+      "legalOwnerPolityId": "kongo_kingdom",
+      "controllerPolityId": "kongo_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_mpinda",
+      "defenseLayoutId": "defense_mpinda",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo",
+      "localPosition": {
+        "x": 5,
+        "y": 25
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mpinda"
+      },
+      "productionRefs": [
+        "ivory"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "south_atlantic_navigation",
+        "access": "estuary"
+      }
+    },
+    {
+      "id": "benin_city",
+      "name": "Benin City",
+      "kind": "capital",
+      "provinceId": "benin_realm",
+      "legalOwnerPolityId": "benin_kingdom",
+      "controllerPolityId": "benin_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_benin_city",
+      "defenseLayoutId": "defense_benin_city",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo",
+      "localPosition": {
+        "x": 35,
+        "y": 45
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "benin_city"
+      },
+      "productionRefs": [
+        "bronze"
+      ]
+    },
+    {
+      "id": "ughoton",
+      "name": "Ughoton",
+      "kind": "port",
+      "provinceId": "benin_realm",
+      "legalOwnerPolityId": "benin_kingdom",
+      "controllerPolityId": "benin_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "africa_mainland_land",
+      "cityCoreId": "city_core_ughoton",
+      "defenseLayoutId": "defense_ughoton",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "africa_west_guinea_congo",
+      "localPosition": {
+        "x": 30,
+        "y": 42
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ughoton"
+      },
+      "productionRefs": [
+        "pepper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "north_atlantic_navigation",
+        "access": "tidal_river"
+      }
     }
   ],
   "officers": [
@@ -8171,6 +12737,251 @@
       "rankTier": "duke",
       "nativeName": "Duke",
       "genericName": "Duke"
+    },
+    {
+      "id": "title_karamanids",
+      "polityId": "karamanids",
+      "rankTier": "prince",
+      "nativeName": "Bey",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_trebizond_empire",
+      "polityId": "trebizond_empire",
+      "rankTier": "emperor",
+      "nativeName": "Basileus",
+      "genericName": "Emperor"
+    },
+    {
+      "id": "title_dulkadirids",
+      "polityId": "dulkadirids",
+      "rankTier": "prince",
+      "nativeName": "Bey",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_georgia",
+      "polityId": "georgia",
+      "rankTier": "king",
+      "nativeName": "Mepe",
+      "genericName": "King"
+    },
+    {
+      "id": "title_cyprus",
+      "polityId": "cyprus",
+      "rankTier": "king",
+      "nativeName": "Roi",
+      "genericName": "King"
+    },
+    {
+      "id": "title_sharifate_mecca",
+      "polityId": "sharifate_mecca",
+      "rankTier": "prince",
+      "nativeName": "Sharif",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_yemen",
+      "polityId": "yemen",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_kathiri",
+      "polityId": "kathiri",
+      "rankTier": "prince",
+      "nativeName": "Sultan",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_nabhanid_oman",
+      "polityId": "nabhanid_oman",
+      "rankTier": "king",
+      "nativeName": "Malik",
+      "genericName": "King"
+    },
+    {
+      "id": "title_jabrids",
+      "polityId": "jabrids",
+      "rankTier": "prince",
+      "nativeName": "Amir",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_kingdom_hormuz",
+      "polityId": "kingdom_hormuz",
+      "rankTier": "king",
+      "nativeName": "Malik",
+      "genericName": "King"
+    },
+    {
+      "id": "title_qara_qoyunlu",
+      "polityId": "qara_qoyunlu",
+      "rankTier": "king",
+      "nativeName": "Shah",
+      "genericName": "King"
+    },
+    {
+      "id": "title_aq_qoyunlu",
+      "polityId": "aq_qoyunlu",
+      "rankTier": "king",
+      "nativeName": "Beg",
+      "genericName": "King"
+    },
+    {
+      "id": "title_shirvan",
+      "polityId": "shirvan",
+      "rankTier": "king",
+      "nativeName": "Shirvanshah",
+      "genericName": "King"
+    },
+    {
+      "id": "title_timurid_empire",
+      "polityId": "timurid_empire",
+      "rankTier": "emperor",
+      "nativeName": "Mirza",
+      "genericName": "Emperor"
+    },
+    {
+      "id": "title_samma_sindh",
+      "polityId": "samma_sindh",
+      "rankTier": "king",
+      "nativeName": "Jam",
+      "genericName": "King"
+    },
+    {
+      "id": "title_langah_multan",
+      "polityId": "langah_multan",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_delhi_sultanate",
+      "polityId": "delhi_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_kashmir_sultanate",
+      "polityId": "kashmir_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_rajput_confederacies",
+      "polityId": "rajput_confederacies",
+      "rankTier": "king",
+      "nativeName": "Maharana",
+      "genericName": "King"
+    },
+    {
+      "id": "title_gujarat_sultanate",
+      "polityId": "gujarat_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_malwa_sultanate",
+      "polityId": "malwa_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_khandesh_sultanate",
+      "polityId": "khandesh_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_bahmani_sultanate",
+      "polityId": "bahmani_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_vijayanagara_empire",
+      "polityId": "vijayanagara_empire",
+      "rankTier": "emperor",
+      "nativeName": "Maharaya",
+      "genericName": "Emperor"
+    },
+    {
+      "id": "title_gond_kingdoms",
+      "polityId": "gond_kingdoms",
+      "rankTier": "king",
+      "nativeName": "Raja",
+      "genericName": "King"
+    },
+    {
+      "id": "title_jaunpur_sultanate",
+      "polityId": "jaunpur_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_nepal_malla",
+      "polityId": "nepal_malla",
+      "rankTier": "king",
+      "nativeName": "Raja",
+      "genericName": "King"
+    },
+    {
+      "id": "title_western_himalayan_states",
+      "polityId": "western_himalayan_states",
+      "rankTier": "king",
+      "nativeName": "Raja",
+      "genericName": "King"
+    },
+    {
+      "id": "title_bengal_sultanate",
+      "polityId": "bengal_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_gajapati_empire",
+      "polityId": "gajapati_empire",
+      "rankTier": "emperor",
+      "nativeName": "Gajapati",
+      "genericName": "Emperor"
+    },
+    {
+      "id": "title_kamata_ahom_states",
+      "polityId": "kamata_ahom_states",
+      "rankTier": "king",
+      "nativeName": "Raja",
+      "genericName": "King"
+    },
+    {
+      "id": "title_kotte",
+      "polityId": "kotte",
+      "rankTier": "king",
+      "nativeName": "Raja",
+      "genericName": "King"
+    },
+    {
+      "id": "title_jaffna",
+      "polityId": "jaffna",
+      "rankTier": "king",
+      "nativeName": "Cinkaiariyan",
+      "genericName": "King"
+    },
+    {
+      "id": "title_maldives_sultanate",
+      "polityId": "maldives_sultanate",
+      "rankTier": "king",
+      "nativeName": "Sultan",
+      "genericName": "King"
     },
     {
       "id": "title_marinid_morocco",
@@ -8998,6 +13809,357 @@
         "id": "kazan"
       },
       "allegiancePolityId": "kazan",
+      "sovereign": true
+    },
+    {
+      "id": "grant_karamanids",
+      "titleStyleId": "title_karamanids",
+      "holder": {
+        "kind": "polity",
+        "id": "karamanids"
+      },
+      "allegiancePolityId": "karamanids",
+      "sovereign": true
+    },
+    {
+      "id": "grant_trebizond_empire",
+      "titleStyleId": "title_trebizond_empire",
+      "holder": {
+        "kind": "polity",
+        "id": "trebizond_empire"
+      },
+      "allegiancePolityId": "trebizond_empire",
+      "sovereign": true
+    },
+    {
+      "id": "grant_dulkadirids",
+      "titleStyleId": "title_dulkadirids",
+      "holder": {
+        "kind": "polity",
+        "id": "dulkadirids"
+      },
+      "allegiancePolityId": "dulkadirids",
+      "sovereign": true
+    },
+    {
+      "id": "grant_georgia",
+      "titleStyleId": "title_georgia",
+      "holder": {
+        "kind": "polity",
+        "id": "georgia"
+      },
+      "allegiancePolityId": "georgia",
+      "sovereign": true
+    },
+    {
+      "id": "grant_cyprus",
+      "titleStyleId": "title_cyprus",
+      "holder": {
+        "kind": "polity",
+        "id": "cyprus"
+      },
+      "allegiancePolityId": "cyprus",
+      "sovereign": true
+    },
+    {
+      "id": "grant_sharifate_mecca",
+      "titleStyleId": "title_sharifate_mecca",
+      "holder": {
+        "kind": "polity",
+        "id": "sharifate_mecca"
+      },
+      "allegiancePolityId": "mamluk_sultanate",
+      "sovereign": false,
+      "grantorTitleId": "grant_mamluk_sultanate"
+    },
+    {
+      "id": "grant_yemen",
+      "titleStyleId": "title_yemen",
+      "holder": {
+        "kind": "polity",
+        "id": "yemen"
+      },
+      "allegiancePolityId": "yemen",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kathiri",
+      "titleStyleId": "title_kathiri",
+      "holder": {
+        "kind": "polity",
+        "id": "kathiri"
+      },
+      "allegiancePolityId": "kathiri",
+      "sovereign": true
+    },
+    {
+      "id": "grant_nabhanid_oman",
+      "titleStyleId": "title_nabhanid_oman",
+      "holder": {
+        "kind": "polity",
+        "id": "nabhanid_oman"
+      },
+      "allegiancePolityId": "nabhanid_oman",
+      "sovereign": true
+    },
+    {
+      "id": "grant_jabrids",
+      "titleStyleId": "title_jabrids",
+      "holder": {
+        "kind": "polity",
+        "id": "jabrids"
+      },
+      "allegiancePolityId": "jabrids",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kingdom_hormuz",
+      "titleStyleId": "title_kingdom_hormuz",
+      "holder": {
+        "kind": "polity",
+        "id": "kingdom_hormuz"
+      },
+      "allegiancePolityId": "kingdom_hormuz",
+      "sovereign": true
+    },
+    {
+      "id": "grant_qara_qoyunlu",
+      "titleStyleId": "title_qara_qoyunlu",
+      "holder": {
+        "kind": "polity",
+        "id": "qara_qoyunlu"
+      },
+      "allegiancePolityId": "qara_qoyunlu",
+      "sovereign": true
+    },
+    {
+      "id": "grant_aq_qoyunlu",
+      "titleStyleId": "title_aq_qoyunlu",
+      "holder": {
+        "kind": "polity",
+        "id": "aq_qoyunlu"
+      },
+      "allegiancePolityId": "aq_qoyunlu",
+      "sovereign": true
+    },
+    {
+      "id": "grant_shirvan",
+      "titleStyleId": "title_shirvan",
+      "holder": {
+        "kind": "polity",
+        "id": "shirvan"
+      },
+      "allegiancePolityId": "shirvan",
+      "sovereign": true
+    },
+    {
+      "id": "grant_timurid_empire",
+      "titleStyleId": "title_timurid_empire",
+      "holder": {
+        "kind": "polity",
+        "id": "timurid_empire"
+      },
+      "allegiancePolityId": "timurid_empire",
+      "sovereign": true
+    },
+    {
+      "id": "grant_samma_sindh",
+      "titleStyleId": "title_samma_sindh",
+      "holder": {
+        "kind": "polity",
+        "id": "samma_sindh"
+      },
+      "allegiancePolityId": "samma_sindh",
+      "sovereign": true
+    },
+    {
+      "id": "grant_langah_multan",
+      "titleStyleId": "title_langah_multan",
+      "holder": {
+        "kind": "polity",
+        "id": "langah_multan"
+      },
+      "allegiancePolityId": "langah_multan",
+      "sovereign": true
+    },
+    {
+      "id": "grant_delhi_sultanate",
+      "titleStyleId": "title_delhi_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "delhi_sultanate"
+      },
+      "allegiancePolityId": "delhi_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kashmir_sultanate",
+      "titleStyleId": "title_kashmir_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "kashmir_sultanate"
+      },
+      "allegiancePolityId": "kashmir_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_rajput_confederacies",
+      "titleStyleId": "title_rajput_confederacies",
+      "holder": {
+        "kind": "polity",
+        "id": "rajput_confederacies"
+      },
+      "allegiancePolityId": "rajput_confederacies",
+      "sovereign": true
+    },
+    {
+      "id": "grant_gujarat_sultanate",
+      "titleStyleId": "title_gujarat_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "gujarat_sultanate"
+      },
+      "allegiancePolityId": "gujarat_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_malwa_sultanate",
+      "titleStyleId": "title_malwa_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "malwa_sultanate"
+      },
+      "allegiancePolityId": "malwa_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_khandesh_sultanate",
+      "titleStyleId": "title_khandesh_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "khandesh_sultanate"
+      },
+      "allegiancePolityId": "khandesh_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_bahmani_sultanate",
+      "titleStyleId": "title_bahmani_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "bahmani_sultanate"
+      },
+      "allegiancePolityId": "bahmani_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_vijayanagara_empire",
+      "titleStyleId": "title_vijayanagara_empire",
+      "holder": {
+        "kind": "polity",
+        "id": "vijayanagara_empire"
+      },
+      "allegiancePolityId": "vijayanagara_empire",
+      "sovereign": true
+    },
+    {
+      "id": "grant_gond_kingdoms",
+      "titleStyleId": "title_gond_kingdoms",
+      "holder": {
+        "kind": "polity",
+        "id": "gond_kingdoms"
+      },
+      "allegiancePolityId": "gond_kingdoms",
+      "sovereign": true
+    },
+    {
+      "id": "grant_jaunpur_sultanate",
+      "titleStyleId": "title_jaunpur_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "jaunpur_sultanate"
+      },
+      "allegiancePolityId": "jaunpur_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_nepal_malla",
+      "titleStyleId": "title_nepal_malla",
+      "holder": {
+        "kind": "polity",
+        "id": "nepal_malla"
+      },
+      "allegiancePolityId": "nepal_malla",
+      "sovereign": true
+    },
+    {
+      "id": "grant_western_himalayan_states",
+      "titleStyleId": "title_western_himalayan_states",
+      "holder": {
+        "kind": "polity",
+        "id": "western_himalayan_states"
+      },
+      "allegiancePolityId": "western_himalayan_states",
+      "sovereign": true
+    },
+    {
+      "id": "grant_bengal_sultanate",
+      "titleStyleId": "title_bengal_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "bengal_sultanate"
+      },
+      "allegiancePolityId": "bengal_sultanate",
+      "sovereign": true
+    },
+    {
+      "id": "grant_gajapati_empire",
+      "titleStyleId": "title_gajapati_empire",
+      "holder": {
+        "kind": "polity",
+        "id": "gajapati_empire"
+      },
+      "allegiancePolityId": "gajapati_empire",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kamata_ahom_states",
+      "titleStyleId": "title_kamata_ahom_states",
+      "holder": {
+        "kind": "polity",
+        "id": "kamata_ahom_states"
+      },
+      "allegiancePolityId": "kamata_ahom_states",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kotte",
+      "titleStyleId": "title_kotte",
+      "holder": {
+        "kind": "polity",
+        "id": "kotte"
+      },
+      "allegiancePolityId": "kotte",
+      "sovereign": true
+    },
+    {
+      "id": "grant_jaffna",
+      "titleStyleId": "title_jaffna",
+      "holder": {
+        "kind": "polity",
+        "id": "jaffna"
+      },
+      "allegiancePolityId": "jaffna",
+      "sovereign": true
+    },
+    {
+      "id": "grant_maldives_sultanate",
+      "titleStyleId": "title_maldives_sultanate",
+      "holder": {
+        "kind": "polity",
+        "id": "maldives_sultanate"
+      },
+      "allegiancePolityId": "maldives_sultanate",
       "sovereign": true
     },
     {
@@ -11818,6 +16980,738 @@
       "overlordTaxRatePercent": 0,
       "upkeepRatePercent": 5,
       "obligations": []
+    },
+    {
+      "id": "holding_ottoman_anatolia",
+      "territory": {
+        "kind": "province",
+        "id": "ottoman_anatolia"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "ottoman_empire"
+      },
+      "controllerPolityId": "ottoman_empire",
+      "governingPolityId": "ottoman_empire",
+      "sovereignPolityId": "ottoman_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_karaman",
+      "territory": {
+        "kind": "province",
+        "id": "karaman"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "karamanids"
+      },
+      "controllerPolityId": "karamanids",
+      "governingPolityId": "karamanids",
+      "sovereignPolityId": "karamanids",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_trebizond",
+      "territory": {
+        "kind": "province",
+        "id": "trebizond"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "trebizond_empire"
+      },
+      "controllerPolityId": "trebizond_empire",
+      "governingPolityId": "trebizond_empire",
+      "sovereignPolityId": "trebizond_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_dulkadir",
+      "territory": {
+        "kind": "province",
+        "id": "dulkadir"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "dulkadirids"
+      },
+      "controllerPolityId": "dulkadirids",
+      "governingPolityId": "dulkadirids",
+      "sovereignPolityId": "dulkadirids",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_georgia",
+      "territory": {
+        "kind": "province",
+        "id": "georgia"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "georgia"
+      },
+      "controllerPolityId": "georgia",
+      "governingPolityId": "georgia",
+      "sovereignPolityId": "georgia",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_cyprus",
+      "territory": {
+        "kind": "province",
+        "id": "cyprus"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "cyprus"
+      },
+      "controllerPolityId": "cyprus",
+      "governingPolityId": "cyprus",
+      "sovereignPolityId": "mamluk_sultanate",
+      "autonomyPercent": 70,
+      "overlordTaxRatePercent": 15,
+      "upkeepRatePercent": 5,
+      "obligations": [
+        {
+          "kind": "service",
+          "value": 1
+        }
+      ],
+      "overlordHoldingId": "holding_mamluk_egypt"
+    },
+    {
+      "id": "holding_mamluk_syria",
+      "territory": {
+        "kind": "province",
+        "id": "mamluk_syria"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "mamluk_sultanate"
+      },
+      "controllerPolityId": "mamluk_sultanate",
+      "governingPolityId": "mamluk_sultanate",
+      "sovereignPolityId": "mamluk_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_hejaz",
+      "territory": {
+        "kind": "province",
+        "id": "hejaz"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "sharifate_mecca"
+      },
+      "controllerPolityId": "sharifate_mecca",
+      "governingPolityId": "sharifate_mecca",
+      "sovereignPolityId": "mamluk_sultanate",
+      "autonomyPercent": 70,
+      "overlordTaxRatePercent": 10,
+      "upkeepRatePercent": 5,
+      "obligations": [
+        {
+          "kind": "service",
+          "value": 1
+        }
+      ],
+      "overlordHoldingId": "holding_mamluk_egypt"
+    },
+    {
+      "id": "holding_yemen",
+      "territory": {
+        "kind": "province",
+        "id": "yemen"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "yemen"
+      },
+      "controllerPolityId": "yemen",
+      "governingPolityId": "yemen",
+      "sovereignPolityId": "yemen",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_hadramawt",
+      "territory": {
+        "kind": "province",
+        "id": "hadramawt"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kathiri"
+      },
+      "controllerPolityId": "kathiri",
+      "governingPolityId": "kathiri",
+      "sovereignPolityId": "kathiri",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_oman",
+      "territory": {
+        "kind": "province",
+        "id": "oman"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "nabhanid_oman"
+      },
+      "controllerPolityId": "nabhanid_oman",
+      "governingPolityId": "nabhanid_oman",
+      "sovereignPolityId": "nabhanid_oman",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_najd_bahrain",
+      "territory": {
+        "kind": "province",
+        "id": "najd_bahrain"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "jabrids"
+      },
+      "controllerPolityId": "jabrids",
+      "governingPolityId": "jabrids",
+      "sovereignPolityId": "jabrids",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_hormuz",
+      "territory": {
+        "kind": "province",
+        "id": "hormuz"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kingdom_hormuz"
+      },
+      "controllerPolityId": "kingdom_hormuz",
+      "governingPolityId": "kingdom_hormuz",
+      "sovereignPolityId": "kingdom_hormuz",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_qara_qoyunlu_azerbaijan",
+      "territory": {
+        "kind": "province",
+        "id": "qara_qoyunlu_azerbaijan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "qara_qoyunlu"
+      },
+      "controllerPolityId": "qara_qoyunlu",
+      "governingPolityId": "qara_qoyunlu",
+      "sovereignPolityId": "qara_qoyunlu",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_qara_qoyunlu_iraq",
+      "territory": {
+        "kind": "province",
+        "id": "qara_qoyunlu_iraq"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "qara_qoyunlu"
+      },
+      "controllerPolityId": "qara_qoyunlu",
+      "governingPolityId": "qara_qoyunlu",
+      "sovereignPolityId": "qara_qoyunlu",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_aq_qoyunlu_diyar_bakr",
+      "territory": {
+        "kind": "province",
+        "id": "aq_qoyunlu_diyar_bakr"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "aq_qoyunlu"
+      },
+      "controllerPolityId": "aq_qoyunlu",
+      "governingPolityId": "aq_qoyunlu",
+      "sovereignPolityId": "aq_qoyunlu",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_shirvan",
+      "territory": {
+        "kind": "province",
+        "id": "shirvan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "shirvan"
+      },
+      "controllerPolityId": "shirvan",
+      "governingPolityId": "shirvan",
+      "sovereignPolityId": "shirvan",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_transoxiana",
+      "territory": {
+        "kind": "province",
+        "id": "transoxiana"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "timurid_empire"
+      },
+      "controllerPolityId": "timurid_empire",
+      "governingPolityId": "timurid_empire",
+      "sovereignPolityId": "timurid_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_khurasan",
+      "territory": {
+        "kind": "province",
+        "id": "khurasan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "timurid_empire"
+      },
+      "controllerPolityId": "timurid_empire",
+      "governingPolityId": "timurid_empire",
+      "sovereignPolityId": "timurid_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_fars",
+      "territory": {
+        "kind": "province",
+        "id": "fars"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "timurid_empire"
+      },
+      "controllerPolityId": "timurid_empire",
+      "governingPolityId": "timurid_empire",
+      "sovereignPolityId": "timurid_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_sindh",
+      "territory": {
+        "kind": "province",
+        "id": "sindh"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "samma_sindh"
+      },
+      "controllerPolityId": "samma_sindh",
+      "governingPolityId": "samma_sindh",
+      "sovereignPolityId": "samma_sindh",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_multan",
+      "territory": {
+        "kind": "province",
+        "id": "multan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "langah_multan"
+      },
+      "controllerPolityId": "langah_multan",
+      "governingPolityId": "langah_multan",
+      "sovereignPolityId": "langah_multan",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_punjab_delhi",
+      "territory": {
+        "kind": "province",
+        "id": "punjab_delhi"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "delhi_sultanate"
+      },
+      "controllerPolityId": "delhi_sultanate",
+      "governingPolityId": "delhi_sultanate",
+      "sovereignPolityId": "delhi_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kashmir",
+      "territory": {
+        "kind": "province",
+        "id": "kashmir"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kashmir_sultanate"
+      },
+      "controllerPolityId": "kashmir_sultanate",
+      "governingPolityId": "kashmir_sultanate",
+      "sovereignPolityId": "kashmir_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_rajputana",
+      "territory": {
+        "kind": "province",
+        "id": "rajputana"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "rajput_confederacies"
+      },
+      "controllerPolityId": "rajput_confederacies",
+      "governingPolityId": "rajput_confederacies",
+      "sovereignPolityId": "rajput_confederacies",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_gujarat",
+      "territory": {
+        "kind": "province",
+        "id": "gujarat"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "gujarat_sultanate"
+      },
+      "controllerPolityId": "gujarat_sultanate",
+      "governingPolityId": "gujarat_sultanate",
+      "sovereignPolityId": "gujarat_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_malwa",
+      "territory": {
+        "kind": "province",
+        "id": "malwa"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "malwa_sultanate"
+      },
+      "controllerPolityId": "malwa_sultanate",
+      "governingPolityId": "malwa_sultanate",
+      "sovereignPolityId": "malwa_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_khandesh",
+      "territory": {
+        "kind": "province",
+        "id": "khandesh"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "khandesh_sultanate"
+      },
+      "controllerPolityId": "khandesh_sultanate",
+      "governingPolityId": "khandesh_sultanate",
+      "sovereignPolityId": "khandesh_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_bahmani_deccan",
+      "territory": {
+        "kind": "province",
+        "id": "bahmani_deccan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "bahmani_sultanate"
+      },
+      "controllerPolityId": "bahmani_sultanate",
+      "governingPolityId": "bahmani_sultanate",
+      "sovereignPolityId": "bahmani_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_vijayanagara",
+      "territory": {
+        "kind": "province",
+        "id": "vijayanagara"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "vijayanagara_empire"
+      },
+      "controllerPolityId": "vijayanagara_empire",
+      "governingPolityId": "vijayanagara_empire",
+      "sovereignPolityId": "vijayanagara_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_gondwana",
+      "territory": {
+        "kind": "province",
+        "id": "gondwana"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "gond_kingdoms"
+      },
+      "controllerPolityId": "gond_kingdoms",
+      "governingPolityId": "gond_kingdoms",
+      "sovereignPolityId": "gond_kingdoms",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_jaunpur",
+      "territory": {
+        "kind": "province",
+        "id": "jaunpur"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "jaunpur_sultanate"
+      },
+      "controllerPolityId": "jaunpur_sultanate",
+      "governingPolityId": "jaunpur_sultanate",
+      "sovereignPolityId": "jaunpur_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_nepal",
+      "territory": {
+        "kind": "province",
+        "id": "nepal"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "nepal_malla"
+      },
+      "controllerPolityId": "nepal_malla",
+      "governingPolityId": "nepal_malla",
+      "sovereignPolityId": "nepal_malla",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_western_himalaya",
+      "territory": {
+        "kind": "province",
+        "id": "western_himalaya"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "western_himalayan_states"
+      },
+      "controllerPolityId": "western_himalayan_states",
+      "governingPolityId": "western_himalayan_states",
+      "sovereignPolityId": "western_himalayan_states",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_bengal",
+      "territory": {
+        "kind": "province",
+        "id": "bengal"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "bengal_sultanate"
+      },
+      "controllerPolityId": "bengal_sultanate",
+      "governingPolityId": "bengal_sultanate",
+      "sovereignPolityId": "bengal_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_gajapati_orissa",
+      "territory": {
+        "kind": "province",
+        "id": "gajapati_orissa"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "gajapati_empire"
+      },
+      "controllerPolityId": "gajapati_empire",
+      "governingPolityId": "gajapati_empire",
+      "sovereignPolityId": "gajapati_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kamata_ahom",
+      "territory": {
+        "kind": "province",
+        "id": "kamata_ahom"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kamata_ahom_states"
+      },
+      "controllerPolityId": "kamata_ahom_states",
+      "governingPolityId": "kamata_ahom_states",
+      "sovereignPolityId": "kamata_ahom_states",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kotte",
+      "territory": {
+        "kind": "province",
+        "id": "kotte"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kotte"
+      },
+      "controllerPolityId": "kotte",
+      "governingPolityId": "kotte",
+      "sovereignPolityId": "kotte",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_jaffna",
+      "territory": {
+        "kind": "province",
+        "id": "jaffna"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "jaffna"
+      },
+      "controllerPolityId": "jaffna",
+      "governingPolityId": "jaffna",
+      "sovereignPolityId": "jaffna",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_maldives",
+      "territory": {
+        "kind": "province",
+        "id": "maldives"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "maldives_sultanate"
+      },
+      "controllerPolityId": "maldives_sultanate",
+      "governingPolityId": "maldives_sultanate",
+      "sovereignPolityId": "maldives_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
     }
   ],
   "allegiances": [
@@ -11876,6 +17770,14 @@
         "id": "palatinate"
       },
       "polityId": "holy_roman_empire"
+    },
+    {
+      "id": "allegiance_sharifate_mecca",
+      "subject": {
+        "kind": "polity",
+        "id": "sharifate_mecca"
+      },
+      "polityId": "mamluk_sultanate"
     },
     {
       "id": "allegiance_medri_bahri",
@@ -12118,6 +18020,20 @@
         ]
       },
       {
+        "id": "middle_east_india_north",
+        "regionId": "middle_east_india",
+        "areaId": "middle_east_india_coarse",
+        "position": {
+          "x": 70,
+          "y": 95
+        },
+        "movementClasses": [
+          "land",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
         "id": "southeast_asia_west",
         "regionId": "southeast_asia",
         "areaId": "southeast_asia_coarse",
@@ -12173,6 +18089,20 @@
         "movementClasses": [
           "land",
           "naval",
+          "amphibious",
+          "flying"
+        ]
+      },
+      {
+        "id": "east_asia_west",
+        "regionId": "east_asia",
+        "areaId": "east_asia_coarse",
+        "position": {
+          "x": 5,
+          "y": 55
+        },
+        "movementClasses": [
+          "land",
           "amphibious",
           "flying"
         ]
@@ -12320,6 +18250,23 @@
         "movementClasses": [
           "land",
           "naval",
+          "amphibious",
+          "flying"
+        ],
+        "directed": false
+      },
+      {
+        "id": "middle_east_central_asia_boundary",
+        "from": {
+          "regionId": "middle_east_india",
+          "anchorId": "middle_east_india_north"
+        },
+        "to": {
+          "regionId": "east_asia",
+          "anchorId": "east_asia_west"
+        },
+        "movementClasses": [
+          "land",
           "amphibious",
           "flying"
         ],

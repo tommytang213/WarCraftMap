@@ -137,7 +137,13 @@ def main():
     SOURCE.write_text(json.dumps(source,ensure_ascii=False,indent=2)+"\n")
 
     world=json.loads(WORLD.read_text())
+    # Remove the superseded focused-pass IDs when rebuilding after integration with
+    # the comprehensive political baseline. These aliases must not survive beside
+    # the authoritative 1450 entities.
+    legacy_polity_ids={"hafsid_ifriqiya","songhai","hausa_states","swahili_city_states","mutapa","kongo","benin"}
+    legacy_province_ids={"morocco_core","tafilalt","manden","ifriqiya","lower_egypt","upper_egypt","western_sahel","niger_bend","hausaland","ethiopian_highlands","somali_coast","swahili_coast","zanzibar_archipelago","zimbabwe_plateau","sofala_hinterland","benin_kingdom"}
     polity_ids={r[0] for r in POLITIES}; province_ids={p[0] for r in POLITIES for p in r[8]}
+    polity_ids |= legacy_polity_ids; province_ids |= legacy_province_ids
     capital_ids={r[5] for r in POLITIES}
     # Idempotently replace only Africa's projection; Europe and reusable fixtures stay intact.
     world["polities"]=[x for x in world["polities"] if x["id"] not in polity_ids]
@@ -163,7 +169,7 @@ def main():
             superior=overlord or (tribute["overlordPolityId"] if tribute else None)
             if superior: holding["overlordHoldingId"]="holding_"+by_polity[superior][8][0][0]
             world["territorialHoldings"].append(holding)
-        world["settlements"].append({"id":capital,"name":capital.replace("_"," ").title(),"kind":"capital","provinceId":pids[0],"legalOwnerPolityId":pid,"controllerPolityId":pid,"capturable":True,"civilianFacilitiesInvulnerable":True,"cityCoreId":"city_core_"+capital,"defenseLayoutId":"defense_"+capital,"serviceIds":["market","quest_hub"]})
+        world["settlements"].append({"id":capital,"name":capital.replace("_"," ").title(),"kind":"capital","provinceId":pids[0],"legalOwnerPolityId":pid,"controllerPolityId":pid,"capturable":True,"civilianFacilitiesInvulnerable":True,"cityCoreId":"city_core_"+capital,"defenseLayoutId":"defense_"+capital,"serviceIds":["market","quest_hub"],"regionalInstanceId":polity["regionalInstanceId"]})
         world["cityCores"].append({"id":"city_core_"+capital,"objectTemplateId":"capital_city_core"})
         world["defenseLayouts"].append({"id":"defense_"+capital,"objectTemplateIds":["capital_defenses"]})
         style="title_"+pid; grant="grant_"+pid; overlord=VASSALS.get(pid)

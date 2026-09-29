@@ -118,7 +118,7 @@ class WorkerCleanupTests(unittest.TestCase):
                 self.assertTrue(service_open_prs(config, clean))
             self.assertNotEqual(clean["issues"]["20"].get("status"), "repair")
 
-    def test_dirty_pr_at_attempt_limit_fails_with_clear_reason(self):
+    def test_dirty_pr_uses_separate_conflict_attempt_budget(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             config = Config(root, root / "state", max_attempts=3)
@@ -127,8 +127,30 @@ class WorkerCleanupTests(unittest.TestCase):
             with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
+            self.assertEqual(record["status"], "repair")
+            self.assertEqual(record["repair_kind"], "merge_conflict")
+            self.assertEqual(record.get("conflict_attempts", 0), 0)
+
+    def test_dirty_pr_at_conflict_attempt_limit_fails_with_clear_reason(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state", max_attempts=3)
+            state = {
+                "issues": {
+                    "19": {
+                        "status": "pr_open",
+                        "pr": 42,
+                        "attempts": 3,
+                        "conflict_attempts": 3,
+                    }
+                }
+            }
+            view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+                self.assertTrue(service_open_prs(config, state))
+            record = state["issues"]["19"]
             self.assertEqual(record["status"], "failed")
-            self.assertIn("attempt limit (3) is exhausted", record["last_failure"])
+            self.assertIn("conflict-repair attempt limit (3) is exhausted", record["last_failure"])
 
     def test_conflict_repair_fetches_and_merges_current_default_branch(self):
         with tempfile.TemporaryDirectory() as directory:

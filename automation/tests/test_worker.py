@@ -19,6 +19,7 @@ from automation.warcraftmap_agent.worker import (
     queue_refill_count,
     reconcile_ready_issue_states,
     select_issue,
+    service_open_prs,
 )
 
 
@@ -60,9 +61,10 @@ class WorkerTests(unittest.TestCase):
 
     def test_resolved_design_issue_reenters_queue(self):
         issues = [{"number": 73, "title": "[agent-ready] resumed", "createdAt": "2026-01-01"}]
-        state = {"issues": {"73": {"attempts": 1, "status": "needs_design", "last_failure": "old question"}}}
+        state = {"issues": {"73": {"attempts": 3, "status": "needs_design", "last_failure": "old question"}}}
         reconcile_ready_issue_states(issues, state)
         self.assertEqual(state["issues"]["73"]["status"], "queued")
+        self.assertEqual(state["issues"]["73"]["attempts"], 0)
         self.assertNotIn("last_failure", state["issues"]["73"])
         self.assertEqual(select_issue(issues, state, 3)["number"], 73)
 
@@ -83,6 +85,45 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertIsNone(select_issue(issues, state, 3))
+
+
+    def test_merge_conflict_repair_uses_separate_attempt_budget(self):
+        issues = [{"number": 111, "title": "[agent-ready] Africa", "createdAt": "2026-01-01"}]
+        state = {
+            "issues": {
+                "111": {
+                    "attempts": 3,
+                    "conflict_attempts": 1,
+                    "status": "repair",
+                    "repair_kind": "merge_conflict",
+                    "pr": 119,
+                }
+            }
+        }
+        self.assertEqual(select_issue(issues, state, 3)["number"], 111)
+
+    def test_failed_dirty_pr_reenters_conflict_repair(self):
+        state = {
+            "issues": {
+                "111": {
+                    "attempts": 3,
+                    "status": "failed",
+                    "pr": 119,
+                    "last_failure": (
+                        "PR #119 is unmergeable because main conflicts with the issue branch, "
+                        "and the per-issue attempt limit (3) is exhausted."
+                    ),
+                }
+            }
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"), max_attempts=3)
+        view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+        with mock.patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            self.assertTrue(service_open_prs(config, state))
+        record = state["issues"]["111"]
+        self.assertEqual(record["status"], "repair")
+        self.assertEqual(record["repair_kind"], "merge_conflict")
+        self.assertEqual(record.get("conflict_attempts", 0), 0)
 
     def test_pr_merge_does_not_delete_branch_checked_out_by_worktree(self):
         command = build_pr_merge_command(17)

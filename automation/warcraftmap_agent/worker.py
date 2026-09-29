@@ -199,6 +199,8 @@ def decision_question(body: str) -> str:
     if next_heading:
         remainder = remainder[:next_heading.start()]
     return re.split(r"\n\s*\n", remainder, maxsplit=1)[0].strip()
+
+
 def normalized_question(question: str) -> str:
     return re.sub(r"\s+", " ", question.casefold()).strip()
 
@@ -368,7 +370,8 @@ def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attemp
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
-        if int(record.get("attempts", 0)) >= max_attempts:
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        if int(record.get(attempt_key, 0)) >= max_attempts:
             continue
         return issue
     return None
@@ -385,6 +388,7 @@ def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, 
         if not record or record.get("status") != "needs_design":
             continue
         record["status"] = "queued"
+        record["attempts"] = 0
         record.pop("last_failure", None)
         record.pop("repair_kind", None)
 
@@ -738,10 +742,16 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
 
 
 def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
-    """Merge one ready PR. Failed/pending PRs remain for a later timer run."""
+    """Merge or recover one tracked open PR per worker invocation."""
     for number, record in state["issues"].items():
         pr = record.get("pr")
-        if record.get("status") != "pr_open" or not pr:
+        if not pr:
+            continue
+        failed_conflict = (
+            record.get("status") == "failed"
+            and "unmergeable because main conflicts" in str(record.get("last_failure", ""))
+        )
+        if record.get("status") != "pr_open" and not failed_conflict:
             continue
         view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
         if view["state"] == "MERGED":
@@ -752,16 +762,16 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
         if view.get("mergeStateStatus") == "DIRTY":
-            attempts = int(record.get("attempts", 0))
-            if attempts >= config.max_attempts:
+            conflict_attempts = int(record.get("conflict_attempts", 0))
+            record["repair_kind"] = "merge_conflict"
+            if conflict_attempts >= config.max_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the per-issue attempt limit ({config.max_attempts}) is exhausted."
+                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted."
                 )
             else:
                 record["status"] = "repair"
-                record["repair_kind"] = "merge_conflict"
                 record["last_failure"] = (
                     f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
                     "conflicts with the issue branch. Preserve completed work from both branches."
@@ -896,7 +906,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         record = issue_record(state, selected["number"])
         worktree, branch = worktree_for(config, selected["number"])
-        record["attempts"] = int(record.get("attempts", 0)) + 1
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        record[attempt_key] = int(record.get(attempt_key, 0)) + 1
         record["status"] = "working"
         run_entry = {
             "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
@@ -937,7 +948,8 @@ def main(argv: list[str] | None = None) -> int:
                 record.pop("last_failure", None)
                 record.pop("repair_kind", None)
         except Exception as exc:
-            record["status"] = "failed" if record["attempts"] >= config.max_attempts else "repair"
+            attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+            record["status"] = "failed" if int(record.get(attempt_key, 0)) >= config.max_attempts else "repair"
             record["last_failure"] = str(exc)[-4000:]
             print(f"attempt failed: {exc}", file=sys.stderr)
         save_state(state_path, state)

@@ -59,7 +59,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Provinces/states
 - [x] Settlements
 - [x] Timeline/eras
-- [ ] Technology/institutions
+- [x] Technology/institutions
 - [x] Economy/trade
 - [x] Diplomacy/war
 - [x] Armies/fleets
@@ -87,7 +87,10 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [ ] Settlements and playable content
-- [ ] Middle East / India
+- [x] Middle East / India
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
 - [ ] Southeast Asia
 - [ ] East Asia
 - [ ] Americas / Caribbean
