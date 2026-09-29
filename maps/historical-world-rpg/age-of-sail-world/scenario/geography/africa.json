@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "africa_spatial_1450",
+  "campaignStartDate": "1450-01-01",
+  "graphRegionId": "africa",
+  "coordinateRules": {"sourceCrs":"africa_gameplay_normalized","axisOrder":["x","y"],"localUnit":"terrain_cell","precisionDecimals":2},
+  "instances": [
+    {"id":"africa_mainland","name":"Africa and Navigation-Significant Islands","graphRegionId":"africa","graphAreaId":"africa_coarse","localBounds":{"minX":0,"minY":0,"maxX":100,"maxY":100},"terrainSourceId":"africa","navigationLandZoneId":"africa_mainland_land"}
+  ],
+  "boundaryAnchors": [
+    {"id":"africa_europe_entry","instanceId":"africa_mainland","globalAnchorId":"africa_north","local":[50,95],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"africa_middle_east_entry","instanceId":"africa_mainland","globalAnchorId":"africa_east","local":[95,45],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"africa_atlantic_entry","instanceId":"africa_mainland","globalAnchorId":"africa_west","local":[5,45],"movementClasses":["naval","amphibious","flying"]}
+  ]
+}

@@ -49,13 +49,17 @@ class PackagingTests(unittest.TestCase):
         output = build(self.project / "package.json", grill=str(self.fake))
         self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
-            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json"))
+            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
+        self.assertIn("runtime/terrain-europe.json", names)
+        self.assertIn("runtime/terrain-africa.json", names)
+        self.assertIn("runtime/terrain-middle_east_india.json", names)
+        self.assertEqual("europe", terrain["regionId"]); self.assertEqual("africa", africa["regionId"]); self.assertEqual("middle_east_india", middle_east_india["regionId"])
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
-        self.assertEqual(["england", "france"], [item["id"] for item in runtime["polityDefinitions"]])
-        self.assertEqual(["greater_london", "kent", "ile_de_france", "normandy"], [item["id"] for item in runtime["provinceDefinitions"]])
-        self.assertEqual(4, len(runtime["provinceHoldings"]))
-        self.assertEqual("london", runtime["polityDefinitions"][0]["capitalSettlementId"])
+        self.assertEqual(98,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
+        self.assertEqual(122,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
+        self.assertEqual(122,len(runtime["provinceHoldings"]))
+        self.assertEqual("london",next(x for x in runtime["polityDefinitions"] if x["id"]=="england")["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 
     def test_generation_is_deterministic_and_clean_rebuilds_match(self):
@@ -83,6 +87,14 @@ class PackagingTests(unittest.TestCase):
         with (self.project / "wurst.build").open("a", encoding="utf-8") as build_file:
             build_file.write("\n# changed after generation\n")
         with self.assertRaisesRegex(PackagingError, "stale generated data.*wurst.build"):
+            verify_generated(config, generated)
+
+    def test_changed_terrain_source_is_rejected(self):
+        config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
+        generate(config, generated)
+        terrain = self.project / "scenario/terrain/europe.json"
+        terrain.write_text(terrain.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*europe.json"):
             verify_generated(config, generated)
 
     def test_invalid_scenario_reports_validation_stage(self):

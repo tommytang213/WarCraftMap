@@ -13,10 +13,13 @@ from automation.warcraftmap_agent.worker import (
     load_state,
     parse_codex_token_usage,
     create_plan_issues,
+    decision_question,
     notify_design_blocker,
     prepare_plan_items,
     queue_refill_count,
+    reconcile_ready_issue_states,
     select_issue,
+    service_open_prs,
 )
 
 
@@ -56,6 +59,15 @@ class WorkerTests(unittest.TestCase):
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 2)
 
+    def test_resolved_design_issue_reenters_queue(self):
+        issues = [{"number": 73, "title": "[agent-ready] resumed", "createdAt": "2026-01-01"}]
+        state = {"issues": {"73": {"attempts": 3, "status": "needs_design", "last_failure": "old question"}}}
+        reconcile_ready_issue_states(issues, state)
+        self.assertEqual(state["issues"]["73"]["status"], "queued")
+        self.assertEqual(state["issues"]["73"]["attempts"], 0)
+        self.assertNotIn("last_failure", state["issues"]["73"])
+        self.assertEqual(select_issue(issues, state, 3)["number"], 73)
+
     def test_skips_open_pr(self):
         issues = [
             {
@@ -73,6 +85,45 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertIsNone(select_issue(issues, state, 3))
+
+
+    def test_merge_conflict_repair_uses_separate_attempt_budget(self):
+        issues = [{"number": 111, "title": "[agent-ready] Africa", "createdAt": "2026-01-01"}]
+        state = {
+            "issues": {
+                "111": {
+                    "attempts": 3,
+                    "conflict_attempts": 1,
+                    "status": "repair",
+                    "repair_kind": "merge_conflict",
+                    "pr": 119,
+                }
+            }
+        }
+        self.assertEqual(select_issue(issues, state, 3)["number"], 111)
+
+    def test_failed_dirty_pr_reenters_conflict_repair(self):
+        state = {
+            "issues": {
+                "111": {
+                    "attempts": 3,
+                    "status": "failed",
+                    "pr": 119,
+                    "last_failure": (
+                        "PR #119 is unmergeable because main conflicts with the issue branch, "
+                        "and the per-issue attempt limit (3) is exhausted."
+                    ),
+                }
+            }
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"), max_attempts=3)
+        view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+        with mock.patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            self.assertTrue(service_open_prs(config, state))
+        record = state["issues"]["111"]
+        self.assertEqual(record["status"], "repair")
+        self.assertEqual(record["repair_kind"], "merge_conflict")
+        self.assertEqual(record.get("conflict_attempts", 0), 0)
 
     def test_pr_merge_does_not_delete_branch_checked_out_by_worktree(self):
         command = build_pr_merge_command(17)
@@ -187,6 +238,12 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(queue_refill_count(3), 0)
         self.assertEqual(queue_refill_count(10), 0)
 
+    def test_ready_work_is_selectable_even_when_refill_is_needed(self):
+        issues = [{"number": 75, "title": "[agent-ready] independent", "body": "", "createdAt": "2026-01-01"}]
+        selected = select_issue(issues, {"issues": {}}, 3, {73})
+        self.assertEqual(selected["number"], 75)
+        self.assertGreater(queue_refill_count(1, design_blocked=True), 0)
+
     def test_open_design_block_allows_independent_queue_replanning(self):
         self.assertEqual(queue_refill_count(0, design_blocked=True), 10)
         self.assertEqual(queue_refill_count(2, design_blocked=True), 8)
@@ -237,6 +294,73 @@ class WorkerTests(unittest.TestCase):
         question = "Which map scale should be used?"
         plan = {"outcome": "planned", "issues": [{"kind": "needs-design", "title": "Scale again", "body": "", "question": question}]}
         self.assertEqual(prepare_plan_items(plan, [], 10, [question]), [])
+
+    def test_decision_question_ignores_duplicated_decision_section(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        body = (
+            "Context.\n\n"
+            "## Decision required\n\n"
+            f"{question}\n\n"
+            "## Decision required\n\n"
+            f"{question}\n"
+        )
+        self.assertEqual(decision_question(body), question)
+
+    def test_create_plan_issues_skips_duplicate_question_even_if_existing_body_repeats_heading(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        existing = [{
+            "number": 108,
+            "title": "[needs-design] Define Africa scope",
+            "body": (
+                "Context.\n\n"
+                "## Decision required\n\n"
+                f"{question}\n\n"
+                "## Decision required\n\n"
+                f"{question}\n"
+            ),
+            "url": "https://example/issues/108",
+            "state": "OPEN",
+        }]
+        item = {
+            "title": "[needs-design] Use existing issue #108: Define Africa scope",
+            "body": f"## Decision required\n\n{question}",
+            "question": question,
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"))
+        with mock.patch(
+            "automation.warcraftmap_agent.worker.gh_json",
+            side_effect=[existing, []],
+        ), mock.patch("automation.warcraftmap_agent.worker.run") as invoked:
+            self.assertEqual(create_plan_issues(config, [item]), 0)
+        invoked.assert_not_called()
+
+    def test_create_plan_issues_skips_question_from_closed_resolved_issue(self):
+        question = "What exact Africa regional-content specification should Phase 5 use?"
+        existing = [{
+            "number": 108,
+            "title": "[resolved-design] Define Africa scope",
+            "body": (
+                "Context.\n\n"
+                "## Decision required\n\n"
+                f"{question}\n\n"
+                "## Resolved design\n\n"
+                "Use the global regional-content rules."
+            ),
+            "url": "https://example/issues/108",
+            "state": "CLOSED",
+        }]
+        item = {
+            "title": "[needs-design] Use existing issue #108: Define Africa scope",
+            "body": f"## Decision required\n\n{question}",
+            "question": question,
+        }
+        config = Config(repo_root=Path("/repo"), state_dir=Path("/state"))
+        with mock.patch(
+            "automation.warcraftmap_agent.worker.gh_json",
+            side_effect=[existing, []],
+        ), mock.patch("automation.warcraftmap_agent.worker.run") as invoked:
+            self.assertEqual(create_plan_issues(config, [item]), 0)
+        invoked.assert_not_called()
 
     def test_notification_payload_contains_required_fields(self):
         with tempfile.TemporaryDirectory() as directory:

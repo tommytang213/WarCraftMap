@@ -9,6 +9,8 @@ deterministic map build orchestrator and runtime-data generator. Map projects
 supply paths and release metadata through their `package.json`; no Age of Sail
 IDs or paths are embedded in the shared generator.
 
+`generate_regional_terrain.py` deterministically rasterizes scenario-owned regional geography. Registered terrain sources are hashed into build provenance, stale outputs are rejected, and normalized terrain inputs are packaged under `runtime/`.
+
 Planned and implemented tooling:
 
 - map build/pack pipeline

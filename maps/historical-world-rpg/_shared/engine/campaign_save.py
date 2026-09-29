@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -97,6 +97,8 @@ class MigrationRegistry:
     def __init__(self, current_version: int = CURRENT_SCHEMA_VERSION) -> None:
         self.current_version = current_version
         self._migrations: dict[int, Migration] = {}
+        if current_version == CURRENT_SCHEMA_VERSION:
+            self.register(1, _migrate_v1_to_v2)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -123,7 +125,16 @@ class MigrationRegistry:
                 )
             result = migrated
             version += 1
+
         return result
+def _migrate_v1_to_v2(document: dict[str, Any]) -> dict[str, Any]:
+    """Version 2 permits persisted regional-instance and pending-crossing state.
+
+    Old saves retain their state verbatim; scenario bootstrap supplies an initial
+    regional location when the new state is absent.
+    """
+    document["schemaVersion"] = 2
+    return document
 
 
 def serialize_save(

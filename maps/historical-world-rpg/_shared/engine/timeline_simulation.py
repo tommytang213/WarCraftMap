@@ -4,7 +4,7 @@ import copy, hashlib, json, re
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable, Mapping
 
-SYSTEM_ORDER=("world","technology_institutions","economy","quests_events","military","government","persistence")
+SYSTEM_ORDER=("world","technology_institutions","economy","quests_events","military","government","characters","persistence")
 CHECKPOINT_FORMAT="warcraftmap_timeline_checkpoint_v1"
 FIXTURE_FORMAT="warcraftmap_timeline_fixture_v1"
 _ID=re.compile(r"^[a-z][a-z0-9_]*$")

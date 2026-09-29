@@ -42,7 +42,15 @@
         "skills": { "type": "array", "items": { "$ref": "#/$defs/skillRating" } },
         "professionIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
         "personalQuestIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
-        "loyalty": { "$ref": "#/$defs/loyaltyState" }
+        "loyalty": { "$ref": "#/$defs/loyaltyState" },
+        "allegiancePolityId": { "oneOf": [{ "$ref": "#/$defs/stableId" }, { "type": "null" }] },
+        "available": { "type": "boolean" },
+        "recruited": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "runtimeTemplateId": { "$ref": "#/$defs/stableId" },
+        "recruitmentCosts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["resourceId", "amount"], "properties": { "resourceId": { "$ref": "#/$defs/stableId" }, "amount": { "type": "number", "minimum": 0 } } } },
+        "rewardIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } },
+        "titleGrantIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/stableId" } }
       }
     },
     "personalQuest": {
@@ -59,7 +67,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["kind", "contentId"],
       "properties": {
-        "kind": { "type": "string", "enum": ["buff", "debuff", "content_unlock"] },
+        "kind": { "type": "string", "enum": ["buff", "debuff", "content_unlock", "unlock", "synergy", "friction", "content_availability"] },
         "contentId": { "$ref": "#/$defs/stableId" }
       }
     },

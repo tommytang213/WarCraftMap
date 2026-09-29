@@ -183,8 +183,22 @@ def normalized_work_title(title: str) -> str:
 
 
 def decision_question(body: str) -> str:
+    """Return only the first decision-question block from an issue body.
+
+    Planner/issue edits can accidentally duplicate the Decision required
+    section. Treat only the first paragraph after the first marker as the
+    canonical question so repeated headings cannot defeat duplicate detection.
+    """
     marker = re.search(r"(?im)^## Decision required\s*$", body)
-    return body[marker.end():].strip() if marker else ""
+    if not marker:
+        return ""
+    remainder = body[marker.end():].lstrip()
+    if not remainder:
+        return ""
+    next_heading = re.search(r"(?m)^#{1,6}\s+\S.*$", remainder)
+    if next_heading:
+        remainder = remainder[:next_heading.start()]
+    return re.split(r"\n\s*\n", remainder, maxsplit=1)[0].strip()
 
 
 def normalized_question(question: str) -> str:
@@ -247,7 +261,7 @@ def planning_prompt(context: dict[str, Any], requested: int) -> str:
 
 Read ROADMAP.md, DESIGN_LOCK.md, ARCHITECTURE.md, AGENTS.md, and the current repository before planning. Treat those files and the GitHub/repository history below as authoritative. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
 
-Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue planning unrelated roadmap work, and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. If no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
+Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue planning unrelated roadmap work, and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. Do not create repeated per-region needs-design questions for geography/content scope when DESIGN_LOCK.md already provides a reusable global rule; derive region-specific boundaries, compression, historical coverage, settlements, routes, terrain, and borders from the locked rules plus historical/geographic evidence and performance constraints. Ask the player only for a genuinely new material gameplay/design choice that cannot be resolved from those authorities. If no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
 
 GitHub and repository history:
 {json.dumps(context, sort_keys=True)}
@@ -319,8 +333,12 @@ def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
             continue
         if NEEDS_DESIGN.match(item["title"]):
             question_key = normalized_question(item.get("question", ""))
-            open_questions = {normalized_question(decision_question(entry.get("body") or "")) for entry in current if entry.get("state") == "OPEN" and NEEDS_DESIGN.match(entry["title"])}
-            if question_key and question_key in open_questions:
+            historical_questions = {
+                normalized_question(question)
+                for entry in current
+                if (question := decision_question(entry.get("body") or ""))
+            }
+            if question_key and question_key in historical_questions:
                 continue
         result = run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
         created += 1
@@ -352,7 +370,8 @@ def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attemp
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
-        if int(record.get("attempts", 0)) >= max_attempts:
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        if int(record.get(attempt_key, 0)) >= max_attempts:
             continue
         return issue
     return None
@@ -362,13 +381,33 @@ def issue_record(state: dict[str, Any], number: int) -> dict[str, Any]:
     return state["issues"].setdefault(str(number), {"attempts": 0, "status": "queued"})
 
 
+def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, Any]) -> None:
+    """Allow externally resolved design issues to re-enter the implementation queue."""
+    for issue in issues:
+        record = state["issues"].get(str(issue["number"]))
+        if not record or record.get("status") != "needs_design":
+            continue
+        record["status"] = "queued"
+        record["attempts"] = 0
+        record.pop("last_failure", None)
+        record.pop("repair_kind", None)
+
+
 def comment(config: Config, number: int, body: str) -> None:
     run(["gh", "issue", "comment", str(number), "--body", body], cwd=config.repo_root)
 
 
 def mark_needs_design(config: Config, issue: dict[str, Any], question: str) -> None:
     clean = READY.sub("", issue["title"]).strip()
-    run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[needs-design] {clean}"], cwd=config.repo_root)
+    body = (issue.get("body") or "").rstrip()
+    marker = re.search(r"(?im)^## Decision required\s*$", body)
+    if marker:
+        body = body[:marker.start()].rstrip()
+    body += "\n\n## Decision required\n\n" + question.strip() + "\n"
+    run(
+        ["gh", "issue", "edit", str(issue["number"]), "--title", f"[needs-design] {clean}", "--body", body],
+        cwd=config.repo_root,
+    )
     comment(config, issue["number"], "Autonomous work paused because a material design decision is required:\n\n" + question)
     try:
         notify_design_blocker(config, {**issue, "title": f"[needs-design] {clean}"}, question)
@@ -408,7 +447,7 @@ Title: {issue['title']}
 Body:
 {issue.get('body') or '(empty)'}
 
-Follow AGENTS.md and the Age of Sail design documentation. Source and scenario data are authoritative. Do not ask the player to perform incremental testing. Do not commit, push, create or edit GitHub issues/PRs, install services, alter global tooling, or touch anything outside this worktree. Run relevant automated tests. Never invent a material game-design choice: return outcome \"needs_design\" with one exact question if blocked by one.
+Follow AGENTS.md and the Age of Sail design documentation. Source and scenario data are authoritative. Do not ask the player to perform incremental testing. Do not commit, push, create or edit GitHub issues/PRs, install services, alter global tooling, or touch anything outside this worktree. Run relevant automated tests. Never invent a material game-design choice: use outcome \"needs_design\" ONLY when a material game-design decision is genuinely missing, with one exact player-facing design question. Tool availability, sandbox permissions, missing commands, patch/edit mechanics, CI problems, merge conflicts, and implementation failures are NOT design decisions; return outcome \"blocked\" for those instead and describe the technical blocker without asking the player to change tooling or permissions.
 
 Previous failure context, if any:
 {repair_context or '(none)'}
@@ -703,10 +742,16 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
 
 
 def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
-    """Merge one ready PR. Failed/pending PRs remain for a later timer run."""
+    """Merge or recover one tracked open PR per worker invocation."""
     for number, record in state["issues"].items():
         pr = record.get("pr")
-        if record.get("status") != "pr_open" or not pr:
+        if not pr:
+            continue
+        failed_conflict = (
+            record.get("status") == "failed"
+            and "unmergeable because main conflicts" in str(record.get("last_failure", ""))
+        )
+        if record.get("status") != "pr_open" and not failed_conflict:
             continue
         view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
         if view["state"] == "MERGED":
@@ -717,16 +762,16 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
         if view.get("mergeStateStatus") == "DIRTY":
-            attempts = int(record.get("attempts", 0))
-            if attempts >= config.max_attempts:
+            conflict_attempts = int(record.get("conflict_attempts", 0))
+            record["repair_kind"] = "merge_conflict"
+            if conflict_attempts >= config.max_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the per-issue attempt limit ({config.max_attempts}) is exhausted."
+                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted."
                 )
             else:
                 record["status"] = "repair"
-                record["repair_kind"] = "merge_conflict"
                 record["last_failure"] = (
                     f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
                     "conflicts with the issue branch. Preserve completed work from both branches."
@@ -772,6 +817,7 @@ def main(argv: list[str] | None = None) -> int:
         state = load_state(state_path)
         state["runs"] = recent_runs(state["runs"], utcnow())
         issues = list_issues(config)
+        reconcile_ready_issue_states(issues, state)
         needs_design = list_needs_design_issues(config)
         design_numbers = {int(item["number"]) for item in needs_design}
         selected = select_issue(issues, state, config.max_attempts, design_numbers)
@@ -780,10 +826,10 @@ def main(argv: list[str] | None = None) -> int:
         if design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
             refill_count = 0
         if args.dry_run:
-            if refill_count:
-                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
-            elif selected:
+            if selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
+            elif refill_count:
+                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
             elif needs_design:
                 blocker = needs_design[0]
                 print(f"no independent work; design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
@@ -802,7 +848,9 @@ def main(argv: list[str] | None = None) -> int:
         if service_open_prs(config, state):
             save_state(state_path, state)
             return 0
-        if refill_count:
+        # Never let queue replenishment pre-empt implementation work that is
+        # already ready and independent of any open design blocker.
+        if refill_count and selected is None:
             available, reason = budget_available(
                 state["runs"], utcnow(), config.max_daily_tokens,
                 config.max_weekly_tokens, config.max_daily_runs, config.max_weekly_runs,
@@ -826,7 +874,7 @@ def main(argv: list[str] | None = None) -> int:
                 plan = invoke_planner(config, context, refill_count, run_entry)
                 existing_titles = [item["title"] for item in context["issues"]]
                 existing_titles.extend(item["title"] for item in context["pull_requests"])
-                existing_questions = [decision_question(item.get("body") or "") for item in context["issues"] if item.get("state") == "OPEN" and NEEDS_DESIGN.match(item["title"])]
+                existing_questions = [question for item in context["issues"] if (question := decision_question(item.get("body") or ""))]
                 items = prepare_plan_items(plan, existing_titles, refill_count, existing_questions)
                 created = create_plan_issues(config, items)
                 if plan.get("outcome") == "exhausted":
@@ -858,7 +906,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         record = issue_record(state, selected["number"])
         worktree, branch = worktree_for(config, selected["number"])
-        record["attempts"] = int(record.get("attempts", 0)) + 1
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        record[attempt_key] = int(record.get(attempt_key, 0)) + 1
         record["status"] = "working"
         run_entry = {
             "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
@@ -884,6 +933,9 @@ def main(argv: list[str] | None = None) -> int:
             if result["outcome"] == "needs_design":
                 mark_needs_design(config, selected, result["question"])
                 record["status"] = "needs_design"
+            elif result["outcome"] == "blocked":
+                detail = (result.get("summary") or result.get("question") or "technical blocker").strip()
+                raise RuntimeError(f"Codex implementation blocked: {detail}")
             else:
                 run_checks(config, worktree)
                 existing_pr = record.get("pr")
@@ -896,7 +948,8 @@ def main(argv: list[str] | None = None) -> int:
                 record.pop("last_failure", None)
                 record.pop("repair_kind", None)
         except Exception as exc:
-            record["status"] = "failed" if record["attempts"] >= config.max_attempts else "repair"
+            attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+            record["status"] = "failed" if int(record.get(attempt_key, 0)) >= config.max_attempts else "repair"
             record["last_failure"] = str(exc)[-4000:]
             print(f"attempt failed: {exc}", file=sys.stderr)
         save_state(state_path, state)

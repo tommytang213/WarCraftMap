@@ -45,6 +45,18 @@ This file records requirements already agreed with the player. They are defaults
 - Land holding, control, sovereignty, autonomy and tax obligations are separate.
 - Independent sovereign land has no overlord tax, but still has normal administration/upkeep costs.
 
+## Settlement-level economy and trade identity
+
+- Economic production, consumption, availability, and pricing are primarily settlement-level rather than a single fixed goods list shared by an entire region.
+- A region's climate, geography, resources, institutions, trade access, and historical economy should influence what its settlements tend to produce or demand, but settlements within the same region should still differ meaningfully.
+- Individual cities and ports may have distinct local specialties, industries, raw materials, manufactured goods, luxury goods, food surpluses, shortages, import dependencies, and trade-service roles according to historical/geographic context and gameplay value.
+- Major trade centers and ports may stock many goods they do not produce locally because trade routes, shipping, caravans, warehouses, and merchant activity bring them in.
+- A settlement should not be limited to only its signature production good. Signature goods indicate comparative advantage or notable local production, while ordinary local consumption and traded inventory may cover a much broader set.
+- Supply, demand, production capacity, war, blockade, occupation, seasonal or historical events, technology, infrastructure, and trade connectivity may change local stock and prices over time.
+- Nearby settlements may share some common staple goods while differing in quantities, prices, specialties, imports, and shortages. Avoid making every city unique merely for the sake of uniqueness when shared geography genuinely supports similar production.
+- Regional content data should therefore define settlement-specific economic profiles and use region-level rules as modifiers/defaults rather than as the authoritative complete market inventory.
+- The current small economy catalog is prototype content and must not be interpreted as the intended final breadth of goods.
+
 ## Characters
 
 - Named recruitable characters have skills, traits, quests and relationships.
@@ -58,6 +70,18 @@ This file records requirements already agreed with the player. They are defaults
 - Strategic armies/fleets may represent many soldiers/ships without spawning every represented entity simultaneously.
 - Economic/logistical cost is the intended practical limiter.
 - Summoned units need no special city-damage exception beyond normal rules.
+
+## Unit roster and combat identity
+
+- The ordinary military roster should be predominantly historically grounded for each polity and period, with deliberate gameplay-friendly variance where it improves fun, readability, balance, or faction identity.
+- Historical progression matters: unit types, weapons, formations, ships, and battlefield roles should broadly fit the campaign date and technology state rather than appearing arbitrarily centuries early.
+- Slight alternate-history divergence is allowed through technology, exceptional national development, player actions, rare content, and balance adjustments; this is not a museum-level simulation.
+- Every meaningful combat unit type should have a distinct gameplay identity rather than being only a renamed stat variant. Different types may be distinguished by passive traits, active abilities, auras, formations, weapon behavior, morale or discipline effects, movement rules, resistances, buffs, debuffs, counters, logistics traits, terrain roles, boarding/siege roles, or other scenario-appropriate mechanics.
+- Not every unit needs every category of mechanic. Prefer a small number of clear, meaningful traits or abilities per type over ability clutter.
+- National/special units may exaggerate real historical strengths for gameplay while remaining recognizable as historically inspired.
+- Marines, naval infantry, boarding troops, and other historically appropriate specialist roles are supported where relevant.
+- Named/recruitable heroes may use substantially stronger RPG or supernatural mechanics than ordinary units while the surrounding world and normal military roster remain predominantly historical.
+- Hero abilities may include persistent mana-powered protection such as a personal Mana Shield that can extend to friendly units within selectable preset ranges. Such group protection uses the hero as the shared mana source, can remain active without a fixed duration while mana is available, and may support self-only and multiple group-range modes.
 
 ## City capture
 
@@ -120,6 +144,76 @@ This file records requirements already agreed with the player. They are defaults
 - Passive/non-modal UI such as HUD panels, tooltips, notifications/toasts, and small informational overlays does not pause the campaign.
 - Nested/modal screen transitions keep the campaign paused until the final modal management screen closes.
 - Closing a management screen must restore the pause state that existed before the first modal management screen opened; it must not unpause a game that the player had already manually paused.
+
+## World-map representation and regional traversal
+
+- The global world uses separate logical regional map instances rather than one physically contiguous world terrain.
+- The initial implementation remains within the project's single packaged `.w3x`: regions are isolated playable terrain instances/areas managed by the scenario/runtime rather than separate Warcraft map files.
+- Crossing a valid land or sea boundary transitions the player and other locally relevant runtime representations to the geographically adjacent region and reconstructs them at the corresponding entry boundary.
+- Regional adjacency follows real-world geography and compass direction. For example, leaving Europe westward across the Atlantic leads toward eastern North America; leaving Europe eastward leads toward Asia/Middle East rather than America.
+- Long-distance ocean travel may use direct region-to-region routes with campaign-time advancement and encounter/event hooks rather than requiring one enormous continuously rendered ocean. Dedicated ocean/encounter instances may be used where gameplay benefits.
+- Each region uses gameplay-compressed geography rather than one rigid global projection or uniform scale. Preserve recognizable coastlines, relative direction, major geographic relationships, settlement ordering, and important travel routes while compressing empty distance aggressively.
+- Regions not currently active remain authoritative abstract campaign state. Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded.
+- Region transitions must preserve authoritative unit, party, fleet, quest, inventory, and campaign state; transient Warcraft objects are reconstructed from stable IDs/state after arrival.
+- Transition boundaries and entry points must be explicit scenario data so geography/navigation remains reusable and testable.
+
+## Geographic fidelity and Europe content scope
+
+- Regional terrain should be derived from real-world geography and then scaled down for Warcraft play. Real-world location, compass direction, relative placement, coastline shape, major distance relationships, and connectivity are the starting point rather than hand-authored fantasy layouts.
+- Use a broadly consistent base scale within and between neighboring regions, with controlled local distortion only where Warcraft object scale, readability, pathing, performance, or gameplay spacing requires it.
+- Important locations must remain geographically sensible relative to one another. A city, port, river, island, mountain range, strait, or neighboring polity should not be moved to a contradictory side of another feature merely to fill space.
+- Divide Europe into as many regional instances as are needed to preserve the chosen geographic scale and performance budget. Region boundaries should follow practical low-density, maritime, mountain, or other natural seams where possible rather than being forced to match modern national borders.
+- Europe uses the political situation at the 1450 campaign start as its historical baseline. Include major sovereign and de-facto polities plus smaller states that materially affect warfare, diplomacy, trade, quests, or regional identity. Extremely fine political fragmentation may be simplified for terrain readability, but historically important entities should remain representable in authoritative scenario state.
+- Provinces/states should use historically meaningful regional or administrative groupings where practical, merging only when the real subdivision is too fine to produce useful Warcraft gameplay.
+- Settlement coverage should prioritize capitals, major ports, major trade centers, strategically important fortified towns, and locations needed for historical events, characters, quests, or travel. The map is not required to include every real village.
+- Port coverage should include historically/gameplay-significant coastal and river ports needed for naval movement, trade, exploration, diplomacy, and regional transitions.
+- Preserve recognizable major coastlines, islands, rivers, mountain systems, straits, and other navigation-defining terrain. Small-scale terrain detail and border wiggles may be generalized.
+- Political borders should broadly match the selected historical baseline at campaign start, then evolve through the normal ownership/control/war systems rather than remaining visually or logically fixed.
+- The same real-geography-first scaling rule is the default for every later Phase 5 world region, including Africa, the Middle East/India, Southeast Asia, East Asia, the Americas/Caribbean, and the Pacific.
+- Do not request a new player design decision merely to repeat the same regional-scope questions for each continent. Region boundaries, compression, included polities, provinces, settlements, ports, terrain, borders, and travel connections should be derived from these locked rules, historical/geographic evidence, gameplay relevance, and performance budgets.
+- Region-specific historical features such as trans-Saharan routes, Indian Ocean trade, major straits, island chains, caravan corridors, or similar geography are implementation/research details under this rule, not separate player design blockers unless they expose a genuinely new gameplay choice not covered here.
+- Create a new regional `needs-design` blocker only when a materially new player-facing design choice cannot be resolved from the existing design lock, historical/geographic evidence, or established performance constraints.
+
+## Quest location and map assistance
+
+- The quest journal must retain stable-ID location context for quest givers, turn-in locations, objectives, relevant settlements, regions, and other known destinations so the player is not required to remember where a quest originated.
+- Quest entries should provide a direct `Show on Map` / `Track` action where a meaningful destination exists.
+- Showing a quest on the map should open or focus the appropriate world/region map context, select the relevant region and settlement/location, and visibly mark the destination.
+- For cross-region objectives, the helper should show a useful route breadcrumb through known region transitions from the player's current physical region to the destination, e.g. current region -> ocean/adjacent region -> target region -> target settlement.
+- When the player reaches the destination region, the helper may provide a local marker, minimap ping, or directional indicator toward the known quest location.
+- Returning to a quest giver or turn-in point must be supported explicitly; completed objectives should still retain their return destination until the quest is actually turned in.
+- Visiting a settlement or accepting a quest there is sufficient to record that settlement as known for later navigation.
+- Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds. A quest may reveal an exact destination, only a region, an approximate search area, or no marker at all according to its scenario data.
+- Approximate quest knowledge should be visualized as a bounded search area rather than a false precise point. For example, a clue such as "somewhere in the Amazon" may highlight or ping a large circle/region covering the plausible search area.
+- Search areas may shrink, move, split, or become an exact marker as the player obtains better clues, explores, talks to characters, finds maps, or completes intermediate objectives.
+- The displayed uncertainty area is informational and should reflect only the precision of the clues actually known to the player.
+- Previously discovered exact locations may be shown precisely even when a later quest clue is broader. If the player has already visited or otherwise explicitly discovered the specific settlement, landmark, ruin, dungeon, port, or other destination and that knowledge is recorded in campaign state, the quest/map helper may use the exact known marker instead of downgrading it to a broad search area.
+- Revealing general fog-of-war or exploring a region does not automatically identify every hidden point of interest inside it; precise quest markers require that the destination itself is known or has been explicitly revealed by the quest/clue.
+- The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character.
+- Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel.
+
+## Remote regional management
+
+- The player can manage owned or authorized holdings in other regions without physically traveling there.
+- Remote regional access supports both management and active command. Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there.
+- Entering a remote regional management view does not move the player's character, party, army, fleet, or physical campaign location.
+- Remote regional management is modal and follows the existing campaign pause policy.
+- When a region becomes the active command region, instantiate the locally relevant military, building, character, and other runtime representations needed for normal play in that region. Do not require every abstract population or background entity to exist as a Warcraft object merely because the region is active.
+- The player's main character keeps a separate physical-region location from the current command/view region. Leaving remote command can return the camera and control context to the character's physical region without teleporting that character.
+- Multiple regions may contain player-owned troops and holdings at the same campaign time. Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active.
+- Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world.
+- The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation.
+- Remote management shows only campaign information the player is already authorized to know.
+
+## Performance and simulation scale
+
+- Performance is a design constraint throughout content production, not a cleanup task deferred until final integration.
+- Global campaign entities should remain authoritative abstract data whenever possible; only locally relevant armies, fleets, characters, settlements, effects, and other representations should become active Warcraft objects.
+- Avoid frame-rate polling for strategic systems. Prefer event-driven processing and coarse campaign-time ticks appropriate to each system.
+- Expensive Warcraft operations such as pathfinding, large unit-group scans, frequent timers, effects, AI orders, and handle creation must be limited to locally relevant gameplay where practical.
+- Phase 5 must include synthetic stress tests before the world is fully populated, including large abstract military/state counts, large character/relationship sets, large settlement/economy sets, accelerated campaign simulation, large saves, and a maximum-reasonable local battle.
+- Performance tests should establish measurable budgets for simulation-step time, visible hitching, save/load time, active-object counts, and local-battle frame rate before full-world content production makes regressions expensive.
+- Development hardware must not be treated as the minimum-performance target; engine-side scalability matters even when a powerful development PC can brute-force a workload.
 
 ## Development workflow
 

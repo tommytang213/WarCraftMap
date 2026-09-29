@@ -17,6 +17,13 @@ invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 enforcement, finite ahead-of-time costs, typed stable-ID unlock events, independent
 province adoption, and campaign-save snapshots.
 
+`military.py` owns authoritative strategic units, armies, fleets, movement,
+operational state, and stable-ID persistence. Warcraft objects are transient,
+locally relevant representations created only through a compatibility adapter.
+
+`quest_event.py` owns deterministic quest lifecycles, trigger ordering and
+deduplication, persistent discoveries, atomic scenario outcomes, and stable saves.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement
@@ -24,7 +31,6 @@ Planned modules include:
 - timeline and eras
 - economy, goods, trade, taxation
 - diplomacy, wars, occupations and peace settlements
-- armies and fleets
 - characters, loyalty, relationships and Oathbound progression
 - titles, peerage, land grants, vassalage and sovereignty
 - quests and historical events

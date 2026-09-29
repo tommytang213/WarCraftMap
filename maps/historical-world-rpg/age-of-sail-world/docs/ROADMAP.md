@@ -47,33 +47,48 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Latest-WC3 compatibility module
 - [x] Map build pipeline
 - [x] Command router + paged /help
-- [ ] UI pause policy for management screens
+- [x] UI pause policy for management screens
 - [x] Campaign save manager
 - [x] 15-slot rolling autosave scheduler
 - [x] /unstuck + last-safe-position system
-- [ ] Player-only emergency invulnerability command
+- [x] Player-only emergency invulnerability command
 
 ## Phase 4 — Core world simulation
 
 - [x] Countries/polities
 - [x] Provinces/states
 - [x] Settlements
-- [ ] Timeline/eras
+- [x] Timeline/eras
 - [x] Technology/institutions
-- [ ] Economy/trade
-- [ ] Diplomacy/war
-- [ ] Armies/fleets
-- [ ] City capture/rebuild
-- [ ] Titles/land/taxation
-- [ ] Characters/relationships
-- [ ] Quests/events/exploration
+- [x] Economy/trade
+- [x] Diplomacy/war
+- [x] Armies/fleets
+- [x] City capture/rebuild
+- [x] Titles/land/taxation
+- [x] Characters/relationships
+- [x] Quests/events/exploration
 
 ## Phase 5 — Age of Sail world content
 
-- [ ] Global geography/navigation topology
-- [ ] Europe
-- [ ] Africa
-- [ ] Middle East / India
+- [ ] Early performance stress harness and provisional budgets
+- [ ] Synthetic large-world simulation tests before full content population
+- [ ] Maximum-reasonable local battle performance test
+- [x] Global geography/navigation topology
+- [ ] Regional instance activation, boundary transitions, and cross-region travel
+- [ ] Cross-region troop command and remote regional building management
+- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
+- [x] Europe
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] Settlements and playable content
+- [x] Africa
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 focused political baseline, settlements, ports, caravan routes, and regional entry content
+- [x] Middle East / India
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
 - [ ] Southeast Asia
 - [ ] East Asia
 - [ ] Americas / Caribbean
@@ -97,7 +112,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 ## Phase 7 — Full-world integration and balancing
 
 - [ ] Multi-century simulation soak tests
-- [ ] Performance budgets
+- [ ] Finalize performance budgets against full-world content
 - [ ] Economy balancing
 - [ ] AI territorial warfare
 - [ ] Save/load stress testing

@@ -27,6 +27,14 @@ class OperationResult:
     transaction_id: str
 
 
+@dataclass(frozen=True)
+class TickResult:
+    """Result of advancing campaign time through every due economic event."""
+
+    state: dict[str, Any]
+    transaction_ids: tuple[str, ...]
+
+
 def _fail(message: str) -> None:
     raise EconomyError(message)
 
@@ -231,6 +239,26 @@ def validate_state(catalog: Mapping[str, Any], state: Mapping[str, Any]) -> None
         _id(ident, "processedTransactionIds")
 
 
+    current_tick = _integer(state.get("currentTick", 0), "currentTick", 0)
+    pending = state.get("pendingObligations", [])
+    if not isinstance(pending, list):
+        _fail("pendingObligations: must be an array")
+    seen: set[str] = set()
+    for entry in pending:
+        if not isinstance(entry, Mapping):
+            _fail("pendingObligations: every entry must be an object")
+        obligation_id = entry.get("obligationId")
+        if obligation_id not in indexes["obligations"] or obligation_id in seen:
+            _fail(f"pendingObligations: invalid or duplicate obligation {obligation_id!r}")
+        seen.add(obligation_id)
+        next_tick = _integer(entry.get("nextDueTick"), f"pending obligation {obligation_id}.nextDueTick", 1)
+        _integer(entry.get("occurrencesSettled"), f"pending obligation {obligation_id}.occurrencesSettled", 0)
+        if next_tick <= current_tick:
+            _fail(f"pending obligation {obligation_id}: due tick was not processed")
+    if pending and seen != set(indexes["obligations"]):
+        _fail("pendingObligations: must cover all obligations when scheduling is enabled")
+
+
 def _mutable_balances(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {record["storeId"]: record for record in state["storeBalances"]}
 
@@ -364,6 +392,7 @@ def apply_authorized_adjustment(catalog: Mapping[str, Any], state: Mapping[str, 
 
 def settle_obligation(catalog: Mapping[str, Any], state: Mapping[str, Any], obligation_id: str, transaction_id: str) -> OperationResult:
     """Settle one fixed recurring tax/upkeep amount as a transfer or authorized sink."""
+
     validate_catalog(catalog)
     obligation = _catalog_indexes(catalog)["obligations"].get(obligation_id)
     if obligation is None:
@@ -372,6 +401,99 @@ def settle_obligation(catalog: Mapping[str, Any], state: Mapping[str, Any], obli
     if "payeeStoreId" in obligation:
         return apply_transfer(catalog, state, {**common, "sourceStoreId": obligation["payerStoreId"], "destinationStoreId": obligation["payeeStoreId"]})
     return apply_authorized_adjustment(catalog, state, {**common, "direction": "sink", "ruleId": obligation["sinkRuleId"], "storeId": obligation["payerStoreId"]})
+
+def execute_trade(catalog: Mapping[str, Any], state: Mapping[str, Any], trade: Mapping[str, Any]) -> OperationResult:
+    """Atomically exchange a market-priced good and currency between two stores."""
+    result, balances, ident = _start(catalog, state, trade.get("id"))
+    indexes = _catalog_indexes(catalog)
+    price = indexes["prices"].get(trade.get("priceId"))
+    if price is None:
+        _fail(f"trade {ident}: missing price reference")
+    buyer = trade.get("buyerStoreId")
+    market_store = indexes["markets"][price["marketId"]]["storeId"]
+    if buyer not in balances or buyer == market_store:
+        _fail(f"trade {ident}: invalid buyer store")
+    quantity = _integer(trade.get("quantityUnits"), f"trade {ident}.quantityUnits", 1)
+    charge = quote_amount_minor(price, quantity)
+    good_id, currency_id = price["goodId"], price["currencyId"]
+    buyer_store = indexes["stores"][buyer]
+    if good_id not in buyer_store["allowedGoodIds"]:
+        _fail(f"trade {ident}: buyer store is incompatible with good {good_id!r}")
+    if _amount(balances[market_store], "good", good_id) < quantity:
+        _fail(f"trade {ident}: market has insufficient goods")
+    if _amount(balances[buyer], "currency", currency_id) < charge:
+        _fail(f"trade {ident}: buyer has insufficient funds")
+    used = sum(line["quantityUnits"] for line in balances[buyer]["goods"])
+    if used + quantity > buyer_store["capacityUnits"]:
+        _fail(f"trade {ident}: buyer has insufficient capacity")
+    _change(balances[market_store], "good", good_id, -quantity)
+    _change(balances[buyer], "good", good_id, quantity)
+    if charge:
+        _change(balances[buyer], "currency", currency_id, -charge)
+        _change(balances[market_store], "currency", currency_id, charge)
+    return _finish(catalog, result, ident)
+
+
+def transfer_personal_inventory(catalog: Mapping[str, Any], state: Mapping[str, Any], transfer: Mapping[str, Any]) -> OperationResult:
+    """Cross the personal/bulk boundary using the good's typed item mapping."""
+    indexes = _catalog_indexes(catalog)
+    source, destination = transfer.get("sourceStoreId"), transfer.get("destinationStoreId")
+    if source not in indexes["stores"] or destination not in indexes["stores"]:
+        _fail("personal inventory transfer: invalid store reference")
+    personal = indexes["stores"][source]["kind"] == "personal_inventory", indexes["stores"][destination]["kind"] == "personal_inventory"
+    if personal[0] == personal[1]:
+        _fail("personal inventory transfer: exactly one store must be personal inventory")
+    good = indexes["goods"].get(transfer.get("goodId"))
+    if good is None or good.get("itemTypeId") != transfer.get("itemTypeId"):
+        _fail("personal inventory transfer: itemTypeId does not match the scenario good mapping")
+    return apply_transfer(catalog, state, {"id": transfer.get("id"), "assetKind": "good", "assetId": transfer.get("goodId"), "amount": transfer.get("quantityUnits"), "sourceStoreId": source, "destinationStoreId": destination})
+
+
+def initialize_scheduling(catalog: Mapping[str, Any], state: Mapping[str, Any], current_tick: int = 0) -> dict[str, Any]:
+    """Add persistent recurring-obligation cursors to existing authoritative state."""
+    validate_state(catalog, state)
+    tick = _integer(current_tick, "currentTick", 0)
+    result = copy.deepcopy(dict(state)); result["currentTick"] = tick
+    result["pendingObligations"] = [{"obligationId": ident, "nextDueTick": tick + rule["intervalTicks"], "occurrencesSettled": 0} for ident, rule in sorted(_catalog_indexes(catalog)["obligations"].items())]
+    return result
+
+
+def process_economy_until(catalog: Mapping[str, Any], state: Mapping[str, Any], target_tick: int) -> TickResult:
+    """Atomically settle every obligation due through a campaign-time tick."""
+    validate_state(catalog, state)
+    target = _integer(target_tick, "targetTick", 0)
+    current_tick, pending = state.get("currentTick"), state.get("pendingObligations")
+    if current_tick is None or not isinstance(pending, list):
+        _fail("economy state scheduling is not initialized")
+    if target < current_tick:
+        _fail("targetTick cannot precede currentTick")
+    result = copy.deepcopy(dict(state)); completed: list[str] = []
+    obligations = _catalog_indexes(catalog)["obligations"]
+    cursors = {entry["obligationId"]: entry for entry in result["pendingObligations"]}
+    if set(cursors) != set(obligations):
+        _fail("pendingObligations must cover every obligation")
+    while True:
+        due = sorted((entry["nextDueTick"], obligation_id) for obligation_id, entry in cursors.items() if entry["nextDueTick"] <= target)
+        if not due:
+            break
+        due_tick, obligation_id = due[0]
+        cursor = cursors[obligation_id]; occurrence = cursor["occurrencesSettled"] + 1
+        transaction_id = f"obligation_{obligation_id}_{occurrence}"
+        result = settle_obligation(catalog, result, obligation_id, transaction_id).state
+        cursor = next(entry for entry in result["pendingObligations"] if entry["obligationId"] == obligation_id)
+        cursors[obligation_id] = cursor
+        cursor["occurrencesSettled"] = occurrence
+        cursor["nextDueTick"] = due_tick + obligations[obligation_id]["intervalTicks"]
+        completed.append(transaction_id)
+    result["currentTick"] = target
+    validate_state(catalog, result)
+    return TickResult(result, tuple(completed))
+
+
+def extension_snapshot(catalog: Mapping[str, Any], state: Mapping[str, Any]) -> dict[str, Any]:
+    """Stable-ID state boundary for later taxation, diplomacy, warfare, and AI."""
+    validate_state(catalog, state)
+    return copy.deepcopy({"currentTick": state.get("currentTick", 0), "storeBalances": state["storeBalances"], "pendingObligations": state.get("pendingObligations", [])})
 
 
 def quote_amount_minor(price: Mapping[str, Any], quantity_units: int) -> int:

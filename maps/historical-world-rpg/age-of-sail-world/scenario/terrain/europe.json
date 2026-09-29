@@ -1,0 +1,105 @@
+{
+  "formatVersion": 1,
+  "regionId": "europe",
+  "coordinateSystem": {"name": "europe_gameplay_normalized", "bounds": [0, 0, 100, 100], "northUp": true},
+  "grid": {"width": 128, "height": 128, "cellSizeWarcraft": 128},
+  "provenance": {
+    "authority": "scenario",
+    "geographicReference": "Natural Earth physical geography generalized for gameplay",
+    "referenceScale": "1:50m",
+    "license": "public-domain",
+    "declaredDistortions": [
+      "English Channel, Danish straits, Bosporus, Strait of Gibraltar, and Strait of Messina widened to at least two pathing cells",
+      "islands smaller than four pathing cells omitted unless navigation-significant",
+      "river widths exaggerated for readability and crossings",
+      "empty northern and eastern distances compressed"
+    ]
+  },
+  "surfaces": [
+    {"id":"continental_europe","kind":"land","polygon":[[18,17],[13,23],[12,33],[16,41],[23,46],[26,54],[31,59],[34,66],[39,71],[46,74],[55,73],[61,77],[69,78],[79,74],[91,68],[99,61],[99,27],[92,24],[83,25],[76,30],[70,30],[65,25],[57,24],[52,19],[46,19],[41,23],[35,22],[29,18]]},
+    {"id":"iberia","kind":"land","polygon":[[13,23],[12,33],[16,41],[27,43],[35,38],[34,27],[29,18],[18,17]]},
+    {"id":"great_britain","kind":"land","polygon":[[20,48],[18,55],[20,63],[24,71],[29,75],[31,69],[29,62],[32,57],[29,50],[25,47]]},
+    {"id":"ireland","kind":"land","polygon":[[12,50],[10,57],[12,64],[17,66],[20,61],[18,53]]},
+    {"id":"scandinavia","kind":"land","polygon":[[43,73],[40,81],[43,94],[49,100],[57,97],[61,88],[65,78],[58,72],[52,76]]},
+    {"id":"denmark","kind":"land","polygon":[[41,68],[39,73],[42,77],[46,75],[46,70]]},
+    {"id":"italy","kind":"land","polygon":[[48,43],[53,40],[57,34],[60,27],[65,23],[67,19],[64,17],[60,22],[57,25],[54,33],[49,37]]},
+    {"id":"sicily","kind":"land","polygon":[[60,14],[66,14],[70,17],[66,20],[61,19]]},
+    {"id":"sardinia","kind":"land","polygon":[[49,22],[52,22],[53,29],[50,31],[48,27]]},
+    {"id":"corsica","kind":"land","polygon":[[50,31],[53,32],[53,37],[51,39],[49,36]]},
+    {"id":"balkans_greece","kind":"land","polygon":[[65,25],[70,30],[77,29],[82,23],[84,17],[80,12],[77,16],[74,13],[71,18],[67,19]]},
+    {"id":"iceland","kind":"land","polygon":[[5,77],[8,82],[15,83],[18,79],[14,75],[8,74]]},
+    {"id":"crete","kind":"land","polygon":[[73,9],[82,9],[84,11],[78,13],[73,12]]}
+  ],
+  "waterBodies": [
+    {"id":"atlantic","kind":"navigable_sea","polygon":[[0,0],[13,0],[13,18],[10,30],[8,46],[9,68],[20,72],[20,100],[0,100]]},
+    {"id":"north_sea","kind":"navigable_sea","polygon":[[19,43],[38,43],[44,50],[44,68],[36,73],[30,76],[28,68],[31,60],[29,48]]},
+    {"id":"baltic_sea","kind":"navigable_sea","polygon":[[44,55],[50,60],[58,63],[68,61],[74,67],[69,77],[61,78],[55,73],[47,75],[42,69]]},
+    {"id":"mediterranean","kind":"navigable_sea","polygon":[[13,0],[100,0],[100,25],[91,24],[84,17],[82,12],[73,9],[70,17],[66,14],[60,14],[52,19],[41,23],[34,27],[29,18],[18,17],[13,23]]},
+    {"id":"black_sea","kind":"navigable_sea","polygon":[[79,24],[84,29],[94,31],[100,28],[100,19],[91,18],[84,19]]},
+    {"id":"lake_geneva","kind":"decorative_water","polygon":[[43,41],[46,41],[46,43],[43,43]]},
+    {"id":"lake_balaton","kind":"decorative_water","polygon":[[65,43],[69,43],[69,45],[65,45]]}
+  ],
+  "linearFeatures": [
+    {"id":"rhine","kind":"major_river","widthCells":2,"points":[[43,65],[42,59],[42,52],[40,47]]},
+    {"id":"danube","kind":"major_river","widthCells":2,"points":[[47,50],[56,47],[65,45],[74,42],[84,36],[91,31]]},
+    {"id":"seine","kind":"major_river","widthCells":1,"points":[[28,49],[33,49],[38,52]]},
+    {"id":"thames","kind":"major_river","widthCells":1,"points":[[23,57],[28,56],[31,54]]},
+    {"id":"alps","kind":"mountain_barrier","widthCells":3,"points":[[39,40],[45,43],[51,43],[57,41],[62,43]]},
+    {"id":"pyrenees","kind":"mountain_barrier","widthCells":3,"points":[[18,42],[24,44],[31,43],[35,40]]},
+    {"id":"carpathians","kind":"mountain_barrier","widthCells":3,"points":[[61,51],[68,54],[76,51],[79,45]]}
+  ],
+  "chokepoints": [
+    {"id":"english_channel","at":[27,47],"connects":["atlantic","north_sea"],"minimumWidthCells":2},
+    {"id":"strait_of_gibraltar","at":[14,18],"connects":["atlantic","mediterranean"],"minimumWidthCells":2},
+    {"id":"danish_straits","at":[43,69],"connects":["north_sea","baltic_sea"],"minimumWidthCells":2},
+    {"id":"bosporus","at":[83,25],"connects":["mediterranean","black_sea"],"minimumWidthCells":2},
+    {"id":"strait_of_messina","at":[65,20],"connects":["mediterranean","mediterranean"],"minimumWidthCells":2}
+  ],
+  "crossings": [
+    {"id":"rhine_lower_crossing","featureId":"rhine","at":[42,55]},
+    {"id":"danube_vienna_crossing","featureId":"danube","at":[61,46]},
+    {"id":"danube_lower_crossing","featureId":"danube","at":[80,38]}
+  ],
+  "navigationZones": [
+    {"id":"europe_mainland_land","surface":"land","movementClasses":["land","amphibious","flying"]},
+    {"id":"british_isles_land","surface":"land","movementClasses":["land","amphibious","flying"]},
+    {"id":"mediterranean_islands_land","surface":"land","movementClasses":["land","amphibious","flying"]},
+    {"id":"atlantic_navigation","surface":"navigable_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"north_sea_navigation","surface":"navigable_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"baltic_navigation","surface":"navigable_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"mediterranean_navigation","surface":"navigable_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"black_sea_navigation","surface":"navigable_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"decorative_lakes","surface":"decorative_water","movementClasses":["flying"]}
+  ],
+  "connections": [
+    {"from":"europe_mainland_land","to":"british_isles_land","movementClasses":["flying"]},
+    {"from":"europe_mainland_land","to":"mediterranean_islands_land","movementClasses":["flying"]},
+    {"from":"atlantic_navigation","to":"north_sea_navigation","movementClasses":["naval","amphibious","flying"],"via":"english_channel"},
+    {"from":"atlantic_navigation","to":"mediterranean_navigation","movementClasses":["naval","amphibious","flying"],"via":"strait_of_gibraltar"},
+    {"from":"north_sea_navigation","to":"baltic_navigation","movementClasses":["naval","amphibious","flying"],"via":"danish_straits"},
+    {"from":"mediterranean_navigation","to":"black_sea_navigation","movementClasses":["naval","amphibious","flying"],"via":"bosporus"},
+    {"from":"europe_mainland_land","to":"atlantic_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"europe_mainland_land","to":"north_sea_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"europe_mainland_land","to":"baltic_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"europe_mainland_land","to":"mediterranean_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"europe_mainland_land","to":"black_sea_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"british_isles_land","to":"atlantic_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"british_isles_land","to":"north_sea_navigation","movementClasses":["amphibious","flying"]},
+    {"from":"mediterranean_islands_land","to":"mediterranean_navigation","movementClasses":["amphibious","flying"]}
+  ],
+  "transitionAnchors": [
+    {"id":"europe_west","at":[5,55],"zoneId":"atlantic_navigation","edge":"west","movementClasses":["naval","amphibious","flying"]},
+    {"id":"europe_south","at":[50,5],"zoneId":"mediterranean_navigation","edge":"south","movementClasses":["naval","amphibious","flying"]},
+    {"id":"europe_east_land","runtimeAnchorId":"europe_east","at":[95,45],"zoneId":"europe_mainland_land","edge":"east","movementClasses":["land","amphibious","flying"]},
+    {"id":"europe_east_sea","runtimeAnchorId":"europe_east","at":[95,23],"zoneId":"black_sea_navigation","edge":"east","movementClasses":["naval","amphibious","flying"]}
+  ],
+  "landmarks": [
+    {"id":"dover","at":[28,51],"toleranceCells":3,"expectedSurface":"land"},
+    {"id":"london","at":[25,57],"toleranceCells":3,"expectedSurface":"land"},
+    {"id":"paris","at":[34,50],"toleranceCells":3,"expectedSurface":"land"},
+    {"id":"rome","at":[58,29],"toleranceCells":3,"expectedSurface":"land"},
+    {"id":"vienna","at":[61,47],"toleranceCells":3,"expectedSurface":"land"},
+    {"id":"constantinople","at":[83,25],"toleranceCells":3,"expectedSurface":"navigable_sea"}
+  ],
+  "budgets": {"maximumCells":16384,"maximumEncodedRuns":5000,"maximumFeatures":80,"maximumGenerationMilliseconds":1500,"maximumOutputBytes":250000}
+}

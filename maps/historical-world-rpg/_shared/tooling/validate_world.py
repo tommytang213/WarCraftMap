@@ -11,6 +11,7 @@ from validate_government import (
     validate_government,
 )
 from validate_navigation import validate as validate_navigation
+from validate_regional_navigation import validate as validate_regional_navigation
 from validate_quest_events import validate as validate_quest_events
 from validate_timeline import validate as validate_timeline
 
@@ -98,8 +99,8 @@ def validate_owned_controlled(value, domain, polities):
 
 def validate(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 8:
-        fail("schemaVersion must currently be 8")
+    if data.get("schemaVersion") != 9:
+        fail("schemaVersion must currently be 9")
 
     timeline = validate_timeline(data, fail)
 
@@ -111,6 +112,7 @@ def validate(path: Path) -> None:
     city_core = unique_index(data.get("cityCores", []), "cityCores")
     defense_layout = unique_index(data.get("defenseLayouts", []), "defenseLayouts")
     officer = unique_index(data.get("officers", []), "officers")
+    military_template = unique_index(data.get("militaryRuntimeTemplates", []), "militaryRuntimeTemplates")
     strategic_unit = unique_index(data.get("strategicUnits", []), "strategicUnits")
     army = unique_index(data.get("armies", []), "armies")
     fleet = unique_index(data.get("fleets", []), "fleets")
@@ -124,6 +126,7 @@ def validate(path: Path) -> None:
     navigation_zones, navigation_safe_points, navigation_states = validate_navigation(
         data, fail, require_id, unique_index, strategic_unit
     )
+    regional = validate_regional_navigation(data, fail, require_id, unique_index)
     technologies, institutions = validate_research(data, fail, require_id, unique_index, polity, province)
     title_styles, title_grants, holdings, allegiances = validate_government(
         data, fail, require_id, unique_index, polity, province, settlement, character
@@ -240,12 +243,24 @@ def validate(path: Path) -> None:
         if isinstance(strength, bool) or not isinstance(strength, int) or strength < 1:
             fail(f"{domain}: representedStrength must be a positive integer")
         require_id(unit.get("strengthUnitId"), f"{domain}.strengthUnitId")
+        location_id = unit.get("currentLocationId")
+        require_id(location_id, f"{domain}.currentLocationId")
+        if location_id not in navigation_zones:
+            fail(f"{domain}: missing location {location_id!r}")
+        movement_class = "land" if unit.get("kind") == "formation" else "naval"
+        if movement_class not in navigation_zones[location_id].get("movementClasses", []):
+            fail(f"{domain}: location {location_id!r} does not support {movement_class}")
         validate_operational_state(unit.get("operationalState"), domain)
         runtime = unit.get("runtimeInstantiation")
         if not isinstance(runtime, dict):
             fail(f"{domain}: runtimeInstantiation must be an object")
         state, count = runtime.get("state"), runtime.get("activeObjectCount")
         require_id(runtime.get("runtimeTemplateId"), f"{domain}.runtimeTemplateId")
+        template_id = runtime.get("runtimeTemplateId")
+        if template_id not in military_template:
+            fail(f"{domain}: missing runtime template {template_id!r}")
+        if military_template[template_id].get("unitKind") != unit.get("kind"):
+            fail(f"{domain}: incompatible runtime template {template_id!r}")
         if state not in {"abstract", "active"}:
             fail(f"{domain}: invalid runtime state")
         if isinstance(count, bool) or not isinstance(count, int) or count < 0:
@@ -274,6 +289,16 @@ def validate(path: Path) -> None:
             for officer_id in group.get("officerIds", []):
                 if officer_id not in officer:
                     fail(f"{domain}: missing officer {officer_id!r}")
+
+    for template_id, template in military_template.items():
+        if template.get("unitKind") not in {"formation", "ship"}:
+            fail(f"military runtime template {template_id}: invalid unitKind")
+        unit_type_id = template.get("warcraftUnitTypeId")
+        if not isinstance(unit_type_id, str) or len(unit_type_id) != 4:
+            fail(f"military runtime template {template_id}: warcraftUnitTypeId must contain four characters")
+        count = template.get("activeObjectCount")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+            fail(f"military runtime template {template_id}: activeObjectCount must be positive")
 
     for collection_name, definitions in (
         ("trait", trait), ("skill", skill), ("profession", profession)
@@ -315,6 +340,29 @@ def validate(path: Path) -> None:
         require_score(loyalty.get("score"), f"{domain}.loyalty.score")
         if loyalty.get("permanentState") not in allowed_permanent_states:
             fail(f"{domain}.loyalty: invalid permanentState")
+        allegiance_id = value.get("allegiancePolityId")
+        if allegiance_id is not None and allegiance_id not in polity:
+            fail(f"{domain}: missing allegiance polity {allegiance_id!r}")
+        for field in ("available", "recruited", "active"):
+            if field in value and not isinstance(value[field], bool):
+                fail(f"{domain}.{field}: must be boolean")
+        if value.get("recruited", False) and (not value.get("available", True) or not value.get("active", True)):
+            fail(f"{domain}: recruited character must be active and available")
+        costs = value.get("recruitmentCosts", [])
+        if not isinstance(costs, list): fail(f"{domain}.recruitmentCosts: must be an array")
+        seen_resources = set()
+        for cost in costs:
+            if not isinstance(cost, dict): fail(f"{domain}.recruitmentCosts: every entry must be an object")
+            resource_id = cost.get("resourceId"); require_id(resource_id, f"{domain}.recruitmentCosts.resourceId")
+            if resource_id in seen_resources: fail(f"{domain}.recruitmentCosts: duplicate resource {resource_id!r}")
+            seen_resources.add(resource_id); amount = cost.get("amount")
+            if isinstance(amount, bool) or not isinstance(amount, (int, float)) or amount < 0: fail(f"{domain}.recruitmentCosts.amount: must be non-negative")
+        for field in ("rewardIds", "titleGrantIds"):
+            values = value.get(field, [])
+            if not isinstance(values, list) or len(values) != len(set(values)): fail(f"{domain}.{field}: must contain unique stable IDs")
+            for ident in values: require_id(ident, f"{domain}.{field}")
+        for grant_id in value.get("titleGrantIds", []):
+            if grant_id not in title_grants: fail(f"{domain}: missing title grant {grant_id!r}")
 
     for quest_id, quest in personal_quest.items():
         character_id = quest.get("characterId")
@@ -324,7 +372,7 @@ def validate(path: Path) -> None:
             fail(f"personal quest {quest_id}: character {character_id!r} does not list the quest")
 
     allowed_scopes = {"loyalty", "companion_relationship"}
-    allowed_consequences = {"buff", "debuff", "content_unlock"}
+    allowed_consequences = {"buff", "debuff", "content_unlock", "unlock", "synergy", "friction", "content_availability"}
     for threshold_id, value in threshold.items():
         domain = f"relationship threshold {threshold_id}"
         if value.get("scope") not in allowed_scopes:
@@ -370,6 +418,7 @@ def validate(path: Path) -> None:
         f"{len(navigation_zones)} navigation zones, "
         f"{len(navigation_safe_points)} navigation safe points, "
         f"{len(navigation_states)} active unit navigation states, "
+        f"{len(regional[0])} regional instances, {len(regional[3])} boundaries, {len(regional[4])} routes, "
         f"{len(quests)} quests, {len(events)} events, "
         f"{len(timeline.get('schedules', []))} timeline schedules"
     )

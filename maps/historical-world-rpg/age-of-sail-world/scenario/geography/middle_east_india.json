@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "id": "middle_east_india_spatial_1450",
+  "campaignStartDate": "1450-01-01",
+  "graphRegionId": "middle_east_india",
+  "coordinateRules": {
+    "sourceCrs": "EPSG:4326", "axisOrder": ["longitude", "latitude"], "localUnit": "terrain_cell", "precisionDecimals": 2,
+    "transform": "local = round((source - sourceOrigin) * scale + offset + declaredDistortion, precisionDecimals)",
+    "seamSourceToleranceDegrees": 0.05, "seamLocalToleranceCells": 0.25, "orientationToleranceDegrees": 12,
+    "adjacencyToleranceCells": 8, "maxUndeclaredDisplacementCells": 0.01
+  },
+  "spatialNotes": [
+    "Empty Arabian, Iranian, Thar, Karakum, and steppe distances are compressed more than inhabited coasts and river corridors.",
+    "The Bosporus, Bab-el-Mandeb, Strait of Hormuz, Palk Strait, and lower Ganges approaches are widened at terrain generation time for readable traversal.",
+    "Cyprus, Bahrain, Socotra, the Maldives, and Sri Lanka retain geographic ordering but are enlarged enough to support visible landfall.",
+    "The Hindu Kush and Himalaya remain barriers with named pass seams; the Suez, Persian Gulf, and Indo-Gangetic corridors remain connected."
+  ],
+  "requiredTraversalConnections": [
+    {"id":"route_eastern_mediterranean","name":"Eastern Mediterranean and Bosporus","anchorIds":["mei_mediterranean_global"],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"route_red_sea","name":"Red Sea and Bab-el-Mandeb","anchorIds":["mei_red_sea_global","seam_levant_red_sea_north","seam_levant_red_sea_south"],"movementClasses":["naval","amphibious"]},
+    {"id":"route_persian_gulf","name":"Persian Gulf and Strait of Hormuz","anchorIds":["seam_arabia_hormuz_west","seam_arabia_hormuz_east"],"movementClasses":["naval","amphibious"]},
+    {"id":"route_arabian_sea","name":"Arabian Sea and Makran Coast","anchorIds":["seam_persia_indus_west","seam_persia_indus_east"],"movementClasses":["land","naval","amphibious"]},
+    {"id":"route_central_asia","name":"Central Asian steppe and pass transition","anchorIds":["mei_central_asia_global"],"movementClasses":["land","amphibious","flying"]},
+    {"id":"route_southeast_asia","name":"Bay of Bengal to Southeast Asia","anchorIds":["mei_southeast_asia_global"],"movementClasses":["land","naval","amphibious","flying"]}
+  ],
+  "requiredFeatureIds": {
+    "coastline": ["coast_anatolia_levant","coast_red_sea_arabia","coast_oman_persian_gulf","coast_indus_western_india","coast_deccan","coast_bengal_delta"],
+    "island": ["island_cyprus","island_bahrain","island_socotra","island_maldives","island_sri_lanka"],
+    "strait": ["strait_bosporus_dardanelles","strait_suez_sinai","strait_bab_el_mandeb","strait_hormuz","strait_palk"],
+    "river": ["river_tigris","river_euphrates","river_amudarya","river_syrdarya","river_indus","river_ganges","river_brahmaputra","river_godavari","river_narmada"],
+    "mountain_barrier": ["mountains_taurus","mountains_zagros","mountains_caucasus_south","mountains_hindu_kush","mountains_himalaya","mountains_western_ghats","mountains_aravalli"],
+    "desert_barrier": ["desert_arabian","desert_syrian","desert_dasht","desert_karakum_kyzylkum","desert_thar"]
+  },
+  "instances": [
+    {
+      "id":"mei_anatolia_levant","name":"Anatolia, Levant, and Eastern Mediterranean","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"The Black Sea, eastern Mediterranean, Taurus crest, and Syrian steppe form practical maritime and low-density seams.",
+      "transform":{"sourceOrigin":[25,28],"scale":[4,4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":84,"maxY":64},
+      "budget":{"maxFeatures":12,"maxControlPoints":64,"maxBoundaryAnchors":8},
+      "features":[
+        {"id":"coast_anatolia_levant","kind":"coastline","points":[[26,40.5],[29,41.1],[33,36],[36,36],[35.5,33],[34.5,31.5],[32.3,31.2]]},
+        {"id":"island_cyprus","kind":"island","points":[[32.2,34.6],[34.6,35.4],[33.6,34.9],[32.2,34.6]]},
+        {"id":"strait_bosporus_dardanelles","kind":"strait","points":[[26.2,40.2],[29,41.1]]},
+        {"id":"strait_suez_sinai","kind":"strait","points":[[32.3,31.2],[32.5,29.9]]},
+        {"id":"mountains_taurus","kind":"mountain_barrier","points":[[29,37],[34,37.5],[38,37]]},
+        {"id":"mountains_caucasus_south","kind":"mountain_barrier","points":[[39,41],[44,42]]},
+        {"id":"desert_syrian","kind":"desert_barrier","points":[[36,33],[39,34],[42,32],[40,29]]}
+      ]
+    },
+    {
+      "id":"mei_arabia_red_sea","name":"Arabia and Red Sea","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"The Red Sea, Arabian Desert, Gulf of Aden, and sparsely inhabited interior provide durable seams around coastal routes.",
+      "transform":{"sourceOrigin":[32,12],"scale":[3,3],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":75,"maxY":72},
+      "budget":{"maxFeatures":12,"maxControlPoints":64,"maxBoundaryAnchors":8},
+      "features":[
+        {"id":"coast_red_sea_arabia","kind":"coastline","points":[[32.5,29.9],[35,28],[38,24],[42.5,12.7],[45,12],[51,16],[56,22],[49,28],[43,29]]},
+        {"id":"island_bahrain","kind":"island","points":[[50.4,25.9],[50.7,26.3],[50.8,25.6]]},
+        {"id":"island_socotra","kind":"island","points":[[52.1,12.3],[54.5,12.6],[53.3,12.1]]},
+        {"id":"strait_bab_el_mandeb","kind":"strait","points":[[43,12.6],[43.5,12.8]]},
+        {"id":"desert_arabian","kind":"desert_barrier","points":[[39,24],[45,27],[51,24],[55,19],[49,17],[43,19],[39,24]]}
+      ]
+    },
+    {
+      "id":"mei_mesopotamia_persia","name":"Mesopotamia, Persia, and Persian Gulf","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"Zagros ridges, the Persian Gulf, Iranian deserts, and Caspian margins separate the river lowlands from adjoining instances.",
+      "transform":{"sourceOrigin":[38,22],"scale":[4,4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":96,"maxY":76},
+      "budget":{"maxFeatures":12,"maxControlPoints":64,"maxBoundaryAnchors":10},
+      "features":[
+        {"id":"coast_oman_persian_gulf","kind":"coastline","points":[[48,29.5],[50,26.5],[54,26.5],[56.3,25.5],[57,24.5],[60,25.5],[57,22.5]]},
+        {"id":"strait_hormuz","kind":"strait","points":[[56.3,26.5],[56.5,26]]},
+        {"id":"river_tigris","kind":"river","points":[[38.5,37],[43.5,35],[44.5,33],[47.8,30.5]]},
+        {"id":"river_euphrates","kind":"river","points":[[38,37],[39,35],[41,34],[44,32],[47.8,30.5]]},
+        {"id":"mountains_zagros","kind":"mountain_barrier","points":[[44,38],[47,35],[50,31],[54,29]]},
+        {"id":"desert_dasht","kind":"desert_barrier","points":[[53,35],[58,34],[62,30],[60,26],[55,28]]}
+      ]
+    },
+    {
+      "id":"mei_central_asia","name":"Central Asian Transition","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"Caspian and Aral shores, the Karakum and Kyzylkum, steppe margins, and Pamir approaches bound the adjoining Central Asian transition.",
+      "transform":{"sourceOrigin":[45,32],"scale":[2,2],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":90,"maxY":52},
+      "budget":{"maxFeatures":10,"maxControlPoints":56,"maxBoundaryAnchors":8},
+      "features":[
+        {"id":"river_amudarya","kind":"river","points":[[71,37],[66,39],[61,42],[59,45]]},
+        {"id":"river_syrdarya","kind":"river","points":[[75,41],[68,44],[61,46]]},
+        {"id":"desert_karakum_kyzylkum","kind":"desert_barrier","points":[[52,38],[60,36],[69,40],[67,45],[57,44],[52,38]]}
+      ]
+    },
+    {
+      "id":"mei_indus_deccan","name":"Indus Basin and Western India","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"Hindu Kush passes, Thar Desert, Deccan watersheds, and the Arabian Sea make practical seams without following political borders.",
+      "transform":{"sourceOrigin":[60,5],"scale":[3,3],"offset":[0,0]},"localBounds":{"minX":0,"minY":-12,"maxX":78,"maxY":99},
+      "budget":{"maxFeatures":12,"maxControlPoints":68,"maxBoundaryAnchors":10},
+      "features":[
+        {"id":"coast_indus_western_india","kind":"coastline","points":[[66.5,25],[67.5,23],[69,22],[72.8,18.9],[73,15],[75,11],[77,8]]},
+        {"id":"coast_deccan","kind":"coastline","points":[[77,8],[80,9],[80.3,13],[82,17],[84,20]]},
+        {"id":"island_maldives","kind":"island","points":[[72.7,7],[73.2,4],[73.5,1]]},
+        {"id":"river_indus","kind":"river","points":[[74,35],[72,31],[70,28],[68,24]]},
+        {"id":"river_godavari","kind":"river","points":[[73.5,19.5],[78,19],[82,17]]},
+        {"id":"river_narmada","kind":"river","points":[[79,22.5],[75,22.5],[72.5,21.7]]},
+        {"id":"mountains_hindu_kush","kind":"mountain_barrier","points":[[68,36],[72,35],[76,34]]},
+        {"id":"mountains_western_ghats","kind":"mountain_barrier","points":[[73,20],[74,15],[76,9]]},
+        {"id":"mountains_aravalli","kind":"mountain_barrier","points":[[72,25],[74,27],[76,29]]},
+        {"id":"desert_thar","kind":"desert_barrier","points":[[69,24],[72,29],[76,28],[75,24],[69,24]]}
+      ]
+    },
+    {
+      "id":"mei_ganges_himalaya","name":"Indo-Gangetic Plain and Himalaya","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"The Himalayan crest, Thar margin, central Indian watershed, and Bengal delta frame the densely connected plain.",
+      "transform":{"sourceOrigin":[72,20],"scale":[3,3],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":72,"maxY":75},
+      "budget":{"maxFeatures":10,"maxControlPoints":60,"maxBoundaryAnchors":10},
+      "features":[
+        {"id":"river_ganges","kind":"river","points":[[78,30],[81,27],[85,25],[88,23],[90,22]]},
+        {"id":"river_brahmaputra","kind":"river","points":[[91,29],[94,27],[90,24],[90,22]]},
+        {"id":"mountains_himalaya","kind":"mountain_barrier","points":[[74,35],[80,32],[86,28],[92,27],[96,28]]}
+      ]
+    },
+    {
+      "id":"mei_bengal_ceylon","name":"Bengal, Ceylon, and Southeast Approaches","graphRegionId":"middle_east_india","graphAreaId":"middle_east_india_coarse",
+      "seamRationale":"The Bay of Bengal provides the maritime seam while the Arakan hills and Brahmaputra headwaters form the eastern land transition.",
+      "transform":{"sourceOrigin":[78,5],"scale":[3,3],"offset":[0,0]},"localBounds":{"minX":-2,"minY":0,"maxX":75,"maxY":90},
+      "budget":{"maxFeatures":10,"maxControlPoints":56,"maxBoundaryAnchors":8},
+      "features":[
+        {"id":"coast_bengal_delta","kind":"coastline","points":[[80,9],[80.3,13],[82,17],[87,21],[90,22],[92,21],[94,18],[97,16]]},
+        {"id":"island_sri_lanka","kind":"island","points":[[79.7,9.8],[80.8,8],[81.8,6],[80.5,5.8],[79.7,8]]},
+        {"id":"strait_palk","kind":"strait","points":[[79.5,10],[80,9.5]]}
+      ]
+    }
+  ],
+  "boundaryAnchors": [
+    {"id":"seam_levant_red_sea_north","instanceId":"mei_anatolia_levant","pairId":"seam_levant_red_sea_south","source":[32.5,29.9],"local":[30,7.6],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_levant_red_sea_south","instanceId":"mei_arabia_red_sea","pairId":"seam_levant_red_sea_north","source":[32.5,29.9],"local":[1.5,53.7],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_levant_mesopotamia_west","instanceId":"mei_anatolia_levant","pairId":"seam_levant_mesopotamia_east","source":[38,37],"local":[52,36],"movementClasses":["land","amphibious"]},
+    {"id":"seam_levant_mesopotamia_east","instanceId":"mei_mesopotamia_persia","pairId":"seam_levant_mesopotamia_west","source":[38,37],"local":[0,60],"movementClasses":["land","amphibious"]},
+    {"id":"seam_arabia_hormuz_west","instanceId":"mei_arabia_red_sea","pairId":"seam_arabia_hormuz_east","source":[56.3,26.5],"local":[57.9,43.5],"movementClasses":["naval","amphibious"],"distortion":{"offset":[-15,0],"reason":"Compress the long Omani coast while retaining the Hormuz sea approach."}},
+    {"id":"seam_arabia_hormuz_east","instanceId":"mei_mesopotamia_persia","pairId":"seam_arabia_hormuz_west","source":[56.3,26.5],"local":[73.2,18],"movementClasses":["naval","amphibious"]},
+    {"id":"seam_persia_central_south","instanceId":"mei_mesopotamia_persia","pairId":"seam_persia_central_north","source":[59,38],"local":[76,64],"movementClasses":["land","amphibious"],"distortion":{"offset":[-8,0],"reason":"Compress the Iranian plateau before the Central Asian desert seam."}},
+    {"id":"seam_persia_central_north","instanceId":"mei_central_asia","pairId":"seam_persia_central_south","source":[59,38],"local":[28,12],"movementClasses":["land","amphibious"]},
+    {"id":"seam_persia_indus_west","instanceId":"mei_mesopotamia_persia","pairId":"seam_persia_indus_east","source":[61,25.5],"local":[92,14],"movementClasses":["land","naval","amphibious"],"distortion":{"offset":[0,0],"reason":"The Makran coastal seam retains its transformed position."}},
+    {"id":"seam_persia_indus_east","instanceId":"mei_indus_deccan","pairId":"seam_persia_indus_west","source":[61,25.5],"local":[3,61.5],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_central_hindu_kush_north","instanceId":"mei_central_asia","pairId":"seam_central_hindu_kush_south","source":[72,35],"local":[54,6],"movementClasses":["land","amphibious"]},
+    {"id":"seam_central_hindu_kush_south","instanceId":"mei_indus_deccan","pairId":"seam_central_hindu_kush_north","source":[72,35],"local":[36,90],"movementClasses":["land","amphibious"]},
+    {"id":"seam_indus_ganges_west","instanceId":"mei_indus_deccan","pairId":"seam_indus_ganges_east","source":[76,29],"local":[48,72],"movementClasses":["land","amphibious"]},
+    {"id":"seam_indus_ganges_east","instanceId":"mei_ganges_himalaya","pairId":"seam_indus_ganges_west","source":[76,29],"local":[12,27],"movementClasses":["land","amphibious"]},
+    {"id":"seam_deccan_bengal_west","instanceId":"mei_indus_deccan","pairId":"seam_deccan_bengal_east","source":[82,17],"local":[66,36],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_deccan_bengal_east","instanceId":"mei_bengal_ceylon","pairId":"seam_deccan_bengal_west","source":[82,17],"local":[12,36],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_ganges_bengal_north","instanceId":"mei_ganges_himalaya","pairId":"seam_ganges_bengal_south","source":[90,22],"local":[54,6],"movementClasses":["land","naval","amphibious"]},
+    {"id":"seam_ganges_bengal_south","instanceId":"mei_bengal_ceylon","pairId":"seam_ganges_bengal_north","source":[90,22],"local":[36,51],"movementClasses":["land","naval","amphibious"]},
+    {"id":"mei_mediterranean_global","instanceId":"mei_anatolia_levant","globalAnchorId":"middle_east_india_west","source":[29,41.1],"local":[16,52.4],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"mei_red_sea_global","instanceId":"mei_arabia_red_sea","globalAnchorId":"middle_east_india_west","source":[43,12.6],"local":[33,1.8],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"mei_central_asia_global","instanceId":"mei_central_asia","globalAnchorId":"middle_east_india_north","source":[75,45],"local":[60,26],"movementClasses":["land","amphibious","flying"]},
+    {"id":"mei_southeast_asia_global","instanceId":"mei_bengal_ceylon","globalAnchorId":"middle_east_india_east","source":[97,16],"local":[57,33],"movementClasses":["land","naval","amphibious","flying"]}
+  ],
+  "distortions": [
+    {"id":"distortion_hormuz_compression","anchorId":"seam_arabia_hormuz_west","displacementCells":15,"orientationDeltaDegrees":0,"adjacencyGapCells":3,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Compress empty Omani distance while preserving the Persian Gulf exit and coastal ordering."},
+    {"id":"distortion_iranian_plateau_compression","anchorId":"seam_persia_central_south","displacementCells":8,"orientationDeltaDegrees":0,"adjacencyGapCells":4,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Compress sparsely traversed plateau distance while retaining the northeast Central Asian relationship."},
+    {"id":"distortion_makran_seam_documentation","anchorId":"seam_persia_indus_west","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":0,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Explicitly records that the Makran coast requires no departure from its affine transform."}
+  ]
+}

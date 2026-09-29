@@ -14,30 +14,30 @@ class PolityRuntimeTests(unittest.TestCase):
         self.original=copy.deepcopy(self.source)
         self.runtime=PolityRuntime(self.source)
     def test_deterministic_initialization_lookup_and_order(self):
-        self.assertEqual(("england","france"),self.runtime.ids())
+        self.assertEqual(98,len(self.runtime.ids())); self.assertIn("england",self.runtime.ids()); self.assertIn("france",self.runtime.ids())
         england=self.runtime.require("england")
-        self.assertEqual(("greater_london","kent"),england.definition.province_ids)
+        self.assertEqual(("greater_london","kent","english_midlands","northern_england"),england.definition.province_ids)
         self.assertEqual(("Kingdom of England","king","london"),(england.definition.name,england.definition.sovereign_tier,england.definition.capital_settlement_id))
         self.assertIsNone(self.runtime.lookup("missing"))
     def test_activation_snapshots_and_definition_immutability(self):
         self.assertTrue(self.runtime.set_active("france",False))
         self.assertFalse(self.runtime.set_active("france",False))
-        self.assertEqual(("england",),self.runtime.ids(active_only=True))
+        self.assertNotIn("france",self.runtime.ids(active_only=True)); self.assertEqual(97,len(self.runtime.ids(active_only=True)))
         snapshot=self.runtime.snapshot()
         self.assertNotIn("handle",json.dumps(snapshot).lower())
-        self.assertEqual([{"id":"england","active":True},{"id":"france","active":False}],snapshot["polities"])
+        self.assertEqual(98,len(snapshot["polities"])); self.assertFalse(next(x for x in snapshot["polities"] if x["id"]=="france")["active"])
         snapshot["polities"][0]["active"]=False
         self.assertTrue(self.runtime.require("england").active)
         self.assertEqual(self.original,self.source)
     def test_restore_is_atomic_and_rebuilds_derived_lookup(self):
-        good=self.runtime.snapshot(); good["polities"].reverse(); good["polities"][0]["active"]=False
+        good=self.runtime.snapshot(); good["polities"].reverse(); next(x for x in good["polities"] if x["id"]=="france")["active"]=False
         self.runtime.restore(good)
         self.assertFalse(self.runtime.require("france").active)
         baseline=self.runtime.snapshot()
         for bad,pattern in [
             ({"schemaVersion":1,"polities":[{"id":"england","active":True},{"id":"england","active":False}]},"duplicate"),
             ({"schemaVersion":1,"polities":[{"id":"england","active":True}]},"missing polity"),
-            ({"schemaVersion":1,"polities":[{"id":"england","active":True},{"id":"spain","active":True}]},"incompatible"),
+            ({"schemaVersion":1,"polities":[{"id":"spain","active":True}]},"incompatible"),
         ]:
             with self.assertRaisesRegex(PolityError,pattern): self.runtime.restore(bad)
             self.assertEqual(baseline,self.runtime.snapshot())

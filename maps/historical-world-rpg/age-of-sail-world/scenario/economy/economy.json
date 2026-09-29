@@ -1,50 +1,7358 @@
 {
   "catalog": {
     "schemaVersion": 1,
-    "currencies": [{"id": "pound_sterling", "minorUnitsPerMajor": 240}],
+    "currencies": [
+      {
+        "id": "pound_sterling",
+        "minorUnitsPerMajor": 240
+      }
+    ],
     "goods": [
-      {"id": "grain", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "grain_bundle"},
-      {"id": "flour", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "flour_bundle"},
-      {"id": "ship_provisions", "quantityUnitsPerDisplayUnit": 100, "itemTypeId": "ship_provisions_bundle"}
+      {
+        "id": "grain",
+        "quantityUnitsPerDisplayUnit": 100,
+        "itemTypeId": "grain_bundle"
+      },
+      {
+        "id": "flour",
+        "quantityUnitsPerDisplayUnit": 100,
+        "itemTypeId": "flour_bundle"
+      },
+      {
+        "id": "ship_provisions",
+        "quantityUnitsPerDisplayUnit": 100,
+        "itemTypeId": "ship_provisions_bundle"
+      }
     ],
     "stores": [
-      {"id": "london_settlement_store", "kind": "settlement", "owner": {"kind": "settlement", "id": "london"}, "capacityUnits": 100000, "allowedGoodIds": ["grain", "flour", "ship_provisions"]},
-      {"id": "dover_warehouse", "kind": "warehouse", "owner": {"kind": "settlement", "id": "dover"}, "capacityUnits": 50000, "allowedGoodIds": ["grain", "flour", "ship_provisions"]},
-      {"id": "english_patrol_ship_hold", "kind": "ship", "owner": {"kind": "strategic_unit", "id": "english_patrol_ship"}, "capacityUnits": 10000, "allowedGoodIds": ["ship_provisions"]},
-      {"id": "english_channel_fleet_cargo", "kind": "fleet", "owner": {"kind": "fleet", "id": "english_channel_fleet"}, "capacityUnits": 50000, "allowedGoodIds": ["ship_provisions"]}
+      {
+        "id": "london_settlement_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        },
+        "capacityUnits": 100000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "dover_warehouse",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "english_patrol_ship_hold",
+        "kind": "ship",
+        "owner": {
+          "kind": "strategic_unit",
+          "id": "english_patrol_ship"
+        },
+        "capacityUnits": 10000,
+        "allowedGoodIds": [
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "english_channel_fleet_cargo",
+        "kind": "fleet",
+        "owner": {
+          "kind": "fleet",
+          "id": "english_channel_fleet"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_london_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_edinburgh_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "edinburgh"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_dublin_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "dublin"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_oslo_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "oslo"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_copenhagen_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "copenhagen"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_stockholm_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "stockholm"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_paris_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "paris"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_dijon_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "dijon"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_nantes_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "nantes"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_aix_en_provence_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "aix_en_provence"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_lisbon_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "lisbon"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_toledo_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "toledo"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_zaragoza_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "zaragoza"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_pamplona_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "pamplona"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_granada_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "granada"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_vienna_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "vienna"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_prague_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "prague"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_berlin_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "berlin"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_wittenberg_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "wittenberg"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_munich_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "munich"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_heidelberg_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "heidelberg"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_aachen_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "aachen"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_lucerne_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "lucerne"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_krakow_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "krakow"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_vilnius_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "vilnius"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_marienburg_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "marienburg"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_riga_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "riga"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_buda_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "buda"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_targoviste_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "targoviste"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_suceava_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "suceava"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_jajce_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "jajce"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_smederevo_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "smederevo"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_lezhe_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "lezhe"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_edirne_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "edirne"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_constantinople_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "constantinople"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_venice_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "venice"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_milan_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "milan"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_florence_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "florence"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_rome_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "rome"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_naples_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "naples"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_genoa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "genoa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_chambery_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "chambery"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_moscow_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "moscow"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_novgorod_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "novgorod"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_tver_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "tver"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_ryazan_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "ryazan"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_saray_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "saray"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_solkhat_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "solkhat"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_kazan_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "kazan"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_dover_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_york_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "york"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_bristol_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bristol"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_bergen_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bergen"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_lubeck_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "lubeck"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_hamburg_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "hamburg"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_bruges_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bruges"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_rouen_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "rouen"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_bordeaux_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bordeaux"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_seville_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "seville"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_barcelona_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "barcelona"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_valencia_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "valencia"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_lyon_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "lyon"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_cologne_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "cologne"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_nuremberg_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "nuremberg"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_danzig_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "danzig"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_belgrade_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "belgrade"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_ragusa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "ragusa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_thessaloniki_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "thessaloniki"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_athens_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "athens"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_palermo_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "palermo"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_kaffa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "kaffa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "europe_calais_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "calais"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_fez_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "fez"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_ceuta_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "ceuta"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_sijilmasa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "sijilmasa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_tunis_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "tunis"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_tripoli_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "tripoli"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_cairo_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "cairo"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_alexandria_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "alexandria"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_aswan_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "aswan"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_niani_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "niani"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_timbuktu_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "timbuktu"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_walata_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "walata"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_taghaza_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "taghaza"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_gao_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "gao"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_agadez_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "agadez"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_kano_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "kano"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_katsina_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "katsina"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_ngazargamu_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "ngazargamu"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_debre_berhan_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "debre_berhan"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_axum_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "axum"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_meregh_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "meregh"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_mogadishu_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mogadishu"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_kilwa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "kilwa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_mombasa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mombasa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_zanzibar_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "zanzibar"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_great_zimbabwe_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "great_zimbabwe"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_sofala_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "sofala"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_mbanza_kongo_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mbanza_kongo"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_mpinda_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mpinda"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_benin_city_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "benin_city"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "africa_ughoton_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "ughoton"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_bursa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bursa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_konya_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "konya"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_aleppo_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "aleppo"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_damascus_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "damascus"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_jerusalem_store",
+        "kind": "settlement",
+        "owner": {
+          "kind": "settlement",
+          "id": "jerusalem"
+        },
+        "capacityUnits": 20000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_jeddah_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "jeddah"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_mecca_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mecca"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_zabid_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "zabid"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_aden_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "aden"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_baghdad_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "baghdad"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_tabriz_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "tabriz"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_hormuz_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "hormuz"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_herat_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "herat"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_samarkand_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "samarkand"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_lahore_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "lahore"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_delhi_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "delhi"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_ahmadabad_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "ahmadabad"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_khambhat_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "khambhat"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_mandu_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "mandu"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_bidar_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "bidar"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_goa_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "goa"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_vijayanagara_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "vijayanagara"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_calicut_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "calicut"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_gaur_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "gaur"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_chittagong_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "chittagong"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      },
+      {
+        "id": "mei_kotte_store",
+        "kind": "warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "kotte"
+        },
+        "capacityUnits": 50000,
+        "allowedGoodIds": [
+          "grain",
+          "flour",
+          "ship_provisions"
+        ]
+      }
     ],
     "recipes": [
-      {"id": "mill_grain_into_flour", "inputs": [{"goodId": "grain", "quantityUnits": 100}], "outputs": [{"goodId": "flour", "quantityUnits": 80}]},
-      {"id": "prepare_ship_provisions", "inputs": [{"goodId": "flour", "quantityUnits": 100}], "outputs": [{"goodId": "ship_provisions", "quantityUnits": 90}]}
+      {
+        "id": "mill_grain_into_flour",
+        "inputs": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 100
+          }
+        ],
+        "outputs": [
+          {
+            "goodId": "flour",
+            "quantityUnits": 80
+          }
+        ]
+      },
+      {
+        "id": "prepare_ship_provisions",
+        "inputs": [
+          {
+            "goodId": "flour",
+            "quantityUnits": 100
+          }
+        ],
+        "outputs": [
+          {
+            "goodId": "ship_provisions",
+            "quantityUnits": 90
+          }
+        ]
+      }
     ],
     "producers": [
-      {"id": "london_mill", "storeId": "london_settlement_store", "recipeId": "mill_grain_into_flour", "owner": {"kind": "settlement", "id": "london"}},
-      {"id": "dover_provisioner", "storeId": "dover_warehouse", "recipeId": "prepare_ship_provisions", "owner": {"kind": "settlement", "id": "dover"}}
+      {
+        "id": "london_mill",
+        "storeId": "london_settlement_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        }
+      },
+      {
+        "id": "dover_provisioner",
+        "storeId": "dover_warehouse",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        }
+      },
+      {
+        "id": "europe_london_producer",
+        "storeId": "europe_london_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        }
+      },
+      {
+        "id": "europe_edinburgh_producer",
+        "storeId": "europe_edinburgh_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "edinburgh"
+        }
+      },
+      {
+        "id": "europe_dublin_producer",
+        "storeId": "europe_dublin_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "dublin"
+        }
+      },
+      {
+        "id": "europe_oslo_producer",
+        "storeId": "europe_oslo_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "oslo"
+        }
+      },
+      {
+        "id": "europe_copenhagen_producer",
+        "storeId": "europe_copenhagen_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "copenhagen"
+        }
+      },
+      {
+        "id": "europe_stockholm_producer",
+        "storeId": "europe_stockholm_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "stockholm"
+        }
+      },
+      {
+        "id": "europe_paris_producer",
+        "storeId": "europe_paris_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "paris"
+        }
+      },
+      {
+        "id": "europe_dijon_producer",
+        "storeId": "europe_dijon_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "dijon"
+        }
+      },
+      {
+        "id": "europe_nantes_producer",
+        "storeId": "europe_nantes_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "nantes"
+        }
+      },
+      {
+        "id": "europe_aix_en_provence_producer",
+        "storeId": "europe_aix_en_provence_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "aix_en_provence"
+        }
+      },
+      {
+        "id": "europe_lisbon_producer",
+        "storeId": "europe_lisbon_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "lisbon"
+        }
+      },
+      {
+        "id": "europe_toledo_producer",
+        "storeId": "europe_toledo_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "toledo"
+        }
+      },
+      {
+        "id": "europe_zaragoza_producer",
+        "storeId": "europe_zaragoza_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "zaragoza"
+        }
+      },
+      {
+        "id": "europe_pamplona_producer",
+        "storeId": "europe_pamplona_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "pamplona"
+        }
+      },
+      {
+        "id": "europe_granada_producer",
+        "storeId": "europe_granada_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "granada"
+        }
+      },
+      {
+        "id": "europe_vienna_producer",
+        "storeId": "europe_vienna_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "vienna"
+        }
+      },
+      {
+        "id": "europe_prague_producer",
+        "storeId": "europe_prague_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "prague"
+        }
+      },
+      {
+        "id": "europe_berlin_producer",
+        "storeId": "europe_berlin_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "berlin"
+        }
+      },
+      {
+        "id": "europe_wittenberg_producer",
+        "storeId": "europe_wittenberg_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "wittenberg"
+        }
+      },
+      {
+        "id": "europe_munich_producer",
+        "storeId": "europe_munich_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "munich"
+        }
+      },
+      {
+        "id": "europe_heidelberg_producer",
+        "storeId": "europe_heidelberg_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "heidelberg"
+        }
+      },
+      {
+        "id": "europe_aachen_producer",
+        "storeId": "europe_aachen_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "aachen"
+        }
+      },
+      {
+        "id": "europe_lucerne_producer",
+        "storeId": "europe_lucerne_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "lucerne"
+        }
+      },
+      {
+        "id": "europe_krakow_producer",
+        "storeId": "europe_krakow_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "krakow"
+        }
+      },
+      {
+        "id": "europe_vilnius_producer",
+        "storeId": "europe_vilnius_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "vilnius"
+        }
+      },
+      {
+        "id": "europe_marienburg_producer",
+        "storeId": "europe_marienburg_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "marienburg"
+        }
+      },
+      {
+        "id": "europe_riga_producer",
+        "storeId": "europe_riga_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "riga"
+        }
+      },
+      {
+        "id": "europe_buda_producer",
+        "storeId": "europe_buda_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "buda"
+        }
+      },
+      {
+        "id": "europe_targoviste_producer",
+        "storeId": "europe_targoviste_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "targoviste"
+        }
+      },
+      {
+        "id": "europe_suceava_producer",
+        "storeId": "europe_suceava_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "suceava"
+        }
+      },
+      {
+        "id": "europe_jajce_producer",
+        "storeId": "europe_jajce_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "jajce"
+        }
+      },
+      {
+        "id": "europe_smederevo_producer",
+        "storeId": "europe_smederevo_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "smederevo"
+        }
+      },
+      {
+        "id": "europe_lezhe_producer",
+        "storeId": "europe_lezhe_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "lezhe"
+        }
+      },
+      {
+        "id": "europe_edirne_producer",
+        "storeId": "europe_edirne_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "edirne"
+        }
+      },
+      {
+        "id": "europe_constantinople_producer",
+        "storeId": "europe_constantinople_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "constantinople"
+        }
+      },
+      {
+        "id": "europe_venice_producer",
+        "storeId": "europe_venice_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "venice"
+        }
+      },
+      {
+        "id": "europe_milan_producer",
+        "storeId": "europe_milan_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "milan"
+        }
+      },
+      {
+        "id": "europe_florence_producer",
+        "storeId": "europe_florence_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "florence"
+        }
+      },
+      {
+        "id": "europe_rome_producer",
+        "storeId": "europe_rome_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "rome"
+        }
+      },
+      {
+        "id": "europe_naples_producer",
+        "storeId": "europe_naples_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "naples"
+        }
+      },
+      {
+        "id": "europe_genoa_producer",
+        "storeId": "europe_genoa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "genoa"
+        }
+      },
+      {
+        "id": "europe_chambery_producer",
+        "storeId": "europe_chambery_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "chambery"
+        }
+      },
+      {
+        "id": "europe_moscow_producer",
+        "storeId": "europe_moscow_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "moscow"
+        }
+      },
+      {
+        "id": "europe_novgorod_producer",
+        "storeId": "europe_novgorod_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "novgorod"
+        }
+      },
+      {
+        "id": "europe_tver_producer",
+        "storeId": "europe_tver_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "tver"
+        }
+      },
+      {
+        "id": "europe_ryazan_producer",
+        "storeId": "europe_ryazan_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "ryazan"
+        }
+      },
+      {
+        "id": "europe_saray_producer",
+        "storeId": "europe_saray_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "saray"
+        }
+      },
+      {
+        "id": "europe_solkhat_producer",
+        "storeId": "europe_solkhat_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "solkhat"
+        }
+      },
+      {
+        "id": "europe_kazan_producer",
+        "storeId": "europe_kazan_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "kazan"
+        }
+      },
+      {
+        "id": "europe_dover_producer",
+        "storeId": "europe_dover_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        }
+      },
+      {
+        "id": "europe_york_producer",
+        "storeId": "europe_york_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "york"
+        }
+      },
+      {
+        "id": "europe_bristol_producer",
+        "storeId": "europe_bristol_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "bristol"
+        }
+      },
+      {
+        "id": "europe_bergen_producer",
+        "storeId": "europe_bergen_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "bergen"
+        }
+      },
+      {
+        "id": "europe_lubeck_producer",
+        "storeId": "europe_lubeck_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "lubeck"
+        }
+      },
+      {
+        "id": "europe_hamburg_producer",
+        "storeId": "europe_hamburg_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "hamburg"
+        }
+      },
+      {
+        "id": "europe_bruges_producer",
+        "storeId": "europe_bruges_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "bruges"
+        }
+      },
+      {
+        "id": "europe_rouen_producer",
+        "storeId": "europe_rouen_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "rouen"
+        }
+      },
+      {
+        "id": "europe_bordeaux_producer",
+        "storeId": "europe_bordeaux_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "bordeaux"
+        }
+      },
+      {
+        "id": "europe_seville_producer",
+        "storeId": "europe_seville_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "seville"
+        }
+      },
+      {
+        "id": "europe_barcelona_producer",
+        "storeId": "europe_barcelona_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "barcelona"
+        }
+      },
+      {
+        "id": "europe_valencia_producer",
+        "storeId": "europe_valencia_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "valencia"
+        }
+      },
+      {
+        "id": "europe_lyon_producer",
+        "storeId": "europe_lyon_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "lyon"
+        }
+      },
+      {
+        "id": "europe_cologne_producer",
+        "storeId": "europe_cologne_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "cologne"
+        }
+      },
+      {
+        "id": "europe_nuremberg_producer",
+        "storeId": "europe_nuremberg_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "nuremberg"
+        }
+      },
+      {
+        "id": "europe_danzig_producer",
+        "storeId": "europe_danzig_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "danzig"
+        }
+      },
+      {
+        "id": "europe_belgrade_producer",
+        "storeId": "europe_belgrade_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "belgrade"
+        }
+      },
+      {
+        "id": "europe_ragusa_producer",
+        "storeId": "europe_ragusa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "ragusa"
+        }
+      },
+      {
+        "id": "europe_thessaloniki_producer",
+        "storeId": "europe_thessaloniki_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "thessaloniki"
+        }
+      },
+      {
+        "id": "europe_athens_producer",
+        "storeId": "europe_athens_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "athens"
+        }
+      },
+      {
+        "id": "europe_palermo_producer",
+        "storeId": "europe_palermo_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "palermo"
+        }
+      },
+      {
+        "id": "europe_kaffa_producer",
+        "storeId": "europe_kaffa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "kaffa"
+        }
+      },
+      {
+        "id": "europe_calais_producer",
+        "storeId": "europe_calais_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "calais"
+        }
+      },
+      {
+        "id": "africa_fez_producer",
+        "storeId": "africa_fez_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "fez"
+        }
+      },
+      {
+        "id": "africa_ceuta_producer",
+        "storeId": "africa_ceuta_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "ceuta"
+        }
+      },
+      {
+        "id": "africa_sijilmasa_producer",
+        "storeId": "africa_sijilmasa_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "sijilmasa"
+        }
+      },
+      {
+        "id": "africa_tunis_producer",
+        "storeId": "africa_tunis_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "tunis"
+        }
+      },
+      {
+        "id": "africa_tripoli_producer",
+        "storeId": "africa_tripoli_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "tripoli"
+        }
+      },
+      {
+        "id": "africa_cairo_producer",
+        "storeId": "africa_cairo_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "cairo"
+        }
+      },
+      {
+        "id": "africa_alexandria_producer",
+        "storeId": "africa_alexandria_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "alexandria"
+        }
+      },
+      {
+        "id": "africa_aswan_producer",
+        "storeId": "africa_aswan_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "aswan"
+        }
+      },
+      {
+        "id": "africa_niani_producer",
+        "storeId": "africa_niani_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "niani"
+        }
+      },
+      {
+        "id": "africa_timbuktu_producer",
+        "storeId": "africa_timbuktu_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "timbuktu"
+        }
+      },
+      {
+        "id": "africa_walata_producer",
+        "storeId": "africa_walata_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "walata"
+        }
+      },
+      {
+        "id": "africa_taghaza_producer",
+        "storeId": "africa_taghaza_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "taghaza"
+        }
+      },
+      {
+        "id": "africa_gao_producer",
+        "storeId": "africa_gao_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "gao"
+        }
+      },
+      {
+        "id": "africa_agadez_producer",
+        "storeId": "africa_agadez_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "agadez"
+        }
+      },
+      {
+        "id": "africa_kano_producer",
+        "storeId": "africa_kano_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "kano"
+        }
+      },
+      {
+        "id": "africa_katsina_producer",
+        "storeId": "africa_katsina_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "katsina"
+        }
+      },
+      {
+        "id": "africa_ngazargamu_producer",
+        "storeId": "africa_ngazargamu_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "ngazargamu"
+        }
+      },
+      {
+        "id": "africa_debre_berhan_producer",
+        "storeId": "africa_debre_berhan_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "debre_berhan"
+        }
+      },
+      {
+        "id": "africa_axum_producer",
+        "storeId": "africa_axum_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "axum"
+        }
+      },
+      {
+        "id": "africa_meregh_producer",
+        "storeId": "africa_meregh_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "meregh"
+        }
+      },
+      {
+        "id": "africa_mogadishu_producer",
+        "storeId": "africa_mogadishu_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "mogadishu"
+        }
+      },
+      {
+        "id": "africa_kilwa_producer",
+        "storeId": "africa_kilwa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "kilwa"
+        }
+      },
+      {
+        "id": "africa_mombasa_producer",
+        "storeId": "africa_mombasa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "mombasa"
+        }
+      },
+      {
+        "id": "africa_zanzibar_producer",
+        "storeId": "africa_zanzibar_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "zanzibar"
+        }
+      },
+      {
+        "id": "africa_great_zimbabwe_producer",
+        "storeId": "africa_great_zimbabwe_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "great_zimbabwe"
+        }
+      },
+      {
+        "id": "africa_sofala_producer",
+        "storeId": "africa_sofala_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "sofala"
+        }
+      },
+      {
+        "id": "africa_mbanza_kongo_producer",
+        "storeId": "africa_mbanza_kongo_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "mbanza_kongo"
+        }
+      },
+      {
+        "id": "africa_mpinda_producer",
+        "storeId": "africa_mpinda_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "mpinda"
+        }
+      },
+      {
+        "id": "africa_benin_city_producer",
+        "storeId": "africa_benin_city_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "benin_city"
+        }
+      },
+      {
+        "id": "africa_ughoton_producer",
+        "storeId": "africa_ughoton_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "ughoton"
+        }
+      },
+      {
+        "id": "mei_bursa_producer",
+        "storeId": "mei_bursa_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "bursa"
+        }
+      },
+      {
+        "id": "mei_konya_producer",
+        "storeId": "mei_konya_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "konya"
+        }
+      },
+      {
+        "id": "mei_aleppo_producer",
+        "storeId": "mei_aleppo_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "aleppo"
+        }
+      },
+      {
+        "id": "mei_damascus_producer",
+        "storeId": "mei_damascus_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "damascus"
+        }
+      },
+      {
+        "id": "mei_jerusalem_producer",
+        "storeId": "mei_jerusalem_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "jerusalem"
+        }
+      },
+      {
+        "id": "mei_jeddah_producer",
+        "storeId": "mei_jeddah_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "jeddah"
+        }
+      },
+      {
+        "id": "mei_mecca_producer",
+        "storeId": "mei_mecca_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "mecca"
+        }
+      },
+      {
+        "id": "mei_zabid_producer",
+        "storeId": "mei_zabid_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "zabid"
+        }
+      },
+      {
+        "id": "mei_aden_producer",
+        "storeId": "mei_aden_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "aden"
+        }
+      },
+      {
+        "id": "mei_baghdad_producer",
+        "storeId": "mei_baghdad_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "baghdad"
+        }
+      },
+      {
+        "id": "mei_tabriz_producer",
+        "storeId": "mei_tabriz_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "tabriz"
+        }
+      },
+      {
+        "id": "mei_hormuz_producer",
+        "storeId": "mei_hormuz_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "hormuz"
+        }
+      },
+      {
+        "id": "mei_herat_producer",
+        "storeId": "mei_herat_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "herat"
+        }
+      },
+      {
+        "id": "mei_samarkand_producer",
+        "storeId": "mei_samarkand_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "samarkand"
+        }
+      },
+      {
+        "id": "mei_lahore_producer",
+        "storeId": "mei_lahore_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "lahore"
+        }
+      },
+      {
+        "id": "mei_delhi_producer",
+        "storeId": "mei_delhi_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "delhi"
+        }
+      },
+      {
+        "id": "mei_ahmadabad_producer",
+        "storeId": "mei_ahmadabad_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "ahmadabad"
+        }
+      },
+      {
+        "id": "mei_khambhat_producer",
+        "storeId": "mei_khambhat_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "khambhat"
+        }
+      },
+      {
+        "id": "mei_mandu_producer",
+        "storeId": "mei_mandu_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "mandu"
+        }
+      },
+      {
+        "id": "mei_bidar_producer",
+        "storeId": "mei_bidar_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "bidar"
+        }
+      },
+      {
+        "id": "mei_goa_producer",
+        "storeId": "mei_goa_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "goa"
+        }
+      },
+      {
+        "id": "mei_vijayanagara_producer",
+        "storeId": "mei_vijayanagara_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "vijayanagara"
+        }
+      },
+      {
+        "id": "mei_calicut_producer",
+        "storeId": "mei_calicut_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "calicut"
+        }
+      },
+      {
+        "id": "mei_gaur_producer",
+        "storeId": "mei_gaur_store",
+        "recipeId": "mill_grain_into_flour",
+        "owner": {
+          "kind": "settlement",
+          "id": "gaur"
+        }
+      },
+      {
+        "id": "mei_chittagong_producer",
+        "storeId": "mei_chittagong_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "chittagong"
+        }
+      },
+      {
+        "id": "mei_kotte_producer",
+        "storeId": "mei_kotte_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "kotte"
+        }
+      }
     ],
-    "consumers": [{"id": "london_provision_consumption", "storeId": "london_settlement_store", "recipeId": "prepare_ship_provisions", "owner": {"kind": "settlement", "id": "london"}}],
+    "consumers": [
+      {
+        "id": "london_provision_consumption",
+        "storeId": "london_settlement_store",
+        "recipeId": "prepare_ship_provisions",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        }
+      }
+    ],
     "markets": [
-      {"id": "london_market", "storeId": "london_settlement_store", "owner": {"kind": "settlement", "id": "london"}},
-      {"id": "dover_market", "storeId": "dover_warehouse", "owner": {"kind": "settlement", "id": "dover"}}
+      {
+        "id": "london_market",
+        "storeId": "london_settlement_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        }
+      },
+      {
+        "id": "dover_market",
+        "storeId": "dover_warehouse",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        }
+      },
+      {
+        "id": "europe_london_market",
+        "storeId": "europe_london_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "london"
+        }
+      },
+      {
+        "id": "europe_edinburgh_market",
+        "storeId": "europe_edinburgh_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "edinburgh"
+        }
+      },
+      {
+        "id": "europe_dublin_market",
+        "storeId": "europe_dublin_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "dublin"
+        }
+      },
+      {
+        "id": "europe_oslo_market",
+        "storeId": "europe_oslo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "oslo"
+        }
+      },
+      {
+        "id": "europe_copenhagen_market",
+        "storeId": "europe_copenhagen_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "copenhagen"
+        }
+      },
+      {
+        "id": "europe_stockholm_market",
+        "storeId": "europe_stockholm_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "stockholm"
+        }
+      },
+      {
+        "id": "europe_paris_market",
+        "storeId": "europe_paris_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "paris"
+        }
+      },
+      {
+        "id": "europe_dijon_market",
+        "storeId": "europe_dijon_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "dijon"
+        }
+      },
+      {
+        "id": "europe_nantes_market",
+        "storeId": "europe_nantes_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "nantes"
+        }
+      },
+      {
+        "id": "europe_aix_en_provence_market",
+        "storeId": "europe_aix_en_provence_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "aix_en_provence"
+        }
+      },
+      {
+        "id": "europe_lisbon_market",
+        "storeId": "europe_lisbon_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lisbon"
+        }
+      },
+      {
+        "id": "europe_toledo_market",
+        "storeId": "europe_toledo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "toledo"
+        }
+      },
+      {
+        "id": "europe_zaragoza_market",
+        "storeId": "europe_zaragoza_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "zaragoza"
+        }
+      },
+      {
+        "id": "europe_pamplona_market",
+        "storeId": "europe_pamplona_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "pamplona"
+        }
+      },
+      {
+        "id": "europe_granada_market",
+        "storeId": "europe_granada_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "granada"
+        }
+      },
+      {
+        "id": "europe_vienna_market",
+        "storeId": "europe_vienna_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "vienna"
+        }
+      },
+      {
+        "id": "europe_prague_market",
+        "storeId": "europe_prague_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "prague"
+        }
+      },
+      {
+        "id": "europe_berlin_market",
+        "storeId": "europe_berlin_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "berlin"
+        }
+      },
+      {
+        "id": "europe_wittenberg_market",
+        "storeId": "europe_wittenberg_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "wittenberg"
+        }
+      },
+      {
+        "id": "europe_munich_market",
+        "storeId": "europe_munich_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "munich"
+        }
+      },
+      {
+        "id": "europe_heidelberg_market",
+        "storeId": "europe_heidelberg_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "heidelberg"
+        }
+      },
+      {
+        "id": "europe_aachen_market",
+        "storeId": "europe_aachen_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "aachen"
+        }
+      },
+      {
+        "id": "europe_lucerne_market",
+        "storeId": "europe_lucerne_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lucerne"
+        }
+      },
+      {
+        "id": "europe_krakow_market",
+        "storeId": "europe_krakow_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "krakow"
+        }
+      },
+      {
+        "id": "europe_vilnius_market",
+        "storeId": "europe_vilnius_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "vilnius"
+        }
+      },
+      {
+        "id": "europe_marienburg_market",
+        "storeId": "europe_marienburg_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "marienburg"
+        }
+      },
+      {
+        "id": "europe_riga_market",
+        "storeId": "europe_riga_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "riga"
+        }
+      },
+      {
+        "id": "europe_buda_market",
+        "storeId": "europe_buda_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "buda"
+        }
+      },
+      {
+        "id": "europe_targoviste_market",
+        "storeId": "europe_targoviste_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "targoviste"
+        }
+      },
+      {
+        "id": "europe_suceava_market",
+        "storeId": "europe_suceava_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "suceava"
+        }
+      },
+      {
+        "id": "europe_jajce_market",
+        "storeId": "europe_jajce_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "jajce"
+        }
+      },
+      {
+        "id": "europe_smederevo_market",
+        "storeId": "europe_smederevo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "smederevo"
+        }
+      },
+      {
+        "id": "europe_lezhe_market",
+        "storeId": "europe_lezhe_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lezhe"
+        }
+      },
+      {
+        "id": "europe_edirne_market",
+        "storeId": "europe_edirne_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "edirne"
+        }
+      },
+      {
+        "id": "europe_constantinople_market",
+        "storeId": "europe_constantinople_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "constantinople"
+        }
+      },
+      {
+        "id": "europe_venice_market",
+        "storeId": "europe_venice_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "venice"
+        }
+      },
+      {
+        "id": "europe_milan_market",
+        "storeId": "europe_milan_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "milan"
+        }
+      },
+      {
+        "id": "europe_florence_market",
+        "storeId": "europe_florence_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "florence"
+        }
+      },
+      {
+        "id": "europe_rome_market",
+        "storeId": "europe_rome_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "rome"
+        }
+      },
+      {
+        "id": "europe_naples_market",
+        "storeId": "europe_naples_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "naples"
+        }
+      },
+      {
+        "id": "europe_genoa_market",
+        "storeId": "europe_genoa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "genoa"
+        }
+      },
+      {
+        "id": "europe_chambery_market",
+        "storeId": "europe_chambery_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "chambery"
+        }
+      },
+      {
+        "id": "europe_moscow_market",
+        "storeId": "europe_moscow_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "moscow"
+        }
+      },
+      {
+        "id": "europe_novgorod_market",
+        "storeId": "europe_novgorod_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "novgorod"
+        }
+      },
+      {
+        "id": "europe_tver_market",
+        "storeId": "europe_tver_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "tver"
+        }
+      },
+      {
+        "id": "europe_ryazan_market",
+        "storeId": "europe_ryazan_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ryazan"
+        }
+      },
+      {
+        "id": "europe_saray_market",
+        "storeId": "europe_saray_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "saray"
+        }
+      },
+      {
+        "id": "europe_solkhat_market",
+        "storeId": "europe_solkhat_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "solkhat"
+        }
+      },
+      {
+        "id": "europe_kazan_market",
+        "storeId": "europe_kazan_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "kazan"
+        }
+      },
+      {
+        "id": "europe_dover_market",
+        "storeId": "europe_dover_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "dover"
+        }
+      },
+      {
+        "id": "europe_york_market",
+        "storeId": "europe_york_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "york"
+        }
+      },
+      {
+        "id": "europe_bristol_market",
+        "storeId": "europe_bristol_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bristol"
+        }
+      },
+      {
+        "id": "europe_bergen_market",
+        "storeId": "europe_bergen_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bergen"
+        }
+      },
+      {
+        "id": "europe_lubeck_market",
+        "storeId": "europe_lubeck_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lubeck"
+        }
+      },
+      {
+        "id": "europe_hamburg_market",
+        "storeId": "europe_hamburg_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "hamburg"
+        }
+      },
+      {
+        "id": "europe_bruges_market",
+        "storeId": "europe_bruges_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bruges"
+        }
+      },
+      {
+        "id": "europe_rouen_market",
+        "storeId": "europe_rouen_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "rouen"
+        }
+      },
+      {
+        "id": "europe_bordeaux_market",
+        "storeId": "europe_bordeaux_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bordeaux"
+        }
+      },
+      {
+        "id": "europe_seville_market",
+        "storeId": "europe_seville_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "seville"
+        }
+      },
+      {
+        "id": "europe_barcelona_market",
+        "storeId": "europe_barcelona_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "barcelona"
+        }
+      },
+      {
+        "id": "europe_valencia_market",
+        "storeId": "europe_valencia_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "valencia"
+        }
+      },
+      {
+        "id": "europe_lyon_market",
+        "storeId": "europe_lyon_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lyon"
+        }
+      },
+      {
+        "id": "europe_cologne_market",
+        "storeId": "europe_cologne_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "cologne"
+        }
+      },
+      {
+        "id": "europe_nuremberg_market",
+        "storeId": "europe_nuremberg_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "nuremberg"
+        }
+      },
+      {
+        "id": "europe_danzig_market",
+        "storeId": "europe_danzig_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "danzig"
+        }
+      },
+      {
+        "id": "europe_belgrade_market",
+        "storeId": "europe_belgrade_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "belgrade"
+        }
+      },
+      {
+        "id": "europe_ragusa_market",
+        "storeId": "europe_ragusa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ragusa"
+        }
+      },
+      {
+        "id": "europe_thessaloniki_market",
+        "storeId": "europe_thessaloniki_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "thessaloniki"
+        }
+      },
+      {
+        "id": "europe_athens_market",
+        "storeId": "europe_athens_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "athens"
+        }
+      },
+      {
+        "id": "europe_palermo_market",
+        "storeId": "europe_palermo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "palermo"
+        }
+      },
+      {
+        "id": "europe_kaffa_market",
+        "storeId": "europe_kaffa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "kaffa"
+        }
+      },
+      {
+        "id": "europe_calais_market",
+        "storeId": "europe_calais_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "calais"
+        }
+      },
+      {
+        "id": "africa_fez_market",
+        "storeId": "africa_fez_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "fez"
+        }
+      },
+      {
+        "id": "africa_ceuta_market",
+        "storeId": "africa_ceuta_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ceuta"
+        }
+      },
+      {
+        "id": "africa_sijilmasa_market",
+        "storeId": "africa_sijilmasa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "sijilmasa"
+        }
+      },
+      {
+        "id": "africa_tunis_market",
+        "storeId": "africa_tunis_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "tunis"
+        }
+      },
+      {
+        "id": "africa_tripoli_market",
+        "storeId": "africa_tripoli_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "tripoli"
+        }
+      },
+      {
+        "id": "africa_cairo_market",
+        "storeId": "africa_cairo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "cairo"
+        }
+      },
+      {
+        "id": "africa_alexandria_market",
+        "storeId": "africa_alexandria_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "alexandria"
+        }
+      },
+      {
+        "id": "africa_aswan_market",
+        "storeId": "africa_aswan_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "aswan"
+        }
+      },
+      {
+        "id": "africa_niani_market",
+        "storeId": "africa_niani_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "niani"
+        }
+      },
+      {
+        "id": "africa_timbuktu_market",
+        "storeId": "africa_timbuktu_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "timbuktu"
+        }
+      },
+      {
+        "id": "africa_walata_market",
+        "storeId": "africa_walata_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "walata"
+        }
+      },
+      {
+        "id": "africa_taghaza_market",
+        "storeId": "africa_taghaza_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "taghaza"
+        }
+      },
+      {
+        "id": "africa_gao_market",
+        "storeId": "africa_gao_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "gao"
+        }
+      },
+      {
+        "id": "africa_agadez_market",
+        "storeId": "africa_agadez_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "agadez"
+        }
+      },
+      {
+        "id": "africa_kano_market",
+        "storeId": "africa_kano_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "kano"
+        }
+      },
+      {
+        "id": "africa_katsina_market",
+        "storeId": "africa_katsina_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "katsina"
+        }
+      },
+      {
+        "id": "africa_ngazargamu_market",
+        "storeId": "africa_ngazargamu_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ngazargamu"
+        }
+      },
+      {
+        "id": "africa_debre_berhan_market",
+        "storeId": "africa_debre_berhan_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "debre_berhan"
+        }
+      },
+      {
+        "id": "africa_axum_market",
+        "storeId": "africa_axum_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "axum"
+        }
+      },
+      {
+        "id": "africa_meregh_market",
+        "storeId": "africa_meregh_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "meregh"
+        }
+      },
+      {
+        "id": "africa_mogadishu_market",
+        "storeId": "africa_mogadishu_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mogadishu"
+        }
+      },
+      {
+        "id": "africa_kilwa_market",
+        "storeId": "africa_kilwa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "kilwa"
+        }
+      },
+      {
+        "id": "africa_mombasa_market",
+        "storeId": "africa_mombasa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mombasa"
+        }
+      },
+      {
+        "id": "africa_zanzibar_market",
+        "storeId": "africa_zanzibar_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "zanzibar"
+        }
+      },
+      {
+        "id": "africa_great_zimbabwe_market",
+        "storeId": "africa_great_zimbabwe_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "great_zimbabwe"
+        }
+      },
+      {
+        "id": "africa_sofala_market",
+        "storeId": "africa_sofala_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "sofala"
+        }
+      },
+      {
+        "id": "africa_mbanza_kongo_market",
+        "storeId": "africa_mbanza_kongo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mbanza_kongo"
+        }
+      },
+      {
+        "id": "africa_mpinda_market",
+        "storeId": "africa_mpinda_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mpinda"
+        }
+      },
+      {
+        "id": "africa_benin_city_market",
+        "storeId": "africa_benin_city_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "benin_city"
+        }
+      },
+      {
+        "id": "africa_ughoton_market",
+        "storeId": "africa_ughoton_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ughoton"
+        }
+      },
+      {
+        "id": "mei_bursa_market",
+        "storeId": "mei_bursa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bursa"
+        }
+      },
+      {
+        "id": "mei_konya_market",
+        "storeId": "mei_konya_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "konya"
+        }
+      },
+      {
+        "id": "mei_aleppo_market",
+        "storeId": "mei_aleppo_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "aleppo"
+        }
+      },
+      {
+        "id": "mei_damascus_market",
+        "storeId": "mei_damascus_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "damascus"
+        }
+      },
+      {
+        "id": "mei_jerusalem_market",
+        "storeId": "mei_jerusalem_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "jerusalem"
+        }
+      },
+      {
+        "id": "mei_jeddah_market",
+        "storeId": "mei_jeddah_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "jeddah"
+        }
+      },
+      {
+        "id": "mei_mecca_market",
+        "storeId": "mei_mecca_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mecca"
+        }
+      },
+      {
+        "id": "mei_zabid_market",
+        "storeId": "mei_zabid_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "zabid"
+        }
+      },
+      {
+        "id": "mei_aden_market",
+        "storeId": "mei_aden_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "aden"
+        }
+      },
+      {
+        "id": "mei_baghdad_market",
+        "storeId": "mei_baghdad_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "baghdad"
+        }
+      },
+      {
+        "id": "mei_tabriz_market",
+        "storeId": "mei_tabriz_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "tabriz"
+        }
+      },
+      {
+        "id": "mei_hormuz_market",
+        "storeId": "mei_hormuz_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "hormuz"
+        }
+      },
+      {
+        "id": "mei_herat_market",
+        "storeId": "mei_herat_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "herat"
+        }
+      },
+      {
+        "id": "mei_samarkand_market",
+        "storeId": "mei_samarkand_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "samarkand"
+        }
+      },
+      {
+        "id": "mei_lahore_market",
+        "storeId": "mei_lahore_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "lahore"
+        }
+      },
+      {
+        "id": "mei_delhi_market",
+        "storeId": "mei_delhi_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "delhi"
+        }
+      },
+      {
+        "id": "mei_ahmadabad_market",
+        "storeId": "mei_ahmadabad_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "ahmadabad"
+        }
+      },
+      {
+        "id": "mei_khambhat_market",
+        "storeId": "mei_khambhat_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "khambhat"
+        }
+      },
+      {
+        "id": "mei_mandu_market",
+        "storeId": "mei_mandu_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "mandu"
+        }
+      },
+      {
+        "id": "mei_bidar_market",
+        "storeId": "mei_bidar_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "bidar"
+        }
+      },
+      {
+        "id": "mei_goa_market",
+        "storeId": "mei_goa_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "goa"
+        }
+      },
+      {
+        "id": "mei_vijayanagara_market",
+        "storeId": "mei_vijayanagara_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "vijayanagara"
+        }
+      },
+      {
+        "id": "mei_calicut_market",
+        "storeId": "mei_calicut_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "calicut"
+        }
+      },
+      {
+        "id": "mei_gaur_market",
+        "storeId": "mei_gaur_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "gaur"
+        }
+      },
+      {
+        "id": "mei_chittagong_market",
+        "storeId": "mei_chittagong_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "chittagong"
+        }
+      },
+      {
+        "id": "mei_kotte_market",
+        "storeId": "mei_kotte_store",
+        "owner": {
+          "kind": "settlement",
+          "id": "kotte"
+        }
+      }
     ],
     "prices": [
-      {"id": "london_grain_price", "marketId": "london_market", "goodId": "grain", "currencyId": "pound_sterling", "quantityUnits": 100, "amountMinor": 12},
-      {"id": "dover_provisions_price", "marketId": "dover_market", "goodId": "ship_provisions", "currencyId": "pound_sterling", "quantityUnits": 100, "amountMinor": 30}
+      {
+        "id": "london_grain_price",
+        "marketId": "london_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "dover_provisions_price",
+        "marketId": "dover_market",
+        "goodId": "ship_provisions",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 30
+      },
+      {
+        "id": "europe_london_grain_price",
+        "marketId": "europe_london_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_edinburgh_grain_price",
+        "marketId": "europe_edinburgh_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_dublin_grain_price",
+        "marketId": "europe_dublin_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_oslo_grain_price",
+        "marketId": "europe_oslo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_copenhagen_grain_price",
+        "marketId": "europe_copenhagen_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_stockholm_grain_price",
+        "marketId": "europe_stockholm_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_paris_grain_price",
+        "marketId": "europe_paris_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_dijon_grain_price",
+        "marketId": "europe_dijon_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_nantes_grain_price",
+        "marketId": "europe_nantes_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_aix_en_provence_grain_price",
+        "marketId": "europe_aix_en_provence_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_lisbon_grain_price",
+        "marketId": "europe_lisbon_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_toledo_grain_price",
+        "marketId": "europe_toledo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_zaragoza_grain_price",
+        "marketId": "europe_zaragoza_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_pamplona_grain_price",
+        "marketId": "europe_pamplona_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_granada_grain_price",
+        "marketId": "europe_granada_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_vienna_grain_price",
+        "marketId": "europe_vienna_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_prague_grain_price",
+        "marketId": "europe_prague_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_berlin_grain_price",
+        "marketId": "europe_berlin_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_wittenberg_grain_price",
+        "marketId": "europe_wittenberg_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_munich_grain_price",
+        "marketId": "europe_munich_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_heidelberg_grain_price",
+        "marketId": "europe_heidelberg_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_aachen_grain_price",
+        "marketId": "europe_aachen_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_lucerne_grain_price",
+        "marketId": "europe_lucerne_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_krakow_grain_price",
+        "marketId": "europe_krakow_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_vilnius_grain_price",
+        "marketId": "europe_vilnius_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_marienburg_grain_price",
+        "marketId": "europe_marienburg_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_riga_grain_price",
+        "marketId": "europe_riga_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_buda_grain_price",
+        "marketId": "europe_buda_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_targoviste_grain_price",
+        "marketId": "europe_targoviste_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_suceava_grain_price",
+        "marketId": "europe_suceava_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_jajce_grain_price",
+        "marketId": "europe_jajce_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_smederevo_grain_price",
+        "marketId": "europe_smederevo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_lezhe_grain_price",
+        "marketId": "europe_lezhe_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_edirne_grain_price",
+        "marketId": "europe_edirne_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_constantinople_grain_price",
+        "marketId": "europe_constantinople_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_venice_grain_price",
+        "marketId": "europe_venice_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_milan_grain_price",
+        "marketId": "europe_milan_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_florence_grain_price",
+        "marketId": "europe_florence_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_rome_grain_price",
+        "marketId": "europe_rome_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_naples_grain_price",
+        "marketId": "europe_naples_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_genoa_grain_price",
+        "marketId": "europe_genoa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_chambery_grain_price",
+        "marketId": "europe_chambery_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_moscow_grain_price",
+        "marketId": "europe_moscow_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_novgorod_grain_price",
+        "marketId": "europe_novgorod_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_tver_grain_price",
+        "marketId": "europe_tver_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_ryazan_grain_price",
+        "marketId": "europe_ryazan_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_saray_grain_price",
+        "marketId": "europe_saray_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_solkhat_grain_price",
+        "marketId": "europe_solkhat_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_kazan_grain_price",
+        "marketId": "europe_kazan_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_dover_grain_price",
+        "marketId": "europe_dover_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_york_grain_price",
+        "marketId": "europe_york_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_bristol_grain_price",
+        "marketId": "europe_bristol_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_bergen_grain_price",
+        "marketId": "europe_bergen_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_lubeck_grain_price",
+        "marketId": "europe_lubeck_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_hamburg_grain_price",
+        "marketId": "europe_hamburg_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_bruges_grain_price",
+        "marketId": "europe_bruges_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_rouen_grain_price",
+        "marketId": "europe_rouen_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_bordeaux_grain_price",
+        "marketId": "europe_bordeaux_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_seville_grain_price",
+        "marketId": "europe_seville_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_barcelona_grain_price",
+        "marketId": "europe_barcelona_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_valencia_grain_price",
+        "marketId": "europe_valencia_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_lyon_grain_price",
+        "marketId": "europe_lyon_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_cologne_grain_price",
+        "marketId": "europe_cologne_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_nuremberg_grain_price",
+        "marketId": "europe_nuremberg_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_danzig_grain_price",
+        "marketId": "europe_danzig_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_belgrade_grain_price",
+        "marketId": "europe_belgrade_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_ragusa_grain_price",
+        "marketId": "europe_ragusa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_thessaloniki_grain_price",
+        "marketId": "europe_thessaloniki_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_athens_grain_price",
+        "marketId": "europe_athens_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_palermo_grain_price",
+        "marketId": "europe_palermo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_kaffa_grain_price",
+        "marketId": "europe_kaffa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "europe_calais_grain_price",
+        "marketId": "europe_calais_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_fez_grain_price",
+        "marketId": "africa_fez_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_ceuta_grain_price",
+        "marketId": "africa_ceuta_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_sijilmasa_grain_price",
+        "marketId": "africa_sijilmasa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_tunis_grain_price",
+        "marketId": "africa_tunis_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_tripoli_grain_price",
+        "marketId": "africa_tripoli_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_cairo_grain_price",
+        "marketId": "africa_cairo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_alexandria_grain_price",
+        "marketId": "africa_alexandria_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_aswan_grain_price",
+        "marketId": "africa_aswan_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_niani_grain_price",
+        "marketId": "africa_niani_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_timbuktu_grain_price",
+        "marketId": "africa_timbuktu_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_walata_grain_price",
+        "marketId": "africa_walata_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_taghaza_grain_price",
+        "marketId": "africa_taghaza_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_gao_grain_price",
+        "marketId": "africa_gao_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_agadez_grain_price",
+        "marketId": "africa_agadez_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_kano_grain_price",
+        "marketId": "africa_kano_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_katsina_grain_price",
+        "marketId": "africa_katsina_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_ngazargamu_grain_price",
+        "marketId": "africa_ngazargamu_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_debre_berhan_grain_price",
+        "marketId": "africa_debre_berhan_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_axum_grain_price",
+        "marketId": "africa_axum_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_meregh_grain_price",
+        "marketId": "africa_meregh_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_mogadishu_grain_price",
+        "marketId": "africa_mogadishu_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_kilwa_grain_price",
+        "marketId": "africa_kilwa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_mombasa_grain_price",
+        "marketId": "africa_mombasa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_zanzibar_grain_price",
+        "marketId": "africa_zanzibar_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_great_zimbabwe_grain_price",
+        "marketId": "africa_great_zimbabwe_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_sofala_grain_price",
+        "marketId": "africa_sofala_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_mbanza_kongo_grain_price",
+        "marketId": "africa_mbanza_kongo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_mpinda_grain_price",
+        "marketId": "africa_mpinda_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_benin_city_grain_price",
+        "marketId": "africa_benin_city_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "africa_ughoton_grain_price",
+        "marketId": "africa_ughoton_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_bursa_grain_price",
+        "marketId": "mei_bursa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_konya_grain_price",
+        "marketId": "mei_konya_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_aleppo_grain_price",
+        "marketId": "mei_aleppo_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_damascus_grain_price",
+        "marketId": "mei_damascus_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_jerusalem_grain_price",
+        "marketId": "mei_jerusalem_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_jeddah_grain_price",
+        "marketId": "mei_jeddah_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_mecca_grain_price",
+        "marketId": "mei_mecca_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_zabid_grain_price",
+        "marketId": "mei_zabid_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_aden_grain_price",
+        "marketId": "mei_aden_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_baghdad_grain_price",
+        "marketId": "mei_baghdad_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_tabriz_grain_price",
+        "marketId": "mei_tabriz_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_hormuz_grain_price",
+        "marketId": "mei_hormuz_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_herat_grain_price",
+        "marketId": "mei_herat_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_samarkand_grain_price",
+        "marketId": "mei_samarkand_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_lahore_grain_price",
+        "marketId": "mei_lahore_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_delhi_grain_price",
+        "marketId": "mei_delhi_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_ahmadabad_grain_price",
+        "marketId": "mei_ahmadabad_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_khambhat_grain_price",
+        "marketId": "mei_khambhat_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_mandu_grain_price",
+        "marketId": "mei_mandu_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_bidar_grain_price",
+        "marketId": "mei_bidar_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_goa_grain_price",
+        "marketId": "mei_goa_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_vijayanagara_grain_price",
+        "marketId": "mei_vijayanagara_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_calicut_grain_price",
+        "marketId": "mei_calicut_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_gaur_grain_price",
+        "marketId": "mei_gaur_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_chittagong_grain_price",
+        "marketId": "mei_chittagong_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      },
+      {
+        "id": "mei_kotte_grain_price",
+        "marketId": "mei_kotte_market",
+        "goodId": "grain",
+        "currencyId": "pound_sterling",
+        "quantityUnits": 100,
+        "amountMinor": 12
+      }
     ],
     "obligations": [
-      {"id": "dover_warehouse_tax", "payerStoreId": "dover_warehouse", "payeeStoreId": "london_settlement_store", "currencyId": "pound_sterling", "amountMinor": 120, "intervalTicks": 30},
-      {"id": "patrol_fleet_upkeep", "payerStoreId": "english_channel_fleet_cargo", "sinkRuleId": "ordinary_operating_cost", "currencyId": "pound_sterling", "amountMinor": 60, "intervalTicks": 10}
+      {
+        "id": "dover_warehouse_tax",
+        "payerStoreId": "dover_warehouse",
+        "payeeStoreId": "london_settlement_store",
+        "currencyId": "pound_sterling",
+        "amountMinor": 120,
+        "intervalTicks": 30
+      },
+      {
+        "id": "patrol_fleet_upkeep",
+        "payerStoreId": "english_channel_fleet_cargo",
+        "sinkRuleId": "ordinary_operating_cost",
+        "currencyId": "pound_sterling",
+        "amountMinor": 60,
+        "intervalTicks": 10
+      }
     ],
-    "sourceRules": [{"id": "scenario_initial_endowment", "assetKind": "currency", "assetIds": ["pound_sterling"], "storeKinds": ["settlement", "warehouse", "fleet"]}],
-    "sinkRules": [{"id": "ordinary_operating_cost", "assetKind": "currency", "assetIds": ["pound_sterling"], "storeKinds": ["settlement", "warehouse", "ship", "fleet"]}]
+    "sourceRules": [
+      {
+        "id": "scenario_initial_endowment",
+        "assetKind": "currency",
+        "assetIds": [
+          "pound_sterling"
+        ],
+        "storeKinds": [
+          "settlement",
+          "warehouse",
+          "fleet"
+        ]
+      }
+    ],
+    "sinkRules": [
+      {
+        "id": "ordinary_operating_cost",
+        "assetKind": "currency",
+        "assetIds": [
+          "pound_sterling"
+        ],
+        "storeKinds": [
+          "settlement",
+          "warehouse",
+          "ship",
+          "fleet"
+        ]
+      }
+    ]
   },
   "state": {
     "schemaVersion": 1,
     "storeBalances": [
-      {"id": "london_settlement_store", "storeId": "london_settlement_store", "goods": [{"goodId": "grain", "quantityUnits": 10000}, {"goodId": "flour", "quantityUnits": 4000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 24000}]},
-      {"id": "dover_warehouse", "storeId": "dover_warehouse", "goods": [{"goodId": "grain", "quantityUnits": 3000}, {"goodId": "flour", "quantityUnits": 2000}, {"goodId": "ship_provisions", "quantityUnits": 1000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 6000}]},
-      {"id": "english_patrol_ship_hold", "storeId": "english_patrol_ship_hold", "goods": [{"goodId": "ship_provisions", "quantityUnits": 500}], "currencies": []},
-      {"id": "english_channel_fleet_cargo", "storeId": "english_channel_fleet_cargo", "goods": [{"goodId": "ship_provisions", "quantityUnits": 2000}], "currencies": [{"currencyId": "pound_sterling", "amountMinor": 1200}]}
+      {
+        "id": "london_settlement_store",
+        "storeId": "london_settlement_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 10000
+          },
+          {
+            "goodId": "flour",
+            "quantityUnits": 4000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 24000
+          }
+        ]
+      },
+      {
+        "id": "dover_warehouse",
+        "storeId": "dover_warehouse",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 3000
+          },
+          {
+            "goodId": "flour",
+            "quantityUnits": 2000
+          },
+          {
+            "goodId": "ship_provisions",
+            "quantityUnits": 1000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 6000
+          }
+        ]
+      },
+      {
+        "id": "english_patrol_ship_hold",
+        "storeId": "english_patrol_ship_hold",
+        "goods": [
+          {
+            "goodId": "ship_provisions",
+            "quantityUnits": 500
+          }
+        ],
+        "currencies": []
+      },
+      {
+        "id": "english_channel_fleet_cargo",
+        "storeId": "english_channel_fleet_cargo",
+        "goods": [
+          {
+            "goodId": "ship_provisions",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 1200
+          }
+        ]
+      },
+      {
+        "id": "europe_london_store",
+        "storeId": "europe_london_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_edinburgh_store",
+        "storeId": "europe_edinburgh_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_dublin_store",
+        "storeId": "europe_dublin_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_oslo_store",
+        "storeId": "europe_oslo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_copenhagen_store",
+        "storeId": "europe_copenhagen_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_stockholm_store",
+        "storeId": "europe_stockholm_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_paris_store",
+        "storeId": "europe_paris_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_dijon_store",
+        "storeId": "europe_dijon_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_nantes_store",
+        "storeId": "europe_nantes_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_aix_en_provence_store",
+        "storeId": "europe_aix_en_provence_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_lisbon_store",
+        "storeId": "europe_lisbon_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_toledo_store",
+        "storeId": "europe_toledo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_zaragoza_store",
+        "storeId": "europe_zaragoza_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_pamplona_store",
+        "storeId": "europe_pamplona_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_granada_store",
+        "storeId": "europe_granada_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_vienna_store",
+        "storeId": "europe_vienna_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_prague_store",
+        "storeId": "europe_prague_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_berlin_store",
+        "storeId": "europe_berlin_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_wittenberg_store",
+        "storeId": "europe_wittenberg_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_munich_store",
+        "storeId": "europe_munich_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_heidelberg_store",
+        "storeId": "europe_heidelberg_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_aachen_store",
+        "storeId": "europe_aachen_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_lucerne_store",
+        "storeId": "europe_lucerne_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_krakow_store",
+        "storeId": "europe_krakow_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_vilnius_store",
+        "storeId": "europe_vilnius_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_marienburg_store",
+        "storeId": "europe_marienburg_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_riga_store",
+        "storeId": "europe_riga_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_buda_store",
+        "storeId": "europe_buda_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_targoviste_store",
+        "storeId": "europe_targoviste_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_suceava_store",
+        "storeId": "europe_suceava_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_jajce_store",
+        "storeId": "europe_jajce_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_smederevo_store",
+        "storeId": "europe_smederevo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_lezhe_store",
+        "storeId": "europe_lezhe_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_edirne_store",
+        "storeId": "europe_edirne_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_constantinople_store",
+        "storeId": "europe_constantinople_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_venice_store",
+        "storeId": "europe_venice_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_milan_store",
+        "storeId": "europe_milan_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_florence_store",
+        "storeId": "europe_florence_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_rome_store",
+        "storeId": "europe_rome_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_naples_store",
+        "storeId": "europe_naples_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_genoa_store",
+        "storeId": "europe_genoa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_chambery_store",
+        "storeId": "europe_chambery_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_moscow_store",
+        "storeId": "europe_moscow_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_novgorod_store",
+        "storeId": "europe_novgorod_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_tver_store",
+        "storeId": "europe_tver_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_ryazan_store",
+        "storeId": "europe_ryazan_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_saray_store",
+        "storeId": "europe_saray_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_solkhat_store",
+        "storeId": "europe_solkhat_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_kazan_store",
+        "storeId": "europe_kazan_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_dover_store",
+        "storeId": "europe_dover_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_york_store",
+        "storeId": "europe_york_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_bristol_store",
+        "storeId": "europe_bristol_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_bergen_store",
+        "storeId": "europe_bergen_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_lubeck_store",
+        "storeId": "europe_lubeck_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_hamburg_store",
+        "storeId": "europe_hamburg_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_bruges_store",
+        "storeId": "europe_bruges_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_rouen_store",
+        "storeId": "europe_rouen_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_bordeaux_store",
+        "storeId": "europe_bordeaux_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_seville_store",
+        "storeId": "europe_seville_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_barcelona_store",
+        "storeId": "europe_barcelona_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_valencia_store",
+        "storeId": "europe_valencia_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_lyon_store",
+        "storeId": "europe_lyon_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_cologne_store",
+        "storeId": "europe_cologne_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_nuremberg_store",
+        "storeId": "europe_nuremberg_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_danzig_store",
+        "storeId": "europe_danzig_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_belgrade_store",
+        "storeId": "europe_belgrade_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_ragusa_store",
+        "storeId": "europe_ragusa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_thessaloniki_store",
+        "storeId": "europe_thessaloniki_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_athens_store",
+        "storeId": "europe_athens_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_palermo_store",
+        "storeId": "europe_palermo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_kaffa_store",
+        "storeId": "europe_kaffa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "europe_calais_store",
+        "storeId": "europe_calais_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_fez_store",
+        "storeId": "africa_fez_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_ceuta_store",
+        "storeId": "africa_ceuta_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_sijilmasa_store",
+        "storeId": "africa_sijilmasa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_tunis_store",
+        "storeId": "africa_tunis_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_tripoli_store",
+        "storeId": "africa_tripoli_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_cairo_store",
+        "storeId": "africa_cairo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_alexandria_store",
+        "storeId": "africa_alexandria_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_aswan_store",
+        "storeId": "africa_aswan_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_niani_store",
+        "storeId": "africa_niani_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_timbuktu_store",
+        "storeId": "africa_timbuktu_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_walata_store",
+        "storeId": "africa_walata_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_taghaza_store",
+        "storeId": "africa_taghaza_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_gao_store",
+        "storeId": "africa_gao_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_agadez_store",
+        "storeId": "africa_agadez_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_kano_store",
+        "storeId": "africa_kano_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_katsina_store",
+        "storeId": "africa_katsina_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_ngazargamu_store",
+        "storeId": "africa_ngazargamu_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_debre_berhan_store",
+        "storeId": "africa_debre_berhan_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_axum_store",
+        "storeId": "africa_axum_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_meregh_store",
+        "storeId": "africa_meregh_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_mogadishu_store",
+        "storeId": "africa_mogadishu_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_kilwa_store",
+        "storeId": "africa_kilwa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_mombasa_store",
+        "storeId": "africa_mombasa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_zanzibar_store",
+        "storeId": "africa_zanzibar_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_great_zimbabwe_store",
+        "storeId": "africa_great_zimbabwe_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_sofala_store",
+        "storeId": "africa_sofala_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_mbanza_kongo_store",
+        "storeId": "africa_mbanza_kongo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_mpinda_store",
+        "storeId": "africa_mpinda_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_benin_city_store",
+        "storeId": "africa_benin_city_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "africa_ughoton_store",
+        "storeId": "africa_ughoton_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_bursa_store",
+        "storeId": "mei_bursa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_konya_store",
+        "storeId": "mei_konya_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_aleppo_store",
+        "storeId": "mei_aleppo_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_damascus_store",
+        "storeId": "mei_damascus_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_jerusalem_store",
+        "storeId": "mei_jerusalem_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_jeddah_store",
+        "storeId": "mei_jeddah_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_mecca_store",
+        "storeId": "mei_mecca_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_zabid_store",
+        "storeId": "mei_zabid_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_aden_store",
+        "storeId": "mei_aden_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_baghdad_store",
+        "storeId": "mei_baghdad_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_tabriz_store",
+        "storeId": "mei_tabriz_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_hormuz_store",
+        "storeId": "mei_hormuz_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_herat_store",
+        "storeId": "mei_herat_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_samarkand_store",
+        "storeId": "mei_samarkand_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_lahore_store",
+        "storeId": "mei_lahore_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_delhi_store",
+        "storeId": "mei_delhi_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_ahmadabad_store",
+        "storeId": "mei_ahmadabad_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_khambhat_store",
+        "storeId": "mei_khambhat_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_mandu_store",
+        "storeId": "mei_mandu_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_bidar_store",
+        "storeId": "mei_bidar_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_goa_store",
+        "storeId": "mei_goa_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_vijayanagara_store",
+        "storeId": "mei_vijayanagara_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_calicut_store",
+        "storeId": "mei_calicut_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_gaur_store",
+        "storeId": "mei_gaur_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_chittagong_store",
+        "storeId": "mei_chittagong_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      },
+      {
+        "id": "mei_kotte_store",
+        "storeId": "mei_kotte_store",
+        "goods": [
+          {
+            "goodId": "grain",
+            "quantityUnits": 2000
+          }
+        ],
+        "currencies": [
+          {
+            "currencyId": "pound_sterling",
+            "amountMinor": 2400
+          }
+        ]
+      }
     ],
-    "processedTransactionIds": []
+    "processedTransactionIds": [],
+    "currentTick": 0,
+    "pendingObligations": [
+      {
+        "obligationId": "dover_warehouse_tax",
+        "nextDueTick": 30,
+        "occurrencesSettled": 0
+      },
+      {
+        "obligationId": "patrol_fleet_upkeep",
+        "nextDueTick": 10,
+        "occurrencesSettled": 0
+      }
+    ]
   }
 }

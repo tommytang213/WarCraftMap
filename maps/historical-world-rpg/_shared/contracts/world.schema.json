@@ -9,6 +9,7 @@
     "navigationZones",
     "navigationSafePoints",
     "activeUnitNavigationStates",
+    "regionalGeography",
     "polities",
     "provinces",
     "settlements",
@@ -59,9 +60,10 @@
         "$ref": "navigation.schema.json#/$defs/activeUnitNavigationState"
       }
     },
+    "regionalGeography": {"$ref": "regional-navigation.schema.json#/$defs/regionalGeography"},
     "schemaVersion": {
       "type": "integer",
-      "const": 8
+      "const": 9
     },
     "polities": {
       "type": "array",
@@ -405,7 +407,14 @@
           "type": "array",
           "items": {"$ref": "#/$defs/stableId"},
           "uniqueItems": true
-        }
+        },
+        "regionalInstanceId": {"$ref": "#/$defs/stableId"},
+        "localPosition": {"$ref": "regional-navigation.schema.json#/$defs/position"},
+        "terrainClass": {"enum": ["coast", "riverbank", "plains", "upland", "forest", "steppe"]},
+        "roleIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}},
+        "portAccess": {"type": "object", "additionalProperties": false, "required": ["maritimeZoneId", "access"], "properties": {"maritimeZoneId": {"$ref": "#/$defs/stableId"}, "access": {"$ref": "#/$defs/stableId"}}},
+        "activation": {"type": "object", "additionalProperties": false, "required": ["runtimeState", "representationTemplateId", "deterministicKey"], "properties": {"runtimeState": {"const": "abstract"}, "representationTemplateId": {"$ref": "#/$defs/stableId"}, "deterministicKey": {"$ref": "#/$defs/stableId"}}},
+        "productionRefs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stableId"}}
       }
     },
     "settlementServiceDefinition": {

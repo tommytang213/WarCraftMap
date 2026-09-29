@@ -6,6 +6,7 @@ import ManagementScreenPauseController
 import UnstuckRecovery
 import WarcraftRecoveryRuntime
 import PlayerGodMode
+import CampaignTimeline
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -13,6 +14,9 @@ constant int SAVE_SCHEMA_VERSION = 1
 init
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
+	let clock = configureCampaignTimeline()
+	installCampaignClock(clock)
+	clock.attachTimer(new WarcraftCampaignTimerAdapter(), 1.)
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	registerUnstuckCommand(commands, recoveryService)
