@@ -85,7 +85,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Africa
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 focused political baseline, settlements, ports, caravan routes, and regional entry content
-- [ ] Middle East / India
+- [x] Middle East / India
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
