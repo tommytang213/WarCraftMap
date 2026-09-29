@@ -154,6 +154,7 @@ class CampaignPackagingTests(unittest.TestCase):
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
             self.assertEqual(6, len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
+            southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
             runtime = json.loads(west.read("runtime/scenario-runtime.json"))
@@ -165,6 +166,15 @@ class CampaignPackagingTests(unittest.TestCase):
             self.assertTrue(runtime["settlementDefinitions"])
             self.assertTrue(all(x["regionalInstanceId"] in runtime["physicalMap"]["regionalInstanceIds"] for x in runtime["settlementDefinitions"]))
             self.assertIn("mali_empire", runtime["ids"]["polities"])
+        southeast_asia_local = self.project / "southeast-asia.w3x"
+        southeast_asia_local.write_bytes(southeast_asia_bytes)
+        with zipfile.ZipFile(southeast_asia_local) as southeast_asia:
+            runtime = json.loads(southeast_asia.read("runtime/scenario-runtime.json"))
+            self.assertEqual("southeast_asia", runtime["physicalMap"]["id"])
+            self.assertEqual(7, len(runtime["physicalMap"]["regionalInstanceIds"]))
+            self.assertIn("majapahit_empire", {row["id"] for row in runtime["polityDefinitions"]})
+            self.assertIn("ava_upper_burma", {row["id"] for row in runtime["provinceDefinitions"]})
+            self.assertTrue(all(row["regionalInstanceId"].startswith("sea_") for row in runtime["settlementDefinitions"]))
         second = build_campaign(self.manifest, grill=str(self.fake))
         self.assertEqual(first_structure, self.structure(second))
         self.assertEqual(source_hashes, {p.relative_to(self.project): hashlib.sha256(p.read_bytes()).hexdigest() for p in authoritative})

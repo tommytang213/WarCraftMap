@@ -137,6 +137,11 @@ def validate(source_path=SOURCE, world_path=WORLD, geography_path=GEOGRAPHY, req
 
 def project(data, world):
     world = copy.deepcopy(world)
+    # Reprojection replaces records in place semantically. Preserve the canonical
+    # ordering of records already present so independently generated regional
+    # baselines remain mutually idempotent.
+    province_order = {row["id"]: index for index, row in enumerate(world["provinces"])}
+    holding_order = {row["id"]: index for index, row in enumerate(world["territorialHoldings"])}
     polity_ids = {p["id"] for p in data["polities"]}; province_ids = {p["id"] for polity in data["polities"] for p in polity["provinces"]}
     existing_province_settlements = {p["id"]: list(p.get("settlementIds", [])) for p in world["provinces"] if p["id"] in province_ids}
     relations = {r["subjectPolityId"]: r for r in data["sovereigntyRelationships"]}
@@ -178,6 +183,8 @@ def project(data, world):
             holding = {"id":"holding_"+province["id"],"territory":{"kind":"province","id":province["id"]},"legalOwner":{"kind":"polity","id":pid},"controllerPolityId":pid,"governingPolityId":pid,"sovereignPolityId":relation["overlordPolityId"] if relation else pid,"autonomyPercent":70 if relation else 35,"overlordTaxRatePercent":relation["taxRatePercent"] if relation else 0,"upkeepRatePercent":5,"obligations":[{"kind":"service","value":1}] if relation else []}
             if relation: holding["overlordHoldingId"] = holdings_by_owner[relation["overlordPolityId"]]
             world["territorialHoldings"].append(holding); province_records.append(holding); holdings_by_owner.setdefault(pid, holding["id"])
+    world["provinces"].sort(key=lambda row: province_order.get(row["id"], len(province_order)))
+    world["territorialHoldings"].sort(key=lambda row: holding_order.get(row["id"], len(holding_order)))
     return world
 
 

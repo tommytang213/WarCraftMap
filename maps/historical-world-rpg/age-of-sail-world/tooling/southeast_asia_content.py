@@ -4,6 +4,8 @@ from __future__ import annotations
 import copy, json, math, re, sys
 from pathlib import Path
 
+from southeast_asia_politics import project as project_politics
+
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/"scenario/settlements/southeast-asia-1450.json"; POLITICS=ROOT/"scenario/politics/southeast-asia-1450.json"
 GEOGRAPHY=ROOT/"scenario/geography/southeast_asia.json"; WORLD=ROOT/"scenario/world/world.json"; ECONOMY=ROOT/"scenario/economy/economy.json"; MAPS=ROOT/"scenario/maps/world-map.json"
@@ -102,19 +104,9 @@ def validate(source_path=SOURCE,politics_path=POLITICS):
     return source,politics,geography,positions
 
 def project(source,politics,geography,positions,world):
-    world=copy.deepcopy(world); sids={x["id"] for x in source["settlements"]}; pids={x["id"] for x in politics["polities"]}; vids={p["id"] for x in politics["polities"] for p in x["provinces"]}
-    for key,ids in (("settlements",sids),("polities",pids),("provinces",vids)): world[key]=[x for x in world[key] if x["id"] not in ids]
-    world["territorialHoldings"]=[x for x in world["territorialHoldings"] if x.get("territory",{}).get("id") not in vids]
+    world=project_politics(politics,copy.deepcopy(world)); sids={x["id"] for x in source["settlements"]}; vids={p["id"] for x in politics["polities"] for p in x["provinces"]}
+    world["settlements"]=[x for x in world["settlements"] if x["id"] not in sids]
     world["cityCores"]=[x for x in world["cityCores"] if x["id"] not in {"city_core_"+x for x in sids}]; world["defenseLayouts"]=[x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+x for x in sids}]
-    mei=json.loads((ROOT/"scenario/politics/middle-east-india-1450.json").read_text()); mei_polities={x["id"] for x in mei["polities"]}; mei_provinces={p["id"] for x in mei["polities"] for p in x["provinces"]}
-    polity_at=next((n for n,x in enumerate(world["polities"]) if x["id"] in mei_polities),len(world["polities"])); province_at=next((n for n,x in enumerate(world["provinces"]) if x["id"] in mei_provinces),len(world["provinces"])); new_polities=[]; new_provinces=[]; new_holdings=[]
-    for polity in politics["polities"]:
-        new_polities.append({"id":polity["id"],"name":polity["name"],"adjective":polity["name"],"sovereignTier":"king","nativeSovereignTitle":"Ruler","capitalSettlementId":polity["capitalSettlementId"],"provinceIds":[p["id"] for p in polity["provinces"]]})
-        for province in polity["provinces"]:
-            new_provinces.append({"id":province["id"],"name":province["name"],"administrativeType":"regional_province","legalOwnerPolityId":polity["id"],"controllerPolityId":polity["id"],"settlementIds":[x["id"] for x in source["settlements"] if x["provinceId"]==province["id"]]})
-            new_holdings.append({"id":"holding_"+province["id"],"territory":{"kind":"province","id":province["id"]},"legalOwner":{"kind":"polity","id":polity["id"]},"controllerPolityId":polity["id"],"governingPolityId":polity["id"],"sovereignPolityId":polity["id"],"autonomyPercent":35,"overlordTaxRatePercent":0,"upkeepRatePercent":5,"obligations":[]})
-    holding_at=next((n for n,x in enumerate(world["territorialHoldings"]) if x.get("territory",{}).get("id") in mei_provinces),len(world["territorialHoldings"]))
-    world["polities"][polity_at:polity_at]=new_polities; world["provinces"][province_at:province_at]=new_provinces; world["territorialHoldings"][holding_at:holding_at]=new_holdings
     zones={x["id"]:x for x in world["navigationZones"]}
     for node in geography["navigationTopology"]["nodes"]:
         movement=["flying"] if node["class"] in {"impassable_barrier","decorative_water"} else ["naval","amphibious","flying"] if node["class"] in {"navigable_sea","island_coast"} else ["land","amphibious","flying"]
@@ -129,6 +121,11 @@ def project(source,politics,geography,positions,world):
         record={"id":ident,"name":item["name"],"kind":"capital" if "capital" in roles else "port" if "major_port" in roles else "fort" if "fortified_town" in roles else "major_city","provinceId":item["provinceId"],"legalOwnerPolityId":item["polityId"],"controllerPolityId":item["polityId"],"capturable":True,"civilianFacilitiesInvulnerable":True,"navigationZoneId":item["navigationZoneId"],"cityCoreId":"city_core_"+ident,"defenseLayoutId":"defense_"+ident,"serviceIds":item["services"],"regionalInstanceId":item["regionalInstanceId"],"physicalMapId":item["physicalMapId"],"localPosition":positions[ident],"terrainClass":item["terrainClass"],"roleIds":roles,"activation":{"runtimeState":"abstract","representationTemplateId":"settlement_representation","deterministicKey":ident},"economicProfile":copy.deepcopy(item["economy"]),"productionRefs":item["economy"]["production"]}
         if item.get("port"): record["portAccess"]=copy.deepcopy(item["port"])
         world["settlements"].append(record); world["cityCores"].append({"id":"city_core_"+ident,"objectTemplateId":"capital_city_core" if "capital" in roles else "city_core"}); world["defenseLayouts"].append({"id":"defense_"+ident,"objectTemplateIds":["capital_defenses" if defense=="capital" else "port_defenses" if defense=="port" else "city_defenses"]})
+    settlements_by_province={province_id:[] for province_id in vids}
+    for settlement in world["settlements"]:
+        if settlement.get("provinceId") in settlements_by_province: settlements_by_province[settlement["provinceId"]].append(settlement["id"])
+    for province in world["provinces"]:
+        if province["id"] in settlements_by_province: province["settlementIds"]=settlements_by_province[province["id"]]
     return world
 
 def update_economy(source,economy):
