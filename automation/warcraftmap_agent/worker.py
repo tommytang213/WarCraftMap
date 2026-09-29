@@ -741,10 +741,16 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
 
 
 def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
-    """Merge one ready PR. Failed/pending PRs remain for a later timer run."""
+    """Merge or recover one tracked open PR per worker invocation."""
     for number, record in state["issues"].items():
         pr = record.get("pr")
-        if record.get("status") != "pr_open" or not pr:
+        if not pr:
+            continue
+        failed_conflict = (
+            record.get("status") == "failed"
+            and "unmergeable because main conflicts" in str(record.get("last_failure", ""))
+        )
+        if record.get("status") != "pr_open" and not failed_conflict:
             continue
         view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
         if view["state"] == "MERGED":
@@ -755,16 +761,16 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
         if view.get("mergeStateStatus") == "DIRTY":
-            attempts = int(record.get("attempts", 0))
-            if attempts >= config.max_attempts:
+            conflict_attempts = int(record.get("conflict_attempts", 0))
+            record["repair_kind"] = "merge_conflict"
+            if conflict_attempts >= config.max_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the per-issue attempt limit ({config.max_attempts}) is exhausted."
+                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted."
                 )
             else:
                 record["status"] = "repair"
-                record["repair_kind"] = "merge_conflict"
                 record["last_failure"] = (
                     f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
                     "conflicts with the issue branch. Preserve completed work from both branches."
