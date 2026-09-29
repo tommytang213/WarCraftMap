@@ -31,6 +31,15 @@ ordinary passive bonuses while stored and reconcile from authoritative equip sta
 - Set effects may grant stats, resistances, resource changes, ability/passive unlocks, conditional effects, or other character/equipment modifiers through the same derived-bonus layer as ordinary equipped-item bonuses.
 - Set bonuses are derived from authoritative equipped-item state and should be recomputed on equip/unequip, load/migration, character reconstruction, and physical-map transition rather than persisted as an independent mutable bonus total.
 
+The generic catalog expresses this with `derivedEffects`, `equipmentSetPieces`, and
+`equipmentSets`. A piece maps one stable identity to one or more eligible item types
+and may further restrict compatible slot types. Threshold policy defaults to
+`cumulative`; an all-`exclusive` set selects only its highest reached tier, while a
+`replacement` threshold explicitly names lower thresholds whose effects it replaces.
+`resolve_equipment_bonuses` is the normalized runtime-adapter boundary: it returns
+ordinary equipped instance IDs plus stable set/effect references and is safe to call
+after every state transition or object reconstruction. Its result is never saved.
+
 ## Pickup order and overflow
 
 Routing is transactional and does not mutate its input:
