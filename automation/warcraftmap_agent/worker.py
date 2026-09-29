@@ -773,7 +773,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         )
         if record.get("status") != "pr_open" and not failed_conflict:
             continue
-        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup,baseRefName"])
+        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,mergeable,statusCheckRollup,baseRefName"])
         if view["state"] == "MERGED":
             finish_merged_issue(config, number, record)
             return True
@@ -781,7 +781,9 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["status"] = "failed"
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
-        if view.get("mergeStateStatus") == "DIRTY":
+        merge_state = str(view.get("mergeStateStatus") or "").upper()
+        mergeable = str(view.get("mergeable") or "").upper()
+        if merge_state == "DIRTY" or mergeable == "CONFLICTING":
             base_oid = remote_branch_oid(config.repo_root, str(view.get("baseRefName") or ""))
             previous_base_oid = str(record.get("conflict_base_oid") or "")
             if base_oid and base_oid != previous_base_oid:
@@ -812,8 +814,15 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"GitHub CI failed on PR #{pr}. Inspect it with gh pr checks {pr} and repair the implementation."
             return True
         if pending:
+            if failed_conflict:
+                return True
             continue
-        if view["mergeStateStatus"] not in {"CLEAN", "HAS_HOOKS", "UNSTABLE"}:
+        if merge_state not in {"CLEAN", "HAS_HOOKS", "UNSTABLE"}:
+            # A PR already known to have failed from merge conflicts remains
+            # owned by PR recovery while GitHub recomputes mergeability. Do not
+            # fall through to queue planning and burn Codex on unrelated work.
+            if failed_conflict:
+                return True
             continue
         # Never merge a PR that has not reported any CI checks. Repositories
         # without branch-protection "required" checks are still gated by the
