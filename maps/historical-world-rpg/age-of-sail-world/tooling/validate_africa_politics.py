@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Europe 1450 political source data and its canonical-world projection."""
+"""Validate Africa 1450 political source data and its canonical-world projection."""
 from __future__ import annotations
 
 import json
@@ -32,13 +32,14 @@ def index(items, domain):
 def validate(source_path, world_path=None, geography_path=None):
     root = source_path.resolve().parents[2]
     world_path = world_path or root / "scenario/world/world.json"
-    geography_path = geography_path or root / "scenario/geography/europe.json"
+    geography_path = geography_path or root / "scenario/geography/africa.json"
     data=json.loads(source_path.read_text(encoding="utf-8")); world=json.loads(world_path.read_text(encoding="utf-8")); geography=json.loads(geography_path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != 1 or data.get("campaignStartDate") != "1450-01-01": fail("Europe baseline must use schema 1 and campaign start 1450-01-01")
+    if data.get("schemaVersion") != 1 or data.get("campaignStartDate") != "1450-01-01": fail("Africa baseline must use schema 1 and campaign start 1450-01-01")
     if data.get("coverageRule") != {"kind":"exclusive_authoritative_provinces","exceptions":[]}: fail("authoritative coverage must be exclusive with explicit exceptions")
     instances=index(geography.get("instances",[]),"geography instances")
-    features={f["id"] for instance in instances.values() for f in instance.get("features",[])}
-    polities=index(data.get("polities",[]),"European polities"); provinces={}; province_owner={}
+    instance_features={ident:{f["id"] for f in item.get("features",[])} for ident,item in instances.items()}
+    features=set().union(*instance_features.values())
+    polities=index(data.get("polities",[]),"African polities"); provinces={}; province_owner={}
     world_polities=index(world.get("polities",[]),"world polities"); world_provinces=index(world.get("provinces",[]),"world provinces"); settlements=index(world.get("settlements",[]),"world settlements")
     relationship_ids=set(); conflict_ids=set()
     for pid, polity in polities.items():
@@ -47,13 +48,13 @@ def validate(source_path, world_path=None, geography_path=None):
         refs=polity.get("geographicFeatureIds")
         if not isinstance(refs,list) or not refs: fail(f"polity {pid}: geographicFeatureIds must not be empty")
         for ref in refs:
-            if ref not in features: fail(f"polity {pid}: missing geographic feature {ref!r}")
+            if ref not in instance_features[instance]: fail(f"polity {pid}: missing geographic feature {ref!r} in regional instance {instance!r}")
         local=index(polity.get("provinces",[]),f"polity {pid} provinces")
         if not local: fail(f"polity {pid}: at least one authoritative province is required")
         for province_id, province in local.items():
             if province.get("regionalInstanceId") != instance: fail(f"province {province_id}: must be assigned to polity regional instance {instance!r}")
             province_features=province.get("geographicFeatureIds")
-            if not isinstance(province_features,list) or not province_features or any(ref not in features for ref in province_features): fail(f"province {province_id}: invalid geographic feature references")
+            if not isinstance(province_features,list) or not province_features or any(ref not in instance_features[instance] for ref in province_features): fail(f"province {province_id}: invalid geographic feature references")
             if province_id in provinces: fail(f"authoritative coverage overlaps at province {province_id!r}")
             provinces[province_id]=province; province_owner[province_id]=pid
         capital=polity.get("capitalSettlementId")
@@ -74,8 +75,8 @@ def validate(source_path, world_path=None, geography_path=None):
             if neighbor not in provinces: fail(f"province {province_id}: missing adjacent province {neighbor!r}")
         projected=world_provinces.get(province_id)
         if projected is None or projected.get("legalOwnerPolityId")!=province_owner[province_id]: fail(f"province {province_id}: canonical ownership projection is missing or stale")
-    scoped_world={ident for ident in provinces if ident in world_provinces and world_provinces[ident].get("legalOwnerPolityId")==province_owner[ident]}
-    if set(provinces)!=scoped_world: fail("canonical world has overlapping or unassigned authoritative Europe province coverage")
+    projected_africa_provinces={ident for ident in provinces if ident in world_provinces and world_provinces[ident].get("legalOwnerPolityId")==province_owner[ident]}
+    if projected_africa_provinces != set(provinces): fail("canonical world has overlapping or unassigned authoritative Africa coverage")
     for domain, records in (("vassalage",data.get("vassalage",[])),("personal unions",data.get("personalUnions",[]))):
         for record in records:
             ident=record.get("id")
@@ -83,6 +84,14 @@ def validate(source_path, world_path=None, geography_path=None):
             relationship_ids.add(ident)
             refs=[record.get("subjectPolityId"),record.get("overlordPolityId")] if domain=="vassalage" else [record.get("seniorPolityId"),*record.get("juniorPolityIds",[])]
             if len(refs)!=len(set(refs)) or any(ref not in polities for ref in refs): fail(f"{domain} {ident}: invalid participants")
+    vassal_subjects={x["subjectPolityId"] for x in data.get("vassalage",[])}
+    for record in data.get("tributaryRelations",[]):
+        ident=record.get("id"); subject=record.get("subjectPolityId"); overlord=record.get("overlordPolityId"); rate=record.get("taxRatePercent")
+        if not isinstance(ident,str) or not ID.fullmatch(ident) or ident in relationship_ids: fail(f"tributary relations: duplicate or invalid ID {ident!r}")
+        if subject == overlord or subject not in polities or overlord not in polities: fail(f"tributary relation {ident}: invalid participants")
+        if subject in vassal_subjects: fail(f"tributary relation {ident}: contradictory sovereignty for {subject!r}")
+        if record.get("kind") != "tribute" or not isinstance(rate,int) or isinstance(rate,bool) or not 0 < rate <= 100: fail(f"tributary relation {ident}: invalid tribute obligation")
+        relationship_ids.add(ident)
     parents={x["subjectPolityId"]:x["overlordPolityId"] for x in data.get("vassalage",[])}
     for start in parents:
         seen=set(); current=start

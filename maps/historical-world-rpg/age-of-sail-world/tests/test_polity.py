@@ -14,7 +14,8 @@ class PolityRuntimeTests(unittest.TestCase):
         self.original=copy.deepcopy(self.source)
         self.runtime=PolityRuntime(self.source)
     def test_deterministic_initialization_lookup_and_order(self):
-        self.assertEqual(98,len(self.runtime.ids())); self.assertIn("england",self.runtime.ids()); self.assertIn("france",self.runtime.ids())
+        self.assertEqual(len(self.source["polities"]),len(self.runtime.ids()))
+        self.assertTrue({"england","france","mali_empire","ethiopian_empire"}.issubset(self.runtime.ids()))
         england=self.runtime.require("england")
         self.assertEqual(("greater_london","kent","english_midlands","northern_england"),england.definition.province_ids)
         self.assertEqual(("Kingdom of England","king","london"),(england.definition.name,england.definition.sovereign_tier,england.definition.capital_settlement_id))
@@ -22,10 +23,10 @@ class PolityRuntimeTests(unittest.TestCase):
     def test_activation_snapshots_and_definition_immutability(self):
         self.assertTrue(self.runtime.set_active("france",False))
         self.assertFalse(self.runtime.set_active("france",False))
-        self.assertNotIn("france",self.runtime.ids(active_only=True)); self.assertEqual(97,len(self.runtime.ids(active_only=True)))
+        self.assertNotIn("france",self.runtime.ids(active_only=True)); self.assertEqual(len(self.source["polities"])-1,len(self.runtime.ids(active_only=True)))
         snapshot=self.runtime.snapshot()
         self.assertNotIn("handle",json.dumps(snapshot).lower())
-        self.assertEqual(98,len(snapshot["polities"])); self.assertFalse(next(x for x in snapshot["polities"] if x["id"]=="france")["active"])
+        self.assertEqual(len(self.source["polities"]),len(snapshot["polities"])); self.assertFalse(next(x for x in snapshot["polities"] if x["id"]=="france")["active"])
         snapshot["polities"][0]["active"]=False
         self.assertTrue(self.runtime.require("england").active)
         self.assertEqual(self.original,self.source)

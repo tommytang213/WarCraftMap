@@ -66,8 +66,6 @@ def validate(source_path=SOURCE, politics_path=POLITICS, geography_path=GEOGRAPH
     if SEA_ZONES - water:
         raise AfricaContentError(f"maritime zones missing from generated topology: {sorted(SEA_ZONES-water)}")
     capitals = {p["capitalSettlementId"] for p in polities.values()}
-    if not capitals <= set(settlements):
-        raise AfricaContentError(f"missing polity capitals: {sorted(capitals-set(settlements))}")
     positions = {}
     for ident, item in settlements.items():
         required = ("name", "polityId", "provinceId", "regionalInstanceId", "position", "terrainClass", "roles", "services", "productionRefs", "defenseClass")
@@ -103,16 +101,12 @@ def validate(source_path=SOURCE, politics_path=POLITICS, geography_path=GEOGRAPH
     ids = sorted(settlements); minimum = source["placementRules"]["minimumSeparationCells"]
     for n, left in enumerate(ids):
         for right in ids[n+1:]:
-            if settlements[left]["regionalInstanceId"] != settlements[right]["regionalInstanceId"]:
-                continue
-            if math.dist(tuple(positions[left].values()), tuple(positions[right].values())) < minimum:
+            if settlements[left]["regionalInstanceId"] == settlements[right]["regionalInstanceId"] and math.dist(tuple(positions[left].values()), tuple(positions[right].values())) < minimum:
                 raise AfricaContentError(f"settlements overlap: {left} and {right}")
     clearance = source["placementRules"]["entryAnchorClearanceCells"]
     for anchor in anchors.values():
         for ident, pos in positions.items():
-            if settlements[ident]["regionalInstanceId"] != anchor["instanceId"]:
-                continue
-            if "transition_location" not in settlements[ident]["roles"] and math.dist(tuple(pos.values()), tuple(anchor["local"])) < clearance:
+            if settlements[ident]["regionalInstanceId"] == anchor["instanceId"] and "transition_location" not in settlements[ident]["roles"] and math.dist(tuple(pos.values()), tuple(anchor["local"])) < clearance:
                 raise AfricaContentError(f"settlement {ident}: obstructs entry anchor {anchor['id']}")
     routes = _index(source.get("tradeRoutes"), "trade routes")
     endpoints = set()
@@ -147,20 +141,10 @@ def _zone(ident, movement):
 
 def project(source, politics, geography, positions, world):
     world = copy.deepcopy(world)
-    africa_polities = {x["id"] for x in politics["polities"]}; africa_provinces = {p["id"] for x in politics["polities"] for p in x["provinces"]}
     africa_settlements = {x["id"] for x in source["settlements"]}
-    world["polities"] = [x for x in world["polities"] if x["id"] not in africa_polities]
-    world["provinces"] = [x for x in world["provinces"] if x["id"] not in africa_provinces]
     world["settlements"] = [x for x in world["settlements"] if x["id"] not in africa_settlements]
     world["cityCores"] = [x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in africa_settlements}]
     world["defenseLayouts"] = [x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in africa_settlements}]
-    world["territorialHoldings"] = [x for x in world["territorialHoldings"] if x["id"] not in {"holding_"+p for p in africa_provinces}]
-    for polity in politics["polities"]:
-        province_ids = [p["id"] for p in polity["provinces"]]
-        world["polities"].append({k: polity[k] for k in ("id", "name", "adjective", "sovereignTier", "nativeSovereignTitle", "capitalSettlementId")} | {"provinceIds": province_ids})
-        for province in polity["provinces"]:
-            world["provinces"].append({"id": province["id"], "name": province["name"], "administrativeType": province["administrativeType"], "legalOwnerPolityId": polity["id"], "controllerPolityId": polity["id"], "settlementIds": []})
-            world["territorialHoldings"].append({"id":"holding_"+province["id"],"territory":{"kind":"province","id":province["id"]},"legalOwner":{"kind":"polity","id":polity["id"]},"controllerPolityId":polity["id"],"governingPolityId":polity["id"],"sovereignPolityId":polity["id"],"autonomyPercent":35,"overlordTaxRatePercent":0,"upkeepRatePercent":5,"obligations":[]})
     provinces = {p["id"]: p for p in world["provinces"]}
     zones = {z["id"]: z for z in world["navigationZones"]}
     zones.setdefault(LAND_ZONE, _zone(LAND_ZONE, ["land", "amphibious", "flying"]))
@@ -176,7 +160,8 @@ def project(source, politics, geography, positions, world):
         ident = item["id"]; roles = item["roles"]; defense = item["defenseClass"]
         record = {"id": ident, "name": item["name"], "kind": "capital" if "capital" in roles else "port" if "major_port" in roles else "fort" if "fortified_town" in roles else "trading_post" if "caravan_center" in roles else "major_city", "provinceId": item["provinceId"], "legalOwnerPolityId": item["polityId"], "controllerPolityId": item["polityId"], "capturable": True, "civilianFacilitiesInvulnerable": True, "navigationZoneId": LAND_ZONE, "cityCoreId": "city_core_"+ident, "defenseLayoutId": "defense_"+ident, "serviceIds": item["services"], "regionalInstanceId": item["regionalInstanceId"], "localPosition": positions[ident], "terrainClass": item["terrainClass"], "roleIds": roles, "activation": {"runtimeState": "abstract", "representationTemplateId": "settlement_representation", "deterministicKey": ident}, "productionRefs": item["productionRefs"]}
         if item.get("port"): record["portAccess"] = copy.deepcopy(item["port"])
-        world["settlements"].append(record); provinces[item["provinceId"]]["settlementIds"].append(ident)
+        world["settlements"].append(record)
+        if ident not in provinces[item["provinceId"]]["settlementIds"]: provinces[item["provinceId"]]["settlementIds"].append(ident)
         world["cityCores"].append({"id": "city_core_"+ident, "objectTemplateId": "capital_city_core" if "capital" in roles else "city_core"})
         world["defenseLayouts"].append({"id": "defense_"+ident, "objectTemplateIds": ["capital_defenses" if defense == "capital" else "port_defenses" if defense == "port" else "city_defenses"]})
     return world

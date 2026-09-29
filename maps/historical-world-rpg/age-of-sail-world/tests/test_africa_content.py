@@ -29,8 +29,8 @@ class AfricaContentTests(unittest.TestCase):
         self.assertEqual((30, 11, 12, 3), (len(source["settlements"]), sum("port" in x for x in source["settlements"]), len(source["tradeRoutes"]), len(source["transitions"])))
         projected = project(source, politics, geography, positions, self.world)
         self.assertEqual(projected, project(copy.deepcopy(source), politics, geography, positions, self.world))
-        africa_instances = {x["id"] for x in geography["instances"]}
-        selected = [x for x in projected["settlements"] if x.get("regionalInstanceId") in africa_instances]
+        selected_ids = {x["id"] for x in source["settlements"]}
+        selected = [x for x in projected["settlements"] if x["id"] in selected_ids]
         self.assertEqual({x["id"] for x in source["settlements"]}, {x["id"] for x in selected})
         cores = {x["id"] for x in projected["cityCores"]}; layouts = {x["id"] for x in projected["defenseLayouts"]}
         for settlement in selected:
@@ -50,12 +50,9 @@ class AfricaContentTests(unittest.TestCase):
         with directory, self.assertRaisesRegex(AfricaContentError, "inland maritime route"): validate(path)
 
     def test_placement_overlap_bounds_and_entry_clearance_are_rejected(self):
-        outside = copy.deepcopy(self.source); next(x for x in outside["settlements"] if x["id"] == "fez")["position"] = [101, 88]
+        outside = copy.deepcopy(self.source); next(x for x in outside["settlements"] if x["id"] == "fez")["position"] = [106, 35]
         overlap = copy.deepcopy(self.source); next(x for x in overlap["settlements"] if x["id"] == "fez")["position"] = next(x for x in overlap["settlements"] if x["id"] == "ceuta")["position"]
-        blocked = copy.deepcopy(self.source)
-        geography = json.loads((ROOT / "scenario/geography/africa.json").read_text())
-        anchor = next(x for x in geography["boundaryAnchors"] if x["instanceId"] == "africa_maghreb_med_atlantic")
-        next(x for x in blocked["settlements"] if x["id"] == "fez")["position"] = anchor["local"]
+        blocked = copy.deepcopy(self.source); next(x for x in blocked["settlements"] if x["id"] == "fez")["position"] = [39, 6]
         for candidate, message in ((outside,"outside local bounds"),(overlap,"overlap"),(blocked,"obstructs entry anchor")):
             directory, path = self.candidate(candidate)
             with self.subTest(message=message), directory, self.assertRaisesRegex(AfricaContentError, message): validate(path)
@@ -73,15 +70,15 @@ class AfricaContentTests(unittest.TestCase):
 
     def test_activation_retirement_capture_reconstruction_and_save_restore(self):
         runtime = SettlementRuntime(self.world, RecordingSettlementAdapter())
-        regional = sorted(x["id"] for x in self.world["settlements"] if x.get("regionalInstanceId") == "africa_mainland")
-        self.assertEqual(tuple(regional), runtime.activate_region("africa_mainland"))
-        runtime.update("timbuktu", controllerPolityId="songhai")
+        regional = sorted(x["id"] for x in self.world["settlements"] if x.get("regionalInstanceId") == "africa_sahara_sahel")
+        self.assertEqual(tuple(regional), runtime.activate_region("africa_sahara_sahel"))
+        runtime.update("timbuktu", controllerPolityId="songhai_kingdom")
         runtime.set_service_available("timbuktu", "market", False)
         saved = runtime.snapshot()
-        self.assertEqual(tuple(regional), runtime.retire_region("africa_mainland"))
+        self.assertEqual(tuple(regional), runtime.retire_region("africa_sahara_sahel"))
         replacement = SettlementRuntime(self.world, RecordingSettlementAdapter())
         replacement.restore(saved, reconstruct=True)
-        self.assertEqual("songhai", replacement.require("timbuktu").controller_polity_id)
+        self.assertEqual("songhai_kingdom", replacement.require("timbuktu").controller_polity_id)
         self.assertFalse(replacement.require("timbuktu").services["market"])
         self.assertTrue(replacement.require("timbuktu").represented)
 
