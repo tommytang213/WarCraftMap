@@ -47,6 +47,8 @@ entities are never duplicated between map-local runtime payloads.
 
 `geography/southeast_asia.json` is the editable authority for the Southeast Asia spatial slice and its Indian, East Asian, and Pacific transitions. It records EPSG:4326 control points, logical mainland and maritime instances, navigable-water topology, paired seams, bounded distortions, density metadata, and per-instance complexity budgets without selecting physical-map packages. Run `python3 tooling/southeast_asia_geography.py` to validate it; calculated local coordinates remain deterministic derived output.
 
+`politics/southeast-asia-1450.json` is the authority for Southeast Asia's 1450 polities, playable historical regions, capitals, sovereignty, preserved compressed port polities, diplomacy, and evidence. Run `python3 tooling/southeast_asia_politics.py` to validate its references and canonical world projection; pass `--write` to rebuild that projection deterministically.
+
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
 
 `politics/africa-1450.json`, `geography/africa.json`, and `settlements/africa-1450.json` together provide the focused Africa authority for selected capitals, ports, caravan centers, trade endpoints, transition locations, placement, services, and abstract representations. Run `python3 tooling/africa_content.py` to validate all references and topology or add `--write` to rebuild the canonical world and economy projections.

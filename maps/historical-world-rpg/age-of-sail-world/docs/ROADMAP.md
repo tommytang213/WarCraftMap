@@ -96,6 +96,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
 - [ ] Southeast Asia
   - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
 - [ ] East Asia
 - [ ] Americas / Caribbean
 - [ ] Pacific
