@@ -666,6 +666,34 @@
       }
     },
     {
+      "id": "node_amazon_river",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "node_andes_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
       "id": "node_arakan_barrier",
       "movementClasses": [
         "flying"
@@ -696,6 +724,55 @@
       }
     },
     {
+      "id": "node_caribbean_islands",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_caribbean_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_central_america_land",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_central_america_land",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
       "id": "node_celebes_sea",
       "movementClasses": [
         "naval",
@@ -721,6 +798,30 @@
       }
     },
     {
+      "id": "node_central_america_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_west_land",
+          "node_north_andes_land"
+        ],
+        "amphibious": [
+          "node_north_america_west_land",
+          "node_caribbean_sea",
+          "node_north_andes_land"
+        ],
+        "flying": [
+          "node_north_america_west_land",
+          "node_caribbean_sea",
+          "node_north_andes_land"
+        ]
+      }
+    },
+    {
       "id": "node_central_asia_gate",
       "movementClasses": [
         "land",
@@ -736,6 +837,28 @@
         ],
         "flying": [
           "node_north_china"
+        ]
+      }
+    },
+    {
+      "id": "node_central_pacific",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_pacific",
+          "node_south_pacific"
+        ],
+        "amphibious": [
+          "node_north_pacific",
+          "node_south_pacific"
+        ],
+        "flying": [
+          "node_north_pacific",
+          "node_south_pacific"
         ]
       }
     },
@@ -798,6 +921,25 @@
       ],
       "connections": {
         "flying": []
+      }
+    },
+    {
+      "id": "node_great_lakes",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_atlantic"
+        ],
+        "amphibious": [
+          "node_north_atlantic"
+        ],
+        "flying": [
+          "node_north_atlantic"
+        ]
       }
     },
     {
@@ -919,6 +1061,28 @@
       }
     },
     {
+      "id": "node_magellan_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
       "id": "node_mainland_east",
       "movementClasses": [
         "land",
@@ -987,6 +1151,112 @@
       }
     },
     {
+      "id": "node_mississippi",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_north_america_east_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_west_land"
+        ],
+        "amphibious": [
+          "node_north_america_west_land"
+        ],
+        "flying": [
+          "node_north_america_west_land"
+        ]
+      }
+    },
+    {
+      "id": "node_north_america_west_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_east_land",
+          "node_central_america_land"
+        ],
+        "amphibious": [
+          "node_north_america_east_land",
+          "node_central_america_land",
+          "node_north_pacific"
+        ],
+        "flying": [
+          "node_north_america_east_land",
+          "node_central_america_land",
+          "node_north_pacific"
+        ]
+      }
+    },
+    {
+      "id": "node_north_andes_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ],
+        "amphibious": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ],
+        "flying": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ]
+      }
+    },
+    {
+      "id": "node_north_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
       "id": "node_north_china",
       "movementClasses": [
         "land",
@@ -1020,13 +1290,18 @@
       ],
       "connections": {
         "naval": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_central_pacific"
         ],
         "amphibious": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_north_america_west_land",
+          "node_central_pacific"
         ],
         "flying": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_north_america_west_land",
+          "node_central_pacific"
         ]
       }
     },
@@ -1071,6 +1346,62 @@
         "flying": [
           "node_south_china_sea",
           "node_celebes_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_rockies_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_south_america_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ],
+        "amphibious": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ],
+        "flying": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ]
+      }
+    },
+    {
+      "id": "node_south_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
         ]
       }
     },
@@ -1122,6 +1453,47 @@
           "node_south_china",
           "node_taiwan_coast",
           "node_east_china_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_south_pacific",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ],
+        "amphibious": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ],
+        "flying": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_southern_cone_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_south_america_land"
+        ],
+        "amphibious": [
+          "node_south_america_land"
+        ],
+        "flying": [
+          "node_south_america_land"
         ]
       }
     },
@@ -3375,6 +3747,359 @@
       "capitalSettlementId": "sakhalin_council_place",
       "provinceIds": [
         "sakhalin_ainu_nivkh"
+      ]
+    },
+    {
+      "id": "haudenosaunee_nations",
+      "name": "Haudenosaunee Nations",
+      "adjective": "Haudenosaunee",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Rotiyaner Council",
+      "capitalSettlementId": "haudenosaunee_council_fire",
+      "provinceIds": [
+        "haudenosaunee_homelands"
+      ]
+    },
+    {
+      "id": "wendat_confederacies",
+      "name": "Wendat Confederacies",
+      "adjective": "Wendat",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Council of Headmen",
+      "capitalSettlementId": "wendat_council_network",
+      "provinceIds": [
+        "wendat_georgian_bay"
+      ]
+    },
+    {
+      "id": "anishinaabe_networks",
+      "name": "Anishinaabe Networks",
+      "adjective": "Anishinaabe",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Ogimaa",
+      "capitalSettlementId": "anishinaabe_seasonal_council",
+      "provinceIds": [
+        "anishinaabe_upper_lakes"
+      ]
+    },
+    {
+      "id": "inuit_north_atlantic_communities",
+      "name": "Inuit North Atlantic Communities",
+      "adjective": "Inuit",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Angakkuq and Camp Councils",
+      "capitalSettlementId": "inuit_seasonal_camps",
+      "provinceIds": [
+        "inuit_labrador_greenland"
+      ]
+    },
+    {
+      "id": "cahokian_successor_centers",
+      "name": "Mississippian Successor Centers",
+      "adjective": "Mississippian",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Great Sun",
+      "capitalSettlementId": "moundville",
+      "provinceIds": [
+        "mississippi_southeast_centers"
+      ]
+    },
+    {
+      "id": "pueblo_world",
+      "name": "Pueblo Communities",
+      "adjective": "Pueblo",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Village Council",
+      "capitalSettlementId": "pueblo_council_network",
+      "provinceIds": [
+        "pueblo_rio_grande_mesa"
+      ]
+    },
+    {
+      "id": "northwest_coast_nations",
+      "name": "Northwest Coast Nations",
+      "adjective": "Northwest Coast",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "House Chief",
+      "capitalSettlementId": "northwest_coast_house_councils",
+      "provinceIds": [
+        "northwest_coast_homelands"
+      ]
+    },
+    {
+      "id": "mexica_tenochtitlan",
+      "name": "Mexica of Tenochtitlan",
+      "adjective": "Mexica",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Huey Tlatoani",
+      "capitalSettlementId": "tenochtitlan",
+      "provinceIds": [
+        "tenochtitlan_domain"
+      ]
+    },
+    {
+      "id": "acolhua_texcoco",
+      "name": "Acolhua of Texcoco",
+      "adjective": "Acolhua",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Tlatoani",
+      "capitalSettlementId": "texcoco",
+      "provinceIds": [
+        "texcoco_domain"
+      ]
+    },
+    {
+      "id": "tepanec_tlacopan",
+      "name": "Tepanec of Tlacopan",
+      "adjective": "Tepanec",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Tlatoani",
+      "capitalSettlementId": "tlacopan",
+      "provinceIds": [
+        "tlacopan_domain"
+      ]
+    },
+    {
+      "id": "tlaxcallan_confederation",
+      "name": "Tlaxcallan",
+      "adjective": "Tlaxcalan",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Tlahtoāni Council",
+      "capitalSettlementId": "tlaxcallan_council",
+      "provinceIds": [
+        "tlaxcallan_four_altepetl"
+      ]
+    },
+    {
+      "id": "purepecha_state",
+      "name": "Purépecha State",
+      "adjective": "Purépecha",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Cazonci",
+      "capitalSettlementId": "tzintzuntzan",
+      "provinceIds": [
+        "purepecha_michoacan"
+      ]
+    },
+    {
+      "id": "chalco_confederation",
+      "name": "Chalco Confederation",
+      "adjective": "Chalca",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Tlatoani Council",
+      "capitalSettlementId": "chalco_atenco",
+      "provinceIds": [
+        "chalco_altepetl"
+      ]
+    },
+    {
+      "id": "yucatan_maya_jurisdictions",
+      "name": "Yucatec Maya Jurisdictions",
+      "adjective": "Yucatec Maya",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Halach Uinik",
+      "capitalSettlementId": "yucatan_kuchkabal_courts",
+      "provinceIds": [
+        "yucatan_kuchkabal"
+      ]
+    },
+    {
+      "id": "itza_kingdom",
+      "name": "Itza Kingdom",
+      "adjective": "Itza",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ajaw",
+      "capitalSettlementId": "nohpeteen",
+      "provinceIds": [
+        "itza_peten"
+      ]
+    },
+    {
+      "id": "kiche_kingdom",
+      "name": "K'iche' Kingdom of Q'umarkaj",
+      "adjective": "K'iche'",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ajpop",
+      "capitalSettlementId": "qumarkaj",
+      "provinceIds": [
+        "kiche_highlands"
+      ]
+    },
+    {
+      "id": "kaqchikel_kingdom",
+      "name": "Kaqchikel Kingdom",
+      "adjective": "Kaqchikel",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ajpop Sotz'il",
+      "capitalSettlementId": "ximche",
+      "provinceIds": [
+        "kaqchikel_highlands"
+      ]
+    },
+    {
+      "id": "taino_cacicazgos",
+      "name": "Taíno Cacicazgos",
+      "adjective": "Taíno",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Cacique",
+      "capitalSettlementId": "taino_cacique_seats",
+      "provinceIds": [
+        "taino_greater_antilles"
+      ]
+    },
+    {
+      "id": "kalinago_island_communities",
+      "name": "Kalinago Island Communities",
+      "adjective": "Kalinago",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Village Leader",
+      "capitalSettlementId": "kalinago_council_network",
+      "provinceIds": [
+        "kalinago_lesser_antilles"
+      ]
+    },
+    {
+      "id": "muisca_zipazgo",
+      "name": "Muisca Zipazgo",
+      "adjective": "Southern Muisca",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Zipa",
+      "capitalSettlementId": "bacata",
+      "provinceIds": [
+        "muisca_bacata"
+      ]
+    },
+    {
+      "id": "muisca_zacazgo",
+      "name": "Muisca Zacazgo",
+      "adjective": "Northern Muisca",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Zaque",
+      "capitalSettlementId": "hunza",
+      "provinceIds": [
+        "muisca_hunza"
+      ]
+    },
+    {
+      "id": "tairona_chiefdoms",
+      "name": "Tairona Chiefdoms",
+      "adjective": "Tairona",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Naoma and Cacique",
+      "capitalSettlementId": "tairona_mountain_centers",
+      "provinceIds": [
+        "tairona_sierra_nevada"
+      ]
+    },
+    {
+      "id": "tawantinsuyu",
+      "name": "Tawantinsuyu",
+      "adjective": "Inca",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Sapa Inka",
+      "capitalSettlementId": "cusco",
+      "provinceIds": [
+        "inca_cusco_heartland",
+        "inca_southern_highlands"
+      ]
+    },
+    {
+      "id": "chimor_kingdom",
+      "name": "Kingdom of Chimor",
+      "adjective": "Chimú",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Chimú Capac",
+      "capitalSettlementId": "chan_chan",
+      "provinceIds": [
+        "chimor_north_coast"
+      ]
+    },
+    {
+      "id": "chincha_lordship",
+      "name": "Chincha Lordship",
+      "adjective": "Chincha",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Hatun Curaca",
+      "capitalSettlementId": "la_cent_in",
+      "provinceIds": [
+        "chincha_valley"
+      ]
+    },
+    {
+      "id": "amazonian_regional_societies",
+      "name": "Amazonian Regional Societies",
+      "adjective": "Amazonian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Regional Chief",
+      "capitalSettlementId": "amazonian_earthwork_centers",
+      "provinceIds": [
+        "amazon_riverine_societies"
+      ]
+    },
+    {
+      "id": "tupi_coastal_networks",
+      "name": "Tupí Coastal Networks",
+      "adjective": "Tupí",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Morubixaba",
+      "capitalSettlementId": "tupi_village_councils",
+      "provinceIds": [
+        "tupi_atlantic_coast"
+      ]
+    },
+    {
+      "id": "mapuche_rewe_confederacies",
+      "name": "Mapuche Rewe Confederacies",
+      "adjective": "Mapuche",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Longko",
+      "capitalSettlementId": "mapuche_rewe_assemblies",
+      "provinceIds": [
+        "mapuche_ngulumapu"
+      ]
+    },
+    {
+      "id": "diaguita_calchaqui_lordships",
+      "name": "Diaguita-Calchaquí Lordships",
+      "adjective": "Diaguita-Calchaquí",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Kuraka",
+      "capitalSettlementId": "calchaqui_pukara_network",
+      "provinceIds": [
+        "diaguita_calchaqui_valleys"
+      ]
+    },
+    {
+      "id": "guarani_tekohas",
+      "name": "Guaraní Tekohas",
+      "adjective": "Guaraní",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Mburuvicha",
+      "capitalSettlementId": "guarani_assembly_network",
+      "provinceIds": [
+        "guarani_parana_paraguay"
+      ]
+    },
+    {
+      "id": "charrua_minuan_networks",
+      "name": "Charrúa and Minuán Networks",
+      "adjective": "Charrúa-Minuán",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Band Leader",
+      "capitalSettlementId": "charrua_seasonal_assemblies",
+      "provinceIds": [
+        "charrua_uruguay_grasslands"
+      ]
+    },
+    {
+      "id": "selknam_yaghan_communities",
+      "name": "Selk'nam and Yaghan Communities",
+      "adjective": "Fuegian",
+      "sovereignTier": "none",
+      "nativeSovereignTitle": "Kin Group Elder",
+      "capitalSettlementId": "fuegian_seasonal_camps",
+      "provinceIds": [
+        "fuegian_archipelago"
       ]
     }
   ],
@@ -5630,6 +6355,334 @@
       "settlementIds": [
         "sakhalin_council_place"
       ]
+    },
+    {
+      "id": "haudenosaunee_homelands",
+      "name": "Five Nations Homelands",
+      "administrativeType": "confederated_nation_homelands",
+      "legalOwnerPolityId": "haudenosaunee_nations",
+      "controllerPolityId": "haudenosaunee_nations",
+      "settlementIds": [
+        "haudenosaunee_council_fire"
+      ]
+    },
+    {
+      "id": "wendat_georgian_bay",
+      "name": "Wendat and Tionontati Country",
+      "administrativeType": "confederated_village_region",
+      "legalOwnerPolityId": "wendat_confederacies",
+      "controllerPolityId": "wendat_confederacies",
+      "settlementIds": [
+        "wendat_council_network"
+      ]
+    },
+    {
+      "id": "anishinaabe_upper_lakes",
+      "name": "Upper Great Lakes and Wild Rice Country",
+      "administrativeType": "kinship_network_region",
+      "legalOwnerPolityId": "anishinaabe_networks",
+      "controllerPolityId": "anishinaabe_networks",
+      "settlementIds": [
+        "anishinaabe_seasonal_council"
+      ]
+    },
+    {
+      "id": "inuit_labrador_greenland",
+      "name": "Labrador and Kalaallit Coastal Worlds",
+      "administrativeType": "seasonal_coastal_network",
+      "legalOwnerPolityId": "inuit_north_atlantic_communities",
+      "controllerPolityId": "inuit_north_atlantic_communities",
+      "settlementIds": [
+        "inuit_seasonal_camps"
+      ]
+    },
+    {
+      "id": "mississippi_southeast_centers",
+      "name": "Mississippi Valley and Southeastern Chiefdoms",
+      "administrativeType": "chiefdom_network_region",
+      "legalOwnerPolityId": "cahokian_successor_centers",
+      "controllerPolityId": "cahokian_successor_centers",
+      "settlementIds": [
+        "moundville"
+      ]
+    },
+    {
+      "id": "pueblo_rio_grande_mesa",
+      "name": "Rio Grande Pueblos and Western Mesas",
+      "administrativeType": "autonomous_town_region",
+      "legalOwnerPolityId": "pueblo_world",
+      "controllerPolityId": "pueblo_world",
+      "settlementIds": [
+        "pueblo_council_network"
+      ]
+    },
+    {
+      "id": "northwest_coast_homelands",
+      "name": "Northwest Coast House Territories",
+      "administrativeType": "house_and_village_territories",
+      "legalOwnerPolityId": "northwest_coast_nations",
+      "controllerPolityId": "northwest_coast_nations",
+      "settlementIds": [
+        "northwest_coast_house_councils"
+      ]
+    },
+    {
+      "id": "tenochtitlan_domain",
+      "name": "Tenochtitlan and Mexica Tributary Districts",
+      "administrativeType": "altepetl_and_tributary_district",
+      "legalOwnerPolityId": "mexica_tenochtitlan",
+      "controllerPolityId": "mexica_tenochtitlan",
+      "settlementIds": [
+        "tenochtitlan"
+      ]
+    },
+    {
+      "id": "texcoco_domain",
+      "name": "Acolhuacan",
+      "administrativeType": "altepetl_hegemony",
+      "legalOwnerPolityId": "acolhua_texcoco",
+      "controllerPolityId": "acolhua_texcoco",
+      "settlementIds": [
+        "texcoco"
+      ]
+    },
+    {
+      "id": "tlacopan_domain",
+      "name": "Tlacopan and Western Basin Districts",
+      "administrativeType": "altepetl_hegemony",
+      "legalOwnerPolityId": "tepanec_tlacopan",
+      "controllerPolityId": "tepanec_tlacopan",
+      "settlementIds": [
+        "tlacopan"
+      ]
+    },
+    {
+      "id": "tlaxcallan_four_altepetl",
+      "name": "Four Altepetl of Tlaxcallan",
+      "administrativeType": "confederated_altepetl",
+      "legalOwnerPolityId": "tlaxcallan_confederation",
+      "controllerPolityId": "tlaxcallan_confederation",
+      "settlementIds": [
+        "tlaxcallan_council"
+      ]
+    },
+    {
+      "id": "purepecha_michoacan",
+      "name": "Michoacán and the Lake Pátzcuaro Core",
+      "administrativeType": "centralized_kingdom_region",
+      "legalOwnerPolityId": "purepecha_state",
+      "controllerPolityId": "purepecha_state",
+      "settlementIds": [
+        "tzintzuntzan"
+      ]
+    },
+    {
+      "id": "chalco_altepetl",
+      "name": "Chalco Altepetl",
+      "administrativeType": "confederated_altepetl",
+      "legalOwnerPolityId": "chalco_confederation",
+      "controllerPolityId": "chalco_confederation",
+      "settlementIds": [
+        "chalco_atenco"
+      ]
+    },
+    {
+      "id": "yucatan_kuchkabal",
+      "name": "Yucatán Kuchkabal",
+      "administrativeType": "independent_maya_jurisdictions",
+      "legalOwnerPolityId": "yucatan_maya_jurisdictions",
+      "controllerPolityId": "yucatan_maya_jurisdictions",
+      "settlementIds": [
+        "yucatan_kuchkabal_courts"
+      ]
+    },
+    {
+      "id": "itza_peten",
+      "name": "Petén Itza",
+      "administrativeType": "maya_kingdom",
+      "legalOwnerPolityId": "itza_kingdom",
+      "controllerPolityId": "itza_kingdom",
+      "settlementIds": [
+        "nohpeteen"
+      ]
+    },
+    {
+      "id": "kiche_highlands",
+      "name": "K'iche' Highlands",
+      "administrativeType": "maya_highland_kingdom",
+      "legalOwnerPolityId": "kiche_kingdom",
+      "controllerPolityId": "kiche_kingdom",
+      "settlementIds": [
+        "qumarkaj"
+      ]
+    },
+    {
+      "id": "kaqchikel_highlands",
+      "name": "Kaqchikel Highlands",
+      "administrativeType": "maya_highland_kingdom",
+      "legalOwnerPolityId": "kaqchikel_kingdom",
+      "controllerPolityId": "kaqchikel_kingdom",
+      "settlementIds": [
+        "ximche"
+      ]
+    },
+    {
+      "id": "taino_greater_antilles",
+      "name": "Greater Antillean Cacicazgos",
+      "administrativeType": "chiefdom_mosaic",
+      "legalOwnerPolityId": "taino_cacicazgos",
+      "controllerPolityId": "taino_cacicazgos",
+      "settlementIds": [
+        "taino_cacique_seats"
+      ]
+    },
+    {
+      "id": "kalinago_lesser_antilles",
+      "name": "Kalinago Lesser Antilles",
+      "administrativeType": "island_community_network",
+      "legalOwnerPolityId": "kalinago_island_communities",
+      "controllerPolityId": "kalinago_island_communities",
+      "settlementIds": [
+        "kalinago_council_network"
+      ]
+    },
+    {
+      "id": "muisca_bacata",
+      "name": "Bacatá Confederation",
+      "administrativeType": "confederated_chiefdom",
+      "legalOwnerPolityId": "muisca_zipazgo",
+      "controllerPolityId": "muisca_zipazgo",
+      "settlementIds": [
+        "bacata"
+      ]
+    },
+    {
+      "id": "muisca_hunza",
+      "name": "Hunza Confederation",
+      "administrativeType": "confederated_chiefdom",
+      "legalOwnerPolityId": "muisca_zacazgo",
+      "controllerPolityId": "muisca_zacazgo",
+      "settlementIds": [
+        "hunza"
+      ]
+    },
+    {
+      "id": "tairona_sierra_nevada",
+      "name": "Sierra Nevada Tairona",
+      "administrativeType": "chiefdom_network",
+      "legalOwnerPolityId": "tairona_chiefdoms",
+      "controllerPolityId": "tairona_chiefdoms",
+      "settlementIds": [
+        "tairona_mountain_centers"
+      ]
+    },
+    {
+      "id": "inca_cusco_heartland",
+      "name": "Cusco and the Inca Heartland",
+      "administrativeType": "royal_heartland",
+      "legalOwnerPolityId": "tawantinsuyu",
+      "controllerPolityId": "tawantinsuyu",
+      "settlementIds": [
+        "cusco"
+      ]
+    },
+    {
+      "id": "inca_southern_highlands",
+      "name": "Collasuyu Northern Marches",
+      "administrativeType": "expanding_imperial_region",
+      "legalOwnerPolityId": "tawantinsuyu",
+      "controllerPolityId": "tawantinsuyu",
+      "settlementIds": []
+    },
+    {
+      "id": "chimor_north_coast",
+      "name": "Chimor North Coast Valleys",
+      "administrativeType": "irrigated_coastal_kingdom",
+      "legalOwnerPolityId": "chimor_kingdom",
+      "controllerPolityId": "chimor_kingdom",
+      "settlementIds": [
+        "chan_chan"
+      ]
+    },
+    {
+      "id": "chincha_valley",
+      "name": "Chincha Valley and Maritime Network",
+      "administrativeType": "merchant_lordship",
+      "legalOwnerPolityId": "chincha_lordship",
+      "controllerPolityId": "chincha_lordship",
+      "settlementIds": [
+        "la_cent_in"
+      ]
+    },
+    {
+      "id": "amazon_riverine_societies",
+      "name": "Amazon and Xingu Riverine Societies",
+      "administrativeType": "riverine_regional_networks",
+      "legalOwnerPolityId": "amazonian_regional_societies",
+      "controllerPolityId": "amazonian_regional_societies",
+      "settlementIds": [
+        "amazonian_earthwork_centers"
+      ]
+    },
+    {
+      "id": "tupi_atlantic_coast",
+      "name": "Tupí Atlantic Coastal Worlds",
+      "administrativeType": "village_alliance_region",
+      "legalOwnerPolityId": "tupi_coastal_networks",
+      "controllerPolityId": "tupi_coastal_networks",
+      "settlementIds": [
+        "tupi_village_councils"
+      ]
+    },
+    {
+      "id": "mapuche_ngulumapu",
+      "name": "Mapuche Ngulumapu",
+      "administrativeType": "lof_and_rewe_confederacies",
+      "legalOwnerPolityId": "mapuche_rewe_confederacies",
+      "controllerPolityId": "mapuche_rewe_confederacies",
+      "settlementIds": [
+        "mapuche_rewe_assemblies"
+      ]
+    },
+    {
+      "id": "diaguita_calchaqui_valleys",
+      "name": "Diaguita and Calchaquí Valleys",
+      "administrativeType": "valley_lordships",
+      "legalOwnerPolityId": "diaguita_calchaqui_lordships",
+      "controllerPolityId": "diaguita_calchaqui_lordships",
+      "settlementIds": [
+        "calchaqui_pukara_network"
+      ]
+    },
+    {
+      "id": "guarani_parana_paraguay",
+      "name": "Paraná-Paraguay Guaraní Tekohas",
+      "administrativeType": "community_network_region",
+      "legalOwnerPolityId": "guarani_tekohas",
+      "controllerPolityId": "guarani_tekohas",
+      "settlementIds": [
+        "guarani_assembly_network"
+      ]
+    },
+    {
+      "id": "charrua_uruguay_grasslands",
+      "name": "Uruguay and Lower Paraná Grasslands",
+      "administrativeType": "mobile_band_network",
+      "legalOwnerPolityId": "charrua_minuan_networks",
+      "controllerPolityId": "charrua_minuan_networks",
+      "settlementIds": [
+        "charrua_seasonal_assemblies"
+      ]
+    },
+    {
+      "id": "fuegian_archipelago",
+      "name": "Tierra del Fuego and Southern Channels",
+      "administrativeType": "kin_group_homelands",
+      "legalOwnerPolityId": "selknam_yaghan_communities",
+      "controllerPolityId": "selknam_yaghan_communities",
+      "settlementIds": [
+        "fuegian_seasonal_camps"
+      ]
     }
   ],
   "settlementServiceDefinitions": [
@@ -6699,6 +7752,134 @@
     },
     {
       "id": "city_core_sakhalin_council_place",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_inuit_seasonal_camps",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tlacopan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_chalco_atenco",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nohpeteen",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ximche",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tairona_mountain_centers",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_calchaqui_pukara_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_guarani_assembly_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_charrua_seasonal_assemblies",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_fuegian_seasonal_camps",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_haudenosaunee_council_fire",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_wendat_council_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_anishinaabe_seasonal_council",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_moundville",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_pueblo_council_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_northwest_coast_house_councils",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tenochtitlan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_texcoco",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tlaxcallan_council",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tzintzuntzan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_yucatan_kuchkabal_courts",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_qumarkaj",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_taino_cacique_seats",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_kalinago_council_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_bacata",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_hunza",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_amazonian_earthwork_centers",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tupi_village_councils",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_cusco",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_chan_chan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_la_cent_in",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_mapuche_rewe_assemblies",
       "objectTemplateId": "capital_city_core"
     }
   ],
@@ -8235,6 +9416,198 @@
     },
     {
       "id": "defense_sakhalin_council_place",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_inuit_seasonal_camps",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tlacopan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_chalco_atenco",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nohpeteen",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ximche",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tairona_mountain_centers",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_calchaqui_pukara_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_guarani_assembly_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_charrua_seasonal_assemblies",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_fuegian_seasonal_camps",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_haudenosaunee_council_fire",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_wendat_council_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_anishinaabe_seasonal_council",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_moundville",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_pueblo_council_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_northwest_coast_house_councils",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tenochtitlan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_texcoco",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tlaxcallan_council",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tzintzuntzan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_yucatan_kuchkabal_courts",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_qumarkaj",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_taino_cacique_seats",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_kalinago_council_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_bacata",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_hunza",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_amazonian_earthwork_centers",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tupi_village_councils",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_cusco",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_chan_chan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_la_cent_in",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_mapuche_rewe_assemblies",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -17353,6 +18726,1475 @@
         "maritimeZoneId": "node_north_pacific",
         "access": "island_harbor"
       }
+    },
+    {
+      "id": "inuit_seasonal_camps",
+      "name": "Inuit Seasonal Camps",
+      "kind": "capital",
+      "provinceId": "inuit_labrador_greenland",
+      "legalOwnerPolityId": "inuit_north_atlantic_communities",
+      "controllerPolityId": "inuit_north_atlantic_communities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_inuit_seasonal_camps",
+      "defenseLayoutId": "defense_inuit_seasonal_camps",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "inuit_seasonal_camps"
+      }
+    },
+    {
+      "id": "tlacopan",
+      "name": "Tlacopan",
+      "kind": "capital",
+      "provinceId": "tlacopan_domain",
+      "legalOwnerPolityId": "tepanec_tlacopan",
+      "controllerPolityId": "tepanec_tlacopan",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_tlacopan",
+      "defenseLayoutId": "defense_tlacopan",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tlacopan"
+      }
+    },
+    {
+      "id": "chalco_atenco",
+      "name": "Chalco Atenco",
+      "kind": "capital",
+      "provinceId": "chalco_altepetl",
+      "legalOwnerPolityId": "chalco_confederation",
+      "controllerPolityId": "chalco_confederation",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_chalco_atenco",
+      "defenseLayoutId": "defense_chalco_atenco",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chalco_atenco"
+      }
+    },
+    {
+      "id": "nohpeteen",
+      "name": "Nohpeteen",
+      "kind": "capital",
+      "provinceId": "itza_peten",
+      "legalOwnerPolityId": "itza_kingdom",
+      "controllerPolityId": "itza_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_nohpeteen",
+      "defenseLayoutId": "defense_nohpeteen",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "nohpeteen"
+      }
+    },
+    {
+      "id": "ximche",
+      "name": "Ximche",
+      "kind": "capital",
+      "provinceId": "kaqchikel_highlands",
+      "legalOwnerPolityId": "kaqchikel_kingdom",
+      "controllerPolityId": "kaqchikel_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_ximche",
+      "defenseLayoutId": "defense_ximche",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ximche"
+      }
+    },
+    {
+      "id": "tairona_mountain_centers",
+      "name": "Tairona Mountain Centers",
+      "kind": "capital",
+      "provinceId": "tairona_sierra_nevada",
+      "legalOwnerPolityId": "tairona_chiefdoms",
+      "controllerPolityId": "tairona_chiefdoms",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_tairona_mountain_centers",
+      "defenseLayoutId": "defense_tairona_mountain_centers",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_north_south",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tairona_mountain_centers"
+      }
+    },
+    {
+      "id": "calchaqui_pukara_network",
+      "name": "Calchaqui Pukara Network",
+      "kind": "capital",
+      "provinceId": "diaguita_calchaqui_valleys",
+      "legalOwnerPolityId": "diaguita_calchaqui_lordships",
+      "controllerPolityId": "diaguita_calchaqui_lordships",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_calchaqui_pukara_network",
+      "defenseLayoutId": "defense_calchaqui_pukara_network",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "calchaqui_pukara_network"
+      }
+    },
+    {
+      "id": "guarani_assembly_network",
+      "name": "Guarani Assembly Network",
+      "kind": "capital",
+      "provinceId": "guarani_parana_paraguay",
+      "legalOwnerPolityId": "guarani_tekohas",
+      "controllerPolityId": "guarani_tekohas",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_guarani_assembly_network",
+      "defenseLayoutId": "defense_guarani_assembly_network",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_amazon_brazil",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "guarani_assembly_network"
+      }
+    },
+    {
+      "id": "charrua_seasonal_assemblies",
+      "name": "Charrua Seasonal Assemblies",
+      "kind": "capital",
+      "provinceId": "charrua_uruguay_grasslands",
+      "legalOwnerPolityId": "charrua_minuan_networks",
+      "controllerPolityId": "charrua_minuan_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_charrua_seasonal_assemblies",
+      "defenseLayoutId": "defense_charrua_seasonal_assemblies",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "charrua_seasonal_assemblies"
+      }
+    },
+    {
+      "id": "fuegian_seasonal_camps",
+      "name": "Fuegian Seasonal Camps",
+      "kind": "capital",
+      "provinceId": "fuegian_archipelago",
+      "legalOwnerPolityId": "selknam_yaghan_communities",
+      "controllerPolityId": "selknam_yaghan_communities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "city_core_fuegian_seasonal_camps",
+      "defenseLayoutId": "defense_fuegian_seasonal_camps",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "fuegian_seasonal_camps"
+      }
+    },
+    {
+      "id": "haudenosaunee_council_fire",
+      "name": "Haudenosaunee Council Fire",
+      "kind": "capital",
+      "provinceId": "haudenosaunee_homelands",
+      "legalOwnerPolityId": "haudenosaunee_nations",
+      "controllerPolityId": "haudenosaunee_nations",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_america_east_land",
+      "cityCoreId": "city_core_haudenosaunee_council_fire",
+      "defenseLayoutId": "defense_haudenosaunee_council_fire",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 88,
+        "y": 62
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "haudenosaunee_council_fire"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "wendat_council_network",
+      "name": "Wendat Council Network",
+      "kind": "capital",
+      "provinceId": "wendat_georgian_bay",
+      "legalOwnerPolityId": "wendat_confederacies",
+      "controllerPolityId": "wendat_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_great_lakes",
+      "cityCoreId": "city_core_wendat_council_network",
+      "defenseLayoutId": "defense_wendat_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 70,
+        "y": 78
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "wendat_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "anishinaabe_seasonal_council",
+      "name": "Anishinaabe Seasonal Council",
+      "kind": "capital",
+      "provinceId": "anishinaabe_upper_lakes",
+      "legalOwnerPolityId": "anishinaabe_networks",
+      "controllerPolityId": "anishinaabe_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_great_lakes",
+      "cityCoreId": "city_core_anishinaabe_seasonal_council",
+      "defenseLayoutId": "defense_anishinaabe_seasonal_council",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 48,
+        "y": 86
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "anishinaabe_seasonal_council"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "moundville",
+      "name": "Moundville",
+      "kind": "capital",
+      "provinceId": "mississippi_southeast_centers",
+      "legalOwnerPolityId": "cahokian_successor_centers",
+      "controllerPolityId": "cahokian_successor_centers",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mississippi",
+      "cityCoreId": "city_core_moundville",
+      "defenseLayoutId": "defense_moundville",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 82,
+        "y": 22
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "moundville"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "pueblo_council_network",
+      "name": "Pueblo Council Network",
+      "kind": "capital",
+      "provinceId": "pueblo_rio_grande_mesa",
+      "legalOwnerPolityId": "pueblo_world",
+      "controllerPolityId": "pueblo_world",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_america_west_land",
+      "cityCoreId": "city_core_pueblo_council_network",
+      "defenseLayoutId": "defense_pueblo_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_pacific",
+      "physicalMapId": "americas_north_pacific",
+      "localPosition": {
+        "x": 78,
+        "y": 35
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "pueblo_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "northwest_coast_house_councils",
+      "name": "Northwest Coast House Councils",
+      "kind": "capital",
+      "provinceId": "northwest_coast_homelands",
+      "legalOwnerPolityId": "northwest_coast_nations",
+      "controllerPolityId": "northwest_coast_nations",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_pacific",
+      "cityCoreId": "city_core_northwest_coast_house_councils",
+      "defenseLayoutId": "defense_northwest_coast_house_councils",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_north_pacific",
+      "physicalMapId": "americas_north_pacific",
+      "localPosition": {
+        "x": 52,
+        "y": 90
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "northwest_coast_house_councils"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_north_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "tenochtitlan",
+      "name": "Tenochtitlan",
+      "kind": "capital",
+      "provinceId": "tenochtitlan_domain",
+      "legalOwnerPolityId": "mexica_tenochtitlan",
+      "controllerPolityId": "mexica_tenochtitlan",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tenochtitlan",
+      "defenseLayoutId": "defense_tenochtitlan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 62,
+        "y": 28
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tenochtitlan"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "texcoco",
+      "name": "Texcoco",
+      "kind": "capital",
+      "provinceId": "texcoco_domain",
+      "legalOwnerPolityId": "acolhua_texcoco",
+      "controllerPolityId": "acolhua_texcoco",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_texcoco",
+      "defenseLayoutId": "defense_texcoco",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 69,
+        "y": 30
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "texcoco"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "tlaxcallan_council",
+      "name": "Tlaxcallan Council",
+      "kind": "capital",
+      "provinceId": "tlaxcallan_four_altepetl",
+      "legalOwnerPolityId": "tlaxcallan_confederation",
+      "controllerPolityId": "tlaxcallan_confederation",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tlaxcallan_council",
+      "defenseLayoutId": "defense_tlaxcallan_council",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 78,
+        "y": 34
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tlaxcallan_council"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "tzintzuntzan",
+      "name": "Tzintzuntzan",
+      "kind": "capital",
+      "provinceId": "purepecha_michoacan",
+      "legalOwnerPolityId": "purepecha_state",
+      "controllerPolityId": "purepecha_state",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tzintzuntzan",
+      "defenseLayoutId": "defense_tzintzuntzan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 48,
+        "y": 30
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tzintzuntzan"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "yucatan_kuchkabal_courts",
+      "name": "Yucatan Kuchkabal Courts",
+      "kind": "capital",
+      "provinceId": "yucatan_kuchkabal",
+      "legalOwnerPolityId": "yucatan_maya_jurisdictions",
+      "controllerPolityId": "yucatan_maya_jurisdictions",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_sea",
+      "cityCoreId": "city_core_yucatan_kuchkabal_courts",
+      "defenseLayoutId": "defense_yucatan_kuchkabal_courts",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 104,
+        "y": 24
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "yucatan_kuchkabal_courts"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "qumarkaj",
+      "name": "Q'umarkaj",
+      "kind": "capital",
+      "provinceId": "kiche_highlands",
+      "legalOwnerPolityId": "kiche_kingdom",
+      "controllerPolityId": "kiche_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_qumarkaj",
+      "defenseLayoutId": "defense_qumarkaj",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 91,
+        "y": 18
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "qumarkaj"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "taino_cacique_seats",
+      "name": "Taino Cacique Seats",
+      "kind": "capital",
+      "provinceId": "taino_greater_antilles",
+      "legalOwnerPolityId": "taino_cacicazgos",
+      "controllerPolityId": "taino_cacicazgos",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_islands",
+      "cityCoreId": "city_core_taino_cacique_seats",
+      "defenseLayoutId": "defense_taino_cacique_seats",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_caribbean_islands",
+      "physicalMapId": "americas_caribbean_islands",
+      "localPosition": {
+        "x": 72,
+        "y": 52
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "taino_cacique_seats"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_islands",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "kalinago_council_network",
+      "name": "Kalinago Council Network",
+      "kind": "capital",
+      "provinceId": "kalinago_lesser_antilles",
+      "legalOwnerPolityId": "kalinago_island_communities",
+      "controllerPolityId": "kalinago_island_communities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_islands",
+      "cityCoreId": "city_core_kalinago_council_network",
+      "defenseLayoutId": "defense_kalinago_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_caribbean_islands",
+      "physicalMapId": "americas_caribbean_islands",
+      "localPosition": {
+        "x": 125,
+        "y": 32
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kalinago_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_islands",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "bacata",
+      "name": "Bacata",
+      "kind": "capital",
+      "provinceId": "muisca_bacata",
+      "legalOwnerPolityId": "muisca_zipazgo",
+      "controllerPolityId": "muisca_zipazgo",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_andes_land",
+      "cityCoreId": "city_core_bacata",
+      "defenseLayoutId": "defense_bacata",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_south",
+      "physicalMapId": "americas_north_south",
+      "localPosition": {
+        "x": 66,
+        "y": 42
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bacata"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "hunza",
+      "name": "Hunza",
+      "kind": "capital",
+      "provinceId": "muisca_hunza",
+      "legalOwnerPolityId": "muisca_zacazgo",
+      "controllerPolityId": "muisca_zacazgo",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_andes_land",
+      "cityCoreId": "city_core_hunza",
+      "defenseLayoutId": "defense_hunza",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_south",
+      "physicalMapId": "americas_north_south",
+      "localPosition": {
+        "x": 72,
+        "y": 52
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hunza"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "amazonian_earthwork_centers",
+      "name": "Amazonian Earthwork Centers",
+      "kind": "capital",
+      "provinceId": "amazon_riverine_societies",
+      "legalOwnerPolityId": "amazonian_regional_societies",
+      "controllerPolityId": "amazonian_regional_societies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_amazon_river",
+      "cityCoreId": "city_core_amazonian_earthwork_centers",
+      "defenseLayoutId": "defense_amazonian_earthwork_centers",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_amazon_brazil",
+      "physicalMapId": "americas_amazon_brazil",
+      "localPosition": {
+        "x": 52,
+        "y": 62
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "amazonian_earthwork_centers"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_amazon_river",
+        "access": "river"
+      }
+    },
+    {
+      "id": "tupi_village_councils",
+      "name": "Tupi Village Councils",
+      "kind": "capital",
+      "provinceId": "tupi_atlantic_coast",
+      "legalOwnerPolityId": "tupi_coastal_networks",
+      "controllerPolityId": "tupi_coastal_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_atlantic",
+      "cityCoreId": "city_core_tupi_village_councils",
+      "defenseLayoutId": "defense_tupi_village_councils",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_amazon_brazil",
+      "physicalMapId": "americas_amazon_brazil",
+      "localPosition": {
+        "x": 94,
+        "y": 42
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tupi_village_councils"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_atlantic",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "cusco",
+      "name": "Cusco",
+      "kind": "capital",
+      "provinceId": "inca_cusco_heartland",
+      "legalOwnerPolityId": "tawantinsuyu",
+      "controllerPolityId": "tawantinsuyu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_southern_cone_land",
+      "cityCoreId": "city_core_cusco",
+      "defenseLayoutId": "defense_cusco",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 54,
+        "y": 70
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cusco"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "chan_chan",
+      "name": "Chan Chan",
+      "kind": "capital",
+      "provinceId": "chimor_north_coast",
+      "legalOwnerPolityId": "chimor_kingdom",
+      "controllerPolityId": "chimor_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_pacific",
+      "cityCoreId": "city_core_chan_chan",
+      "defenseLayoutId": "defense_chan_chan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 36,
+        "y": 92
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chan_chan"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "la_cent_in",
+      "name": "La Centinela",
+      "kind": "capital",
+      "provinceId": "chincha_valley",
+      "legalOwnerPolityId": "chincha_lordship",
+      "controllerPolityId": "chincha_lordship",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_pacific",
+      "cityCoreId": "city_core_la_cent_in",
+      "defenseLayoutId": "defense_la_cent_in",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 48,
+        "y": 82
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "la_cent_in"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "mapuche_rewe_assemblies",
+      "name": "Mapuche Rewe Assemblies",
+      "kind": "capital",
+      "provinceId": "mapuche_ngulumapu",
+      "legalOwnerPolityId": "mapuche_rewe_confederacies",
+      "controllerPolityId": "mapuche_rewe_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_southern_cone_land",
+      "cityCoreId": "city_core_mapuche_rewe_assemblies",
+      "defenseLayoutId": "defense_mapuche_rewe_assemblies",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 64,
+        "y": 38
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mapuche_rewe_assemblies"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
     }
   ],
   "officers": [
@@ -18862,6 +21704,230 @@
       "polityId": "sakhalin_communities",
       "rankTier": "prince",
       "nativeName": "Community Elder",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_haudenosaunee_nations",
+      "polityId": "haudenosaunee_nations",
+      "rankTier": "prince",
+      "nativeName": "Rotiyaner Council",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_wendat_confederacies",
+      "polityId": "wendat_confederacies",
+      "rankTier": "prince",
+      "nativeName": "Council of Headmen",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_anishinaabe_networks",
+      "polityId": "anishinaabe_networks",
+      "rankTier": "prince",
+      "nativeName": "Ogimaa",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_inuit_north_atlantic_communities",
+      "polityId": "inuit_north_atlantic_communities",
+      "rankTier": "prince",
+      "nativeName": "Angakkuq and Camp Councils",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_cahokian_successor_centers",
+      "polityId": "cahokian_successor_centers",
+      "rankTier": "prince",
+      "nativeName": "Great Sun",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_pueblo_world",
+      "polityId": "pueblo_world",
+      "rankTier": "prince",
+      "nativeName": "Village Council",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_northwest_coast_nations",
+      "polityId": "northwest_coast_nations",
+      "rankTier": "prince",
+      "nativeName": "House Chief",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_mexica_tenochtitlan",
+      "polityId": "mexica_tenochtitlan",
+      "rankTier": "king",
+      "nativeName": "Huey Tlatoani",
+      "genericName": "King"
+    },
+    {
+      "id": "title_acolhua_texcoco",
+      "polityId": "acolhua_texcoco",
+      "rankTier": "king",
+      "nativeName": "Tlatoani",
+      "genericName": "King"
+    },
+    {
+      "id": "title_tepanec_tlacopan",
+      "polityId": "tepanec_tlacopan",
+      "rankTier": "king",
+      "nativeName": "Tlatoani",
+      "genericName": "King"
+    },
+    {
+      "id": "title_tlaxcallan_confederation",
+      "polityId": "tlaxcallan_confederation",
+      "rankTier": "prince",
+      "nativeName": "Tlahtoāni Council",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_purepecha_state",
+      "polityId": "purepecha_state",
+      "rankTier": "king",
+      "nativeName": "Cazonci",
+      "genericName": "King"
+    },
+    {
+      "id": "title_chalco_confederation",
+      "polityId": "chalco_confederation",
+      "rankTier": "prince",
+      "nativeName": "Tlatoani Council",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_yucatan_maya_jurisdictions",
+      "polityId": "yucatan_maya_jurisdictions",
+      "rankTier": "prince",
+      "nativeName": "Halach Uinik",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_itza_kingdom",
+      "polityId": "itza_kingdom",
+      "rankTier": "king",
+      "nativeName": "Ajaw",
+      "genericName": "King"
+    },
+    {
+      "id": "title_kiche_kingdom",
+      "polityId": "kiche_kingdom",
+      "rankTier": "king",
+      "nativeName": "Ajpop",
+      "genericName": "King"
+    },
+    {
+      "id": "title_kaqchikel_kingdom",
+      "polityId": "kaqchikel_kingdom",
+      "rankTier": "king",
+      "nativeName": "Ajpop Sotz'il",
+      "genericName": "King"
+    },
+    {
+      "id": "title_taino_cacicazgos",
+      "polityId": "taino_cacicazgos",
+      "rankTier": "prince",
+      "nativeName": "Cacique",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_kalinago_island_communities",
+      "polityId": "kalinago_island_communities",
+      "rankTier": "prince",
+      "nativeName": "Village Leader",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_muisca_zipazgo",
+      "polityId": "muisca_zipazgo",
+      "rankTier": "king",
+      "nativeName": "Zipa",
+      "genericName": "King"
+    },
+    {
+      "id": "title_muisca_zacazgo",
+      "polityId": "muisca_zacazgo",
+      "rankTier": "king",
+      "nativeName": "Zaque",
+      "genericName": "King"
+    },
+    {
+      "id": "title_tairona_chiefdoms",
+      "polityId": "tairona_chiefdoms",
+      "rankTier": "prince",
+      "nativeName": "Naoma and Cacique",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_tawantinsuyu",
+      "polityId": "tawantinsuyu",
+      "rankTier": "emperor",
+      "nativeName": "Sapa Inka",
+      "genericName": "Emperor"
+    },
+    {
+      "id": "title_chimor_kingdom",
+      "polityId": "chimor_kingdom",
+      "rankTier": "king",
+      "nativeName": "Chimú Capac",
+      "genericName": "King"
+    },
+    {
+      "id": "title_chincha_lordship",
+      "polityId": "chincha_lordship",
+      "rankTier": "prince",
+      "nativeName": "Hatun Curaca",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_amazonian_regional_societies",
+      "polityId": "amazonian_regional_societies",
+      "rankTier": "prince",
+      "nativeName": "Regional Chief",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_tupi_coastal_networks",
+      "polityId": "tupi_coastal_networks",
+      "rankTier": "prince",
+      "nativeName": "Morubixaba",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_mapuche_rewe_confederacies",
+      "polityId": "mapuche_rewe_confederacies",
+      "rankTier": "prince",
+      "nativeName": "Longko",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_diaguita_calchaqui_lordships",
+      "polityId": "diaguita_calchaqui_lordships",
+      "rankTier": "prince",
+      "nativeName": "Kuraka",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_guarani_tekohas",
+      "polityId": "guarani_tekohas",
+      "rankTier": "prince",
+      "nativeName": "Mburuvicha",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_charrua_minuan_networks",
+      "polityId": "charrua_minuan_networks",
+      "rankTier": "prince",
+      "nativeName": "Band Leader",
+      "genericName": "Prince"
+    },
+    {
+      "id": "title_selknam_yaghan_communities",
+      "polityId": "selknam_yaghan_communities",
+      "rankTier": "prince",
+      "nativeName": "Kin Group Elder",
       "genericName": "Prince"
     }
   ],
@@ -20616,6 +23682,326 @@
         "id": "sakhalin_communities"
       },
       "allegiancePolityId": "sakhalin_communities",
+      "sovereign": true
+    },
+    {
+      "id": "grant_haudenosaunee_nations",
+      "titleStyleId": "title_haudenosaunee_nations",
+      "holder": {
+        "kind": "polity",
+        "id": "haudenosaunee_nations"
+      },
+      "allegiancePolityId": "haudenosaunee_nations",
+      "sovereign": true
+    },
+    {
+      "id": "grant_wendat_confederacies",
+      "titleStyleId": "title_wendat_confederacies",
+      "holder": {
+        "kind": "polity",
+        "id": "wendat_confederacies"
+      },
+      "allegiancePolityId": "wendat_confederacies",
+      "sovereign": true
+    },
+    {
+      "id": "grant_anishinaabe_networks",
+      "titleStyleId": "title_anishinaabe_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "anishinaabe_networks"
+      },
+      "allegiancePolityId": "anishinaabe_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_inuit_north_atlantic_communities",
+      "titleStyleId": "title_inuit_north_atlantic_communities",
+      "holder": {
+        "kind": "polity",
+        "id": "inuit_north_atlantic_communities"
+      },
+      "allegiancePolityId": "inuit_north_atlantic_communities",
+      "sovereign": true
+    },
+    {
+      "id": "grant_cahokian_successor_centers",
+      "titleStyleId": "title_cahokian_successor_centers",
+      "holder": {
+        "kind": "polity",
+        "id": "cahokian_successor_centers"
+      },
+      "allegiancePolityId": "cahokian_successor_centers",
+      "sovereign": true
+    },
+    {
+      "id": "grant_pueblo_world",
+      "titleStyleId": "title_pueblo_world",
+      "holder": {
+        "kind": "polity",
+        "id": "pueblo_world"
+      },
+      "allegiancePolityId": "pueblo_world",
+      "sovereign": true
+    },
+    {
+      "id": "grant_northwest_coast_nations",
+      "titleStyleId": "title_northwest_coast_nations",
+      "holder": {
+        "kind": "polity",
+        "id": "northwest_coast_nations"
+      },
+      "allegiancePolityId": "northwest_coast_nations",
+      "sovereign": true
+    },
+    {
+      "id": "grant_mexica_tenochtitlan",
+      "titleStyleId": "title_mexica_tenochtitlan",
+      "holder": {
+        "kind": "polity",
+        "id": "mexica_tenochtitlan"
+      },
+      "allegiancePolityId": "mexica_tenochtitlan",
+      "sovereign": true
+    },
+    {
+      "id": "grant_acolhua_texcoco",
+      "titleStyleId": "title_acolhua_texcoco",
+      "holder": {
+        "kind": "polity",
+        "id": "acolhua_texcoco"
+      },
+      "allegiancePolityId": "acolhua_texcoco",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tepanec_tlacopan",
+      "titleStyleId": "title_tepanec_tlacopan",
+      "holder": {
+        "kind": "polity",
+        "id": "tepanec_tlacopan"
+      },
+      "allegiancePolityId": "tepanec_tlacopan",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tlaxcallan_confederation",
+      "titleStyleId": "title_tlaxcallan_confederation",
+      "holder": {
+        "kind": "polity",
+        "id": "tlaxcallan_confederation"
+      },
+      "allegiancePolityId": "tlaxcallan_confederation",
+      "sovereign": true
+    },
+    {
+      "id": "grant_purepecha_state",
+      "titleStyleId": "title_purepecha_state",
+      "holder": {
+        "kind": "polity",
+        "id": "purepecha_state"
+      },
+      "allegiancePolityId": "purepecha_state",
+      "sovereign": true
+    },
+    {
+      "id": "grant_chalco_confederation",
+      "titleStyleId": "title_chalco_confederation",
+      "holder": {
+        "kind": "polity",
+        "id": "chalco_confederation"
+      },
+      "allegiancePolityId": "chalco_confederation",
+      "sovereign": true
+    },
+    {
+      "id": "grant_yucatan_maya_jurisdictions",
+      "titleStyleId": "title_yucatan_maya_jurisdictions",
+      "holder": {
+        "kind": "polity",
+        "id": "yucatan_maya_jurisdictions"
+      },
+      "allegiancePolityId": "yucatan_maya_jurisdictions",
+      "sovereign": true
+    },
+    {
+      "id": "grant_itza_kingdom",
+      "titleStyleId": "title_itza_kingdom",
+      "holder": {
+        "kind": "polity",
+        "id": "itza_kingdom"
+      },
+      "allegiancePolityId": "itza_kingdom",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kiche_kingdom",
+      "titleStyleId": "title_kiche_kingdom",
+      "holder": {
+        "kind": "polity",
+        "id": "kiche_kingdom"
+      },
+      "allegiancePolityId": "kiche_kingdom",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kaqchikel_kingdom",
+      "titleStyleId": "title_kaqchikel_kingdom",
+      "holder": {
+        "kind": "polity",
+        "id": "kaqchikel_kingdom"
+      },
+      "allegiancePolityId": "kaqchikel_kingdom",
+      "sovereign": true
+    },
+    {
+      "id": "grant_taino_cacicazgos",
+      "titleStyleId": "title_taino_cacicazgos",
+      "holder": {
+        "kind": "polity",
+        "id": "taino_cacicazgos"
+      },
+      "allegiancePolityId": "taino_cacicazgos",
+      "sovereign": true
+    },
+    {
+      "id": "grant_kalinago_island_communities",
+      "titleStyleId": "title_kalinago_island_communities",
+      "holder": {
+        "kind": "polity",
+        "id": "kalinago_island_communities"
+      },
+      "allegiancePolityId": "kalinago_island_communities",
+      "sovereign": true
+    },
+    {
+      "id": "grant_muisca_zipazgo",
+      "titleStyleId": "title_muisca_zipazgo",
+      "holder": {
+        "kind": "polity",
+        "id": "muisca_zipazgo"
+      },
+      "allegiancePolityId": "muisca_zipazgo",
+      "sovereign": true
+    },
+    {
+      "id": "grant_muisca_zacazgo",
+      "titleStyleId": "title_muisca_zacazgo",
+      "holder": {
+        "kind": "polity",
+        "id": "muisca_zacazgo"
+      },
+      "allegiancePolityId": "muisca_zacazgo",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tairona_chiefdoms",
+      "titleStyleId": "title_tairona_chiefdoms",
+      "holder": {
+        "kind": "polity",
+        "id": "tairona_chiefdoms"
+      },
+      "allegiancePolityId": "tairona_chiefdoms",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tawantinsuyu",
+      "titleStyleId": "title_tawantinsuyu",
+      "holder": {
+        "kind": "polity",
+        "id": "tawantinsuyu"
+      },
+      "allegiancePolityId": "tawantinsuyu",
+      "sovereign": true
+    },
+    {
+      "id": "grant_chimor_kingdom",
+      "titleStyleId": "title_chimor_kingdom",
+      "holder": {
+        "kind": "polity",
+        "id": "chimor_kingdom"
+      },
+      "allegiancePolityId": "chimor_kingdom",
+      "sovereign": true
+    },
+    {
+      "id": "grant_chincha_lordship",
+      "titleStyleId": "title_chincha_lordship",
+      "holder": {
+        "kind": "polity",
+        "id": "chincha_lordship"
+      },
+      "allegiancePolityId": "chincha_lordship",
+      "sovereign": true
+    },
+    {
+      "id": "grant_amazonian_regional_societies",
+      "titleStyleId": "title_amazonian_regional_societies",
+      "holder": {
+        "kind": "polity",
+        "id": "amazonian_regional_societies"
+      },
+      "allegiancePolityId": "amazonian_regional_societies",
+      "sovereign": true
+    },
+    {
+      "id": "grant_tupi_coastal_networks",
+      "titleStyleId": "title_tupi_coastal_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "tupi_coastal_networks"
+      },
+      "allegiancePolityId": "tupi_coastal_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_mapuche_rewe_confederacies",
+      "titleStyleId": "title_mapuche_rewe_confederacies",
+      "holder": {
+        "kind": "polity",
+        "id": "mapuche_rewe_confederacies"
+      },
+      "allegiancePolityId": "mapuche_rewe_confederacies",
+      "sovereign": true
+    },
+    {
+      "id": "grant_diaguita_calchaqui_lordships",
+      "titleStyleId": "title_diaguita_calchaqui_lordships",
+      "holder": {
+        "kind": "polity",
+        "id": "diaguita_calchaqui_lordships"
+      },
+      "allegiancePolityId": "diaguita_calchaqui_lordships",
+      "sovereign": true
+    },
+    {
+      "id": "grant_guarani_tekohas",
+      "titleStyleId": "title_guarani_tekohas",
+      "holder": {
+        "kind": "polity",
+        "id": "guarani_tekohas"
+      },
+      "allegiancePolityId": "guarani_tekohas",
+      "sovereign": true
+    },
+    {
+      "id": "grant_charrua_minuan_networks",
+      "titleStyleId": "title_charrua_minuan_networks",
+      "holder": {
+        "kind": "polity",
+        "id": "charrua_minuan_networks"
+      },
+      "allegiancePolityId": "charrua_minuan_networks",
+      "sovereign": true
+    },
+    {
+      "id": "grant_selknam_yaghan_communities",
+      "titleStyleId": "title_selknam_yaghan_communities",
+      "holder": {
+        "kind": "polity",
+        "id": "selknam_yaghan_communities"
+      },
+      "allegiancePolityId": "selknam_yaghan_communities",
       "sovereign": true
     }
   ],
@@ -24773,6 +28159,600 @@
       "controllerPolityId": "sakhalin_communities",
       "governingPolityId": "sakhalin_communities",
       "sovereignPolityId": "sakhalin_communities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_haudenosaunee_homelands",
+      "territory": {
+        "kind": "province",
+        "id": "haudenosaunee_homelands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "haudenosaunee_nations"
+      },
+      "controllerPolityId": "haudenosaunee_nations",
+      "governingPolityId": "haudenosaunee_nations",
+      "sovereignPolityId": "haudenosaunee_nations",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_wendat_georgian_bay",
+      "territory": {
+        "kind": "province",
+        "id": "wendat_georgian_bay"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "wendat_confederacies"
+      },
+      "controllerPolityId": "wendat_confederacies",
+      "governingPolityId": "wendat_confederacies",
+      "sovereignPolityId": "wendat_confederacies",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_anishinaabe_upper_lakes",
+      "territory": {
+        "kind": "province",
+        "id": "anishinaabe_upper_lakes"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "anishinaabe_networks"
+      },
+      "controllerPolityId": "anishinaabe_networks",
+      "governingPolityId": "anishinaabe_networks",
+      "sovereignPolityId": "anishinaabe_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_inuit_labrador_greenland",
+      "territory": {
+        "kind": "province",
+        "id": "inuit_labrador_greenland"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "inuit_north_atlantic_communities"
+      },
+      "controllerPolityId": "inuit_north_atlantic_communities",
+      "governingPolityId": "inuit_north_atlantic_communities",
+      "sovereignPolityId": "inuit_north_atlantic_communities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_mississippi_southeast_centers",
+      "territory": {
+        "kind": "province",
+        "id": "mississippi_southeast_centers"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "cahokian_successor_centers"
+      },
+      "controllerPolityId": "cahokian_successor_centers",
+      "governingPolityId": "cahokian_successor_centers",
+      "sovereignPolityId": "cahokian_successor_centers",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_pueblo_rio_grande_mesa",
+      "territory": {
+        "kind": "province",
+        "id": "pueblo_rio_grande_mesa"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "pueblo_world"
+      },
+      "controllerPolityId": "pueblo_world",
+      "governingPolityId": "pueblo_world",
+      "sovereignPolityId": "pueblo_world",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_northwest_coast_homelands",
+      "territory": {
+        "kind": "province",
+        "id": "northwest_coast_homelands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "northwest_coast_nations"
+      },
+      "controllerPolityId": "northwest_coast_nations",
+      "governingPolityId": "northwest_coast_nations",
+      "sovereignPolityId": "northwest_coast_nations",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tenochtitlan_domain",
+      "territory": {
+        "kind": "province",
+        "id": "tenochtitlan_domain"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "mexica_tenochtitlan"
+      },
+      "controllerPolityId": "mexica_tenochtitlan",
+      "governingPolityId": "mexica_tenochtitlan",
+      "sovereignPolityId": "mexica_tenochtitlan",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_texcoco_domain",
+      "territory": {
+        "kind": "province",
+        "id": "texcoco_domain"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "acolhua_texcoco"
+      },
+      "controllerPolityId": "acolhua_texcoco",
+      "governingPolityId": "acolhua_texcoco",
+      "sovereignPolityId": "acolhua_texcoco",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tlacopan_domain",
+      "territory": {
+        "kind": "province",
+        "id": "tlacopan_domain"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tepanec_tlacopan"
+      },
+      "controllerPolityId": "tepanec_tlacopan",
+      "governingPolityId": "tepanec_tlacopan",
+      "sovereignPolityId": "tepanec_tlacopan",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tlaxcallan_four_altepetl",
+      "territory": {
+        "kind": "province",
+        "id": "tlaxcallan_four_altepetl"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tlaxcallan_confederation"
+      },
+      "controllerPolityId": "tlaxcallan_confederation",
+      "governingPolityId": "tlaxcallan_confederation",
+      "sovereignPolityId": "tlaxcallan_confederation",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_purepecha_michoacan",
+      "territory": {
+        "kind": "province",
+        "id": "purepecha_michoacan"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "purepecha_state"
+      },
+      "controllerPolityId": "purepecha_state",
+      "governingPolityId": "purepecha_state",
+      "sovereignPolityId": "purepecha_state",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_chalco_altepetl",
+      "territory": {
+        "kind": "province",
+        "id": "chalco_altepetl"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "chalco_confederation"
+      },
+      "controllerPolityId": "chalco_confederation",
+      "governingPolityId": "chalco_confederation",
+      "sovereignPolityId": "chalco_confederation",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_yucatan_kuchkabal",
+      "territory": {
+        "kind": "province",
+        "id": "yucatan_kuchkabal"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "yucatan_maya_jurisdictions"
+      },
+      "controllerPolityId": "yucatan_maya_jurisdictions",
+      "governingPolityId": "yucatan_maya_jurisdictions",
+      "sovereignPolityId": "yucatan_maya_jurisdictions",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_itza_peten",
+      "territory": {
+        "kind": "province",
+        "id": "itza_peten"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "itza_kingdom"
+      },
+      "controllerPolityId": "itza_kingdom",
+      "governingPolityId": "itza_kingdom",
+      "sovereignPolityId": "itza_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kiche_highlands",
+      "territory": {
+        "kind": "province",
+        "id": "kiche_highlands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kiche_kingdom"
+      },
+      "controllerPolityId": "kiche_kingdom",
+      "governingPolityId": "kiche_kingdom",
+      "sovereignPolityId": "kiche_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kaqchikel_highlands",
+      "territory": {
+        "kind": "province",
+        "id": "kaqchikel_highlands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kaqchikel_kingdom"
+      },
+      "controllerPolityId": "kaqchikel_kingdom",
+      "governingPolityId": "kaqchikel_kingdom",
+      "sovereignPolityId": "kaqchikel_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_taino_greater_antilles",
+      "territory": {
+        "kind": "province",
+        "id": "taino_greater_antilles"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "taino_cacicazgos"
+      },
+      "controllerPolityId": "taino_cacicazgos",
+      "governingPolityId": "taino_cacicazgos",
+      "sovereignPolityId": "taino_cacicazgos",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_kalinago_lesser_antilles",
+      "territory": {
+        "kind": "province",
+        "id": "kalinago_lesser_antilles"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "kalinago_island_communities"
+      },
+      "controllerPolityId": "kalinago_island_communities",
+      "governingPolityId": "kalinago_island_communities",
+      "sovereignPolityId": "kalinago_island_communities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_muisca_bacata",
+      "territory": {
+        "kind": "province",
+        "id": "muisca_bacata"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "muisca_zipazgo"
+      },
+      "controllerPolityId": "muisca_zipazgo",
+      "governingPolityId": "muisca_zipazgo",
+      "sovereignPolityId": "muisca_zipazgo",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_muisca_hunza",
+      "territory": {
+        "kind": "province",
+        "id": "muisca_hunza"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "muisca_zacazgo"
+      },
+      "controllerPolityId": "muisca_zacazgo",
+      "governingPolityId": "muisca_zacazgo",
+      "sovereignPolityId": "muisca_zacazgo",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tairona_sierra_nevada",
+      "territory": {
+        "kind": "province",
+        "id": "tairona_sierra_nevada"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tairona_chiefdoms"
+      },
+      "controllerPolityId": "tairona_chiefdoms",
+      "governingPolityId": "tairona_chiefdoms",
+      "sovereignPolityId": "tairona_chiefdoms",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_inca_cusco_heartland",
+      "territory": {
+        "kind": "province",
+        "id": "inca_cusco_heartland"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tawantinsuyu"
+      },
+      "controllerPolityId": "tawantinsuyu",
+      "governingPolityId": "tawantinsuyu",
+      "sovereignPolityId": "tawantinsuyu",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_inca_southern_highlands",
+      "territory": {
+        "kind": "province",
+        "id": "inca_southern_highlands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tawantinsuyu"
+      },
+      "controllerPolityId": "tawantinsuyu",
+      "governingPolityId": "tawantinsuyu",
+      "sovereignPolityId": "tawantinsuyu",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_chimor_north_coast",
+      "territory": {
+        "kind": "province",
+        "id": "chimor_north_coast"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "chimor_kingdom"
+      },
+      "controllerPolityId": "chimor_kingdom",
+      "governingPolityId": "chimor_kingdom",
+      "sovereignPolityId": "chimor_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_chincha_valley",
+      "territory": {
+        "kind": "province",
+        "id": "chincha_valley"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "chincha_lordship"
+      },
+      "controllerPolityId": "chincha_lordship",
+      "governingPolityId": "chincha_lordship",
+      "sovereignPolityId": "chincha_lordship",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_amazon_riverine_societies",
+      "territory": {
+        "kind": "province",
+        "id": "amazon_riverine_societies"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "amazonian_regional_societies"
+      },
+      "controllerPolityId": "amazonian_regional_societies",
+      "governingPolityId": "amazonian_regional_societies",
+      "sovereignPolityId": "amazonian_regional_societies",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_tupi_atlantic_coast",
+      "territory": {
+        "kind": "province",
+        "id": "tupi_atlantic_coast"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tupi_coastal_networks"
+      },
+      "controllerPolityId": "tupi_coastal_networks",
+      "governingPolityId": "tupi_coastal_networks",
+      "sovereignPolityId": "tupi_coastal_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_mapuche_ngulumapu",
+      "territory": {
+        "kind": "province",
+        "id": "mapuche_ngulumapu"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "mapuche_rewe_confederacies"
+      },
+      "controllerPolityId": "mapuche_rewe_confederacies",
+      "governingPolityId": "mapuche_rewe_confederacies",
+      "sovereignPolityId": "mapuche_rewe_confederacies",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_diaguita_calchaqui_valleys",
+      "territory": {
+        "kind": "province",
+        "id": "diaguita_calchaqui_valleys"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "diaguita_calchaqui_lordships"
+      },
+      "controllerPolityId": "diaguita_calchaqui_lordships",
+      "governingPolityId": "diaguita_calchaqui_lordships",
+      "sovereignPolityId": "diaguita_calchaqui_lordships",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_guarani_parana_paraguay",
+      "territory": {
+        "kind": "province",
+        "id": "guarani_parana_paraguay"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "guarani_tekohas"
+      },
+      "controllerPolityId": "guarani_tekohas",
+      "governingPolityId": "guarani_tekohas",
+      "sovereignPolityId": "guarani_tekohas",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_charrua_uruguay_grasslands",
+      "territory": {
+        "kind": "province",
+        "id": "charrua_uruguay_grasslands"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "charrua_minuan_networks"
+      },
+      "controllerPolityId": "charrua_minuan_networks",
+      "governingPolityId": "charrua_minuan_networks",
+      "sovereignPolityId": "charrua_minuan_networks",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_fuegian_archipelago",
+      "territory": {
+        "kind": "province",
+        "id": "fuegian_archipelago"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "selknam_yaghan_communities"
+      },
+      "controllerPolityId": "selknam_yaghan_communities",
+      "governingPolityId": "selknam_yaghan_communities",
+      "sovereignPolityId": "selknam_yaghan_communities",
       "autonomyPercent": 35,
       "overlordTaxRatePercent": 0,
       "upkeepRatePercent": 5,
