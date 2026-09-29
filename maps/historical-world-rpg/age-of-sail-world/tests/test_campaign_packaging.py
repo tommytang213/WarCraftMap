@@ -65,7 +65,7 @@ class CampaignPackagingTests(unittest.TestCase):
         content[0]["id"] = "whole_world"; content[0]["packagePath"] = "Maps/WholeWorld.w3x"
         for key in ("logicalRegionIds", "regionalInstanceIds", "generatedTerrainIds"):
             content[0]["assignments"][key] = sorted({v for item in content for v in item["assignments"][key]})
-        content[0]["terrainBudget"] = {"maximumCells": 76800, "maximumOutputBytes": 4194304}
+        content[0]["terrainBudget"] = {"maximumCells": 110000, "maximumOutputBytes": 5242880}
         raw["physicalMaps"] = [raw["physicalMaps"][0], content[0]]
         self.manifest.write_text(json.dumps(raw), encoding="utf-8")
         validate_campaign(load_campaign_config(self.manifest))
@@ -152,7 +152,7 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         with zipfile.ZipFile(first) as campaign:
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            self.assertEqual(6, len(campaign_manifest["maps"]))
+            self.assertEqual(7, len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
