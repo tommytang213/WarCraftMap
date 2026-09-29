@@ -152,7 +152,8 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         with zipfile.ZipFile(first) as campaign:
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            self.assertEqual(7, len(campaign_manifest["maps"]))
+            configured_maps = json.loads(self.manifest.read_text(encoding="utf-8"))["physicalMaps"]
+            self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
             southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
