@@ -13,12 +13,15 @@ invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 
 `timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
 
+`technology_institutions.py` provides fixed-point polity research, graph-prerequisite
+enforcement, finite ahead-of-time costs, typed stable-ID unlock events, independent
+province adoption, and campaign-save snapshots.
+
 Planned modules include:
 
 - world hierarchy: polity -> province/state -> settlement
 - ownership vs control
 - timeline and eras
-- technology and institutions
 - economy, goods, trade, taxation
 - diplomacy, wars, occupations and peace settlements
 - armies and fleets

@@ -59,7 +59,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Provinces/states
 - [x] Settlements
 - [ ] Timeline/eras
-- [ ] Technology/institutions
+- [x] Technology/institutions
 - [ ] Economy/trade
 - [ ] Diplomacy/war
 - [ ] Armies/fleets
