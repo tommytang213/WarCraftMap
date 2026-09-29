@@ -20,6 +20,9 @@ def load_configuration(path):
   p[name]=Profile(name,r["seed"],r["warmupRuns"],r["measuredRuns"],w,{k:float(v) for k,v in t.items()},float(cv))
  if not p:raise ConfigurationError("profiles required")
  return d,p
+def load_json(path):
+ return json.loads(Path(path).read_text())
+
 def validate_snapshot(v,path="fixture"):
  if isinstance(v,dict):
   for k,x in v.items():
