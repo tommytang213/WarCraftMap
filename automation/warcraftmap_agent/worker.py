@@ -153,6 +153,26 @@ def gh_json(repo: Path, args: list[str]) -> Any:
     return json.loads(result.stdout)
 
 
+def remote_branch_oid(repo: Path, branch: str) -> str:
+    """Return the current origin branch OID without mutating the checkout."""
+    if not branch:
+        return ""
+    result = run(
+        ["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{branch}"],
+        cwd=repo,
+        check=False,
+    )
+    if result.returncode == 2:
+        return ""
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        raise RuntimeError(f"could not resolve origin/{branch}: {detail}")
+    line = result.stdout.strip().splitlines()
+    if not line:
+        return ""
+    return line[0].split()[0]
+
+
 def list_issues(config: Config) -> list[dict[str, Any]]:
     issues = gh_json(config.repo_root, ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,body,url,createdAt"])
     return sorted((item for item in issues if READY.match(item["title"])), key=lambda item: (item["createdAt"], item["number"]))
@@ -753,7 +773,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         )
         if record.get("status") != "pr_open" and not failed_conflict:
             continue
-        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup,baseRefOid"])
+        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup,baseRefName"])
         if view["state"] == "MERGED":
             finish_merged_issue(config, number, record)
             return True
@@ -762,7 +782,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
         if view.get("mergeStateStatus") == "DIRTY":
-            base_oid = str(view.get("baseRefOid") or "")
+            base_oid = remote_branch_oid(config.repo_root, str(view.get("baseRefName") or ""))
             previous_base_oid = str(record.get("conflict_base_oid") or "")
             if base_oid and base_oid != previous_base_oid:
                 record["conflict_base_oid"] = base_oid
