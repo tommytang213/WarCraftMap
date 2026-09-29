@@ -66,6 +66,8 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] City capture/rebuild
 - [x] Titles/land/taxation
 - [x] Characters/relationships
+- [ ] Controller military tradition / category combat-experience progression
+- [ ] Equipment set definitions and partial/full threshold-bonus resolution
 - [x] Quests/events/exploration
 
 ## Phase 5 — Age of Sail world content
@@ -108,6 +110,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [ ] Americas / Caribbean
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, confederated and decentralized authority, diplomacy, and conflicts)
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
 - [ ] Pacific
 - [ ] Historical tech/event timeline
 - [ ] Country-specific units/content

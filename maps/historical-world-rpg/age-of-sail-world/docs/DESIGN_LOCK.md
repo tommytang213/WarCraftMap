@@ -83,6 +83,23 @@ This file records requirements already agreed with the player. They are defaults
 - Named/recruitable heroes may use substantially stronger RPG or supernatural mechanics than ordinary units while the surrounding world and normal military roster remain predominantly historical.
 - Hero abilities may include persistent mana-powered protection such as a personal Mana Shield that can extend to friendly units within selectable preset ranges. Such group protection uses the hero as the shared mana source, can remain active without a fixed duration while mana is available, and may support self-only and multiple group-range modes.
 
+## Controller military traditions
+
+- Player-controlled forces and AI-controlled polities maintain independent persistent military-tradition progression rather than sharing one global combat-experience value.
+- Traditions are controller-scoped and category-specific. Scenario data may define tracks such as infantry, cavalry, artillery, naval, marine/boarding, siege, or other appropriate military categories without hardcoding those names into the shared engine.
+- Relevant combat by a unit contributes experience to its controller's matching tradition track. Enemy kills are a primary supported source; scenario/balance data may also award weighted experience for other meaningful combat contribution so the system is not tied only to literal last-hit ownership.
+- Tradition progression benefits all currently controlled units that qualify for that tradition category, including units represented abstractly while another physical map is active. Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes.
+- Tradition belongs to the controller, not permanently to the individual unit. If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition.
+- The core numerical tradition bonus is continuous and experience-proportional rather than a discrete level table. Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient).
+- Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. Long-running player and AI controllers may continue improving as they accumulate valid experience across the campaign. Balance should come from experience rates, coefficients, opposing progression, costs, counters, and scenario tuning rather than an arbitrary cap that makes further combat experience worthless.
+- Milestone thresholds may unlock additional category-wide buffs, passive effects, doctrines, formations, morale/discipline mechanics, logistics advantages, or other qualitative rewards once the controller reaches the required tradition experience.
+- Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP.
+- Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect.
+- Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards.
+- Do not require every tradition to raise every numerical stat. Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles.
+- Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command.
+- AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier.
+
 ## City capture
 
 - Civilian facilities are invulnerable.
