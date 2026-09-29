@@ -899,7 +899,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         record = issue_record(state, selected["number"])
         worktree, branch = worktree_for(config, selected["number"])
-        record["attempts"] = int(record.get("attempts", 0)) + 1
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        record[attempt_key] = int(record.get(attempt_key, 0)) + 1
         record["status"] = "working"
         run_entry = {
             "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
@@ -940,7 +941,8 @@ def main(argv: list[str] | None = None) -> int:
                 record.pop("last_failure", None)
                 record.pop("repair_kind", None)
         except Exception as exc:
-            record["status"] = "failed" if record["attempts"] >= config.max_attempts else "repair"
+            attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+            record["status"] = "failed" if int(record.get(attempt_key, 0)) >= config.max_attempts else "repair"
             record["last_failure"] = str(exc)[-4000:]
             print(f"attempt failed: {exc}", file=sys.stderr)
         save_state(state_path, state)
