@@ -111,6 +111,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Regional instances and geographic reference data
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
 - [ ] Pacific
+  - [x] Regional instances and geographic reference data
 - [ ] Historical tech/event timeline
 - [ ] Country-specific units/content
 - [ ] Recruitable characters
