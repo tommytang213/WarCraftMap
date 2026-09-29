@@ -94,10 +94,12 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
-- [ ] Southeast Asia
+- [x] Southeast Asia
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 political baseline and authoritative settlement content
+  - [x] Ports, trade routes, transitions, economy profiles, and abstract activation data
 - [ ] East Asia
 - [ ] Americas / Caribbean
 - [ ] Pacific

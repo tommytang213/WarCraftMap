@@ -10,48 +10,913 @@
     ]
   },
   "historicalEvidence": [
-    {"id":"evidence_mainland_1450","scope":"mainland_mandalas","citation":"The Cambridge History of Southeast Asia, volume 1, part 1 (Tarling, ed.), chapters on the classical mainland states.","note":"Supports the Ava, Hanthawaddy, Arakan, Lan Na, Lan Xang, Ayutthaya, Khmer, Dai Viet, and Champa baseline and the use of mandala-era divisions."},
-    {"id":"evidence_maritime_1450","scope":"maritime_trade_states","citation":"The Cambridge History of Southeast Asia, volume 1, part 1 (Tarling, ed.), chapters on the maritime states from c. 1400.","note":"Supports Malacca, the Sumatran successor states, Java, Sunda, Bali, Brunei, and the eastern archipelago baseline."},
-    {"id":"evidence_philippines_1450","scope":"philippine_port_polities","citation":"William Henry Scott, Barangay: Sixteenth-Century Philippine Culture and Society (1994), used cautiously for late precolonial political forms.","note":"Supports preserving the Manila-Tondo, Cebu, Butuan, Maguindanao, and Sulu port-polity traditions without projecting later colonial boundaries."},
-    {"id":"evidence_burma_1450","scope":"ava_hanthawaddy_toungoo","citation":"G. E. Harvey, History of Burma (1925), Ava and Pegu dynastic chronology.","note":"Supports Toungoo's subordinate relationship to Ava and the distinct Arakanese and Mon realms."},
-    {"id":"evidence_vietnam_champa_1450","scope":"dai_viet_champa","citation":"Keith W. Taylor, A History of the Vietnamese (2013), Later Le and fifteenth-century Champa chapters.","note":"Supports separate Dai Viet and Champa authority in 1450 without hardcoding the conquest of 1471."},
-    {"id":"evidence_java_1450","scope":"java_sunda_bali","citation":"M. C. Ricklefs, A History of Modern Indonesia since c. 1200, third edition (2001), fifteenth-century Java chapters.","note":"Supports Majapahit, Sunda, and Bali and preserves the north-coast ports whose later expansion is not predetermined."},
-    {"id":"evidence_spice_islands_1450","scope":"moluccas_sulawesi","citation":"Leonard Y. Andaya, The World of Maluku (1993), early political and trading networks.","note":"Supports distinct Ternate and Tidore and preservation of Bacan, Jailolo, and neighboring maritime communities."}
+    {
+      "id": "evidence_mainland_1450",
+      "scope": "mainland_mandalas",
+      "citation": "The Cambridge History of Southeast Asia, volume 1, part 1 (Tarling, ed.), chapters on the classical mainland states.",
+      "note": "Supports the Ava, Hanthawaddy, Arakan, Lan Na, Lan Xang, Ayutthaya, Khmer, Dai Viet, and Champa baseline and the use of mandala-era divisions."
+    },
+    {
+      "id": "evidence_maritime_1450",
+      "scope": "maritime_trade_states",
+      "citation": "The Cambridge History of Southeast Asia, volume 1, part 1 (Tarling, ed.), chapters on the maritime states from c. 1400.",
+      "note": "Supports Malacca, the Sumatran successor states, Java, Sunda, Bali, Brunei, and the eastern archipelago baseline."
+    },
+    {
+      "id": "evidence_philippines_1450",
+      "scope": "philippine_port_polities",
+      "citation": "William Henry Scott, Barangay: Sixteenth-Century Philippine Culture and Society (1994), used cautiously for late precolonial political forms.",
+      "note": "Supports preserving the Manila-Tondo, Cebu, Butuan, Maguindanao, and Sulu port-polity traditions without projecting later colonial boundaries."
+    },
+    {
+      "id": "evidence_burma_1450",
+      "scope": "ava_hanthawaddy_toungoo",
+      "citation": "G. E. Harvey, History of Burma (1925), Ava and Pegu dynastic chronology.",
+      "note": "Supports Toungoo's subordinate relationship to Ava and the distinct Arakanese and Mon realms."
+    },
+    {
+      "id": "evidence_vietnam_champa_1450",
+      "scope": "dai_viet_champa",
+      "citation": "Keith W. Taylor, A History of the Vietnamese (2013), Later Le and fifteenth-century Champa chapters.",
+      "note": "Supports separate Dai Viet and Champa authority in 1450 without hardcoding the conquest of 1471."
+    },
+    {
+      "id": "evidence_java_1450",
+      "scope": "java_sunda_bali",
+      "citation": "M. C. Ricklefs, A History of Modern Indonesia since c. 1200, third edition (2001), fifteenth-century Java chapters.",
+      "note": "Supports Majapahit, Sunda, and Bali and preserves the north-coast ports whose later expansion is not predetermined."
+    },
+    {
+      "id": "evidence_spice_islands_1450",
+      "scope": "moluccas_sulawesi",
+      "citation": "Leonard Y. Andaya, The World of Maluku (1993), early political and trading networks.",
+      "note": "Supports distinct Ternate and Tidore and preservation of Bacan, Jailolo, and neighboring maritime communities."
+    }
   ],
   "polities": [
-    {"id":"ava_kingdom","name":"Kingdom of Ava","adjective":"Avan","sovereignTier":"king","nativeSovereignTitle":"Min","capitalSettlementId":"ava","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_irrawaddy","river_salween"],"evidenceIds":["evidence_mainland_1450","evidence_burma_1450"],"provinces":[{"id":"ava_upper_burma","name":"Ava and Upper Irrawaddy","administrativeType":"royal_heartland","adjacentProvinceIds":["toungoo","shan_states","hanthawaddy_pegu","mrauk_u_arakan"]}]},
-    {"id":"toungoo_principality","name":"Principality of Toungoo","adjective":"Toungoo","sovereignTier":"prince","nativeSovereignTitle":"Myoza","capitalSettlementId":"toungoo","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_irrawaddy","mountains_shan_tenasserim"],"evidenceIds":["evidence_burma_1450"],"provinces":[{"id":"toungoo","name":"Toungoo","administrativeType":"vassal_principality","adjacentProvinceIds":["ava_upper_burma","hanthawaddy_pegu"]}]},
-    {"id":"hanthawaddy_kingdom","name":"Hanthawaddy Kingdom","adjective":"Hanthawaddy","sovereignTier":"king","nativeSovereignTitle":"Binnya","capitalSettlementId":"pegu","regionalInstanceId":"sea_mainland","geographicFeatureIds":["coast_mainland_west","river_irrawaddy"],"evidenceIds":["evidence_mainland_1450","evidence_burma_1450"],"provinces":[{"id":"hanthawaddy_pegu","name":"Pegu and the Mon Ports","administrativeType":"mon_kingdom","adjacentProvinceIds":["ava_upper_burma","toungoo","ayutthaya_tenasserim"]}]},
-    {"id":"mrauk_u_kingdom","name":"Kingdom of Mrauk U","adjective":"Arakanese","sovereignTier":"king","nativeSovereignTitle":"Min","capitalSettlementId":"mrauk_u","regionalInstanceId":"sea_mainland","geographicFeatureIds":["coast_mainland_west","mountains_arakan"],"evidenceIds":["evidence_burma_1450"],"provinces":[{"id":"mrauk_u_arakan","name":"Arakan","administrativeType":"coastal_kingdom","adjacentProvinceIds":["ava_upper_burma"]}]},
-    {"id":"shan_states","name":"Shan States","adjective":"Shan","sovereignTier":"prince","nativeSovereignTitle":"Saopha","capitalSettlementId":"mong_yang","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_salween","mountains_shan_tenasserim"],"evidenceIds":["evidence_mainland_1450"],"provinces":[{"id":"shan_states","name":"Shan Highlands","administrativeType":"compressed_saopha_states","adjacentProvinceIds":["ava_upper_burma","lan_na","lan_xang"]}],"preservedEntities":["Mong Yang","Mong Kawng","Hsipaw","Mong Nai"]},
-    {"id":"lan_na_kingdom","name":"Kingdom of Lan Na","adjective":"Lan Na","sovereignTier":"king","nativeSovereignTitle":"Chao","capitalSettlementId":"chiang_mai","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_mekong","mountains_shan_tenasserim"],"evidenceIds":["evidence_mainland_1450"],"provinces":[{"id":"lan_na","name":"Lan Na","administrativeType":"mueang_mandala","adjacentProvinceIds":["shan_states","lan_xang","ayutthaya_core"]}]},
-    {"id":"lan_xang_kingdom","name":"Kingdom of Lan Xang","adjective":"Lan Xang","sovereignTier":"king","nativeSovereignTitle":"Chao","capitalSettlementId":"muang_swa","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_mekong","mountains_annamite"],"evidenceIds":["evidence_mainland_1450"],"provinces":[{"id":"lan_xang","name":"Lan Xang","administrativeType":"mueang_mandala","adjacentProvinceIds":["shan_states","lan_na","ayutthaya_core","khmer_angkor","dai_viet"]}]},
-    {"id":"ayutthaya_kingdom","name":"Kingdom of Ayutthaya","adjective":"Ayutthayan","sovereignTier":"king","nativeSovereignTitle":"Ramathibodi","capitalSettlementId":"ayutthaya","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_chao_phraya","coast_mainland_east"],"evidenceIds":["evidence_mainland_1450"],"provinces":[{"id":"ayutthaya_core","name":"Chao Phraya Basin","administrativeType":"royal_mandala","adjacentProvinceIds":["lan_na","lan_xang","khmer_angkor","ayutthaya_tenasserim"]},{"id":"ayutthaya_tenasserim","name":"Tenasserim and Northern Malay Tributaries","administrativeType":"tributary_mueang","adjacentProvinceIds":["ayutthaya_core","hanthawaddy_pegu","malacca_sultanate"]}],"preservedEntities":["Nakhon Si Thammarat","Pattani","Kedah"]},
-    {"id":"khmer_empire","name":"Kingdom of Kambuja","adjective":"Khmer","sovereignTier":"king","nativeSovereignTitle":"Raja","capitalSettlementId":"chaktomuk","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_mekong","mountains_annamite"],"evidenceIds":["evidence_mainland_1450"],"provinces":[{"id":"khmer_angkor","name":"Angkor and Lower Mekong","administrativeType":"post_angkorian_kingdom","adjacentProvinceIds":["ayutthaya_core","lan_xang","champa"]}]},
-    {"id":"dai_viet","name":"Kingdom of Dai Viet","adjective":"Dai Viet","sovereignTier":"king","nativeSovereignTitle":"Hoang de","capitalSettlementId":"dong_kinh","regionalInstanceId":"sea_mainland","geographicFeatureIds":["river_red","coast_mainland_east"],"evidenceIds":["evidence_mainland_1450","evidence_vietnam_champa_1450"],"provinces":[{"id":"dai_viet","name":"Red River Realm","administrativeType":"dao_provinces","adjacentProvinceIds":["lan_xang","champa"]}]},
-    {"id":"champa_kingdom","name":"Kingdom of Champa","adjective":"Cham","sovereignTier":"king","nativeSovereignTitle":"Raja-di-raja","capitalSettlementId":"vijaya_champa","regionalInstanceId":"sea_mainland","geographicFeatureIds":["coast_mainland_east","mountains_annamite"],"evidenceIds":["evidence_vietnam_champa_1450"],"provinces":[{"id":"champa","name":"Vijaya and the Cham Coast","administrativeType":"coastal_mandala","adjacentProvinceIds":["dai_viet","khmer_angkor"]}],"preservedEntities":["Kauthara","Panduranga"]},
-    {"id":"malacca_sultanate","name":"Malacca Sultanate","adjective":"Malaccan","sovereignTier":"king","nativeSovereignTitle":"Sultan","capitalSettlementId":"malacca","regionalInstanceId":"sea_malay_sumatra","geographicFeatureIds":["coast_malay_peninsula","strait_malacca","strait_singapore"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"malacca_sultanate","name":"Malacca and the Southern Malay Peninsula","administrativeType":"maritime_sultanate","adjacentProvinceIds":["ayutthaya_tenasserim","samudera_pasai","minangkabau"]}]},
-    {"id":"samudera_pasai","name":"Samudera Pasai Sultanate","adjective":"Pasai","sovereignTier":"king","nativeSovereignTitle":"Sultan","capitalSettlementId":"pasai","regionalInstanceId":"sea_malay_sumatra","geographicFeatureIds":["island_sumatra","strait_malacca"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"samudera_pasai","name":"Pasai and North Sumatra","administrativeType":"port_sultanate","adjacentProvinceIds":["malacca_sultanate","minangkabau"]}]},
-    {"id":"minangkabau_kingdom","name":"Minangkabau Kingdom","adjective":"Minangkabau","sovereignTier":"king","nativeSovereignTitle":"Maharajadiraja","capitalSettlementId":"pagaruyung","regionalInstanceId":"sea_malay_sumatra","geographicFeatureIds":["island_sumatra","mountains_sumatra"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"minangkabau","name":"Minangkabau and Southern Sumatra","administrativeType":"highland_confederated_kingdom","adjacentProvinceIds":["samudera_pasai","malacca_sultanate","sunda_kingdom"]}],"preservedEntities":["Palembang","Indragiri","Jambi"]},
-    {"id":"majapahit_empire","name":"Majapahit Empire","adjective":"Majapahit","sovereignTier":"emperor","nativeSovereignTitle":"Maharaja","capitalSettlementId":"trowulan","regionalInstanceId":"sea_java_sunda","geographicFeatureIds":["island_java","mountains_java","corridor_java_sea"],"evidenceIds":["evidence_maritime_1450","evidence_java_1450"],"provinces":[{"id":"majapahit_java","name":"Majapahit and Eastern Java","administrativeType":"imperial_heartland","adjacentProvinceIds":["sunda_kingdom","bali_kingdoms","brunei_sultanate","makassar_polities"]}],"preservedEntities":["Demak","Gresik","Surabaya","Tuban"]},
-    {"id":"sunda_kingdom","name":"Kingdom of Sunda","adjective":"Sundanese","sovereignTier":"king","nativeSovereignTitle":"Maharaja","capitalSettlementId":"pakuan_pajajaran","regionalInstanceId":"sea_java_sunda","geographicFeatureIds":["island_java","strait_sunda"],"evidenceIds":["evidence_java_1450"],"provinces":[{"id":"sunda_kingdom","name":"Sunda and Western Java","administrativeType":"kingdom","adjacentProvinceIds":["minangkabau","majapahit_java"]}]},
-    {"id":"bali_kingdoms","name":"Balinese Kingdoms","adjective":"Balinese","sovereignTier":"king","nativeSovereignTitle":"Dalem","capitalSettlementId":"gelgel","regionalInstanceId":"sea_java_sunda","geographicFeatureIds":["archipelago_lesser_sunda","strait_lombok"],"evidenceIds":["evidence_java_1450"],"provinces":[{"id":"bali_kingdoms","name":"Bali and the Lesser Sunda Realms","administrativeType":"compressed_island_kingdoms","adjacentProvinceIds":["majapahit_java","makassar_polities"]}],"preservedEntities":["Gelgel","Lombok","Sumbawa","Timor ritual domains"]},
-    {"id":"brunei_sultanate","name":"Brunei Sultanate","adjective":"Bruneian","sovereignTier":"king","nativeSovereignTitle":"Sultan","capitalSettlementId":"kota_batu","regionalInstanceId":"sea_borneo","geographicFeatureIds":["island_borneo","coast_borneo","river_rajanga"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"brunei_sultanate","name":"Brunei and Northwest Borneo","administrativeType":"riverine_sultanate","adjacentProvinceIds":["majapahit_java","kutai_kingdom","sulu_sultanate","luzon_polities"]}]},
-    {"id":"kutai_kingdom","name":"Kingdom of Kutai","adjective":"Kutai","sovereignTier":"king","nativeSovereignTitle":"Maharaja","capitalSettlementId":"muara_kaman","regionalInstanceId":"sea_borneo","geographicFeatureIds":["island_borneo","mountains_borneo","river_kapuas"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"kutai_kingdom","name":"Kutai and the Borneo River Realms","administrativeType":"compressed_river_kingdoms","adjacentProvinceIds":["brunei_sultanate","makassar_polities"]}],"preservedEntities":["Kutai Martadipura","Tanjungpura","Banjar river polities"]},
-    {"id":"luzon_polities","name":"Luzon Port Polities","adjective":"Luzon","sovereignTier":"prince","nativeSovereignTitle":"Lakan","capitalSettlementId":"tondo","regionalInstanceId":"sea_philippines","geographicFeatureIds":["island_luzon","coast_luzon_visayas"],"evidenceIds":["evidence_philippines_1450"],"provinces":[{"id":"luzon_polities","name":"Luzon Port and Highland Polities","administrativeType":"compressed_port_polities","adjacentProvinceIds":["brunei_sultanate","visayan_polities"]}],"preservedEntities":["Tondo","Namayan","Manila river polity","Pangasinan","Caboloan"]},
-    {"id":"visayan_polities","name":"Visayan Polities","adjective":"Visayan","sovereignTier":"prince","nativeSovereignTitle":"Datu","capitalSettlementId":"cebu","regionalInstanceId":"sea_philippines","geographicFeatureIds":["archipelago_visayas","coast_luzon_visayas"],"evidenceIds":["evidence_philippines_1450"],"provinces":[{"id":"visayan_polities","name":"Cebu and the Visayas","administrativeType":"compressed_barangay_polities","adjacentProvinceIds":["luzon_polities","mindanao_polities","sulu_sultanate"]}],"preservedEntities":["Cebu","Panay settlements","Butuan"]},
-    {"id":"maguindanao_polities","name":"Mindanao River Polities","adjective":"Mindanao","sovereignTier":"prince","nativeSovereignTitle":"Datu","capitalSettlementId":"buayan","regionalInstanceId":"sea_philippines","geographicFeatureIds":["island_mindanao","archipelago_sulu"],"evidenceIds":["evidence_philippines_1450"],"provinces":[{"id":"mindanao_polities","name":"Mindanao River and Coastal Polities","administrativeType":"compressed_datu_domains","adjacentProvinceIds":["visayan_polities","sulu_sultanate","makassar_polities"]}],"preservedEntities":["Buayan","Maguindanao river settlements","Butuan"]},
-    {"id":"sulu_sultanate","name":"Sultanate of Sulu","adjective":"Sulu","sovereignTier":"king","nativeSovereignTitle":"Sultan","capitalSettlementId":"buansa","regionalInstanceId":"sea_philippines","geographicFeatureIds":["archipelago_sulu"],"evidenceIds":["evidence_philippines_1450","evidence_maritime_1450"],"provinces":[{"id":"sulu_sultanate","name":"Sulu Archipelago","administrativeType":"island_sultanate","adjacentProvinceIds":["brunei_sultanate","visayan_polities","mindanao_polities"]}]},
-    {"id":"makassar_polities","name":"South Sulawesi Kingdoms","adjective":"South Sulawesi","sovereignTier":"king","nativeSovereignTitle":"Karaeng","capitalSettlementId":"siang","regionalInstanceId":"sea_sulawesi_moluccas","geographicFeatureIds":["island_sulawesi","coast_sulawesi_moluccas","strait_makassar"],"evidenceIds":["evidence_maritime_1450"],"provinces":[{"id":"makassar_polities","name":"South Sulawesi and Makassar Strait","administrativeType":"compressed_kingdoms","adjacentProvinceIds":["kutai_kingdom","majapahit_java","bali_kingdoms","mindanao_polities","ternate_sultanate"]}],"preservedEntities":["Siang","Gowa","Bone","Luwu"]},
-    {"id":"ternate_sultanate","name":"Sultanate of Ternate","adjective":"Ternatan","sovereignTier":"king","nativeSovereignTitle":"Kolano","capitalSettlementId":"ternate","regionalInstanceId":"sea_sulawesi_moluccas","geographicFeatureIds":["archipelago_moluccas","corridor_eastern_archipelago"],"evidenceIds":["evidence_spice_islands_1450"],"provinces":[{"id":"ternate_sultanate","name":"Ternate and Northern Maluku","administrativeType":"spice_island_sultanate","adjacentProvinceIds":["makassar_polities","tidore_sultanate"]}],"preservedEntities":["Jailolo"]},
-    {"id":"tidore_sultanate","name":"Sultanate of Tidore","adjective":"Tidorese","sovereignTier":"king","nativeSovereignTitle":"Kolano","capitalSettlementId":"tidore","regionalInstanceId":"sea_sulawesi_moluccas","geographicFeatureIds":["archipelago_moluccas","corridor_eastern_archipelago"],"evidenceIds":["evidence_spice_islands_1450"],"provinces":[{"id":"tidore_sultanate","name":"Tidore and Eastern Maluku","administrativeType":"spice_island_sultanate","adjacentProvinceIds":["ternate_sultanate","papuan_coastal_polities"]}],"preservedEntities":["Bacan","Seram trading communities"]},
-    {"id":"papuan_coastal_polities","name":"Papuan Coastal Polities","adjective":"Papuan","sovereignTier":"prince","nativeSovereignTitle":"Raja","capitalSettlementId":"waigeo","regionalInstanceId":"sea_new_guinea_west","geographicFeatureIds":["island_new_guinea_west","archipelago_raja_ampat"],"evidenceIds":["evidence_spice_islands_1450"],"provinces":[{"id":"papuan_coastal_polities","name":"Raja Ampat and Western New Guinea Coasts","administrativeType":"compressed_maritime_domains","adjacentProvinceIds":["tidore_sultanate"]}],"preservedEntities":["Waigeo","Salawati","Misool","Waigama"]}
+    {
+      "id": "ava_kingdom",
+      "name": "Kingdom of Ava",
+      "adjective": "Avan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Min",
+      "capitalSettlementId": "ava",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_irrawaddy",
+        "river_salween"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450",
+        "evidence_burma_1450"
+      ],
+      "provinces": [
+        {
+          "id": "ava_upper_burma",
+          "name": "Ava and Upper Irrawaddy",
+          "administrativeType": "royal_heartland",
+          "adjacentProvinceIds": [
+            "toungoo",
+            "shan_states",
+            "hanthawaddy_pegu",
+            "mrauk_u_arakan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toungoo_principality",
+      "name": "Principality of Toungoo",
+      "adjective": "Toungoo",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Myoza",
+      "capitalSettlementId": "toungoo",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_irrawaddy",
+        "mountains_shan_tenasserim"
+      ],
+      "evidenceIds": [
+        "evidence_burma_1450"
+      ],
+      "provinces": [
+        {
+          "id": "toungoo",
+          "name": "Toungoo",
+          "administrativeType": "vassal_principality",
+          "adjacentProvinceIds": [
+            "ava_upper_burma",
+            "hanthawaddy_pegu"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hanthawaddy_kingdom",
+      "name": "Hanthawaddy Kingdom",
+      "adjective": "Hanthawaddy",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Binnya",
+      "capitalSettlementId": "pegu",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "coast_mainland_west",
+        "river_irrawaddy"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450",
+        "evidence_burma_1450"
+      ],
+      "provinces": [
+        {
+          "id": "hanthawaddy_pegu",
+          "name": "Pegu and the Mon Ports",
+          "administrativeType": "mon_kingdom",
+          "adjacentProvinceIds": [
+            "ava_upper_burma",
+            "toungoo",
+            "ayutthaya_tenasserim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mrauk_u_kingdom",
+      "name": "Kingdom of Mrauk U",
+      "adjective": "Arakanese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Min",
+      "capitalSettlementId": "mrauk_u",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "coast_mainland_west",
+        "mountains_arakan"
+      ],
+      "evidenceIds": [
+        "evidence_burma_1450"
+      ],
+      "provinces": [
+        {
+          "id": "mrauk_u_arakan",
+          "name": "Arakan",
+          "administrativeType": "coastal_kingdom",
+          "adjacentProvinceIds": [
+            "ava_upper_burma"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shan_states",
+      "name": "Shan States",
+      "adjective": "Shan",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Saopha",
+      "capitalSettlementId": "mong_yang",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_salween",
+        "mountains_shan_tenasserim"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450"
+      ],
+      "provinces": [
+        {
+          "id": "shan_states",
+          "name": "Shan Highlands",
+          "administrativeType": "compressed_saopha_states",
+          "adjacentProvinceIds": [
+            "ava_upper_burma",
+            "lan_na",
+            "lan_xang"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Mong Yang",
+        "Mong Kawng",
+        "Hsipaw",
+        "Mong Nai"
+      ]
+    },
+    {
+      "id": "lan_na_kingdom",
+      "name": "Kingdom of Lan Na",
+      "adjective": "Lan Na",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Chao",
+      "capitalSettlementId": "chiang_mai",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_mekong",
+        "mountains_shan_tenasserim"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450"
+      ],
+      "provinces": [
+        {
+          "id": "lan_na",
+          "name": "Lan Na",
+          "administrativeType": "mueang_mandala",
+          "adjacentProvinceIds": [
+            "shan_states",
+            "lan_xang",
+            "ayutthaya_core"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lan_xang_kingdom",
+      "name": "Kingdom of Lan Xang",
+      "adjective": "Lan Xang",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Chao",
+      "capitalSettlementId": "luang_prabang",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_mekong",
+        "mountains_annamite"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450"
+      ],
+      "provinces": [
+        {
+          "id": "lan_xang",
+          "name": "Lan Xang",
+          "administrativeType": "mueang_mandala",
+          "adjacentProvinceIds": [
+            "shan_states",
+            "lan_na",
+            "ayutthaya_core",
+            "khmer_angkor",
+            "dai_viet"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ayutthaya_kingdom",
+      "name": "Kingdom of Ayutthaya",
+      "adjective": "Ayutthayan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ramathibodi",
+      "capitalSettlementId": "ayutthaya",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_chao_phraya",
+        "coast_mainland_east"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450"
+      ],
+      "provinces": [
+        {
+          "id": "ayutthaya_core",
+          "name": "Chao Phraya Basin",
+          "administrativeType": "royal_mandala",
+          "adjacentProvinceIds": [
+            "lan_na",
+            "lan_xang",
+            "khmer_angkor",
+            "ayutthaya_tenasserim"
+          ]
+        },
+        {
+          "id": "ayutthaya_tenasserim",
+          "name": "Tenasserim and Northern Malay Tributaries",
+          "administrativeType": "tributary_mueang",
+          "adjacentProvinceIds": [
+            "ayutthaya_core",
+            "hanthawaddy_pegu",
+            "malacca_sultanate"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Nakhon Si Thammarat",
+        "Pattani",
+        "Kedah"
+      ]
+    },
+    {
+      "id": "khmer_empire",
+      "name": "Kingdom of Kambuja",
+      "adjective": "Khmer",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "angkor",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_mekong",
+        "mountains_annamite"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450"
+      ],
+      "provinces": [
+        {
+          "id": "khmer_angkor",
+          "name": "Angkor and Lower Mekong",
+          "administrativeType": "post_angkorian_kingdom",
+          "adjacentProvinceIds": [
+            "ayutthaya_core",
+            "lan_xang",
+            "champa"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dai_viet",
+      "name": "Kingdom of Dai Viet",
+      "adjective": "Dai Viet",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Hoang de",
+      "capitalSettlementId": "thang_long",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "river_red",
+        "coast_mainland_east"
+      ],
+      "evidenceIds": [
+        "evidence_mainland_1450",
+        "evidence_vietnam_champa_1450"
+      ],
+      "provinces": [
+        {
+          "id": "dai_viet",
+          "name": "Red River Realm",
+          "administrativeType": "dao_provinces",
+          "adjacentProvinceIds": [
+            "lan_xang",
+            "champa"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "champa_kingdom",
+      "name": "Kingdom of Champa",
+      "adjective": "Cham",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Raja-di-raja",
+      "capitalSettlementId": "vijaya",
+      "regionalInstanceId": "sea_mainland",
+      "geographicFeatureIds": [
+        "coast_mainland_east",
+        "mountains_annamite"
+      ],
+      "evidenceIds": [
+        "evidence_vietnam_champa_1450"
+      ],
+      "provinces": [
+        {
+          "id": "champa",
+          "name": "Vijaya and the Cham Coast",
+          "administrativeType": "coastal_mandala",
+          "adjacentProvinceIds": [
+            "dai_viet",
+            "khmer_angkor"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Kauthara",
+        "Panduranga"
+      ]
+    },
+    {
+      "id": "malacca_sultanate",
+      "name": "Malacca Sultanate",
+      "adjective": "Malaccan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "malacca",
+      "regionalInstanceId": "sea_malay_sumatra",
+      "geographicFeatureIds": [
+        "coast_malay_peninsula",
+        "strait_malacca",
+        "strait_singapore"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "malacca_sultanate",
+          "name": "Malacca and the Southern Malay Peninsula",
+          "administrativeType": "maritime_sultanate",
+          "adjacentProvinceIds": [
+            "ayutthaya_tenasserim",
+            "samudera_pasai",
+            "minangkabau"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "samudera_pasai",
+      "name": "Samudera Pasai Sultanate",
+      "adjective": "Pasai",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "pasai",
+      "regionalInstanceId": "sea_malay_sumatra",
+      "geographicFeatureIds": [
+        "island_sumatra",
+        "strait_malacca"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "samudera_pasai",
+          "name": "Pasai and North Sumatra",
+          "administrativeType": "port_sultanate",
+          "adjacentProvinceIds": [
+            "malacca_sultanate",
+            "minangkabau"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "minangkabau_kingdom",
+      "name": "Minangkabau Kingdom",
+      "adjective": "Minangkabau",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Maharajadiraja",
+      "capitalSettlementId": "pagaruyung",
+      "regionalInstanceId": "sea_malay_sumatra",
+      "geographicFeatureIds": [
+        "island_sumatra",
+        "mountains_sumatra"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "minangkabau",
+          "name": "Minangkabau and Southern Sumatra",
+          "administrativeType": "highland_confederated_kingdom",
+          "adjacentProvinceIds": [
+            "samudera_pasai",
+            "malacca_sultanate",
+            "sunda_kingdom"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Palembang",
+        "Indragiri",
+        "Jambi"
+      ]
+    },
+    {
+      "id": "majapahit_empire",
+      "name": "Majapahit Empire",
+      "adjective": "Majapahit",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Maharaja",
+      "capitalSettlementId": "trowulan",
+      "regionalInstanceId": "sea_java_sunda",
+      "geographicFeatureIds": [
+        "island_java",
+        "mountains_java",
+        "corridor_java_sea"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450",
+        "evidence_java_1450"
+      ],
+      "provinces": [
+        {
+          "id": "majapahit_java",
+          "name": "Majapahit and Eastern Java",
+          "administrativeType": "imperial_heartland",
+          "adjacentProvinceIds": [
+            "sunda_kingdom",
+            "bali_kingdoms",
+            "brunei_sultanate",
+            "makassar_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Demak",
+        "Gresik",
+        "Surabaya",
+        "Tuban"
+      ]
+    },
+    {
+      "id": "sunda_kingdom",
+      "name": "Kingdom of Sunda",
+      "adjective": "Sundanese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Maharaja",
+      "capitalSettlementId": "pakuan_pajajaran",
+      "regionalInstanceId": "sea_java_sunda",
+      "geographicFeatureIds": [
+        "island_java",
+        "strait_sunda"
+      ],
+      "evidenceIds": [
+        "evidence_java_1450"
+      ],
+      "provinces": [
+        {
+          "id": "sunda_kingdom",
+          "name": "Sunda and Western Java",
+          "administrativeType": "kingdom",
+          "adjacentProvinceIds": [
+            "minangkabau",
+            "majapahit_java"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bali_kingdoms",
+      "name": "Balinese Kingdoms",
+      "adjective": "Balinese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Dalem",
+      "capitalSettlementId": "gelgel",
+      "regionalInstanceId": "sea_java_sunda",
+      "geographicFeatureIds": [
+        "archipelago_lesser_sunda",
+        "strait_lombok"
+      ],
+      "evidenceIds": [
+        "evidence_java_1450"
+      ],
+      "provinces": [
+        {
+          "id": "bali_kingdoms",
+          "name": "Bali and the Lesser Sunda Realms",
+          "administrativeType": "compressed_island_kingdoms",
+          "adjacentProvinceIds": [
+            "majapahit_java",
+            "makassar_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Gelgel",
+        "Lombok",
+        "Sumbawa",
+        "Timor ritual domains"
+      ]
+    },
+    {
+      "id": "brunei_sultanate",
+      "name": "Brunei Sultanate",
+      "adjective": "Bruneian",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "brunei",
+      "regionalInstanceId": "sea_borneo",
+      "geographicFeatureIds": [
+        "island_borneo",
+        "coast_borneo",
+        "river_rajanga"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "brunei_sultanate",
+          "name": "Brunei and Northwest Borneo",
+          "administrativeType": "riverine_sultanate",
+          "adjacentProvinceIds": [
+            "majapahit_java",
+            "kutai_kingdom",
+            "sulu_sultanate",
+            "luzon_polities"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kutai_kingdom",
+      "name": "Kingdom of Kutai",
+      "adjective": "Kutai",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Maharaja",
+      "capitalSettlementId": "muara_kaman",
+      "regionalInstanceId": "sea_borneo",
+      "geographicFeatureIds": [
+        "island_borneo",
+        "mountains_borneo",
+        "river_kapuas"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "kutai_kingdom",
+          "name": "Kutai and the Borneo River Realms",
+          "administrativeType": "compressed_river_kingdoms",
+          "adjacentProvinceIds": [
+            "brunei_sultanate",
+            "makassar_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Kutai Martadipura",
+        "Tanjungpura",
+        "Banjar river polities"
+      ]
+    },
+    {
+      "id": "luzon_polities",
+      "name": "Luzon Port Polities",
+      "adjective": "Luzon",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Lakan",
+      "capitalSettlementId": "tondo",
+      "regionalInstanceId": "sea_philippines",
+      "geographicFeatureIds": [
+        "island_luzon",
+        "coast_luzon_visayas"
+      ],
+      "evidenceIds": [
+        "evidence_philippines_1450"
+      ],
+      "provinces": [
+        {
+          "id": "luzon_polities",
+          "name": "Luzon Port and Highland Polities",
+          "administrativeType": "compressed_port_polities",
+          "adjacentProvinceIds": [
+            "brunei_sultanate",
+            "visayan_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Tondo",
+        "Namayan",
+        "Manila river polity",
+        "Pangasinan",
+        "Caboloan"
+      ]
+    },
+    {
+      "id": "visayan_polities",
+      "name": "Visayan Polities",
+      "adjective": "Visayan",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Datu",
+      "capitalSettlementId": "cebu",
+      "regionalInstanceId": "sea_philippines",
+      "geographicFeatureIds": [
+        "archipelago_visayas",
+        "coast_luzon_visayas"
+      ],
+      "evidenceIds": [
+        "evidence_philippines_1450"
+      ],
+      "provinces": [
+        {
+          "id": "visayan_polities",
+          "name": "Cebu and the Visayas",
+          "administrativeType": "compressed_barangay_polities",
+          "adjacentProvinceIds": [
+            "luzon_polities",
+            "mindanao_polities",
+            "sulu_sultanate"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Cebu",
+        "Panay settlements",
+        "Butuan"
+      ]
+    },
+    {
+      "id": "maguindanao_polities",
+      "name": "Mindanao River Polities",
+      "adjective": "Mindanao",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Datu",
+      "capitalSettlementId": "buayan",
+      "regionalInstanceId": "sea_philippines",
+      "geographicFeatureIds": [
+        "island_mindanao",
+        "archipelago_sulu"
+      ],
+      "evidenceIds": [
+        "evidence_philippines_1450"
+      ],
+      "provinces": [
+        {
+          "id": "mindanao_polities",
+          "name": "Mindanao River and Coastal Polities",
+          "administrativeType": "compressed_datu_domains",
+          "adjacentProvinceIds": [
+            "visayan_polities",
+            "sulu_sultanate",
+            "makassar_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Buayan",
+        "Maguindanao river settlements",
+        "Butuan"
+      ]
+    },
+    {
+      "id": "sulu_sultanate",
+      "name": "Sultanate of Sulu",
+      "adjective": "Sulu",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Sultan",
+      "capitalSettlementId": "jolo",
+      "regionalInstanceId": "sea_philippines",
+      "geographicFeatureIds": [
+        "archipelago_sulu"
+      ],
+      "evidenceIds": [
+        "evidence_philippines_1450",
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "sulu_sultanate",
+          "name": "Sulu Archipelago",
+          "administrativeType": "island_sultanate",
+          "adjacentProvinceIds": [
+            "brunei_sultanate",
+            "visayan_polities",
+            "mindanao_polities"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "makassar_polities",
+      "name": "South Sulawesi Kingdoms",
+      "adjective": "South Sulawesi",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Karaeng",
+      "capitalSettlementId": "siang",
+      "regionalInstanceId": "sea_sulawesi_moluccas",
+      "geographicFeatureIds": [
+        "island_sulawesi",
+        "coast_sulawesi_moluccas",
+        "strait_makassar"
+      ],
+      "evidenceIds": [
+        "evidence_maritime_1450"
+      ],
+      "provinces": [
+        {
+          "id": "makassar_polities",
+          "name": "South Sulawesi and Makassar Strait",
+          "administrativeType": "compressed_kingdoms",
+          "adjacentProvinceIds": [
+            "kutai_kingdom",
+            "majapahit_java",
+            "bali_kingdoms",
+            "mindanao_polities",
+            "ternate_sultanate"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Siang",
+        "Gowa",
+        "Bone",
+        "Luwu"
+      ]
+    },
+    {
+      "id": "ternate_sultanate",
+      "name": "Sultanate of Ternate",
+      "adjective": "Ternatan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Kolano",
+      "capitalSettlementId": "ternate",
+      "regionalInstanceId": "sea_sulawesi_moluccas",
+      "geographicFeatureIds": [
+        "archipelago_moluccas",
+        "corridor_eastern_archipelago"
+      ],
+      "evidenceIds": [
+        "evidence_spice_islands_1450"
+      ],
+      "provinces": [
+        {
+          "id": "ternate_sultanate",
+          "name": "Ternate and Northern Maluku",
+          "administrativeType": "spice_island_sultanate",
+          "adjacentProvinceIds": [
+            "makassar_polities",
+            "tidore_sultanate"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Jailolo"
+      ]
+    },
+    {
+      "id": "tidore_sultanate",
+      "name": "Sultanate of Tidore",
+      "adjective": "Tidorese",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Kolano",
+      "capitalSettlementId": "tidore",
+      "regionalInstanceId": "sea_sulawesi_moluccas",
+      "geographicFeatureIds": [
+        "archipelago_moluccas",
+        "corridor_eastern_archipelago"
+      ],
+      "evidenceIds": [
+        "evidence_spice_islands_1450"
+      ],
+      "provinces": [
+        {
+          "id": "tidore_sultanate",
+          "name": "Tidore and Eastern Maluku",
+          "administrativeType": "spice_island_sultanate",
+          "adjacentProvinceIds": [
+            "ternate_sultanate",
+            "papuan_coastal_polities"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Bacan",
+        "Seram trading communities"
+      ]
+    },
+    {
+      "id": "papuan_coastal_polities",
+      "name": "Papuan Coastal Polities",
+      "adjective": "Papuan",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Raja",
+      "capitalSettlementId": "raja_ampat",
+      "regionalInstanceId": "sea_new_guinea_west",
+      "geographicFeatureIds": [
+        "island_new_guinea_west",
+        "archipelago_raja_ampat"
+      ],
+      "evidenceIds": [
+        "evidence_spice_islands_1450"
+      ],
+      "provinces": [
+        {
+          "id": "papuan_coastal_polities",
+          "name": "Raja Ampat and Western New Guinea Coasts",
+          "administrativeType": "compressed_maritime_domains",
+          "adjacentProvinceIds": [
+            "tidore_sultanate"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Waigeo",
+        "Salawati",
+        "Misool",
+        "Waigama"
+      ]
+    }
   ],
   "sovereigntyRelationships": [
-    {"id":"toungoo_ava_vassalage","kind":"vassal","subjectPolityId":"toungoo_principality","overlordPolityId":"ava_kingdom","taxRatePercent":10,"obligations":["military_service","court_attendance"]}
+    {
+      "id": "toungoo_ava_vassalage",
+      "kind": "vassal",
+      "subjectPolityId": "toungoo_principality",
+      "overlordPolityId": "ava_kingdom",
+      "taxRatePercent": 10,
+      "obligations": [
+        "military_service",
+        "court_attendance"
+      ]
+    }
   ],
   "diplomaticRelations": [
-    {"id":"ternate_tidore_rivalry","kind":"rivalry","firstPolityId":"ternate_sultanate","secondPolityId":"tidore_sultanate"}
+    {
+      "id": "ternate_tidore_rivalry",
+      "kind": "rivalry",
+      "firstPolityId": "ternate_sultanate",
+      "secondPolityId": "tidore_sultanate"
+    }
   ],
   "activeConflicts": []
 }
