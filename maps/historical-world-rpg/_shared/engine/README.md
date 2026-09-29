@@ -6,6 +6,11 @@ Reusable systems live here. This layer must not know that the first scenario is 
 slot layout, integrity checks, and migration registry. Warcraft-native storage is
 deliberately deferred to the runtime integration layer.
 
+`cross_map_persistence.py` implements versioned, integrity-protected physical-map
+transfer checkpoints, manifest validation, first-visit defaults, visited-map
+reconstruction, and deterministic adapter ordering. Physical-map travel triggers
+remain scenario/runtime concerns.
+
 `inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
 
 `timeline_simulation.py` provides ordered system hooks, deterministic random streams,
