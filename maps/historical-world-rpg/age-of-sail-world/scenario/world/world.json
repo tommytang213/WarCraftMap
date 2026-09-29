@@ -22989,32 +22989,201 @@
   "companionRelationships": [],
   "researchBranches": [
     {
-      "id": "navigation",
-      "name": "Navigation",
+      "id": "military",
+      "name": "Military",
       "entryNodeIds": [
-        "celestial_navigation"
+        "pike_and_shot"
       ]
     },
     {
-      "id": "statecraft",
-      "name": "Statecraft",
+      "id": "naval",
+      "name": "Naval",
+      "entryNodeIds": [
+        "oceanic_seamanship"
+      ]
+    },
+    {
+      "id": "commercial",
+      "name": "Commercial",
+      "entryNodeIds": [
+        "double_entry_bookkeeping"
+      ]
+    },
+    {
+      "id": "administrative",
+      "name": "Administrative",
       "entryNodeIds": [
         "professional_bureaucracy"
+      ]
+    },
+    {
+      "id": "scientific",
+      "name": "Scientific",
+      "entryNodeIds": [
+        "scholastic_natural_philosophy"
+      ]
+    },
+    {
+      "id": "agricultural",
+      "name": "Agricultural",
+      "entryNodeIds": [
+        "intensive_crop_rotation"
+      ]
+    },
+    {
+      "id": "industrial",
+      "name": "Industrial",
+      "entryNodeIds": [
+        "water_powered_machinery"
+      ]
+    },
+    {
+      "id": "institutional",
+      "name": "Institutional",
+      "entryNodeIds": [
+        "movable_type_printing"
       ]
     }
   ],
   "technologies": [
     {
-      "id": "celestial_navigation",
-      "name": "Celestial Navigation",
-      "description": "Systematic open-water position finding.",
-      "branchId": "navigation",
+      "id": "pike_and_shot",
+      "name": "Pike and Shot",
+      "description": "Combined infantry formations integrate polearms and hand firearms.",
+      "branchId": "military",
       "prerequisiteIds": [],
       "timeCost": {
-        "preferredYear": 1480,
-        "baseCost": 100,
-        "aheadOfTimeCostMultiplier": 12,
-        "additionalMultiplierPerYearAhead": 0.25
+        "preferredYear": 1470,
+        "baseCost": 90,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "army_discipline"
+        }
+      ]
+    },
+    {
+      "id": "trace_italienne",
+      "name": "Bastioned Fortification",
+      "description": "Angular earthwork defenses answer increasingly effective cannon.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "pike_and_shot"
+      ],
+      "timeCost": {
+        "preferredYear": 1500,
+        "baseCost": 125,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "arsenal"
+        }
+      ]
+    },
+    {
+      "id": "flintlock_drill",
+      "name": "Flintlock Drill",
+      "description": "Reliable locks and standardized drill increase infantry firepower.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "trace_italienne",
+        "military_fiscal_state"
+      ],
+      "timeCost": {
+        "preferredYear": 1660,
+        "baseCost": 210,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "flintlock_infantry"
+        }
+      ]
+    },
+    {
+      "id": "linear_tactics",
+      "name": "Linear Tactics",
+      "description": "Disciplined lines maximize coordinated musket volleys.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "flintlock_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 250,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "line_infantry"
+        }
+      ]
+    },
+    {
+      "id": "mobile_field_artillery",
+      "name": "Mobile Field Artillery",
+      "description": "Lighter standardized guns support armies in maneuver.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "linear_tactics",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1760,
+        "baseCost": 320,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "ability",
+          "contentId": "field_artillery"
+        }
+      ]
+    },
+    {
+      "id": "mass_army_logistics",
+      "name": "Mass Army Logistics",
+      "description": "Conscription registers and organized supply sustain mass armies.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "mobile_field_artillery",
+        "statistical_administration"
+      ],
+      "timeCost": {
+        "preferredYear": 1795,
+        "baseCost": 390,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "mass_conscription"
+        }
+      ]
+    },
+    {
+      "id": "oceanic_seamanship",
+      "name": "Oceanic Seamanship",
+      "description": "Deep-water sailing practice supports reliable long voyages.",
+      "branchId": "naval",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 85,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
       },
       "unlocks": [
         {
@@ -23024,19 +23193,35 @@
       ]
     },
     {
+      "id": "celestial_navigation",
+      "name": "Celestial Navigation",
+      "description": "Astronomical observations improve latitude and position finding.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "oceanic_seamanship"
+      ],
+      "timeCost": {
+        "preferredYear": 1480,
+        "baseCost": 110,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
       "id": "standardized_charts",
       "name": "Standardized Charts",
-      "description": "Shared standards for producing and reading charts.",
-      "branchId": "navigation",
+      "description": "Shared hydrographic conventions make accumulated observations reusable.",
+      "branchId": "naval",
       "prerequisiteIds": [
         "celestial_navigation",
-        "professional_bureaucracy"
+        "movable_type_printing"
       ],
       "timeCost": {
         "preferredYear": 1550,
-        "baseCost": 180,
-        "aheadOfTimeCostMultiplier": 20,
-        "additionalMultiplierPerYearAhead": 0.5
+        "baseCost": 165,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
       },
       "unlocks": [
         {
@@ -23044,20 +23229,202 @@
           "contentId": "fleet_navigation_efficiency"
         }
       ]
-    }
-  ],
-  "institutions": [
+    },
     {
-      "id": "professional_bureaucracy",
-      "name": "Professional Bureaucracy",
-      "description": "Permanent administrative offices and record keeping.",
-      "branchId": "statecraft",
+      "id": "galleon_design",
+      "name": "Galleon Design",
+      "description": "Purpose-built oceanic sailing ships combine cargo capacity and artillery.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "standardized_charts",
+        "cast_cannon"
+      ],
+      "timeCost": {
+        "preferredYear": 1560,
+        "baseCost": 190,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "galleon"
+        }
+      ]
+    },
+    {
+      "id": "battlefleet_doctrine",
+      "name": "Battlefleet Doctrine",
+      "description": "Permanent battle fleets coordinate heavy ships in line ahead.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "galleon_design",
+        "public_credit"
+      ],
+      "timeCost": {
+        "preferredYear": 1660,
+        "baseCost": 260,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "ship_of_the_line"
+        }
+      ]
+    },
+    {
+      "id": "marine_chronometer",
+      "name": "Marine Chronometer",
+      "description": "Stable shipboard timekeeping makes longitude routinely measurable.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "newtonian_science",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1765,
+        "baseCost": 340,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "ability",
+          "contentId": "scientific_survey"
+        }
+      ]
+    },
+    {
+      "id": "steam_navigation",
+      "name": "Steam Navigation",
+      "description": "Practical engines supplement sail for reliable short-range navigation.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "rotative_steam_power",
+        "marine_chronometer"
+      ],
+      "timeCost": {
+        "preferredYear": 1815,
+        "baseCost": 450,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "steam_vessel"
+        }
+      ]
+    },
+    {
+      "id": "double_entry_bookkeeping",
+      "name": "Double-entry Bookkeeping",
+      "description": "Balanced ledgers make complex commercial accounts auditable.",
+      "branchId": "commercial",
       "prerequisiteIds": [],
       "timeCost": {
         "preferredYear": 1450,
-        "baseCost": 120,
-        "aheadOfTimeCostMultiplier": 15,
-        "additionalMultiplierPerYearAhead": 0.3
+        "baseCost": 80,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "trade_efficiency"
+        }
+      ]
+    },
+    {
+      "id": "bill_of_exchange_networks",
+      "name": "Bills of Exchange",
+      "description": "Transferable credit instruments connect distant commercial networks.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "double_entry_bookkeeping"
+      ],
+      "timeCost": {
+        "preferredYear": 1475,
+        "baseCost": 105,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "joint_stock_enterprise",
+      "name": "Joint-stock Enterprise",
+      "description": "Transferable shares pool capital and distribute long-distance risk.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "bill_of_exchange_networks",
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 190,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "stock_exchange"
+        }
+      ]
+    },
+    {
+      "id": "insurance_markets",
+      "name": "Marine Insurance Markets",
+      "description": "Specialized underwriting prices and distributes maritime risk.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "joint_stock_enterprise",
+        "standardized_charts"
+      ],
+      "timeCost": {
+        "preferredYear": 1680,
+        "baseCost": 230,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "integrated_world_markets",
+      "name": "Integrated World Markets",
+      "description": "Regular information, credit, and shipping connect intercontinental prices.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "insurance_markets",
+        "industrial_manufacture"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 350,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "trade_efficiency"
+        }
+      ]
+    },
+    {
+      "id": "professional_bureaucracy",
+      "name": "Professional Bureaucracy",
+      "description": "Permanent offices preserve fiscal and legal records beyond individual rulers.",
+      "branchId": "administrative",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 90,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
       },
       "unlocks": [
         {
@@ -23065,88 +23432,3678 @@
           "contentId": "central_records"
         }
       ]
-    }
-  ],
-  "polityResearchStates": [
+    },
     {
-      "id": "england_research",
-      "polityId": "england",
-      "completedTechnologyIds": [
-        "celestial_navigation"
-      ],
-      "establishedInstitutionIds": [
+      "id": "cadastral_survey",
+      "name": "Cadastral Survey",
+      "description": "Systematic land records improve assessment and mobilization.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
         "professional_bureaucracy"
       ],
-      "researchProgress": [
+      "timeCost": {
+        "preferredYear": 1500,
+        "baseCost": 130,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "military_fiscal_state",
+      "name": "Military-fiscal State",
+      "description": "Durable taxation and borrowing support standing armed forces.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "cadastral_survey",
+        "bill_of_exchange_networks"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 230,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
         {
-          "nodeId": "standardized_charts",
-          "progress": 20
+          "kind": "policy",
+          "contentId": "public_credit"
         }
       ]
     },
     {
-      "id": "france_research",
-      "polityId": "france",
-      "completedTechnologyIds": [],
-      "establishedInstitutionIds": [
-        "professional_bureaucracy"
+      "id": "statistical_administration",
+      "name": "Statistical Administration",
+      "description": "Regular censuses and tabulation support population-scale policy.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "military_fiscal_state",
+        "enlightenment_public_sphere"
       ],
-      "researchProgress": [
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 330,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
         {
-          "nodeId": "celestial_navigation",
-          "progress": 65
+          "kind": "policy",
+          "contentId": "standard_measures"
+        }
+      ]
+    },
+    {
+      "id": "scholastic_natural_philosophy",
+      "name": "Natural Philosophy",
+      "description": "Learned traditions organize mathematical and empirical inquiry.",
+      "branchId": "scientific",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 80,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "experimental_method",
+      "name": "Experimental Method",
+      "description": "Repeatable observation and experiment discipline claims about nature.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "scholastic_natural_philosophy",
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 175,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "research_exchange"
+        }
+      ]
+    },
+    {
+      "id": "newtonian_science",
+      "name": "Mathematical Natural Science",
+      "description": "Mathematical laws unify terrestrial and celestial mechanics.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "experimental_method",
+        "scientific_societies"
+      ],
+      "timeCost": {
+        "preferredYear": 1687,
+        "baseCost": 250,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "precision_engineering",
+      "name": "Precision Engineering",
+      "description": "Accurate instruments and interchangeable standards improve machines.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "newtonian_science"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 310,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "patent_law"
+        }
+      ]
+    },
+    {
+      "id": "intensive_crop_rotation",
+      "name": "Intensive Crop Rotation",
+      "description": "Alternating fodder and food crops limits fallow and restores soils.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1500,
+        "baseCost": 95,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "agricultural_output"
+        }
+      ]
+    },
+    {
+      "id": "new_world_crops",
+      "name": "Intercontinental Crop Exchange",
+      "description": "Maize, potatoes, cassava, and other crops spread into suitable ecologies.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "oceanic_seamanship"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 145,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "population_growth"
+        }
+      ]
+    },
+    {
+      "id": "selective_breeding",
+      "name": "Selective Breeding",
+      "description": "Recorded selection improves livestock traits over generations.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "intensive_crop_rotation",
+        "experimental_method"
+      ],
+      "timeCost": {
+        "preferredYear": 1720,
+        "baseCost": 250,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "agricultural_mechanization",
+      "name": "Agricultural Mechanization",
+      "description": "Improved seed drills and threshing machinery raise labor productivity.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "selective_breeding",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 340,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "enclosure"
+        }
+      ]
+    },
+    {
+      "id": "water_powered_machinery",
+      "name": "Water-powered Machinery",
+      "description": "Geared water power drives concentrated production.",
+      "branchId": "industrial",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 85,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "cast_cannon",
+      "name": "Cast Cannon",
+      "description": "Improved metallurgy produces dependable heavy bronze and iron ordnance.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "water_powered_machinery"
+      ],
+      "timeCost": {
+        "preferredYear": 1470,
+        "baseCost": 110,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "coke_smelted_iron",
+      "name": "Coke-smelted Iron",
+      "description": "Mineral fuel permits expanded iron production beyond charcoal limits.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "cast_cannon",
+        "experimental_method"
+      ],
+      "timeCost": {
+        "preferredYear": 1710,
+        "baseCost": 270,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "rotative_steam_power",
+      "name": "Rotative Steam Power",
+      "description": "Efficient rotary engines power factories and transport machinery.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "coke_smelted_iron",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1785,
+        "baseCost": 380,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "factory"
+        }
+      ]
+    },
+    {
+      "id": "industrial_manufacture",
+      "name": "Industrial Manufacture",
+      "description": "Powered machinery, disciplined labor, and capital combine at factory scale.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "rotative_steam_power",
+        "joint_stock_enterprise"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 430,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "industrial_output"
         }
       ]
     }
   ],
+  "institutions": [
+    {
+      "id": "movable_type_printing",
+      "name": "Movable-type Print Culture",
+      "description": "Cheap reproducible texts enlarge administrative, religious, and scholarly exchange.",
+      "branchId": "institutional",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 100,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "printing_house"
+        }
+      ]
+    },
+    {
+      "id": "renaissance_humanism",
+      "name": "Renaissance Humanism",
+      "description": "Textual scholarship and civic education broaden elite learning.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1470,
+        "baseCost": 125,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": []
+    },
+    {
+      "id": "confessional_state",
+      "name": "Confessional State",
+      "description": "States institutionalize religious settlement and disciplined clerical administration.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "renaissance_humanism",
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 170,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "religious_toleration"
+        }
+      ]
+    },
+    {
+      "id": "scientific_societies",
+      "name": "Scientific Societies",
+      "description": "Correspondence, journals, and learned bodies coordinate public inquiry.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "experimental_method",
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1660,
+        "baseCost": 220,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "research_exchange"
+        }
+      ]
+    },
+    {
+      "id": "public_credit",
+      "name": "Public Credit",
+      "description": "Credible funded debt links taxation, investors, and long-term state finance.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "joint_stock_enterprise",
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1690,
+        "baseCost": 245,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "public_credit"
+        }
+      ]
+    },
+    {
+      "id": "enlightenment_public_sphere",
+      "name": "Enlightenment Public Sphere",
+      "description": "Print, salons, and associations widen reasoned political and scientific debate.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "scientific_societies",
+        "public_credit"
+      ],
+      "timeCost": {
+        "preferredYear": 1730,
+        "baseCost": 280,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "free_press"
+        }
+      ]
+    },
+    {
+      "id": "constitutionalism",
+      "name": "Constitutional Government",
+      "description": "Codified constraints and representative institutions regulate sovereign authority.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "enlightenment_public_sphere",
+        "statistical_administration"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 350,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "constitutional_government"
+        }
+      ]
+    }
+  ],
+  "polityResearchStates": [
+    {
+      "id": "acolhua_texcoco_research",
+      "polityId": "acolhua_texcoco",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "adal_sultanate_research",
+      "polityId": "adal_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ainu_moshir_research",
+      "polityId": "ainu_moshir",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "air_sultanate_research",
+      "polityId": "air_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ajuran_sultanate_research",
+      "polityId": "ajuran_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "albania_research",
+      "polityId": "albania",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "alodia_research",
+      "polityId": "alodia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "amazonian_regional_societies_research",
+      "polityId": "amazonian_regional_societies",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "anishinaabe_networks_research",
+      "polityId": "anishinaabe_networks",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "aq_qoyunlu_research",
+      "polityId": "aq_qoyunlu",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "aragon_research",
+      "polityId": "aragon",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ashikaga_shogunate_research",
+      "polityId": "ashikaga_shogunate",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "austria_research",
+      "polityId": "austria",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ava_kingdom_research",
+      "polityId": "ava_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ayutthaya_kingdom_research",
+      "polityId": "ayutthaya_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bahmani_sultanate_research",
+      "polityId": "bahmani_sultanate",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bali_kingdoms_research",
+      "polityId": "bali_kingdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bavaria_research",
+      "polityId": "bavaria",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "beja_confederations_research",
+      "polityId": "beja_confederations",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "belau_chiefdoms_research",
+      "polityId": "belau_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bengal_sultanate_research",
+      "polityId": "bengal_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "benin_kingdom_research",
+      "polityId": "benin_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bismarck_island_communities_research",
+      "polityId": "bismarck_island_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bohemia_research",
+      "polityId": "bohemia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bonoman_research",
+      "polityId": "bonoman",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bosnia_research",
+      "polityId": "bosnia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "brandenburg_research",
+      "polityId": "brandenburg",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "brittany_research",
+      "polityId": "brittany",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "brunei_sultanate_research",
+      "polityId": "brunei_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "buganda_kingdom_research",
+      "polityId": "buganda_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "bunyoro_kitara_research",
+      "polityId": "bunyoro_kitara",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "burgundy_research",
+      "polityId": "burgundy",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "byzantine_empire_research",
+      "polityId": "byzantine_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "cahokian_successor_centers_research",
+      "polityId": "cahokian_successor_centers",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "castile_research",
+      "polityId": "castile",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "chalco_confederation_research",
+      "polityId": "chalco_confederation",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "chamorro_chiefdoms_research",
+      "polityId": "chamorro_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "champa_kingdom_research",
+      "polityId": "champa_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "charrua_minuan_networks_research",
+      "polityId": "charrua_minuan_networks",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "chimor_kingdom_research",
+      "polityId": "chimor_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "chincha_lordship_research",
+      "polityId": "chincha_lordship",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "crimea_research",
+      "polityId": "crimea",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "cyprus_research",
+      "polityId": "cyprus",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "dai_viet_research",
+      "polityId": "dai_viet",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "delhi_sultanate_research",
+      "polityId": "delhi_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "denmark_research",
+      "polityId": "denmark",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "diaguita_calchaqui_lordships_research",
+      "polityId": "diaguita_calchaqui_lordships",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "dulkadirids_research",
+      "polityId": "dulkadirids",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "england_research",
+      "polityId": "england",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ethiopian_empire_research",
+      "polityId": "ethiopian_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "fijian_vanua_research",
+      "polityId": "fijian_vanua",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "florence_research",
+      "polityId": "florence",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "fouta_jallon_polities_research",
+      "polityId": "fouta_jallon_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "france_research",
+      "polityId": "france",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "gajapati_empire_research",
+      "polityId": "gajapati_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "genoa_research",
+      "polityId": "genoa",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "oceanic_seamanship",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "georgia_research",
+      "polityId": "georgia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "gobir_research",
+      "polityId": "gobir",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "golden_horde_research",
+      "polityId": "golden_horde",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "gond_kingdoms_research",
+      "polityId": "gond_kingdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "granada_research",
+      "polityId": "granada",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "great_zimbabwe_research",
+      "polityId": "great_zimbabwe",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "guarani_tekohas_research",
+      "polityId": "guarani_tekohas",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "gujarat_sultanate_research",
+      "polityId": "gujarat_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "hafsid_sultanate_research",
+      "polityId": "hafsid_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "haixi_jurchen_research",
+      "polityId": "haixi_jurchen",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "hanthawaddy_kingdom_research",
+      "polityId": "hanthawaddy_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "haudenosaunee_nations_research",
+      "polityId": "haudenosaunee_nations",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "hawaii_chiefdom_research",
+      "polityId": "hawaii_chiefdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "holy_roman_empire_research",
+      "polityId": "holy_roman_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "hungary_research",
+      "polityId": "hungary",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "igala_kingdom_research",
+      "polityId": "igala_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "imerina_chiefdoms_research",
+      "polityId": "imerina_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "inuit_north_atlantic_communities_research",
+      "polityId": "inuit_north_atlantic_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ireland_research",
+      "polityId": "ireland",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "itza_kingdom_research",
+      "polityId": "itza_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "jabrids_research",
+      "polityId": "jabrids",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "jaffna_research",
+      "polityId": "jaffna",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "jaunpur_sultanate_research",
+      "polityId": "jaunpur_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "jianzhou_jurchen_research",
+      "polityId": "jianzhou_jurchen",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "jolof_empire_research",
+      "polityId": "jolof_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "joseon_kingdom_research",
+      "polityId": "joseon_kingdom",
+      "completedTechnologyIds": [
+        "cast_cannon",
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [
+        "movable_type_printing"
+      ],
+      "researchProgress": []
+    },
+    {
+      "id": "kalinago_island_communities_research",
+      "polityId": "kalinago_island_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kamata_ahom_states_research",
+      "polityId": "kamata_ahom_states",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kanak_chiefdoms_research",
+      "polityId": "kanak_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kanem_bornu_research",
+      "polityId": "kanem_bornu",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kano_research",
+      "polityId": "kano",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kaqchikel_kingdom_research",
+      "polityId": "kaqchikel_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kara_del_hami_research",
+      "polityId": "kara_del_hami",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "karamanids_research",
+      "polityId": "karamanids",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kashmir_sultanate_research",
+      "polityId": "kashmir_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kathiri_research",
+      "polityId": "kathiri",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "katsina_research",
+      "polityId": "katsina",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kauai_chiefdom_research",
+      "polityId": "kauai_chiefdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kazan_research",
+      "polityId": "kazan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "khandesh_sultanate_research",
+      "polityId": "khandesh_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "khmer_empire_research",
+      "polityId": "khmer_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "khoi_san_polities_research",
+      "polityId": "khoi_san_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kiche_kingdom_research",
+      "polityId": "kiche_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kilwa_sultanate_research",
+      "polityId": "kilwa_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kingdom_hormuz_research",
+      "polityId": "kingdom_hormuz",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kongo_kingdom_research",
+      "polityId": "kongo_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kotte_research",
+      "polityId": "kotte",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kutai_kingdom_research",
+      "polityId": "kutai_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "kwararafa_confederacy_research",
+      "polityId": "kwararafa_confederacy",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "lan_na_kingdom_research",
+      "polityId": "lan_na_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "lan_xang_kingdom_research",
+      "polityId": "lan_xang_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "langah_multan_research",
+      "polityId": "langah_multan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "lithuania_research",
+      "polityId": "lithuania",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "livonian_confederation_research",
+      "polityId": "livonian_confederation",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "loango_kingdom_research",
+      "polityId": "loango_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "luba_kingdom_research",
+      "polityId": "luba_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "lunda_polities_research",
+      "polityId": "lunda_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "luzon_polities_research",
+      "polityId": "luzon_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "madagascar_coastal_polities_research",
+      "polityId": "madagascar_coastal_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "maguindanao_polities_research",
+      "polityId": "maguindanao_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "majapahit_empire_research",
+      "polityId": "majapahit_empire",
+      "completedTechnologyIds": [
+        "oceanic_seamanship"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "makassar_polities_research",
+      "polityId": "makassar_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "malacca_sultanate_research",
+      "polityId": "malacca_sultanate",
+      "completedTechnologyIds": [
+        "oceanic_seamanship"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "maldives_sultanate_research",
+      "polityId": "maldives_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mali_empire_research",
+      "polityId": "mali_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "malindi_research",
+      "polityId": "malindi",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "malwa_sultanate_research",
+      "polityId": "malwa_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mamluk_sultanate_research",
+      "polityId": "mamluk_sultanate",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "maori_iwi_hapu_research",
+      "polityId": "maori_iwi_hapu",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mapuche_rewe_confederacies_research",
+      "polityId": "mapuche_rewe_confederacies",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mapungubwe_successors_research",
+      "polityId": "mapungubwe_successors",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "maravi_polities_research",
+      "polityId": "maravi_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "marinid_morocco_research",
+      "polityId": "marinid_morocco",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "marquesan_chiefdoms_research",
+      "polityId": "marquesan_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "marshallese_irooj_domains_research",
+      "polityId": "marshallese_irooj_domains",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "maui_chiefdom_research",
+      "polityId": "maui_chiefdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "medri_bahri_research",
+      "polityId": "medri_bahri",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mexica_tenochtitlan_research",
+      "polityId": "mexica_tenochtitlan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "milan_research",
+      "polityId": "milan",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "minangkabau_kingdom_research",
+      "polityId": "minangkabau_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ming_empire_research",
+      "polityId": "ming_empire",
+      "completedTechnologyIds": [
+        "cast_cannon",
+        "double_entry_bookkeeping",
+        "oceanic_seamanship",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [
+        "movable_type_printing"
+      ],
+      "researchProgress": []
+    },
+    {
+      "id": "ming_liaodong_command_research",
+      "polityId": "ming_liaodong_command",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mogadishu_sultanate_research",
+      "polityId": "mogadishu_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "moldavia_research",
+      "polityId": "moldavia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mombasa_research",
+      "polityId": "mombasa",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mossi_kingdoms_research",
+      "polityId": "mossi_kingdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mrauk_u_kingdom_research",
+      "polityId": "mrauk_u_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "muisca_zacazgo_research",
+      "polityId": "muisca_zacazgo",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "muisca_zipazgo_research",
+      "polityId": "muisca_zipazgo",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "muscovy_research",
+      "polityId": "muscovy",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "mutapa_kingdom_research",
+      "polityId": "mutapa_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "nabhanid_oman_research",
+      "polityId": "nabhanid_oman",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "naples_research",
+      "polityId": "naples",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "navarre_research",
+      "polityId": "navarre",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "nepal_malla_research",
+      "polityId": "nepal_malla",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "new_guinea_exchange_communities_research",
+      "polityId": "new_guinea_exchange_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "northern_yuan_khanate_research",
+      "polityId": "northern_yuan_khanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "northwest_coast_nations_research",
+      "polityId": "northwest_coast_nations",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "norway_research",
+      "polityId": "norway",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "novgorod_research",
+      "polityId": "novgorod",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "nupe_kingdom_research",
+      "polityId": "nupe_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "oahu_chiefdom_research",
+      "polityId": "oahu_chiefdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "oirat_confederation_research",
+      "polityId": "oirat_confederation",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ottoman_empire_research",
+      "polityId": "ottoman_empire",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "oyo_kingdom_research",
+      "polityId": "oyo_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "palatinate_research",
+      "polityId": "palatinate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "papal_states_research",
+      "polityId": "papal_states",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "papuan_coastal_polities_research",
+      "polityId": "papuan_coastal_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "pate_sultanate_research",
+      "polityId": "pate_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "phagmodrupa_dynasty_research",
+      "polityId": "phagmodrupa_dynasty",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "poland_research",
+      "polityId": "poland",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "portugal_research",
+      "polityId": "portugal",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "oceanic_seamanship",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "provence_research",
+      "polityId": "provence",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "pueblo_world_research",
+      "polityId": "pueblo_world",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "purepecha_state_research",
+      "polityId": "purepecha_state",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "qara_qoyunlu_research",
+      "polityId": "qara_qoyunlu",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "rajput_confederacies_research",
+      "polityId": "rajput_confederacies",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "rapa_nui_clans_research",
+      "polityId": "rapa_nui_clans",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "rinpungpa_house_research",
+      "polityId": "rinpungpa_house",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "rwanda_burundi_kingdoms_research",
+      "polityId": "rwanda_burundi_kingdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ryazan_research",
+      "polityId": "ryazan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ryukyu_kingdom_research",
+      "polityId": "ryukyu_kingdom",
+      "completedTechnologyIds": [
+        "oceanic_seamanship"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "sakhalin_communities_research",
+      "polityId": "sakhalin_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "samma_sindh_research",
+      "polityId": "samma_sindh",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "samoan_chiefly_districts_research",
+      "polityId": "samoan_chiefly_districts",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "samudera_pasai_research",
+      "polityId": "samudera_pasai",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "saudeleur_dynasty_research",
+      "polityId": "saudeleur_dynasty",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "savoy_research",
+      "polityId": "savoy",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "saxony_research",
+      "polityId": "saxony",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "scotland_research",
+      "polityId": "scotland",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "selknam_yaghan_communities_research",
+      "polityId": "selknam_yaghan_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "serbia_research",
+      "polityId": "serbia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "shan_states_research",
+      "polityId": "shan_states",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "sharifate_mecca_research",
+      "polityId": "sharifate_mecca",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "shirvan_research",
+      "polityId": "shirvan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "solomon_island_chiefdoms_research",
+      "polityId": "solomon_island_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "songhai_kingdom_research",
+      "polityId": "songhai_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "sulu_sultanate_research",
+      "polityId": "sulu_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "sunda_kingdom_research",
+      "polityId": "sunda_kingdom",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "sweden_research",
+      "polityId": "sweden",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "swiss_confederacy_research",
+      "polityId": "swiss_confederacy",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tahiti_chiefdoms_research",
+      "polityId": "tahiti_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "taino_cacicazgos_research",
+      "polityId": "taino_cacicazgos",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tairona_chiefdoms_research",
+      "polityId": "tairona_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "taiwan_indigenous_domains_research",
+      "polityId": "taiwan_indigenous_domains",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tawantinsuyu_research",
+      "polityId": "tawantinsuyu",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tepanec_tlacopan_research",
+      "polityId": "tepanec_tlacopan",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "ternate_sultanate_research",
+      "polityId": "ternate_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "teutonic_order_research",
+      "polityId": "teutonic_order",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tidore_sultanate_research",
+      "polityId": "tidore_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "timurid_empire_research",
+      "polityId": "timurid_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tlaxcallan_confederation_research",
+      "polityId": "tlaxcallan_confederation",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "toungoo_principality_research",
+      "polityId": "toungoo_principality",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "trebizond_empire_research",
+      "polityId": "trebizond_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tuamotu_atoll_communities_research",
+      "polityId": "tuamotu_atoll_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tui_tonga_empire_research",
+      "polityId": "tui_tonga_empire",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tungaru_maneaba_communities_research",
+      "polityId": "tungaru_maneaba_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tupi_coastal_networks_research",
+      "polityId": "tupi_coastal_networks",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "tver_research",
+      "polityId": "tver",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "unangan_island_communities_research",
+      "polityId": "unangan_island_communities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "vanuatu_chiefdoms_research",
+      "polityId": "vanuatu_chiefdoms",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "venice_research",
+      "polityId": "venice",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "oceanic_seamanship",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "vijayanagara_empire_research",
+      "polityId": "vijayanagara_empire",
+      "completedTechnologyIds": [
+        "double_entry_bookkeeping",
+        "professional_bureaucracy",
+        "water_powered_machinery"
+      ],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "visayan_polities_research",
+      "polityId": "visayan_polities",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "wallachia_research",
+      "polityId": "wallachia",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "warsangali_sultanate_research",
+      "polityId": "warsangali_sultanate",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "wendat_confederacies_research",
+      "polityId": "wendat_confederacies",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "western_himalayan_states_research",
+      "polityId": "western_himalayan_states",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "wild_jurchen_confederacies_research",
+      "polityId": "wild_jurchen_confederacies",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "yapese_domains_research",
+      "polityId": "yapese_domains",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "yemen_research",
+      "polityId": "yemen",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "yucatan_maya_jurisdictions_research",
+      "polityId": "yucatan_maya_jurisdictions",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "zayyanid_tlemcen_research",
+      "polityId": "zayyanid_tlemcen",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "zazzau_research",
+      "polityId": "zazzau",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    }
+  ],
   "provinceAdoptionStates": [
+    {
+      "id": "ainu_ezo_adoption",
+      "provinceId": "ainu_ezo",
+      "adoption": []
+    },
+    {
+      "id": "air_adoption",
+      "provinceId": "air",
+      "adoption": []
+    },
+    {
+      "id": "ajuran_realm_adoption",
+      "provinceId": "ajuran_realm",
+      "adoption": []
+    },
+    {
+      "id": "akan_forest_adoption",
+      "provinceId": "akan_forest",
+      "adoption": []
+    },
+    {
+      "id": "albania_adoption",
+      "provinceId": "albania",
+      "adoption": []
+    },
+    {
+      "id": "aleutian_island_communities_adoption",
+      "provinceId": "aleutian_island_communities",
+      "adoption": []
+    },
+    {
+      "id": "alodia_realm_adoption",
+      "provinceId": "alodia_realm",
+      "adoption": []
+    },
+    {
+      "id": "amazon_riverine_societies_adoption",
+      "provinceId": "amazon_riverine_societies",
+      "adoption": []
+    },
+    {
+      "id": "amhara_adoption",
+      "provinceId": "amhara",
+      "adoption": []
+    },
+    {
+      "id": "anishinaabe_upper_lakes_adoption",
+      "provinceId": "anishinaabe_upper_lakes",
+      "adoption": []
+    },
+    {
+      "id": "aotearoa_iwi_territories_adoption",
+      "provinceId": "aotearoa_iwi_territories",
+      "adoption": []
+    },
+    {
+      "id": "aq_qoyunlu_diyar_bakr_adoption",
+      "provinceId": "aq_qoyunlu_diyar_bakr",
+      "adoption": []
+    },
+    {
+      "id": "aragon_crown_adoption",
+      "provinceId": "aragon_crown",
+      "adoption": []
+    },
+    {
+      "id": "ashikaga_eastern_honshu_adoption",
+      "provinceId": "ashikaga_eastern_honshu",
+      "adoption": []
+    },
+    {
+      "id": "ashikaga_kinai_adoption",
+      "provinceId": "ashikaga_kinai",
+      "adoption": []
+    },
+    {
+      "id": "ashikaga_kyushu_adoption",
+      "provinceId": "ashikaga_kyushu",
+      "adoption": []
+    },
+    {
+      "id": "ashikaga_western_honshu_shikoku_adoption",
+      "provinceId": "ashikaga_western_honshu_shikoku",
+      "adoption": []
+    },
+    {
+      "id": "austrian_lands_adoption",
+      "provinceId": "austrian_lands",
+      "adoption": []
+    },
+    {
+      "id": "ava_upper_burma_adoption",
+      "provinceId": "ava_upper_burma",
+      "adoption": []
+    },
+    {
+      "id": "ayutthaya_core_adoption",
+      "provinceId": "ayutthaya_core",
+      "adoption": []
+    },
+    {
+      "id": "ayutthaya_tenasserim_adoption",
+      "provinceId": "ayutthaya_tenasserim",
+      "adoption": []
+    },
+    {
+      "id": "bahmani_deccan_adoption",
+      "provinceId": "bahmani_deccan",
+      "adoption": []
+    },
+    {
+      "id": "bali_kingdoms_adoption",
+      "provinceId": "bali_kingdoms",
+      "adoption": []
+    },
+    {
+      "id": "bavaria_adoption",
+      "provinceId": "bavaria",
+      "adoption": []
+    },
+    {
+      "id": "beja_lands_adoption",
+      "provinceId": "beja_lands",
+      "adoption": []
+    },
+    {
+      "id": "belau_islands_adoption",
+      "provinceId": "belau_islands",
+      "adoption": []
+    },
+    {
+      "id": "bengal_adoption",
+      "provinceId": "bengal",
+      "adoption": []
+    },
+    {
+      "id": "benin_realm_adoption",
+      "provinceId": "benin_realm",
+      "adoption": []
+    },
+    {
+      "id": "bismarck_archipelago_adoption",
+      "provinceId": "bismarck_archipelago",
+      "adoption": []
+    },
+    {
+      "id": "bohemian_crown_adoption",
+      "provinceId": "bohemian_crown",
+      "adoption": []
+    },
+    {
+      "id": "bornu_adoption",
+      "provinceId": "bornu",
+      "adoption": []
+    },
+    {
+      "id": "bosnia_adoption",
+      "provinceId": "bosnia",
+      "adoption": []
+    },
+    {
+      "id": "brandenburg_adoption",
+      "provinceId": "brandenburg",
+      "adoption": []
+    },
+    {
+      "id": "brittany_adoption",
+      "provinceId": "brittany",
+      "adoption": []
+    },
+    {
+      "id": "brunei_sultanate_adoption",
+      "provinceId": "brunei_sultanate",
+      "adoption": []
+    },
+    {
+      "id": "buganda_adoption",
+      "provinceId": "buganda",
+      "adoption": []
+    },
+    {
+      "id": "bunyoro_adoption",
+      "provinceId": "bunyoro",
+      "adoption": []
+    },
+    {
+      "id": "burgundian_netherlands_adoption",
+      "provinceId": "burgundian_netherlands",
+      "adoption": []
+    },
+    {
+      "id": "burgundy_duchy_adoption",
+      "provinceId": "burgundy_duchy",
+      "adoption": []
+    },
+    {
+      "id": "byzantine_thrace_adoption",
+      "provinceId": "byzantine_thrace",
+      "adoption": []
+    },
+    {
+      "id": "castile_crown_adoption",
+      "provinceId": "castile_crown",
+      "adoption": []
+    },
+    {
+      "id": "central_maghreb_adoption",
+      "provinceId": "central_maghreb",
+      "adoption": []
+    },
+    {
+      "id": "central_morocco_adoption",
+      "provinceId": "central_morocco",
+      "adoption": []
+    },
+    {
+      "id": "chalco_altepetl_adoption",
+      "provinceId": "chalco_altepetl",
+      "adoption": []
+    },
+    {
+      "id": "champa_adoption",
+      "provinceId": "champa",
+      "adoption": []
+    },
+    {
+      "id": "charrua_uruguay_grasslands_adoption",
+      "provinceId": "charrua_uruguay_grasslands",
+      "adoption": []
+    },
+    {
+      "id": "chimor_north_coast_adoption",
+      "provinceId": "chimor_north_coast",
+      "adoption": []
+    },
+    {
+      "id": "chincha_valley_adoption",
+      "provinceId": "chincha_valley",
+      "adoption": []
+    },
+    {
+      "id": "crimea_adoption",
+      "provinceId": "crimea",
+      "adoption": []
+    },
+    {
+      "id": "cyprus_adoption",
+      "provinceId": "cyprus",
+      "adoption": []
+    },
+    {
+      "id": "dai_viet_adoption",
+      "provinceId": "dai_viet",
+      "adoption": []
+    },
+    {
+      "id": "denmark_proper_adoption",
+      "provinceId": "denmark_proper",
+      "adoption": []
+    },
+    {
+      "id": "diaguita_calchaqui_valleys_adoption",
+      "provinceId": "diaguita_calchaqui_valleys",
+      "adoption": []
+    },
+    {
+      "id": "dulkadir_adoption",
+      "provinceId": "dulkadir",
+      "adoption": []
+    },
+    {
+      "id": "eastern_new_guinea_communities_adoption",
+      "provinceId": "eastern_new_guinea_communities",
+      "adoption": []
+    },
+    {
+      "id": "english_midlands_adoption",
+      "provinceId": "english_midlands",
+      "adoption": []
+    },
+    {
+      "id": "fars_adoption",
+      "provinceId": "fars",
+      "adoption": []
+    },
+    {
+      "id": "fez_meknes_adoption",
+      "provinceId": "fez_meknes",
+      "adoption": []
+    },
+    {
+      "id": "fijian_vanua_adoption",
+      "provinceId": "fijian_vanua",
+      "adoption": []
+    },
+    {
+      "id": "fouta_jallon_adoption",
+      "provinceId": "fouta_jallon",
+      "adoption": []
+    },
+    {
+      "id": "fuegian_archipelago_adoption",
+      "provinceId": "fuegian_archipelago",
+      "adoption": []
+    },
+    {
+      "id": "gaelic_ireland_adoption",
+      "provinceId": "gaelic_ireland",
+      "adoption": []
+    },
+    {
+      "id": "gajapati_orissa_adoption",
+      "provinceId": "gajapati_orissa",
+      "adoption": []
+    },
+    {
+      "id": "georgia_adoption",
+      "provinceId": "georgia",
+      "adoption": []
+    },
+    {
+      "id": "gobir_adoption",
+      "provinceId": "gobir",
+      "adoption": []
+    },
+    {
+      "id": "golden_horde_steppe_adoption",
+      "provinceId": "golden_horde_steppe",
+      "adoption": []
+    },
+    {
+      "id": "gondwana_adoption",
+      "provinceId": "gondwana",
+      "adoption": []
+    },
+    {
+      "id": "granada_adoption",
+      "provinceId": "granada",
+      "adoption": []
+    },
+    {
+      "id": "great_zimbabwe_adoption",
+      "provinceId": "great_zimbabwe",
+      "adoption": []
+    },
     {
       "id": "greater_london_adoption",
       "provinceId": "greater_london",
       "adoption": [
         {
-          "nodeId": "celestial_navigation",
-          "level": 85
+          "nodeId": "double_entry_bookkeeping",
+          "level": 45
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 25
         },
         {
           "nodeId": "professional_bureaucracy",
-          "level": 90
+          "level": 55
         }
       ]
     },
     {
-      "id": "kent_adoption",
-      "provinceId": "kent",
-      "adoption": [
-        {
-          "nodeId": "celestial_navigation",
-          "level": 45
-        },
-        {
-          "nodeId": "professional_bureaucracy",
-          "level": 60
-        }
-      ]
+      "id": "guarani_parana_paraguay_adoption",
+      "provinceId": "guarani_parana_paraguay",
+      "adoption": []
+    },
+    {
+      "id": "gujarat_adoption",
+      "provinceId": "gujarat",
+      "adoption": []
+    },
+    {
+      "id": "hadramawt_adoption",
+      "provinceId": "hadramawt",
+      "adoption": []
+    },
+    {
+      "id": "hafsid_ifriqiya_adoption",
+      "provinceId": "hafsid_ifriqiya",
+      "adoption": []
+    },
+    {
+      "id": "haixi_jurchen_domains_adoption",
+      "provinceId": "haixi_jurchen_domains",
+      "adoption": []
+    },
+    {
+      "id": "hanthawaddy_pegu_adoption",
+      "provinceId": "hanthawaddy_pegu",
+      "adoption": []
+    },
+    {
+      "id": "haudenosaunee_homelands_adoption",
+      "provinceId": "haudenosaunee_homelands",
+      "adoption": []
+    },
+    {
+      "id": "hausa_north_adoption",
+      "provinceId": "hausa_north",
+      "adoption": []
+    },
+    {
+      "id": "hausa_west_adoption",
+      "provinceId": "hausa_west",
+      "adoption": []
+    },
+    {
+      "id": "hawaii_island_adoption",
+      "provinceId": "hawaii_island",
+      "adoption": []
+    },
+    {
+      "id": "hejaz_adoption",
+      "provinceId": "hejaz",
+      "adoption": []
+    },
+    {
+      "id": "hormuz_adoption",
+      "provinceId": "hormuz",
+      "adoption": []
+    },
+    {
+      "id": "hungary_adoption",
+      "provinceId": "hungary",
+      "adoption": []
+    },
+    {
+      "id": "iceland_adoption",
+      "provinceId": "iceland",
+      "adoption": []
+    },
+    {
+      "id": "ifat_adoption",
+      "provinceId": "ifat",
+      "adoption": []
     },
     {
       "id": "ile_de_france_adoption",
       "provinceId": "ile_de_france",
       "adoption": [
         {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 45
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 25
+        },
+        {
           "nodeId": "professional_bureaucracy",
-          "level": 80
+          "level": 55
         }
       ]
+    },
+    {
+      "id": "imerina_highlands_adoption",
+      "provinceId": "imerina_highlands",
+      "adoption": []
+    },
+    {
+      "id": "imperial_free_cities_adoption",
+      "provinceId": "imperial_free_cities",
+      "adoption": []
+    },
+    {
+      "id": "inca_cusco_heartland_adoption",
+      "provinceId": "inca_cusco_heartland",
+      "adoption": []
+    },
+    {
+      "id": "inca_southern_highlands_adoption",
+      "provinceId": "inca_southern_highlands",
+      "adoption": []
+    },
+    {
+      "id": "inuit_labrador_greenland_adoption",
+      "provinceId": "inuit_labrador_greenland",
+      "adoption": []
+    },
+    {
+      "id": "itza_peten_adoption",
+      "provinceId": "itza_peten",
+      "adoption": []
+    },
+    {
+      "id": "jaffna_adoption",
+      "provinceId": "jaffna",
+      "adoption": []
+    },
+    {
+      "id": "jaunpur_adoption",
+      "provinceId": "jaunpur",
+      "adoption": []
+    },
+    {
+      "id": "jianzhou_jurchen_domains_adoption",
+      "provinceId": "jianzhou_jurchen_domains",
+      "adoption": []
+    },
+    {
+      "id": "jolof_realm_adoption",
+      "provinceId": "jolof_realm",
+      "adoption": []
+    },
+    {
+      "id": "joseon_central_provinces_adoption",
+      "provinceId": "joseon_central_provinces",
+      "adoption": [
+        {
+          "nodeId": "cast_cannon",
+          "level": 25
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 80
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 70
+        }
+      ]
+    },
+    {
+      "id": "joseon_hamgil_pyeongan_adoption",
+      "provinceId": "joseon_hamgil_pyeongan",
+      "adoption": []
+    },
+    {
+      "id": "joseon_jeju_adoption",
+      "provinceId": "joseon_jeju",
+      "adoption": []
+    },
+    {
+      "id": "joseon_southern_provinces_adoption",
+      "provinceId": "joseon_southern_provinces",
+      "adoption": []
+    },
+    {
+      "id": "jurchen_liaodong_frontier_adoption",
+      "provinceId": "jurchen_liaodong_frontier",
+      "adoption": []
+    },
+    {
+      "id": "kalahari_polities_adoption",
+      "provinceId": "kalahari_polities",
+      "adoption": []
+    },
+    {
+      "id": "kalinago_lesser_antilles_adoption",
+      "provinceId": "kalinago_lesser_antilles",
+      "adoption": []
+    },
+    {
+      "id": "kamata_ahom_adoption",
+      "provinceId": "kamata_ahom",
+      "adoption": []
+    },
+    {
+      "id": "kanak_country_adoption",
+      "provinceId": "kanak_country",
+      "adoption": []
+    },
+    {
+      "id": "kanem_adoption",
+      "provinceId": "kanem",
+      "adoption": []
+    },
+    {
+      "id": "kaqchikel_highlands_adoption",
+      "provinceId": "kaqchikel_highlands",
+      "adoption": []
+    },
+    {
+      "id": "kara_del_hami_adoption",
+      "provinceId": "kara_del_hami",
+      "adoption": []
+    },
+    {
+      "id": "karaman_adoption",
+      "provinceId": "karaman",
+      "adoption": []
+    },
+    {
+      "id": "kashmir_adoption",
+      "provinceId": "kashmir",
+      "adoption": []
+    },
+    {
+      "id": "katsina_adoption",
+      "provinceId": "katsina",
+      "adoption": []
+    },
+    {
+      "id": "kauai_niihau_adoption",
+      "provinceId": "kauai_niihau",
+      "adoption": []
+    },
+    {
+      "id": "kazan_adoption",
+      "provinceId": "kazan",
+      "adoption": []
+    },
+    {
+      "id": "kent_adoption",
+      "provinceId": "kent",
+      "adoption": [
+        {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 15
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 25
+        }
+      ]
+    },
+    {
+      "id": "khandesh_adoption",
+      "provinceId": "khandesh",
+      "adoption": []
+    },
+    {
+      "id": "khmer_angkor_adoption",
+      "provinceId": "khmer_angkor",
+      "adoption": []
+    },
+    {
+      "id": "khurasan_adoption",
+      "provinceId": "khurasan",
+      "adoption": []
+    },
+    {
+      "id": "kiche_highlands_adoption",
+      "provinceId": "kiche_highlands",
+      "adoption": []
+    },
+    {
+      "id": "kilwa_coast_adoption",
+      "provinceId": "kilwa_coast",
+      "adoption": []
+    },
+    {
+      "id": "kongo_core_adoption",
+      "provinceId": "kongo_core",
+      "adoption": []
+    },
+    {
+      "id": "kongo_east_adoption",
+      "provinceId": "kongo_east",
+      "adoption": []
+    },
+    {
+      "id": "kotte_adoption",
+      "provinceId": "kotte",
+      "adoption": []
+    },
+    {
+      "id": "kutai_kingdom_adoption",
+      "provinceId": "kutai_kingdom",
+      "adoption": []
+    },
+    {
+      "id": "kwararafa_adoption",
+      "provinceId": "kwararafa",
+      "adoption": []
+    },
+    {
+      "id": "lamu_archipelago_adoption",
+      "provinceId": "lamu_archipelago",
+      "adoption": []
+    },
+    {
+      "id": "lan_na_adoption",
+      "provinceId": "lan_na",
+      "adoption": []
+    },
+    {
+      "id": "lan_xang_adoption",
+      "provinceId": "lan_xang",
+      "adoption": []
+    },
+    {
+      "id": "liguria_adoption",
+      "provinceId": "liguria",
+      "adoption": [
+        {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 45
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 25
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 55
+        }
+      ]
+    },
+    {
+      "id": "lithuania_proper_adoption",
+      "provinceId": "lithuania_proper",
+      "adoption": []
+    },
+    {
+      "id": "livonia_adoption",
+      "provinceId": "livonia",
+      "adoption": []
+    },
+    {
+      "id": "loango_coast_adoption",
+      "provinceId": "loango_coast",
+      "adoption": []
+    },
+    {
+      "id": "loire_france_adoption",
+      "provinceId": "loire_france",
+      "adoption": []
+    },
+    {
+      "id": "lower_niger_adoption",
+      "provinceId": "lower_niger",
+      "adoption": []
+    },
+    {
+      "id": "lower_nubia_adoption",
+      "provinceId": "lower_nubia",
+      "adoption": []
+    },
+    {
+      "id": "luba_lands_adoption",
+      "provinceId": "luba_lands",
+      "adoption": []
+    },
+    {
+      "id": "lunda_lands_adoption",
+      "provinceId": "lunda_lands",
+      "adoption": []
+    },
+    {
+      "id": "luzon_polities_adoption",
+      "provinceId": "luzon_polities",
+      "adoption": []
+    },
+    {
+      "id": "madagascar_east_adoption",
+      "provinceId": "madagascar_east",
+      "adoption": []
+    },
+    {
+      "id": "madagascar_west_adoption",
+      "provinceId": "madagascar_west",
+      "adoption": []
+    },
+    {
+      "id": "majapahit_java_adoption",
+      "provinceId": "majapahit_java",
+      "adoption": []
+    },
+    {
+      "id": "makassar_polities_adoption",
+      "provinceId": "makassar_polities",
+      "adoption": []
+    },
+    {
+      "id": "malacca_sultanate_adoption",
+      "provinceId": "malacca_sultanate",
+      "adoption": []
+    },
+    {
+      "id": "maldives_adoption",
+      "provinceId": "maldives",
+      "adoption": []
+    },
+    {
+      "id": "malindi_adoption",
+      "provinceId": "malindi",
+      "adoption": []
+    },
+    {
+      "id": "malwa_adoption",
+      "provinceId": "malwa",
+      "adoption": []
+    },
+    {
+      "id": "mamluk_egypt_adoption",
+      "provinceId": "mamluk_egypt",
+      "adoption": []
+    },
+    {
+      "id": "mamluk_syria_adoption",
+      "provinceId": "mamluk_syria",
+      "adoption": []
+    },
+    {
+      "id": "manding_adoption",
+      "provinceId": "manding",
+      "adoption": []
+    },
+    {
+      "id": "mapuche_ngulumapu_adoption",
+      "provinceId": "mapuche_ngulumapu",
+      "adoption": []
+    },
+    {
+      "id": "mapungubwe_successors_adoption",
+      "provinceId": "mapungubwe_successors",
+      "adoption": []
+    },
+    {
+      "id": "maravi_lands_adoption",
+      "provinceId": "maravi_lands",
+      "adoption": []
+    },
+    {
+      "id": "mariana_chiefdoms_adoption",
+      "provinceId": "mariana_chiefdoms",
+      "adoption": []
+    },
+    {
+      "id": "marquesan_valleys_adoption",
+      "provinceId": "marquesan_valleys",
+      "adoption": []
+    },
+    {
+      "id": "marshall_atoll_domains_adoption",
+      "provinceId": "marshall_atoll_domains",
+      "adoption": []
+    },
+    {
+      "id": "maui_nui_adoption",
+      "provinceId": "maui_nui",
+      "adoption": []
+    },
+    {
+      "id": "medri_bahri_adoption",
+      "provinceId": "medri_bahri",
+      "adoption": []
+    },
+    {
+      "id": "middle_niger_adoption",
+      "provinceId": "middle_niger",
+      "adoption": []
+    },
+    {
+      "id": "milan_adoption",
+      "provinceId": "milan",
+      "adoption": []
+    },
+    {
+      "id": "minangkabau_adoption",
+      "provinceId": "minangkabau",
+      "adoption": []
+    },
+    {
+      "id": "mindanao_polities_adoption",
+      "provinceId": "mindanao_polities",
+      "adoption": []
+    },
+    {
+      "id": "ming_beizhili_adoption",
+      "provinceId": "ming_beizhili",
+      "adoption": [
+        {
+          "nodeId": "cast_cannon",
+          "level": 25
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 80
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 70
+        }
+      ]
+    },
+    {
+      "id": "ming_fujian_zhejiang_adoption",
+      "provinceId": "ming_fujian_zhejiang",
+      "adoption": []
+    },
+    {
+      "id": "ming_huguang_sichuan_adoption",
+      "provinceId": "ming_huguang_sichuan",
+      "adoption": []
+    },
+    {
+      "id": "ming_lingnan_adoption",
+      "provinceId": "ming_lingnan",
+      "adoption": []
+    },
+    {
+      "id": "ming_nanzhili_adoption",
+      "provinceId": "ming_nanzhili",
+      "adoption": [
+        {
+          "nodeId": "cast_cannon",
+          "level": 25
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 80
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 70
+        }
+      ]
+    },
+    {
+      "id": "ming_shandong_henan_adoption",
+      "provinceId": "ming_shandong_henan",
+      "adoption": []
+    },
+    {
+      "id": "ming_shanxi_shaanxi_adoption",
+      "provinceId": "ming_shanxi_shaanxi",
+      "adoption": []
+    },
+    {
+      "id": "mississippi_southeast_centers_adoption",
+      "provinceId": "mississippi_southeast_centers",
+      "adoption": []
+    },
+    {
+      "id": "mogadishu_hinterland_adoption",
+      "provinceId": "mogadishu_hinterland",
+      "adoption": []
+    },
+    {
+      "id": "moldavia_adoption",
+      "provinceId": "moldavia",
+      "adoption": []
+    },
+    {
+      "id": "mombasa_adoption",
+      "provinceId": "mombasa",
+      "adoption": []
+    },
+    {
+      "id": "mossi_lands_adoption",
+      "provinceId": "mossi_lands",
+      "adoption": []
+    },
+    {
+      "id": "mrauk_u_arakan_adoption",
+      "provinceId": "mrauk_u_arakan",
+      "adoption": []
+    },
+    {
+      "id": "muisca_bacata_adoption",
+      "provinceId": "muisca_bacata",
+      "adoption": []
+    },
+    {
+      "id": "muisca_hunza_adoption",
+      "provinceId": "muisca_hunza",
+      "adoption": []
+    },
+    {
+      "id": "multan_adoption",
+      "provinceId": "multan",
+      "adoption": []
+    },
+    {
+      "id": "muscovy_adoption",
+      "provinceId": "muscovy",
+      "adoption": []
+    },
+    {
+      "id": "mutapa_adoption",
+      "provinceId": "mutapa",
+      "adoption": []
+    },
+    {
+      "id": "najd_bahrain_adoption",
+      "provinceId": "najd_bahrain",
+      "adoption": []
+    },
+    {
+      "id": "namib_polities_adoption",
+      "provinceId": "namib_polities",
+      "adoption": []
+    },
+    {
+      "id": "naples_sicily_adoption",
+      "provinceId": "naples_sicily",
+      "adoption": []
+    },
+    {
+      "id": "navarre_adoption",
+      "provinceId": "navarre",
+      "adoption": []
+    },
+    {
+      "id": "nepal_adoption",
+      "provinceId": "nepal",
+      "adoption": []
     },
     {
       "id": "normandy_adoption",
       "provinceId": "normandy",
       "adoption": [
         {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 15
+        },
+        {
           "nodeId": "professional_bureaucracy",
-          "level": 35
+          "level": 25
         }
       ]
+    },
+    {
+      "id": "northern_england_adoption",
+      "provinceId": "northern_england",
+      "adoption": []
+    },
+    {
+      "id": "northern_yuan_domains_adoption",
+      "provinceId": "northern_yuan_domains",
+      "adoption": []
+    },
+    {
+      "id": "northwest_coast_homelands_adoption",
+      "provinceId": "northwest_coast_homelands",
+      "adoption": []
+    },
+    {
+      "id": "norway_proper_adoption",
+      "provinceId": "norway_proper",
+      "adoption": []
+    },
+    {
+      "id": "novgorod_lands_adoption",
+      "provinceId": "novgorod_lands",
+      "adoption": []
+    },
+    {
+      "id": "nupe_adoption",
+      "provinceId": "nupe",
+      "adoption": []
+    },
+    {
+      "id": "oahu_adoption",
+      "provinceId": "oahu",
+      "adoption": []
+    },
+    {
+      "id": "oirat_dzungaria_adoption",
+      "provinceId": "oirat_dzungaria",
+      "adoption": []
+    },
+    {
+      "id": "oirat_eastern_mongolia_adoption",
+      "provinceId": "oirat_eastern_mongolia",
+      "adoption": []
+    },
+    {
+      "id": "oman_adoption",
+      "provinceId": "oman",
+      "adoption": []
+    },
+    {
+      "id": "ottoman_anatolia_adoption",
+      "provinceId": "ottoman_anatolia",
+      "adoption": []
+    },
+    {
+      "id": "ottoman_balkans_adoption",
+      "provinceId": "ottoman_balkans",
+      "adoption": []
+    },
+    {
+      "id": "oyo_realm_adoption",
+      "provinceId": "oyo_realm",
+      "adoption": []
+    },
+    {
+      "id": "papal_states_adoption",
+      "provinceId": "papal_states",
+      "adoption": []
+    },
+    {
+      "id": "papuan_coastal_polities_adoption",
+      "provinceId": "papuan_coastal_polities",
+      "adoption": []
+    },
+    {
+      "id": "phagmodrupa_u_tsang_adoption",
+      "provinceId": "phagmodrupa_u_tsang",
+      "adoption": []
+    },
+    {
+      "id": "pohnpei_saudeleur_adoption",
+      "provinceId": "pohnpei_saudeleur",
+      "adoption": []
+    },
+    {
+      "id": "poland_crown_adoption",
+      "provinceId": "poland_crown",
+      "adoption": []
+    },
+    {
+      "id": "portugal_adoption",
+      "provinceId": "portugal",
+      "adoption": []
+    },
+    {
+      "id": "provence_adoption",
+      "provinceId": "provence",
+      "adoption": []
+    },
+    {
+      "id": "prussia_adoption",
+      "provinceId": "prussia",
+      "adoption": []
+    },
+    {
+      "id": "pueblo_rio_grande_mesa_adoption",
+      "provinceId": "pueblo_rio_grande_mesa",
+      "adoption": []
+    },
+    {
+      "id": "punjab_delhi_adoption",
+      "provinceId": "punjab_delhi",
+      "adoption": []
+    },
+    {
+      "id": "purepecha_michoacan_adoption",
+      "provinceId": "purepecha_michoacan",
+      "adoption": []
+    },
+    {
+      "id": "qara_qoyunlu_azerbaijan_adoption",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "adoption": []
+    },
+    {
+      "id": "qara_qoyunlu_iraq_adoption",
+      "provinceId": "qara_qoyunlu_iraq",
+      "adoption": []
+    },
+    {
+      "id": "rajputana_adoption",
+      "provinceId": "rajputana",
+      "adoption": []
+    },
+    {
+      "id": "rapa_nui_adoption",
+      "provinceId": "rapa_nui",
+      "adoption": []
+    },
+    {
+      "id": "rhine_palatinate_adoption",
+      "provinceId": "rhine_palatinate",
+      "adoption": []
+    },
+    {
+      "id": "rif_adoption",
+      "provinceId": "rif",
+      "adoption": []
+    },
+    {
+      "id": "rinpungpa_tsang_adoption",
+      "provinceId": "rinpungpa_tsang",
+      "adoption": []
+    },
+    {
+      "id": "ruthenia_adoption",
+      "provinceId": "ruthenia",
+      "adoption": []
+    },
+    {
+      "id": "rwanda_burundi_adoption",
+      "provinceId": "rwanda_burundi",
+      "adoption": []
+    },
+    {
+      "id": "ryazan_adoption",
+      "provinceId": "ryazan",
+      "adoption": []
+    },
+    {
+      "id": "ryukyu_islands_adoption",
+      "provinceId": "ryukyu_islands",
+      "adoption": []
+    },
+    {
+      "id": "sakhalin_ainu_nivkh_adoption",
+      "provinceId": "sakhalin_ainu_nivkh",
+      "adoption": []
+    },
+    {
+      "id": "samoan_districts_adoption",
+      "provinceId": "samoan_districts",
+      "adoption": []
+    },
+    {
+      "id": "samudera_pasai_adoption",
+      "provinceId": "samudera_pasai",
+      "adoption": []
+    },
+    {
+      "id": "savoy_adoption",
+      "provinceId": "savoy",
+      "adoption": []
+    },
+    {
+      "id": "saxony_adoption",
+      "provinceId": "saxony",
+      "adoption": []
+    },
+    {
+      "id": "schleswig_holstein_adoption",
+      "provinceId": "schleswig_holstein",
+      "adoption": []
+    },
+    {
+      "id": "scottish_highlands_adoption",
+      "provinceId": "scottish_highlands",
+      "adoption": []
+    },
+    {
+      "id": "scottish_lowlands_adoption",
+      "provinceId": "scottish_lowlands",
+      "adoption": []
+    },
+    {
+      "id": "senegambia_adoption",
+      "provinceId": "senegambia",
+      "adoption": []
+    },
+    {
+      "id": "serbia_adoption",
+      "provinceId": "serbia",
+      "adoption": []
+    },
+    {
+      "id": "shan_states_adoption",
+      "provinceId": "shan_states",
+      "adoption": []
+    },
+    {
+      "id": "shewa_adoption",
+      "provinceId": "shewa",
+      "adoption": []
+    },
+    {
+      "id": "shirvan_adoption",
+      "provinceId": "shirvan",
+      "adoption": []
+    },
+    {
+      "id": "sijilmasa_adoption",
+      "provinceId": "sijilmasa",
+      "adoption": []
+    },
+    {
+      "id": "sindh_adoption",
+      "provinceId": "sindh",
+      "adoption": []
+    },
+    {
+      "id": "society_island_chiefdoms_adoption",
+      "provinceId": "society_island_chiefdoms",
+      "adoption": []
+    },
+    {
+      "id": "sofala_coast_adoption",
+      "provinceId": "sofala_coast",
+      "adoption": []
+    },
+    {
+      "id": "solomon_archipelago_adoption",
+      "provinceId": "solomon_archipelago",
+      "adoption": []
+    },
+    {
+      "id": "songhai_realm_adoption",
+      "provinceId": "songhai_realm",
+      "adoption": []
+    },
+    {
+      "id": "sulu_sultanate_adoption",
+      "provinceId": "sulu_sultanate",
+      "adoption": []
+    },
+    {
+      "id": "sunda_kingdom_adoption",
+      "provinceId": "sunda_kingdom",
+      "adoption": []
+    },
+    {
+      "id": "swedish_finland_adoption",
+      "provinceId": "swedish_finland",
+      "adoption": []
+    },
+    {
+      "id": "swedish_gotaland_adoption",
+      "provinceId": "swedish_gotaland",
+      "adoption": []
+    },
+    {
+      "id": "swiss_confederacy_adoption",
+      "provinceId": "swiss_confederacy",
+      "adoption": []
+    },
+    {
+      "id": "taino_greater_antilles_adoption",
+      "provinceId": "taino_greater_antilles",
+      "adoption": []
+    },
+    {
+      "id": "tairona_sierra_nevada_adoption",
+      "provinceId": "tairona_sierra_nevada",
+      "adoption": []
+    },
+    {
+      "id": "taiwan_indigenous_domains_adoption",
+      "provinceId": "taiwan_indigenous_domains",
+      "adoption": []
+    },
+    {
+      "id": "tenochtitlan_domain_adoption",
+      "provinceId": "tenochtitlan_domain",
+      "adoption": []
+    },
+    {
+      "id": "ternate_sultanate_adoption",
+      "provinceId": "ternate_sultanate",
+      "adoption": []
+    },
+    {
+      "id": "texcoco_domain_adoption",
+      "provinceId": "texcoco_domain",
+      "adoption": []
+    },
+    {
+      "id": "the_pale_adoption",
+      "provinceId": "the_pale",
+      "adoption": []
+    },
+    {
+      "id": "tidore_sultanate_adoption",
+      "provinceId": "tidore_sultanate",
+      "adoption": []
+    },
+    {
+      "id": "tigray_adoption",
+      "provinceId": "tigray",
+      "adoption": []
+    },
+    {
+      "id": "tlacopan_domain_adoption",
+      "provinceId": "tlacopan_domain",
+      "adoption": []
+    },
+    {
+      "id": "tlaxcallan_four_altepetl_adoption",
+      "provinceId": "tlaxcallan_four_altepetl",
+      "adoption": []
+    },
+    {
+      "id": "tlemcen_adoption",
+      "provinceId": "tlemcen",
+      "adoption": []
+    },
+    {
+      "id": "tongan_core_islands_adoption",
+      "provinceId": "tongan_core_islands",
+      "adoption": []
+    },
+    {
+      "id": "toungoo_adoption",
+      "provinceId": "toungoo",
+      "adoption": []
+    },
+    {
+      "id": "transoxiana_adoption",
+      "provinceId": "transoxiana",
+      "adoption": []
+    },
+    {
+      "id": "trebizond_adoption",
+      "provinceId": "trebizond",
+      "adoption": []
+    },
+    {
+      "id": "tripolitania_adoption",
+      "provinceId": "tripolitania",
+      "adoption": []
+    },
+    {
+      "id": "tuamotu_gambier_communities_adoption",
+      "provinceId": "tuamotu_gambier_communities",
+      "adoption": []
+    },
+    {
+      "id": "tungaru_atoll_communities_adoption",
+      "provinceId": "tungaru_atoll_communities",
+      "adoption": []
+    },
+    {
+      "id": "tupi_atlantic_coast_adoption",
+      "provinceId": "tupi_atlantic_coast",
+      "adoption": []
+    },
+    {
+      "id": "tuscany_adoption",
+      "provinceId": "tuscany",
+      "adoption": [
+        {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 45
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 25
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 55
+        }
+      ]
+    },
+    {
+      "id": "tver_adoption",
+      "provinceId": "tver",
+      "adoption": []
+    },
+    {
+      "id": "upper_senegal_adoption",
+      "provinceId": "upper_senegal",
+      "adoption": []
+    },
+    {
+      "id": "valencia_balearics_adoption",
+      "provinceId": "valencia_balearics",
+      "adoption": []
+    },
+    {
+      "id": "vanuatu_archipelago_adoption",
+      "provinceId": "vanuatu_archipelago",
+      "adoption": []
+    },
+    {
+      "id": "venetian_mainland_adoption",
+      "provinceId": "venetian_mainland",
+      "adoption": [
+        {
+          "nodeId": "double_entry_bookkeeping",
+          "level": 45
+        },
+        {
+          "nodeId": "movable_type_printing",
+          "level": 25
+        },
+        {
+          "nodeId": "professional_bureaucracy",
+          "level": 55
+        }
+      ]
+    },
+    {
+      "id": "vijayanagara_adoption",
+      "provinceId": "vijayanagara",
+      "adoption": []
+    },
+    {
+      "id": "visayan_polities_adoption",
+      "provinceId": "visayan_polities",
+      "adoption": []
+    },
+    {
+      "id": "wallachia_adoption",
+      "provinceId": "wallachia",
+      "adoption": []
+    },
+    {
+      "id": "warsangali_adoption",
+      "provinceId": "warsangali",
+      "adoption": []
+    },
+    {
+      "id": "wendat_georgian_bay_adoption",
+      "provinceId": "wendat_georgian_bay",
+      "adoption": []
+    },
+    {
+      "id": "western_caroline_domains_adoption",
+      "provinceId": "western_caroline_domains",
+      "adoption": []
+    },
+    {
+      "id": "western_himalaya_adoption",
+      "provinceId": "western_himalaya",
+      "adoption": []
+    },
+    {
+      "id": "wild_jurchen_domains_adoption",
+      "provinceId": "wild_jurchen_domains",
+      "adoption": []
+    },
+    {
+      "id": "yemen_adoption",
+      "provinceId": "yemen",
+      "adoption": []
+    },
+    {
+      "id": "yucatan_kuchkabal_adoption",
+      "provinceId": "yucatan_kuchkabal",
+      "adoption": []
+    },
+    {
+      "id": "zanzibar_pemba_adoption",
+      "provinceId": "zanzibar_pemba",
+      "adoption": []
+    },
+    {
+      "id": "zeila_coast_adoption",
+      "provinceId": "zeila_coast",
+      "adoption": []
     }
   ],
   "titleStyles": [

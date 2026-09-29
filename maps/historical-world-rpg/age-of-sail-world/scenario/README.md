@@ -5,6 +5,10 @@ Scenario-specific content belongs here and must be replaceable by another timeli
 Regional terrain sources under `terrain/` contain authoritative geography, traversal zones, declared gameplay distortions, transition anchors, and generation budgets. Generated terrain files are build outputs and must not be edited or committed.
 
 Research content in this directory supplies scenario-specific names, dates, costs, prerequisites, and unlock IDs to the generic shared contracts.
+The authoritative catalog is `progression/catalog.json`; it also owns historical
+origins, adoption requirements, diffusion tuning, conditional modifiers, evidence,
+and the complete 1450 polity/province seed. Run `python3 tooling/progression_catalog.py`
+to validate its graph and world projection, or add `--write` to rebuild that projection.
 
 Quest and event content likewise supplies display text, declarative condition and
 outcome IDs, graph relationships, and typed world references. Executable logic
