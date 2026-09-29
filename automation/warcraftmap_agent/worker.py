@@ -370,7 +370,8 @@ def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attemp
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
-        if int(record.get("attempts", 0)) >= max_attempts:
+        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
+        if int(record.get(attempt_key, 0)) >= max_attempts:
             continue
         return issue
     return None
