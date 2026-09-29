@@ -65,7 +65,7 @@ class CampaignPackagingTests(unittest.TestCase):
         content[0]["id"] = "whole_world"; content[0]["packagePath"] = "Maps/WholeWorld.w3x"
         for key in ("logicalRegionIds", "regionalInstanceIds", "generatedTerrainIds"):
             content[0]["assignments"][key] = sorted({v for item in content for v in item["assignments"][key]})
-        content[0]["terrainBudget"] = {"maximumCells": 76800, "maximumOutputBytes": 4194304}
+        content[0]["terrainBudget"] = {"maximumCells": 110000, "maximumOutputBytes": 5242880}
         raw["physicalMaps"] = [raw["physicalMaps"][0], content[0]]
         self.manifest.write_text(json.dumps(raw), encoding="utf-8")
         validate_campaign(load_campaign_config(self.manifest))
