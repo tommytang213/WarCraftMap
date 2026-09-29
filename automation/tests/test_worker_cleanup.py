@@ -84,6 +84,7 @@ class WorkerCleanupTests(unittest.TestCase):
                 "state": "OPEN",
                 "mergeStateStatus": "DIRTY",
                 "statusCheckRollup": [{"status": "IN_PROGRESS"}],
+                "baseRefOid": "base-a",
             }
             with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
                 self.assertTrue(service_open_prs(config, state))
@@ -123,13 +124,19 @@ class WorkerCleanupTests(unittest.TestCase):
             root = Path(directory)
             config = Config(root, root / "state", max_attempts=3)
             state = {"issues": {"19": {"status": "pr_open", "pr": 42, "attempts": 3}}}
-            view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+            view = {
+                "state": "OPEN",
+                "mergeStateStatus": "DIRTY",
+                "statusCheckRollup": [],
+                "baseRefOid": "base-a",
+            }
             with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "repair")
             self.assertEqual(record["repair_kind"], "merge_conflict")
             self.assertEqual(record.get("conflict_attempts", 0), 0)
+            self.assertEqual(record["conflict_base_oid"], "base-a")
 
     def test_dirty_pr_at_conflict_attempt_limit_fails_with_clear_reason(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -145,12 +152,52 @@ class WorkerCleanupTests(unittest.TestCase):
                     }
                 }
             }
-            view = {"state": "OPEN", "mergeStateStatus": "DIRTY", "statusCheckRollup": []}
+            state["issues"]["19"]["conflict_base_oid"] = "base-a"
+            view = {
+                "state": "OPEN",
+                "mergeStateStatus": "DIRTY",
+                "statusCheckRollup": [],
+                "baseRefOid": "base-a",
+            }
             with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "failed")
             self.assertIn("conflict-repair attempt limit (3) is exhausted", record["last_failure"])
+
+    def test_new_base_resets_exhausted_conflict_attempt_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state", max_attempts=3)
+            state = {
+                "issues": {
+                    "19": {
+                        "status": "failed",
+                        "pr": 42,
+                        "attempts": 3,
+                        "conflict_attempts": 3,
+                        "conflict_base_oid": "old-base",
+                        "repair_kind": "merge_conflict",
+                        "last_failure": (
+                            "PR #42 is unmergeable because main conflicts with the issue branch, "
+                            "and the conflict-repair attempt limit (3) is exhausted."
+                        ),
+                    }
+                }
+            }
+            view = {
+                "state": "OPEN",
+                "mergeStateStatus": "DIRTY",
+                "statusCheckRollup": [],
+                "baseRefOid": "new-base",
+            }
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+                self.assertTrue(service_open_prs(config, state))
+            record = state["issues"]["19"]
+            self.assertEqual(record["status"], "repair")
+            self.assertEqual(record["conflict_attempts"], 0)
+            self.assertEqual(record["conflict_base_oid"], "new-base")
+
 
     def test_conflict_repair_fetches_and_merges_current_default_branch(self):
         with tempfile.TemporaryDirectory() as directory:
