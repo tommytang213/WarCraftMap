@@ -55,4 +55,3 @@ class EastAsiaContentTests(unittest.TestCase):
         self.assertEqual((29,29),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
 
 if __name__=="__main__": unittest.main()
-
