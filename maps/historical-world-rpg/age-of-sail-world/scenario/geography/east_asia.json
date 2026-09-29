@@ -1,0 +1,173 @@
+{
+  "id": "east_asia_spatial_1450",
+  "schemaVersion": 1,
+  "graphRegionId": "east_asia",
+  "provenance": {
+    "authority": "scenario",
+    "geographicReference": "Natural Earth physical geography generalized from EPSG:4326, with named HydroSHEDS river alignments and GEBCO-informed navigable straits",
+    "referenceScale": "1:50m",
+    "license": "public-domain",
+    "baseline": "Physical geography; names use established English geographic forms",
+    "declaredGeneralization": "Control points retain strategic shape, ordering, adjacency, and orientation rather than survey-grade detail."
+  },
+  "coordinateRules": {
+    "sourceCrs": "EPSG:4326", "axisOrder": ["longitude", "latitude"], "localUnit": "terrain_cell", "precisionDecimals": 2,
+    "transform": "local = round((source - sourceOrigin) * scale + offset + declaredDistortion, precisionDecimals)",
+    "seamSourceToleranceDegrees": 0.05, "seamLocalToleranceCells": 0.25, "orientationToleranceDegrees": 12,
+    "adjacencyToleranceCells": 8, "maxUndeclaredDisplacementCells": 0.01
+  },
+  "densityRules": {"minFeaturesPerInstance": 4, "maxFeaturesPerInstance": 10, "minAnchorsPerInstance": 1.5, "maxAnchorsPerInstance": 3.2},
+  "requiredFeatureIds": {
+    "coastline": ["coast_china_north", "coast_china_south", "coast_korea", "coast_japan", "coast_okhotsk"],
+    "island": ["island_hainan", "island_taiwan", "island_jeju", "island_honshu", "island_hokkaido", "island_kyushu", "island_shikoku", "island_sakhalin"],
+    "archipelago": ["archipelago_ryukyu", "archipelago_kuril"],
+    "strait": ["strait_taiwan", "strait_korea", "strait_tsugaru", "strait_la_perouse"],
+    "river": ["river_yellow", "river_yangtze", "river_pearl", "river_amur"],
+    "mountain_barrier": ["mountains_himalaya", "mountains_tibetan_rim", "mountains_greater_khingan", "mountains_korea"],
+    "desert_barrier": ["desert_gobi", "desert_taklamakan"],
+    "traversal_corridor": ["corridor_hexi", "corridor_grand_canal", "corridor_china_coast", "corridor_korea", "corridor_japan_sea", "corridor_north_pacific"]
+  },
+  "requiredTraversalConnections": [
+    {"id":"central_asian_approach","name":"Tarim and Hexi Corridor","fromNodeId":"node_central_asia_gate","toNodeId":"node_north_china","movementClasses":["land","amphibious","flying"]},
+    {"id":"north_south_china_corridor","name":"North China to lower Yangtze corridor","fromNodeId":"node_north_china","toNodeId":"node_south_china","movementClasses":["land","amphibious","flying"]},
+    {"id":"south_china_sea_approach","name":"Pearl River and South China Sea approach","fromNodeId":"node_south_china","toNodeId":"node_south_china_sea","movementClasses":["amphibious","flying"]},
+    {"id":"taiwan_luzon_route","name":"Taiwan Strait and Luzon approach","fromNodeId":"node_south_china_sea","toNodeId":"node_east_china_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"korea_strait_route","name":"Korea Strait route","fromNodeId":"node_east_china_sea","toNodeId":"node_japan_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"northeast_asia_corridor","name":"North China to Korea overland corridor","fromNodeId":"node_north_china","toNodeId":"node_korea_land","movementClasses":["land","amphibious","flying"]},
+    {"id":"north_pacific_route","name":"Japan and Kuril North Pacific route","fromNodeId":"node_japan_sea","toNodeId":"node_north_pacific","movementClasses":["naval","amphibious","flying"]}
+  ],
+  "instances": [
+    {
+      "id":"east_asia_interior","name":"Tibetan Plateau, Tarim Basin, and Mongolian Steppe","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"The Himalayan and Tibetan barriers, Tarim basin, Gobi, and Hexi corridor bound the playable western approach.",
+      "transform":{"sourceOrigin":[74,25],"scale":[2.5,2.5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":105,"maxY":75},
+      "budget":{"maxFeatures":7,"maxControlPoints":40,"maxBoundaryAnchors":5},
+      "complexity":{"terrainBands":5,"waterBodies":0,"pathingChokepoints":3,"generationWeight":0.82},
+      "features":[
+        {"id":"mountains_himalaya","kind":"mountain_barrier","points":[[75,35],[82,30],[90,28],[98,29],[104,31]]},
+        {"id":"mountains_tibetan_rim","kind":"mountain_barrier","points":[[78,36],[88,36],[98,35],[103,33]]},
+        {"id":"desert_taklamakan","kind":"desert_barrier","points":[[76,40],[82,42],[88,40],[82,37],[76,40]]},
+        {"id":"desert_gobi","kind":"desert_barrier","points":[[92,43],[101,46],[110,44],[106,40],[96,40]]},
+        {"id":"corridor_hexi","kind":"traversal_corridor","points":[[88,40],[94,39],[100,38],[105,37]]}
+      ]
+    },
+    {
+      "id":"east_asia_china_north","name":"North China and Manchuria","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"Yellow River plains, Bohai coast, Manchurian plain, and Greater Khingan form a coherent mainland instance.",
+      "transform":{"sourceOrigin":[102,30],"scale":[3.5,3.5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":126,"maxY":84},
+      "budget":{"maxFeatures":8,"maxControlPoints":46,"maxBoundaryAnchors":7},
+      "complexity":{"terrainBands":4,"waterBodies":2,"pathingChokepoints":3,"generationWeight":0.9},
+      "features":[
+        {"id":"coast_china_north","kind":"coastline","points":[[119,30],[122,32],[120,37],[122,40],[125,40],[130,43]]},
+        {"id":"river_yellow","kind":"river","points":[[103,35],[108,37],[112,34],[116,35],[119,37]]},
+        {"id":"river_amur","kind":"river","points":[[121,49],[127,48],[133,48],[137,53]]},
+        {"id":"mountains_greater_khingan","kind":"mountain_barrier","points":[[120,50],[119,45],[117,40]]},
+        {"id":"corridor_grand_canal","kind":"traversal_corridor","points":[[116,34],[117,37],[116,40]]}
+      ]
+    },
+    {
+      "id":"east_asia_china_south","name":"South China, Taiwan, and northern South China Sea","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"The Yangtze and Pearl basins share coastal routes with Hainan, Taiwan Strait, and the Southeast Asian seam.",
+      "transform":{"sourceOrigin":[102,17],"scale":[4,4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":108,"maxY":68},
+      "budget":{"maxFeatures":10,"maxControlPoints":58,"maxBoundaryAnchors":7},
+      "complexity":{"terrainBands":4,"waterBodies":3,"pathingChokepoints":4,"generationWeight":0.96},
+      "features":[
+        {"id":"coast_china_south","kind":"coastline","points":[[108,21],[113,22],[117,24],[120,27],[122,31]]},
+        {"id":"island_hainan","kind":"island","points":[[109,20],[111,20],[111,18],[109,18],[109,20]]},
+        {"id":"island_taiwan","kind":"island","points":[[121,25],[122,23],[121,21],[120,23],[121,25]]},
+        {"id":"strait_taiwan","kind":"strait","points":[[118,24],[120,24],[121,22]]},
+        {"id":"river_yangtze","kind":"river","points":[[103,31],[109,30],[114,30],[121,31]]},
+        {"id":"river_pearl","kind":"river","points":[[105,25],[110,23],[114,22]]},
+        {"id":"archipelago_ryukyu","kind":"archipelago","points":[[122,25],[126,27],[129,29]]},
+        {"id":"corridor_china_coast","kind":"traversal_corridor","points":[[110,21],[116,25],[121,30]]}
+      ]
+    },
+    {
+      "id":"east_asia_korea","name":"Korean Peninsula and Yellow Sea","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"The peninsula, Yellow Sea, Korea Strait, and mountain spine create a strategic land-maritime hinge.",
+      "transform":{"sourceOrigin":[120,31],"scale":[6,6],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":84,"maxY":78},
+      "budget":{"maxFeatures":7,"maxControlPoints":40,"maxBoundaryAnchors":6},
+      "complexity":{"terrainBands":3,"waterBodies":2,"pathingChokepoints":3,"generationWeight":0.72},
+      "features":[
+        {"id":"coast_korea","kind":"coastline","points":[[126,34],[125,37],[128,42],[130,41],[129,35],[126,34]]},
+        {"id":"island_jeju","kind":"island","points":[[126,34],[127,34],[127,33],[126,33],[126,34]]},
+        {"id":"strait_korea","kind":"strait","points":[[128,34],[130,33]]},
+        {"id":"mountains_korea","kind":"mountain_barrier","points":[[128,41],[128,38],[127,35]]},
+        {"id":"corridor_korea","kind":"traversal_corridor","points":[[126,40],[127,37],[128,35]]}
+      ]
+    },
+    {
+      "id":"east_asia_japan","name":"Japanese Home Islands and adjacent seas","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"Kyushu, Shikoku, Honshu, and Hokkaido retain southwest-to-northeast order and their strategic straits.",
+      "transform":{"sourceOrigin":[128,29],"scale":[4,4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":72,"maxY":68},
+      "budget":{"maxFeatures":10,"maxControlPoints":60,"maxBoundaryAnchors":6},
+      "complexity":{"terrainBands":4,"waterBodies":3,"pathingChokepoints":5,"generationWeight":0.9},
+      "features":[
+        {"id":"coast_japan","kind":"coastline","points":[[130,31],[133,34],[137,35],[140,38],[142,43],[145,45]]},
+        {"id":"island_kyushu","kind":"island","points":[[130,34],[132,34],[131,31],[129,32],[130,34]]},
+        {"id":"island_shikoku","kind":"island","points":[[133,34],[135,34],[134,33],[133,34]]},
+        {"id":"island_honshu","kind":"island","points":[[134,35],[138,36],[141,40],[140,35],[136,34],[134,35]]},
+        {"id":"island_hokkaido","kind":"island","points":[[140,42],[144,45],[145,43],[142,41],[140,42]]},
+        {"id":"strait_tsugaru","kind":"strait","points":[[140,41],[142,42]]},
+        {"id":"corridor_japan_sea","kind":"traversal_corridor","points":[[130,34],[135,37],[140,41],[144,44]]}
+      ]
+    },
+    {
+      "id":"east_asia_northeast_pacific","name":"Sakhalin, Sea of Okhotsk, and Kuril approaches","graphRegionId":"east_asia","graphAreaId":"east_asia_coarse",
+      "seamRationale":"Sakhalin and the Kuril chain provide the North Pacific transition while preserving isolated interior waters.",
+      "transform":{"sourceOrigin":[135,42],"scale":[3,3],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":90,"maxY":60},
+      "budget":{"maxFeatures":8,"maxControlPoints":48,"maxBoundaryAnchors":5},
+      "complexity":{"terrainBands":3,"waterBodies":3,"pathingChokepoints":3,"generationWeight":0.7},
+      "features":[
+        {"id":"coast_okhotsk","kind":"coastline","points":[[136,54],[143,55],[150,59],[158,61],[164,57]]},
+        {"id":"island_sakhalin","kind":"island","points":[[142,46],[144,51],[143,54],[141,50],[142,46]]},
+        {"id":"archipelago_kuril","kind":"archipelago","points":[[145,44],[149,47],[154,49],[158,51]]},
+        {"id":"strait_la_perouse","kind":"strait","points":[[142,46],[144,46]]},
+        {"id":"corridor_north_pacific","kind":"traversal_corridor","points":[[144,44],[150,47],[158,50],[164,52]]}
+      ]
+    }
+  ],
+  "boundaryAnchors": [
+    {"id":"seam_interior_north_west","instanceId":"east_asia_interior","pairId":"seam_interior_north_east","source":[105,37],"local":[77.5,30],"movementClasses":["land","amphibious","flying"]},
+    {"id":"seam_interior_north_east","instanceId":"east_asia_china_north","pairId":"seam_interior_north_west","source":[105,37],"local":[10.5,24.5],"movementClasses":["land","amphibious","flying"]},
+    {"id":"seam_north_south_north","instanceId":"east_asia_china_north","pairId":"seam_north_south_south","source":[118,31],"local":[56,3.5],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_north_south_south","instanceId":"east_asia_china_south","pairId":"seam_north_south_north","source":[118,31],"local":[64,56],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_north_korea_west","instanceId":"east_asia_china_north","pairId":"seam_north_korea_east","source":[124,40],"local":[77,35],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_north_korea_east","instanceId":"east_asia_korea","pairId":"seam_north_korea_west","source":[124,40],"local":[24,54],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_south_korea_west","instanceId":"east_asia_china_south","pairId":"seam_south_korea_east","source":[122,32],"local":[80,60],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_south_korea_east","instanceId":"east_asia_korea","pairId":"seam_south_korea_west","source":[122,32],"local":[12,6],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_korea_japan_west","instanceId":"east_asia_korea","pairId":"seam_korea_japan_east","source":[130,34],"local":[60,18],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_korea_japan_east","instanceId":"east_asia_japan","pairId":"seam_korea_japan_west","source":[130,34],"local":[8,20],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Declare the Japanese island readability allowance without moving the seam."}},
+    {"id":"seam_japan_okhotsk_south","instanceId":"east_asia_japan","pairId":"seam_japan_okhotsk_north","source":[144,44],"local":[64,60],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_japan_okhotsk_north","instanceId":"east_asia_northeast_pacific","pairId":"seam_japan_okhotsk_south","source":[144,44],"local":[27,6],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Declare North Pacific compression without moving the authoritative seam."}},
+    {"id":"east_asia_central_asia_entry","instanceId":"east_asia_interior","globalAnchorId":"east_asia_west","source":[74,40],"local":[0,37.5],"movementClasses":["land","amphibious","flying"]},
+    {"id":"east_asia_southeast_entry","instanceId":"east_asia_china_south","globalAnchorId":"east_asia_south","source":[104,17],"local":[16,0],"movementClasses":["land","naval","amphibious","flying"],"distortion":{"offset":[8,0],"reason":"Align the broad Southeast Asian contract with the Pearl River and northern South China Sea approach."}},
+    {"id":"east_asia_pacific_entry","instanceId":"east_asia_northeast_pacific","globalAnchorId":"east_asia_east","source":[165,52],"local":[90,30],"movementClasses":["land","naval","amphibious","flying"]}
+  ],
+  "navigationTopology": {
+    "nodes": [
+      {"id":"node_central_asia_gate","instanceId":"east_asia_interior","class":"land"},{"id":"node_tibetan_barrier","instanceId":"east_asia_interior","class":"impassable_barrier"},{"id":"node_gobi_isolated_water","instanceId":"east_asia_interior","class":"decorative_water"},
+      {"id":"node_north_china","instanceId":"east_asia_china_north","class":"land"},{"id":"node_south_china","instanceId":"east_asia_china_south","class":"land"},{"id":"node_south_china_sea","instanceId":"east_asia_china_south","class":"navigable_sea"},{"id":"node_taiwan_coast","instanceId":"east_asia_china_south","class":"island_coast"},
+      {"id":"node_korea_land","instanceId":"east_asia_korea","class":"land"},{"id":"node_east_china_sea","instanceId":"east_asia_korea","class":"navigable_sea"},{"id":"node_japan_sea","instanceId":"east_asia_japan","class":"navigable_sea"},{"id":"node_japan_coast","instanceId":"east_asia_japan","class":"island_coast"},
+      {"id":"node_okhotsk_sea","instanceId":"east_asia_northeast_pacific","class":"navigable_sea"},{"id":"node_north_pacific","instanceId":"east_asia_northeast_pacific","class":"navigable_sea"},{"id":"node_isolated_crater_lake","instanceId":"east_asia_northeast_pacific","class":"decorative_water"}
+    ],
+    "links": [
+      {"id":"link_hexi_north_china","from":"node_central_asia_gate","to":"node_north_china","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_china_overland","from":"node_north_china","to":"node_south_china","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_south_china_landfall","from":"node_south_china","to":"node_south_china_sea","movementClasses":["amphibious","flying"]},
+      {"id":"link_taiwan_strait","from":"node_south_china_sea","to":"node_taiwan_coast","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_south_east_china_sea","from":"node_south_china_sea","to":"node_east_china_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_north_korea_land","from":"node_north_china","to":"node_korea_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_korea_landfall","from":"node_korea_land","to":"node_east_china_sea","movementClasses":["amphibious","flying"]},
+      {"id":"link_korea_strait","from":"node_east_china_sea","to":"node_japan_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_japan_landfall","from":"node_japan_sea","to":"node_japan_coast","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_japan_okhotsk","from":"node_japan_sea","to":"node_okhotsk_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_okhotsk_pacific","from":"node_okhotsk_sea","to":"node_north_pacific","movementClasses":["naval","amphibious","flying"]}
+    ]
+  },
+  "distortions": [
+    {"id":"distortion_south_boundary_alignment","anchorId":"east_asia_southeast_entry","displacementCells":8,"orientationDeltaDegrees":0,"adjacencyGapCells":4,"preservesOrientation":true,"preservesAdjacency":true,"reason":"The northern South China Sea is compressed and shifted east to pair the broad global seam without reversing mainland or island order."},
+    {"id":"distortion_japanese_island_readability","anchorId":"seam_korea_japan_east","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":3,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Japanese islands and straits may be widened for landfall and naval pathing while southwest-to-northeast ordering remains fixed."},
+    {"id":"distortion_north_pacific_compression","anchorId":"seam_japan_okhotsk_north","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":5,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Kuril and Okhotsk open water may be compressed while retaining the Pacific-facing sequence and navigable channels."}
+  ]
+}
