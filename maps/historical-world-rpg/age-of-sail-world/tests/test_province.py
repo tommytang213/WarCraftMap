@@ -15,9 +15,9 @@ class ProvinceRuntimeTests(unittest.TestCase):
         self.polities=PolityRuntime(self.source); self.runtime=ProvinceRuntime(self.source,self.polities)
 
     def test_initialization_keeps_governance_dimensions_distinct(self):
-        self.assertEqual(62,len(self.runtime.ids())); self.assertIn("kent",self.runtime.ids()); self.assertIn("normandy",self.runtime.ids())
+        self.assertEqual(122,len(self.runtime.ids())); self.assertIn("kent",self.runtime.ids()); self.assertIn("normandy",self.runtime.ids())
         kent=self.runtime.require("kent")
-        self.assertEqual(("Kent","county",("dover",)),(kent.definition.name,kent.definition.administrative_type,kent.definition.settlement_ids))
+        self.assertEqual(("Kent","county",("dover","calais")),(kent.definition.name,kent.definition.administrative_type,kent.definition.settlement_ids))
         self.assertEqual(("england","england","england","england",35,False),(kent.legal_owner_polity_id,kent.controller_polity_id,kent.governing_polity_id,kent.sovereign_polity_id,kent.autonomy_percent,kent.occupied))
 
     def test_occupation_control_and_legal_transfer_are_atomic_and_ordered(self):

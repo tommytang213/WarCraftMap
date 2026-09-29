@@ -215,6 +215,11 @@ class SettlementRuntime:
             ))
             specs[settlement_id] = {
                 "navigationZoneId": zone_id,
+                "regionalInstanceId": value.get("regionalInstanceId"),
+                "localPosition": copy.deepcopy(value.get("localPosition")),
+                "terrainClass": value.get("terrainClass"),
+                "activation": copy.deepcopy(value.get("activation")),
+                "portAccess": copy.deepcopy(value.get("portAccess")),
                 "cityCore": copy.deepcopy(cores.get(core_id)) if core_id else None,
                 "defenseLayout": copy.deepcopy(layouts.get(layout_id)) if layout_id else None,
                 "objectTemplates": {
@@ -301,6 +306,21 @@ class SettlementRuntime:
             return False
         self._adapter.destroy(handle)
         return True
+
+    def activate_region(self, regional_instance_id: str) -> tuple[str, ...]:
+        """Create local representations in stable-ID order; state remains authoritative."""
+        selected = tuple(ident for ident in self.ids() if self._representation_specs[ident].get("regionalInstanceId") == regional_instance_id)
+        for ident in selected:
+            if self.require(ident).operational:
+                self.create_representation(ident)
+        return selected
+
+    def retire_region(self, regional_instance_id: str) -> tuple[str, ...]:
+        """Retire only Warcraft representations without changing campaign state."""
+        selected = tuple(ident for ident in self.ids() if self._representation_specs[ident].get("regionalInstanceId") == regional_instance_id)
+        for ident in selected:
+            self.destroy_representation(ident)
+        return selected
 
     def reconstruct_representations(self) -> None:
         staged = self._stage_representations(self._state)

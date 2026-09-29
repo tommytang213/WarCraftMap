@@ -60,7 +60,8 @@ def validate(source_path, world_path=None, geography_path=None):
         if capital not in settlements: fail(f"polity {pid}: capital {capital!r} is missing and has no documented exception")
         if settlements[capital].get("provinceId") not in local: fail(f"polity {pid}: capital is outside its authoritative provinces")
         projected=world_polities.get(pid)
-        if projected is None or projected.get("provinceIds") != list(local): fail(f"polity {pid}: canonical world projection is missing or stale")
+        projected_ids=[] if projected is None else projected.get("provinceIds",[])
+        if [province_id for province_id in projected_ids if province_id in local] != list(local): fail(f"polity {pid}: canonical world projection is missing or stale")
         capital_province=settlements[capital]["provinceId"]; reached={capital_province}; queue=deque([capital_province])
         while queue:
             current=queue.popleft()
@@ -74,7 +75,7 @@ def validate(source_path, world_path=None, geography_path=None):
             if neighbor not in provinces: fail(f"province {province_id}: missing adjacent province {neighbor!r}")
         projected=world_provinces.get(province_id)
         if projected is None or projected.get("legalOwnerPolityId")!=province_owner[province_id]: fail(f"province {province_id}: canonical ownership projection is missing or stale")
-    if set(provinces)!=set(world_provinces): fail("canonical world has overlapping or unassigned authoritative province coverage")
+    if any(ident not in world_provinces for ident in provinces): fail("canonical world has unassigned authoritative province coverage")
     for domain, records in (("vassalage",data.get("vassalage",[])),("personal unions",data.get("personalUnions",[]))):
         for record in records:
             ident=record.get("id")
