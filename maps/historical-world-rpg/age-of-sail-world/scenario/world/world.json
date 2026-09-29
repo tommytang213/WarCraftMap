@@ -666,6 +666,34 @@
       }
     },
     {
+      "id": "node_amazon_river",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
+      "id": "node_andes_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
       "id": "node_arakan_barrier",
       "movementClasses": [
         "flying"
@@ -696,6 +724,55 @@
       }
     },
     {
+      "id": "node_caribbean_islands",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_caribbean_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_central_america_land",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_mississippi",
+          "node_north_atlantic",
+          "node_central_america_land",
+          "node_caribbean_islands",
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
       "id": "node_celebes_sea",
       "movementClasses": [
         "naval",
@@ -721,6 +798,30 @@
       }
     },
     {
+      "id": "node_central_america_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_west_land",
+          "node_north_andes_land"
+        ],
+        "amphibious": [
+          "node_north_america_west_land",
+          "node_caribbean_sea",
+          "node_north_andes_land"
+        ],
+        "flying": [
+          "node_north_america_west_land",
+          "node_caribbean_sea",
+          "node_north_andes_land"
+        ]
+      }
+    },
+    {
       "id": "node_central_asia_gate",
       "movementClasses": [
         "land",
@@ -736,6 +837,28 @@
         ],
         "flying": [
           "node_north_china"
+        ]
+      }
+    },
+    {
+      "id": "node_central_pacific",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_pacific",
+          "node_south_pacific"
+        ],
+        "amphibious": [
+          "node_north_pacific",
+          "node_south_pacific"
+        ],
+        "flying": [
+          "node_north_pacific",
+          "node_south_pacific"
         ]
       }
     },
@@ -798,6 +921,25 @@
       ],
       "connections": {
         "flying": []
+      }
+    },
+    {
+      "id": "node_great_lakes",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_north_atlantic"
+        ],
+        "amphibious": [
+          "node_north_atlantic"
+        ],
+        "flying": [
+          "node_north_atlantic"
+        ]
       }
     },
     {
@@ -919,6 +1061,28 @@
       }
     },
     {
+      "id": "node_magellan_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ],
+        "amphibious": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ],
+        "flying": [
+          "node_south_pacific",
+          "node_south_atlantic"
+        ]
+      }
+    },
+    {
       "id": "node_mainland_east",
       "movementClasses": [
         "land",
@@ -987,6 +1151,112 @@
       }
     },
     {
+      "id": "node_mississippi",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_north_america_east_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_west_land"
+        ],
+        "amphibious": [
+          "node_north_america_west_land"
+        ],
+        "flying": [
+          "node_north_america_west_land"
+        ]
+      }
+    },
+    {
+      "id": "node_north_america_west_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_america_east_land",
+          "node_central_america_land"
+        ],
+        "amphibious": [
+          "node_north_america_east_land",
+          "node_central_america_land",
+          "node_north_pacific"
+        ],
+        "flying": [
+          "node_north_america_east_land",
+          "node_central_america_land",
+          "node_north_pacific"
+        ]
+      }
+    },
+    {
+      "id": "node_north_andes_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ],
+        "amphibious": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ],
+        "flying": [
+          "node_central_america_land",
+          "node_south_america_land"
+        ]
+      }
+    },
+    {
+      "id": "node_north_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ],
+        "amphibious": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ],
+        "flying": [
+          "node_great_lakes",
+          "node_caribbean_sea"
+        ]
+      }
+    },
+    {
       "id": "node_north_china",
       "movementClasses": [
         "land",
@@ -1020,13 +1290,18 @@
       ],
       "connections": {
         "naval": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_central_pacific"
         ],
         "amphibious": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_north_america_west_land",
+          "node_central_pacific"
         ],
         "flying": [
-          "node_okhotsk_sea"
+          "node_okhotsk_sea",
+          "node_north_america_west_land",
+          "node_central_pacific"
         ]
       }
     },
@@ -1071,6 +1346,62 @@
         "flying": [
           "node_south_china_sea",
           "node_celebes_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_rockies_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_south_america_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ],
+        "amphibious": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ],
+        "flying": [
+          "node_north_andes_land",
+          "node_southern_cone_land"
+        ]
+      }
+    },
+    {
+      "id": "node_south_atlantic",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
+        ],
+        "amphibious": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
+        ],
+        "flying": [
+          "node_caribbean_sea",
+          "node_amazon_river",
+          "node_magellan_sea"
         ]
       }
     },
@@ -1122,6 +1453,47 @@
           "node_south_china",
           "node_taiwan_coast",
           "node_east_china_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_south_pacific",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ],
+        "amphibious": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ],
+        "flying": [
+          "node_central_pacific",
+          "node_magellan_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_southern_cone_land",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_south_america_land"
+        ],
+        "amphibious": [
+          "node_south_america_land"
+        ],
+        "flying": [
+          "node_south_america_land"
         ]
       }
     },
@@ -7383,6 +7755,46 @@
       "objectTemplateId": "capital_city_core"
     },
     {
+      "id": "city_core_inuit_seasonal_camps",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tlacopan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_chalco_atenco",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_nohpeteen",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ximche",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tairona_mountain_centers",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_calchaqui_pukara_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_guarani_assembly_network",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_charrua_seasonal_assemblies",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_fuegian_seasonal_camps",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
       "id": "city_core_haudenosaunee_council_fire",
       "objectTemplateId": "capital_city_core"
     },
@@ -7392,10 +7804,6 @@
     },
     {
       "id": "city_core_anishinaabe_seasonal_council",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_inuit_seasonal_camps",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -7419,10 +7827,6 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_tlacopan",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_tlaxcallan_council",
       "objectTemplateId": "capital_city_core"
     },
@@ -7431,23 +7835,11 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_chalco_atenco",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_yucatan_kuchkabal_courts",
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_nohpeteen",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_qumarkaj",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_ximche",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -7467,7 +7859,11 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_tairona_mountain_centers",
+      "id": "city_core_amazonian_earthwork_centers",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tupi_village_councils",
       "objectTemplateId": "capital_city_core"
     },
     {
@@ -7483,31 +7879,7 @@
       "objectTemplateId": "capital_city_core"
     },
     {
-      "id": "city_core_amazonian_earthwork_centers",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_tupi_village_councils",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
       "id": "city_core_mapuche_rewe_assemblies",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_calchaqui_pukara_network",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_guarani_assembly_network",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_charrua_seasonal_assemblies",
-      "objectTemplateId": "capital_city_core"
-    },
-    {
-      "id": "city_core_fuegian_seasonal_camps",
       "objectTemplateId": "capital_city_core"
     }
   ],
@@ -9049,6 +9421,66 @@
       ]
     },
     {
+      "id": "defense_inuit_seasonal_camps",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tlacopan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_chalco_atenco",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_nohpeteen",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ximche",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tairona_mountain_centers",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_calchaqui_pukara_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_guarani_assembly_network",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_charrua_seasonal_assemblies",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_fuegian_seasonal_camps",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
       "id": "defense_haudenosaunee_council_fire",
       "objectTemplateIds": [
         "capital_defenses"
@@ -9062,12 +9494,6 @@
     },
     {
       "id": "defense_anishinaabe_seasonal_council",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_inuit_seasonal_camps",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -9103,12 +9529,6 @@
       ]
     },
     {
-      "id": "defense_tlacopan",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_tlaxcallan_council",
       "objectTemplateIds": [
         "capital_defenses"
@@ -9121,31 +9541,13 @@
       ]
     },
     {
-      "id": "defense_chalco_atenco",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_yucatan_kuchkabal_courts",
       "objectTemplateIds": [
         "capital_defenses"
       ]
     },
     {
-      "id": "defense_nohpeteen",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_qumarkaj",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_ximche",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -9175,7 +9577,13 @@
       ]
     },
     {
-      "id": "defense_tairona_mountain_centers",
+      "id": "defense_amazonian_earthwork_centers",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tupi_village_councils",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -9199,43 +9607,7 @@
       ]
     },
     {
-      "id": "defense_amazonian_earthwork_centers",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_tupi_village_councils",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
       "id": "defense_mapuche_rewe_assemblies",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_calchaqui_pukara_network",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_guarani_assembly_network",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_charrua_seasonal_assemblies",
-      "objectTemplateIds": [
-        "capital_defenses"
-      ]
-    },
-    {
-      "id": "defense_fuegian_seasonal_camps",
       "objectTemplateIds": [
         "capital_defenses"
       ]
@@ -18356,72 +18728,6 @@
       }
     },
     {
-      "id": "haudenosaunee_council_fire",
-      "name": "Haudenosaunee Council Fire",
-      "kind": "capital",
-      "provinceId": "haudenosaunee_homelands",
-      "legalOwnerPolityId": "haudenosaunee_nations",
-      "controllerPolityId": "haudenosaunee_nations",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_haudenosaunee_council_fire",
-      "defenseLayoutId": "defense_haudenosaunee_council_fire",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_atlantic",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "haudenosaunee_council_fire"
-      }
-    },
-    {
-      "id": "wendat_council_network",
-      "name": "Wendat Council Network",
-      "kind": "capital",
-      "provinceId": "wendat_georgian_bay",
-      "legalOwnerPolityId": "wendat_confederacies",
-      "controllerPolityId": "wendat_confederacies",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_wendat_council_network",
-      "defenseLayoutId": "defense_wendat_council_network",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_atlantic",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "wendat_council_network"
-      }
-    },
-    {
-      "id": "anishinaabe_seasonal_council",
-      "name": "Anishinaabe Seasonal Council",
-      "kind": "capital",
-      "provinceId": "anishinaabe_upper_lakes",
-      "legalOwnerPolityId": "anishinaabe_networks",
-      "controllerPolityId": "anishinaabe_networks",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_anishinaabe_seasonal_council",
-      "defenseLayoutId": "defense_anishinaabe_seasonal_council",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_atlantic",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "anishinaabe_seasonal_council"
-      }
-    },
-    {
       "id": "inuit_seasonal_camps",
       "name": "Inuit Seasonal Camps",
       "kind": "capital",
@@ -18441,116 +18747,6 @@
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "inuit_seasonal_camps"
-      }
-    },
-    {
-      "id": "moundville",
-      "name": "Moundville",
-      "kind": "capital",
-      "provinceId": "mississippi_southeast_centers",
-      "legalOwnerPolityId": "cahokian_successor_centers",
-      "controllerPolityId": "cahokian_successor_centers",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_moundville",
-      "defenseLayoutId": "defense_moundville",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_atlantic",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "moundville"
-      }
-    },
-    {
-      "id": "pueblo_council_network",
-      "name": "Pueblo Council Network",
-      "kind": "capital",
-      "provinceId": "pueblo_rio_grande_mesa",
-      "legalOwnerPolityId": "pueblo_world",
-      "controllerPolityId": "pueblo_world",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_pueblo_council_network",
-      "defenseLayoutId": "defense_pueblo_council_network",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_pacific",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "pueblo_council_network"
-      }
-    },
-    {
-      "id": "northwest_coast_house_councils",
-      "name": "Northwest Coast House Councils",
-      "kind": "capital",
-      "provinceId": "northwest_coast_homelands",
-      "legalOwnerPolityId": "northwest_coast_nations",
-      "controllerPolityId": "northwest_coast_nations",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_northwest_coast_house_councils",
-      "defenseLayoutId": "defense_northwest_coast_house_councils",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_pacific",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "northwest_coast_house_councils"
-      }
-    },
-    {
-      "id": "tenochtitlan",
-      "name": "Tenochtitlan",
-      "kind": "capital",
-      "provinceId": "tenochtitlan_domain",
-      "legalOwnerPolityId": "mexica_tenochtitlan",
-      "controllerPolityId": "mexica_tenochtitlan",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_tenochtitlan",
-      "defenseLayoutId": "defense_tenochtitlan",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "tenochtitlan"
-      }
-    },
-    {
-      "id": "texcoco",
-      "name": "Texcoco",
-      "kind": "capital",
-      "provinceId": "texcoco_domain",
-      "legalOwnerPolityId": "acolhua_texcoco",
-      "controllerPolityId": "acolhua_texcoco",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_texcoco",
-      "defenseLayoutId": "defense_texcoco",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "texcoco"
       }
     },
     {
@@ -18576,50 +18772,6 @@
       }
     },
     {
-      "id": "tlaxcallan_council",
-      "name": "Tlaxcallan Council",
-      "kind": "capital",
-      "provinceId": "tlaxcallan_four_altepetl",
-      "legalOwnerPolityId": "tlaxcallan_confederation",
-      "controllerPolityId": "tlaxcallan_confederation",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_tlaxcallan_council",
-      "defenseLayoutId": "defense_tlaxcallan_council",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "tlaxcallan_council"
-      }
-    },
-    {
-      "id": "tzintzuntzan",
-      "name": "Tzintzuntzan",
-      "kind": "capital",
-      "provinceId": "purepecha_michoacan",
-      "legalOwnerPolityId": "purepecha_state",
-      "controllerPolityId": "purepecha_state",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_tzintzuntzan",
-      "defenseLayoutId": "defense_tzintzuntzan",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "tzintzuntzan"
-      }
-    },
-    {
       "id": "chalco_atenco",
       "name": "Chalco Atenco",
       "kind": "capital",
@@ -18639,28 +18791,6 @@
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "chalco_atenco"
-      }
-    },
-    {
-      "id": "yucatan_kuchkabal_courts",
-      "name": "Yucatan Kuchkabal Courts",
-      "kind": "capital",
-      "provinceId": "yucatan_kuchkabal",
-      "legalOwnerPolityId": "yucatan_maya_jurisdictions",
-      "controllerPolityId": "yucatan_maya_jurisdictions",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_yucatan_kuchkabal_courts",
-      "defenseLayoutId": "defense_yucatan_kuchkabal_courts",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "yucatan_kuchkabal_courts"
       }
     },
     {
@@ -18686,28 +18816,6 @@
       }
     },
     {
-      "id": "qumarkaj",
-      "name": "Qumarkaj",
-      "kind": "capital",
-      "provinceId": "kiche_highlands",
-      "legalOwnerPolityId": "kiche_kingdom",
-      "controllerPolityId": "kiche_kingdom",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_qumarkaj",
-      "defenseLayoutId": "defense_qumarkaj",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_mexico_central",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "qumarkaj"
-      }
-    },
-    {
       "id": "ximche",
       "name": "Ximche",
       "kind": "capital",
@@ -18730,94 +18838,6 @@
       }
     },
     {
-      "id": "taino_cacique_seats",
-      "name": "Taino Cacique Seats",
-      "kind": "capital",
-      "provinceId": "taino_greater_antilles",
-      "legalOwnerPolityId": "taino_cacicazgos",
-      "controllerPolityId": "taino_cacicazgos",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_taino_cacique_seats",
-      "defenseLayoutId": "defense_taino_cacique_seats",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_caribbean_islands",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "taino_cacique_seats"
-      }
-    },
-    {
-      "id": "kalinago_council_network",
-      "name": "Kalinago Council Network",
-      "kind": "capital",
-      "provinceId": "kalinago_lesser_antilles",
-      "legalOwnerPolityId": "kalinago_island_communities",
-      "controllerPolityId": "kalinago_island_communities",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_kalinago_council_network",
-      "defenseLayoutId": "defense_kalinago_council_network",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_caribbean_islands",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "kalinago_council_network"
-      }
-    },
-    {
-      "id": "bacata",
-      "name": "Bacata",
-      "kind": "capital",
-      "provinceId": "muisca_bacata",
-      "legalOwnerPolityId": "muisca_zipazgo",
-      "controllerPolityId": "muisca_zipazgo",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_bacata",
-      "defenseLayoutId": "defense_bacata",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_south",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "bacata"
-      }
-    },
-    {
-      "id": "hunza",
-      "name": "Hunza",
-      "kind": "capital",
-      "provinceId": "muisca_hunza",
-      "legalOwnerPolityId": "muisca_zacazgo",
-      "controllerPolityId": "muisca_zacazgo",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_hunza",
-      "defenseLayoutId": "defense_hunza",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_north_south",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "hunza"
-      }
-    },
-    {
       "id": "tairona_mountain_centers",
       "name": "Tairona Mountain Centers",
       "kind": "capital",
@@ -18837,138 +18857,6 @@
         "runtimeState": "abstract",
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "tairona_mountain_centers"
-      }
-    },
-    {
-      "id": "cusco",
-      "name": "Cusco",
-      "kind": "capital",
-      "provinceId": "inca_cusco_heartland",
-      "legalOwnerPolityId": "tawantinsuyu",
-      "controllerPolityId": "tawantinsuyu",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_cusco",
-      "defenseLayoutId": "defense_cusco",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_andes_southern_cone",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "cusco"
-      }
-    },
-    {
-      "id": "chan_chan",
-      "name": "Chan Chan",
-      "kind": "capital",
-      "provinceId": "chimor_north_coast",
-      "legalOwnerPolityId": "chimor_kingdom",
-      "controllerPolityId": "chimor_kingdom",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_chan_chan",
-      "defenseLayoutId": "defense_chan_chan",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_andes_southern_cone",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "chan_chan"
-      }
-    },
-    {
-      "id": "la_cent_in",
-      "name": "La Cent In",
-      "kind": "capital",
-      "provinceId": "chincha_valley",
-      "legalOwnerPolityId": "chincha_lordship",
-      "controllerPolityId": "chincha_lordship",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_la_cent_in",
-      "defenseLayoutId": "defense_la_cent_in",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_andes_southern_cone",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "la_cent_in"
-      }
-    },
-    {
-      "id": "amazonian_earthwork_centers",
-      "name": "Amazonian Earthwork Centers",
-      "kind": "capital",
-      "provinceId": "amazon_riverine_societies",
-      "legalOwnerPolityId": "amazonian_regional_societies",
-      "controllerPolityId": "amazonian_regional_societies",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_amazonian_earthwork_centers",
-      "defenseLayoutId": "defense_amazonian_earthwork_centers",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_amazon_brazil",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "amazonian_earthwork_centers"
-      }
-    },
-    {
-      "id": "tupi_village_councils",
-      "name": "Tupi Village Councils",
-      "kind": "capital",
-      "provinceId": "tupi_atlantic_coast",
-      "legalOwnerPolityId": "tupi_coastal_networks",
-      "controllerPolityId": "tupi_coastal_networks",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_tupi_village_councils",
-      "defenseLayoutId": "defense_tupi_village_councils",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_amazon_brazil",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "tupi_village_councils"
-      }
-    },
-    {
-      "id": "mapuche_rewe_assemblies",
-      "name": "Mapuche Rewe Assemblies",
-      "kind": "capital",
-      "provinceId": "mapuche_ngulumapu",
-      "legalOwnerPolityId": "mapuche_rewe_confederacies",
-      "controllerPolityId": "mapuche_rewe_confederacies",
-      "capturable": true,
-      "civilianFacilitiesInvulnerable": true,
-      "cityCoreId": "city_core_mapuche_rewe_assemblies",
-      "defenseLayoutId": "defense_mapuche_rewe_assemblies",
-      "serviceIds": [
-        "market",
-        "quest_hub"
-      ],
-      "regionalInstanceId": "americas_andes_southern_cone",
-      "activation": {
-        "runtimeState": "abstract",
-        "representationTemplateId": "settlement_representation",
-        "deterministicKey": "mapuche_rewe_assemblies"
       }
     },
     {
@@ -19058,6 +18946,1255 @@
         "representationTemplateId": "settlement_representation",
         "deterministicKey": "fuegian_seasonal_camps"
       }
+    },
+    {
+      "id": "haudenosaunee_council_fire",
+      "name": "Haudenosaunee Council Fire",
+      "kind": "capital",
+      "provinceId": "haudenosaunee_homelands",
+      "legalOwnerPolityId": "haudenosaunee_nations",
+      "controllerPolityId": "haudenosaunee_nations",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_america_east_land",
+      "cityCoreId": "city_core_haudenosaunee_council_fire",
+      "defenseLayoutId": "defense_haudenosaunee_council_fire",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 88,
+        "y": 62
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "haudenosaunee_council_fire"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "wendat_council_network",
+      "name": "Wendat Council Network",
+      "kind": "capital",
+      "provinceId": "wendat_georgian_bay",
+      "legalOwnerPolityId": "wendat_confederacies",
+      "controllerPolityId": "wendat_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_great_lakes",
+      "cityCoreId": "city_core_wendat_council_network",
+      "defenseLayoutId": "defense_wendat_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 70,
+        "y": 78
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "wendat_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "anishinaabe_seasonal_council",
+      "name": "Anishinaabe Seasonal Council",
+      "kind": "capital",
+      "provinceId": "anishinaabe_upper_lakes",
+      "legalOwnerPolityId": "anishinaabe_networks",
+      "controllerPolityId": "anishinaabe_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_great_lakes",
+      "cityCoreId": "city_core_anishinaabe_seasonal_council",
+      "defenseLayoutId": "defense_anishinaabe_seasonal_council",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 48,
+        "y": 86
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "anishinaabe_seasonal_council"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "moundville",
+      "name": "Moundville",
+      "kind": "capital",
+      "provinceId": "mississippi_southeast_centers",
+      "legalOwnerPolityId": "cahokian_successor_centers",
+      "controllerPolityId": "cahokian_successor_centers",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mississippi",
+      "cityCoreId": "city_core_moundville",
+      "defenseLayoutId": "defense_moundville",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_atlantic",
+      "physicalMapId": "americas_north_atlantic",
+      "localPosition": {
+        "x": 82,
+        "y": 22
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "moundville"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "pueblo_council_network",
+      "name": "Pueblo Council Network",
+      "kind": "capital",
+      "provinceId": "pueblo_rio_grande_mesa",
+      "legalOwnerPolityId": "pueblo_world",
+      "controllerPolityId": "pueblo_world",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_america_west_land",
+      "cityCoreId": "city_core_pueblo_council_network",
+      "defenseLayoutId": "defense_pueblo_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_pacific",
+      "physicalMapId": "americas_north_pacific",
+      "localPosition": {
+        "x": 78,
+        "y": 35
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "pueblo_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "northwest_coast_house_councils",
+      "name": "Northwest Coast House Councils",
+      "kind": "capital",
+      "provinceId": "northwest_coast_homelands",
+      "legalOwnerPolityId": "northwest_coast_nations",
+      "controllerPolityId": "northwest_coast_nations",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_pacific",
+      "cityCoreId": "city_core_northwest_coast_house_councils",
+      "defenseLayoutId": "defense_northwest_coast_house_councils",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_north_pacific",
+      "physicalMapId": "americas_north_pacific",
+      "localPosition": {
+        "x": 52,
+        "y": 90
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "northwest_coast_house_councils"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_north_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "tenochtitlan",
+      "name": "Tenochtitlan",
+      "kind": "capital",
+      "provinceId": "tenochtitlan_domain",
+      "legalOwnerPolityId": "mexica_tenochtitlan",
+      "controllerPolityId": "mexica_tenochtitlan",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tenochtitlan",
+      "defenseLayoutId": "defense_tenochtitlan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 62,
+        "y": 28
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tenochtitlan"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "texcoco",
+      "name": "Texcoco",
+      "kind": "capital",
+      "provinceId": "texcoco_domain",
+      "legalOwnerPolityId": "acolhua_texcoco",
+      "controllerPolityId": "acolhua_texcoco",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_texcoco",
+      "defenseLayoutId": "defense_texcoco",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 69,
+        "y": 30
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "texcoco"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ]
+    },
+    {
+      "id": "tlaxcallan_council",
+      "name": "Tlaxcallan Council",
+      "kind": "capital",
+      "provinceId": "tlaxcallan_four_altepetl",
+      "legalOwnerPolityId": "tlaxcallan_confederation",
+      "controllerPolityId": "tlaxcallan_confederation",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tlaxcallan_council",
+      "defenseLayoutId": "defense_tlaxcallan_council",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 78,
+        "y": 34
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tlaxcallan_council"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "tzintzuntzan",
+      "name": "Tzintzuntzan",
+      "kind": "capital",
+      "provinceId": "purepecha_michoacan",
+      "legalOwnerPolityId": "purepecha_state",
+      "controllerPolityId": "purepecha_state",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_tzintzuntzan",
+      "defenseLayoutId": "defense_tzintzuntzan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 48,
+        "y": 30
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tzintzuntzan"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "yucatan_kuchkabal_courts",
+      "name": "Yucatan Kuchkabal Courts",
+      "kind": "capital",
+      "provinceId": "yucatan_kuchkabal",
+      "legalOwnerPolityId": "yucatan_maya_jurisdictions",
+      "controllerPolityId": "yucatan_maya_jurisdictions",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_sea",
+      "cityCoreId": "city_core_yucatan_kuchkabal_courts",
+      "defenseLayoutId": "defense_yucatan_kuchkabal_courts",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 104,
+        "y": 24
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "yucatan_kuchkabal_courts"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "qumarkaj",
+      "name": "Q'umarkaj",
+      "kind": "capital",
+      "provinceId": "kiche_highlands",
+      "legalOwnerPolityId": "kiche_kingdom",
+      "controllerPolityId": "kiche_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_central_america_land",
+      "cityCoreId": "city_core_qumarkaj",
+      "defenseLayoutId": "defense_qumarkaj",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_mexico_central",
+      "physicalMapId": "americas_mexico_central",
+      "localPosition": {
+        "x": 91,
+        "y": 18
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "qumarkaj"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "taino_cacique_seats",
+      "name": "Taino Cacique Seats",
+      "kind": "capital",
+      "provinceId": "taino_greater_antilles",
+      "legalOwnerPolityId": "taino_cacicazgos",
+      "controllerPolityId": "taino_cacicazgos",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_islands",
+      "cityCoreId": "city_core_taino_cacique_seats",
+      "defenseLayoutId": "defense_taino_cacique_seats",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_caribbean_islands",
+      "physicalMapId": "americas_caribbean_islands",
+      "localPosition": {
+        "x": 72,
+        "y": 52
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "taino_cacique_seats"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_islands",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "kalinago_council_network",
+      "name": "Kalinago Council Network",
+      "kind": "capital",
+      "provinceId": "kalinago_lesser_antilles",
+      "legalOwnerPolityId": "kalinago_island_communities",
+      "controllerPolityId": "kalinago_island_communities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_caribbean_islands",
+      "cityCoreId": "city_core_kalinago_council_network",
+      "defenseLayoutId": "defense_kalinago_council_network",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_caribbean_islands",
+      "physicalMapId": "americas_caribbean_islands",
+      "localPosition": {
+        "x": 125,
+        "y": 32
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "kalinago_council_network"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_caribbean_islands",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "bacata",
+      "name": "Bacata",
+      "kind": "capital",
+      "provinceId": "muisca_bacata",
+      "legalOwnerPolityId": "muisca_zipazgo",
+      "controllerPolityId": "muisca_zipazgo",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_andes_land",
+      "cityCoreId": "city_core_bacata",
+      "defenseLayoutId": "defense_bacata",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_south",
+      "physicalMapId": "americas_north_south",
+      "localPosition": {
+        "x": 66,
+        "y": 42
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "bacata"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ]
+    },
+    {
+      "id": "hunza",
+      "name": "Hunza",
+      "kind": "capital",
+      "provinceId": "muisca_hunza",
+      "legalOwnerPolityId": "muisca_zacazgo",
+      "controllerPolityId": "muisca_zacazgo",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_north_andes_land",
+      "cityCoreId": "city_core_hunza",
+      "defenseLayoutId": "defense_hunza",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_north_south",
+      "physicalMapId": "americas_north_south",
+      "localPosition": {
+        "x": 72,
+        "y": 52
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hunza"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "amazonian_earthwork_centers",
+      "name": "Amazonian Earthwork Centers",
+      "kind": "capital",
+      "provinceId": "amazon_riverine_societies",
+      "legalOwnerPolityId": "amazonian_regional_societies",
+      "controllerPolityId": "amazonian_regional_societies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_amazon_river",
+      "cityCoreId": "city_core_amazonian_earthwork_centers",
+      "defenseLayoutId": "defense_amazonian_earthwork_centers",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_amazon_brazil",
+      "physicalMapId": "americas_amazon_brazil",
+      "localPosition": {
+        "x": 52,
+        "y": 62
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "amazonian_earthwork_centers"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_amazon_river",
+        "access": "river"
+      }
+    },
+    {
+      "id": "tupi_village_councils",
+      "name": "Tupi Village Councils",
+      "kind": "capital",
+      "provinceId": "tupi_atlantic_coast",
+      "legalOwnerPolityId": "tupi_coastal_networks",
+      "controllerPolityId": "tupi_coastal_networks",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_atlantic",
+      "cityCoreId": "city_core_tupi_village_councils",
+      "defenseLayoutId": "defense_tupi_village_councils",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_amazon_brazil",
+      "physicalMapId": "americas_amazon_brazil",
+      "localPosition": {
+        "x": 94,
+        "y": 42
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tupi_village_councils"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_atlantic",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "cusco",
+      "name": "Cusco",
+      "kind": "capital",
+      "provinceId": "inca_cusco_heartland",
+      "legalOwnerPolityId": "tawantinsuyu",
+      "controllerPolityId": "tawantinsuyu",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_southern_cone_land",
+      "cityCoreId": "city_core_cusco",
+      "defenseLayoutId": "defense_cusco",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 54,
+        "y": 70
+      },
+      "terrainClass": "upland",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cusco"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
+    },
+    {
+      "id": "chan_chan",
+      "name": "Chan Chan",
+      "kind": "capital",
+      "provinceId": "chimor_north_coast",
+      "legalOwnerPolityId": "chimor_kingdom",
+      "controllerPolityId": "chimor_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_pacific",
+      "cityCoreId": "city_core_chan_chan",
+      "defenseLayoutId": "defense_chan_chan",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 36,
+        "y": 92
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "chan_chan"
+      },
+      "economicProfile": {
+        "production": [
+          "fish",
+          "timber",
+          "salt"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "fish",
+        "timber",
+        "salt"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "la_cent_in",
+      "name": "La Centinela",
+      "kind": "capital",
+      "provinceId": "chincha_valley",
+      "legalOwnerPolityId": "chincha_lordship",
+      "controllerPolityId": "chincha_lordship",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_pacific",
+      "cityCoreId": "city_core_la_cent_in",
+      "defenseLayoutId": "defense_la_cent_in",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse",
+        "port_services"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 48,
+        "y": 82
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "la_cent_in"
+      },
+      "economicProfile": {
+        "production": [
+          "potatoes",
+          "textiles",
+          "copper"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "potatoes",
+        "textiles",
+        "copper"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_pacific",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "mapuche_rewe_assemblies",
+      "name": "Mapuche Rewe Assemblies",
+      "kind": "capital",
+      "provinceId": "mapuche_ngulumapu",
+      "legalOwnerPolityId": "mapuche_rewe_confederacies",
+      "controllerPolityId": "mapuche_rewe_confederacies",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_southern_cone_land",
+      "cityCoreId": "city_core_mapuche_rewe_assemblies",
+      "defenseLayoutId": "defense_mapuche_rewe_assemblies",
+      "serviceIds": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "regionalInstanceId": "americas_andes_southern_cone",
+      "physicalMapId": "americas_andes_southern_cone",
+      "localPosition": {
+        "x": 64,
+        "y": 38
+      },
+      "terrainClass": "forest",
+      "roleIds": [
+        "capital",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "mapuche_rewe_assemblies"
+      },
+      "economicProfile": {
+        "production": [
+          "maize",
+          "cotton",
+          "cacao"
+        ],
+        "imports": [
+          "tools",
+          "iron_goods"
+        ],
+        "shortages": [
+          "horses",
+          "gunpowder"
+        ]
+      },
+      "productionRefs": [
+        "maize",
+        "cotton",
+        "cacao"
+      ]
     }
   ],
   "officers": [
