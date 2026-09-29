@@ -1,0 +1,209 @@
+{
+  "id": "americas_caribbean_spatial_1450",
+  "schemaVersion": 1,
+  "graphRegionId": "americas_caribbean",
+  "provenance": {
+    "authority": "scenario",
+    "geographicReference": "Natural Earth physical geography generalized from EPSG:4326, with HydroSHEDS river and lake alignments and GEBCO-informed navigable straits",
+    "referenceScale": "1:50m",
+    "license": "public-domain",
+    "baseline": "Physical geography; names use established English geographic forms",
+    "declaredGeneralization": "Control points retain strategic shape, ordering, adjacency, and orientation rather than survey-grade detail."
+  },
+  "coordinateRules": {
+    "sourceCrs": "EPSG:4326", "axisOrder": ["longitude", "latitude"], "localUnit": "terrain_cell", "precisionDecimals": 2,
+    "transform": "local = round((source - sourceOrigin) * scale + offset + declaredDistortion, precisionDecimals)",
+    "seamSourceToleranceDegrees": 0.05, "seamLocalToleranceCells": 0.25, "orientationToleranceDegrees": 12,
+    "adjacencyToleranceCells": 8, "maxUndeclaredDisplacementCells": 0.01
+  },
+  "densityRules": {"minFeaturesPerInstance": 5, "maxFeaturesPerInstance": 10, "minAnchorsPerInstance": 1.8, "maxAnchorsPerInstance": 3.2},
+  "requiredFeatureIds": {
+    "coastline": ["coast_north_america_atlantic", "coast_north_america_pacific", "coast_central_america", "coast_caribbean", "coast_north_south_america", "coast_brazil", "coast_southern_cone", "coast_pacific_transition"],
+    "island": ["island_greenland_south", "island_newfoundland", "island_cuba", "island_hispaniola", "island_jamaica", "island_puerto_rico", "island_tierra_del_fuego", "island_clipperton"],
+    "archipelago": ["archipelago_canadian_atlantic", "archipelago_bahamas", "archipelago_lesser_antilles", "archipelago_galapagos", "archipelago_aleutian_east"],
+    "strait": ["strait_davis", "strait_florida", "strait_yucatan", "strait_mona", "strait_magellan", "strait_drake"],
+    "river": ["river_st_lawrence", "river_mississippi", "river_rio_grande", "river_orinoco", "river_amazon", "river_parana"],
+    "lake": ["lakes_great_lakes", "lake_nicaragua", "lake_titicaca"],
+    "mountain_barrier": ["mountains_appalachian", "mountains_rocky", "mountains_sierra_madre", "mountains_andes_north", "mountains_guiana", "mountains_andes_central", "mountains_andes_south"],
+    "desert_barrier": ["desert_sonoran_chihuahuan", "desert_atacama", "desert_patagonian"],
+    "traversal_corridor": ["corridor_north_america", "corridor_mississippi", "corridor_central_america", "corridor_caribbean", "corridor_north_andes", "corridor_amazon", "corridor_south_america", "corridor_pacific_approach"]
+  },
+  "requiredTraversalConnections": [
+    {"id":"north_american_overland","name":"Atlantic plains to western interior","fromNodeId":"node_north_america_east_land","toNodeId":"node_north_america_west_land","movementClasses":["land","amphibious","flying"]},
+    {"id":"mississippi_navigation","name":"Mississippi basin to Gulf","fromNodeId":"node_mississippi","toNodeId":"node_caribbean_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"great_lakes_corridor","name":"Great Lakes and Saint Lawrence","fromNodeId":"node_great_lakes","toNodeId":"node_north_atlantic","movementClasses":["naval","amphibious","flying"]},
+    {"id":"panama_crossing","name":"Central American isthmus","fromNodeId":"node_central_america_land","toNodeId":"node_north_andes_land","movementClasses":["land","amphibious","flying"]},
+    {"id":"caribbean_sea_lane","name":"Greater and Lesser Antilles lane","fromNodeId":"node_caribbean_sea","toNodeId":"node_caribbean_islands","movementClasses":["naval","amphibious","flying"]},
+    {"id":"amazon_navigation","name":"Amazon inland navigation","fromNodeId":"node_amazon_river","toNodeId":"node_south_atlantic","movementClasses":["naval","amphibious","flying"]},
+    {"id":"andean_overland","name":"Northern to central Andes","fromNodeId":"node_north_andes_land","toNodeId":"node_south_america_land","movementClasses":["land","amphibious","flying"]},
+    {"id":"south_american_overland","name":"Brazilian interior to Southern Cone","fromNodeId":"node_south_america_land","toNodeId":"node_southern_cone_land","movementClasses":["land","amphibious","flying"]},
+    {"id":"atlantic_approach","name":"North and South Atlantic approaches","fromNodeId":"node_north_atlantic","toNodeId":"node_south_atlantic","movementClasses":["naval","amphibious","flying"]},
+    {"id":"pacific_approach","name":"Pacific coast and adjoining ocean approach","fromNodeId":"node_north_pacific","toNodeId":"node_south_pacific","movementClasses":["naval","amphibious","flying"]}
+  ],
+  "instances": [
+    {
+      "id":"americas_north_atlantic","name":"Northeastern North America and North Atlantic approaches","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_north_central","seamRationale":"Great Lakes, Saint Lawrence, Atlantic seaboard, Newfoundland, and southern Greenland form a coherent Atlantic approach.",
+      "transform":{"sourceOrigin":[-100,25],"scale":[2.4,2.4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":145,"maxY":120},
+      "budget":{"maxFeatures":10,"maxControlPoints":56,"maxBoundaryAnchors":6},"complexity":{"terrainBands":4,"waterBodies":4,"pathingChokepoints":4,"generationWeight":0.94},
+      "features":[
+        {"id":"coast_north_america_atlantic","kind":"coastline","points":[[-97,29],[-90,30],[-82,25],[-80,33],[-75,40],[-67,45],[-60,47]]},
+        {"id":"island_greenland_south","kind":"island","points":[[-48,60],[-43,61],[-42,65],[-48,64],[-48,60]]},
+        {"id":"island_newfoundland","kind":"island","points":[[-59,47],[-53,47],[-54,51],[-58,51],[-59,47]]},
+        {"id":"archipelago_canadian_atlantic","kind":"archipelago","points":[[-65,44],[-62,46],[-60,49]]},
+        {"id":"strait_davis","kind":"strait","points":[[-58,60],[-52,62]]},
+        {"id":"river_st_lawrence","kind":"river","points":[[-84,46],[-78,45],[-72,47],[-66,49]]},
+        {"id":"river_mississippi","kind":"river","points":[[-94,47],[-91,40],[-90,34],[-89,29]]},
+        {"id":"lakes_great_lakes","kind":"lake","points":[[-92,47],[-87,48],[-82,45],[-76,44]]},
+        {"id":"mountains_appalachian","kind":"mountain_barrier","points":[[-86,34],[-82,38],[-78,42],[-72,47]]},
+        {"id":"corridor_mississippi","kind":"traversal_corridor","points":[[-94,47],[-91,40],[-89,29]]}
+      ]
+    },
+    {
+      "id":"americas_north_pacific","name":"Western North America and northeastern Pacific","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_north_central","seamRationale":"Rockies and Pacific coast define a readable western land corridor and Pacific-facing maritime edge.",
+      "transform":{"sourceOrigin":[-140,25],"scale":[2.5,2.5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":120,"maxY":105},
+      "budget":{"maxFeatures":7,"maxControlPoints":42,"maxBoundaryAnchors":6},"complexity":{"terrainBands":5,"waterBodies":2,"pathingChokepoints":4,"generationWeight":0.88},
+      "features":[
+        {"id":"coast_north_america_pacific","kind":"coastline","points":[[-130,55],[-125,49],[-124,42],[-118,34],[-115,30]]},
+        {"id":"mountains_rocky","kind":"mountain_barrier","points":[[-120,55],[-115,48],[-111,40],[-107,32]]},
+        {"id":"desert_sonoran_chihuahuan","kind":"desert_barrier","points":[[-116,34],[-108,32],[-103,28],[-112,27],[-116,34]]},
+        {"id":"river_rio_grande","kind":"river","points":[[-107,32],[-104,30],[-101,29],[-97,26]]},
+        {"id":"corridor_north_america","kind":"traversal_corridor","points":[[-123,48],[-115,43],[-108,38],[-101,35]]}
+      ]
+    },
+    {
+      "id":"americas_mexico_central","name":"Mexico and Central American isthmus","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_north_central","seamRationale":"Sierra Madre, Yucatan Channel, Central American lakes, and Panama create a compact land-maritime hinge.",
+      "transform":{"sourceOrigin":[-120,5],"scale":[3.2,3.2],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":135,"maxY":85},
+      "budget":{"maxFeatures":7,"maxControlPoints":42,"maxBoundaryAnchors":7},"complexity":{"terrainBands":5,"waterBodies":3,"pathingChokepoints":6,"generationWeight":0.92},
+      "features":[
+        {"id":"coast_central_america","kind":"coastline","points":[[-117,30],[-105,20],[-97,19],[-90,16],[-83,9],[-78,8]]},
+        {"id":"strait_yucatan","kind":"strait","points":[[-87,22],[-85,21]]},
+        {"id":"lake_nicaragua","kind":"lake","points":[[-86,12],[-84,11]]},
+        {"id":"mountains_sierra_madre","kind":"mountain_barrier","points":[[-108,28],[-104,23],[-99,18],[-94,16]]},
+        {"id":"corridor_central_america","kind":"traversal_corridor","points":[[-92,17],[-87,14],[-83,10],[-79,9]]}
+      ]
+    },
+    {
+      "id":"americas_caribbean_islands","name":"Caribbean Sea and island arcs","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_caribbean","seamRationale":"Greater and Lesser Antilles require widened islands and channels for naval and amphibious readability.",
+      "transform":{"sourceOrigin":[-90,8],"scale":[5,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":150,"maxY":100},
+      "budget":{"maxFeatures":10,"maxControlPoints":58,"maxBoundaryAnchors":7},"complexity":{"terrainBands":3,"waterBodies":5,"pathingChokepoints":7,"generationWeight":0.98},
+      "features":[
+        {"id":"coast_caribbean","kind":"coastline","points":[[-89,20],[-83,22],[-78,25],[-72,20],[-66,18],[-61,12]]},
+        {"id":"island_cuba","kind":"island","points":[[-85,22],[-78,20],[-75,20],[-80,23],[-85,22]]},
+        {"id":"island_hispaniola","kind":"island","points":[[-74,20],[-68,19],[-69,18],[-73,18],[-74,20]]},
+        {"id":"island_jamaica","kind":"island","points":[[-79,18],[-76,18]]},
+        {"id":"island_puerto_rico","kind":"island","points":[[-67,19],[-65,18]]},
+        {"id":"archipelago_bahamas","kind":"archipelago","points":[[-79,27],[-77,25],[-75,23]]},
+        {"id":"archipelago_lesser_antilles","kind":"archipelago","points":[[-62,18],[-61,15],[-61,12]]},
+        {"id":"strait_florida","kind":"strait","points":[[-82,24],[-80,25]]},
+        {"id":"strait_mona","kind":"strait","points":[[-69,19],[-67,19]]},
+        {"id":"corridor_caribbean","kind":"traversal_corridor","points":[[-85,22],[-76,19],[-67,18],[-61,14]]}
+      ]
+    },
+    {
+      "id":"americas_north_south","name":"Northern South America and northern Andes","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_south","seamRationale":"Orinoco basin, Guianas, northern Andes, and Caribbean coast bridge Panama, Amazonia, and the Antilles.",
+      "transform":{"sourceOrigin":[-82,-5],"scale":[3.5,3.5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":105,"maxY":80},
+      "budget":{"maxFeatures":7,"maxControlPoints":42,"maxBoundaryAnchors":7},"complexity":{"terrainBands":5,"waterBodies":3,"pathingChokepoints":5,"generationWeight":0.9},
+      "features":[
+        {"id":"coast_north_south_america","kind":"coastline","points":[[-79,9],[-75,11],[-68,11],[-61,7],[-52,5]]},
+        {"id":"river_orinoco","kind":"river","points":[[-72,5],[-67,7],[-62,8],[-60,9]]},
+        {"id":"mountains_andes_north","kind":"mountain_barrier","points":[[-78,10],[-75,5],[-76,0],[-78,-4]]},
+        {"id":"corridor_north_andes","kind":"traversal_corridor","points":[[-79,9],[-76,5],[-75,1],[-77,-3]]},
+        {"id":"mountains_guiana","kind":"mountain_barrier","points":[[-66,5],[-62,5],[-59,4]]}
+      ]
+    },
+    {
+      "id":"americas_amazon_brazil","name":"Amazon basin and Brazilian Atlantic","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_south","seamRationale":"Amazon navigation and Brazilian Atlantic coast form the principal equatorial east-west corridor.",
+      "transform":{"sourceOrigin":[-80,-35],"scale":[2.5,2.5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":115,"maxY":105},
+      "budget":{"maxFeatures":6,"maxControlPoints":40,"maxBoundaryAnchors":7},"complexity":{"terrainBands":4,"waterBodies":4,"pathingChokepoints":3,"generationWeight":0.93},
+      "features":[
+        {"id":"coast_brazil","kind":"coastline","points":[[-51,3],[-44,-2],[-35,-8],[-38,-15],[-43,-23],[-49,-30]]},
+        {"id":"river_amazon","kind":"river","points":[[-74,-4],[-67,-5],[-60,-3],[-52,-1]]},
+        {"id":"river_parana","kind":"river","points":[[-55,-16],[-56,-23],[-58,-29],[-59,-33]]},
+        {"id":"corridor_amazon","kind":"traversal_corridor","points":[[-73,-4],[-64,-4],[-55,-2],[-50,0]]},
+        {"id":"corridor_south_america","kind":"traversal_corridor","points":[[-60,-8],[-56,-16],[-54,-24],[-58,-32]]}
+      ]
+    },
+    {
+      "id":"americas_andes_southern_cone","name":"Central Andes and Southern Cone","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_south","seamRationale":"Andean spine, Atacama, pampas, Patagonia, and Magellan waterways define the southern continental instance.",
+      "transform":{"sourceOrigin":[-82,-58],"scale":[2.4,2.4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":100,"maxY":125},
+      "budget":{"maxFeatures":9,"maxControlPoints":55,"maxBoundaryAnchors":7},"complexity":{"terrainBands":6,"waterBodies":3,"pathingChokepoints":6,"generationWeight":0.96},
+      "features":[
+        {"id":"coast_southern_cone","kind":"coastline","points":[[-78,-8],[-75,-20],[-72,-35],[-74,-45],[-68,-55],[-55,-52],[-50,-35]]},
+        {"id":"island_tierra_del_fuego","kind":"island","points":[[-70,-53],[-65,-55],[-61,-54],[-66,-52],[-70,-53]]},
+        {"id":"strait_magellan","kind":"strait","points":[[-72,-53],[-68,-52],[-64,-53]]},
+        {"id":"strait_drake","kind":"strait","points":[[-68,-56],[-62,-57]]},
+        {"id":"lake_titicaca","kind":"lake","points":[[-70,-16],[-68,-15]]},
+        {"id":"mountains_andes_central","kind":"mountain_barrier","points":[[-76,-8],[-72,-18],[-70,-28],[-70,-36]]},
+        {"id":"mountains_andes_south","kind":"mountain_barrier","points":[[-70,-36],[-72,-44],[-70,-52]]},
+        {"id":"desert_atacama","kind":"desert_barrier","points":[[-71,-18],[-69,-25],[-70,-29]]},
+        {"id":"desert_patagonian","kind":"desert_barrier","points":[[-69,-40],[-64,-46],[-67,-51]]}
+      ]
+    },
+    {
+      "id":"americas_pacific_transition","name":"Eastern Pacific transition waters","graphRegionId":"americas_caribbean","graphAreaId":"americas_caribbean_coarse","physicalMapId":"americas_pacific_transition","seamRationale":"A compressed navigable offshore lane preserves north-south coastal order and pairs the global Pacific stub without rendering empty ocean.",
+      "transform":{"sourceOrigin":[-150,-58],"scale":[1.1,1.1],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":85,"maxY":130},
+      "budget":{"maxFeatures":5,"maxControlPoints":35,"maxBoundaryAnchors":6},"complexity":{"terrainBands":2,"waterBodies":5,"pathingChokepoints":2,"generationWeight":0.6},
+      "features":[
+        {"id":"coast_pacific_transition","kind":"coastline","points":[[-135,55],[-125,35],[-115,15],[-90,0],[-80,-20],[-75,-45]]},
+        {"id":"corridor_pacific_approach","kind":"traversal_corridor","points":[[-145,50],[-140,20],[-130,-10],[-120,-40]]},
+        {"id":"archipelago_galapagos","kind":"archipelago","points":[[-92,-1],[-89,1]]},
+        {"id":"archipelago_aleutian_east","kind":"archipelago","points":[[-150,52],[-145,54],[-140,55]]},
+        {"id":"island_clipperton","kind":"island","points":[[-110,10],[-108,10]]}
+      ]
+    }
+  ],
+  "boundaryAnchors": [
+    {"id":"seam_north_east_west","instanceId":"americas_north_atlantic","pairId":"seam_north_west_east","source":[-100,35],"local":[0,24],"movementClasses":["land","amphibious","flying"]},
+    {"id":"seam_north_west_east","instanceId":"americas_north_pacific","pairId":"seam_north_east_west","source":[-100,35],"local":[100,25],"movementClasses":["land","amphibious","flying"]},
+    {"id":"seam_north_central_north","instanceId":"americas_north_atlantic","pairId":"seam_central_north","source":[-90,25],"local":[24,0],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_central_north","instanceId":"americas_mexico_central","pairId":"seam_north_central_north","source":[-90,25],"local":[96,64],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_central_caribbean","instanceId":"americas_mexico_central","pairId":"seam_caribbean_central","source":[-85,20],"local":[112,48],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_caribbean_central","instanceId":"americas_caribbean_islands","pairId":"seam_central_caribbean","source":[-85,20],"local":[25,60],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_caribbean_south","instanceId":"americas_caribbean_islands","pairId":"seam_south_caribbean","source":[-70,10],"local":[100,10],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_south_caribbean","instanceId":"americas_north_south","pairId":"seam_caribbean_south","source":[-70,10],"local":[42,52.5],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_north_south_amazon","instanceId":"americas_north_south","pairId":"seam_amazon_north","source":[-65,-5],"local":[59.5,0],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_amazon_north","instanceId":"americas_amazon_brazil","pairId":"seam_north_south_amazon","source":[-65,-5],"local":[37.5,75],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_amazon_southern","instanceId":"americas_amazon_brazil","pairId":"seam_southern_amazon","source":[-60,-35],"local":[50,0],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_southern_amazon","instanceId":"americas_andes_southern_cone","pairId":"seam_amazon_southern","source":[-60,-35],"local":[52.8,55.2],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_west_pacific","instanceId":"americas_north_pacific","pairId":"seam_pacific_west","source":[-135,50],"local":[12.5,62.5],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_pacific_west","instanceId":"americas_pacific_transition","pairId":"seam_west_pacific","source":[-135,50],"local":[16.5,118.8],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Declare compressed northeastern Pacific water without moving the authoritative seam."}},
+    {"id":"americas_atlantic_entry","instanceId":"americas_caribbean_islands","globalAnchorId":"americas_caribbean_east","source":[-68,18],"local":[110,50],"movementClasses":["land","naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"The shared Atlantic contract represents both northern and southern long-distance routes at a readable Caribbean approach."}},
+    {"id":"americas_pacific_entry","instanceId":"americas_pacific_transition","globalAnchorId":"americas_caribbean_west","source":[-150,-12.55],"local":[0,50],"movementClasses":["land","naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"The global Pacific stub is compressed into the offshore transition lane while preserving eastward landfall."}}
+  ],
+  "navigationTopology": {
+    "nodes": [
+      {"id":"node_north_america_east_land","instanceId":"americas_north_atlantic","class":"land"},{"id":"node_great_lakes","instanceId":"americas_north_atlantic","class":"navigable_river"},{"id":"node_mississippi","instanceId":"americas_north_atlantic","class":"navigable_river"},{"id":"node_north_atlantic","instanceId":"americas_north_atlantic","class":"navigable_sea"},{"id":"node_isolated_crater_lake","instanceId":"americas_north_atlantic","class":"decorative_water"},
+      {"id":"node_north_america_west_land","instanceId":"americas_north_pacific","class":"land"},{"id":"node_north_pacific","instanceId":"americas_north_pacific","class":"navigable_sea"},{"id":"node_rockies_barrier","instanceId":"americas_north_pacific","class":"impassable_barrier"},
+      {"id":"node_central_america_land","instanceId":"americas_mexico_central","class":"land"},{"id":"node_central_pacific","instanceId":"americas_mexico_central","class":"navigable_sea"},
+      {"id":"node_caribbean_sea","instanceId":"americas_caribbean_islands","class":"navigable_sea"},{"id":"node_caribbean_islands","instanceId":"americas_caribbean_islands","class":"island_coast"},
+      {"id":"node_north_andes_land","instanceId":"americas_north_south","class":"land"},{"id":"node_amazon_river","instanceId":"americas_amazon_brazil","class":"navigable_river"},{"id":"node_south_atlantic","instanceId":"americas_amazon_brazil","class":"navigable_sea"},{"id":"node_south_america_land","instanceId":"americas_amazon_brazil","class":"land"},
+      {"id":"node_southern_cone_land","instanceId":"americas_andes_southern_cone","class":"land"},{"id":"node_magellan_sea","instanceId":"americas_andes_southern_cone","class":"navigable_sea"},{"id":"node_andes_barrier","instanceId":"americas_andes_southern_cone","class":"impassable_barrier"},
+      {"id":"node_south_pacific","instanceId":"americas_pacific_transition","class":"navigable_sea"}
+    ],
+    "links": [
+      {"id":"link_north_overland","from":"node_north_america_east_land","to":"node_north_america_west_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_st_lawrence","from":"node_great_lakes","to":"node_north_atlantic","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_mississippi_gulf","from":"node_mississippi","to":"node_caribbean_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_atlantic_caribbean","from":"node_north_atlantic","to":"node_caribbean_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_west_land_central","from":"node_north_america_west_land","to":"node_central_america_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_west_pacific_landfall","from":"node_north_america_west_land","to":"node_north_pacific","movementClasses":["amphibious","flying"]},
+      {"id":"link_central_caribbean_landfall","from":"node_central_america_land","to":"node_caribbean_sea","movementClasses":["amphibious","flying"]},
+      {"id":"link_panama_land","from":"node_central_america_land","to":"node_north_andes_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_caribbean_landfall","from":"node_caribbean_sea","to":"node_caribbean_islands","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_caribbean_south_atlantic","from":"node_caribbean_sea","to":"node_south_atlantic","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_amazon_atlantic","from":"node_amazon_river","to":"node_south_atlantic","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_north_andes_south_land","from":"node_north_andes_land","to":"node_south_america_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_south_overland","from":"node_south_america_land","to":"node_southern_cone_land","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_north_pacific_central","from":"node_north_pacific","to":"node_central_pacific","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_central_south_pacific","from":"node_central_pacific","to":"node_south_pacific","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_south_pacific_magellan","from":"node_south_pacific","to":"node_magellan_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_magellan_atlantic","from":"node_magellan_sea","to":"node_south_atlantic","movementClasses":["naval","amphibious","flying"]}
+    ]
+  },
+  "distortions": [
+    {"id":"distortion_pacific_water_compression","anchorId":"seam_pacific_west","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":5,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Open Pacific distance is compressed while north-south coastal ordering and navigable continuity remain fixed."},
+    {"id":"distortion_atlantic_route_convergence","anchorId":"americas_atlantic_entry","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":6,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Two global Atlantic routes converge on one coarse graph anchor, represented by a readable Caribbean offshore approach."},
+    {"id":"distortion_pacific_global_stub","anchorId":"americas_pacific_entry","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":6,"preservesOrientation":true,"preservesAdjacency":true,"reason":"The long-distance Pacific crossing ends in compressed offshore water rather than empty rendered ocean."}
+  ]
+}
+

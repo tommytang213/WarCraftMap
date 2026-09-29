@@ -125,6 +125,15 @@ class CampaignPackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data.*southeast_asia.json"):
             verify_generated(base, generated)
 
+    def test_generated_output_detects_stale_americas_authority(self):
+        base = load_config(load_campaign_config(self.manifest).map_config_path)
+        generated = self.project / "_build/generated-americas"
+        generate(base, generated); verify_generated(base, generated)
+        authority = self.project / "scenario/geography/americas_caribbean.json"
+        authority.write_text(authority.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*americas_caribbean.json"):
+            verify_generated(base, generated)
+
     @staticmethod
     def structure(path):
         with zipfile.ZipFile(path) as archive:
@@ -152,7 +161,8 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         with zipfile.ZipFile(first) as campaign:
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            self.assertEqual(7, len(campaign_manifest["maps"]))
+            configured_maps = json.loads(self.manifest.read_text(encoding="utf-8"))["physicalMaps"]
+            self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
             southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
             east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
