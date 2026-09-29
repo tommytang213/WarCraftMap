@@ -388,6 +388,7 @@ def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, 
         if not record or record.get("status") != "needs_design":
             continue
         record["status"] = "queued"
+        record["attempts"] = 0
         record.pop("last_failure", None)
         record.pop("repair_kind", None)
 
