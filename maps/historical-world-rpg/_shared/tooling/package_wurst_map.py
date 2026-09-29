@@ -177,7 +177,7 @@ def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
 
-def _assemble(config: BuildConfig, root: Path, generated: Path) -> Path:
+def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None) -> Path:
     compile_root = root / "compile"
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
     shutil.copytree(config.wurst_source, compile_root / "wurst")
@@ -185,7 +185,10 @@ def _assemble(config: BuildConfig, root: Path, generated: Path) -> Path:
     shutil.copy2(generated / GENERATED_WURST, compile_root / "wurst" / GENERATED_WURST)
     runtime_dir = compile_root / "map" / config.source_map.name / "runtime"; runtime_dir.mkdir()
     shutil.copy2(generated / GENERATED_DATA, runtime_dir / GENERATED_DATA); shutil.copy2(generated / PROVENANCE, runtime_dir / PROVENANCE)
+    selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
     for terrain_id, _source in config.regional_terrain:
+        if terrain_id not in selected:
+            continue
         shutil.copy2(generated / f"terrain-{terrain_id}.json", runtime_dir / f"terrain-{terrain_id}.json")
     return compile_root
 
@@ -194,13 +197,14 @@ def _find_archive(root: Path) -> Path:
     if not files: raise _fail("map assembly", "Wurst produced no .w3x archive")
     return max(files, key=lambda p: p.stat().st_mtime_ns)
 
-def _inspect(config: BuildConfig, archive: Path, compile_root: Path) -> None:
+def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids: tuple[str, ...] | None = None) -> None:
     data = archive.read_bytes()
     if len(data) < 4 or data[:4] not in (b"MPQ\x1a", b"HM3W", b"PK\x03\x04"): raise _fail("archive inspection", f"unrecognized Warcraft archive: {archive}")
     lua = ""
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as zipped:
-            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id, _ in config.regional_terrain)}
+            selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
+            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id in selected)}
             if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
             if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
             lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")

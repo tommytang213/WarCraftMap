@@ -30,6 +30,13 @@ Planned data domains:
 
 The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-01 through 1820-12-31 range and era labels are scenario content; the shared engine contains no Age of Sail year constants. Historical event definitions and schedules will be authored there in later content issues.
 
+Physical packaging is authored in `../physical-maps.json`. Its stable physical-map
+IDs, logical-region and regional-instance assignments, generated terrain inputs,
+source folder maps/manifests, package paths, per-map budgets, and bootstrap marker
+are scenario data. A logical region may occur in more than one physical-map entry,
+but every required regional instance is assigned exactly once so authoritative
+entities are never duplicated between map-local runtime payloads.
+
 `geography/europe.json` is the editable authority for the 1450 Europe spatial slice. It defines regional instances, real-world control points, local affine transforms, paired seams, declared gameplay distortions, and complexity budgets. Run `python3 tooling/europe_geography.py` to validate it. Terrain/map inputs containing calculated local control points are deterministic derived artifacts and must not become an alternate source of truth.
 
 `geography/africa.json` is the editable authority for Africa regional instances and spatial reference data. It records source coordinates, deterministic local transforms, natural seams, transition corridors, declared compression, and bounded complexity budgets. Run `python3 tooling/africa_geography.py` to validate it.

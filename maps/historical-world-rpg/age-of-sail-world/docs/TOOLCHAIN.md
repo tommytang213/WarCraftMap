@@ -69,14 +69,14 @@ GitHub CI performs Wurst typechecking using the official/community Wurst Docker 
 
 CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
 
-The `Age of Sail map artifact` workflow runs the repository-controlled
-`./tooling/package_release.sh` command with an immutable Wurst container image,
+The `Age of Sail campaign artifact` workflow runs the repository-controlled
+`./tooling/package_campaign.sh` command with an immutable Wurst container image,
 after source and world validation. Successful workflow runs currently retain the packaged
-`AgeOfSailWorld.w3x` for 14 days as the `age-of-sail-world-map` artifact. This is a
-bootstrap/runtime-validation artifact, not the intended final whole-world release
-format. The final release pipeline must package multiple physical regional/subregional
-maps into a single-player custom-campaign experience and validate cross-map state
-transfer and transitions. Maintainers can download CI artifacts from the **Artifacts**
+`AgeOfSailWorldCampaign.w3n` for 14 days as the `age-of-sail-world-campaign`
+artifact. It contains every map configured by `physical-maps.json` in one
+single-player campaign package. `Maps/AgeOfSailWorld.w3x` is explicitly the
+bootstrap/runtime-validation map, not the final whole-world container. Cross-map
+state transfer and transitions remain separate runtime work. Maintainers can download CI artifacts from the **Artifacts**
 section of the run's GitHub Actions summary. CI output is never committed as a release.
 
 ## Runtime map pipeline
@@ -100,6 +100,21 @@ Every invocation removes the previous `_build/` tree. To clean without building:
 ```text
 ./tooling/package_release.sh clean
 ```
+
+Those commands preserve the useful bootstrap-only developer workflow. The clean
+command for the complete campaign is:
+
+```text
+./tooling/package_campaign.sh
+```
+
+It validates `physical-maps.json`, generates only each map's assigned runtime
+entities and terrain payloads, compiles and inspects every map, then writes
+`_build/release/AgeOfSailWorldCampaign.w3n`. Use
+`./tooling/package_campaign.sh clean` to remove all intermediates and releases.
+Physical-map IDs, source paths, region/instance/terrain assignments, package paths,
+budgets, display name, and bootstrap selection are scenario configuration; the
+shared build code is scenario-neutral.
 
 Failures name their stage (`inputs`, `scenario validation`, `generation`,
 `provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).

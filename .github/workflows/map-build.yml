@@ -1,4 +1,4 @@
-name: Age of Sail map artifact
+name: Age of Sail campaign artifact
 
 on:
   push:
@@ -15,12 +15,12 @@ permissions:
   contents: read
 
 jobs:
-  build-age-of-sail-map:
+  build-age-of-sail-campaign:
     runs-on: ubuntu-24.04
     env:
       WURST_IMAGE: frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a
       MAP_PROJECT: maps/historical-world-rpg/age-of-sail-world
-      MAP_ARTIFACT: maps/historical-world-rpg/age-of-sail-world/_build/release/AgeOfSailWorld.w3x
+      MAP_ARTIFACT: maps/historical-world-rpg/age-of-sail-world/_build/release/AgeOfSailWorldCampaign.w3n
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -43,16 +43,16 @@ jobs:
               apt-get update
               apt-get install -y --no-install-recommends python3
               chown -R wurstuser:wurstuser /workspace/maps/historical-world-rpg/age-of-sail-world
-              su -s /bin/sh wurstuser -c "PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
+              su -s /bin/sh wurstuser -c "PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
             '
 
-      - name: Confirm packaged map
+      - name: Confirm packaged campaign
         run: test -s "$MAP_ARTIFACT"
 
-      - name: Upload Age of Sail map
+      - name: Upload Age of Sail campaign
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: age-of-sail-world-map
+          name: age-of-sail-world-campaign
           path: ${{ env.MAP_ARTIFACT }}
           if-no-files-found: error
           retention-days: 14
