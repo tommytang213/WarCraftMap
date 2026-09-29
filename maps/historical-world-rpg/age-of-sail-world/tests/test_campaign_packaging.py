@@ -152,9 +152,10 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         with zipfile.ZipFile(first) as campaign:
             campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            self.assertEqual(6, len(campaign_manifest["maps"]))
+            self.assertEqual(7, len(campaign_manifest["maps"]))
             west_bytes = campaign.read("Maps/EuropeWest.w3x")
             southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
+            east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
             runtime = json.loads(west.read("runtime/scenario-runtime.json"))
@@ -175,6 +176,15 @@ class CampaignPackagingTests(unittest.TestCase):
             self.assertIn("majapahit_empire", {row["id"] for row in runtime["polityDefinitions"]})
             self.assertIn("ava_upper_burma", {row["id"] for row in runtime["provinceDefinitions"]})
             self.assertTrue(all(row["regionalInstanceId"].startswith("sea_") for row in runtime["settlementDefinitions"]))
+        east_asia_local = self.project / "east-asia.w3x"
+        east_asia_local.write_bytes(east_asia_bytes)
+        with zipfile.ZipFile(east_asia_local) as east_asia:
+            runtime = json.loads(east_asia.read("runtime/scenario-runtime.json"))
+            self.assertEqual("east_asia", runtime["physicalMap"]["id"])
+            self.assertEqual(6, len(runtime["physicalMap"]["regionalInstanceIds"]))
+            self.assertIn("ming_empire", {row["id"] for row in runtime["polityDefinitions"]})
+            self.assertIn("joseon_central_provinces", {row["id"] for row in runtime["provinceDefinitions"]})
+            self.assertTrue(all(row["regionalInstanceId"].startswith("east_asia_") for row in runtime["settlementDefinitions"]))
         second = build_campaign(self.manifest, grill=str(self.fake))
         self.assertEqual(first_structure, self.structure(second))
         self.assertEqual(source_hashes, {p.relative_to(self.project): hashlib.sha256(p.read_bytes()).hexdigest() for p in authoritative})

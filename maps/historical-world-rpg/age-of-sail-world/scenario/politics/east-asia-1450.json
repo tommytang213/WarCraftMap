@@ -1,0 +1,802 @@
+{
+  "schemaVersion": 1,
+  "id": "east_asia_political_baseline_1450",
+  "campaignStartDate": "1450-01-01",
+  "coverageRule": {
+    "kind": "exclusive_authoritative_provinces",
+    "exceptions": [
+      "Pastoral, forest, and island communities without a single durable territorial government in 1450 are retained as preserved entities or autonomous frontier provinces rather than assigned fictitious borders.",
+      "Fine Ming prefectural, Japanese shugo-domain, Tibetan estate, Jurchen federation, and Ainu community boundaries are compressed into historically meaningful playable regions while their important constituent powers remain authoritative metadata."
+    ]
+  },
+  "historicalEvidence": [
+    {
+      "id": "evidence_ming_oirat_1450",
+      "scope": "ming_oirat_crisis",
+      "citation": "The Cambridge History of China, volume 7: The Ming Dynasty, 1368–1644, part 1 (Twitchett and Mote, eds.), chapters on the Zhengtong reign and the Tumu Crisis.",
+      "note": "Supports Ming administration, the Oirat ascendancy, and the still-unresolved Ming-Oirat conflict on 1 January 1450 without presuming its later settlement."
+    },
+    {
+      "id": "evidence_mongolia_frontier",
+      "scope": "mongolia_jurchen_hami",
+      "citation": "The Cambridge History of Inner Asia: The Chinggisid Age (Di Cosmo, Frank, and Golden, eds.), late medieval Mongolia and Ming frontier chapters.",
+      "note": "Supports separate Oirat and eastern Mongol authority, the Hami tributary frontier, and distinct Jurchen groupings."
+    },
+    {
+      "id": "evidence_tibet",
+      "scope": "tibetan_polities",
+      "citation": "Luciano Petech, Central Tibet and the Mongols: The Yüan-Sa-skya Period of Tibetan History (1990), with later chronology from The History of Tibet, volume 2 (McKay, ed.).",
+      "note": "Supports the Phagmodrupa polity, rising Rinpungpa autonomy, and preservation of Guge and monastic powers without modern boundaries."
+    },
+    {
+      "id": "evidence_joseon",
+      "scope": "joseon_korea",
+      "citation": "The Cambridge History of Korea, volume 2: The Chosŏn Dynasty, 1392–1910 (Lee and de Bary, eds.), early Chosŏn institutions and frontier chapters.",
+      "note": "Supports Joseon provincial granularity, the Ming tributary relationship, Jeju, and the northern frontier in 1450."
+    },
+    {
+      "id": "evidence_japan",
+      "scope": "muromachi_japan",
+      "citation": "The Cambridge History of Japan, volume 3: Medieval Japan (Yamamura, ed.), Muromachi bakufu and provincial governance chapters.",
+      "note": "Supports Ashikaga legal authority alongside powerful shugo, the Ryukyu kingdom, and the absence of a falsely unified modern administrative geography."
+    },
+    {
+      "id": "evidence_ryukyu",
+      "scope": "ryukyu_ming_trade",
+      "citation": "George H. Kerr, Okinawa: The History of an Island People, revised edition (2000), early Shō dynasty chapters.",
+      "note": "Supports independent Ryukyuan kingship, Shuri as capital, and tributary trade with Ming China."
+    },
+    {
+      "id": "evidence_ainu_northeast",
+      "scope": "ainu_sakhalin_frontier",
+      "citation": "Brett L. Walker, The Conquest of Ainu Lands (2001), chapters on medieval Ezo and northern exchange networks.",
+      "note": "Supports preserving autonomous Ainu communities in Ezo and Sakhalin rather than retrojecting later Japanese or Russian borders."
+    }
+  ],
+  "polities": [
+    {
+      "id": "ming_empire",
+      "name": "Great Ming",
+      "adjective": "Ming",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Huangdi",
+      "capitalSettlementId": "beijing",
+      "regionalInstanceId": "east_asia_china_north",
+      "geographicFeatureIds": [
+        "river_yellow",
+        "corridor_grand_canal"
+      ],
+      "evidenceIds": [
+        "evidence_ming_oirat_1450"
+      ],
+      "provinces": [
+        {
+          "id": "ming_beizhili",
+          "name": "Beizhili",
+          "administrativeType": "directly_administered_region",
+          "adjacentProvinceIds": [
+            "ming_shandong_henan",
+            "ming_shanxi_shaanxi",
+            "oirat_eastern_mongolia",
+            "jurchen_liaodong_frontier"
+          ]
+        },
+        {
+          "id": "ming_shandong_henan",
+          "name": "Shandong and Henan",
+          "administrativeType": "provincial_administration",
+          "adjacentProvinceIds": [
+            "ming_beizhili",
+            "ming_shanxi_shaanxi",
+            "ming_nanzhili",
+            "ming_huguang_sichuan"
+          ]
+        },
+        {
+          "id": "ming_shanxi_shaanxi",
+          "name": "Shanxi and Shaanxi",
+          "administrativeType": "frontier_provincial_administration",
+          "adjacentProvinceIds": [
+            "ming_beizhili",
+            "ming_shandong_henan",
+            "ming_huguang_sichuan",
+            "kara_del_hami",
+            "oirat_eastern_mongolia"
+          ]
+        },
+        {
+          "id": "ming_nanzhili",
+          "name": "Nanzhili and the Lower Yangzi",
+          "administrativeType": "directly_administered_region",
+          "regionalInstanceId": "east_asia_china_south",
+          "geographicFeatureIds": [
+            "river_yangtze",
+            "coast_china_south"
+          ],
+          "adjacentProvinceIds": [
+            "ming_shandong_henan",
+            "ming_huguang_sichuan",
+            "ming_fujian_zhejiang"
+          ]
+        },
+        {
+          "id": "ming_huguang_sichuan",
+          "name": "Huguang and Sichuan",
+          "administrativeType": "provincial_administration",
+          "regionalInstanceId": "east_asia_china_south",
+          "geographicFeatureIds": [
+            "river_yangtze"
+          ],
+          "adjacentProvinceIds": [
+            "ming_shandong_henan",
+            "ming_shanxi_shaanxi",
+            "ming_nanzhili",
+            "ming_lingnan",
+            "phagmodrupa_u_tsang"
+          ]
+        },
+        {
+          "id": "ming_fujian_zhejiang",
+          "name": "Fujian and Zhejiang",
+          "administrativeType": "coastal_provincial_administration",
+          "regionalInstanceId": "east_asia_china_south",
+          "geographicFeatureIds": [
+            "coast_china_south",
+            "strait_taiwan"
+          ],
+          "adjacentProvinceIds": [
+            "ming_nanzhili",
+            "ming_lingnan",
+            "taiwan_indigenous_domains",
+            "ryukyu_islands"
+          ]
+        },
+        {
+          "id": "ming_lingnan",
+          "name": "Guangdong and Guangxi",
+          "administrativeType": "southern_provincial_administration",
+          "regionalInstanceId": "east_asia_china_south",
+          "geographicFeatureIds": [
+            "river_pearl",
+            "coast_china_south"
+          ],
+          "adjacentProvinceIds": [
+            "ming_huguang_sichuan",
+            "ming_fujian_zhejiang"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Prince of Lu domain",
+        "Prince of Ning domain",
+        "Guangxi native chieftaincies"
+      ]
+    },
+    {
+      "id": "oirat_confederation",
+      "name": "Oirat Confederation",
+      "adjective": "Oirat",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Taishi",
+      "capitalSettlementId": "oirat_mobile_court",
+      "capitalException": "The Oirat court was mobile in 1450; its authoritative capital is a strategic mobile-court reference, not a fixed settlement.",
+      "regionalInstanceId": "east_asia_interior",
+      "geographicFeatureIds": [
+        "desert_gobi",
+        "corridor_hexi"
+      ],
+      "evidenceIds": [
+        "evidence_ming_oirat_1450",
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "oirat_dzungaria",
+          "name": "Dzungaria and the Western Mongol Pastures",
+          "administrativeType": "mobile_confederation_territory",
+          "adjacentProvinceIds": [
+            "oirat_eastern_mongolia",
+            "kara_del_hami"
+          ]
+        },
+        {
+          "id": "oirat_eastern_mongolia",
+          "name": "Oirat-Dominated Eastern Mongolia",
+          "administrativeType": "confederation_hegemony",
+          "adjacentProvinceIds": [
+            "oirat_dzungaria",
+            "northern_yuan_domains",
+            "ming_beizhili",
+            "ming_shanxi_shaanxi"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "northern_yuan_khanate",
+      "name": "Northern Yuan",
+      "adjective": "Eastern Mongol",
+      "sovereignTier": "emperor",
+      "nativeSovereignTitle": "Khagan",
+      "capitalSettlementId": "northern_yuan_mobile_court",
+      "capitalException": "The eastern Mongol khan's court was mobile and politically constrained by Oirat power in 1450.",
+      "regionalInstanceId": "east_asia_interior",
+      "geographicFeatureIds": [
+        "desert_gobi"
+      ],
+      "evidenceIds": [
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "northern_yuan_domains",
+          "name": "Eastern Mongol Domains",
+          "administrativeType": "mobile_khanate",
+          "adjacentProvinceIds": [
+            "oirat_eastern_mongolia",
+            "haixi_jurchen_domains"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kara_del_hami",
+      "name": "Kara Del",
+      "adjective": "Hami",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Wang",
+      "capitalSettlementId": "hami",
+      "regionalInstanceId": "east_asia_interior",
+      "geographicFeatureIds": [
+        "corridor_hexi",
+        "desert_taklamakan"
+      ],
+      "evidenceIds": [
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "kara_del_hami",
+          "name": "Hami and the Eastern Tarim Approaches",
+          "administrativeType": "tributary_frontier_principality",
+          "adjacentProvinceIds": [
+            "oirat_dzungaria",
+            "ming_shanxi_shaanxi",
+            "phagmodrupa_u_tsang"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phagmodrupa_dynasty",
+      "name": "Phagmodrupa Dynasty",
+      "adjective": "Phagmodrupa",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Desi",
+      "capitalSettlementId": "nedong",
+      "regionalInstanceId": "east_asia_interior",
+      "geographicFeatureIds": [
+        "mountains_tibetan_rim",
+        "mountains_himalaya"
+      ],
+      "evidenceIds": [
+        "evidence_tibet"
+      ],
+      "provinces": [
+        {
+          "id": "phagmodrupa_u_tsang",
+          "name": "Ü and the Phagmodrupa Estates",
+          "administrativeType": "tibetan_desidom",
+          "adjacentProvinceIds": [
+            "rinpungpa_tsang",
+            "kara_del_hami",
+            "ming_huguang_sichuan"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Sakya",
+        "Ganden",
+        "Tsedong"
+      ]
+    },
+    {
+      "id": "rinpungpa_house",
+      "name": "Rinpungpa House",
+      "adjective": "Rinpungpa",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Depön",
+      "capitalSettlementId": "rinpung",
+      "regionalInstanceId": "east_asia_interior",
+      "geographicFeatureIds": [
+        "mountains_tibetan_rim"
+      ],
+      "evidenceIds": [
+        "evidence_tibet"
+      ],
+      "provinces": [
+        {
+          "id": "rinpungpa_tsang",
+          "name": "Rinpung and Tsang",
+          "administrativeType": "autonomous_estate",
+          "adjacentProvinceIds": [
+            "phagmodrupa_u_tsang"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Gyantse principality",
+        "Guge Kingdom"
+      ]
+    },
+    {
+      "id": "jianzhou_jurchen",
+      "name": "Jianzhou Jurchen",
+      "adjective": "Jianzhou Jurchen",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Beile",
+      "capitalSettlementId": "jianzhou_court",
+      "capitalException": "Jianzhou authority comprised shifting fortified communities rather than one validated urban capital in 1450.",
+      "regionalInstanceId": "east_asia_china_north",
+      "geographicFeatureIds": [
+        "river_amur",
+        "mountains_greater_khingan"
+      ],
+      "evidenceIds": [
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "jianzhou_jurchen_domains",
+          "name": "Jianzhou Jurchen Domains",
+          "administrativeType": "frontier_federation",
+          "adjacentProvinceIds": [
+            "haixi_jurchen_domains",
+            "jurchen_liaodong_frontier",
+            "joseon_hamgil_pyeongan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "haixi_jurchen",
+      "name": "Haixi Jurchen",
+      "adjective": "Haixi Jurchen",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Beile",
+      "capitalSettlementId": "haixi_court",
+      "capitalException": "Haixi authority was distributed among mobile and fortified clan centers in 1450.",
+      "regionalInstanceId": "east_asia_china_north",
+      "geographicFeatureIds": [
+        "river_amur",
+        "mountains_greater_khingan"
+      ],
+      "evidenceIds": [
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "haixi_jurchen_domains",
+          "name": "Haixi Jurchen Domains",
+          "administrativeType": "frontier_federation",
+          "adjacentProvinceIds": [
+            "northern_yuan_domains",
+            "jianzhou_jurchen_domains",
+            "wild_jurchen_domains"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wild_jurchen_confederacies",
+      "name": "Wild Jurchen Confederacies",
+      "adjective": "Wild Jurchen",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Beile",
+      "capitalSettlementId": "wild_jurchen_court",
+      "capitalException": "The northern forest confederacies had no single durable capital suitable for a fixed 1450 settlement.",
+      "regionalInstanceId": "east_asia_china_north",
+      "geographicFeatureIds": [
+        "river_amur",
+        "coast_china_north"
+      ],
+      "evidenceIds": [
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "wild_jurchen_domains",
+          "name": "Lower Amur and Northern Forest Domains",
+          "administrativeType": "forest_confederacies",
+          "adjacentProvinceIds": [
+            "haixi_jurchen_domains",
+            "sakhalin_ainu_nivkh"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Nivkh communities",
+        "Udege communities"
+      ]
+    },
+    {
+      "id": "ming_liaodong_command",
+      "name": "Ming Liaodong Regional Military Commission",
+      "adjective": "Liaodong",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Dudu",
+      "capitalSettlementId": "liaoyang",
+      "regionalInstanceId": "east_asia_china_north",
+      "geographicFeatureIds": [
+        "coast_china_north",
+        "mountains_greater_khingan"
+      ],
+      "evidenceIds": [
+        "evidence_ming_oirat_1450",
+        "evidence_mongolia_frontier"
+      ],
+      "provinces": [
+        {
+          "id": "jurchen_liaodong_frontier",
+          "name": "Liaodong Military Frontier",
+          "administrativeType": "regional_military_commission",
+          "adjacentProvinceIds": [
+            "ming_beizhili",
+            "jianzhou_jurchen_domains",
+            "joseon_hamgil_pyeongan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "joseon_kingdom",
+      "name": "Kingdom of Joseon",
+      "adjective": "Joseon",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Wang",
+      "capitalSettlementId": "hanseong",
+      "capitalProvinceId": "joseon_central_provinces",
+      "regionalInstanceId": "east_asia_korea",
+      "geographicFeatureIds": [
+        "coast_korea",
+        "corridor_korea"
+      ],
+      "evidenceIds": [
+        "evidence_joseon"
+      ],
+      "provinces": [
+        {
+          "id": "joseon_hamgil_pyeongan",
+          "name": "Hamgil and Pyeongan Provinces",
+          "administrativeType": "northern_provinces",
+          "adjacentProvinceIds": [
+            "jianzhou_jurchen_domains",
+            "jurchen_liaodong_frontier",
+            "joseon_central_provinces"
+          ]
+        },
+        {
+          "id": "joseon_central_provinces",
+          "name": "Gyeonggi, Chungcheong, and Gangwon",
+          "administrativeType": "royal_and_central_provinces",
+          "adjacentProvinceIds": [
+            "joseon_hamgil_pyeongan",
+            "joseon_southern_provinces"
+          ]
+        },
+        {
+          "id": "joseon_southern_provinces",
+          "name": "Gyeongsang and Jeolla Provinces",
+          "administrativeType": "southern_provinces",
+          "adjacentProvinceIds": [
+            "joseon_central_provinces",
+            "joseon_jeju",
+            "ashikaga_kyushu"
+          ]
+        },
+        {
+          "id": "joseon_jeju",
+          "name": "Jeju",
+          "administrativeType": "island_mok",
+          "geographicFeatureIds": [
+            "island_jeju"
+          ],
+          "adjacentProvinceIds": [
+            "joseon_southern_provinces"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ashikaga_shogunate",
+      "name": "Ashikaga Shogunate",
+      "adjective": "Ashikaga",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Seii Taishōgun",
+      "capitalSettlementId": "kyoto",
+      "regionalInstanceId": "east_asia_japan",
+      "geographicFeatureIds": [
+        "island_honshu",
+        "corridor_japan_sea"
+      ],
+      "evidenceIds": [
+        "evidence_japan"
+      ],
+      "provinces": [
+        {
+          "id": "ashikaga_kinai",
+          "name": "Kinai",
+          "administrativeType": "bakufu_heartland",
+          "adjacentProvinceIds": [
+            "ashikaga_western_honshu_shikoku",
+            "ashikaga_eastern_honshu"
+          ]
+        },
+        {
+          "id": "ashikaga_western_honshu_shikoku",
+          "name": "Western Honshu and Shikoku",
+          "administrativeType": "compressed_shugo_provinces",
+          "geographicFeatureIds": [
+            "island_honshu",
+            "island_shikoku"
+          ],
+          "adjacentProvinceIds": [
+            "ashikaga_kinai",
+            "ashikaga_kyushu"
+          ]
+        },
+        {
+          "id": "ashikaga_kyushu",
+          "name": "Kyushu",
+          "administrativeType": "compressed_shugo_provinces",
+          "geographicFeatureIds": [
+            "island_kyushu"
+          ],
+          "adjacentProvinceIds": [
+            "ashikaga_western_honshu_shikoku",
+            "joseon_southern_provinces",
+            "ryukyu_islands"
+          ]
+        },
+        {
+          "id": "ashikaga_eastern_honshu",
+          "name": "Eastern Honshu",
+          "administrativeType": "kanto_and_tohoku_shugo_provinces",
+          "adjacentProvinceIds": [
+            "ashikaga_kinai",
+            "ainu_ezo"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Hosokawa clan",
+        "Yamana clan",
+        "Ōuchi clan",
+        "Shiba clan",
+        "Kamakura-fu"
+      ]
+    },
+    {
+      "id": "ryukyu_kingdom",
+      "name": "Kingdom of Ryukyu",
+      "adjective": "Ryukyuan",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ō",
+      "capitalSettlementId": "shuri",
+      "regionalInstanceId": "east_asia_china_south",
+      "geographicFeatureIds": [
+        "archipelago_ryukyu",
+        "coast_china_south"
+      ],
+      "evidenceIds": [
+        "evidence_ryukyu"
+      ],
+      "provinces": [
+        {
+          "id": "ryukyu_islands",
+          "name": "Chūzan and the Ryukyu Islands",
+          "administrativeType": "maritime_kingdom",
+          "adjacentProvinceIds": [
+            "ming_fujian_zhejiang",
+            "ashikaga_kyushu",
+            "taiwan_indigenous_domains"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Amami communities",
+        "Miyako chiefdoms",
+        "Yaeyama chiefdoms"
+      ]
+    },
+    {
+      "id": "taiwan_indigenous_domains",
+      "name": "Taiwan Indigenous Domains",
+      "adjective": "Taiwan Indigenous",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Elder",
+      "capitalSettlementId": "taiwan_council_place",
+      "capitalException": "The island's autonomous communities had no single island-wide capital or sovereignty in 1450.",
+      "regionalInstanceId": "east_asia_china_south",
+      "geographicFeatureIds": [
+        "island_taiwan",
+        "strait_taiwan"
+      ],
+      "evidenceIds": [
+        "evidence_ryukyu"
+      ],
+      "provinces": [
+        {
+          "id": "taiwan_indigenous_domains",
+          "name": "Taiwan Indigenous Domains",
+          "administrativeType": "autonomous_community_networks",
+          "adjacentProvinceIds": [
+            "ming_fujian_zhejiang",
+            "ryukyu_islands"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Siraya communities",
+        "Favorlang communities",
+        "Atayal communities"
+      ]
+    },
+    {
+      "id": "ainu_moshir",
+      "name": "Ainu Mosir",
+      "adjective": "Ainu",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Kotankor Kur",
+      "capitalSettlementId": "ainu_council_place",
+      "capitalException": "Ainu communities in Ezo had no single sovereign capital in 1450.",
+      "regionalInstanceId": "east_asia_japan",
+      "geographicFeatureIds": [
+        "island_hokkaido",
+        "strait_tsugaru"
+      ],
+      "evidenceIds": [
+        "evidence_ainu_northeast"
+      ],
+      "provinces": [
+        {
+          "id": "ainu_ezo",
+          "name": "Ezo Ainu Domains",
+          "administrativeType": "autonomous_kotan_networks",
+          "adjacentProvinceIds": [
+            "ashikaga_eastern_honshu",
+            "sakhalin_ainu_nivkh"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Oshima Wajin settlements",
+        "Ishikari kotan networks"
+      ]
+    },
+    {
+      "id": "sakhalin_communities",
+      "name": "Sakhalin Ainu and Nivkh Communities",
+      "adjective": "Sakhalin",
+      "sovereignTier": "prince",
+      "nativeSovereignTitle": "Community Elder",
+      "capitalSettlementId": "sakhalin_council_place",
+      "capitalException": "Sakhalin's Ainu and Nivkh communities formed dispersed exchange networks without one capital.",
+      "regionalInstanceId": "east_asia_northeast_pacific",
+      "geographicFeatureIds": [
+        "island_sakhalin",
+        "strait_la_perouse"
+      ],
+      "evidenceIds": [
+        "evidence_ainu_northeast"
+      ],
+      "provinces": [
+        {
+          "id": "sakhalin_ainu_nivkh",
+          "name": "Karafuto and Lower Amur Maritime Communities",
+          "administrativeType": "autonomous_maritime_networks",
+          "adjacentProvinceIds": [
+            "ainu_ezo",
+            "wild_jurchen_domains"
+          ]
+        }
+      ],
+      "preservedEntities": [
+        "Sakhalin Ainu communities",
+        "Nivkh settlements"
+      ]
+    }
+  ],
+  "sovereigntyRelationships": [
+    {
+      "id": "ming_hami_tributary",
+      "kind": "tributary",
+      "subjectPolityId": "kara_del_hami",
+      "overlordPolityId": "ming_empire",
+      "taxRatePercent": 5,
+      "obligations": [
+        "tribute missions",
+        "frontier passage"
+      ]
+    },
+    {
+      "id": "phagmodrupa_rinpungpa_vassal",
+      "kind": "vassal",
+      "subjectPolityId": "rinpungpa_house",
+      "overlordPolityId": "phagmodrupa_dynasty",
+      "taxRatePercent": 8,
+      "obligations": [
+        "nominal service",
+        "estate levy"
+      ]
+    },
+    {
+      "id": "ming_joseon_tributary",
+      "kind": "tributary",
+      "subjectPolityId": "joseon_kingdom",
+      "overlordPolityId": "ming_empire",
+      "taxRatePercent": 4,
+      "obligations": [
+        "tribute missions",
+        "diplomatic recognition"
+      ]
+    },
+    {
+      "id": "ming_ryukyu_tributary",
+      "kind": "tributary",
+      "subjectPolityId": "ryukyu_kingdom",
+      "overlordPolityId": "ming_empire",
+      "taxRatePercent": 3,
+      "obligations": [
+        "tribute missions",
+        "licensed maritime trade"
+      ]
+    },
+    {
+      "id": "ming_liaodong_governance",
+      "kind": "vassal",
+      "subjectPolityId": "ming_liaodong_command",
+      "overlordPolityId": "ming_empire",
+      "taxRatePercent": 0,
+      "obligations": [
+        "frontier defense",
+        "imperial administration"
+      ]
+    }
+  ],
+  "diplomaticRelations": [
+    {
+      "id": "oirat_northern_yuan_hegemony",
+      "firstPolityId": "oirat_confederation",
+      "secondPolityId": "northern_yuan_khanate",
+      "kind": "alliance"
+    },
+    {
+      "id": "joseon_jurchen_frontier_rivalry",
+      "firstPolityId": "joseon_kingdom",
+      "secondPolityId": "jianzhou_jurchen",
+      "kind": "rivalry"
+    },
+    {
+      "id": "ryukyu_ashikaga_trade",
+      "firstPolityId": "ryukyu_kingdom",
+      "secondPolityId": "ashikaga_shogunate",
+      "kind": "alliance"
+    }
+  ],
+  "activeConflicts": [
+    {
+      "id": "tumu_crisis_war",
+      "name": "Ming-Oirat War after the Tumu Crisis",
+      "attackerPolityIds": [
+        "oirat_confederation"
+      ],
+      "defenderPolityIds": [
+        "ming_empire",
+        "ming_liaodong_command"
+      ],
+      "startDate": "1449-07-01",
+      "historicalConstraint": "The Zhengtong Emperor remains an Oirat captive on the campaign start date; neither his release nor the later political outcome is pre-scripted."
+    }
+  ]
+}

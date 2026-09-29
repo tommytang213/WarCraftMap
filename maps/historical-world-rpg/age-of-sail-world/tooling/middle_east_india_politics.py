@@ -63,6 +63,8 @@ def validate(source_path=SOURCE, world_path=WORLD, geography_path=GEOGRAPHY, req
         local = _index(polity.get("provinces"), f"polity {polity_id} provinces")
         if not local:
             raise PoliticsError(f"polity {polity_id}: missing authoritative coverage")
+        if polity.get("capitalProvinceId", next(iter(local))) not in local:
+            raise PoliticsError(f"polity {polity_id}: capital province is outside its authoritative coverage")
         for province_id, province in local.items():
             if province_id in provinces:
                 raise PoliticsError(f"authoritative coverage overlaps at province {province_id!r}")
@@ -149,7 +151,9 @@ def project(data, world):
     world["territorialHoldings"] = [h for h in world["territorialHoldings"] if h["territory"]["id"] not in province_ids]
     existing_polities = {p["id"]: p for p in world["polities"]}
     existing_settlements = {s["id"] for s in world["settlements"]}
+    existing_settlement_records = {s["id"]: s for s in world["settlements"]}
     existing_styles = {s["polityId"] for s in world["titleStyles"]}
+    synthesized_capitals = set()
     for polity in data["polities"]:
         pid = polity["id"]; new_provinces = [p["id"] for p in polity["provinces"]]
         if pid in existing_polities:
@@ -158,11 +162,15 @@ def project(data, world):
             record = {k: polity[k] for k in ("id", "name", "adjective", "sovereignTier", "nativeSovereignTitle", "capitalSettlementId")}
             record["provinceIds"] = new_provinces; world["polities"].append(record)
         capital = polity["capitalSettlementId"]
-        if capital not in existing_settlements and not polity.get("capitalException"):
+        # Even a documented mobile/distributed-capital exception needs a stable
+        # abstract settlement reference because the scenario-neutral polity
+        # runtime resolves every capital ID.  The exception waives a fixed
+        # historical city, not referential integrity.
+        if capital not in existing_settlements:
             first = polity["provinces"][0]["id"]
             world["settlements"].append({"id":capital,"name":capital.replace("_", " ").title(),"kind":"capital","provinceId":first,"legalOwnerPolityId":pid,"controllerPolityId":pid,"capturable":True,"civilianFacilitiesInvulnerable":True,"cityCoreId":"city_core_"+capital,"defenseLayoutId":"defense_"+capital,"serviceIds":["market","quest_hub"],"regionalInstanceId":polity["regionalInstanceId"],"activation":{"runtimeState":"abstract","representationTemplateId":"settlement_representation","deterministicKey":capital}})
             world["cityCores"].append({"id":"city_core_"+capital,"objectTemplateId":"capital_city_core"})
-            world["defenseLayouts"].append({"id":"defense_"+capital,"objectTemplateIds":["capital_defenses"]}); existing_settlements.add(capital)
+            world["defenseLayouts"].append({"id":"defense_"+capital,"objectTemplateIds":["capital_defenses"]}); existing_settlements.add(capital); synthesized_capitals.add(capital)
         if pid not in existing_styles:
             rank = polity["sovereignTier"] if polity["sovereignTier"] != "none" else "prince"
             world["titleStyles"].append({"id":"title_"+pid,"polityId":pid,"rankTier":rank,"nativeName":polity["nativeSovereignTitle"],"genericName":rank.title()})
@@ -177,8 +185,18 @@ def project(data, world):
     province_records = []
     for polity in data["polities"]:
         pid = polity["id"]; relation = relations.get(pid)
+        capital_province = polity.get("capitalProvinceId", polity["provinces"][0]["id"])
+        capital_record = existing_settlement_records.get(polity["capitalSettlementId"])
+        if capital_record is not None and polity.get("capitalProvinceId") and not polity.get("capitalException"):
+            capital_record["provinceId"] = capital_province
+        local_capital_reference = (not polity.get("capitalException") or
+                                   (capital_record is not None and capital_record.get("regionalInstanceId") == polity["regionalInstanceId"]))
         for province in polity["provinces"]:
-            capital_ids = existing_province_settlements.get(province["id"], []); capital = polity["capitalSettlementId"]; capital_ids = list(dict.fromkeys(capital_ids + ([capital] if capital in existing_settlements and province is polity["provinces"][0] and not polity.get("capitalException") else [])))
+            capital = polity["capitalSettlementId"]
+            capital_ids = existing_province_settlements.get(province["id"], [])
+            if polity.get("capitalProvinceId"):
+                capital_ids = [item for item in capital_ids if item != capital]
+            capital_ids = list(dict.fromkeys(capital_ids + ([capital] if capital in existing_settlements and province["id"] == capital_province and (local_capital_reference or capital in synthesized_capitals) else [])))
             world["provinces"].append({"id":province["id"],"name":province["name"],"administrativeType":province["administrativeType"],"legalOwnerPolityId":pid,"controllerPolityId":pid,"settlementIds":capital_ids})
             holding = {"id":"holding_"+province["id"],"territory":{"kind":"province","id":province["id"]},"legalOwner":{"kind":"polity","id":pid},"controllerPolityId":pid,"governingPolityId":pid,"sovereignPolityId":relation["overlordPolityId"] if relation else pid,"autonomyPercent":70 if relation else 35,"overlordTaxRatePercent":relation["taxRatePercent"] if relation else 0,"upkeepRatePercent":5,"obligations":[{"kind":"service","value":1}] if relation else []}
             if relation: holding["overlordHoldingId"] = holdings_by_owner[relation["overlordPolityId"]]
