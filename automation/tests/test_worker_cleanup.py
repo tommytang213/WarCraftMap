@@ -84,9 +84,11 @@ class WorkerCleanupTests(unittest.TestCase):
                 "state": "OPEN",
                 "mergeStateStatus": "DIRTY",
                 "statusCheckRollup": [{"status": "IN_PROGRESS"}],
-                "baseRefOid": "base-a",
+                "baseRefName": "main",
             }
-            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), patch(
+                "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="base-a"
+            ):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "repair")
@@ -130,7 +132,9 @@ class WorkerCleanupTests(unittest.TestCase):
                 "statusCheckRollup": [],
                 "baseRefOid": "base-a",
             }
-            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), patch(
+                "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="base-a"
+            ):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "repair")
@@ -159,7 +163,9 @@ class WorkerCleanupTests(unittest.TestCase):
                 "statusCheckRollup": [],
                 "baseRefOid": "base-a",
             }
-            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), patch(
+                "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="base-a"
+            ):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "failed")
@@ -189,9 +195,11 @@ class WorkerCleanupTests(unittest.TestCase):
                 "state": "OPEN",
                 "mergeStateStatus": "DIRTY",
                 "statusCheckRollup": [],
-                "baseRefOid": "new-base",
+                "baseRefName": "main",
             }
-            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view):
+            with patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), patch(
+                "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="new-base"
+            ):
                 self.assertTrue(service_open_prs(config, state))
             record = state["issues"]["19"]
             self.assertEqual(record["status"], "repair")
