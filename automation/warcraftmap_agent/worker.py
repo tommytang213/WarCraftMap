@@ -153,6 +153,26 @@ def gh_json(repo: Path, args: list[str]) -> Any:
     return json.loads(result.stdout)
 
 
+def remote_branch_oid(repo: Path, branch: str) -> str:
+    """Return the current origin branch OID without mutating the checkout."""
+    if not branch:
+        return ""
+    result = run(
+        ["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{branch}"],
+        cwd=repo,
+        check=False,
+    )
+    if result.returncode == 2:
+        return ""
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        raise RuntimeError(f"could not resolve origin/{branch}: {detail}")
+    line = result.stdout.strip().splitlines()
+    if not line:
+        return ""
+    return line[0].split()[0]
+
+
 def list_issues(config: Config) -> list[dict[str, Any]]:
     issues = gh_json(config.repo_root, ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,body,url,createdAt"])
     return sorted((item for item in issues if READY.match(item["title"])), key=lambda item: (item["createdAt"], item["number"]))
@@ -753,7 +773,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         )
         if record.get("status") != "pr_open" and not failed_conflict:
             continue
-        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
+        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,mergeable,statusCheckRollup,baseRefName"])
         if view["state"] == "MERGED":
             finish_merged_issue(config, number, record)
             return True
@@ -761,20 +781,29 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["status"] = "failed"
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
-        if view.get("mergeStateStatus") == "DIRTY":
+        merge_state = str(view.get("mergeStateStatus") or "").upper()
+        mergeable = str(view.get("mergeable") or "").upper()
+        if merge_state == "DIRTY" or mergeable == "CONFLICTING":
+            base_oid = remote_branch_oid(config.repo_root, str(view.get("baseRefName") or ""))
+            previous_base_oid = str(record.get("conflict_base_oid") or "")
+            if base_oid and base_oid != previous_base_oid:
+                record["conflict_base_oid"] = base_oid
+                record["conflict_attempts"] = 0
             conflict_attempts = int(record.get("conflict_attempts", 0))
             record["repair_kind"] = "merge_conflict"
             if conflict_attempts >= config.max_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted."
+                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted "
+                    f"for base {base_oid[:12] or 'unknown'}."
                 )
             else:
                 record["status"] = "repair"
                 record["last_failure"] = (
-                    f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
-                    "conflicts with the issue branch. Preserve completed work from both branches."
+                    f"Merge conflict repair required: PR #{pr} is DIRTY against base "
+                    f"{base_oid[:12] or 'unknown'} because current main conflicts with the issue "
+                    "branch. Preserve completed work from both branches."
                 )
             return True
         checks = view.get("statusCheckRollup") or []
@@ -785,8 +814,15 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"GitHub CI failed on PR #{pr}. Inspect it with gh pr checks {pr} and repair the implementation."
             return True
         if pending:
+            if failed_conflict:
+                return True
             continue
-        if view["mergeStateStatus"] not in {"CLEAN", "HAS_HOOKS", "UNSTABLE"}:
+        if merge_state not in {"CLEAN", "HAS_HOOKS", "UNSTABLE"}:
+            # A PR already known to have failed from merge conflicts remains
+            # owned by PR recovery while GitHub recomputes mergeability. Do not
+            # fall through to queue planning and burn Codex on unrelated work.
+            if failed_conflict:
+                return True
             continue
         # Never merge a PR that has not reported any CI checks. Repositories
         # without branch-protection "required" checks are still gated by the
