@@ -173,6 +173,7 @@ class QuestEventRuntime:
   return self._tx(op)
  def _deliver(self,s,out,eid,tid,key,c):
   e=self.events[eid]; es=self._maps(s)[1][eid]
+  c=copy.deepcopy(dict(c)); c.setdefault("eventId",eid); c.setdefault("occurrenceKey",key)
   if not e["repeatable"] and es["occurrences"]: self._notify(out,s,"event_deduplicated","event",eid,occurrenceKey=key); return
   if not self._prereqs(e,s,c): self._notify(out,s,"event_blocked","event",eid,occurrenceKey=key); return
   if not self._condition(e["_triggers"][tid],s,c): return
