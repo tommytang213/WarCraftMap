@@ -106,6 +106,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
   - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
 - [ ] Americas / Caribbean
+  - [x] Regional instances and geographic reference data
 - [ ] Pacific
 - [ ] Historical tech/event timeline
 - [ ] Country-specific units/content
