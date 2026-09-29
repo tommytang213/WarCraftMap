@@ -12,7 +12,7 @@ class MiddleEastIndiaContentTests(unittest.TestCase):
         directory=tempfile.TemporaryDirectory(); path=Path(directory.name)/"candidate.json"; path.write_text(json.dumps(value)); return directory,path
     def test_authority_projection_and_capture_references(self):
         source,politics,geography,positions=validate(); projected=project(source,politics,geography,positions,self.world)
-        self.assertEqual(projected,project(copy.deepcopy(source),politics,geography,positions,self.world)); selected=[x for x in projected["settlements"] if x.get("regionalInstanceId")=="middle_east_india_mainland"]
+        self.assertEqual(projected,project(copy.deepcopy(source),politics,geography,positions,self.world)); selected=[x for x in projected["settlements"] if x["id"] in {item["id"] for item in source["settlements"]}]
         self.assertEqual((26,8,16), (len(selected),sum("portAccess" in x for x in selected),len(source["tradeRoutes"])))
         cores={x["id"] for x in projected["cityCores"]}; layouts={x["id"] for x in projected["defenseLayouts"]}
         for item in selected:
@@ -23,7 +23,7 @@ class MiddleEastIndiaContentTests(unittest.TestCase):
             with directory,self.assertRaisesRegex(MiddleEastIndiaContentError,message): validate(path)
     def test_overlap_bounds_and_entry_clearance_are_rejected(self):
         cases=[]
-        outside=copy.deepcopy(self.source); next(x for x in outside["settlements"] if x["id"]=="konya")["position"]=[101,67]; cases.append((outside,"outside local bounds"))
+        outside=copy.deepcopy(self.source); next(x for x in outside["settlements"] if x["id"]=="konya")["position"]=[128,67]; cases.append((outside,"outside terrain bounds"))
         overlap=copy.deepcopy(self.source); next(x for x in overlap["settlements"] if x["id"]=="konya")["position"]=[10,72]; cases.append((overlap,"overlap"))
         blocked=copy.deepcopy(self.source); next(x for x in blocked["settlements"] if x["id"]=="konya")["position"]=[5,68]; cases.append((blocked,"obstructs entry anchor"))
         for value,message in cases:
@@ -37,8 +37,13 @@ class MiddleEastIndiaContentTests(unittest.TestCase):
             if current not in seen: seen.add(current); pending.extend(b if a==current else a for a,b in edges if a==current or b==current)
         self.assertTrue(required<=seen); self.assertEqual({"europe","africa","southeast_asia"},{x["neighborRegionId"] for x in self.source["transitions"]})
     def test_activation_retirement_capture_and_save_restore(self):
-        runtime=SettlementRuntime(self.world,RecordingSettlementAdapter()); regional=sorted(x["id"] for x in self.world["settlements"] if x.get("regionalInstanceId")=="middle_east_india_mainland")
-        self.assertEqual(tuple(regional),runtime.activate_region("middle_east_india_mainland")); runtime.update("delhi",controllerPolityId="timurid_empire"); runtime.set_service_available("delhi","market",False); saved=runtime.snapshot(); self.assertEqual(tuple(regional),runtime.retire_region("middle_east_india_mainland"))
+        runtime=SettlementRuntime(self.world,RecordingSettlementAdapter()); content_ids={x["id"] for x in self.source["settlements"]}; regions=sorted({x["regionalInstanceId"] for x in self.source["settlements"]})
+        activated=set()
+        for region in regions: activated.update(runtime.activate_region(region))
+        self.assertTrue(content_ids <= activated); runtime.update("delhi",controllerPolityId="timurid_empire"); runtime.set_service_available("delhi","market",False); saved=runtime.snapshot()
+        retired=set()
+        for region in regions: retired.update(runtime.retire_region(region))
+        self.assertTrue(content_ids <= retired)
         restored=SettlementRuntime(self.world,RecordingSettlementAdapter()); restored.restore(saved,reconstruct=True); self.assertEqual("timurid_empire",restored.require("delhi").controller_polity_id); self.assertFalse(restored.require("delhi").services["market"]); self.assertTrue(restored.require("delhi").represented)
 
 if __name__=="__main__": unittest.main()

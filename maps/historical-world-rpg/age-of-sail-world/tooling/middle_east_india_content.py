@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/"scenario/settlements/middle-east-india-1450.json"; POLITICS=ROOT/"scenario/politics/middle-east-india-1450.json"
-GEOGRAPHY=ROOT/"scenario/geography/middle-east-india.json"; TERRAIN=ROOT/"scenario/terrain/middle-east-india.json"
+GEOGRAPHY=ROOT/"scenario/geography/middle_east_india.json"; TERRAIN=ROOT/"scenario/terrain/middle-east-india.json"
 WORLD=ROOT/"scenario/world/world.json"; ECONOMY=ROOT/"scenario/economy/economy.json"
 ID=re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 ROLES={"capital","major_port","trade_center","fortified_town","caravan_center","transition_location","historical_location","pilgrimage_location"}
@@ -40,7 +40,7 @@ def validate(source_path=SOURCE,politics_path=POLITICS,geography_path=GEOGRAPHY)
     if source.get("schemaVersion")!=1 or source.get("campaignStartDate")!="1450-01-01": raise MiddleEastIndiaContentError("content must use schema 1 and campaign start 1450-01-01")
     settlements=_index(source.get("settlements"),"settlements"); polities=_index(politics.get("polities"),"polities")
     provinces={p["id"]:(owner["id"],p) for owner in polities.values() for p in owner.get("provinces",[])}
-    instances=_index(geography.get("instances"),"regional instances"); anchors=_index(geography.get("boundaryAnchors"),"boundary anchors")
+    instances=_index(geography.get("instances"),"regional instances"); anchors=_index(terrain.get("transitionAnchors"),"transition anchors")
     water={x["id"]+"_navigation" for x in terrain["waterBodies"] if x["kind"]=="navigable_sea"}
     terrain_zones={x["id"] for x in terrain["navigationZones"]}
     capitals={p["capitalSettlementId"] for p in polities.values() if p["capitalSettlementId"] in settlements}
@@ -50,9 +50,9 @@ def validate(source_path=SOURCE,politics_path=POLITICS,geography_path=GEOGRAPHY)
         if any(x not in item for x in required): raise MiddleEastIndiaContentError(f"settlement {ident}: missing required field")
         if item["polityId"] not in polities or item["provinceId"] not in provinces or provinces[item["provinceId"]][0]!=item["polityId"]: raise MiddleEastIndiaContentError(f"settlement {ident}: polity/province mismatch")
         if item["regionalInstanceId"] not in instances: raise MiddleEastIndiaContentError(f"settlement {ident}: missing regional instance")
-        pos=item["position"]; bounds=instances[item["regionalInstanceId"]]["localBounds"]
+        pos=item["position"]; bounds={"minX":0,"minY":0,"maxX":terrain["grid"]["width"]-1,"maxY":terrain["grid"]["height"]-1}
         if not isinstance(pos,list) or len(pos)!=2 or any(isinstance(x,bool) or not isinstance(x,(int,float)) or not math.isfinite(x) for x in pos): raise MiddleEastIndiaContentError(f"settlement {ident}: invalid position")
-        if not bounds["minX"]<=pos[0]<=bounds["maxX"] or not bounds["minY"]<=pos[1]<=bounds["maxY"]: raise MiddleEastIndiaContentError(f"settlement {ident}: position outside local bounds")
+        if not bounds["minX"]<=pos[0]<=bounds["maxX"] or not bounds["minY"]<=pos[1]<=bounds["maxY"]: raise MiddleEastIndiaContentError(f"settlement {ident}: position outside terrain bounds")
         positions[ident]={"x":pos[0],"y":pos[1]}
         if item["terrainClass"] not in TERRAINS or not item["roles"] or not set(item["roles"])<=ROLES or len(item["roles"])!=len(set(item["roles"])): raise MiddleEastIndiaContentError(f"settlement {ident}: invalid terrain class or roles")
         if ident in capitals and "capital" not in item["roles"]: raise MiddleEastIndiaContentError(f"settlement {ident}: polity capital lacks capital role")
@@ -71,7 +71,7 @@ def validate(source_path=SOURCE,politics_path=POLITICS,geography_path=GEOGRAPHY)
     clearance=source["placementRules"]["entryAnchorClearanceCells"]
     for anchor in anchors.values():
         for ident,pos in positions.items():
-            if "transition_location" not in settlements[ident]["roles"] and math.dist(tuple(pos.values()),tuple(anchor["local"]))<clearance: raise MiddleEastIndiaContentError(f"settlement {ident}: obstructs entry anchor {anchor['id']}")
+            if "transition_location" not in settlements[ident]["roles"] and math.dist(tuple(pos.values()),tuple(anchor["at"]))<clearance: raise MiddleEastIndiaContentError(f"settlement {ident}: obstructs entry anchor {anchor['id']}")
     routes=_index(source.get("tradeRoutes"),"trade routes"); overland=[]; maritime=[]
     for ident,route in routes.items():
         a,b=route.get("fromSettlementId"),route.get("toSettlementId")
@@ -96,20 +96,13 @@ def validate(source_path=SOURCE,politics_path=POLITICS,geography_path=GEOGRAPHY)
 def _zone(ident,movement): return {"id":ident,"movementClasses":movement,"connections":{kind:[] for kind in movement}}
 
 def project(source,politics,geography,positions,world):
-    world=copy.deepcopy(world); polity_ids={x["id"] for x in politics["polities"]}; province_ids={p["id"] for x in politics["polities"] for p in x["provinces"]}; settlement_ids={x["id"] for x in source["settlements"]}
-    existing_polities={x["id"]:x for x in world["polities"]}; world["provinces"]=[x for x in world["provinces"] if x["id"] not in province_ids]; world["settlements"]=[x for x in world["settlements"] if x["id"] not in settlement_ids]
-    world["cityCores"]=[x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in settlement_ids}]; world["defenseLayouts"]=[x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in settlement_ids}]
-    world["territorialHoldings"]=[x for x in world["territorialHoldings"] if x["id"] not in {"holding_"+p for p in province_ids}]
-    for polity in politics["polities"]:
-        pids=[p["id"] for p in polity["provinces"]]
-        if polity["id"] in existing_polities:
-            record=existing_polities[polity["id"]]; record["provinceIds"]=[x for x in record["provinceIds"] if x not in pids]+pids
-        else:
-            record={k:polity[k] for k in ("id","name","adjective","sovereignTier","nativeSovereignTitle","capitalSettlementId")}|{"provinceIds":pids}; world["polities"].append(record); existing_polities[polity["id"]]=record
-        for province in polity["provinces"]:
-            world["provinces"].append({"id":province["id"],"name":province["name"],"administrativeType":province["administrativeType"],"legalOwnerPolityId":polity["id"],"controllerPolityId":polity["id"],"settlementIds":[]})
-            world["territorialHoldings"].append({"id":"holding_"+province["id"],"territory":{"kind":"province","id":province["id"]},"legalOwner":{"kind":"polity","id":polity["id"]},"controllerPolityId":polity["id"],"governingPolityId":polity["id"],"sovereignPolityId":polity["id"],"autonomyPercent":35,"overlordTaxRatePercent":0,"upkeepRatePercent":5,"obligations":[]})
-    provinces={p["id"]:p for p in world["provinces"]}; zones={z["id"]:z for z in world["navigationZones"]}; terrain=json.loads(TERRAIN.read_text())
+    world=copy.deepcopy(world); settlement_ids={x["id"] for x in source["settlements"]}
+    world["settlements"]=[x for x in world["settlements"] if x["id"] not in settlement_ids]
+    world["cityCores"]=[x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in settlement_ids}]
+    world["defenseLayouts"]=[x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in settlement_ids}]
+    provinces={p["id"]:p for p in world["provinces"]}
+    for province in provinces.values(): province["settlementIds"]=[sid for sid in province["settlementIds"] if sid not in settlement_ids]
+    zones={z["id"]:z for z in world["navigationZones"]}; terrain=json.loads(TERRAIN.read_text())
     for item in terrain["navigationZones"]: zones.setdefault(item["id"],_zone(item["id"],item["movementClasses"]))
     for edge in terrain["connections"]:
         for kind in edge["movementClasses"]:
@@ -118,7 +111,7 @@ def project(source,politics,geography,positions,world):
     world["navigationZones"]=[zones[k] for k in sorted(zones)]
     for item in source["settlements"]:
         ident=item["id"]; roles=item["roles"]; defense=item["defenseClass"]
-        record={"id":ident,"name":item["name"],"kind":"capital" if "capital" in roles else "port" if "major_port" in roles else "fort" if "fortified_town" in roles else "trading_post" if "caravan_center" in roles else "major_city","provinceId":item["provinceId"],"legalOwnerPolityId":item["polityId"],"controllerPolityId":item["polityId"],"capturable":True,"civilianFacilitiesInvulnerable":True,"navigationZoneId":LAND,"cityCoreId":"city_core_"+ident,"defenseLayoutId":"defense_"+ident,"serviceIds":item["services"],"regionalInstanceId":item["regionalInstanceId"],"localPosition":positions[ident],"terrainClass":item["terrainClass"],"roleIds":roles,"activation":{"runtimeState":"abstract","representationTemplateId":"settlement_representation","deterministicKey":ident},"productionRefs":item["productionRefs"]}
+        record={"id":ident,"name":item["name"],"kind":"capital" if "capital" in roles else "port" if "major_port" in roles else "fort" if "fortified_town" in roles else "trading_post" if "caravan_center" in roles else "major_city","provinceId":item["provinceId"],"legalOwnerPolityId":item["polityId"],"controllerPolityId":item["polityId"],"capturable":True,"civilianFacilitiesInvulnerable":True,"navigationZoneId":"islands_land" if item["terrainClass"]=="island" else "india_land" if item["regionalInstanceId"] in {"mei_indus_deccan","mei_ganges_himalaya","mei_bengal_ceylon"} else "arabia_land" if item["regionalInstanceId"]=="mei_arabia_red_sea" else LAND,"cityCoreId":"city_core_"+ident,"defenseLayoutId":"defense_"+ident,"serviceIds":item["services"],"regionalInstanceId":item["regionalInstanceId"],"localPosition":positions[ident],"terrainClass":item["terrainClass"],"roleIds":roles,"activation":{"runtimeState":"abstract","representationTemplateId":"settlement_representation","deterministicKey":ident},"productionRefs":item["productionRefs"]}
         if item.get("port"): record["portAccess"]=copy.deepcopy(item["port"])
         world["settlements"].append(record); provinces[item["provinceId"]]["settlementIds"].append(ident)
         world["cityCores"].append({"id":"city_core_"+ident,"objectTemplateId":"capital_city_core" if "capital" in roles else "city_core"}); world["defenseLayouts"].append({"id":"defense_"+ident,"objectTemplateIds":["capital_defenses" if defense=="capital" else "port_defenses" if defense=="port" else "city_defenses"]})

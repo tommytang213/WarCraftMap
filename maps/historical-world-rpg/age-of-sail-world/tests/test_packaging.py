@@ -56,9 +56,9 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("runtime/terrain-middle_east_india.json", names)
         self.assertEqual("europe", terrain["regionId"]); self.assertEqual("africa", africa["regionId"]); self.assertEqual("middle_east_india", middle_east_india["regionId"])
         self.assertIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
-        self.assertEqual(75,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
-        self.assertEqual(98,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
-        self.assertEqual(98,len(runtime["provinceHoldings"]))
+        self.assertEqual(98,len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
+        self.assertEqual(122,len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
+        self.assertEqual(122,len(runtime["provinceHoldings"]))
         self.assertEqual("london",next(x for x in runtime["polityDefinitions"] if x["id"]=="england")["capitalSettlementId"])
         self.assertFalse(any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names))
 

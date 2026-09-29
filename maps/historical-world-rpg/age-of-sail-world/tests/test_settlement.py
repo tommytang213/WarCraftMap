@@ -26,7 +26,7 @@ class SettlementRuntimeTests(unittest.TestCase):
         self.runtime = SettlementRuntime(self.source, self.objects)
 
     def test_deterministic_initialization_lookup_and_separate_fields(self):
-        self.assertEqual(128,len(self.runtime.ids())); self.assertTrue({"dover","london","paris","rouen","timbuktu","kilwa"}.issubset(self.runtime.ids()))
+        self.assertEqual(152,len(self.runtime.ids())); self.assertTrue({"dover","london","paris","rouen","timbuktu","kilwa"}.issubset(self.runtime.ids()))
         london = self.runtime.require("london")
         self.assertEqual(
             ("england", "england", "greater_london", "capital", True,
@@ -70,7 +70,7 @@ class SettlementRuntimeTests(unittest.TestCase):
         self.runtime.update("paris", operational=False)
         self.runtime.reconstruct_representations()
         created = [op[1] for op in self.objects.operations if op[0] == "create"]
-        self.assertNotIn("paris",created); self.assertEqual(127,len(created)); self.assertIn("london",created)
+        self.assertNotIn("paris",created); self.assertEqual(151,len(created)); self.assertIn("london",created)
         self.assertFalse(self.runtime.require("paris").represented)
         self.assertTrue(self.runtime.require("london").represented)
 
