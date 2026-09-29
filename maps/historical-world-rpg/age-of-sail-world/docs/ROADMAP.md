@@ -115,6 +115,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
 - [ ] Pacific
   - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (island polities, chiefdoms, confederated and decentralized communities, diplomacy, and political-center exceptions)
 - [ ] Historical tech/event timeline
 - [ ] Country-specific units/content
 - [ ] Recruitable characters
