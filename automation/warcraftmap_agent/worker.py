@@ -753,7 +753,7 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         )
         if record.get("status") != "pr_open" and not failed_conflict:
             continue
-        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup"])
+        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,statusCheckRollup,baseRefOid"])
         if view["state"] == "MERGED":
             finish_merged_issue(config, number, record)
             return True
@@ -762,19 +762,26 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
             return True
         if view.get("mergeStateStatus") == "DIRTY":
+            base_oid = str(view.get("baseRefOid") or "")
+            previous_base_oid = str(record.get("conflict_base_oid") or "")
+            if base_oid and base_oid != previous_base_oid:
+                record["conflict_base_oid"] = base_oid
+                record["conflict_attempts"] = 0
             conflict_attempts = int(record.get("conflict_attempts", 0))
             record["repair_kind"] = "merge_conflict"
             if conflict_attempts >= config.max_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted."
+                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted "
+                    f"for base {base_oid[:12] or 'unknown'}."
                 )
             else:
                 record["status"] = "repair"
                 record["last_failure"] = (
-                    f"Merge conflict repair required: PR #{pr} is DIRTY because current main "
-                    "conflicts with the issue branch. Preserve completed work from both branches."
+                    f"Merge conflict repair required: PR #{pr} is DIRTY against base "
+                    f"{base_oid[:12] or 'unknown'} because current main conflicts with the issue "
+                    "branch. Preserve completed work from both branches."
                 )
             return True
         checks = view.get("statusCheckRollup") or []
