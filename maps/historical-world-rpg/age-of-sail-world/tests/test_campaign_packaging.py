@@ -134,6 +134,15 @@ class CampaignPackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data.*americas_caribbean.json"):
             verify_generated(base, generated)
 
+    def test_generated_output_detects_stale_pacific_authority(self):
+        base = load_config(load_campaign_config(self.manifest).map_config_path)
+        generated = self.project / "_build/generated-pacific"
+        generate(base, generated); verify_generated(base, generated)
+        authority = self.project / "scenario/geography/pacific.json"
+        authority.write_text(authority.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*pacific.json"):
+            verify_generated(base, generated)
+
     @staticmethod
     def structure(path):
         with zipfile.ZipFile(path) as archive:
