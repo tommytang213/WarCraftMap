@@ -20,14 +20,18 @@ class TechnologyInstitutionTests(unittest.TestCase):
         world=copy.deepcopy(WORLD)
         node=next(x for x in world["technologies"] if x["id"]=="standardized_charts")
         node["unlocks"]=[{"kind":"policy","contentId":"z_policy"},{"kind":"ability","contentId":"a_ability"}]
+        france=next(x for x in world["polityResearchStates"] if x["polityId"]=="france")
+        france["completedTechnologyIds"].append("oceanic_seamanship")
+        france["establishedInstitutionIds"].append("movable_type_printing")
+        france["researchProgress"]=[{"nodeId":"celestial_navigation","progress":65}]
         runtime=self.runtime(world,"1600-01-01")
         baseline=runtime.snapshot()
         with self.assertRaisesRegex(ResearchError,"unavailable prerequisites"):
             runtime.advance_research("france","standardized_charts",1000,"1600-01-01")
         self.assertEqual(baseline,runtime.snapshot())
-        events=runtime.advance_research("france","celestial_navigation",35,"1600-01-01")
-        self.assertEqual(["technology_completed","content_unlocked"],[x.kind for x in events])
-        events=runtime.advance_research("france","standardized_charts",180,"1600-01-01")
+        events=runtime.advance_research("france","celestial_navigation",39,"1600-01-01")
+        self.assertEqual(["technology_completed"],[x.kind for x in events])
+        events=runtime.advance_research("france","standardized_charts",165,"1600-01-01")
         self.assertEqual(
             [("technology_completed",None),("content_unlocked","ability"),("content_unlocked","policy")],
             [(x.kind,x.unlock_kind) for x in events],
@@ -43,9 +47,9 @@ class TechnologyInstitutionTests(unittest.TestCase):
         early=runtime.cost_units("standardized_charts","1450-01-01")
         preferred=runtime.cost_units("standardized_charts","1550-01-01")
         late=runtime.cost_units("standardized_charts","1700-01-01")
-        self.assertEqual(180*UNITS_PER_POINT,preferred)
+        self.assertEqual(165*UNITS_PER_POINT,preferred)
         self.assertEqual(preferred,late)
-        self.assertEqual(180*70*UNITS_PER_POINT,early)
+        self.assertEqual(165*16*UNITS_PER_POINT,early)
         self.assertGreater(early,preferred)
 
     def test_independent_uneven_diffusion_and_equivalent_run_determinism(self):
@@ -57,7 +61,7 @@ class TechnologyInstitutionTests(unittest.TestCase):
             return runtime
         one,two=run(),run()
         self.assertEqual(one.snapshot(),two.snapshot())
-        self.assertEqual(57*UNITS_PER_POINT,one.adoption_units("kent","celestial_navigation"))
+        self.assertEqual(12*UNITS_PER_POINT,one.adoption_units("kent","celestial_navigation"))
         self.assertEqual(24*UNITS_PER_POINT,one.adoption_units("normandy","celestial_navigation"))
         self.assertNotEqual(one.adoption_units("kent","celestial_navigation"),one.adoption_units("normandy","celestial_navigation"))
 

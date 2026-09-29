@@ -189,7 +189,8 @@ class WorldContractTests(unittest.TestCase):
 
     def test_cross_tree_prerequisite_is_valid(self):
         data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
-        self.assertIn("professional_bureaucracy", data["technologies"][1]["prerequisiteIds"])
+        node = next(x for x in data["technologies"] if x["id"] == "flintlock_drill")
+        self.assertIn("military_fiscal_state", node["prerequisiteIds"])
         validator.validate(WORLD_PATH)
 
     def test_duplicate_research_ids_are_rejected_across_node_kinds(self):
@@ -216,15 +217,18 @@ class WorldContractTests(unittest.TestCase):
 
     def test_ahead_of_time_research_has_finite_cost_not_a_lock(self):
         data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
-        cost = data["technologies"][1]["timeCost"]
+        node = next(x for x in data["technologies"] if x["id"] == "standardized_charts")
+        cost = node["timeCost"]
         self.assertGreater(cost["aheadOfTimeCostMultiplier"], 1)
         self.assertGreaterEqual(cost["additionalMultiplierPerYearAhead"], 0)
         self.assertNotIn("earliestYear", data["technologies"][1])
 
     def test_polity_state_and_uneven_province_adoption_are_valid(self):
         data = json.loads(WORLD_PATH.read_text(encoding="utf-8"))
-        levels = [state["adoption"][0]["level"] for state in data["provinceAdoptionStates"][:2]]
-        self.assertNotEqual(levels[0], levels[1])
+        by_province = {x["provinceId"]:x for x in data["provinceAdoptionStates"]}
+        london = {x["nodeId"]:x["level"] for x in by_province["greater_london"]["adoption"]}
+        kent = {x["nodeId"]:x["level"] for x in by_province["kent"]["adoption"]}
+        self.assertNotEqual(london["professional_bureaucracy"], kent["professional_bureaucracy"])
         validator.validate(WORLD_PATH)
 
 
