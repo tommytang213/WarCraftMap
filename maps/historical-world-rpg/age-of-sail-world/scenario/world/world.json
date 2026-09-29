@@ -666,6 +666,264 @@
       }
     },
     {
+      "id": "node_arakan_barrier",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_bay_bengal",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_malacca_sea"
+        ],
+        "amphibious": [
+          "node_mainland_west",
+          "node_malacca_sea"
+        ],
+        "flying": [
+          "node_mainland_west",
+          "node_malacca_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_celebes_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_philippine_sea",
+          "node_java_sea",
+          "node_eastern_sea"
+        ],
+        "amphibious": [
+          "node_philippine_sea",
+          "node_java_sea",
+          "node_eastern_sea"
+        ],
+        "flying": [
+          "node_philippine_sea",
+          "node_java_sea",
+          "node_eastern_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_decorative_inland_water",
+      "movementClasses": [
+        "flying"
+      ],
+      "connections": {
+        "flying": []
+      }
+    },
+    {
+      "id": "node_eastern_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_celebes_sea"
+        ],
+        "amphibious": [
+          "node_celebes_sea"
+        ],
+        "flying": [
+          "node_celebes_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_java_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_java_sea"
+        ],
+        "amphibious": [
+          "node_java_sea"
+        ],
+        "flying": [
+          "node_java_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_java_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_malacca_sea",
+          "node_celebes_sea",
+          "node_java_coast"
+        ],
+        "amphibious": [
+          "node_malacca_sea",
+          "node_celebes_sea",
+          "node_java_coast"
+        ],
+        "flying": [
+          "node_malacca_sea",
+          "node_celebes_sea",
+          "node_java_coast"
+        ]
+      }
+    },
+    {
+      "id": "node_mainland_east",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_mainland_west"
+        ],
+        "amphibious": [
+          "node_mainland_west"
+        ],
+        "flying": [
+          "node_mainland_west"
+        ]
+      }
+    },
+    {
+      "id": "node_mainland_west",
+      "movementClasses": [
+        "land",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "land": [
+          "node_mainland_east"
+        ],
+        "amphibious": [
+          "node_mainland_east",
+          "node_bay_bengal"
+        ],
+        "flying": [
+          "node_mainland_east",
+          "node_bay_bengal"
+        ]
+      }
+    },
+    {
+      "id": "node_malacca_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_bay_bengal",
+          "node_south_china_sea",
+          "node_java_sea",
+          "node_sumatra_coast"
+        ],
+        "amphibious": [
+          "node_bay_bengal",
+          "node_south_china_sea",
+          "node_java_sea",
+          "node_sumatra_coast"
+        ],
+        "flying": [
+          "node_bay_bengal",
+          "node_south_china_sea",
+          "node_java_sea",
+          "node_sumatra_coast"
+        ]
+      }
+    },
+    {
+      "id": "node_philippine_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_south_china_sea",
+          "node_celebes_sea"
+        ],
+        "amphibious": [
+          "node_south_china_sea",
+          "node_celebes_sea"
+        ],
+        "flying": [
+          "node_south_china_sea",
+          "node_celebes_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_south_china_sea",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_malacca_sea",
+          "node_philippine_sea"
+        ],
+        "amphibious": [
+          "node_malacca_sea",
+          "node_philippine_sea"
+        ],
+        "flying": [
+          "node_malacca_sea",
+          "node_philippine_sea"
+        ]
+      }
+    },
+    {
+      "id": "node_sumatra_coast",
+      "movementClasses": [
+        "naval",
+        "amphibious",
+        "flying"
+      ],
+      "connections": {
+        "naval": [
+          "node_malacca_sea"
+        ],
+        "amphibious": [
+          "node_malacca_sea"
+        ],
+        "flying": [
+          "node_malacca_sea"
+        ]
+      }
+    },
+    {
       "id": "north_atlantic_navigation",
       "movementClasses": [
         "naval",
@@ -1280,6 +1538,176 @@
       "capitalSettlementId": "lezhe",
       "provinceIds": [
         "albania"
+      ]
+    },
+    {
+      "id": "ava_kingdom",
+      "name": "Kingdom of Ava",
+      "adjective": "Kingdom of Ava",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "ava",
+      "provinceIds": [
+        "upper_burma"
+      ]
+    },
+    {
+      "id": "hanthawaddy_kingdom",
+      "name": "Hanthawaddy Kingdom",
+      "adjective": "Hanthawaddy Kingdom",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "pegu",
+      "provinceIds": [
+        "lower_burma"
+      ]
+    },
+    {
+      "id": "lan_xang",
+      "name": "Kingdom of Lan Xang",
+      "adjective": "Kingdom of Lan Xang",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "luang_prabang",
+      "provinceIds": [
+        "lan_xang_heartland"
+      ]
+    },
+    {
+      "id": "ayutthaya_kingdom",
+      "name": "Kingdom of Ayutthaya",
+      "adjective": "Kingdom of Ayutthaya",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "ayutthaya",
+      "provinceIds": [
+        "chao_phraya_basin"
+      ]
+    },
+    {
+      "id": "khmer_empire",
+      "name": "Khmer Empire",
+      "adjective": "Khmer Empire",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "angkor",
+      "provinceIds": [
+        "angkorian_cambodia"
+      ]
+    },
+    {
+      "id": "dai_viet",
+      "name": "Dai Viet",
+      "adjective": "Dai Viet",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "thang_long",
+      "provinceIds": [
+        "red_river_delta",
+        "central_vietnam"
+      ]
+    },
+    {
+      "id": "champa",
+      "name": "Kingdom of Champa",
+      "adjective": "Kingdom of Champa",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "vijaya",
+      "provinceIds": [
+        "champa_coast"
+      ]
+    },
+    {
+      "id": "malacca_sultanate",
+      "name": "Malacca Sultanate",
+      "adjective": "Malacca Sultanate",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "malacca",
+      "provinceIds": [
+        "malacca_strait"
+      ]
+    },
+    {
+      "id": "samudera_pasai",
+      "name": "Samudera Pasai Sultanate",
+      "adjective": "Samudera Pasai Sultanate",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "pasai",
+      "provinceIds": [
+        "north_sumatra"
+      ]
+    },
+    {
+      "id": "majapahit",
+      "name": "Majapahit Empire",
+      "adjective": "Majapahit Empire",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "trowulan",
+      "provinceIds": [
+        "east_java",
+        "sunda_java",
+        "south_borneo"
+      ]
+    },
+    {
+      "id": "brunei_sultanate",
+      "name": "Brunei Sultanate",
+      "adjective": "Brunei Sultanate",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "brunei",
+      "provinceIds": [
+        "north_borneo"
+      ]
+    },
+    {
+      "id": "sulu_sultanate",
+      "name": "Sulu Sultanate",
+      "adjective": "Sulu Sultanate",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "jolo",
+      "provinceIds": [
+        "sulu_archipelago"
+      ]
+    },
+    {
+      "id": "luzon_polities",
+      "name": "Luzon Polities",
+      "adjective": "Luzon Polities",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "tondo",
+      "provinceIds": [
+        "luzon",
+        "visayas"
+      ]
+    },
+    {
+      "id": "ternate_sultanate",
+      "name": "Sultanate of Ternate",
+      "adjective": "Sultanate of Ternate",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "ternate",
+      "provinceIds": [
+        "north_moluccas"
+      ]
+    },
+    {
+      "id": "tidore_sultanate",
+      "name": "Sultanate of Tidore",
+      "adjective": "Sultanate of Tidore",
+      "sovereignTier": "king",
+      "nativeSovereignTitle": "Ruler",
+      "capitalSettlementId": "tidore",
+      "provinceIds": [
+        "eastern_moluccas",
+        "western_new_guinea"
       ]
     },
     {
@@ -3654,6 +4082,206 @@
       "settlementIds": []
     },
     {
+      "id": "upper_burma",
+      "name": "Upper Burma",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "ava_kingdom",
+      "controllerPolityId": "ava_kingdom",
+      "settlementIds": [
+        "ava"
+      ]
+    },
+    {
+      "id": "lower_burma",
+      "name": "Lower Burma",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "hanthawaddy_kingdom",
+      "controllerPolityId": "hanthawaddy_kingdom",
+      "settlementIds": [
+        "pegu"
+      ]
+    },
+    {
+      "id": "lan_xang_heartland",
+      "name": "Lan Xang Heartland",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "lan_xang",
+      "controllerPolityId": "lan_xang",
+      "settlementIds": [
+        "luang_prabang"
+      ]
+    },
+    {
+      "id": "chao_phraya_basin",
+      "name": "Chao Phraya Basin",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "ayutthaya_kingdom",
+      "controllerPolityId": "ayutthaya_kingdom",
+      "settlementIds": [
+        "ayutthaya"
+      ]
+    },
+    {
+      "id": "angkorian_cambodia",
+      "name": "Angkorian Cambodia",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "khmer_empire",
+      "controllerPolityId": "khmer_empire",
+      "settlementIds": [
+        "angkor"
+      ]
+    },
+    {
+      "id": "red_river_delta",
+      "name": "Red River Delta",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "dai_viet",
+      "controllerPolityId": "dai_viet",
+      "settlementIds": [
+        "thang_long"
+      ]
+    },
+    {
+      "id": "central_vietnam",
+      "name": "Central Vietnam",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "dai_viet",
+      "controllerPolityId": "dai_viet",
+      "settlementIds": [
+        "hoi_an"
+      ]
+    },
+    {
+      "id": "champa_coast",
+      "name": "Champa Coast",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "champa",
+      "controllerPolityId": "champa",
+      "settlementIds": [
+        "vijaya"
+      ]
+    },
+    {
+      "id": "malacca_strait",
+      "name": "Malacca Strait",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "malacca_sultanate",
+      "controllerPolityId": "malacca_sultanate",
+      "settlementIds": [
+        "malacca"
+      ]
+    },
+    {
+      "id": "north_sumatra",
+      "name": "Northern Sumatra",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "samudera_pasai",
+      "controllerPolityId": "samudera_pasai",
+      "settlementIds": [
+        "pasai"
+      ]
+    },
+    {
+      "id": "east_java",
+      "name": "Eastern Java",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "settlementIds": [
+        "trowulan"
+      ]
+    },
+    {
+      "id": "sunda_java",
+      "name": "Western Java and Sunda",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "settlementIds": [
+        "sunda_kelapa"
+      ]
+    },
+    {
+      "id": "south_borneo",
+      "name": "Southern Borneo",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "settlementIds": [
+        "banjarmasin"
+      ]
+    },
+    {
+      "id": "north_borneo",
+      "name": "Northern Borneo",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "brunei_sultanate",
+      "controllerPolityId": "brunei_sultanate",
+      "settlementIds": [
+        "brunei"
+      ]
+    },
+    {
+      "id": "sulu_archipelago",
+      "name": "Sulu Archipelago",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "sulu_sultanate",
+      "controllerPolityId": "sulu_sultanate",
+      "settlementIds": [
+        "jolo"
+      ]
+    },
+    {
+      "id": "luzon",
+      "name": "Luzon",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "luzon_polities",
+      "controllerPolityId": "luzon_polities",
+      "settlementIds": [
+        "tondo"
+      ]
+    },
+    {
+      "id": "visayas",
+      "name": "Visayas",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "luzon_polities",
+      "controllerPolityId": "luzon_polities",
+      "settlementIds": [
+        "cebu"
+      ]
+    },
+    {
+      "id": "north_moluccas",
+      "name": "Northern Moluccas",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "ternate_sultanate",
+      "controllerPolityId": "ternate_sultanate",
+      "settlementIds": [
+        "ternate"
+      ]
+    },
+    {
+      "id": "eastern_moluccas",
+      "name": "Eastern Moluccas and Papua Trade Sphere",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "tidore_sultanate",
+      "controllerPolityId": "tidore_sultanate",
+      "settlementIds": [
+        "tidore"
+      ]
+    },
+    {
+      "id": "western_new_guinea",
+      "name": "Western New Guinea",
+      "administrativeType": "regional_province",
+      "legalOwnerPolityId": "tidore_sultanate",
+      "controllerPolityId": "tidore_sultanate",
+      "settlementIds": [
+        "raja_ampat"
+      ]
+    },
+    {
       "id": "ottoman_anatolia",
       "name": "Ottoman Anatolia",
       "administrativeType": "beylerbeylik",
@@ -4867,6 +5495,86 @@
     {
       "id": "city_core_ughoton",
       "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_ava",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_pegu",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_luang_prabang",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ayutthaya",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_angkor",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_thang_long",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_hoi_an",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_vijaya",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_malacca",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_pasai",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_trowulan",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_sunda_kelapa",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_banjarmasin",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_brunei",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tondo",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_cebu",
+      "objectTemplateId": "city_core"
+    },
+    {
+      "id": "city_core_jolo",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_ternate",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_tidore",
+      "objectTemplateId": "capital_city_core"
+    },
+    {
+      "id": "city_core_raja_ampat",
+      "objectTemplateId": "city_core"
     }
   ],
   "defenseLayouts": [
@@ -6006,6 +6714,126 @@
     },
     {
       "id": "defense_ughoton",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_ava",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_pegu",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_luang_prabang",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ayutthaya",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_angkor",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_thang_long",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_hoi_an",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_vijaya",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_malacca",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_pasai",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_trowulan",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_sunda_kelapa",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_banjarmasin",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_brunei",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tondo",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_cebu",
+      "objectTemplateIds": [
+        "port_defenses"
+      ]
+    },
+    {
+      "id": "defense_jolo",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_ternate",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_tidore",
+      "objectTemplateIds": [
+        "capital_defenses"
+      ]
+    },
+    {
+      "id": "defense_raja_ampat",
       "objectTemplateIds": [
         "port_defenses"
       ]
@@ -12102,6 +12930,1117 @@
         "maritimeZoneId": "north_atlantic_navigation",
         "access": "tidal_river"
       }
+    },
+    {
+      "id": "ava",
+      "name": "Ava",
+      "kind": "capital",
+      "provinceId": "upper_burma",
+      "legalOwnerPolityId": "ava_kingdom",
+      "controllerPolityId": "ava_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mainland_west",
+      "cityCoreId": "city_core_ava",
+      "defenseLayoutId": "defense_ava",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 18,
+        "y": 66
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ava"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "lacquerware"
+        ],
+        "imports": [
+          "salt",
+          "textiles"
+        ],
+        "shortages": [
+          "ship_provisions"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "lacquerware"
+      ]
+    },
+    {
+      "id": "pegu",
+      "name": "Pegu",
+      "kind": "capital",
+      "provinceId": "lower_burma",
+      "legalOwnerPolityId": "hanthawaddy_kingdom",
+      "controllerPolityId": "hanthawaddy_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_bay_bengal",
+      "cityCoreId": "city_core_pegu",
+      "defenseLayoutId": "defense_pegu",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 20,
+        "y": 34
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "pegu"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "timber"
+        ],
+        "imports": [
+          "horses",
+          "textiles"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "timber"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_bay_bengal",
+        "access": "river_estuary"
+      }
+    },
+    {
+      "id": "luang_prabang",
+      "name": "Luang Prabang",
+      "kind": "capital",
+      "provinceId": "lan_xang_heartland",
+      "legalOwnerPolityId": "lan_xang",
+      "controllerPolityId": "lan_xang",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mainland_east",
+      "cityCoreId": "city_core_luang_prabang",
+      "defenseLayoutId": "defense_luang_prabang",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 46,
+        "y": 63
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "religious_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "luang_prabang"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "forest_goods"
+        ],
+        "imports": [
+          "salt",
+          "textiles"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "forest_goods"
+      ]
+    },
+    {
+      "id": "ayutthaya",
+      "name": "Ayutthaya",
+      "kind": "capital",
+      "provinceId": "chao_phraya_basin",
+      "legalOwnerPolityId": "ayutthaya_kingdom",
+      "controllerPolityId": "ayutthaya_kingdom",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mainland_east",
+      "cityCoreId": "city_core_ayutthaya",
+      "defenseLayoutId": "defense_ayutthaya",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 40,
+        "y": 35
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ayutthaya"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "ceramics"
+        ],
+        "imports": [
+          "horses",
+          "spices"
+        ],
+        "shortages": [
+          "iron"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "ceramics"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_malacca_sea",
+        "access": "river_estuary"
+      }
+    },
+    {
+      "id": "angkor",
+      "name": "Angkor",
+      "kind": "capital",
+      "provinceId": "angkorian_cambodia",
+      "legalOwnerPolityId": "khmer_empire",
+      "controllerPolityId": "khmer_empire",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mainland_east",
+      "cityCoreId": "city_core_angkor",
+      "defenseLayoutId": "defense_angkor",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 57,
+        "y": 30
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "historical_location",
+        "religious_location",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "angkor"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "stonework"
+        ],
+        "imports": [
+          "salt",
+          "metals"
+        ],
+        "shortages": [
+          "ship_provisions"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "stonework"
+      ]
+    },
+    {
+      "id": "thang_long",
+      "name": "Thang Long",
+      "kind": "capital",
+      "provinceId": "red_river_delta",
+      "legalOwnerPolityId": "dai_viet",
+      "controllerPolityId": "dai_viet",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_mainland_east",
+      "cityCoreId": "city_core_thang_long",
+      "defenseLayoutId": "defense_thang_long",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 74,
+        "y": 63
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "thang_long"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "silk"
+        ],
+        "imports": [
+          "horses",
+          "metals"
+        ],
+        "shortages": [
+          "spices"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "silk"
+      ]
+    },
+    {
+      "id": "hoi_an",
+      "name": "Faifo",
+      "kind": "port",
+      "provinceId": "central_vietnam",
+      "legalOwnerPolityId": "dai_viet",
+      "controllerPolityId": "dai_viet",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_hoi_an",
+      "defenseLayoutId": "defense_hoi_an",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 69.8,
+        "y": 39.2
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "hoi_an"
+      },
+      "economicProfile": {
+        "production": [
+          "silk",
+          "ceramics"
+        ],
+        "imports": [
+          "spices",
+          "metals"
+        ],
+        "shortages": [
+          "horses"
+        ]
+      },
+      "productionRefs": [
+        "silk",
+        "ceramics"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "vijaya",
+      "name": "Vijaya",
+      "kind": "capital",
+      "provinceId": "champa_coast",
+      "legalOwnerPolityId": "champa",
+      "controllerPolityId": "champa",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_vijaya",
+      "defenseLayoutId": "defense_vijaya",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_mainland",
+      "physicalMapId": "sea_mainland",
+      "localPosition": {
+        "x": 60.8,
+        "y": 26.8
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "vijaya"
+      },
+      "economicProfile": {
+        "production": [
+          "aloeswood",
+          "ship_provisions"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "horses"
+        ]
+      },
+      "productionRefs": [
+        "aloeswood",
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "malacca",
+      "name": "Malacca",
+      "kind": "capital",
+      "provinceId": "malacca_strait",
+      "legalOwnerPolityId": "malacca_sultanate",
+      "controllerPolityId": "malacca_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_malacca_sea",
+      "cityCoreId": "city_core_malacca",
+      "defenseLayoutId": "defense_malacca",
+      "serviceIds": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_malay_sumatra",
+      "physicalMapId": "sea_malay_sumatra",
+      "localPosition": {
+        "x": 50,
+        "y": 38
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "malacca"
+      },
+      "economicProfile": {
+        "production": [
+          "ship_provisions",
+          "tin"
+        ],
+        "imports": [
+          "rice",
+          "textiles",
+          "spices"
+        ],
+        "shortages": [
+          "horses"
+        ]
+      },
+      "productionRefs": [
+        "ship_provisions",
+        "tin"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_malacca_sea",
+        "access": "strait"
+      }
+    },
+    {
+      "id": "pasai",
+      "name": "Samudera Pasai",
+      "kind": "capital",
+      "provinceId": "north_sumatra",
+      "legalOwnerPolityId": "samudera_pasai",
+      "controllerPolityId": "samudera_pasai",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_sumatra_coast",
+      "cityCoreId": "city_core_pasai",
+      "defenseLayoutId": "defense_pasai",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_malay_sumatra",
+      "physicalMapId": "sea_malay_sumatra",
+      "localPosition": {
+        "x": 18.1,
+        "y": 54.2
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "religious_location",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "pasai"
+      },
+      "economicProfile": {
+        "production": [
+          "pepper",
+          "gold"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "pepper",
+        "gold"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_malacca_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "trowulan",
+      "name": "Trowulan",
+      "kind": "capital",
+      "provinceId": "east_java",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_java_coast",
+      "cityCoreId": "city_core_trowulan",
+      "defenseLayoutId": "defense_trowulan",
+      "serviceIds": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_java_sunda",
+      "physicalMapId": "sea_java_sunda",
+      "localPosition": {
+        "x": 35,
+        "y": 20
+      },
+      "terrainClass": "plains",
+      "roleIds": [
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "trowulan"
+      },
+      "economicProfile": {
+        "production": [
+          "rice",
+          "ceramics"
+        ],
+        "imports": [
+          "spices",
+          "metals"
+        ],
+        "shortages": [
+          "horses"
+        ]
+      },
+      "productionRefs": [
+        "rice",
+        "ceramics"
+      ]
+    },
+    {
+      "id": "sunda_kelapa",
+      "name": "Sunda Kelapa",
+      "kind": "port",
+      "provinceId": "sunda_java",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_java_sea",
+      "cityCoreId": "city_core_sunda_kelapa",
+      "defenseLayoutId": "defense_sunda_kelapa",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_java_sunda",
+      "physicalMapId": "sea_java_sunda",
+      "localPosition": {
+        "x": 10,
+        "y": 24
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "sunda_kelapa"
+      },
+      "economicProfile": {
+        "production": [
+          "pepper",
+          "timber"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "pepper",
+        "timber"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_java_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "banjarmasin",
+      "name": "Banjarmasin",
+      "kind": "port",
+      "provinceId": "south_borneo",
+      "legalOwnerPolityId": "majapahit",
+      "controllerPolityId": "majapahit",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_banjarmasin",
+      "defenseLayoutId": "defense_banjarmasin",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_borneo",
+      "physicalMapId": "sea_borneo",
+      "localPosition": {
+        "x": 34,
+        "y": 17
+      },
+      "terrainClass": "riverbank",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "banjarmasin"
+      },
+      "economicProfile": {
+        "production": [
+          "forest_goods",
+          "diamonds"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "iron"
+        ]
+      },
+      "productionRefs": [
+        "forest_goods",
+        "diamonds"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_java_sea",
+        "access": "river_estuary"
+      }
+    },
+    {
+      "id": "brunei",
+      "name": "Brunei",
+      "kind": "capital",
+      "provinceId": "north_borneo",
+      "legalOwnerPolityId": "brunei_sultanate",
+      "controllerPolityId": "brunei_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_south_china_sea",
+      "cityCoreId": "city_core_brunei",
+      "defenseLayoutId": "defense_brunei",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_borneo",
+      "physicalMapId": "sea_borneo",
+      "localPosition": {
+        "x": 31,
+        "y": 50
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "brunei"
+      },
+      "economicProfile": {
+        "production": [
+          "camphor",
+          "forest_goods"
+        ],
+        "imports": [
+          "rice",
+          "ceramics"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "camphor",
+        "forest_goods"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_south_china_sea",
+        "access": "coastal"
+      }
+    },
+    {
+      "id": "tondo",
+      "name": "Tondo",
+      "kind": "capital",
+      "provinceId": "luzon",
+      "legalOwnerPolityId": "luzon_polities",
+      "controllerPolityId": "luzon_polities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_philippine_sea",
+      "cityCoreId": "city_core_tondo",
+      "defenseLayoutId": "defense_tondo",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_philippines",
+      "physicalMapId": "sea_philippines",
+      "localPosition": {
+        "x": 28,
+        "y": 55
+      },
+      "terrainClass": "coast",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tondo"
+      },
+      "economicProfile": {
+        "production": [
+          "gold",
+          "wax"
+        ],
+        "imports": [
+          "ceramics",
+          "textiles"
+        ],
+        "shortages": [
+          "iron"
+        ]
+      },
+      "productionRefs": [
+        "gold",
+        "wax"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_philippine_sea",
+        "access": "bay"
+      }
+    },
+    {
+      "id": "cebu",
+      "name": "Cebu",
+      "kind": "port",
+      "provinceId": "visayas",
+      "legalOwnerPolityId": "luzon_polities",
+      "controllerPolityId": "luzon_polities",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_philippine_sea",
+      "cityCoreId": "city_core_cebu",
+      "defenseLayoutId": "defense_cebu",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_philippines",
+      "physicalMapId": "sea_philippines",
+      "localPosition": {
+        "x": 36,
+        "y": 34
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "cebu"
+      },
+      "economicProfile": {
+        "production": [
+          "ship_provisions",
+          "wax"
+        ],
+        "imports": [
+          "rice",
+          "ceramics"
+        ],
+        "shortages": [
+          "metals"
+        ]
+      },
+      "productionRefs": [
+        "ship_provisions",
+        "wax"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_philippine_sea",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "jolo",
+      "name": "Jolo",
+      "kind": "capital",
+      "provinceId": "sulu_archipelago",
+      "legalOwnerPolityId": "sulu_sultanate",
+      "controllerPolityId": "sulu_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_celebes_sea",
+      "cityCoreId": "city_core_jolo",
+      "defenseLayoutId": "defense_jolo",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_philippines",
+      "physicalMapId": "sea_philippines",
+      "localPosition": {
+        "x": 27,
+        "y": 25.9
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "jolo"
+      },
+      "economicProfile": {
+        "production": [
+          "pearls",
+          "marine_goods"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "pearls",
+        "marine_goods"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_celebes_sea",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "ternate",
+      "name": "Ternate",
+      "kind": "capital",
+      "provinceId": "north_moluccas",
+      "legalOwnerPolityId": "ternate_sultanate",
+      "controllerPolityId": "ternate_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_celebes_sea",
+      "cityCoreId": "city_core_ternate",
+      "defenseLayoutId": "defense_ternate",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "sea_sulawesi_moluccas",
+      "physicalMapId": "sea_sulawesi_moluccas",
+      "localPosition": {
+        "x": 58.5,
+        "y": 32.2
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "ternate"
+      },
+      "economicProfile": {
+        "production": [
+          "cloves",
+          "ship_provisions"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "cloves",
+        "ship_provisions"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_celebes_sea",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "tidore",
+      "name": "Tidore",
+      "kind": "capital",
+      "provinceId": "eastern_moluccas",
+      "legalOwnerPolityId": "tidore_sultanate",
+      "controllerPolityId": "tidore_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_eastern_sea",
+      "cityCoreId": "city_core_tidore",
+      "defenseLayoutId": "defense_tidore",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_sulawesi_moluccas",
+      "physicalMapId": "sea_sulawesi_moluccas",
+      "localPosition": {
+        "x": 57,
+        "y": 29
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "capital",
+        "major_port",
+        "trade_center"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "tidore"
+      },
+      "economicProfile": {
+        "production": [
+          "cloves",
+          "marine_goods"
+        ],
+        "imports": [
+          "rice",
+          "textiles"
+        ],
+        "shortages": [
+          "timber"
+        ]
+      },
+      "productionRefs": [
+        "cloves",
+        "marine_goods"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_eastern_sea",
+        "access": "island_harbor"
+      }
+    },
+    {
+      "id": "raja_ampat",
+      "name": "Raja Ampat",
+      "kind": "port",
+      "provinceId": "western_new_guinea",
+      "legalOwnerPolityId": "tidore_sultanate",
+      "controllerPolityId": "tidore_sultanate",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "navigationZoneId": "node_eastern_sea",
+      "cityCoreId": "city_core_raja_ampat",
+      "defenseLayoutId": "defense_raja_ampat",
+      "serviceIds": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "regionalInstanceId": "sea_new_guinea_west",
+      "physicalMapId": "sea_new_guinea_west",
+      "localPosition": {
+        "x": 11.7,
+        "y": 39.9
+      },
+      "terrainClass": "island",
+      "roleIds": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "activation": {
+        "runtimeState": "abstract",
+        "representationTemplateId": "settlement_representation",
+        "deterministicKey": "raja_ampat"
+      },
+      "economicProfile": {
+        "production": [
+          "birds_of_paradise",
+          "marine_goods"
+        ],
+        "imports": [
+          "rice",
+          "metals"
+        ],
+        "shortages": [
+          "textiles"
+        ]
+      },
+      "productionRefs": [
+        "birds_of_paradise",
+        "marine_goods"
+      ],
+      "portAccess": {
+        "maritimeZoneId": "node_eastern_sea",
+        "access": "island_harbor"
+      }
     }
   ],
   "officers": [
@@ -16976,6 +18915,366 @@
       "controllerPolityId": "madagascar_coastal_polities",
       "governingPolityId": "madagascar_coastal_polities",
       "sovereignPolityId": "madagascar_coastal_polities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_upper_burma",
+      "territory": {
+        "kind": "province",
+        "id": "upper_burma"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "ava_kingdom"
+      },
+      "controllerPolityId": "ava_kingdom",
+      "governingPolityId": "ava_kingdom",
+      "sovereignPolityId": "ava_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_lower_burma",
+      "territory": {
+        "kind": "province",
+        "id": "lower_burma"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "hanthawaddy_kingdom"
+      },
+      "controllerPolityId": "hanthawaddy_kingdom",
+      "governingPolityId": "hanthawaddy_kingdom",
+      "sovereignPolityId": "hanthawaddy_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_lan_xang_heartland",
+      "territory": {
+        "kind": "province",
+        "id": "lan_xang_heartland"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "lan_xang"
+      },
+      "controllerPolityId": "lan_xang",
+      "governingPolityId": "lan_xang",
+      "sovereignPolityId": "lan_xang",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_chao_phraya_basin",
+      "territory": {
+        "kind": "province",
+        "id": "chao_phraya_basin"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "ayutthaya_kingdom"
+      },
+      "controllerPolityId": "ayutthaya_kingdom",
+      "governingPolityId": "ayutthaya_kingdom",
+      "sovereignPolityId": "ayutthaya_kingdom",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_angkorian_cambodia",
+      "territory": {
+        "kind": "province",
+        "id": "angkorian_cambodia"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "khmer_empire"
+      },
+      "controllerPolityId": "khmer_empire",
+      "governingPolityId": "khmer_empire",
+      "sovereignPolityId": "khmer_empire",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_red_river_delta",
+      "territory": {
+        "kind": "province",
+        "id": "red_river_delta"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "dai_viet"
+      },
+      "controllerPolityId": "dai_viet",
+      "governingPolityId": "dai_viet",
+      "sovereignPolityId": "dai_viet",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_central_vietnam",
+      "territory": {
+        "kind": "province",
+        "id": "central_vietnam"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "dai_viet"
+      },
+      "controllerPolityId": "dai_viet",
+      "governingPolityId": "dai_viet",
+      "sovereignPolityId": "dai_viet",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_champa_coast",
+      "territory": {
+        "kind": "province",
+        "id": "champa_coast"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "champa"
+      },
+      "controllerPolityId": "champa",
+      "governingPolityId": "champa",
+      "sovereignPolityId": "champa",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_malacca_strait",
+      "territory": {
+        "kind": "province",
+        "id": "malacca_strait"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "malacca_sultanate"
+      },
+      "controllerPolityId": "malacca_sultanate",
+      "governingPolityId": "malacca_sultanate",
+      "sovereignPolityId": "malacca_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_north_sumatra",
+      "territory": {
+        "kind": "province",
+        "id": "north_sumatra"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "samudera_pasai"
+      },
+      "controllerPolityId": "samudera_pasai",
+      "governingPolityId": "samudera_pasai",
+      "sovereignPolityId": "samudera_pasai",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_east_java",
+      "territory": {
+        "kind": "province",
+        "id": "east_java"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "majapahit"
+      },
+      "controllerPolityId": "majapahit",
+      "governingPolityId": "majapahit",
+      "sovereignPolityId": "majapahit",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_sunda_java",
+      "territory": {
+        "kind": "province",
+        "id": "sunda_java"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "majapahit"
+      },
+      "controllerPolityId": "majapahit",
+      "governingPolityId": "majapahit",
+      "sovereignPolityId": "majapahit",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_south_borneo",
+      "territory": {
+        "kind": "province",
+        "id": "south_borneo"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "majapahit"
+      },
+      "controllerPolityId": "majapahit",
+      "governingPolityId": "majapahit",
+      "sovereignPolityId": "majapahit",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_north_borneo",
+      "territory": {
+        "kind": "province",
+        "id": "north_borneo"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "brunei_sultanate"
+      },
+      "controllerPolityId": "brunei_sultanate",
+      "governingPolityId": "brunei_sultanate",
+      "sovereignPolityId": "brunei_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_sulu_archipelago",
+      "territory": {
+        "kind": "province",
+        "id": "sulu_archipelago"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "sulu_sultanate"
+      },
+      "controllerPolityId": "sulu_sultanate",
+      "governingPolityId": "sulu_sultanate",
+      "sovereignPolityId": "sulu_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_luzon",
+      "territory": {
+        "kind": "province",
+        "id": "luzon"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "luzon_polities"
+      },
+      "controllerPolityId": "luzon_polities",
+      "governingPolityId": "luzon_polities",
+      "sovereignPolityId": "luzon_polities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_visayas",
+      "territory": {
+        "kind": "province",
+        "id": "visayas"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "luzon_polities"
+      },
+      "controllerPolityId": "luzon_polities",
+      "governingPolityId": "luzon_polities",
+      "sovereignPolityId": "luzon_polities",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_north_moluccas",
+      "territory": {
+        "kind": "province",
+        "id": "north_moluccas"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "ternate_sultanate"
+      },
+      "controllerPolityId": "ternate_sultanate",
+      "governingPolityId": "ternate_sultanate",
+      "sovereignPolityId": "ternate_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_eastern_moluccas",
+      "territory": {
+        "kind": "province",
+        "id": "eastern_moluccas"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tidore_sultanate"
+      },
+      "controllerPolityId": "tidore_sultanate",
+      "governingPolityId": "tidore_sultanate",
+      "sovereignPolityId": "tidore_sultanate",
+      "autonomyPercent": 35,
+      "overlordTaxRatePercent": 0,
+      "upkeepRatePercent": 5,
+      "obligations": []
+    },
+    {
+      "id": "holding_western_new_guinea",
+      "territory": {
+        "kind": "province",
+        "id": "western_new_guinea"
+      },
+      "legalOwner": {
+        "kind": "polity",
+        "id": "tidore_sultanate"
+      },
+      "controllerPolityId": "tidore_sultanate",
+      "governingPolityId": "tidore_sultanate",
+      "sovereignPolityId": "tidore_sultanate",
       "autonomyPercent": 35,
       "overlordTaxRatePercent": 0,
       "upkeepRatePercent": 5,
