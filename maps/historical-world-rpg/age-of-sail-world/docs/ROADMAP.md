@@ -72,7 +72,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 - [x] Early performance stress harness and provisional budgets
 - [x] Synthetic large-world simulation tests before full content population
-- [ ] Maximum-reasonable local battle performance test
+- [x] Maximum-reasonable local battle performance test
 - [x] Global geography/navigation topology
 - [ ] Multi-map campaign packaging and per-region/subregion physical map build pipeline
 - [ ] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
