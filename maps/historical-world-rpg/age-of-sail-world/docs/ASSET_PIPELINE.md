@@ -56,3 +56,24 @@ Timeline-specific art belongs to the scenario. A Roman scenario should be able t
 Early engine work should use stock placeholder assets where possible. Final art replacement is intentionally later so art production does not block simulation/system development.
 
 Before the release candidate, placeholders that materially hurt readability or historical identity must be replaced or polished.
+
+## Scenario visual-language source
+
+The Europe, Africa, and Middle East–India slice is authored in
+`scenario/visuals/europe-africa-middle-east-india.json`. Stable IDs describe role,
+period, silhouette, team color, palette, stock model/skin, attachment set, scale,
+animation, formation readability, rank distinction, and permitted fallback. The
+deterministic inheritance order is archetype, regional family, polity, historical
+period, then unit identity. This data changes presentation only; roster mechanics
+and availability remain authoritative in `scenario/rosters/`.
+
+`tooling/visual_language.py` validates references and historical-fit declarations,
+then emits normalized date snapshots, Classic/Reforged object-data inputs, and a
+labeled developer contact-sheet scene manifest under `scenario/visuals/generated/`.
+Runtime code consumes generated model paths and never selects Age of Sail art in
+the shared engine. Controller changes retain player team color; the compatibility
+boundary selects Classic or Reforged paths. Placeholder assets name a custom-art
+candidate and may not be introduced implicitly.
+
+This is only the first regional slice. The overall country/unit visual-language
+roadmap remains open until the remaining world regions are authored.

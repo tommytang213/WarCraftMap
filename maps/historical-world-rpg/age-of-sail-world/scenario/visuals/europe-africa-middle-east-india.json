@@ -1,0 +1,108 @@
+{
+  "format": "age_of_sail_visual_language_v1",
+  "scope": {"regions": ["europe", "africa", "middle_east_india"], "years": [1450, 1820], "roadmapComplete": false},
+  "contracts": {
+    "inheritanceOrder": ["archetype", "regionalFamily", "polity", "historicalPeriod", "identity"],
+    "requiredAssignmentFields": ["roleId", "silhouetteId", "teamColorId", "paletteId", "assetId", "attachmentSetId", "scale", "animationSetId", "formationReadabilityId", "rankDistinctionId", "fallbackId"],
+    "scaleRange": [0.75, 1.35],
+    "maxAttachments": 2,
+    "maxEffects": 1
+  },
+  "historicalPeriods": [
+    {"id":"early_modern_1450_1549","startYear":1450,"endYear":1549},
+    {"id":"gunpowder_1550_1649","startYear":1550,"endYear":1649},
+    {"id":"standing_armies_1650_1749","startYear":1650,"endYear":1749},
+    {"id":"long_eighteenth_century_1750_1820","startYear":1750,"endYear":1820}
+  ],
+  "roles": [
+    {"id":"infantry_line","category":"infantry"},{"id":"infantry_skirmisher","category":"infantry"},
+    {"id":"cavalry_shock","category":"cavalry"},{"id":"artillery_field","category":"artillery"},
+    {"id":"specialist_field","category":"specialist"},{"id":"specialist_skirmisher","category":"specialist"},{"id":"marine_boarding","category":"marine"},
+    {"id":"transport_cargo","category":"transport"},{"id":"merchant_ocean","category":"merchant"},
+    {"id":"warship_oared","category":"warship"},{"id":"warship_sailing","category":"warship"},
+    {"id":"character_commander","category":"character"},{"id":"character_specialist","category":"character"}
+  ],
+  "silhouettes": [
+    {"id":"foot_dense","readability":"upright massed infantry"},{"id":"foot_loose","readability":"light isolated infantry"},
+    {"id":"mounted_tall","readability":"horse and raised weapon"},{"id":"gun_low_wide","readability":"low wheeled gun"},
+    {"id":"hero_upright","readability":"single elevated character"},{"id":"boat_small","readability":"short open hull"},
+    {"id":"merchant_round","readability":"broad cargo hull"},{"id":"galley_long","readability":"long low oared hull"},
+    {"id":"warship_tall","readability":"tall multi-mast hull"}
+  ],
+  "teamColors": [{"id":"primary_cloth_sails","mode":"player","minimumCoverage":0.12,"controllerChange":"refresh_owner_color"}],
+  "palettes": [
+    {"id":"europe_cloth_steel","tint":[225,220,205]},{"id":"africa_earth_brass","tint":[210,175,120]},
+    {"id":"med_india_jewel_earth","tint":[220,185,135]},{"id":"naval_timber_canvas","tint":[205,190,155]},
+    {"id":"officer_contrast","tint":[235,210,155]}
+  ],
+  "animationSets": [{"id":"foot_weapon"},{"id":"mounted_weapon"},{"id":"artillery_recoil"},{"id":"ship_sail"},{"id":"hero_command"}],
+  "attachmentSets": [
+    {"id":"none","attachments":[],"effects":[]},
+    {"id":"infantry_officer","attachments":[{"point":"overhead","assetId":"fx_command_aura"}],"effects":[]},
+    {"id":"artillery_smoke","attachments":[],"effects":["fx_cannon_smoke"]},
+    {"id":"ship_wake","attachments":[],"effects":["fx_ship_wake"]}
+  ],
+  "formationReadability": [{"id":"close_blocks"},{"id":"loose_screen"},{"id":"mounted_wedge"},{"id":"battery_line"},{"id":"naval_column"},{"id":"single_character"}],
+  "rankDistinctions": [{"id":"ordinary_none"},{"id":"officer_attachment"},{"id":"character_scale"}],
+  "fallbacks": [
+    {"id":"stock_same_role","permitted":true,"mustPreserve":["category","domain","teamColor"]},
+    {"id":"declared_placeholder","permitted":true,"requiresCandidate":true}
+  ],
+  "assets": [
+    {"id":"stock_footman","kind":"unit","status":"stock","classic":"units/human/Footman/Footman.mdl","reforged":"units/human/Footman/Footman.mdx","portrait":"UI/Glues/SinglePlayer/HumanCampaign3D/HumanCampaign3D.mdl","teamColor":true,"animations":["foot_weapon"],"attachmentPoints":["overhead","hand,right"]},
+    {"id":"stock_rifleman","kind":"unit","status":"stock","classic":"units/human/Rifleman/Rifleman.mdl","reforged":"units/human/Rifleman/Rifleman.mdx","portrait":"UI/Glues/SinglePlayer/HumanCampaign3D/HumanCampaign3D.mdl","teamColor":true,"animations":["foot_weapon"],"attachmentPoints":["overhead"]},
+    {"id":"stock_knight","kind":"unit","status":"stock","classic":"units/human/Knight/Knight.mdl","reforged":"units/human/Knight/Knight.mdx","portrait":"UI/Glues/SinglePlayer/HumanCampaign3D/HumanCampaign3D.mdl","teamColor":true,"animations":["mounted_weapon"],"attachmentPoints":["overhead"]},
+    {"id":"stock_mortar_team","kind":"unit","status":"stock","classic":"units/human/MortarTeam/MortarTeam.mdl","reforged":"units/human/MortarTeam/MortarTeam.mdx","portrait":"UI/Glues/SinglePlayer/HumanCampaign3D/HumanCampaign3D.mdl","teamColor":true,"animations":["artillery_recoil"],"attachmentPoints":[]},
+    {"id":"stock_militia","kind":"unit","status":"stock","classic":"units/human/Militia/Militia.mdl","reforged":"units/human/Militia/Militia.mdx","portrait":"UI/Glues/SinglePlayer/HumanCampaign3D/HumanCampaign3D.mdl","teamColor":true,"animations":["foot_weapon"],"attachmentPoints":["overhead"]},
+    {"id":"stock_boat","kind":"unit","status":"stock","classic":"units/other/TransportShip/TransportShip.mdl","reforged":"units/other/TransportShip/TransportShip.mdx","portrait":"ReplaceableTextures/CommandButtons/BTNTransport.blp","teamColor":true,"animations":["ship_sail"],"attachmentPoints":[]},
+    {"id":"stock_merchant_ship","kind":"unit","status":"stock","classic":"units/creeps/HumanTransportShip/HumanTransportShip.mdl","reforged":"units/creeps/HumanTransportShip/HumanTransportShip.mdx","portrait":"ReplaceableTextures/CommandButtons/BTNHumanTransport.blp","teamColor":true,"animations":["ship_sail"],"attachmentPoints":[]},
+    {"id":"stock_battleship","kind":"unit","status":"stock","classic":"units/human/HumanBattleship/HumanBattleship.mdl","reforged":"units/human/HumanBattleship/HumanBattleship.mdx","portrait":"ReplaceableTextures/CommandButtons/BTNHumanBattleship.blp","teamColor":true,"animations":["ship_sail"],"attachmentPoints":[]},
+    {"id":"stock_hero_paladin","kind":"unit","status":"stock","classic":"units/human/HeroPaladin/HeroPaladin.mdl","reforged":"units/human/HeroPaladin/HeroPaladin.mdx","portrait":"ReplaceableTextures/CommandButtons/BTNHeroPaladin.blp","teamColor":true,"animations":["hero_command"],"attachmentPoints":["overhead"]},
+    {"id":"stock_hero_archmage","kind":"unit","status":"stock","classic":"units/human/HeroArchMage/HeroArchMage.mdl","reforged":"units/human/HeroArchMage/HeroArchMage.mdx","portrait":"ReplaceableTextures/CommandButtons/BTNHeroArchMage.blp","teamColor":true,"animations":["hero_command"],"attachmentPoints":["overhead"]},
+    {"id":"fx_command_aura","kind":"attachment","status":"stock"},{"id":"fx_cannon_smoke","kind":"effect","status":"stock"},{"id":"fx_ship_wake","kind":"effect","status":"stock"}
+  ],
+  "historicalFit": [
+    {"assetId":"stock_footman","roles":["infantry_line","marine_boarding"],"rating":"placeholder","customCandidate":"regional_clothing_infantry","evidenceId":"european_land_warfare"},
+    {"assetId":"stock_rifleman","roles":["infantry_line","infantry_skirmisher","specialist_field","specialist_skirmisher"],"rating":"stock_variation","evidenceId":"european_land_warfare"},
+    {"assetId":"stock_knight","roles":["cavalry_shock"],"rating":"placeholder","customCandidate":"early_modern_regional_cavalry","evidenceId":"indian_warfare"},
+    {"assetId":"stock_mortar_team","roles":["artillery_field"],"rating":"stock_variation","evidenceId":"ottoman_warfare"},
+    {"assetId":"stock_militia","roles":["specialist_field","marine_boarding"],"rating":"stock_variation","evidenceId":"european_naval_warfare"},
+    {"assetId":"stock_boat","roles":["transport_cargo","warship_oared"],"rating":"placeholder","customCandidate":"oared_galley_and_dhow","evidenceId":"indian_ocean_shipping"},
+    {"assetId":"stock_merchant_ship","roles":["merchant_ocean"],"rating":"stock_variation","evidenceId":"indian_ocean_shipping"},
+    {"assetId":"stock_battleship","roles":["warship_sailing"],"rating":"stock_variation","evidenceId":"european_naval_warfare"},
+    {"assetId":"stock_hero_paladin","roles":["character_commander"],"rating":"placeholder","customCandidate":"regional_historical_characters","evidenceId":"african_warfare"},
+    {"assetId":"stock_hero_archmage","roles":["character_specialist"],"rating":"placeholder","customCandidate":"regional_historical_characters","evidenceId":"european_land_warfare"}
+  ],
+  "archetypes": [
+    {"id":"land_line","matchCategories":["infantry"],"values":{"roleId":"infantry_line","silhouetteId":"foot_dense","teamColorId":"primary_cloth_sails","paletteId":"europe_cloth_steel","assetId":"stock_footman","attachmentSetId":"none","scale":1.0,"animationSetId":"foot_weapon","formationReadabilityId":"close_blocks","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}},
+    {"id":"cavalry","matchCategories":["cavalry"],"values":{"roleId":"cavalry_shock","silhouetteId":"mounted_tall","teamColorId":"primary_cloth_sails","paletteId":"europe_cloth_steel","assetId":"stock_knight","attachmentSetId":"none","scale":1.08,"animationSetId":"mounted_weapon","formationReadabilityId":"mounted_wedge","rankDistinctionId":"ordinary_none","fallbackId":"declared_placeholder"}},
+    {"id":"artillery","matchCategories":["artillery"],"values":{"roleId":"artillery_field","silhouetteId":"gun_low_wide","teamColorId":"primary_cloth_sails","paletteId":"europe_cloth_steel","assetId":"stock_mortar_team","attachmentSetId":"artillery_smoke","scale":0.95,"animationSetId":"artillery_recoil","formationReadabilityId":"battery_line","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}},
+    {"id":"specialist","matchCategories":["specialist"],"values":{"roleId":"specialist_field","silhouetteId":"foot_loose","teamColorId":"primary_cloth_sails","paletteId":"europe_cloth_steel","assetId":"stock_rifleman","attachmentSetId":"none","scale":0.94,"animationSetId":"foot_weapon","formationReadabilityId":"loose_screen","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}},
+    {"id":"marine","matchCategories":["marine"],"values":{"roleId":"marine_boarding","silhouetteId":"foot_dense","teamColorId":"primary_cloth_sails","paletteId":"naval_timber_canvas","assetId":"stock_militia","attachmentSetId":"none","scale":1.0,"animationSetId":"foot_weapon","formationReadabilityId":"close_blocks","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}},
+    {"id":"transport","matchCategories":["transport"],"values":{"roleId":"transport_cargo","silhouetteId":"boat_small","teamColorId":"primary_cloth_sails","paletteId":"naval_timber_canvas","assetId":"stock_boat","attachmentSetId":"ship_wake","scale":0.9,"animationSetId":"ship_sail","formationReadabilityId":"naval_column","rankDistinctionId":"ordinary_none","fallbackId":"declared_placeholder"}},
+    {"id":"merchant","matchCategories":["merchant"],"values":{"roleId":"merchant_ocean","silhouetteId":"merchant_round","teamColorId":"primary_cloth_sails","paletteId":"naval_timber_canvas","assetId":"stock_merchant_ship","attachmentSetId":"ship_wake","scale":1.0,"animationSetId":"ship_sail","formationReadabilityId":"naval_column","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}},
+    {"id":"warship","matchCategories":["warship"],"values":{"roleId":"warship_sailing","silhouetteId":"warship_tall","teamColorId":"primary_cloth_sails","paletteId":"naval_timber_canvas","assetId":"stock_battleship","attachmentSetId":"ship_wake","scale":1.12,"animationSetId":"ship_sail","formationReadabilityId":"naval_column","rankDistinctionId":"ordinary_none","fallbackId":"stock_same_role"}}
+  ],
+  "regionalFamilies": [
+    {"id":"european_ordinary_roster","values":{"paletteId":"europe_cloth_steel"}},
+    {"id":"african_ordinary_roster","values":{"paletteId":"africa_earth_brass"}},
+    {"id":"middle_east_india_ordinary_roster","values":{"paletteId":"med_india_jewel_earth"}}
+  ],
+  "polityFamilyAssignments": {"ottoman_empire":"middle_east_india_ordinary_roster","mamluk_sultanate":"middle_east_india_ordinary_roster"},
+  "polities": [{"id":"england","values":{}},{"id":"france","values":{}},{"id":"ottoman_empire","values":{}},{"id":"ethiopian_empire","values":{}},{"id":"songhai_kingdom","values":{}},{"id":"kongo_kingdom","values":{}},{"id":"marinid_morocco","values":{}},{"id":"kilwa_sultanate","values":{}},{"id":"vijayanagara_empire","values":{}},{"id":"rajput_confederacies","values":{}}],
+  "periodOverrides": [
+    {"id":"gunpowder_infantry","periodId":"gunpowder_1550_1649","matchCategories":["infantry"],"values":{"assetId":"stock_rifleman"}},
+    {"id":"standing_army_infantry","periodId":"standing_armies_1650_1749","matchCategories":["infantry"],"values":{"assetId":"stock_rifleman"}},
+    {"id":"late_infantry","periodId":"long_eighteenth_century_1750_1820","matchCategories":["infantry"],"values":{"assetId":"stock_rifleman"}}
+  ],
+  "unitOverrides": [
+    {"id":"english_longbow_retinue","values":{"roleId":"specialist_skirmisher","silhouetteId":"foot_loose","assetId":"stock_rifleman","formationReadabilityId":"loose_screen"}},
+    {"id":"venetian_galley","values":{"roleId":"warship_oared","silhouetteId":"galley_long","assetId":"stock_boat","scale":1.18,"fallbackId":"declared_placeholder"}},
+    {"id":"mediterranean_galley","values":{"roleId":"warship_oared","silhouetteId":"galley_long","assetId":"stock_boat","scale":1.18,"fallbackId":"declared_placeholder"}},
+    {"id":"swahili_dhow_transport","values":{"silhouetteId":"boat_small","fallbackId":"declared_placeholder"}}
+  ],
+  "characterArchetypes": [
+    {"id":"commander","values":{"roleId":"character_commander","silhouetteId":"hero_upright","teamColorId":"primary_cloth_sails","paletteId":"officer_contrast","assetId":"stock_hero_paladin","attachmentSetId":"infantry_officer","scale":1.12,"animationSetId":"hero_command","formationReadabilityId":"single_character","rankDistinctionId":"character_scale","fallbackId":"declared_placeholder"}},
+    {"id":"specialist","values":{"roleId":"character_specialist","silhouetteId":"hero_upright","teamColorId":"primary_cloth_sails","paletteId":"officer_contrast","assetId":"stock_hero_archmage","attachmentSetId":"infantry_officer","scale":1.08,"animationSetId":"hero_command","formationReadabilityId":"single_character","rankDistinctionId":"character_scale","fallbackId":"declared_placeholder"}}
+  ]
+}
