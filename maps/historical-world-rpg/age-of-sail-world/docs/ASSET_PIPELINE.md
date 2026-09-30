@@ -90,3 +90,12 @@ validator to produce the deterministic reports under
 `scenario/visuals/reports/`. Metadata resolution is used instead of a rendered
 contact sheet because the repository toolchain does not contain a deterministic
 CASC model renderer.
+
+The completed country/unit pass is authoritative in
+`scenario/visuals/country-unit-language.json`. It keeps regional families,
+polity palettes, historical availability, technology progression, stock
+fallbacks, and named-character production requirements in scenario data. The
+shared resolver applies controller team color without erasing imported cultural
+markings. `tooling/build_visual_language.py` regenerates the global snapshot and
+the four stable regional preview-scene manifests; these metadata contact sheets
+are used because no deterministic model renderer is available in the toolchain.
