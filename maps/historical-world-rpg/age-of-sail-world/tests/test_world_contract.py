@@ -16,19 +16,19 @@ spec.loader.exec_module(validator)
 
 
 def add_character_fixture(data):
-    data["traits"] = [{"id": "steadfast", "name": "Steadfast", "description": "Keeps faith under pressure."}]
-    data["skills"] = [{"id": "navigation", "name": "Navigation", "description": "Plans and follows routes."}]
-    data["professions"] = [{"id": "navigator", "name": "Navigator", "description": "A professional navigator."}]
+    data["traits"] = [{"id": "steadfast", "name": "Steadfast", "description": "Keeps faith under pressure."}] + data.get("traits", [])
+    data["skills"] = [{"id": "navigation_fixture", "name": "Navigation Fixture", "description": "Plans and follows routes."}] + data.get("skills", [])
+    data["professions"] = [{"id": "navigator_fixture", "name": "Navigator Fixture", "description": "A professional navigator."}] + data.get("professions", [])
     data["personalQuests"] = [{
         "id": "prove_the_route", "title": "Prove the Route",
         "summary": "Resolve a personal obligation.", "characterId": "companion_alpha"
-    }]
+    }] + data.get("personalQuests", [])
     data["characters"] = [
         {
             "id": "companion_alpha", "displayName": "Companion Alpha",
             "biography": "Scenario-defined character display data.",
-            "traitIds": ["steadfast"], "skills": [{"skillId": "navigation", "rating": 60}],
-            "professionIds": ["navigator"], "personalQuestIds": ["prove_the_route"],
+            "traitIds": ["steadfast"], "skills": [{"skillId": "navigation_fixture", "rating": 60}],
+            "professionIds": ["navigator_fixture"], "personalQuestIds": ["prove_the_route"],
             "loyalty": {"score": 25, "permanentState": "none"}
         },
         {
@@ -37,16 +37,16 @@ def add_character_fixture(data):
             "traitIds": [], "skills": [], "professionIds": [], "personalQuestIds": [],
             "loyalty": {"score": 0, "permanentState": "oathbound"}
         }
-    ]
+    ] + data.get("characters", [])
     data["relationshipThresholds"] = [{
         "id": "trusted_companions", "scope": "companion_relationship",
         "minimum": 50, "maximum": 100,
         "consequences": [{"kind": "buff", "contentId": "trusted_companion_synergy"}]
-    }]
+    }] + data.get("relationshipThresholds", [])
     data["companionRelationships"] = [{
         "id": "alpha_beta_relation", "characterAId": "companion_alpha",
         "characterBId": "companion_beta", "score": 10
-    }]
+    }] + data.get("companionRelationships", [])
     return data
 
 

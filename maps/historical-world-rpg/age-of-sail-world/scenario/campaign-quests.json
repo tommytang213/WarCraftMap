@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "coverageTargets": {
+    "majorRegions": ["europe", "africa", "middle_east_india", "southeast_asia", "east_asia", "americas_caribbean", "pacific"],
+    "minimumRegionalChains": 7,
+    "minimumLongChains": 1,
+    "requiredObjectiveKinds": ["travel", "trade", "diplomacy", "character", "discovery", "military", "settlement", "technology", "institution", "historical_event"],
+    "requiredGuidance": ["exact", "approximate", "region", "hidden", "return_to_giver", "turn_in"]
+  },
+  "quests": [
+    {
+      "id": "europe_printed_compact", "region": "europe", "chainKind": "regional", "title": "The Printed Compact",
+      "summary": "Carry a merchant compact from Lisbon to London and secure its recognition without assuming either city remains under its first ruler.",
+      "giver": ["settlement", "lisbon"], "turnIn": ["settlement", "lisbon"],
+      "stages": [
+        {"id": "carry_compact", "title": "Carry the Compact", "objectives": [{"id": "reach_london", "text": "Reach London or its lawful successor administration.", "kind": "travel", "refs": [["settlement", "london"]], "guidance": {"precision": "exact", "regionId": "europe", "settlementId": "london"}}], "next": ["negotiate", "secure_archive"]},
+        {"id": "negotiate", "title": "Terms at the Guildhall", "objectives": [{"id": "win_recognition", "text": "Win recognition through the current diplomatic authority.", "kind": "diplomacy", "refs": [["polity", "england"]]}], "next": ["return_compact"]},
+        {"id": "secure_archive", "title": "An Archive Survives", "objectives": [{"id": "preserve_copy", "text": "Deposit a copy with a surviving printing institution.", "kind": "institution", "refs": [["institution", "movable_type_printing"]]}], "next": ["return_compact"]},
+        {"id": "return_compact", "title": "Return to Lisbon", "objectives": [{"id": "report_lisbon", "text": "Report to the compact's sponsors in Lisbon.", "kind": "travel", "refs": [["settlement", "lisbon"]], "guidance": {"precision": "exact", "regionId": "europe", "settlementId": "lisbon", "purpose": "return_to_giver"}}], "next": []}
+      ],
+      "rewards": [{"id": "compact_credit", "adapter": "economy", "effect": "adjust_treasury", "refs": [["polity", "portugal"]]}, {"id": "compact_title", "adapter": "title", "effect": "grant_title", "refs": [["polity", "portugal"]]}],
+      "divergences": ["changed_settlement_control", "destroyed_giver_uses_successor_authority", "diplomatic_refusal_uses_archive_path"]
+    },
+    {
+      "id": "africa_niger_manuscripts", "region": "africa", "chainKind": "regional", "title": "Leaves of the Niger",
+      "summary": "Protect Timbuktu's manuscript trade while the Niger's rulers and roads change.", "giver": ["settlement", "timbuktu"], "turnIn": ["settlement", "timbuktu"],
+      "stages": [
+        {"id": "find_caravan", "title": "The Missing Caravan", "objectives": [{"id": "search_sahel", "text": "Search the western Sahel for the manuscript caravan.", "kind": "discovery", "refs": [["settlement", "timbuktu"]], "guidance": {"precision": "approximate", "regionId": "africa", "settlementId": "timbuktu", "searchAreas": [{"x": 22, "y": 25, "radius": 18}]}}], "next": ["escort_trade", "replace_copies"]},
+        {"id": "escort_trade", "title": "Guard the Salt Road", "objectives": [{"id": "secure_caravan", "text": "Defeat or deter the force threatening the caravan route.", "kind": "military", "refs": [["province", "middle_niger"]]}], "next": ["return_manuscripts"]},
+        {"id": "replace_copies", "title": "Copies Beyond the Road", "objectives": [{"id": "fund_copies", "text": "Trade for replacement paper and fund new copies.", "kind": "trade", "refs": [["settlement", "timbuktu"]]}], "next": ["return_manuscripts"]},
+        {"id": "return_manuscripts", "title": "Restore the Library", "objectives": [{"id": "restore_archive", "text": "Return the surviving work to Timbuktu's current custodians.", "kind": "settlement", "refs": [["settlement", "timbuktu"]]}], "next": []}
+      ],
+      "rewards": [{"id": "niger_prosperity", "adapter": "settlement", "effect": "adjust_prosperity", "refs": [["settlement", "timbuktu"]]}, {"id": "songhai_regard", "adapter": "diplomacy", "effect": "adjust_relations", "refs": [["polity", "songhai_kingdom"]]}],
+      "divergences": ["blocked_route_uses_copying_path", "changed_settlement_control", "military_defeat_preserves_recovery_path"]
+    },
+    {
+      "id": "india_stars_and_pepper", "region": "middle_east_india", "chainKind": "regional", "title": "Stars and Pepper",
+      "summary": "Join Calicut's pepper market to safer celestial navigation and keep the work alive if its first scholar is absent.", "giver": ["settlement", "calicut"], "turnIn": ["settlement", "calicut"],
+      "stages": [
+        {"id": "market_measure", "title": "Weights at Calicut", "objectives": [{"id": "trade_pepper", "text": "Complete a pepper trade at Calicut under its current controller.", "kind": "trade", "refs": [["settlement", "calicut"]], "guidance": {"precision": "exact", "regionId": "middle_east_india", "settlementId": "calicut"}}], "next": ["consult_king", "consult_pilots"]},
+        {"id": "consult_king", "title": "A Royal Astronomer", "objectives": [{"id": "meet_krishnadevaraya", "text": "Consult Krishnadevaraya if he is available and willing.", "kind": "character", "refs": [["character", "krishnadevaraya"]]}], "next": ["chart_monson"]},
+        {"id": "consult_pilots", "title": "The Pilots' Tables", "objectives": [{"id": "consult_pilot_guild", "text": "Obtain observations from Calicut's pilot guild instead.", "kind": "institution", "refs": [["institution", "renaissance_humanism"]]}], "next": ["chart_monson"]},
+        {"id": "chart_monson", "title": "A Monsoon Table", "objectives": [{"id": "advance_navigation", "text": "Complete the celestial-navigation research needed for the table.", "kind": "technology", "refs": [["technology", "celestial_navigation"]]}], "next": []}
+      ],
+      "rewards": [{"id": "chart_knowledge", "adapter": "technology", "effect": "complete_research", "refs": [["technology", "standardized_charts"]]}, {"id": "calicut_credit", "adapter": "economy", "effect": "adjust_treasury", "refs": [["polity", "vijayanagara_empire"]]}],
+      "divergences": ["unavailable_character_uses_pilot_guild", "changed_allegiance_uses_neutral_consultation", "changed_settlement_control"]
+    },
+    {
+      "id": "southeast_strait_accord", "region": "southeast_asia", "chainKind": "regional", "title": "The Strait Accord",
+      "summary": "Keep Malacca's strait open through negotiation or convoy action during commercial competition.", "giver": ["settlement", "malacca"], "turnIn": ["settlement", "malacca"],
+      "stages": [
+        {"id": "hear_petitions", "title": "Petitions of the Strait", "objectives": [{"id": "witness_competition", "text": "Hear the petitions raised by competition in the Malacca Strait.", "kind": "historical_event", "refs": [["settlement", "malacca"]], "eventId": "malacca_strait_competition", "guidance": {"precision": "region", "regionId": "southeast_asia"}}], "next": ["broker_passage", "guard_convoy"]},
+        {"id": "broker_passage", "title": "Broker Passage", "objectives": [{"id": "settle_port_claims", "text": "Broker passage with Malacca's current diplomatic authority.", "kind": "diplomacy", "refs": [["polity", "malacca_sultanate"]]}], "next": ["record_accord"]},
+        {"id": "guard_convoy", "title": "Guard the Convoy", "objectives": [{"id": "defend_strait", "text": "Protect a neutral convoy without claiming control of the route.", "kind": "military", "refs": [["navigation_zone", "node_malacca_sea"]]}], "next": ["record_accord"]},
+        {"id": "record_accord", "title": "Record the Accord", "objectives": [{"id": "return_malacca", "text": "Record the outcome at Malacca.", "kind": "settlement", "refs": [["settlement", "malacca"]]}], "next": []}
+      ],
+      "rewards": [{"id": "strait_relations", "adapter": "diplomacy", "effect": "adjust_relations", "refs": [["polity", "malacca_sultanate"]]}, {"id": "strait_trade", "adapter": "economy", "effect": "adjust_market", "refs": [["settlement", "malacca"]]}],
+      "divergences": ["diplomatic_refusal_uses_convoy_path", "blocked_route_retains_objective", "changed_settlement_control"]
+    },
+    {
+      "id": "east_asia_coastal_record", "region": "east_asia", "chainKind": "regional", "title": "The Coastal Record",
+      "summary": "Reconcile official coastal records with the testimony of sailors and admirals.", "giver": ["settlement", "beijing"], "turnIn": ["settlement", "beijing"],
+      "stages": [
+        {"id": "sealed_order", "title": "A Sealed Order", "objectives": [{"id": "receive_coastal_order", "text": "Receive the court's coastal-trade order.", "kind": "historical_event", "refs": [["settlement", "beijing"]], "eventId": "ming_coastal_trade_pressure", "guidance": {"precision": "exact", "regionId": "east_asia", "settlementId": "beijing"}}], "next": ["ask_admiral", "inspect_quanzhou"]},
+        {"id": "ask_admiral", "title": "The Admiral's Account", "objectives": [{"id": "consult_yi", "text": "Seek Yi Sun-sin's account if he is present and not hostile.", "kind": "character", "refs": [["character", "yi_sun_sin"]]}], "next": ["amend_record"]},
+        {"id": "inspect_quanzhou", "title": "The Harbor Ledger", "objectives": [{"id": "inspect_harbor", "text": "Inspect Quanzhou's harbor ledger as alternate testimony.", "kind": "discovery", "refs": [["settlement", "quanzhou"]], "guidance": {"precision": "exact", "regionId": "east_asia", "settlementId": "quanzhou"}}], "next": ["amend_record"]},
+        {"id": "amend_record", "title": "Amend the Record", "objectives": [{"id": "improve_charts", "text": "Apply the evidence to standardized charts.", "kind": "technology", "refs": [["technology", "standardized_charts"]]}], "next": []}
+      ],
+      "rewards": [{"id": "coastal_discovery", "adapter": "discovery", "effect": "reveal_location", "refs": [["settlement", "quanzhou"]]}, {"id": "court_regard", "adapter": "diplomacy", "effect": "adjust_relations", "refs": [["polity", "ming_empire"]]}],
+      "divergences": ["unavailable_character_uses_ledger", "changed_allegiance_uses_ledger", "changed_settlement_control"]
+    },
+    {
+      "id": "americas_highland_messages", "region": "americas_caribbean", "chainKind": "regional", "title": "Messages of the Highlands",
+      "summary": "Carry news between Cusco's road stations without exposing a refuge named only in guarded clues.", "giver": ["settlement", "cusco"], "turnIn": ["settlement", "cusco"],
+      "stages": [
+        {"id": "read_knots", "title": "Read the Knots", "objectives": [{"id": "meet_interpreter", "text": "Ask Malintzin to interpret the foreign report, or use the court interpreters if she is absent.", "kind": "character", "refs": [["character", "malintzin"]]}], "next": ["find_refuge", "use_court_runner"]},
+        {"id": "find_refuge", "title": "The Unnamed Refuge", "objectives": [{"id": "locate_refuge", "text": "Follow the guarded clue; no marker identifies the refuge.", "kind": "discovery", "refs": [["province", "inca_cusco_heartland"]], "guidance": {"precision": "hidden", "regionId": "americas_caribbean", "requiredClueIds": ["highland_knotted_clue"]}}], "next": ["deliver_warning"]},
+        {"id": "use_court_runner", "title": "The Court Road", "objectives": [{"id": "reach_road_network", "text": "Entrust the warning to the surviving court road network.", "kind": "settlement", "refs": [["settlement", "cusco"]]}], "next": ["deliver_warning"]},
+        {"id": "deliver_warning", "title": "The Warning Delivered", "objectives": [{"id": "survive_succession", "text": "Deliver the warning despite the succession crisis.", "kind": "historical_event", "refs": [["polity", "tawantinsuyu"]], "eventId": "tawantinsuyu_succession_pressure"}], "next": []}
+      ],
+      "rewards": [{"id": "highland_regard", "adapter": "character", "effect": "adjust_relationship", "refs": [["character", "tupac_amaru_ii"]]}, {"id": "highland_knowledge", "adapter": "discovery", "effect": "reveal_clue", "refs": [["province", "inca_cusco_heartland"]]}],
+      "divergences": ["unavailable_character_uses_court_runner", "hidden_location_never_leaks", "succession_changes_recipient"]
+    },
+    {
+      "id": "pacific_stars_between_islands", "region": "pacific", "chainKind": "regional", "title": "Stars Between Islands",
+      "summary": "Preserve a voyaging exchange whose destination is known first only as an island region.", "giver": ["settlement", "hawaii_royal_center"], "turnIn": ["settlement", "hawaii_royal_center"],
+      "stages": [
+        {"id": "learn_star_path", "title": "The Star Path", "objectives": [{"id": "speak_with_tupaia", "text": "Learn the star path from Tupaia, or from the voyaging council if he is unavailable.", "kind": "character", "refs": [["character", "tupaia"]]}], "next": ["seek_exchange", "council_route"]},
+        {"id": "seek_exchange", "title": "Across the Island Sea", "objectives": [{"id": "reach_samoa", "text": "Seek the exchange somewhere in the Pacific island region.", "kind": "travel", "refs": [["settlement", "samoa_fono"]], "guidance": {"precision": "region", "regionId": "pacific", "settlementId": "samoa_fono"}}], "next": ["renew_exchange"]},
+        {"id": "council_route", "title": "A Council Route", "objectives": [{"id": "ask_hawaii_council", "text": "Recover the route from Hawai'i's voyaging council.", "kind": "institution", "refs": [["institution", "renaissance_humanism"]]}], "next": ["renew_exchange"]},
+        {"id": "renew_exchange", "title": "Renew the Exchange", "objectives": [{"id": "witness_exchange", "text": "Renew the voyaging exchange between island communities.", "kind": "historical_event", "refs": [["settlement", "samoa_fono"]], "eventId": "pacific_voyaging_exchange"}], "next": []}
+      ],
+      "rewards": [{"id": "island_route", "adapter": "discovery", "effect": "reveal_route", "refs": [["navigation_zone", "node_central_pacific"]]}, {"id": "navigator_regard", "adapter": "character", "effect": "adjust_relationship", "refs": [["character", "tupaia"]]}],
+      "divergences": ["unavailable_character_uses_council", "blocked_route_retains_objective", "changed_settlement_control"]
+    },
+    {
+      "id": "ocean_of_accounts", "region": "global", "chainKind": "long", "title": "An Ocean of Accounts",
+      "summary": "Build a campaign-spanning account of trade, navigation, and political change without presuming any one port, ruler, or route survives.", "giver": ["settlement", "lisbon"], "turnIn": ["settlement", "lisbon"],
+      "prerequisiteQuestIds": ["europe_printed_compact", "africa_niger_manuscripts"],
+      "stages": [
+        {"id": "western_ledger", "title": "The Western Ledger", "objectives": [{"id": "compare_lisbon_timbuktu", "text": "Compare the Lisbon compact with the restored Niger archive.", "kind": "trade", "refs": [["settlement", "lisbon"], ["settlement", "timbuktu"]], "guidance": {"precision": "exact", "regionId": "africa", "settlementId": "timbuktu"}}], "next": ["monsoon_ledger"]},
+        {"id": "monsoon_ledger", "title": "The Monsoon Ledger", "objectives": [{"id": "record_calicut_malacca", "text": "Record a viable commercial link between Calicut and Malacca.", "kind": "trade", "refs": [["settlement", "calicut"], ["settlement", "malacca"]], "guidance": {"precision": "exact", "regionId": "southeast_asia", "settlementId": "malacca"}}], "next": ["eastern_testimony", "chart_detour"]},
+        {"id": "eastern_testimony", "title": "Eastern Testimony", "objectives": [{"id": "obtain_coastal_record", "text": "Obtain the amended East Asian coastal record.", "kind": "diplomacy", "refs": [["settlement", "beijing"]], "guidance": {"precision": "exact", "regionId": "east_asia", "settlementId": "beijing"}}], "next": ["across_two_oceans"]},
+        {"id": "chart_detour", "title": "The Chart Detour", "objectives": [{"id": "substitute_chart", "text": "When the eastern witness is unavailable, substitute a verified chart.", "kind": "technology", "refs": [["technology", "standardized_charts"]]}], "next": ["across_two_oceans"]},
+        {"id": "across_two_oceans", "title": "Across Two Oceans", "objectives": [{"id": "compare_island_highland", "text": "Compare Pacific voyaging knowledge with the guarded highland account.", "kind": "discovery", "refs": [["settlement", "samoa_fono"], ["settlement", "cusco"]], "guidance": {"precision": "approximate", "regionId": "americas_caribbean", "settlementId": "cusco", "searchAreas": [{"x": 45, "y": 62, "radius": 20}]}}], "next": ["return_world_ledger"]},
+        {"id": "return_world_ledger", "title": "Return the World Ledger", "objectives": [{"id": "turn_in_lisbon", "text": "Return the completed ledger to Lisbon or its successor civic authority.", "kind": "settlement", "refs": [["settlement", "lisbon"]], "guidance": {"precision": "exact", "regionId": "europe", "settlementId": "lisbon", "purpose": "turn_in"}}], "next": []}
+      ],
+      "rewards": [{"id": "world_ledger_credit", "adapter": "economy", "effect": "adjust_treasury", "refs": [["polity", "portugal"]]}, {"id": "world_ledger_title", "adapter": "title", "effect": "grant_title", "refs": [["polity", "portugal"]]}, {"id": "world_ledger_relations", "adapter": "diplomacy", "effect": "adjust_relations", "refs": [["polity", "malacca_sultanate"], ["polity", "ming_empire"]]}, {"id": "world_ledger_discovery", "adapter": "discovery", "effect": "reveal_route", "refs": [["navigation_zone", "node_central_pacific"]]}, {"id": "world_ledger_science", "adapter": "technology", "effect": "complete_research", "refs": [["technology", "standardized_charts"]]}],
+      "divergences": ["unavailable_eastern_witness_uses_chart", "blocked_routes_pause_without_completion", "changed_control_uses_successor_civic_authority", "all_terminal_failures_remain_explicit"]
+    }
+  ]
+}
