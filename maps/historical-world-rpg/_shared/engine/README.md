@@ -11,6 +11,11 @@ transfer checkpoints, manifest validation, first-visit defaults, visited-map
 reconstruction, and deterministic adapter ordering. Physical-map travel triggers
 remain scenario/runtime concerns.
 
+`world_integrity.py` provides bounded stable-ID scans and transactional recovery for
+scenario-declared authoritative domains. It rebuilds only derived persistence indexes
+and map-local Warcraft representations; unsafe authoritative corruption is rejected
+without mutation.
+
 `inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
 
 `timeline_simulation.py` provides ordered system hooks, deterministic random streams,
