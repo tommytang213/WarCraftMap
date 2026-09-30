@@ -71,6 +71,10 @@ entities are never duplicated between map-local runtime payloads.
 ship roster format and representative cross-category fixtures. It deliberately
 does not complete any country roster. Run `python3 tooling/validate_unit_roster.py`
 to validate references, inheritance, availability, mechanics, and runtime data.
+Country slices under `rosters/` add scenario-owned regional assignments and
+historical evidence. `southeast-east-asia-pacific.json` owns the second slice,
+including mainland, maritime, frontier, island-defense, and voyaging identities;
+the combined validator checks it together with the foundation and other slices.
 
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
 

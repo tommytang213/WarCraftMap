@@ -38,3 +38,23 @@ effects.
 
 Run `python3 tooling/validate_unit_roster.py`; `--output PATH` also writes a
 deterministic generated-data inspection artifact.
+
+The first country slice is
+`scenario/rosters/europe-africa-middle-east-india.json`. It adds selective
+European, African, Ottoman–Middle Eastern, and Indian identities while retaining
+shared archetypes for ordinary formations. Its assignments, names, balance,
+historical windows, requirements, and evidence are scenario-owned. Availability
+can require a polity, date, technologies, institutions, equipment, reforms,
+resources, and port access. Validation rejects broken gates and national units
+assigned to another polity.
+
+The second country slice is
+`scenario/rosters/southeast-east-asia-pacific.json`. It adds shared and
+polity-specific mainland, maritime Southeast Asian, East Asian frontier, and
+Pacific island forces. Its data covers elephant and mounted forces, early and
+later gunpowder formations, siege and fortress roles, riverine and amphibious
+warfare, boarding vessels, island defense, and historically supported
+long-distance wayfinding. Later matchlock and banner formations are date,
+technology, equipment, and reform gated; they are not injected into the 1450
+baseline. This slice remains one part of the country-content roadmap and does
+not mark that roadmap item complete.

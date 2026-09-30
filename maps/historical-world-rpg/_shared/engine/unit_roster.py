@@ -205,8 +205,10 @@ class RosterCatalog:
             self._check_external(row, ident)
 
     def _check_external(self, row: Mapping[str, Any], ident: str) -> None:
-        for field, key in (("technologyIds", "technologies"), ("militaryTraditionIds", "militaryTraditions")):
-            values = _unique_ids(row.get(field), f"archetype {ident}.{field}")
+        for field, key in (("technologyIds", "technologies"), ("institutionIds", "institutions"),
+                           ("equipmentIds", "equipment"), ("reformIds", "reforms"),
+                           ("resourceIds", "resources"), ("militaryTraditionIds", "militaryTraditions")):
+            values = _unique_ids(row.get(field, []), f"archetype {ident}.{field}")
             known = self.references.get(key)
             if known is not None and not set(values) <= known:
                 raise RosterError(f"archetype {ident}: missing {key} reference")
@@ -220,6 +222,8 @@ class RosterCatalog:
             known = self.references.get("countries")
             if known is not None and country not in known:
                 raise RosterError(f"archetype {ident}: missing country reference")
+        if not isinstance(row.get("portRequired", False), bool):
+            raise RosterError(f"archetype {ident}.portRequired: must be boolean")
 
     def _validate_relationships(self) -> None:
         graph = {}
@@ -242,7 +246,10 @@ class RosterCatalog:
                 visiting.remove(ident); done.add(ident)
         for ident in sorted(graph): visit(ident)
 
-    def availability(self, archetype_id: str, year: int, completed_technology_ids: set[str]) -> Availability:
+    def availability(self, archetype_id: str, year: int, completed_technology_ids: set[str], *,
+                     country_id: str | None = None, established_institution_ids: set[str] | None = None,
+                     equipment_ids: set[str] | None = None, reform_ids: set[str] | None = None,
+                     resource_ids: set[str] | None = None, has_port: bool = False) -> Availability:
         row = self.archetypes.get(archetype_id)
         if row is None or row.get("abstract"):
             raise RosterError(f"unknown concrete archetype {archetype_id!r}")
@@ -251,7 +258,13 @@ class RosterCatalog:
         early_required = set(availability["earlyAccessTechnologyIds"])
         historical = availability["historicalStartYear"] <= year <= availability["historicalEndYear"]
         early = availability["earlyAccessYear"] <= year < availability["historicalStartYear"] and bool(early_required) and early_required <= completed_technology_ids
-        unlocked = required <= completed_technology_ids
+        unlocked = (required <= completed_technology_ids
+                    and set(row.get("institutionIds", [])) <= (established_institution_ids or set())
+                    and set(row.get("equipmentIds", [])) <= (equipment_ids or set())
+                    and set(row.get("reformIds", [])) <= (reform_ids or set())
+                    and set(row.get("resourceIds", [])) <= (resource_ids or set())
+                    and (row["countryId"] is None or row["countryId"] == country_id)
+                    and (not row.get("portRequired", False) or has_port))
         distance = min(abs(year - availability["historicalStartYear"]), abs(year - availability["historicalEndYear"]))
         return Availability(unlocked and (historical or early), 100 if historical else max(25, 100 - distance * 5), early and unlocked)
 

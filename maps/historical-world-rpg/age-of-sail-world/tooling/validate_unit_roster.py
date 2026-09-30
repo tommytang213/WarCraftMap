@@ -9,20 +9,69 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / "_shared" / "engine"))
 from unit_roster import RosterCatalog, RosterError  # noqa: E402
 
+SLICE_PATHS = (
+    ROOT / "scenario/rosters/europe-africa-middle-east-india.json",
+    ROOT / "scenario/rosters/southeast-east-asia-pacific.json",
+)
+
+
+def _combined_source(path):
+    source = json.loads(Path(path).read_text(encoding="utf-8"))
+    if Path(path) == ROOT / "scenario/rosters/foundation.json":
+        assignments, equipment, reforms, resources = [], set(), set(), set()
+        for slice_path in SLICE_PATHS:
+            if not slice_path.exists():
+                continue
+            regional = json.loads(slice_path.read_text(encoding="utf-8"))
+            if regional.get("format") != "age_of_sail_roster_slice_v1":
+                raise RosterError(f"unsupported roster slice format in {slice_path.name}")
+            for key in ("weapons", "armor", "abilities", "formations", "ships", "archetypes", "historicalEvidence"):
+                source[key].extend(regional.get(key, []))
+            assignments.extend(regional.get("assignments", []))
+            equipment.update(regional.get("equipment", []))
+            reforms.update(regional.get("reforms", []))
+            resources.update(regional.get("resources", []))
+        source["rosterAssignments"] = assignments
+        source["equipmentCatalog"] = sorted(equipment)
+        source["reformCatalog"] = sorted(reforms)
+        source["resourceCatalog"] = sorted(resources | {"grain", "flour", "ship_provisions"})
+    return source
+
 
 def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
-    source = json.loads(Path(path).read_text(encoding="utf-8"))
+    source = _combined_source(path)
     progression = json.loads((ROOT / "scenario/progression/catalog.json").read_text(encoding="utf-8"))
     traditions = json.loads((ROOT / "scenario/military-traditions.json").read_text(encoding="utf-8"))
     world = json.loads((ROOT / "scenario/world/world.json").read_text(encoding="utf-8"))
     references = {
         "technologies": {x["id"] for x in progression["technologies"]},
+        "institutions": {x["id"] for x in progression["institutions"]},
         "militaryTraditions": {x["id"] for x in traditions["traditions"]},
         "countries": {x["id"] for x in world["polities"]},
+        "equipment": set(source.get("equipmentCatalog", [])),
+        "reforms": set(source.get("reformCatalog", [])),
+        "resources": set(source.get("resourceCatalog", {"grain", "flour", "ship_provisions"})),
     }
     if source.get("format") != "age_of_sail_ordinary_roster_v1" or not source.get("historicalEvidence"):
         raise RosterError("unsupported roster format or missing historical evidence")
-    return RosterCatalog(source, references)
+    catalog = RosterCatalog(source, references)
+    assignments = source.get("rosterAssignments", [])
+    seen = set()
+    for assignment in assignments:
+        polities, units = assignment.get("polityIds"), assignment.get("archetypeIds")
+        if not isinstance(polities, list) or not polities or not isinstance(units, list) or not units:
+            raise RosterError("roster assignment must name non-empty polity and archetype arrays")
+        if not set(polities) <= references["countries"] or not set(units) <= set(catalog.archetypes):
+            raise RosterError("roster assignment has broken polity or archetype reference")
+        for polity in polities:
+            for unit in units:
+                if catalog.archetypes[unit].get("countryId") not in (None, polity):
+                    raise RosterError(f"roster assignment gives {unit} to incompatible polity {polity}")
+                seen.add((polity, unit))
+    if len(seen) != sum(len(x["polityIds"]) * len(x["archetypeIds"]) for x in assignments):
+        raise RosterError("duplicate roster assignment")
+    catalog.assignments = tuple(sorted(seen))
+    return catalog
 
 
 def main(argv=None):
