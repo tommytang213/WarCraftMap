@@ -46,6 +46,49 @@ def stack(instance_id, item_type_id, quantity=1):
     return {"instanceId": instance_id, "itemTypeId": item_type_id, "quantity": quantity}
 
 
+def set_catalog(policy="cumulative", allow_duplicates=False):
+    data = catalog()
+    data["equipmentSlots"] = [
+        {"id": "weapon_slot", "slotType": "main_hand"},
+        {"id": "head_slot", "slotType": "head"},
+        {"id": "chest_slot", "slotType": "chest"},
+        {"id": "ring_left", "slotType": "ring"},
+        {"id": "ring_right", "slotType": "ring"},
+    ]
+    data["itemTypes"].extend([
+        {"id": "test_helm", "category": "equipment", "stackable": False, "stackLimit": 1, "equipmentSlotTypes": ["head"]},
+        {"id": "test_coat", "category": "equipment", "stackable": False, "stackLimit": 1, "equipmentSlotTypes": ["chest"]},
+        {"id": "test_ring", "category": "equipment", "stackable": False, "stackLimit": 1, "equipmentSlotTypes": ["ring"]},
+    ])
+    data["derivedEffects"] = [
+        {"id": "set_defence", "modifiers": {"stats": {"armor": 2}, "resistances": {"cold": 5}}},
+        {"id": "set_resource", "modifiers": {"resources": {"resolve": 10}, "abilities": ["steady"]}},
+        {"id": "set_passive", "modifiers": {"passives": ["guarded"], "conditionalEffects": ["low_health_guard"]}},
+    ]
+    data["equipmentSetPieces"] = [
+        {"id": "helm_piece", "itemTypeIds": ["test_helm"], "equipmentSlotTypes": ["head"]},
+        {"id": "coat_piece", "itemTypeIds": ["test_coat"]},
+        {"id": "ring_piece", "itemTypeIds": ["test_ring"], "equipmentSlotTypes": ["ring"]},
+    ]
+    thresholds = [
+        {"id": "two_piece", "pieceCount": 2, "effectIds": ["set_defence"], "tierPolicy": policy},
+        {"id": "three_piece", "pieceCount": 3, "effectIds": ["set_resource"], "tierPolicy": policy},
+    ]
+    if policy == "replacement":
+        thresholds[0]["tierPolicy"] = "cumulative"
+        thresholds[1]["replacesThresholdIds"] = ["two_piece"]
+    data["equipmentSets"] = [{"id": "test_set", "pieceIds": ["helm_piece", "coat_piece", "ring_piece"],
+                               "allowDuplicatePieces": allow_duplicates, "thresholds": thresholds}]
+    return data
+
+
+def set_inventory():
+    state = empty_inventory(1)
+    state["equipment"] = {"weapon_slot": None, "head_slot": None, "chest_slot": None,
+                            "ring_left": None, "ring_right": None}
+    return state
+
+
 class InventoryContractTests(unittest.TestCase):
     def test_valid_contract_supports_six_backpacks_and_180_maximum_slots(self):
         data = catalog()
@@ -146,6 +189,100 @@ class InventoryContractTests(unittest.TestCase):
         self.assertEqual(6, len(recovered.inventory["activeBackpacks"]))
         self.assertIn("pack_7", [value["instanceId"] for value in recovered.overflow])
         self.assertIn("seventh_item", str(recovered.inventory) + str(recovered.overflow))
+
+    def test_set_resolution_zero_partial_full_and_storage_exclusion(self):
+        data, state = set_catalog(), set_inventory()
+        state["outerSlots"][0] = stack("stored_helm", "test_helm")
+        state["activeBackpacks"][0]["slots"][0] = stack("bagged_coat", "test_coat")
+        self.assertEqual((), inventory.resolve_equipment_bonuses(data, state).set_bonuses)
+        state["outerSlots"][0] = state["activeBackpacks"][0]["slots"][0] = None
+        state["equipment"]["head_slot"] = stack("equipped_helm", "test_helm")
+        state["equipment"]["chest_slot"] = stack("equipped_coat", "test_coat")
+        partial = inventory.resolve_equipment_bonuses(data, state)
+        self.assertEqual(("two_piece",), tuple(x.threshold_id for x in partial.set_bonuses))
+        state["equipment"]["ring_left"] = stack("equipped_ring", "test_ring")
+        full = inventory.resolve_equipment_bonuses(data, state)
+        self.assertEqual(("two_piece", "three_piece"), tuple(x.threshold_id for x in full.set_bonuses))
+        self.assertEqual(("set_defence", "set_resource"), full.effect_ids)
+
+    def test_distinct_default_duplicate_opt_in_and_ordinary_bonus_preservation(self):
+        state = set_inventory()
+        state["equipment"]["ring_left"] = stack("first_ring", "test_ring")
+        state["equipment"]["ring_right"] = stack("second_ring", "test_ring")
+        default = inventory.resolve_equipment_bonuses(set_catalog(), state)
+        self.assertEqual((), default.set_bonuses)
+        allowed = inventory.resolve_equipment_bonuses(set_catalog(allow_duplicates=True), state)
+        self.assertEqual(("two_piece",), tuple(x.threshold_id for x in allowed.set_bonuses))
+        self.assertEqual(("first_ring", "second_ring"), allowed.item_instance_ids)
+
+    def test_replacement_and_exclusive_tiers_select_normalized_effects(self):
+        state = set_inventory()
+        state["equipment"]["head_slot"] = stack("equipped_helm", "test_helm")
+        state["equipment"]["chest_slot"] = stack("equipped_coat", "test_coat")
+        state["equipment"]["ring_left"] = stack("equipped_ring", "test_ring")
+        replaced = inventory.resolve_equipment_bonuses(set_catalog("replacement"), state)
+        self.assertEqual(("three_piece",), tuple(x.threshold_id for x in replaced.set_bonuses))
+        exclusive = inventory.resolve_equipment_bonuses(set_catalog("exclusive"), state)
+        self.assertEqual(("three_piece",), tuple(x.threshold_id for x in exclusive.set_bonuses))
+
+    def test_multiple_and_overlapping_sets_resolve_independently(self):
+        data, state = set_catalog(), set_inventory()
+        data["equipmentSets"].append({"id": "second_set", "pieceIds": ["helm_piece", "coat_piece"],
+            "thresholds": [{"id": "second_partial", "pieceCount": 2, "effectIds": ["set_passive"]}]})
+        state["equipment"]["head_slot"] = stack("equipped_helm", "test_helm")
+        state["equipment"]["chest_slot"] = stack("equipped_coat", "test_coat")
+        result = inventory.resolve_equipment_bonuses(data, state)
+        self.assertEqual((("second_set", "second_partial"), ("test_set", "two_piece")),
+                         tuple((x.set_id, x.threshold_id) for x in result.set_bonuses))
+
+    def test_recompute_after_swap_transfer_and_reconstruction_is_deterministic(self):
+        data, state = set_catalog(), set_inventory()
+        state["equipment"]["head_slot"] = stack("equipped_helm", "test_helm")
+        state["equipment"]["chest_slot"] = stack("equipped_coat", "test_coat")
+        before = inventory.resolve_equipment_bonuses(data, state)
+        restored = copy.deepcopy(state)  # save/load or physical-object reconstruction
+        self.assertEqual(before, inventory.resolve_equipment_bonuses(data, restored))
+        restored["outerSlots"][0] = restored["equipment"]["chest_slot"]
+        restored["equipment"]["chest_slot"] = None
+        self.assertEqual((), inventory.resolve_equipment_bonuses(data, restored).set_bonuses)
+        self.assertNotIn("set_bonuses", str(restored).lower(), "derived totals must never enter persisted state")
+
+    def test_over_capacity_recovery_preserves_equipped_set_authority(self):
+        data, state = set_catalog(), set_inventory()
+        state["equipment"]["head_slot"] = stack("equipped_helm", "test_helm")
+        state["equipment"]["chest_slot"] = stack("equipped_coat", "test_coat")
+        state["outerSlots"].extend(stack(f"overflow_item_{index}", "field_blade") for index in range(12))
+        recovered = inventory.recover_over_capacity(data, state)
+        self.assertEqual(("two_piece",), tuple(
+            x.threshold_id for x in inventory.resolve_equipment_bonuses(data, recovered.inventory).set_bonuses))
+        self.assertEqual(3, len(recovered.overflow))
+
+    def test_failed_state_validation_does_not_mutate_catalog_or_inventory(self):
+        data, state = set_catalog(), set_inventory()
+        original_data, original_state = copy.deepcopy(data), copy.deepcopy(state)
+        state["equipment"]["head_slot"] = stack("wrong_slot", "test_coat")
+        invalid_state = copy.deepcopy(state)
+        with self.assertRaisesRegex(inventory.InventoryError, "incompatible equipment"):
+            inventory.resolve_equipment_bonuses(data, invalid_state)
+        self.assertEqual(original_data, data)
+        self.assertEqual(invalid_state, state)
+        self.assertEqual(original_state["equipment"]["head_slot"], None)
+
+    def test_malformed_set_catalogs_fail_atomically_with_stable_ids(self):
+        mutations = []
+        mutations.append(lambda d: d["equipmentSets"][0]["thresholds"].append(
+            {"id": "duplicate_count", "pieceCount": 2, "effectIds": ["set_passive"]}))
+        mutations.append(lambda d: d["equipmentSets"][0]["thresholds"][0].update(effectIds=["missing_effect"]))
+        mutations.append(lambda d: d["equipmentSets"][0].update(pieceIds=["helm_piece", "helm_piece"]))
+        mutations.append(lambda d: d["equipmentSetPieces"][0].update(itemTypeIds=["healing_draught"]))
+        for mutate in mutations:
+            data = set_catalog(); mutate(data)
+            with self.assertRaises(inventory.InventoryError):
+                inventory.validate_catalog(data)
+        data = set_catalog("replacement")
+        data["equipmentSets"][0]["thresholds"][0].update(tierPolicy="replacement", replacesThresholdIds=["three_piece"])
+        with self.assertRaisesRegex(inventory.InventoryError, "replacement|cyclic"):
+            inventory.validate_catalog(data)
 
 
 if __name__ == "__main__":

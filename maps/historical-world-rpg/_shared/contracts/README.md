@@ -94,11 +94,22 @@ Rank tiers are universal ordered identifiers from `none` through `emperor`; play
 
 `territorialHoldings` keep legal ownership, military control, civil governance, sovereignty, and autonomy in separate fields. A holding may name an overlord holding and owe scenario-defined tax and obligations. A holding with no overlord must have zero overlord tax and no overlord obligations, while every holding retains a positive ordinary upkeep rate. Territory and holder references use stable IDs; neither titles nor land depend on Warcraft object instances.
 
+`military-tradition.schema.json` defines scenario-neutral stable IDs for eligible
+controllers, categories, weighted combat sources, rational continuous
+coefficients, milestone effects, and strategic-unit assignments. Persistent
+experience is controller/category state; derived runtime layers are not saved.
+
 `allegiances` represent one current polity per subject without country-specific rules. `validate_allegiance_transition` accepts a change between any two existing, distinct polity IDs, allowing runtime systems to change allegiance without changing title or territory identity.
 
 ## Inventory and equipment contract
 
-`inventory.schema.json` defines generic item types, data-driven stacks, equipment slots, backpack types, progression tiers, and stable-ID owner state. The executable validator and deterministic pickup/recovery rules live in `_shared/engine/inventory.py`. Storage never grants equipment bonuses; only the dedicated equipment map does. V1 has six outer slots plus at most six backpacks of at most 30 slots each, with no nested containers. See the scenario `docs/INVENTORY.md` for native Warcraft 3.0 adapter findings and persistence behavior.
+`inventory.schema.json` defines generic item types, data-driven stacks, equipment slots, backpack types, progression tiers, stable-ID owner state, and scenario-neutral equipment-set pieces, thresholds, tier policies, and derived-effect references. The executable validator and deterministic pickup/recovery/set-resolution rules live in `_shared/engine/inventory.py`. Storage never grants equipment bonuses; only the dedicated equipment map does. Set results are derived and are not fields of owner state. V1 has six outer slots plus at most six backpacks of at most 30 slots each, with no nested containers. See the scenario `docs/INVENTORY.md` for native Warcraft 3.0 adapter findings and persistence behavior.
+
+`unit-roster.schema.json` defines scenario-owned ordinary land/naval archetypes,
+components, mechanics, historical/technology availability, directed evolution,
+and bounded runtime templates. `_shared/engine/unit_roster.py` resolves explicit
+inheritance and validates cross-domain compatibility while keeping strategic
+strength independent from transient Warcraft proxy counts.
 
 ## Contract versions
 

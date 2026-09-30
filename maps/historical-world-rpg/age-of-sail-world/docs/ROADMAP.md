@@ -66,17 +66,22 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] City capture/rebuild
 - [x] Titles/land/taxation
 - [x] Characters/relationships
+- [x] Controller military tradition / category combat-experience progression
+- [x] Equipment set definitions and partial/full threshold-bonus resolution
 - [x] Quests/events/exploration
 
 ## Phase 5 — Age of Sail world content
 
 - [x] Early performance stress harness and provisional budgets
 - [x] Synthetic large-world simulation tests before full content population
-- [ ] Maximum-reasonable local battle performance test
+- [x] Maximum-reasonable local battle performance test
 - [x] Global geography/navigation topology
-- [x] Regional instance activation, boundary transitions, and cross-region travel
-- [ ] Cross-region troop command and remote regional building management
-- [ ] World/region map, discovery knowledge, custom quest journal, and quest location/search-area tracking
+- [x] Multi-map campaign packaging and per-region/subregion physical map build pipeline
+- [x] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
+- [x] Regional instance activation, boundary transitions, and cross-map/cross-region travel
+- [x] Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)
+- [x] World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
+- [x] Custom quest journal and quest-to-map tracking integration
 - [x] Europe
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
@@ -91,13 +96,31 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
-- [ ] Southeast Asia
+- [x] Southeast Asia
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 political baseline and authoritative settlement content
+  - [x] Ports, trade routes, transitions, economy profiles, and abstract activation data
 - [ ] East Asia
-- [ ] Americas / Caribbean
+  - [x] Regional instances and geographic reference data
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
+  - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
+- [x] Americas / Caribbean
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (polities, provinces, confederated and decentralized authority, diplomacy, and conflicts)
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 political baseline (polities, provinces, sovereignty, relationships, and conflicts)
+  - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
 - [ ] Pacific
-- [ ] Historical tech/event timeline
-- [ ] Country-specific units/content
-- [ ] Recruitable characters
+  - [x] Regional instances and geographic reference data
+  - [x] 1450 political baseline (island polities, chiefdoms, confederated and decentralized communities, diplomacy, and political-center exceptions)
+  - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
+  - [x] 1450 political authority, priority settlements, ports, routes, transitions, economies, and abstract activation data
+- [x] Historical tech/event timeline
+- [x] Country-specific units/content
+- [x] Recruitable characters
 - [ ] Regional and long-chain quests
 - [ ] Treasures/secrets
 

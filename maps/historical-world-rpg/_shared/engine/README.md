@@ -6,6 +6,11 @@ Reusable systems live here. This layer must not know that the first scenario is 
 slot layout, integrity checks, and migration registry. Warcraft-native storage is
 deliberately deferred to the runtime integration layer.
 
+`cross_map_persistence.py` implements versioned, integrity-protected physical-map
+transfer checkpoints, manifest validation, first-visit defaults, visited-map
+reconstruction, and deterministic adapter ordering. Physical-map travel triggers
+remain scenario/runtime concerns.
+
 `inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
 
 `timeline_simulation.py` provides ordered system hooks, deterministic random streams,
@@ -21,6 +26,11 @@ province adoption, and campaign-save snapshots.
 operational state, and stable-ID persistence. Warcraft objects are transient,
 locally relevant representations created only through a compatibility adapter.
 
+`unit_roster.py` validates scenario roster catalogs, resolves controlled
+archetype inheritance, evaluates historical and technology availability, and
+deterministically projects roster-instance strength into bounded local proxies.
+It contains no Age of Sail content or balance values.
+
 `quest_event.py` owns deterministic quest lifecycles, trigger ordering and
 deduplication, persistent discoveries, atomic scenario outcomes, and stable saves.
 
@@ -32,6 +42,8 @@ Planned modules include:
 - economy, goods, trade, taxation
 - diplomacy, wars, occupations and peace settlements
 - characters, loyalty, relationships and Oathbound progression
+- declarative character availability, deterministic alternate locations, remote
+  region projection, and reconstructible physical representations
 - titles, peerage, land grants, vassalage and sovereignty
 - quests and historical events
 - navigation zones and safe-position recovery

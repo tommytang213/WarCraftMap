@@ -1,0 +1,158 @@
+{
+  "format": "warcraftmap_physical_maps_v1",
+  "formatVersion": 1,
+  "mapBuildConfig": "package.json",
+  "regionalAssignments": "scenario/maps/world-map.json",
+  "outputDirectory": "_build/release",
+  "campaign": {
+    "id": "age_of_sail_world",
+    "name": "Age of Sail: The World",
+    "fileName": "AgeOfSailWorldCampaign",
+    "bootstrapMapId": "bootstrap_runtime_validation"
+  },
+  "physicalMaps": [
+    {
+      "id": "bootstrap_runtime_validation",
+      "bootstrap": true,
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/AgeOfSailWorld.w3x",
+      "assignments": {"logicalRegionIds": [], "regionalInstanceIds": [], "generatedTerrainIds": []},
+      "terrainBudget": {"maximumCells": 0, "maximumOutputBytes": 0}
+    },
+    {
+      "id": "europe_west",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/EuropeWest.w3x",
+      "assignments": {
+        "logicalRegionIds": ["europe"],
+        "regionalInstanceIds": ["europe_atlantic_isles", "europe_france_low_countries", "europe_iberia_western_med", "europe_italy_central_med"],
+        "generatedTerrainIds": ["europe"]
+      },
+      "terrainBudget": {"maximumCells": 16384, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "europe_central_east",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/EuropeCentralEast.w3x",
+      "assignments": {
+        "logicalRegionIds": ["europe"],
+        "regionalInstanceIds": ["europe_balkans_aegean", "europe_baltic_scandinavia", "europe_central_alpine", "europe_eastern_black_sea"],
+        "generatedTerrainIds": ["europe"]
+      },
+      "terrainBudget": {"maximumCells": 16384, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "africa",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/Africa.w3x",
+      "assignments": {
+        "logicalRegionIds": ["africa"],
+        "regionalInstanceIds": ["africa_great_lakes_rift", "africa_horn_swahili", "africa_madagascar_indian_ocean", "africa_maghreb_med_atlantic", "africa_nile_red_sea", "africa_sahara_sahel", "africa_southern_cape", "africa_west_guinea_congo"],
+        "generatedTerrainIds": ["africa"]
+      },
+      "terrainBudget": {"maximumCells": 16384, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "middle_east_india",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/MiddleEastIndia.w3x",
+      "assignments": {
+        "logicalRegionIds": ["middle_east_india"],
+        "regionalInstanceIds": ["mei_anatolia_levant", "mei_arabia_red_sea", "mei_bengal_ceylon", "mei_central_asia", "mei_ganges_himalaya", "mei_indus_deccan", "mei_mesopotamia_persia"],
+        "generatedTerrainIds": ["middle_east_india"]
+      },
+      "terrainBudget": {"maximumCells": 16384, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "southeast_asia",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/SoutheastAsia.w3x",
+      "assignments": {
+        "logicalRegionIds": ["southeast_asia"],
+        "regionalInstanceIds": ["sea_mainland", "sea_malay_sumatra", "sea_java_sunda", "sea_borneo", "sea_philippines", "sea_sulawesi_moluccas", "sea_new_guinea_west"],
+        "generatedTerrainIds": ["southeast_asia"]
+      },
+      "terrainBudget": {"maximumCells": 27648, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "east_asia",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/EastAsia.w3x",
+      "assignments": {
+        "logicalRegionIds": ["east_asia"],
+        "regionalInstanceIds": ["east_asia_interior", "east_asia_china_north", "east_asia_china_south", "east_asia_korea", "east_asia_japan", "east_asia_northeast_pacific"],
+        "generatedTerrainIds": ["east_asia"]
+      },
+      "terrainBudget": {"maximumCells": 18784, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "americas_north_central",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/AmericasNorthCentral.w3x",
+      "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_north_atlantic", "americas_north_pacific", "americas_mexico_central"], "generatedTerrainIds": ["americas_caribbean"]},
+      "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "americas_caribbean",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/AmericasCaribbean.w3x",
+      "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_caribbean_islands"], "generatedTerrainIds": ["americas_caribbean"]},
+      "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 786432}
+    },
+    {
+      "id": "americas_south",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/AmericasSouth.w3x",
+      "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_north_south", "americas_amazon_brazil", "americas_andes_southern_cone"], "generatedTerrainIds": ["americas_caribbean"]},
+      "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 1048576}
+    },
+    {
+      "id": "americas_pacific_transition",
+      "sourceMap": "map/AgeOfSailWorld.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/AmericasPacificTransition.w3x",
+      "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_pacific_transition"], "generatedTerrainIds": ["americas_caribbean"]},
+      "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 524288}
+    },
+    {
+      "id":"pacific_north","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNorth.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_north_hawaii"],"generatedTerrainIds":["pacific"]},
+      "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":524288}
+    },
+    {
+      "id":"pacific_west","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificWest.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_micronesia"],"generatedTerrainIds":["pacific"]},
+      "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":786432}
+    },
+    {
+      "id":"pacific_melanesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificMelanesia.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_melanesia"],"generatedTerrainIds":["pacific"]},
+      "terrainBudget":{"maximumCells":32768,"maximumOutputBytes":1048576}
+    },
+    {
+      "id":"pacific_polynesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificPolynesia.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_west_polynesia","pacific_east_polynesia"],"generatedTerrainIds":["pacific"]},
+      "terrainBudget":{"maximumCells":32768,"maximumOutputBytes":1048576}
+    },
+    {
+      "id":"pacific_new_zealand","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNewZealand.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_new_zealand"],"generatedTerrainIds":["pacific"]},
+      "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":786432}
+    },
+    {
+      "id":"pacific_open_ocean_encounter","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificOpenOceanEncounter.w3x",
+      "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":[],"generatedTerrainIds":[]},
+      "terrainBudget":{"maximumCells":8192,"maximumOutputBytes":262144}
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import time
@@ -146,8 +147,104 @@ def _validate(source: dict, regional_geography: dict | None) -> tuple[dict, dict
     return zones, chokepoints, features
 
 
-def generate(source: dict, regional_geography: dict | None = None) -> dict:
+def _generate_instance_collection(source: dict, regional_geography: dict | None, authority: dict | None) -> dict:
+    """Generate map-scoped rasters from an authoritative multi-instance geography.
+
+    The format deliberately keeps the geography in the scenario authority file;
+    this configuration only declares raster/pathing policy and budgets.
+    """
+    if authority is None or authority.get("graphRegionId") != source.get("regionId"):
+        raise TerrainGenerationError("multi-instance terrain requires its matching geography authority")
+    policies = _index(source.get("instancePolicies"), "instancePolicies")
+    instances = _index(authority.get("instances"), "geography instances")
+    if set(policies) != set(instances):
+        raise TerrainGenerationError("instancePolicies must cover every authoritative geography instance")
+    topology = authority.get("navigationTopology", {})
+    nodes = _index(topology.get("nodes"), "navigation nodes")
+    links = _index(topology.get("links"), "navigation links")
+    graphs = {kind: {node: set() for node in nodes} for kind in sorted(MOVEMENT_CLASSES)}
+    for link in links.values():
+        for kind in link.get("movementClasses", []):
+            if kind not in MOVEMENT_CLASSES:
+                raise TerrainGenerationError(f"navigation link {link['id']}: invalid movement class")
+            graphs[kind][link["from"]].add(link["to"]); graphs[kind][link["to"]].add(link["from"])
+    forbidden = {node for node, value in nodes.items() if value.get("class") in {"decorative_water", "impassable_barrier"}}
+    if any(graphs[kind][node] for kind in graphs for node in forbidden):
+        raise TerrainGenerationError("navigation cannot route through decorative water or impassable barriers")
+    results, total_cells, total_bytes = [], 0, 0
+    anchors_by_id = _index(authority.get("boundaryAnchors"), "boundaryAnchors")
+    for anchor in anchors_by_id.values():
+        if anchor.get("pairId"):
+            pair = anchors_by_id.get(anchor["pairId"])
+            if pair is None or pair.get("pairId") != anchor["id"] or pair.get("source") != anchor.get("source"):
+                raise TerrainGenerationError(f"boundary anchor {anchor['id']}: seam correspondence is invalid")
+    runtime_anchors = {a["id"]: a for a in (regional_geography or {}).get("anchors", [])}
+    for anchor in anchors_by_id.values():
+        if anchor.get("globalAnchorId"):
+            target = runtime_anchors.get(anchor["globalAnchorId"])
+            if target is None or target.get("regionId") != source["regionId"]:
+                raise TerrainGenerationError(f"boundary anchor {anchor['id']}: global entry anchor is missing")
+    for instance_id in sorted(instances):
+        instance, policy = instances[instance_id], policies[instance_id]
+        bounds = instance["localBounds"]; width, height = policy["grid"]
+        if not all(isinstance(v, int) and v > 1 for v in (width, height)):
+            raise TerrainGenerationError(f"{instance_id}: grid must contain positive integer dimensions")
+        cells = [SURFACES["navigable_sea"]] * (width * height)
+        def paint_polygon(polygon, value):
+            for y in range(height):
+                py = bounds["minY"] + (y + .5) * (bounds["maxY"] - bounds["minY"]) / height
+                for x in range(width):
+                    px = bounds["minX"] + (x + .5) * (bounds["maxX"] - bounds["minX"]) / width
+                    if _point_in_polygon(px, py, polygon): cells[y * width + x] = value
+        for polygon in policy.get("landMasks", []): paint_polygon(polygon, SURFACES["land"])
+        feature_output = []
+        origin, scale, offset = instance["transform"]["sourceOrigin"], instance["transform"]["scale"], instance["transform"]["offset"]
+        for feature in instance["features"]:
+            transformed = [[round((p[0]-origin[0])*scale[0]+offset[0], 2), round((p[1]-origin[1])*scale[1]+offset[1], 2)] for p in feature["points"]]
+            feature_output.append({**feature, "points": transformed})
+            if feature["kind"] == "island" and len(transformed) >= 3: paint_polygon(transformed, SURFACES["land"])
+        # Isolated/decorative water is never made navigable by a generalized
+        # island polygon; it has final precedence in the surface raster.
+        for polygon in policy.get("decorativeWaterMasks", []): paint_polygon(polygon, SURFACES["decorative_water"])
+        encoded = _runs(cells)
+        item = {"id": instance_id, "name": instance["name"], "bounds": bounds,
+                "grid": {"width": width, "height": height, "cellSizeWarcraft": source["cellSizeWarcraft"]},
+                "surfaceEncoding": {"legend": SURFACES, "order": "southwest-row-major", "runs": encoded},
+                "surfaceCounts": {name: cells.count(value) for name, value in SURFACES.items()},
+                "features": feature_output,
+                "navigationNodeIds": sorted(n for n, value in nodes.items() if value["instanceId"] == instance_id),
+                "boundaryAnchors": sorted((a for a in authority["boundaryAnchors"] if a["instanceId"] == instance_id), key=lambda a:a["id"]),
+                "statistics": {"cellCount": len(cells), "encodedRuns": len(encoded), "featureCount": len(feature_output)}}
+        encoded_bytes = len(canonical_bytes(item)); budget = policy["budget"]
+        checks = (("cells", len(cells), budget["maximumCells"]), ("runs", len(encoded), budget["maximumEncodedRuns"]),
+                  ("features", len(feature_output), budget["maximumFeatures"]), ("output bytes", encoded_bytes, budget["maximumOutputBytes"]))
+        for label, actual, maximum in checks:
+            if actual > maximum: raise TerrainGenerationError(f"{instance_id}: {label} budget exceeded: {actual} > {maximum}")
+        item["statistics"]["outputBytes"] = encoded_bytes; total_cells += len(cells); total_bytes += encoded_bytes; results.append(item)
+    anchors = sorted(authority["boundaryAnchors"], key=lambda a:a["id"])
+    return {"formatVersion": 2, "regionId": source["regionId"], "authorityId": authority["id"],
+            "provenance": {
+                "generator": "generate_regional_terrain.py/v2",
+                "terrainSourceSha256": hashlib.sha256(canonical_bytes(source)).hexdigest(),
+                "authoritySha256": hashlib.sha256(canonical_bytes(authority)).hexdigest(),
+            },
+            "declaredDistortions": source["declaredDistortions"], "instances": results,
+            "navigation": {"nodes": list(nodes.values()), "links": list(links.values()),
+                "connectivity": {kind: {node: sorted(_reachable(graph, node)) for node in sorted(graph)} for kind, graph in graphs.items()}},
+            "transitionAnchors": anchors,
+            "statistics": {"instanceCount": len(results), "cellCount": total_cells, "instanceOutputBytes": total_bytes}}
+
+
+def generate(source: dict, regional_geography: dict | None = None, authority: dict | None = None) -> dict:
     started = time.perf_counter()
+    if source.get("formatVersion") == 2:
+        result = _generate_instance_collection(source, regional_geography, authority)
+        maximum = source["budgets"]["maximumGenerationMilliseconds"]
+        elapsed = (time.perf_counter() - started) * 1000
+        if elapsed > maximum: raise TerrainGenerationError(f"budget exceeded: generation time {elapsed:.1f}ms > {maximum}ms")
+        if len(canonical_bytes(result)) > source["budgets"]["maximumOutputBytes"]:
+            raise TerrainGenerationError("budget exceeded: aggregate output size")
+        return result
     zones, chokepoints, features = _validate(source, regional_geography)
     width, height = source["grid"]["width"], source["grid"]["height"]
     minimum_x, minimum_y, maximum_x, maximum_y = source["coordinateSystem"]["bounds"]
@@ -229,11 +326,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--world", type=Path)
+    parser.add_argument("--authority", type=Path)
     args = parser.parse_args(argv)
     try:
         source = json.loads(args.source.read_text(encoding="utf-8"))
         world = json.loads(args.world.read_text(encoding="utf-8"))["regionalGeography"] if args.world else None
-        result = generate(source, world)
+        authority = json.loads(args.authority.read_text(encoding="utf-8")) if args.authority else None
+        result = generate(source, world, authority)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(canonical_bytes(result))
     except (OSError, json.JSONDecodeError, KeyError, TerrainGenerationError) as error:

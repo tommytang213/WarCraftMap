@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -99,6 +99,7 @@ class MigrationRegistry:
         self._migrations: dict[int, Migration] = {}
         if current_version == CURRENT_SCHEMA_VERSION:
             self.register(1, _migrate_v1_to_v2)
+            self.register(2, _migrate_v2_to_v3)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -134,6 +135,19 @@ def _migrate_v1_to_v2(document: dict[str, Any]) -> dict[str, Any]:
     regional location when the new state is absent.
     """
     document["schemaVersion"] = 2
+    return document
+
+
+def _migrate_v2_to_v3(document: dict[str, Any]) -> dict[str, Any]:
+    """Version 3 persists discovery precision and mutable search areas."""
+    world = document.setdefault("state", {}).setdefault("world", {})
+    world.setdefault("mapKnowledge", {
+        "version": 1,
+        "regions": [], "settlements": [], "landmarks": [], "routes": [],
+        "boundaries": [], "pointsOfInterest": [], "locations": {},
+        "searchAreas": {},
+    })
+    document["schemaVersion"] = 3
     return document
 
 

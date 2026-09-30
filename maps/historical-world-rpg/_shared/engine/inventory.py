@@ -37,6 +37,25 @@ class RecoveryResult:
     overflow: tuple[dict[str, Any], ...]
 
 
+@dataclass(frozen=True)
+class ResolvedSetBonus:
+    """One reached set threshold, expressed only as stable derived references."""
+
+    set_id: str
+    threshold_id: str
+    equipped_piece_count: int
+    effect_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class EquipmentDerivedBonuses:
+    """Complete reconstructible input to the shared derived-modifier adapter."""
+
+    item_instance_ids: tuple[str, ...]
+    set_bonuses: tuple[ResolvedSetBonus, ...]
+    effect_ids: tuple[str, ...]
+
+
 def _fail(message: str) -> None:
     raise InventoryError(message)
 
@@ -75,6 +94,9 @@ def validate_catalog(catalog: Mapping[str, Any]) -> None:
     backpack_types = _index(catalog.get("backpackTypes", []), "backpackTypes")
     equipment_slots = _index(catalog.get("equipmentSlots", []), "equipmentSlots")
     unlock_tiers = _index(catalog.get("backpackUnlockTiers", []), "backpackUnlockTiers")
+    effects = _index(catalog.get("derivedEffects", []), "derivedEffects")
+    pieces = _index(catalog.get("equipmentSetPieces", []), "equipmentSetPieces")
+    sets = _index(catalog.get("equipmentSets", []), "equipmentSets")
     if not unlock_tiers:
         _fail("backpackUnlockTiers: at least one tier is required")
     allowed_categories = {
@@ -107,6 +129,100 @@ def validate_catalog(catalog: Mapping[str, Any]) -> None:
                 _fail(f"item type {item_id}: unknown equipment slot type {slot_type!r}")
         if category == "trade_good" and not stackable:
             _fail(f"item type {item_id}: trade goods must be stackable")
+    for effect_id, effect in effects.items():
+        # Payloads are deliberately opaque to inventory.  The modifier adapter owns
+        # their meaning, while this catalog owns reference integrity.
+        if set(effect) - {"id", "modifiers"}:
+            _fail(f"derived effect {effect_id}: unknown fields")
+        if not isinstance(effect.get("modifiers"), Mapping) or not effect["modifiers"]:
+            _fail(f"derived effect {effect_id}.modifiers: must be a non-empty object")
+    item_piece_ids: dict[str, set[str]] = {item_id: set() for item_id in item_types}
+    for piece_id, piece in pieces.items():
+        item_ids = piece.get("itemTypeIds")
+        if not isinstance(item_ids, list) or not item_ids or len(item_ids) != len(set(item_ids)):
+            _fail(f"equipment set piece {piece_id}.itemTypeIds: must be a unique non-empty array")
+        slot_types = piece.get("equipmentSlotTypes", [])
+        if not isinstance(slot_types, list) or len(slot_types) != len(set(slot_types)):
+            _fail(f"equipment set piece {piece_id}.equipmentSlotTypes: must contain unique values")
+        for slot_type in slot_types:
+            _id(slot_type, f"equipment set piece {piece_id}.equipmentSlotTypes")
+            if slot_type not in equipment_slot_types:
+                _fail(f"equipment set piece {piece_id}: unknown equipment slot type {slot_type!r}")
+        for item_id in item_ids:
+            if item_id not in item_types:
+                _fail(f"equipment set piece {piece_id}: missing item type {item_id!r}")
+            item = item_types[item_id]
+            if item["category"] != "equipment":
+                _fail(f"equipment set piece {piece_id}: item {item_id!r} is not equipment")
+            compatible = set(item["equipmentSlotTypes"])
+            if slot_types and not compatible.intersection(slot_types):
+                _fail(f"equipment set piece {piece_id}: item {item_id!r} has incompatible slots")
+            if piece_id in item_piece_ids[item_id]:
+                _fail(f"equipment set piece {piece_id}: duplicate item {item_id!r}")
+            item_piece_ids[item_id].add(piece_id)
+    for set_id, definition in sets.items():
+        piece_ids = definition.get("pieceIds")
+        if not isinstance(piece_ids, list) or not piece_ids or len(piece_ids) != len(set(piece_ids)):
+            _fail(f"equipment set {set_id}.pieceIds: must be a unique non-empty array")
+        for piece_id in piece_ids:
+            if piece_id not in pieces:
+                _fail(f"equipment set {set_id}: missing piece {piece_id!r}")
+        allow_duplicates = definition.get("allowDuplicatePieces", False)
+        if not isinstance(allow_duplicates, bool):
+            _fail(f"equipment set {set_id}.allowDuplicatePieces: must be boolean")
+        thresholds = _index(definition.get("thresholds", []), f"equipment set {set_id}.thresholds")
+        if not thresholds:
+            _fail(f"equipment set {set_id}.thresholds: at least one threshold is required")
+        counts = set()
+        replacement_graph: dict[str, tuple[str, ...]] = {}
+        for threshold_id, threshold in thresholds.items():
+            count = _positive_int(threshold.get("pieceCount"), f"equipment set {set_id} threshold {threshold_id}.pieceCount")
+            if count in counts:
+                _fail(f"equipment set {set_id}: duplicate threshold piece count {count}")
+            if not allow_duplicates and count > len(piece_ids):
+                _fail(f"equipment set {set_id} threshold {threshold_id}: piece count exceeds distinct pieces")
+            counts.add(count)
+            effect_ids = threshold.get("effectIds")
+            if not isinstance(effect_ids, list) or not effect_ids or len(effect_ids) != len(set(effect_ids)):
+                _fail(f"equipment set {set_id} threshold {threshold_id}.effectIds: must be a unique non-empty array")
+            for effect_id in effect_ids:
+                if effect_id not in effects:
+                    _fail(f"equipment set {set_id} threshold {threshold_id}: missing effect {effect_id!r}")
+            policy = threshold.get("tierPolicy", "cumulative")
+            if policy not in {"cumulative", "exclusive", "replacement"}:
+                _fail(f"equipment set {set_id} threshold {threshold_id}: invalid tier policy {policy!r}")
+            replaces = threshold.get("replacesThresholdIds", [])
+            if not isinstance(replaces, list) or len(replaces) != len(set(replaces)):
+                _fail(f"equipment set {set_id} threshold {threshold_id}.replacesThresholdIds: must be unique")
+            if policy != "replacement" and replaces:
+                _fail(f"equipment set {set_id} threshold {threshold_id}: only replacement tiers may replace thresholds")
+            if policy == "replacement" and not replaces:
+                _fail(f"equipment set {set_id} threshold {threshold_id}: replacement tier must name replaced thresholds")
+            replacement_graph[threshold_id] = tuple(replaces)
+        if any(t.get("tierPolicy", "cumulative") == "exclusive" for t in thresholds.values()) and any(
+                t.get("tierPolicy", "cumulative") != "exclusive" for t in thresholds.values()):
+            _fail(f"equipment set {set_id}: exclusive tiers cannot be mixed with other tier policies")
+        for threshold_id, replaced_ids in replacement_graph.items():
+            for replaced_id in replaced_ids:
+                if replaced_id not in thresholds:
+                    _fail(f"equipment set {set_id} threshold {threshold_id}: missing replacement target {replaced_id!r}")
+        visiting, visited = set(), set()
+
+        def visit(threshold_id: str) -> None:
+            if threshold_id in visiting:
+                _fail(f"equipment set {set_id}: cyclic replacement at threshold {threshold_id!r}")
+            if threshold_id in visited:
+                return
+            visiting.add(threshold_id)
+            for replaced_id in replacement_graph[threshold_id]:
+                visit(replaced_id)
+            visiting.remove(threshold_id); visited.add(threshold_id)
+        for threshold_id in thresholds:
+            visit(threshold_id)
+        for threshold_id, replaced_ids in replacement_graph.items():
+            for replaced_id in replaced_ids:
+                if thresholds[replaced_id]["pieceCount"] >= thresholds[threshold_id]["pieceCount"]:
+                    _fail(f"equipment set {set_id} threshold {threshold_id}: replacement target must be a lower threshold")
     for backpack_id, backpack in backpack_types.items():
         capacity = _positive_int(backpack.get("capacity"), f"backpack type {backpack_id}.capacity")
         if capacity > MAX_BACKPACK_CAPACITY:
@@ -294,7 +410,59 @@ def pickup(
 def equipment_bonus_item_ids(catalog: Mapping[str, Any], inventory: Mapping[str, Any]) -> tuple[str, ...]:
     """Return only actively equipped item instances that may grant gear bonuses."""
     validate_inventory(catalog, inventory)
-    return tuple(stack["instanceId"] for stack in inventory["equipment"].values() if stack is not None)
+    return tuple(
+        inventory["equipment"][slot_id]["instanceId"]
+        for slot_id in sorted(inventory["equipment"])
+        if inventory["equipment"][slot_id] is not None
+    )
+
+
+def resolve_equipment_bonuses(catalog: Mapping[str, Any], inventory: Mapping[str, Any]) -> EquipmentDerivedBonuses:
+    """Rebuild ordinary and set-derived bonuses from authoritative equip state.
+
+    Nothing returned here is authoritative or suitable for persistence.  Calling it
+    after load, ownership restoration, or Warcraft object reconstruction produces the
+    same normalized result as calling it immediately after an equipment operation.
+    """
+    validate_inventory(catalog, inventory)
+    pieces = _index(catalog.get("equipmentSetPieces", []), "equipmentSetPieces")
+    sets = _index(catalog.get("equipmentSets", []), "equipmentSets")
+    equipment_slots = _index(catalog["equipmentSlots"], "equipmentSlots")
+    item_piece_ids: dict[str, list[str]] = {}
+    for piece_id, piece in pieces.items():
+        for item_id in piece["itemTypeIds"]:
+            item_piece_ids.setdefault(item_id, []).append(piece_id)
+    qualified: list[str] = []
+    for slot_id in sorted(inventory["equipment"]):
+        stack = inventory["equipment"][slot_id]
+        if stack is None:
+            continue
+        slot_type = equipment_slots[slot_id]["slotType"]
+        for piece_id in item_piece_ids.get(stack["itemTypeId"], ()):
+            permitted = pieces[piece_id].get("equipmentSlotTypes", [])
+            if not permitted or slot_type in permitted:
+                qualified.append(piece_id)
+    resolved: list[ResolvedSetBonus] = []
+    for set_id in sorted(sets):
+        definition = sets[set_id]
+        allowed = set(definition["pieceIds"])
+        matches = [piece_id for piece_id in qualified if piece_id in allowed]
+        count = len(matches) if definition.get("allowDuplicatePieces", False) else len(set(matches))
+        thresholds = _index(definition["thresholds"], f"equipment set {set_id}.thresholds")
+        reached = {threshold_id for threshold_id, threshold in thresholds.items() if threshold["pieceCount"] <= count}
+        if reached and all(thresholds[x].get("tierPolicy", "cumulative") == "exclusive" for x in thresholds):
+            reached = {max(reached, key=lambda x: (thresholds[x]["pieceCount"], x))}
+        replaced: set[str] = set()
+        pending = [target for threshold_id in reached for target in thresholds[threshold_id].get("replacesThresholdIds", [])]
+        while pending:
+            target = pending.pop()
+            if target in replaced:
+                continue
+            replaced.add(target); pending.extend(thresholds[target].get("replacesThresholdIds", []))
+        for threshold_id in sorted(reached - replaced, key=lambda x: (thresholds[x]["pieceCount"], x)):
+            resolved.append(ResolvedSetBonus(set_id, threshold_id, count, tuple(thresholds[threshold_id]["effectIds"])))
+    effect_ids = tuple(effect_id for bonus in resolved for effect_id in bonus.effect_ids)
+    return EquipmentDerivedBonuses(equipment_bonus_item_ids(catalog, inventory), tuple(resolved), effect_ids)
 
 
 def recover_over_capacity(catalog: Mapping[str, Any], inventory: Mapping[str, Any]) -> RecoveryResult:

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "id": "southeast_asia_spatial_1450",
+  "campaignStartDate": "1450-01-01",
+  "graphRegionId": "southeast_asia",
+  "coordinateRules": {
+    "sourceCrs": "EPSG:4326", "axisOrder": ["longitude", "latitude"], "localUnit": "terrain_cell", "precisionDecimals": 2,
+    "transform": "local = round((source - sourceOrigin) * scale + offset + declaredDistortion, precisionDecimals)",
+    "seamSourceToleranceDegrees": 0.05, "seamLocalToleranceCells": 0.25, "orientationToleranceDegrees": 12,
+    "adjacencyToleranceCells": 8, "maxUndeclaredDisplacementCells": 0.01
+  },
+  "spatialNotes": [
+    "Natural Earth-style EPSG:4326 control points are generalized for gameplay; named channels and relative island order remain authoritative.",
+    "The Bay of Bengal, Malacca, South China Sea, Java Sea, Philippine Sea, and eastern archipelago waters are navigable; enclosed decorative water is not.",
+    "Instance seams use low-density water, mountain crests, and narrow straits rather than modern political borders.",
+    "This data describes logical instances and partitioning metadata only and does not select physical-map packages."
+  ],
+  "densityRules": {"minFeaturesPerInstance": 4, "maxFeaturesPerInstance": 11, "minAnchorsPerInstance": 1.8, "maxAnchorsPerInstance": 3.0},
+  "requiredTraversalConnections": [
+    {"id":"mainland_corridor","name":"Irrawaddy to Red River mainland corridor","fromNodeId":"node_mainland_west","toNodeId":"node_mainland_east","movementClasses":["land","amphibious","flying"]},
+    {"id":"bay_of_bengal_approach","name":"Bay of Bengal to Malacca approach","fromNodeId":"node_bay_bengal","toNodeId":"node_malacca_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"malacca_corridor","name":"Strait of Malacca passage","fromNodeId":"node_malacca_sea","toNodeId":"node_south_china_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"south_china_sea_route","name":"South China Sea routes","fromNodeId":"node_south_china_sea","toNodeId":"node_philippine_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"sunda_java_route","name":"Sunda Strait and Java Sea route","fromNodeId":"node_malacca_sea","toNodeId":"node_java_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"philippine_route","name":"Luzon to southern Philippines route","fromNodeId":"node_philippine_sea","toNodeId":"node_celebes_sea","movementClasses":["naval","amphibious","flying"]},
+    {"id":"eastern_archipelago_route","name":"Moluccas to New Guinea and Pacific route","fromNodeId":"node_java_sea","toNodeId":"node_eastern_sea","movementClasses":["naval","amphibious","flying"]}
+  ],
+  "requiredFeatureIds": {
+    "coastline": ["coast_mainland_west","coast_mainland_east","coast_malay_peninsula","coast_sumatra","coast_java","coast_borneo","coast_luzon_visayas","coast_sulawesi_moluccas","coast_new_guinea_west"],
+    "island": ["island_sumatra","island_java","island_borneo","island_luzon","island_mindanao","island_sulawesi","island_timor","island_new_guinea_west"],
+    "archipelago": ["archipelago_andaman_nicobar","archipelago_visayas","archipelago_lesser_sunda","archipelago_moluccas","archipelago_sulu","archipelago_raja_ampat"],
+    "strait": ["strait_malacca","strait_sunda","strait_lombok","strait_makassar","strait_singapore","strait_luzon"],
+    "river": ["river_irrawaddy","river_salween","river_chao_phraya","river_mekong","river_red","river_kapuas","river_rajanga"],
+    "mountain_barrier": ["mountains_arakan","mountains_shan_tenasserim","mountains_annamite","mountains_sumatra","mountains_java","mountains_borneo","mountains_new_guinea"],
+    "traversal_corridor": ["corridor_mainland","corridor_malay_peninsula","corridor_south_china_sea","corridor_java_sea","corridor_eastern_archipelago"]
+  },
+  "instances": [
+    {
+      "id":"sea_mainland","name":"Mainland Southeast Asia","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"The Bay of Bengal, Gulf of Thailand, South China Sea, Arakan crest, and Annamite range bound the connected mainland.",
+      "transform":{"sourceOrigin":[92,8],"scale":[4,4],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":96,"maxY":88},
+      "budget":{"maxFeatures":11,"maxControlPoints":68,"maxBoundaryAnchors":6},
+      "features":[
+        {"id":"coast_mainland_west","kind":"coastline","points":[[92.5,21],[94,18],[96,16],[97,12],[99,10]]},
+        {"id":"coast_mainland_east","kind":"coastline","points":[[108,21],[106,17],[109,13],[105,10],[103,8.5]]},
+        {"id":"river_irrawaddy","kind":"river","points":[[97,26],[96,21],[96,16]]},
+        {"id":"river_salween","kind":"river","points":[[98,26],[98,20],[97,16]]},
+        {"id":"river_chao_phraya","kind":"river","points":[[100,18],[100.5,15],[100.5,13.5]]},
+        {"id":"river_mekong","kind":"river","points":[[101,24],[104,18],[105,15],[106,11]]},
+        {"id":"river_red","kind":"river","points":[[102,24],[105,22],[106.5,20.5]]},
+        {"id":"mountains_arakan","kind":"mountain_barrier","points":[[93,25],[94.5,21],[95,17]]},
+        {"id":"mountains_shan_tenasserim","kind":"mountain_barrier","points":[[98,25],[99,19],[99,12]]},
+        {"id":"mountains_annamite","kind":"mountain_barrier","points":[[103,20],[105,17],[106,14]]},
+        {"id":"corridor_mainland","kind":"traversal_corridor","points":[[95,19],[100,17],[104,18],[107,20]]}
+      ]
+    },
+    {
+      "id":"sea_malay_sumatra","name":"Malay Peninsula, Sumatra, and Malacca","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"The Andaman Sea, Malacca Strait, Sunda Strait, and shallow southern South China Sea form navigation-significant seams.",
+      "transform":{"sourceOrigin":[92,-6],"scale":[5,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":80,"maxY":95},
+      "budget":{"maxFeatures":10,"maxControlPoints":60,"maxBoundaryAnchors":7},
+      "features":[
+        {"id":"coast_malay_peninsula","kind":"coastline","points":[[99,10],[100,7],[101,4],[104,1]]},
+        {"id":"coast_sumatra","kind":"coastline","points":[[95,5],[98,2],[101,-3],[105,-6]]},
+        {"id":"island_sumatra","kind":"island","points":[[95,5],[101,-3],[105,-6],[100,-6],[95,5]]},
+        {"id":"archipelago_andaman_nicobar","kind":"archipelago","points":[[92.8,13],[93,8],[93.5,6]]},
+        {"id":"strait_malacca","kind":"strait","points":[[99,6],[101,3],[103,1]]},
+        {"id":"strait_singapore","kind":"strait","points":[[103.4,1.1],[104.2,1.3]]},
+        {"id":"mountains_sumatra","kind":"mountain_barrier","points":[[96,4],[100,0],[103,-4]]},
+        {"id":"corridor_malay_peninsula","kind":"traversal_corridor","points":[[99,10],[101,5],[103,1]]}
+      ]
+    },
+    {
+      "id":"sea_java_sunda","name":"Java and Lesser Sunda Islands","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"Sunda Strait, the Java Sea, Lombok Strait, and the deep Timor approaches preserve the east-west island chain.",
+      "transform":{"sourceOrigin":[104,-12],"scale":[4,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":92,"maxY":40},
+      "budget":{"maxFeatures":9,"maxControlPoints":56,"maxBoundaryAnchors":6},
+      "features":[
+        {"id":"coast_java","kind":"coastline","points":[[105,-6],[110,-6.5],[115,-7],[114,-8.5],[108,-8],[105,-6]]},
+        {"id":"island_java","kind":"island","points":[[105,-6],[115,-7],[114,-8.5],[106,-7.5],[105,-6]]},
+        {"id":"island_timor","kind":"island","points":[[123,-9],[127,-8.5],[125,-10],[123,-9]]},
+        {"id":"archipelago_lesser_sunda","kind":"archipelago","points":[[116,-8.5],[119,-8.5],[123,-9],[127,-8.5]]},
+        {"id":"strait_sunda","kind":"strait","points":[[104.8,-5.8],[105.8,-6.2]]},
+        {"id":"strait_lombok","kind":"strait","points":[[115.7,-8.2],[116.2,-8.5]]},
+        {"id":"mountains_java","kind":"mountain_barrier","points":[[107,-7.2],[111,-7.5],[114,-7.7]]},
+        {"id":"corridor_java_sea","kind":"traversal_corridor","points":[[106,-5],[112,-5],[118,-6],[123,-7]]}
+      ]
+    },
+    {
+      "id":"sea_borneo","name":"Borneo and Southern South China Sea","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"The South China, Sulu, Celebes, and Java seas isolate Borneo while keeping its coastal approaches connected.",
+      "transform":{"sourceOrigin":[108,-5],"scale":[5,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":65,"maxY":70},
+      "budget":{"maxFeatures":7,"maxControlPoints":48,"maxBoundaryAnchors":6},
+      "features":[
+        {"id":"coast_borneo","kind":"coastline","points":[[109,2],[114,7],[119,5],[119,-1],[114,-4],[109,2]]},
+        {"id":"island_borneo","kind":"island","points":[[109,2],[114,7],[119,5],[119,-1],[114,-4],[109,2]]},
+        {"id":"river_kapuas","kind":"river","points":[[114,1],[112,0],[109,0]]},
+        {"id":"river_rajanga","kind":"river","points":[[114,3],[112,2],[111,2]]},
+        {"id":"mountains_borneo","kind":"mountain_barrier","points":[[114,5],[115,2],[116,-1]]},
+        {"id":"corridor_south_china_sea","kind":"traversal_corridor","points":[[109,8],[114,9],[119,8]]}
+      ]
+    },
+    {
+      "id":"sea_philippines","name":"Philippines and Sulu Sea","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"Luzon Strait, Philippine Sea, Sulu Sea, and Celebes Sea separate the major island groups with playable channels.",
+      "transform":{"sourceOrigin":[116,4],"scale":[5,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":50,"maxY":85},
+      "budget":{"maxFeatures":8,"maxControlPoints":52,"maxBoundaryAnchors":6},
+      "features":[
+        {"id":"coast_luzon_visayas","kind":"coastline","points":[[120,19],[122,17],[121,14],[124,11],[126,9]]},
+        {"id":"island_luzon","kind":"island","points":[[120,19],[122,18],[123,15],[121,14],[120,19]]},
+        {"id":"island_mindanao","kind":"island","points":[[124,9],[126,8],[125,6],[123,7],[124,9]]},
+        {"id":"archipelago_visayas","kind":"archipelago","points":[[121,12],[123,11],[125,10]]},
+        {"id":"archipelago_sulu","kind":"archipelago","points":[[120,8],[119,6],[118,5]]},
+        {"id":"strait_luzon","kind":"strait","points":[[120,20],[122,21]]}
+      ]
+    },
+    {
+      "id":"sea_sulawesi_moluccas","name":"Sulawesi and Moluccas","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"Makassar Strait, Celebes Sea, Banda Sea, and Molucca Sea define the branching eastern archipelago.",
+      "transform":{"sourceOrigin":[117,-8],"scale":[5,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":70,"maxY":75},
+      "budget":{"maxFeatures":8,"maxControlPoints":52,"maxBoundaryAnchors":7},
+      "features":[
+        {"id":"coast_sulawesi_moluccas","kind":"coastline","points":[[119,-5],[121,1],[125,1],[128,0],[127,-4]]},
+        {"id":"island_sulawesi","kind":"island","points":[[119,-5],[120,1],[124,1],[122,-3],[119,-5]]},
+        {"id":"archipelago_moluccas","kind":"archipelago","points":[[127,2],[128,0],[129,-3],[127,-4]]},
+        {"id":"strait_makassar","kind":"strait","points":[[117,-1],[119,1],[120,3]]},
+        {"id":"corridor_eastern_archipelago","kind":"traversal_corridor","points":[[120,3],[125,1],[129,-2],[131,-3]]}
+      ]
+    },
+    {
+      "id":"sea_new_guinea_west","name":"Western New Guinea and Pacific Approaches","graphRegionId":"southeast_asia","graphAreaId":"southeast_asia_coarse",
+      "seamRationale":"Halmahera Sea, Seram Sea, and the New Guinea highlands provide the eastern transition to the Pacific contract.",
+      "transform":{"sourceOrigin":[128,-10],"scale":[4,5],"offset":[0,0]},"localBounds":{"minX":0,"minY":0,"maxX":88,"maxY":70},
+      "budget":{"maxFeatures":7,"maxControlPoints":48,"maxBoundaryAnchors":5},
+      "features":[
+        {"id":"coast_new_guinea_west","kind":"coastline","points":[[130,-1],[135,-3],[141,-2],[150,-5],[141,-9],[133,-5],[130,-1]]},
+        {"id":"island_new_guinea_west","kind":"island","points":[[130,-1],[141,-2],[150,-5],[141,-9],[133,-5],[130,-1]]},
+        {"id":"mountains_new_guinea","kind":"mountain_barrier","points":[[133,-4],[140,-5],[147,-6]]},
+        {"id":"archipelago_raja_ampat","kind":"archipelago","points":[[130,-0.5],[131,-1],[131.5,-1.5]]}
+      ]
+    }
+  ],
+  "boundaryAnchors": [
+    {"id":"seam_mainland_malay_north","instanceId":"sea_mainland","pairId":"seam_mainland_malay_south","source":[99,10],"local":[28,8],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_mainland_malay_south","instanceId":"sea_malay_sumatra","pairId":"seam_mainland_malay_north","source":[99,10],"local":[35,80],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"seam_malay_java_west","instanceId":"sea_malay_sumatra","pairId":"seam_malay_java_east","source":[105,-6],"local":[65,0],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_malay_java_east","instanceId":"sea_java_sunda","pairId":"seam_malay_java_west","source":[105,-6],"local":[4,30],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_malay_borneo_west","instanceId":"sea_malay_sumatra","pairId":"seam_malay_borneo_east","source":[108,1],"local":[80,35],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Reserve playable channel width without moving the authoritative seam."}},
+    {"id":"seam_malay_borneo_east","instanceId":"sea_borneo","pairId":"seam_malay_borneo_west","source":[108,1],"local":[0,30],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_borneo_philippines_south","instanceId":"sea_borneo","pairId":"seam_borneo_philippines_north","source":[118,5],"local":[50,50],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_borneo_philippines_north","instanceId":"sea_philippines","pairId":"seam_borneo_philippines_south","source":[118,5],"local":[10,5],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_java_sulawesi_west","instanceId":"sea_java_sunda","pairId":"seam_java_sulawesi_east","source":[120,-7],"local":[64,25],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Document island enlargement tolerance without moving the seam."}},
+    {"id":"seam_java_sulawesi_east","instanceId":"sea_sulawesi_moluccas","pairId":"seam_java_sulawesi_west","source":[120,-7],"local":[15,5],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"seam_sulawesi_new_guinea_west","instanceId":"sea_sulawesi_moluccas","pairId":"seam_sulawesi_new_guinea_east","source":[130,-2],"local":[65,30],"movementClasses":["naval","amphibious","flying"],"distortion":{"offset":[0,0],"reason":"Document open-water compression tolerance without moving the seam."}},
+    {"id":"seam_sulawesi_new_guinea_east","instanceId":"sea_new_guinea_west","pairId":"seam_sulawesi_new_guinea_west","source":[130,-2],"local":[8,40],"movementClasses":["naval","amphibious","flying"]},
+    {"id":"southeast_asia_india_entry","instanceId":"sea_mainland","globalAnchorId":"southeast_asia_west","source":[92,20],"local":[0,48],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"southeast_asia_east_asia_entry","instanceId":"sea_mainland","globalAnchorId":"southeast_asia_north","source":[104,30],"local":[48,88],"movementClasses":["land","naval","amphibious","flying"]},
+    {"id":"southeast_asia_pacific_entry","instanceId":"sea_new_guinea_west","globalAnchorId":"southeast_asia_east","source":[150,-1],"local":[88,45],"movementClasses":["land","naval","amphibious","flying"]}
+  ],
+  "navigationTopology": {
+    "nodes": [
+      {"id":"node_mainland_west","instanceId":"sea_mainland","class":"land"},{"id":"node_mainland_east","instanceId":"sea_mainland","class":"land"},
+      {"id":"node_arakan_barrier","instanceId":"sea_mainland","class":"impassable_barrier"},{"id":"node_decorative_inland_water","instanceId":"sea_mainland","class":"decorative_water"},
+      {"id":"node_bay_bengal","instanceId":"sea_mainland","class":"navigable_sea"},{"id":"node_malacca_sea","instanceId":"sea_malay_sumatra","class":"navigable_sea"},
+      {"id":"node_south_china_sea","instanceId":"sea_borneo","class":"navigable_sea"},{"id":"node_java_sea","instanceId":"sea_java_sunda","class":"navigable_sea"},
+      {"id":"node_philippine_sea","instanceId":"sea_philippines","class":"navigable_sea"},{"id":"node_celebes_sea","instanceId":"sea_sulawesi_moluccas","class":"navigable_sea"},
+      {"id":"node_eastern_sea","instanceId":"sea_new_guinea_west","class":"navigable_sea"},
+      {"id":"node_sumatra_coast","instanceId":"sea_malay_sumatra","class":"island_coast"},{"id":"node_java_coast","instanceId":"sea_java_sunda","class":"island_coast"}
+    ],
+    "links": [
+      {"id":"link_mainland_overland","from":"node_mainland_west","to":"node_mainland_east","movementClasses":["land","amphibious","flying"]},
+      {"id":"link_mainland_bay_landfall","from":"node_mainland_west","to":"node_bay_bengal","movementClasses":["amphibious","flying"]},
+      {"id":"link_bay_malacca","from":"node_bay_bengal","to":"node_malacca_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_malacca_south_china","from":"node_malacca_sea","to":"node_south_china_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_south_china_philippine","from":"node_south_china_sea","to":"node_philippine_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_philippine_celebes","from":"node_philippine_sea","to":"node_celebes_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_malacca_java","from":"node_malacca_sea","to":"node_java_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_java_celebes","from":"node_java_sea","to":"node_celebes_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_celebes_eastern","from":"node_celebes_sea","to":"node_eastern_sea","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_malacca_sumatra","from":"node_malacca_sea","to":"node_sumatra_coast","movementClasses":["naval","amphibious","flying"]},
+      {"id":"link_java_landfall","from":"node_java_sea","to":"node_java_coast","movementClasses":["naval","amphibious","flying"]}
+    ]
+  },
+  "distortions": [
+    {"id":"distortion_malacca_playable_width","anchorId":"seam_malay_borneo_west","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":2,"preservesOrientation":true,"preservesAdjacency":true,"reason":"The Malacca and Singapore channels may be widened during terrain generation without reversing Sumatra, Malaya, or Borneo."},
+    {"id":"distortion_lesser_sunda_readability","anchorId":"seam_java_sulawesi_west","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":3,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Small Lesser Sunda islands may be enlarged and empty sea compressed while retaining west-east order and playable channels."},
+    {"id":"distortion_eastern_archipelago_compression","anchorId":"seam_sulawesi_new_guinea_west","displacementCells":0,"orientationDeltaDegrees":0,"adjacencyGapCells":4,"preservesOrientation":true,"preservesAdjacency":true,"reason":"Banda and Molucca open-water distances may be compressed while preserving the Pacific-facing sequence and maritime adjacency."}
+  ]
+}

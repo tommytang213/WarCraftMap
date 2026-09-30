@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 3
+GENERATOR_VERSION = 4
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -78,17 +78,22 @@ def generate(config: BuildConfig, generated: Path) -> None:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from generate_regional_terrain import canonical_bytes, generate as generate_terrain
     terrain_outputs = {}
+    terrain_authorities = []
     for terrain_id, terrain_path in config.regional_terrain:
         try:
             terrain_source = json.loads(terrain_path.read_text(encoding="utf-8"))
-            terrain = generate_terrain(terrain_source, world["regionalGeography"])
+            authority = None
+            if terrain_source.get("authority"):
+                authority_path = _inside(config.project, terrain_source["authority"], f"regionalTerrain {terrain_id}.authority")
+                authority = json.loads(authority_path.read_text(encoding="utf-8")); terrain_authorities.append(authority_path)
+            terrain = generate_terrain(terrain_source, world["regionalGeography"], authority)
         except (OSError, json.JSONDecodeError, KeyError, ValueError) as error:
             raise _fail("terrain generation", f"{terrain_id}: {error}") from error
         output_name = f"terrain-{terrain_id}.json"
         (generated / output_name).write_bytes(canonical_bytes(terrain))
         terrain_outputs[terrain_id] = output_name
     domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
-    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"]}
+    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"]}
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
     movement = {"land": "MOVE_LAND", "naval": "MOVE_NAVAL", "amphibious": "MOVE_AMPHIBIOUS", "flying": "MOVE_FLYING"}
@@ -145,6 +150,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         Path(__file__).resolve(),
         Path(__file__).resolve().with_name("generate_regional_terrain.py"),
         *(path for _, path in config.regional_terrain),
+        *terrain_authorities,
     )
     inputs = {}
     for path in input_paths:
@@ -177,7 +183,7 @@ def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
 
-def _assemble(config: BuildConfig, root: Path, generated: Path) -> Path:
+def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None) -> Path:
     compile_root = root / "compile"
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
     shutil.copytree(config.wurst_source, compile_root / "wurst")
@@ -185,7 +191,10 @@ def _assemble(config: BuildConfig, root: Path, generated: Path) -> Path:
     shutil.copy2(generated / GENERATED_WURST, compile_root / "wurst" / GENERATED_WURST)
     runtime_dir = compile_root / "map" / config.source_map.name / "runtime"; runtime_dir.mkdir()
     shutil.copy2(generated / GENERATED_DATA, runtime_dir / GENERATED_DATA); shutil.copy2(generated / PROVENANCE, runtime_dir / PROVENANCE)
+    selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
     for terrain_id, _source in config.regional_terrain:
+        if terrain_id not in selected:
+            continue
         shutil.copy2(generated / f"terrain-{terrain_id}.json", runtime_dir / f"terrain-{terrain_id}.json")
     return compile_root
 
@@ -194,13 +203,14 @@ def _find_archive(root: Path) -> Path:
     if not files: raise _fail("map assembly", "Wurst produced no .w3x archive")
     return max(files, key=lambda p: p.stat().st_mtime_ns)
 
-def _inspect(config: BuildConfig, archive: Path, compile_root: Path) -> None:
+def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids: tuple[str, ...] | None = None) -> None:
     data = archive.read_bytes()
     if len(data) < 4 or data[:4] not in (b"MPQ\x1a", b"HM3W", b"PK\x03\x04"): raise _fail("archive inspection", f"unrecognized Warcraft archive: {archive}")
     lua = ""
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as zipped:
-            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id, _ in config.regional_terrain)}
+            selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
+            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id in selected)}
             if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
             if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
             lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 2,
+  "regionId": "east_asia",
+  "authority": "scenario/geography/east_asia.json",
+  "cellSizeWarcraft": 128,
+  "declaredDistortions": [
+    "Major East Asian islands are enlarged to at least four pathing cells so landfalls and selection remain readable.",
+    "Taiwan, Korea, Tsugaru, and La Perouse straits retain at least two navigable cells at their narrowest playable point.",
+    "The Yellow, Yangtze, Pearl, and Amur river corridors are widened where needed for visible crossings without creating naval routes.",
+    "Himalayan, Tibetan, Greater Khingan, Korean, Gobi, and Taklamakan barriers are widened to prevent undeclared land traversal.",
+    "Open seas and the Ryukyu and Kuril chains are compressed while authoritative orientation, adjacency, and island order are preserved.",
+    "Small islands are represented as ordered landfall clusters rather than literal coastline resolution."
+  ],
+  "instancePolicies": [
+    {"id":"east_asia_interior","grid":[64,48],"landMasks":[[[0,0],[105,0],[105,75],[0,75]]],"decorativeWaterMasks":[[[66,45],[72,45],[72,50],[66,50]]],"budget":{"maximumCells":3072,"maximumEncodedRuns":120,"maximumFeatures":7,"maximumOutputBytes":24000}},
+    {"id":"east_asia_china_north","grid":[64,48],"landMasks":[[[0,0],[62,0],[67,18],[73,28],[84,38],[104,44],[126,44],[126,84],[0,84]]],"decorativeWaterMasks":[],"budget":{"maximumCells":3072,"maximumEncodedRuns":180,"maximumFeatures":8,"maximumOutputBytes":26000}},
+    {"id":"east_asia_china_south","grid":[64,48],"landMasks":[[[0,0],[46,0],[55,14],[70,28],[82,48],[86,68],[0,68]]],"decorativeWaterMasks":[],"budget":{"maximumCells":3072,"maximumEncodedRuns":220,"maximumFeatures":10,"maximumOutputBytes":28000}},
+    {"id":"east_asia_korea","grid":[56,52],"landMasks":[[[30,8],[42,15],[54,30],[60,60],[48,72],[34,58],[28,35]]],"decorativeWaterMasks":[],"budget":{"maximumCells":2912,"maximumEncodedRuns":190,"maximumFeatures":7,"maximumOutputBytes":25000}},
+    {"id":"east_asia_japan","grid":[64,56],"landMasks":[],"decorativeWaterMasks":[],"budget":{"maximumCells":3584,"maximumEncodedRuns":280,"maximumFeatures":10,"maximumOutputBytes":30000}},
+    {"id":"east_asia_northeast_pacific","grid":[64,48],"landMasks":[[[0,36],[22,40],[45,48],[70,60],[90,60],[90,48],[62,37],[30,30],[0,28]]],"decorativeWaterMasks":[[[8,12],[14,12],[14,18],[8,18]]],"budget":{"maximumCells":3072,"maximumEncodedRuns":220,"maximumFeatures":8,"maximumOutputBytes":27000}}
+  ],
+  "budgets":{"maximumGenerationMilliseconds":1500,"maximumOutputBytes":180000}
+}

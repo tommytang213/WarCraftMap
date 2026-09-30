@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/military-tradition.schema.json",
+  "title": "Controller Military Traditions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schemaVersion", "eligibleControllerIds", "categories", "experienceSources", "traditions", "unitAssignments"],
+  "properties": {
+    "format": {"const": "warcraftmap_military_traditions_v1"},
+    "schemaVersion": {"const": 1},
+    "eligibleControllerIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "categories": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/category"}},
+    "experienceSources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+    "traditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/tradition"}},
+    "unitAssignments": {"type": "array", "items": {"$ref": "#/$defs/assignment"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+    "category": {"type": "object", "additionalProperties": false, "required": ["id", "name"], "properties": {"id": {"$ref": "#/$defs/id"}, "name": {"type": "string", "minLength": 1}}},
+    "source": {"type": "object", "additionalProperties": false, "required": ["id", "weightNumerator", "weightDenominator"], "properties": {"id": {"$ref": "#/$defs/id"}, "weightNumerator": {"type": "integer", "minimum": 1}, "weightDenominator": {"type": "integer", "minimum": 1}}},
+    "coefficient": {"type": "object", "additionalProperties": false, "required": ["attributeId", "numerator", "denominator"], "properties": {"attributeId": {"$ref": "#/$defs/id"}, "numerator": {"type": "integer"}, "denominator": {"type": "integer", "minimum": 1}}},
+    "effect": {"type": "object", "additionalProperties": false, "required": ["effectId", "mode", "replacesEffectId"], "properties": {"effectId": {"$ref": "#/$defs/id"}, "mode": {"enum": ["additive", "upgrade", "replacement"]}, "replacesEffectId": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]}}},
+    "milestone": {"type": "object", "additionalProperties": false, "required": ["id", "threshold", "effect"], "properties": {"id": {"$ref": "#/$defs/id"}, "threshold": {"type": "integer", "minimum": 1}, "effect": {"$ref": "#/$defs/effect"}}},
+    "tradition": {"type": "object", "additionalProperties": false, "required": ["id", "categoryId", "startingExperience", "coefficients", "milestones"], "properties": {"id": {"$ref": "#/$defs/id"}, "categoryId": {"$ref": "#/$defs/id"}, "startingExperience": {"type": "integer", "minimum": 0}, "coefficients": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/coefficient"}}, "milestones": {"type": "array", "items": {"$ref": "#/$defs/milestone"}}}},
+    "assignment": {"type": "object", "additionalProperties": false, "required": ["id", "controllerId", "categoryId"], "properties": {"id": {"$ref": "#/$defs/id"}, "controllerId": {"$ref": "#/$defs/id"}, "categoryId": {"$ref": "#/$defs/id"}}}
+  }
+}

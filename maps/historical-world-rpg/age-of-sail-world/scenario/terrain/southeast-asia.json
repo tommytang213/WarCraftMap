@@ -1,0 +1,23 @@
+{
+  "formatVersion": 2,
+  "regionId": "southeast_asia",
+  "authority": "scenario/geography/southeast_asia.json",
+  "cellSizeWarcraft": 128,
+  "declaredDistortions": [
+    "Major islands are enlarged to at least four pathing cells so landfall and unit selection remain readable.",
+    "Malacca, Singapore, Sunda, Lombok, Makassar, and Luzon straits retain at least two navigable cells at their narrowest playable point.",
+    "Open water is compressed between island groups while authoritative west-east and north-south ordering is preserved.",
+    "Mountain crests and wetlands are widened to one pathing cell where required to prevent unintended land traversal.",
+    "Small archipelago members are represented by ordered landfall clusters rather than literal coastline resolution."
+  ],
+  "instancePolicies": [
+    {"id":"sea_mainland","grid":[64,64],"landMasks":[[[0,88],[96,88],[96,48],[72,42],[60,25],[42,20],[28,8],[0,8]]],"decorativeWaterMasks":[[[38,45],[43,45],[43,50],[38,50]]],"budget":{"maximumCells":4096,"maximumEncodedRuns":260,"maximumFeatures":11,"maximumOutputBytes":30000}},
+    {"id":"sea_malay_sumatra","grid":[64,64],"landMasks":[[[34,95],[58,95],[63,38],[57,22],[49,32]],[[12,58],[36,45],[65,0],[38,0],[8,45]]],"decorativeWaterMasks":[],"budget":{"maximumCells":4096,"maximumEncodedRuns":300,"maximumFeatures":10,"maximumOutputBytes":30000}},
+    {"id":"sea_java_sunda","grid":[64,40],"landMasks":[[[4,30],[44,26],[44,17],[8,20]],[[48,17],[92,12],[92,5],[48,9]]],"decorativeWaterMasks":[],"budget":{"maximumCells":2560,"maximumEncodedRuns":220,"maximumFeatures":9,"maximumOutputBytes":26000}},
+    {"id":"sea_borneo","grid":[64,64],"landMasks":[[[5,35],[30,60],[57,48],[57,18],[30,5],[5,35]]],"decorativeWaterMasks":[[[29,31],[34,31],[34,36],[29,36]]],"budget":{"maximumCells":4096,"maximumEncodedRuns":280,"maximumFeatures":7,"maximumOutputBytes":28000}},
+    {"id":"sea_philippines","grid":[64,64],"landMasks":[[[18,75],[31,76],[36,53],[25,46]],[[34,30],[48,28],[46,12],[31,16]],[[22,40],[39,44],[43,31],[27,25]]],"decorativeWaterMasks":[],"budget":{"maximumCells":4096,"maximumEncodedRuns":300,"maximumFeatures":8,"maximumOutputBytes":28000}},
+    {"id":"sea_sulawesi_moluccas","grid":[64,64],"landMasks":[[[10,15],[20,48],[38,46],[28,30],[35,12],[20,5]],[[48,18],[62,37],[66,14],[54,4]]],"decorativeWaterMasks":[],"budget":{"maximumCells":4096,"maximumEncodedRuns":320,"maximumFeatures":8,"maximumOutputBytes":28000}},
+    {"id":"sea_new_guinea_west","grid":[64,64],"landMasks":[[[8,45],[28,36],[55,40],[88,25],[60,5],[20,25]]],"decorativeWaterMasks":[[[48,22],[53,22],[53,27],[48,27]]],"budget":{"maximumCells":4096,"maximumEncodedRuns":260,"maximumFeatures":7,"maximumOutputBytes":28000}}
+  ],
+  "budgets":{"maximumGenerationMilliseconds":1500,"maximumOutputBytes":220000}
+}
