@@ -12,6 +12,7 @@ from unit_roster import RosterCatalog, RosterError  # noqa: E402
 SLICE_PATHS = (
     ROOT / "scenario/rosters/europe-africa-middle-east-india.json",
     ROOT / "scenario/rosters/southeast-east-asia-pacific.json",
+    ROOT / "scenario/rosters/americas-caribbean.json",
 )
 
 
@@ -70,7 +71,36 @@ def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
                 seen.add((polity, unit))
     if len(seen) != sum(len(x["polityIds"]) * len(x["archetypeIds"]) for x in assignments):
         raise RosterError("duplicate roster assignment")
+    families_path = ROOT / "scenario/rosters/global-roster-families.json"
+    families = json.loads(families_path.read_text(encoding="utf-8"))
+    if families.get("format") != "age_of_sail_roster_families_v1":
+        raise RosterError("unsupported global roster-family format")
+    family_ids, family_polities = set(), set()
+    for family in families.get("families", []):
+        family_id = family.get("id")
+        if not isinstance(family_id, str) or family_id in family_ids:
+            raise RosterError("duplicate or invalid roster-family ID")
+        family_ids.add(family_id)
+        politics_path = ROOT / "scenario/politics" / family.get("politySource", "")
+        try:
+            polity_ids = {x["id"] for x in json.loads(politics_path.read_text(encoding="utf-8"))["polities"]}
+        except (OSError, json.JSONDecodeError, KeyError, TypeError):
+            raise RosterError(f"roster family {family_id}: invalid polity source")
+        units = family.get("archetypeIds")
+        if not isinstance(units, list) or not units or not set(units) <= set(catalog.archetypes):
+            raise RosterError(f"roster family {family_id}: broken archetype reference")
+        family_polities.update(polity_ids)
+        for polity in polity_ids:
+            for unit in units:
+                if catalog.archetypes[unit].get("countryId") not in (None, polity):
+                    raise RosterError(f"roster family {family_id} gives {unit} to incompatible polity {polity}")
+                seen.add((polity, unit))
+    covered = {polity for polity, _ in seen}
+    missing = references["countries"] - covered
+    if missing:
+        raise RosterError(f"playable polity roster coverage missing: {', '.join(sorted(missing))}")
     catalog.assignments = tuple(sorted(seen))
+    catalog.roster_families = tuple(sorted(family_ids))
     return catalog
 
 

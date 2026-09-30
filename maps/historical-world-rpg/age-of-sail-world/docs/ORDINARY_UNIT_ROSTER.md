@@ -56,5 +56,13 @@ later gunpowder formations, siege and fortress roles, riverine and amphibious
 warfare, boarding vessels, island defense, and historically supported
 long-distance wayfinding. Later matchlock and banner formations are date,
 technology, equipment, and reform gated; they are not injected into the 1450
-baseline. This slice remains one part of the country-content roadmap and does
-not mark that roadmap item complete.
+baseline.
+
+The third country slice is `scenario/rosters/americas-caribbean.json`. It covers
+Indigenous woodland, Arctic, Pueblo, Mesoamerican, Caribbean, Andean, Amazonian,
+and southern-cone military identities. Firearms, horses, and imported cannon
+are equipment-, reform-, resource-, technology-, and date-gated rather than
+1450 defaults. `global-roster-families.json` supplies explicit shared-family
+fallback coverage outside directly assigned rosters, and validation rejects an
+orphaned polity. With all three slices integrated, the initial country-content
+roster pass is complete.
