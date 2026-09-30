@@ -198,6 +198,20 @@ This file records requirements already agreed with the player. They are defaults
 - Region-specific historical features such as trans-Saharan routes, Indian Ocean trade, major straits, island chains, caravan corridors, or similar geography are implementation/research details under this rule, not separate player design blockers unless they expose a genuinely new gameplay choice not covered here.
 - Create a new regional `needs-design` blocker only when a materially new player-facing design choice cannot be resolved from the existing design lock, historical/geographic evidence, or established performance constraints.
 
+## Treasures and secrets discovery
+
+- Campaign treasures and secrets use a hybrid deterministic model.
+- Historically meaningful or unique treasures keep fixed authored identity, historical/geographic context, and an appropriate fixed anchor region or location family. They must not be randomized into historically implausible parts of the world.
+- Within that historical anchor, the exact valid hiding place may vary deterministically per campaign among authored/geographically valid candidates. Secondary loot, guards, encounters, hazards, or supporting rewards may also vary deterministically.
+- Generic caches, pirate hoards, wreck salvage, hidden stores, ruins, and similar non-unique secrets may vary more freely, but still only within scenario-appropriate regions, terrain, navigation zones, and content pools.
+- Deterministic variation is derived from persistent campaign seed/state. Reloading, changing physical maps, revisiting a region, or restoring a save must not reroll a treasure's resolved location, reward variant, encounter, or discovery state.
+- Once a treasure/secret is resolved for a campaign, its authoritative result persists across saves, cross-map transitions, reconstruction, and inactive-region simulation.
+- Discovery may progress through hidden, region-only, approximate search-area, narrowed search-area, and exact-known states using the existing discovery/map/quest knowledge model.
+- Clues and search areas must always refer to the campaign's actual resolved treasure location and must never reveal information more precise than the player has earned.
+- A historically unique artifact normally keeps its unique identity/reward while its exact hiding place and secondary rewards may vary. Generic treasure rewards may be selected from deterministic, scenario-defined pools.
+- Treasure placement must validate accessibility, terrain/navigation compatibility, physical-map assignment, duplicate/exclusive placement rules, and conflict with settlements or other reserved content before campaign state is committed.
+- Treasure generation must be reproducible from the same campaign seed and authoritative inputs for testing, migration, and recovery.
+
 ## Quest location and map assistance
 
 - The quest journal must retain stable-ID location context for quest givers, turn-in locations, objectives, relevant settlements, regions, and other known destinations so the player is not required to remember where a quest originated.
