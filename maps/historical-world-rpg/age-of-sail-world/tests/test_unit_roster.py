@@ -108,7 +108,7 @@ class UnitRosterTests(unittest.TestCase):
         self.assertEqual(("steady_drill",), runtime.derived_modifiers("first_unit"))
 
     def test_generated_data_is_stable_and_inspectable(self):
-        first = self.catalog(); second = self.catalog()
+        first = validate_unit_roster.load_catalog(); second = validate_unit_roster.load_catalog()
         self.assertEqual(first.digest(), second.digest())
         self.assertEqual(first.generated_unit_data(), second.generated_unit_data())
         with tempfile.TemporaryDirectory() as directory:
@@ -116,7 +116,7 @@ class UnitRosterTests(unittest.TestCase):
             self.assertEqual(0, validate_unit_roster.main(["--output", str(output)]))
             document = json.loads(output.read_text())
             self.assertEqual(first.digest(), document["digest"])
-            self.assertEqual(9, len(document["units"]))
+            self.assertEqual(57, len(document["units"]))
 
 
 if __name__ == "__main__":
