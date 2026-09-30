@@ -128,7 +128,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 - [x] Stock/Reforged asset catalogue and historical-fit matrix
 - [x] Country/unit visual language
-- [ ] Settlement/building visual sets
+- [x] Settlement/building visual sets
 - [ ] Custom icons/textures where needed
 - [ ] Custom 3D models where stock assets are insufficient
 - [ ] Sound/music/ambient pass

@@ -78,3 +78,11 @@ shared resolver applies controller team color without erasing imported cultural
 markings. `tooling/build_visual_language.py` regenerates the global snapshot and
 the four stable regional preview-scene manifests; these metadata contact sheets
 are used because no deterministic model renderer is available in the toolchain.
+
+The settlement/building pass is authoritative in
+`scenario/visuals/settlement-building-sets.json`. It covers every projected
+stable settlement and defense layout and keeps City Cores, civilian services,
+production, storage, port access, landmarks, and defenses semantically distinct.
+`tooling/build_settlement_visuals.py` regenerates deterministic placement
+manifests and structural regional preview scenes. Warcraft object instances are
+replaceable representations derived from stable settlement/controller state.
