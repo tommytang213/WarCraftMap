@@ -107,3 +107,22 @@ production, storage, port access, landmarks, and defenses semantically distinct.
 `tooling/build_settlement_visuals.py` regenerates deterministic placement
 manifests and structural regional preview scenes. Warcraft object instances are
 replaceable representations derived from stable settlement/controller state.
+
+## Custom 2D production
+
+`scenario/visuals/custom-2d-assets.json` is the editable authority for the 16
+priority-2 equipment and treasure icons where stock chest art caused a real
+readability gap. The artwork is original geometric work licensed CC0-1.0; it
+does not incorporate art from another map or an external collection. Run
+`python3 tooling/build_custom_2d.py --check` to reproduce and validate 64 px,
+straight-alpha, sRGB TGA32 command-button imports and the labelled 64/32 px
+contact sheet under `_build/custom-2d/`.
+
+The source records intended object uses, authorship, licence, attribution, and
+the remaining lower-priority/model/sound/interface lanes. The generated import
+manifest records source and derivative hashes, exact virtual paths, dimensions,
+channels, compression and mipmap policy, byte size, and objective 32 px
+transparency/contrast/clipping measurements. Folder-map assembly regenerates
+these files, copies only the Warcraft imports plus their runtime manifest, and
+exposes stable `kind:id` references in `custom2dAssets` within scenario runtime
+data. Generated derivatives and contact sheets remain untracked build outputs.

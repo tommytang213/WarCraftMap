@@ -16,6 +16,7 @@ class BuildConfig:
     scenario_file: Path; scenario_validator: Path; output: Path; output_stem: str
     package_name: str; metadata: dict[str, str]; bootstrap_markers: tuple[str, ...]
     regional_terrain: tuple[tuple[str, Path], ...]
+    custom_2d_source: Path | None; custom_2d_builder: Path | None
 
 def _inside(root: Path, value: object, label: str, boundary: Path | None = None) -> Path:
     if not isinstance(value, str) or not value or Path(value).is_absolute():
@@ -47,7 +48,12 @@ def load_config(config_path: Path) -> BuildConfig:
         if not isinstance(terrain_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", terrain_id): raise PackagingError("configuration: regional terrain id is invalid")
         terrain_entries.append((terrain_id, _inside(project, item.get("source"), f"regionalTerrain {terrain_id}.source")))
     if len({item[0] for item in terrain_entries}) != len(terrain_entries): raise PackagingError("configuration: regional terrain ids must be unique")
-    return BuildConfig(project, config_path, _inside(project, raw.get("sourceMap"), "sourceMap"), _inside(project, raw.get("sourceManifest"), "sourceManifest"), _inside(project, raw.get("wurstSource"), "wurstSource"), _inside(project, scenario.get("data"), "scenario.data"), _inside(project, scenario.get("validator"), "scenario.validator", project.parent), _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{stem}.w3x", stem, package_name, metadata, tuple(markers), tuple(terrain_entries))
+    custom = scenario.get("custom2d")
+    if custom is not None and (not isinstance(custom, dict) or set(custom) != {"source", "builder"}):
+        raise PackagingError("configuration: scenario.custom2d must contain source and builder")
+    custom_source = _inside(project, custom["source"], "scenario.custom2d.source") if custom else None
+    custom_builder = _inside(project, custom["builder"], "scenario.custom2d.builder") if custom else None
+    return BuildConfig(project, config_path, _inside(project, raw.get("sourceMap"), "sourceMap"), _inside(project, raw.get("sourceManifest"), "sourceManifest"), _inside(project, raw.get("wurstSource"), "wurstSource"), _inside(project, scenario.get("data"), "scenario.data"), _inside(project, scenario.get("validator"), "scenario.validator", project.parent), _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{stem}.w3x", stem, package_name, metadata, tuple(markers), tuple(terrain_entries), custom_source, custom_builder)
 
 def _fail(stage: str, message: object) -> PackagingError: return PackagingError(f"{stage} stage failed: {message}")
 def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -56,6 +62,8 @@ def validate_inputs(config: BuildConfig, grill: str | None = None) -> str:
     required = {"source map folder": config.source_map, "source manifest": config.manifest, "Wurst source folder": config.wurst_source, "scenario data": config.scenario_file, "scenario validator": config.scenario_validator, "wurst.build": config.project / "wurst.build"}
     missing = [f"{label} ({path})" for label, path in required.items() if not path.exists()]
     missing.extend(f"regional terrain {terrain_id} ({path})" for terrain_id, path in config.regional_terrain if not path.is_file())
+    if config.custom_2d_source and not config.custom_2d_source.is_file(): missing.append(f"custom 2D source ({config.custom_2d_source})")
+    if config.custom_2d_builder and not config.custom_2d_builder.is_file(): missing.append(f"custom 2D builder ({config.custom_2d_builder})")
     if missing: raise _fail("inputs", "missing " + ", ".join(missing))
     build_text = (config.project / "wurst.build").read_text(encoding="utf-8")
     for setting in ("scriptMode: LUA", "wc3Patch: v3.0", f"fileName: {config.output_stem}"):
@@ -75,6 +83,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
     generated.mkdir(parents=True, exist_ok=True)
+    if config.custom_2d_builder:
+        result=subprocess.run([sys.executable,str(config.custom_2d_builder),"--output",str(generated/"custom-2d"),"--check"],cwd=config.project,text=True,capture_output=True)
+        if result.returncode: raise _fail("custom 2D generation", (result.stderr or result.stdout).strip())
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from generate_regional_terrain import canonical_bytes, generate as generate_terrain
     terrain_outputs = {}
@@ -94,6 +105,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
         terrain_outputs[terrain_id] = output_name
     domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
     runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"]}
+    if config.custom_2d_source:
+        custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
+        runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
     movement = {"land": "MOVE_LAND", "naval": "MOVE_NAVAL", "amphibious": "MOVE_AMPHIBIOUS", "flying": "MOVE_FLYING"}
@@ -151,6 +165,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         Path(__file__).resolve().with_name("generate_regional_terrain.py"),
         *(path for _, path in config.regional_terrain),
         *terrain_authorities,
+        *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
     )
     inputs = {}
     for path in input_paths:
@@ -162,6 +177,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
             key = f"@generator/{path.name}"
         inputs[key] = _sha(path)
     outputs = {name: _sha(generated / name) for name in (GENERATED_WURST, GENERATED_DATA, *terrain_outputs.values())}
+    if config.custom_2d_source:
+        for path in sorted((generated/"custom-2d").rglob("*")):
+            if path.is_file(): outputs[path.relative_to(generated).as_posix()]=_sha(path)
     provenance = {"formatVersion": 1, "generatorVersion": GENERATOR_VERSION, "inputs": inputs, "outputs": outputs}
     (generated / PROVENANCE).write_text(json.dumps(provenance, sort_keys=True, indent=2) + "\n", encoding="utf-8")
 
@@ -196,6 +214,13 @@ def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tup
         if terrain_id not in selected:
             continue
         shutil.copy2(generated / f"terrain-{terrain_id}.json", runtime_dir / f"terrain-{terrain_id}.json")
+    if config.custom_2d_source:
+        custom=generated/"custom-2d"
+        shutil.copy2(custom/"custom-2d-imports.json",runtime_dir/"custom-2d-imports.json")
+        for path in sorted((custom/"imports").rglob("*")):
+            if path.is_file():
+                target=compile_root/"map"/config.source_map.name/path.relative_to(custom/"imports")
+                target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(path,target)
     return compile_root
 
 def _find_archive(root: Path) -> Path:
@@ -211,6 +236,10 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
         with zipfile.ZipFile(archive) as zipped:
             selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
             names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id in selected)}
+            if config.custom_2d_source:
+                expected.add("runtime/custom-2d-imports.json")
+                custom=json.loads(zipped.read("runtime/custom-2d-imports.json"))
+                expected.update(row["importPath"].replace("\\","/") for row in custom["assets"])
             if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
             if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
             lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")
