@@ -48,6 +48,13 @@ event and schedule projection deterministically.
 - treasures
 - starting configurations
 
+`economy/balance.json` owns the full-world long-campaign economic envelopes,
+scenario modifiers, logistics tiers, source/sink policy, and soak performance
+budget.  It deliberately derives settlement profiles from the historical
+production, import, shortage, role, and route identities in the seven
+authoritative settlement files.  Run `python3 tooling/economy_balance.py`; pass
+`--write` to refresh the deterministic regional and settlement balance report.
+
 The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-01 through 1820-12-31 range and era labels are scenario content; the shared engine contains no Age of Sail year constants. Historical event definitions and schedules will be authored there in later content issues.
 
 Physical packaging is authored in `../physical-maps.json`. Its stable physical-map
