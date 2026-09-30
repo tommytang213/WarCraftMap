@@ -1,0 +1,25 @@
+{
+  "format":"age_of_sail_audio_profiles_v1",
+  "fallbackProfile":{"id":"safe_silence_fallback","match":{},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_wind"]}},
+  "profiles":[
+    {"id":"region_europe","match":{"region_id":"europe"},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_wind"]}},
+    {"id":"region_africa","match":{"region_id":"africa"},"layers":{"music":["stock_music_nightelf"],"ambience":["stock_ambience_wind"]}},
+    {"id":"region_middle_east_india","match":{"region_id":"middle_east_india"},"layers":{"music":["stock_music_orc"],"ambience":["stock_ambience_wind"]}},
+    {"id":"region_southeast_asia","match":{"region_id":"southeast_asia"},"layers":{"music":["stock_music_nightelf"],"ambience":["stock_ambience_ocean"]}},
+    {"id":"region_east_asia","match":{"region_id":"east_asia"},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_wind"]}},
+    {"id":"region_americas_caribbean","match":{"region_id":"americas_caribbean"},"layers":{"music":["stock_music_nightelf"],"ambience":["stock_ambience_ocean"]}},
+    {"id":"region_pacific","match":{"region_id":"pacific"},"layers":{"music":["stock_music_nightelf"],"ambience":["stock_ambience_ocean"]}},
+    {"id":"settlement_capital","match":{"settlement_type":"capital"},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_city"]}},
+    {"id":"settlement_port","match":{"settlement_type":"port"},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_ocean"],"world_spatial":["stock_ship_creak"]}},
+    {"id":"settlement_town","match":{"settlement_type":"town"},"layers":{"music":["stock_music_human"],"ambience":["stock_ambience_city"]}},
+    {"id":"travel_sea","match":{"travel":"sea"},"layers":{"music":["stock_music_human","stock_music_nightelf"],"ambience":["stock_ambience_ocean"],"world_spatial":["stock_ship_creak"]}},
+    {"id":"travel_land","match":{"travel":"land"},"layers":{"music":["stock_music_orc","stock_music_human"],"ambience":["stock_ambience_wind"]}},
+    {"id":"combat_land","match":{"combat":"land"},"layers":{"combat_loop":["stock_music_tension"],"ambience":["stock_ambience_wind"],"world_spatial":["stock_cannon"]}},
+    {"id":"combat_naval","match":{"combat":"naval"},"layers":{"combat_loop":["stock_music_tension"],"ambience":["stock_ambience_ocean"],"world_spatial":["stock_cannon","stock_ship_creak"]}},
+    {"id":"modal_management","match":{"modal":"management"},"layers":{"music":["stock_music_human"],"ui":["stock_ui_click"]}},
+    {"id":"event_quest","match":{"event":"quest"},"layers":{"event":["stock_event_hint","stock_discovery"]}},
+    {"id":"event_discovery","match":{"event":"discovery"},"requiresDiscoveryIds":["current_target"],"layers":{"music":["stock_music_undead"],"event":["stock_discovery"]}},
+    {"id":"event_treasure","match":{"event":"treasure"},"requiresDiscoveryIds":["current_target"],"layers":{"event":["stock_treasure"]}}
+  ],
+  "feedback":{"questAccepted":"stock_discovery","questCompleted":"stock_treasure","eventNotice":"stock_event_hint","managementConfirm":"stock_ui_click","commandError":"stock_ui_error","commandRecovery":"stock_ui_recovery","optionalEnglishBark":"stock_voice_acknowledge"}
+}

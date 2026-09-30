@@ -126,13 +126,15 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 ## Phase 6 — Visual/content production
 
+Status: complete. All Phase 6 integration gates are recorded in the deterministic asset audit.
+
 - [x] Stock/Reforged asset catalogue and historical-fit matrix
 - [x] Country/unit visual language
 - [x] Settlement/building visual sets
 - [x] Custom icons/textures where needed
 - [x] Custom 3D models where stock assets are insufficient
-- [ ] Sound/music/ambient pass
-- [ ] Placeholder-removal audit
+- [x] Sound/music/ambient pass
+- [x] Placeholder-removal audit
 
 ## Phase 7 — Full-world integration and balancing
 
