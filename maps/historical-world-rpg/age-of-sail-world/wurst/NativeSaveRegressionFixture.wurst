@@ -1,0 +1,118 @@
+package NativeSaveRegressionFixture
+
+import WC3Compatibility
+
+// Developer-only fixture. It has no init block and is activated exclusively by
+// a configured noninteractive runner calling nativeSaveRegressionStart().
+public constant string NATIVE_SAVE_FIXTURE_ID = "wc3-v3.0-lua-native-save-regression"
+public constant string NATIVE_SAVE_CACHE = "AgeOfSailNativeRegression.w3v"
+public constant string NATIVE_SAVE_MISSION = "native_save_v1"
+
+gamecache fixtureCache = null
+timer fixtureCampaignTimer = null
+timer fixtureAutosaveTimer = null
+framehandle fixtureModalFrame = null
+effect fixtureEffect = null
+sound fixtureSound = null
+unit fixtureSettlement = null
+unit fixtureFleet = null
+int fixtureRuntimeGeneration = 0
+int fixtureEventDeliveryCount = 0
+
+function fixtureWrite(string key, string value)
+	compatStoreString(fixtureCache, NATIVE_SAVE_MISSION, key, value)
+
+function fixtureRead(string key) returns string
+	return compatGetStoredString(fixtureCache, NATIVE_SAVE_MISSION, key)
+
+function discardTransientRuntime()
+	if fixtureCampaignTimer != null
+		compatDestroyOwnedTimer(fixtureCampaignTimer)
+	if fixtureAutosaveTimer != null
+		compatDestroyOwnedTimer(fixtureAutosaveTimer)
+	if fixtureModalFrame != null
+		compatDestroyOwnedFrame(fixtureModalFrame)
+	if fixtureEffect != null
+		compatDestroyOwnedEffect(fixtureEffect)
+	if fixtureSound != null
+		compatStopOwnedSound(fixtureSound)
+	if fixtureSettlement != null
+		compatRemoveUnit(fixtureSettlement)
+	if fixtureFleet != null
+		compatRemoveUnit(fixtureFleet)
+	fixtureCampaignTimer = null
+	fixtureAutosaveTimer = null
+	fixtureModalFrame = null
+	fixtureEffect = null
+	fixtureSound = null
+	fixtureSettlement = null
+	fixtureFleet = null
+
+function reconstructRegisteredRuntime()
+	discardTransientRuntime()
+	fixtureRuntimeGeneration++
+	fixtureCampaignTimer = compatCreateOwnedTimer()
+	fixtureAutosaveTimer = compatCreateOwnedTimer()
+	fixtureSettlement = compatCreateUnit(Player(0), 'hfoo', 0., 0., 0.)
+	fixtureFleet = compatCreateUnit(Player(0), 'hfoo', 128., 0., 0.)
+	fixtureModalFrame = compatCreateFrame("FRAME", "NativeSaveRegressionModal", compatGameUiFrame(), "", fixtureRuntimeGeneration)
+	fixtureEffect = compatCreateOwnedEffect("Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl", 0., 0.)
+	fixtureSound = compatCreateOwnedSound("Sound\\Ambient\\DoodadEffects\\Ocean.wav")
+
+function seedAuthoritativeFixture()
+	fixtureWrite("schemaVersion", "1")
+	fixtureWrite("campaignSlot", "autosave_07")
+	fixtureWrite("campaignPayloadDigest", "campaign-fixture-v1")
+	fixtureWrite("autosaveMetadata", "1|8|37.5")
+	fixtureWrite("physicalMapId", "world-map")
+	fixtureWrite("modalPause", "true|1|false")
+	fixtureWrite("campaignClock", "1450.0|1.0")
+	fixtureWrite("entities", "fleet:vasco|official:governor|settlement:lisbon")
+	fixtureWrite("deliveredEvents", "event:fixture:before-save")
+	fixtureWrite("authoritativeDigest", "runner-must-canonicalize-and-compare")
+
+/** Safe-idle entry point called by the external runner before native save. */
+public function nativeSaveRegressionStart(string saveName) returns boolean
+	fixtureCache = compatInitGameCache(NATIVE_SAVE_CACHE)
+	seedAuthoritativeFixture()
+	reconstructRegisteredRuntime()
+	fixtureWrite("runtimeGeneration", fixtureRuntimeGeneration.toString())
+	fixtureWrite("phase", "awaiting_native_load")
+	if not compatSaveGameCache(fixtureCache)
+		fixtureWrite("failure", "game cache fixture commit failed")
+		return false
+	compatSaveGame(saveName)
+	return compatSaveGameExists(saveName)
+
+/** Unsafe transactions must defer before SaveGame is called. */
+public function nativeSaveRegressionRequestDuring(string transaction) returns string
+	if transaction == "map_transition" or transaction == "city_capture" or transaction == "campaign_commit"
+		return "deferred"
+	return "created"
+
+/** Called after each process/session restoration. */
+public function nativeSaveRegressionAfterLoad() returns boolean
+	fixtureCache = compatInitGameCache(NATIVE_SAVE_CACHE)
+	if fixtureRead("phase") != "awaiting_native_load"
+		return false
+	reconstructRegisteredRuntime()
+	fixtureEventDeliveryCount++
+	fixtureWrite("runtimeGeneration", fixtureRuntimeGeneration.toString())
+	fixtureWrite("eventDeliveryCount", fixtureEventDeliveryCount.toString())
+	fixtureWrite("representedIds", "fleet:vasco|settlement:lisbon")
+	fixtureWrite("timerIds", "autosave|campaign-clock")
+	fixtureWrite("modalFrameCount", "1")
+	fixtureWrite("transientHandlesRecreated", "true")
+	fixtureWrite("phase", "native_load_verified")
+	return compatSaveGameCache(fixtureCache)
+
+/** Missing runtime units are recovery input, never lost authoritative state. */
+public function nativeSaveRegressionRemoveFleetRepresentation()
+	if fixtureFleet != null
+		compatRemoveUnit(fixtureFleet)
+	fixtureFleet = null
+
+public function nativeSaveRegressionRecoverRepresentations() returns boolean
+	if fixtureFleet == null
+		fixtureFleet = compatCreateUnit(Player(0), 'hfoo', 128., 0., 0.)
+	return fixtureFleet != null and fixtureSettlement != null

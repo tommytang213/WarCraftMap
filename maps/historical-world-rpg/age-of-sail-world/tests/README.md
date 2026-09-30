@@ -18,6 +18,11 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+Native Warcraft save/load uses `python3 tooling/run_native_save_regression.py`.
+The default run executes the deterministic reconstruction oracle and reports a
+clear runtime-unavailable skip. See `docs/WC3_COMPATIBILITY.md` for the pinned
+3.0/Lua runner protocol and dedicated CI invocation.
+
 Run the reusable timeline fixture command with, for example:
 
 ```sh

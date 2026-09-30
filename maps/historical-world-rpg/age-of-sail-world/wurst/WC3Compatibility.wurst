@@ -82,6 +82,25 @@ public function compatRemoveSaveDirectory(string name) returns boolean
 public function compatSaveCheckpoint(string name, boolean showWindow)
 	SaveGameCheckpoint(name, showWindow)
 
+// Native-save regression lifecycle. These adapters are intentionally generic;
+// the fixture and developer runner own the test protocol.
+public function compatCreateOwnedTimer() returns timer
+	return CreateTimer()
+public function compatDestroyOwnedTimer(timer value)
+	DestroyTimer(value)
+public function compatCreateOwnedEffect(string modelPath, real x, real y) returns effect
+	return AddSpecialEffect(modelPath, x, y)
+public function compatDestroyOwnedEffect(effect value)
+	DestroyEffect(value)
+public function compatDestroyOwnedFrame(framehandle value)
+	BlzDestroyFrame(value)
+public function compatCreateOwnedSound(string path) returns sound
+	return CreateSound(path, true, false, false, 10, 10, "DefaultEAXON")
+public function compatStopOwnedSound(sound value)
+	StopSound(value, true, false)
+public function compatGameUiFrame() returns framehandle
+	return BlzGetOriginFrame(ORIGIN_FRAME_GAME_UI, 0)
+
 // Frame UI.
 public function compatCreateFrame(string frameType, string name, framehandle owner, string inherits, int context) returns framehandle
 	return BlzCreateFrameByType(frameType, name, owner, inherits, context)
