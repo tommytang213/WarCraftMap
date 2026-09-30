@@ -21,6 +21,9 @@ from .budget import budget_available, recent_runs, usage_summary
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
 NEEDS_DESIGN = re.compile(r"^\[needs-design\]\s+", re.IGNORECASE)
+PLANNED = re.compile(r"^\[planned\]\s+", re.IGNORECASE)
+PLANNED_PHASE = re.compile(r"^\[planned\]\s+Phase\s+(\d+)\s*:", re.IGNORECASE)
+DEPENDENCY = re.compile(r"(?im)^\s*Depends on:\s*#(\d+)\b")
 QUEUE_REFILL_THRESHOLD = 3
 QUEUE_TARGET = 10
 
@@ -195,6 +198,85 @@ def list_needs_design_issues(config: Config) -> list[dict[str, Any]]:
     )
 
 
+def list_planned_issues(config: Config) -> list[dict[str, Any]]:
+    """Return open roadmap reservations, which are never implementation work."""
+    issues = gh_json(
+        config.repo_root,
+        ["issue", "list", "--state", "open", "--limit", str(config.issue_limit), "--json", "number,title,body,url,createdAt"],
+    )
+    return sorted(
+        (item for item in issues if PLANNED.match(item["title"])),
+        key=lambda item: (item["createdAt"], item["number"]),
+    )
+
+
+def roadmap_phase_complete(roadmap: str, phase: int) -> bool:
+    """Use the checkboxes in one ROADMAP phase as its authoritative completion gate."""
+    heading = re.compile(rf"(?m)^##\s+Phase\s+{phase}\b.*$")
+    match = heading.search(roadmap)
+    if not match:
+        return False
+    next_heading = re.search(r"(?m)^##\s+Phase\s+\d+\b.*$", roadmap[match.end():])
+    section = roadmap[match.end():match.end() + next_heading.start()] if next_heading else roadmap[match.end():]
+    boxes = re.findall(r"(?m)^\s*-\s+\[([ xX])\]", section)
+    if boxes:
+        return all(box.casefold() == "x" for box in boxes)
+    return bool(re.search(r"(?im)^\s*Status:\s*complete\s*\.?\s*$", section))
+
+
+def roadmap_path(repo_root: Path) -> Path:
+    candidates = sorted(repo_root.glob("**/docs/ROADMAP.md"))
+    if len(candidates) != 1:
+        raise RuntimeError(f"expected exactly one authoritative docs/ROADMAP.md, found {len(candidates)}")
+    return candidates[0]
+
+
+def planned_issue_phase(issue: dict[str, Any]) -> int | None:
+    match = PLANNED_PHASE.match(str(issue.get("title", "")))
+    return int(match.group(1)) if match else None
+
+
+def planned_dependency_numbers(issue: dict[str, Any]) -> set[int]:
+    return {int(number) for number in DEPENDENCY.findall(str(issue.get("body") or ""))}
+
+
+def eligible_planned_issues(
+    planned: list[dict[str, Any]], roadmap: str, dependency_states: dict[int, str],
+) -> list[dict[str, Any]]:
+    """Find reservations whose preceding phase and explicit dependencies are complete."""
+    eligible = []
+    for issue in planned:
+        phase = planned_issue_phase(issue)
+        if phase is None or phase <= 0 or not roadmap_phase_complete(roadmap, phase - 1):
+            continue
+        dependencies = planned_dependency_numbers(issue)
+        if any(dependency_states.get(number, "OPEN").upper() != "CLOSED" for number in dependencies):
+            continue
+        eligible.append(issue)
+    return eligible
+
+
+def promote_planned_issues(config: Config, dry_run: bool = False) -> list[dict[str, Any]]:
+    """Promote eligible existing issues in place and return those issues."""
+    planned = list_planned_issues(config)
+    dependency_states: dict[int, str] = {}
+    for number in sorted({number for issue in planned for number in planned_dependency_numbers(issue)}):
+        try:
+            view = gh_json(config.repo_root, ["issue", "view", str(number), "--json", "state"])
+            dependency_states[number] = str(view.get("state", "OPEN"))
+        except RuntimeError:
+            # An inaccessible or invalid dependency is not evidence that it is complete.
+            dependency_states[number] = "OPEN"
+    eligible = eligible_planned_issues(
+        planned, roadmap_path(config.repo_root).read_text(encoding="utf-8"), dependency_states,
+    )
+    if not dry_run:
+        for issue in eligible:
+            title = PLANNED.sub("", issue["title"]).strip()
+            run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[agent-ready] {title}"], cwd=config.repo_root)
+    return eligible
+
+
 def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> int:
     """Return the bounded number of issues needed to maintain the ready buffer."""
     # A design blocker affects its dependants, not the whole queue. The second
@@ -205,6 +287,7 @@ def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> i
 def normalized_work_title(title: str) -> str:
     title = READY.sub("", title.strip())
     title = NEEDS_DESIGN.sub("", title)
+    title = PLANNED.sub("", title)
     return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
 
 
@@ -246,7 +329,7 @@ def prepare_plan_items(
         if len(prepared) >= limit:
             break
         kind = raw.get("kind")
-        clean_title = READY.sub("", NEEDS_DESIGN.sub("", str(raw.get("title", "")).strip())).strip()
+        clean_title = READY.sub("", NEEDS_DESIGN.sub("", PLANNED.sub("", str(raw.get("title", "")).strip()))).strip()
         key = normalized_work_title(clean_title)
         if not clean_title or not key or key in seen:
             continue
@@ -424,6 +507,8 @@ def select_issue(
 ) -> dict[str, Any] | None:
     blockers = open_design_numbers or set()
     for issue in issues:
+        if not READY.match(str(issue.get("title", ""))):
+            continue
         if issue_blocker_numbers(issue) & blockers:
             continue
         record = state["issues"].get(str(issue["number"]), {})
@@ -921,6 +1006,10 @@ def main(argv: list[str] | None = None) -> int:
         state_path = config.state_dir / "state.json"
         state = load_state(state_path)
         state["runs"] = recent_runs(state["runs"], utcnow())
+        promoted = promote_planned_issues(config, dry_run=args.dry_run)
+        if args.dry_run:
+            for issue in promoted:
+                print(f"planned promotion: would make #{issue['number']} [agent-ready] {PLANNED.sub('', issue['title']).strip()}")
         issues = list_issues(config)
         reconcile_ready_issue_states(issues, state)
         needs_design = list_needs_design_issues(config)

@@ -16,7 +16,11 @@ from automation.warcraftmap_agent.worker import (
     create_plan_issues,
     decision_question,
     notify_design_blocker,
+    eligible_planned_issues,
+    normalized_work_title,
+    planned_dependency_numbers,
     prepare_plan_items,
+    promote_planned_issues,
     queue_refill_count,
     reconcile_ready_issue_states,
     select_issue,
@@ -59,6 +63,10 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 2)
+
+    def test_planned_issue_is_never_directly_selected(self):
+        issues = [{"number": 8, "title": "[planned] Phase 8: release", "createdAt": "2026-01-01"}]
+        self.assertIsNone(select_issue(issues, {"issues": {}}, 3))
 
     def test_resolved_design_issue_reenters_queue(self):
         issues = [{"number": 73, "title": "[agent-ready] resumed", "createdAt": "2026-01-01"}]
@@ -342,6 +350,61 @@ class WorkerTests(unittest.TestCase):
         }
         items = prepare_plan_items(plan, ["[agent-ready] Existing work"], 10)
         self.assertEqual([item["title"] for item in items], ["[agent-ready] New work"])
+
+    def test_planned_and_ready_titles_are_the_same_logical_work(self):
+        self.assertEqual(
+            normalized_work_title("[planned] Foo"),
+            normalized_work_title("[agent-ready] Foo"),
+        )
+        plan = {"outcome": "planned", "issues": [{
+            "kind": "agent-ready", "title": "Foo",
+            "body": "## Acceptance criteria\n- done\n## Automated validation\n- test", "question": "",
+        }]}
+        self.assertEqual(prepare_plan_items(plan, ["[planned] Foo"], 10), [])
+
+    def test_planned_promotion_requires_previous_phase_complete(self):
+        issue = {"number": 8, "title": "[planned] Phase 8: release", "body": ""}
+        incomplete = "## Phase 7 — Integration\n\n- [x] done\n- [ ] pending\n\n## Phase 8 — RC\n- [ ] release\n"
+        complete = incomplete.replace("- [ ] pending", "- [x] pending")
+        self.assertEqual(eligible_planned_issues([issue], incomplete, {}), [])
+        self.assertEqual(eligible_planned_issues([issue], complete, {}), [issue])
+
+    def test_all_planned_dependencies_block_until_closed(self):
+        issue = {
+            "number": 8, "title": "[planned] Phase 8: release",
+            "body": "Depends on: #224\n\nDepends on: #225",
+        }
+        roadmap = "## Phase 7 — Integration\n- [x] done\n\n## Phase 8 — RC\n- [ ] release\n"
+        self.assertEqual(planned_dependency_numbers(issue), {224, 225})
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "OPEN", 225: "CLOSED"}), [])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "OPEN"}), [])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "CLOSED"}), [issue])
+
+    def test_dry_run_reports_eligibility_without_mutation_and_promotion_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            docs = root / "scenario" / "docs"
+            docs.mkdir(parents=True)
+            (docs / "ROADMAP.md").write_text(
+                "## Phase 7 — Integration\n- [x] done\n\n## Phase 8 — RC\n- [ ] release\n",
+                encoding="utf-8",
+            )
+            config = Config(repo_root=root, state_dir=root / "state")
+            issue = {"number": 8, "title": "[planned] Phase 8: release", "body": "", "url": "u", "createdAt": "c"}
+            with mock.patch("automation.warcraftmap_agent.worker.list_planned_issues", return_value=[issue]), \
+                 mock.patch("automation.warcraftmap_agent.worker.run") as mutation:
+                self.assertEqual(promote_planned_issues(config, dry_run=True), [issue])
+                mutation.assert_not_called()
+            with mock.patch("automation.warcraftmap_agent.worker.list_planned_issues", side_effect=[[issue], []]), \
+                 mock.patch("automation.warcraftmap_agent.worker.run") as mutation:
+                self.assertEqual(promote_planned_issues(config), [issue])
+                self.assertEqual(promote_planned_issues(config), [])
+                mutation.assert_called_once()
+
+    def test_general_planned_issue_is_not_promoted(self):
+        issue = {"number": 9, "title": "[planned] General cleanup", "body": ""}
+        roadmap = "## Phase 7 — Integration\n- [x] done\n"
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {}), [])
 
     def test_plan_preserves_phase_and_dependency_order(self):
         plan = {
