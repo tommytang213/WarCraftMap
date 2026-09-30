@@ -103,6 +103,82 @@ class WorkerTests(unittest.TestCase):
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 111)
 
+    def test_ci_repair_uses_separate_attempt_budget_after_implementation_exhaustion(self):
+        issues = [{"number": 207, "title": "[agent-ready] audio", "createdAt": "2026-01-01"}]
+        state = {
+            "issues": {
+                "207": {
+                    "attempts": 3,
+                    "ci_repair_attempts": 1,
+                    "status": "repair",
+                    "repair_kind": "ci",
+                    "pr": 215,
+                }
+            }
+        }
+        self.assertEqual(
+            select_issue(
+                issues, state, 3, max_ci_repair_attempts=5, max_conflict_attempts=5
+            )["number"],
+            207,
+        )
+
+    def test_legacy_ci_repair_state_recovers_without_manual_attempt_reset(self):
+        issues = [{"number": 207, "title": "[agent-ready] audio", "createdAt": "2026-01-01"}]
+        state = {
+            "issues": {
+                "207": {
+                    "attempts": 3,
+                    "status": "repair",
+                    "pr": 215,
+                    "last_failure": (
+                        "GitHub CI failed on PR #215. Inspect it with gh pr checks 215 "
+                        "and repair the implementation."
+                    ),
+                }
+            }
+        }
+        self.assertEqual(
+            select_issue(
+                issues, state, 3, max_ci_repair_attempts=5, max_conflict_attempts=5
+            )["number"],
+            207,
+        )
+
+    def test_failed_ci_enters_ci_repair_lane_and_exhaustion_is_terminal(self):
+        view = {
+            "state": "OPEN",
+            "mergeStateStatus": "UNSTABLE",
+            "mergeable": "MERGEABLE",
+            "baseRefName": "main",
+            "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "FAILURE"}],
+        }
+        config = Config(
+            repo_root=Path("/repo"),
+            state_dir=Path("/state"),
+            max_attempts=3,
+            max_ci_repair_attempts=5,
+            max_conflict_attempts=5,
+        )
+        state = {"issues": {"207": {"attempts": 3, "ci_repair_attempts": 4, "status": "pr_open", "pr": 215}}}
+        with mock.patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), mock.patch(
+            "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="abc123"
+        ):
+            self.assertTrue(service_open_prs(config, state))
+        record = state["issues"]["207"]
+        self.assertEqual(record["status"], "repair")
+        self.assertEqual(record["repair_kind"], "ci")
+        self.assertEqual(record["ci_repair_attempts"], 4)
+
+        record["status"] = "pr_open"
+        record["ci_repair_attempts"] = 5
+        with mock.patch("automation.warcraftmap_agent.worker.gh_json", return_value=view), mock.patch(
+            "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="abc123"
+        ):
+            self.assertTrue(service_open_prs(config, state))
+        self.assertEqual(record["status"], "failed")
+        self.assertIn("CI-repair attempt limit (5) is exhausted", record["last_failure"])
+
     def test_failed_dirty_pr_reenters_conflict_repair(self):
         state = {
             "issues": {
