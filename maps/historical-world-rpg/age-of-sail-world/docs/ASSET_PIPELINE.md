@@ -108,6 +108,23 @@ production, storage, port access, landmarks, and defenses semantically distinct.
 manifests and structural regional preview scenes. Warcraft object instances are
 replaceable representations derived from stable settlement/controller state.
 
+## Custom 3D model production
+
+The high-priority requirements emitted by the country/unit pass are implemented
+by `scenario/assets/custom-models/models.json`. Running
+`python3 tooling/build_custom_models.py` deterministically exports Warcraft III
+MDL version 800 models into the folder-map import tree and emits import bindings,
+object data, animation snapshots, scene fixtures, and a labeled contact sheet
+under `scenario/visuals/generated/`. The `--check` mode rejects stale exports.
+
+The source pins the generator contract, licence, provenance, derivative status,
+runtime intent, and performance budgets. Models use Warcraft replaceable team
+color and no external bitmap dependencies. Distinct headgear, clothing mass,
+equipment, and proportions carry named-character silhouettes. Stock unit, icon,
+and portrait IDs remain fallbacks; scenario object data selects import paths, so
+the shared engine contains no Age of Sail path. Priority-2 specialist-building
+candidates remain outside this high-priority pass.
+
 ## Custom 2D production
 
 `scenario/visuals/custom-2d-assets.json` is the editable authority for the 16
