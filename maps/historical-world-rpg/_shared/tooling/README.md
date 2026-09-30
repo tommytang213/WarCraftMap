@@ -24,3 +24,8 @@ Planned and implemented tooling:
 - release packaging
 
 `validate_world.py` also validates generic title rank/grant hierarchies, holder allegiances, territorial references, vassal cycles, and independent-versus-overlord taxation rules through `validate_government.py`.
+
+`validate_assets.py` validates any scenario-neutral asset catalogue and a
+scenario-owned historical-fit matrix. It resolves candidate locators and emits
+stable coverage, unresolved-replacement, and resolved object/import manifests;
+it contains no Age of Sail IDs.
