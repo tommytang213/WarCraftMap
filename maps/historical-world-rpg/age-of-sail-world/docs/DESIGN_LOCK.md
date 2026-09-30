@@ -83,6 +83,57 @@ This file records requirements already agreed with the player. They are defaults
 - Named/recruitable heroes may use substantially stronger RPG or supernatural mechanics than ordinary units while the surrounding world and normal military roster remain predominantly historical.
 - Hero abilities may include persistent mana-powered protection such as a personal Mana Shield that can extend to friendly units within selectable preset ranges. Such group protection uses the hero as the shared mana source, can remain active without a fixed duration while mana is available, and may support self-only and multiple group-range modes.
 
+## Layered military and naval rosters
+
+- Final military content uses layered roster composition rather than requiring every polity to duplicate every ordinary role.
+- Common/global archetypes cover roles that genuinely transfer across regions or are useful as shared mechanical bases.
+- Regional/cultural families provide historically appropriate local identities, equipment, formations, ship traditions, and ordinary troops.
+- Polity-specific variants provide meaningful national/state identity where history or gameplay justifies it.
+- Elite, guard, specialist, famous, and otherwise unique formations sit above those shared layers where appropriate.
+- Major powers and long-lived militarily important polities should have broader multi-era rosters than minor polities. Minor polities may rely primarily on regional/common families while still receiving distinctive units, modifiers, traditions, or specialists when justified.
+- A polity roster is resolved from the authoritative controller/polity, region or culture, campaign date, technology, institutions, reforms, resources, military traditions, and other scenario requirements. Calendar date alone must not grant units whose enabling development has not occurred.
+- Unit availability, obsolescence, upgrades, and replacement chains should visibly represent military evolution across the 1450-1820 campaign instead of leaving one early-game signature unit to represent a polity for centuries.
+- Settlement garrisons, AI armies, recruitable military units, and other ordinary forces should consume the same authoritative roster families so city defenders do not become a disconnected parallel unit catalogue.
+- Naval content is equal in importance to land content for the Age of Sail scenario. Reusable hull/runtime families should support a substantially broader player-facing catalogue of regional, polity-specific, merchant, transport, patrol, raiding, boarding, and warship variants across multiple eras.
+- Shared hulls or runtime templates may back several historically distinct player-facing vessels when their mechanics genuinely overlap; visual identity, armament, stats, abilities, requirements, role, and availability may still differ.
+- Roster breadth must be judged across regions, polities, roles, and eras rather than by a raw global archetype count.
+
+## Political offices and settlement administration
+
+- Political/administrative office is distinct from legal ownership, territorial holding, control, sovereignty, and title/land ownership. Appointing a character to govern a settlement or province does not by itself transfer the settlement away from the player/controller.
+- Every authoritative settlement normally has an administrator or equivalent office holder. The player-facing title should use a culturally and historically appropriate term where practical while exposing a clear generic role such as Administrator or Governor.
+- Historically important or well-attested officials may be authored named characters. Otherwise the campaign deterministically generates a culturally appropriate persistent minor official with a plausible personal name, origin, skills, traits, loyalty, age/lifespan data, allegiance, and office identity. Do not expose runtime-style labels such as `Governor_017` to the player.
+- Generated officials are lightweight authoritative characters, not anonymous Warcraft units. Their identity remains stable across save/load, map transitions, reconstruction, and inactive-region simulation.
+- A settlement acquired or captured by the player/controller automatically receives an acting/local administrator if no eligible explicit appointment exists. The player is never forced through a blocking appointment dialog merely to keep a newly acquired settlement functional.
+- The player may replace the automatic administrator with an eligible recruited hero, historical character, generated official, noble/title holder, or other valid character. The player retains normal settlement management authority after delegating administration.
+- Administrative jurisdiction may cover one settlement or, for sufficiently capable/high-ranking offices, multiple settlements or an entire province/region. Administrative capacity, rank, skills, government structure, distance, unrest, integration, institutions, technology, and similar factors may affect efficiency.
+- A character has one authoritative physical location. Administrative jurisdiction over multiple settlements never creates authoritative clones. A governor travelling with the player may continue to provide permitted remote administrative effects, but cannot simultaneously appear as the same physical combatant in another city.
+- Add a scenario-neutral Administration/Governance skill or equivalent administrative rating rather than forcing unrelated skills to represent general civil administration. Other existing skills may provide secondary office effects where relevant.
+- Administrator effects may derive from Administration/Governance, Command, Engineering, Tradecraft, Diplomacy, Scholarship, traits, profession, title/rank, local conditions, government form, and scenario modifiers. Different strengths should produce meaningfully different economic, construction, unrest, institution, supply, garrison, defense, or recovery outcomes.
+- Appointment, promotion, tenure, demotion, dismissal, dispossession, and other office changes may affect character loyalty and relationships. Rewards must depend on meaningful prestige/responsibility change and history so repeatedly appointing/dismissing the same character cannot farm loyalty.
+- Oathbound remains the permanent high-loyalty state: ordinary negative office consequences cannot reduce an Oathbound character's loyalty.
+- Removing a sufficiently disloyal, powerful, locally supported, or militarily entrenched administrator may create refusal, defection, mutiny, rebellion, separatism, or related events according to explicit authoritative conditions. Risky removal must present a useful warning rather than surprise the player with an unexplained settlement loss.
+- Office state, jurisdiction, appointment history, administrative effects, succession/replacement state, and any rebellion consequences are authoritative campaign data and persist across saves and physical-map transitions.
+- Major polities should eventually have appropriate ruler/sovereign or collective-governance representation in addition to settlement administrators. Decentralized or collective political structures must not be forced into a fake singular monarch solely to satisfy the office system.
+- The same office framework may support settlement administrators, provincial governors, sovereign/ruler roles, army commanders, and fleet commanders while keeping the responsibilities and gameplay effects of each office distinct.
+
+## Settlement administrator presentation and local defense
+
+- Every governed settlement exposes its administrator clearly through the settlement/government UI, including name, culturally appropriate office title, loyalty where knowable, relevant skills/traits, jurisdiction, residence/physical location, capacity/efficiency, and major active effects.
+- Each settlement has a recognizable government/administration interaction point or equivalent presentation appropriate to its visual set. If the administrator is physically resident and locally instantiated, their actual character representation may appear there with a clear name/title treatment.
+- If the appointed administrator is physically elsewhere, do not instantiate a duplicate of that character. A deterministic deputy/local official or abstract office representation may stand in locally and should be identified as acting on behalf of the absent administrator where appropriate.
+- Settlement defenders are authoritative local-defense/garrison state, not free player army units. When physically instantiated they use a dedicated allied/AI defense controller and are not directly commandable by the player even when defending a player-controlled settlement.
+- Players must not be able to exploit settlement defenders as free expeditionary troops, cargo, equipment sources, disposable recruitment, or permanent field armies.
+- A settlement under attack instantiates its currently available garrison/local-defense force. If combat remains active, additional reinforcement waves may spawn after data-driven intervals only while authoritative reserve/manpower/supply remains available.
+- Reinforcement waves are bounded by persistent garrison strength, reserves, manpower, supply, buildings, policies, and other authoritative limits. A settlement must never produce infinite defenders merely because an attack remains in progress.
+- Garrison casualties and resource expenditure persist back into authoritative state. After a data-driven combat-quiet period, unnecessary runtime defenders may despawn and the surviving force is represented abstractly again; defenders must not instantly reset to full strength.
+- Garrison replenishment outside combat follows explicit campaign rules and consumes appropriate time/resources/manpower rather than occurring as a free runtime respawn.
+- Defender composition and strength may change over the campaign according to controlling polity, region/culture, campaign date, technology, institutions, reforms, available resources, settlement class, fortifications, buildings, military traditions, administrator skills/traits, wealth/manpower, unrest, recent conquest, and other scenario data.
+- Technology and institutional progress may unlock different defender types, improved equipment, additional specialists/artillery, larger or better-organized reserves, stronger fortifications, or other qualitative changes; defender progression is not limited to flat stat scaling.
+- Administrator Command, Administration/Governance, Engineering, Tradecraft and other relevant abilities may improve organization, reserve readiness, morale, fortification repair, supply, reinforcement cadence, or similar bounded defense effects, but cannot create manpower or unavailable technology from nothing.
+- A resident administrator/commander may join the AI-controlled settlement defense as their actual character. An absent administrator does not appear as a combat clone; a deputy/local commander handles local defense instead.
+- Existing City Core capture and defensive-layout reconstruction rules remain authoritative. The local-defense system extends those rules rather than replacing the ownership/control/capture model.
+
 ## Controller military traditions
 
 - Player-controlled forces and AI-controlled polities maintain independent persistent military-tradition progression rather than sharing one global combat-experience value.
