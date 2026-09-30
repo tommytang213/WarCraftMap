@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "warcraftmap/audio-manifest.schema.json",
+  "title": "Scenario-neutral audio manifest",
+  "type": "object",
+  "required": ["format", "formatVersion", "budgets", "categories", "assets", "fallbacks"],
+  "properties": {
+    "format": {"const": "warcraftmap_audio_manifest_v1"},
+    "formatVersion": {"const": 1},
+    "budgets": {
+      "type": "object",
+      "required": ["maximumImportedBytes", "maximumDecodedBytes", "maximumActiveChannels"],
+      "properties": {
+        "maximumImportedBytes": {"type": "integer", "minimum": 0},
+        "maximumDecodedBytes": {"type": "integer", "minimum": 0},
+        "maximumActiveChannels": {"type": "integer", "minimum": 1, "maximum": 64}
+      }
+    },
+    "categories": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/category"}},
+    "assets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/asset"}},
+    "fallbacks": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}
+  },
+  "$defs": {
+    "category": {
+      "type": "object",
+      "required": ["id", "kind", "priority", "maximumConcurrent", "cooldownMs", "fadeInMs", "fadeOutMs", "interrupt"],
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {"enum": ["music", "ambience", "one_shot", "loop", "ui", "voice", "spatial"]},
+        "priority": {"type": "integer", "minimum": 0, "maximum": 100},
+        "maximumConcurrent": {"type": "integer", "minimum": 1},
+        "cooldownMs": {"type": "integer", "minimum": 0},
+        "fadeInMs": {"type": "integer", "minimum": 0},
+        "fadeOutMs": {"type": "integer", "minimum": 0},
+        "interrupt": {"enum": ["never", "lower_priority", "same_or_lower", "replace_category"]}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "required": ["id", "categoryId", "source", "locator", "technical", "historicalFit", "provenance", "license", "attribution", "intendedUse"],
+      "properties": {
+        "id": {"type": "string"}, "categoryId": {"type": "string"},
+        "source": {"enum": ["stock", "import"]},
+        "locator": {"type": "string", "minLength": 1},
+        "technical": {
+          "type": "object",
+          "required": ["format", "durationMs", "sampleRateHz", "channels", "loop", "integratedLufs", "peakDbfs", "encodedBytes", "decodedBytes"],
+          "properties": {
+            "format": {"enum": ["warcraft_stock", "wav", "mp3"]},
+            "durationMs": {"type": "integer", "minimum": 1}, "sampleRateHz": {"type": "integer"},
+            "channels": {"type": "integer", "minimum": 1, "maximum": 2}, "loop": {"type": "boolean"},
+            "loopStartMs": {"type": "integer", "minimum": 0}, "loopEndMs": {"type": "integer", "minimum": 1},
+            "integratedLufs": {"type": "number"}, "peakDbfs": {"type": "number", "maximum": 0},
+            "encodedBytes": {"type": "integer", "minimum": 0}, "decodedBytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": ["string", "null"]}
+          }
+        },
+        "historicalFit": {"type": "string", "minLength": 1}, "provenance": {"type": "string", "minLength": 1},
+        "license": {"type": "string", "minLength": 1}, "attribution": {"type": "string"}, "intendedUse": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

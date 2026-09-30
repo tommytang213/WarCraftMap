@@ -131,7 +131,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Settlement/building visual sets
 - [x] Custom icons/textures where needed
 - [ ] Custom 3D models where stock assets are insufficient
-- [ ] Sound/music/ambient pass
+- [x] Sound/music/ambient pass
 - [ ] Placeholder-removal audit
 
 ## Phase 7 — Full-world integration and balancing

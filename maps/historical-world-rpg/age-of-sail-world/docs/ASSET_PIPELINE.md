@@ -126,3 +126,13 @@ transparency/contrast/clipping measurements. Folder-map assembly regenerates
 these files, copies only the Warcraft imports plus their runtime manifest, and
 exposes stable `kind:id` references in `custom2dAssets` within scenario runtime
 data. Generated derivatives and contact sheets remain untracked build outputs.
+
+## Audio pass
+
+`scenario/audio/manifest.json` catalogues the stock Warcraft III 3.0 audio used
+by the scenario, with fit, provenance, licence, attribution, technical metadata,
+and budgets. `scenario/audio/profiles.json` owns the Age of Sail choices. Run
+`python3 tooling/audio_pipeline.py --check` to validate references, loops,
+loudness, imports, budgets, and machine-readable coverage/waveform summaries.
+This pass uses stock audio only and therefore adds no imported archive or
+decoded-audio memory cost.
