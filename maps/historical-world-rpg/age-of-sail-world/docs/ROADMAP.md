@@ -121,7 +121,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Historical tech/event timeline
 - [x] Country-specific units/content
 - [x] Recruitable characters
-- [ ] Regional and long-chain quests
+- [x] Regional and long-chain quests
 - [x] Treasures/secrets
 
 ## Phase 6 — Visual/content production
