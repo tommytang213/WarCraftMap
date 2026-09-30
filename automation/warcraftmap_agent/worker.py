@@ -36,6 +36,8 @@ class Config:
     max_weekly_runs: int = 50
     timeout_minutes: int = 45
     max_attempts: int = 3
+    max_ci_repair_attempts: int = 5
+    max_conflict_attempts: int = 5
     checks_command: str = "./automation/run_checks.sh"
     issue_limit: int = 100
     design_notification_command: str = ""
@@ -88,6 +90,8 @@ def make_config(repo_root: Path, env_path: Path) -> Config:
         max_weekly_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_RUNS", 50),
         timeout_minutes=positive_int(values, "WARCRAFTMAP_AGENT_TIMEOUT_MINUTES", 45),
         max_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_ATTEMPTS_PER_ISSUE", 3),
+        max_ci_repair_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_CI_REPAIR_ATTEMPTS", 5),
+        max_conflict_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_CONFLICT_REPAIR_ATTEMPTS", 5),
         checks_command=values.get("WARCRAFTMAP_AGENT_CHECKS_COMMAND", "./automation/run_checks.sh"),
         issue_limit=positive_int(values, "WARCRAFTMAP_AGENT_ISSUE_LIMIT", 100),
         design_notification_command=values.get("WARCRAFTMAP_AGENT_DESIGN_NOTIFICATION_COMMAND", ""),
@@ -382,7 +386,40 @@ def issue_blocker_numbers(issue: dict[str, Any]) -> set[int]:
     return numbers
 
 
-def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attempts: int, open_design_numbers: set[int] | None = None) -> dict[str, Any] | None:
+def repair_kind(record: dict[str, Any]) -> str:
+    """Return the retry lane, including recovery for legacy CI-repair records."""
+    explicit = str(record.get("repair_kind") or "")
+    if explicit in {"ci", "merge_conflict"}:
+        return explicit
+    if record.get("pr") and "GitHub CI failed on PR #" in str(record.get("last_failure", "")):
+        return "ci"
+    return ""
+
+
+def attempt_budget(
+    record: dict[str, Any],
+    max_attempts: int,
+    max_ci_repair_attempts: int = 5,
+    max_conflict_attempts: int = 5,
+) -> tuple[str, int, int]:
+    kind = repair_kind(record)
+    if kind == "ci":
+        key, limit = "ci_repair_attempts", max_ci_repair_attempts
+    elif kind == "merge_conflict":
+        key, limit = "conflict_attempts", max_conflict_attempts
+    else:
+        key, limit = "attempts", max_attempts
+    return key, int(record.get(key, 0)), limit
+
+
+def select_issue(
+    issues: list[dict[str, Any]],
+    state: dict[str, Any],
+    max_attempts: int,
+    open_design_numbers: set[int] | None = None,
+    max_ci_repair_attempts: int = 5,
+    max_conflict_attempts: int = 5,
+) -> dict[str, Any] | None:
     blockers = open_design_numbers or set()
     for issue in issues:
         if issue_blocker_numbers(issue) & blockers:
@@ -390,8 +427,10 @@ def select_issue(issues: list[dict[str, Any]], state: dict[str, Any], max_attemp
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
-        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
-        if int(record.get(attempt_key, 0)) >= max_attempts:
+        _attempt_key, attempts, limit = attempt_budget(
+            record, max_attempts, max_ci_repair_attempts, max_conflict_attempts
+        )
+        if attempts >= limit:
             continue
         return issue
     return None
@@ -409,8 +448,12 @@ def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, 
             continue
         record["status"] = "queued"
         record["attempts"] = 0
+        record["ci_repair_attempts"] = 0
+        record["conflict_attempts"] = 0
         record.pop("last_failure", None)
         record.pop("repair_kind", None)
+        record.pop("ci_base_oid", None)
+        record.pop("conflict_base_oid", None)
 
 
 def comment(config: Config, number: int, body: str) -> None:
@@ -796,11 +839,11 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
                 record["conflict_attempts"] = 0
             conflict_attempts = int(record.get("conflict_attempts", 0))
             record["repair_kind"] = "merge_conflict"
-            if conflict_attempts >= config.max_attempts:
+            if conflict_attempts >= config.max_conflict_attempts:
                 record["status"] = "failed"
                 record["last_failure"] = (
                     f"PR #{pr} is unmergeable because main conflicts with the issue branch, "
-                    f"and the conflict-repair attempt limit ({config.max_attempts}) is exhausted "
+                    f"and the conflict-repair attempt limit ({config.max_conflict_attempts}) is exhausted "
                     f"for base {base_oid[:12] or 'unknown'}."
                 )
             else:
@@ -815,8 +858,27 @@ def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
         failed = any(check_state(item) == "failed" for item in checks)
         pending = any(check_state(item) == "pending" for item in checks)
         if failed:
-            record["status"] = "repair"
-            record["last_failure"] = f"GitHub CI failed on PR #{pr}. Inspect it with gh pr checks {pr} and repair the implementation."
+            base_oid = remote_branch_oid(config.repo_root, str(view.get("baseRefName") or ""))
+            previous_base_oid = str(record.get("ci_base_oid") or "")
+            if base_oid and previous_base_oid and base_oid != previous_base_oid:
+                record["ci_repair_attempts"] = 0
+            if base_oid:
+                record["ci_base_oid"] = base_oid
+            record["repair_kind"] = "ci"
+            ci_attempts = int(record.get("ci_repair_attempts", 0))
+            if ci_attempts >= config.max_ci_repair_attempts:
+                record["status"] = "failed"
+                record["last_failure"] = (
+                    f"GitHub CI failed on PR #{pr}, and the CI-repair attempt limit "
+                    f"({config.max_ci_repair_attempts}) is exhausted for base "
+                    f"{base_oid[:12] or 'unknown'}."
+                )
+            else:
+                record["status"] = "repair"
+                record["last_failure"] = (
+                    f"GitHub CI failed on PR #{pr}. Inspect it with gh pr checks {pr} "
+                    "and repair the implementation."
+                )
             return True
         if pending:
             if failed_conflict:
@@ -861,7 +923,10 @@ def main(argv: list[str] | None = None) -> int:
         reconcile_ready_issue_states(issues, state)
         needs_design = list_needs_design_issues(config)
         design_numbers = {int(item["number"]) for item in needs_design}
-        selected = select_issue(issues, state, config.max_attempts, design_numbers)
+        selected = select_issue(
+            issues, state, config.max_attempts, design_numbers,
+            config.max_ci_repair_attempts, config.max_conflict_attempts,
+        )
         independent_ready_count = sum(not (issue_blocker_numbers(issue) & design_numbers) for issue in issues)
         refill_count = queue_refill_count(independent_ready_count, bool(needs_design))
         if design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
@@ -928,7 +993,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"planning failed: {exc}", file=sys.stderr)
             save_state(state_path, state)
             return 0
-        selected = select_issue(issues, state, config.max_attempts, design_numbers)
+        selected = select_issue(
+            issues, state, config.max_attempts, design_numbers,
+            config.max_ci_repair_attempts, config.max_conflict_attempts,
+        )
         if not selected:
             save_state(state_path, state)
             print("no eligible [agent-ready] issue")
@@ -947,8 +1015,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         record = issue_record(state, selected["number"])
         worktree, branch = worktree_for(config, selected["number"])
-        attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
-        record[attempt_key] = int(record.get(attempt_key, 0)) + 1
+        kind = repair_kind(record)
+        if kind and not record.get("repair_kind"):
+            record["repair_kind"] = kind
+        attempt_key, attempts, _limit = attempt_budget(
+            record, config.max_attempts,
+            config.max_ci_repair_attempts, config.max_conflict_attempts,
+        )
+        record[attempt_key] = attempts + 1
         record["status"] = "working"
         run_entry = {
             "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
@@ -989,8 +1063,11 @@ def main(argv: list[str] | None = None) -> int:
                 record.pop("last_failure", None)
                 record.pop("repair_kind", None)
         except Exception as exc:
-            attempt_key = "conflict_attempts" if record.get("repair_kind") == "merge_conflict" else "attempts"
-            record["status"] = "failed" if int(record.get(attempt_key, 0)) >= config.max_attempts else "repair"
+            attempt_key, attempts, limit = attempt_budget(
+                record, config.max_attempts,
+                config.max_ci_repair_attempts, config.max_conflict_attempts,
+            )
+            record["status"] = "failed" if attempts >= limit else "repair"
             record["last_failure"] = str(exc)[-4000:]
             print(f"attempt failed: {exc}", file=sys.stderr)
         save_state(state_path, state)
