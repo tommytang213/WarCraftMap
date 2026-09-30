@@ -100,6 +100,12 @@ public function compatSetUnitCoordinates(unit target, real x, real y)
 	SetUnitY(target, y)
 public function compatTeleportUnit(unit target, real x, real y)
 	SetUnitPosition(target, x, y)
+public function compatCreateUnit(player owner, int typeId, real x, real y, real facing) returns unit
+	return CreateUnit(owner, typeId, x, y, facing)
+public function compatRemoveUnit(unit target)
+	RemoveUnit(target)
+public function compatPanCamera(player owner, real x, real y, real duration)
+	PanCameraToTimedForPlayer(owner, x, y, duration)
 public function compatGetUnitMaxLife(unit target) returns int
 	return BlzGetUnitMaxHP(target)
 public function compatSetUnitMaxLife(unit target, int life)

@@ -9,18 +9,33 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / "_shared" / "engine"))
 from unit_roster import RosterCatalog, RosterError  # noqa: E402
 
-SLICE_PATH = ROOT / "scenario/rosters/europe-africa-middle-east-india.json"
+SLICE_PATHS = (
+    ROOT / "scenario/rosters/europe-africa-middle-east-india.json",
+    ROOT / "scenario/rosters/southeast-east-asia-pacific.json",
+    ROOT / "scenario/rosters/americas-caribbean.json",
+)
 
 
 def _combined_source(path):
     source = json.loads(Path(path).read_text(encoding="utf-8"))
-    if Path(path) == ROOT / "scenario/rosters/foundation.json" and SLICE_PATH.exists():
-        regional = json.loads(SLICE_PATH.read_text(encoding="utf-8"))
-        for key in ("weapons", "armor", "abilities", "formations", "ships", "archetypes", "historicalEvidence"):
-            source[key].extend(regional.get(key, []))
-        source["rosterAssignments"] = regional.get("assignments", [])
-        source["equipmentCatalog"] = regional.get("equipment", [])
-        source["reformCatalog"] = regional.get("reforms", [])
+    if Path(path) == ROOT / "scenario/rosters/foundation.json":
+        assignments, equipment, reforms, resources = [], set(), set(), set()
+        for slice_path in SLICE_PATHS:
+            if not slice_path.exists():
+                continue
+            regional = json.loads(slice_path.read_text(encoding="utf-8"))
+            if regional.get("format") != "age_of_sail_roster_slice_v1":
+                raise RosterError(f"unsupported roster slice format in {slice_path.name}")
+            for key in ("weapons", "armor", "abilities", "formations", "ships", "archetypes", "historicalEvidence"):
+                source[key].extend(regional.get(key, []))
+            assignments.extend(regional.get("assignments", []))
+            equipment.update(regional.get("equipment", []))
+            reforms.update(regional.get("reforms", []))
+            resources.update(regional.get("resources", []))
+        source["rosterAssignments"] = assignments
+        source["equipmentCatalog"] = sorted(equipment)
+        source["reformCatalog"] = sorted(reforms)
+        source["resourceCatalog"] = sorted(resources | {"grain", "flour", "ship_provisions"})
     return source
 
 
@@ -36,7 +51,7 @@ def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
         "countries": {x["id"] for x in world["polities"]},
         "equipment": set(source.get("equipmentCatalog", [])),
         "reforms": set(source.get("reformCatalog", [])),
-        "resources": {"grain", "flour", "ship_provisions"},
+        "resources": set(source.get("resourceCatalog", {"grain", "flour", "ship_provisions"})),
     }
     if source.get("format") != "age_of_sail_ordinary_roster_v1" or not source.get("historicalEvidence"):
         raise RosterError("unsupported roster format or missing historical evidence")
@@ -56,7 +71,36 @@ def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
                 seen.add((polity, unit))
     if len(seen) != sum(len(x["polityIds"]) * len(x["archetypeIds"]) for x in assignments):
         raise RosterError("duplicate roster assignment")
+    families_path = ROOT / "scenario/rosters/global-roster-families.json"
+    families = json.loads(families_path.read_text(encoding="utf-8"))
+    if families.get("format") != "age_of_sail_roster_families_v1":
+        raise RosterError("unsupported global roster-family format")
+    family_ids, family_polities = set(), set()
+    for family in families.get("families", []):
+        family_id = family.get("id")
+        if not isinstance(family_id, str) or family_id in family_ids:
+            raise RosterError("duplicate or invalid roster-family ID")
+        family_ids.add(family_id)
+        politics_path = ROOT / "scenario/politics" / family.get("politySource", "")
+        try:
+            polity_ids = {x["id"] for x in json.loads(politics_path.read_text(encoding="utf-8"))["polities"]}
+        except (OSError, json.JSONDecodeError, KeyError, TypeError):
+            raise RosterError(f"roster family {family_id}: invalid polity source")
+        units = family.get("archetypeIds")
+        if not isinstance(units, list) or not units or not set(units) <= set(catalog.archetypes):
+            raise RosterError(f"roster family {family_id}: broken archetype reference")
+        family_polities.update(polity_ids)
+        for polity in polity_ids:
+            for unit in units:
+                if catalog.archetypes[unit].get("countryId") not in (None, polity):
+                    raise RosterError(f"roster family {family_id} gives {unit} to incompatible polity {polity}")
+                seen.add((polity, unit))
+    covered = {polity for polity, _ in seen}
+    missing = references["countries"] - covered
+    if missing:
+        raise RosterError(f"playable polity roster coverage missing: {', '.join(sorted(missing))}")
     catalog.assignments = tuple(sorted(seen))
+    catalog.roster_families = tuple(sorted(family_ids))
     return catalog
 
 

@@ -42,6 +42,8 @@ Planned modules include:
 - economy, goods, trade, taxation
 - diplomacy, wars, occupations and peace settlements
 - characters, loyalty, relationships and Oathbound progression
+- declarative character availability, deterministic alternate locations, remote
+  region projection, and reconstructible physical representations
 - titles, peerage, land grants, vassalage and sovereignty
 - quests and historical events
 - navigation zones and safe-position recovery

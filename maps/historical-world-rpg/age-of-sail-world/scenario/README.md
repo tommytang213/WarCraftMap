@@ -31,7 +31,9 @@ catalogue, including English narrative/evidence, stable references, conditions,
 weighted alternate outcomes, and balance values. Run
 `python3 tooling/historical_events.py`; pass `--write` to rebuild the canonical world
 event and schedule projection deterministically.
-- characters
+- characters (`characters/global.json` is authoritative; run
+  `python3 tooling/global_characters.py`, or add `--write` to rebuild the world
+  projection; availability and location remain stable-ID simulation state)
 - native title names and generic rank mappings
 - special/national units
 - quests
@@ -71,10 +73,13 @@ entities are never duplicated between map-local runtime payloads.
 ship roster format and representative cross-category fixtures. It deliberately
 does not complete any country roster. Run `python3 tooling/validate_unit_roster.py`
 to validate references, inheritance, availability, mechanics, and runtime data.
-
-`rosters/europe-africa-middle-east-india.json` is the first selective country
-slice. It keeps regional history, assignments, statistics, requirements, and
-evidence in scenario data; it does not mark the overall roster roadmap complete.
+Country slices under `rosters/` add scenario-owned regional assignments and
+historical evidence. `southeast-east-asia-pacific.json` owns the second slice,
+including mainland, maritime, frontier, island-defense, and voyaging identities;
+the combined validator checks it together with the foundation and other slices.
+`europe-africa-middle-east-india.json` owns the first selective country slice,
+including its regional history, assignments, statistics, requirements, and
+evidence. The first slice alone does not complete the overall roster roadmap.
 
 `settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
 

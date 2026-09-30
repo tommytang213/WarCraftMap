@@ -1,0 +1,92 @@
+{
+  "format":"age_of_sail_roster_slice_v1",
+  "weapons":[
+    {"id":"bow_atlatl","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"sling_macana","compatibleCategories":["infantry","specialist","marine"]},
+    {"id":"traded_musket","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"canoe_boarding_arms","compatibleCategories":["marine","warship"]}
+  ],
+  "armor":[
+    {"id":"quilted_cotton_armor","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"hide_wood_armor","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"sewn_bark_hull","compatibleCategories":["transport","merchant","warship"]},
+    {"id":"reed_balsa_hull","compatibleCategories":["transport","merchant","warship"]}
+  ],
+  "abilities":[
+    {"id":"woodland_ambush","mechanic":"terrain","compatibleCategories":["infantry","specialist","marine"]},
+    {"id":"mountain_warfare","mechanic":"terrain","compatibleCategories":["infantry","cavalry","artillery","specialist","marine"]},
+    {"id":"plains_mobility","mechanic":"terrain","compatibleCategories":["cavalry","specialist"]},
+    {"id":"arid_mobility","mechanic":"terrain","compatibleCategories":["infantry","specialist"]},
+    {"id":"river_canoe_logistics","mechanic":"logistics","compatibleCategories":["specialist","marine","transport","warship"]},
+    {"id":"palisade_assault","mechanic":"siege","compatibleCategories":["infantry","specialist"]},
+    {"id":"highland_logistics","mechanic":"logistics","compatibleCategories":["infantry","specialist"]},
+    {"id":"missile_skirmish","mechanic":"weapon","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"ritual_cohesion","mechanic":"morale","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"kayak_seamanship","mechanic":"terrain","compatibleCategories":["marine","transport"]},
+    {"id":"horse_adaptation","mechanic":"active","compatibleCategories":["cavalry"]},
+    {"id":"contact_firearm_drill","mechanic":"discipline","compatibleCategories":["infantry","cavalry","artillery","specialist","marine"]},
+    {"id":"canoe_boarding","mechanic":"boarding","compatibleCategories":["marine","warship"]}
+    ,{"id":"island_hopping","mechanic":"terrain","compatibleCategories":["marine","transport","warship"]}
+  ],
+  "formations":[
+    {"id":"dispersed_war_party","compatibleCategories":["infantry","cavalry","specialist","marine"]},
+    {"id":"andean_column","compatibleCategories":["infantry","specialist"]}
+  ],
+  "ships":[
+    {"id":"great_lakes_war_canoe_hull","category":"warship","crewStrength":45},
+    {"id":"caribbean_pirogue_hull","category":"warship","crewStrength":55},
+    {"id":"arctic_skin_boat_hull","category":"transport","crewStrength":18},
+    {"id":"andean_balsa_hull","category":"transport","crewStrength":32}
+  ],
+  "archetypes":[
+    {"id":"woodland_war_party","extends":"ordinary_land_base","name":"Woodland War Party","category":"specialist","weaponIds":["bow_atlatl"],"armorIds":["hide_wood_armor"],"abilityIds":["woodland_ambush","missile_skirmish"],"formationIds":["dispersed_war_party"],"runtimeTemplateId":"specialist_runtime","strategicStrength":180,"cost":105,"upkeep":9,"supply":7,"upgradeToIds":["contact_musket_company"],"replacementIds":["contact_musket_company"],"countryId":null},
+    {"id":"mississippian_palisade_guard","extends":"ordinary_land_base","name":"Mississippian Palisade Guard","category":"infantry","weaponIds":["bow_atlatl","polearm"],"armorIds":["hide_wood_armor"],"abilityIds":["palisade_assault","ritual_cohesion"],"formationIds":["close_order"],"strategicStrength":540,"cost":105,"upkeep":9,"supply":8,"countryId":null},
+    {"id":"pueblo_bow_guard","extends":"ordinary_land_base","name":"Pueblo Bow Guard","category":"infantry","weaponIds":["bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["arid_mobility","missile_skirmish"],"formationIds":["dispersed_war_party"],"strategicStrength":510,"cost":100,"upkeep":8,"supply":7,"countryId":"pueblo_world"},
+    {"id":"inuit_coastal_hunters","extends":"shipboard_marines","name":"Inuit Coastal Hunters","weaponIds":["bow_atlatl","canoe_boarding_arms"],"armorIds":["hide_wood_armor"],"abilityIds":["kayak_seamanship","river_canoe_logistics"],"formationIds":["dispersed_war_party"],"strategicStrength":145,"cost":125,"upkeep":10,"supply":6,"countryId":"inuit_north_atlantic_communities"},
+    {"id":"mesoamerican_city_levy","extends":"ordinary_land_base","name":"Mesoamerican City Levy","category":"infantry","weaponIds":["sling_macana","bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["ritual_cohesion","palisade_assault"],"formationIds":["close_order"],"strategicStrength":570,"cost":110,"upkeep":10,"supply":9,"countryId":null},
+    {"id":"mexica_eagle_warriors","extends":"ordinary_land_base","name":"Mexica Eagle Warriors","category":"specialist","weaponIds":["sling_macana","bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["veteran_habits","ritual_cohesion","palisade_assault"],"formationIds":["dispersed_war_party"],"runtimeTemplateId":"specialist_runtime","strategicStrength":215,"cost":180,"upkeep":18,"supply":11,"countryId":"mexica_tenochtitlan"},
+    {"id":"purepecha_archers","extends":"ordinary_land_base","name":"Purépecha Archers","category":"specialist","weaponIds":["bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["missile_skirmish","mountain_warfare"],"formationIds":["dispersed_war_party"],"runtimeTemplateId":"specialist_runtime","strategicStrength":195,"cost":125,"upkeep":11,"supply":8,"countryId":"purepecha_state"},
+    {"id":"maya_forest_company","extends":"ordinary_land_base","name":"Maya Forest Company","category":"specialist","weaponIds":["sling_macana","bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["woodland_ambush","palisade_assault"],"formationIds":["dispersed_war_party"],"runtimeTemplateId":"specialist_runtime","strategicStrength":190,"cost":115,"upkeep":10,"supply":7,"countryId":null},
+    {"id":"caribbean_canoe_marines","extends":"shipboard_marines","name":"Caribbean Canoe Marines","weaponIds":["canoe_boarding_arms","bow_atlatl"],"armorIds":["quilted_cotton_armor"],"abilityIds":["amphibious_assault","canoe_boarding","river_canoe_logistics"],"formationIds":["dispersed_war_party"],"strategicStrength":205,"cost":145,"upkeep":13,"supply":9,"countryId":null},
+    {"id":"andean_sling_regiment","extends":"ordinary_land_base","name":"Andean Sling Regiment","category":"infantry","weaponIds":["sling_macana","polearm"],"armorIds":["quilted_cotton_armor"],"abilityIds":["mountain_warfare","missile_skirmish","ritual_cohesion"],"formationIds":["andean_column"],"strategicStrength":590,"cost":115,"upkeep":10,"supply":8,"countryId":null},
+    {"id":"chasqui_logistics_corps","extends":"ordinary_land_base","name":"Chasqui Logistics Corps","category":"specialist","weaponIds":["sling_macana"],"armorIds":["quilted_cotton_armor"],"abilityIds":["highland_logistics","mountain_warfare"],"formationIds":["andean_column"],"runtimeTemplateId":"specialist_runtime","strategicStrength":125,"cost":155,"upkeep":13,"supply":5,"countryId":"tawantinsuyu"},
+    {"id":"lowland_forest_war_party","extends":"woodland_war_party","name":"Lowland Forest War Party","abilityIds":["woodland_ambush","river_canoe_logistics","missile_skirmish"],"strategicStrength":185,"cost":100,"upkeep":8,"supply":6,"countryId":null},
+    {"id":"contact_musket_company","extends":"ordinary_land_base","name":"Contact-Era Musket Company","category":"specialist","runtimeTemplateId":"specialist_runtime","weaponIds":["traded_musket"],"armorIds":["hide_wood_armor"],"abilityIds":["contact_firearm_drill","woodland_ambush"],"formationIds":["dispersed_war_party"],"strategicStrength":210,"cost":155,"upkeep":16,"supply":13,"technologyIds":["pike_and_shot"],"equipmentIds":["traded_firearms"],"reformIds":["contact_firearm_adoption"],"availability":{"historicalStartYear":1600,"historicalEndYear":1820,"earlyAccessTechnologyIds":["pike_and_shot"],"earlyAccessYear":1520},"countryId":null},
+    {"id":"indigenous_horse_company","extends":"sabre_cavalry","name":"Indigenous Horse Company","weaponIds":["bow_atlatl","sabre"],"armorIds":["hide_wood_armor"],"abilityIds":["horse_adaptation","plains_mobility","missile_skirmish"],"formationIds":["dispersed_war_party"],"strategicStrength":345,"cost":225,"upkeep":22,"supply":16,"equipmentIds":["introduced_horses"],"reformIds":["mounted_warfare_adoption"],"resourceIds":["horses"],"availability":{"historicalStartYear":1650,"historicalEndYear":1820,"earlyAccessTechnologyIds":["selective_breeding"],"earlyAccessYear":1550},"countryId":null},
+    {"id":"adopted_cannon_battery","extends":"field_artillery_battery","name":"Adopted Cannon Battery","abilityIds":["field_siege","contact_firearm_drill"],"strategicStrength":115,"cost":290,"upkeep":29,"supply":31,"equipmentIds":["imported_cannon"],"reformIds":["artillery_adoption"],"availability":{"historicalStartYear":1650,"historicalEndYear":1820,"earlyAccessTechnologyIds":["cast_cannon"],"earlyAccessYear":1550},"countryId":null},
+    {"id":"great_lakes_war_canoe","extends":"armed_sailing_warship","name":"Great Lakes War Canoe","movementClassId":"coastal_sail","weaponIds":["canoe_boarding_arms"],"armorIds":["sewn_bark_hull"],"abilityIds":["canoe_boarding","river_canoe_logistics"],"shipId":"great_lakes_war_canoe_hull","strategicStrength":260,"cost":300,"upkeep":20,"supply":15,"technologyIds":[],"portRequired":true,"availability":{"historicalStartYear":1450,"historicalEndYear":1820,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":null},
+    {"id":"caribbean_war_pirogue","extends":"armed_sailing_warship","name":"Caribbean War Pirogue","movementClassId":"coastal_sail","weaponIds":["canoe_boarding_arms"],"armorIds":["sewn_bark_hull"],"abilityIds":["canoe_boarding","river_canoe_logistics","island_hopping"],"shipId":"caribbean_pirogue_hull","strategicStrength":285,"cost":325,"upkeep":22,"supply":16,"technologyIds":[],"portRequired":true,"availability":{"historicalStartYear":1450,"historicalEndYear":1820,"earlyAccessTechnologyIds":[],"earlyAccessYear":1450},"countryId":null},
+    {"id":"arctic_skin_boat_transport","extends":"coastal_transport","name":"Arctic Skin-Boat Transport","weaponIds":["unarmed_cargo"],"armorIds":["sewn_bark_hull"],"abilityIds":["cargo_capacity","kayak_seamanship"],"shipId":"arctic_skin_boat_hull","strategicStrength":90,"cost":175,"upkeep":8,"supply":10,"portRequired":true,"countryId":null},
+    {"id":"andean_balsa_transport","extends":"coastal_transport","name":"Andean Balsa Transport","weaponIds":["unarmed_cargo"],"armorIds":["reed_balsa_hull"],"abilityIds":["cargo_capacity","river_canoe_logistics"],"shipId":"andean_balsa_hull","strategicStrength":105,"cost":190,"upkeep":9,"supply":12,"portRequired":true,"countryId":null}
+  ],
+  "equipment":["traded_firearms","introduced_horses","imported_cannon"],
+  "reforms":["contact_firearm_adoption","mounted_warfare_adoption","artillery_adoption"],
+  "resources":["horses","ship_provisions","timber"],
+  "assignments":[
+    {"polityIds":["haudenosaunee_nations","wendat_confederacies","anishinaabe_networks"],"archetypeIds":["woodland_war_party","great_lakes_war_canoe","contact_musket_company"]},
+    {"polityIds":["inuit_north_atlantic_communities"],"archetypeIds":["inuit_coastal_hunters","arctic_skin_boat_transport"]},
+    {"polityIds":["cahokian_successor_centers"],"archetypeIds":["mississippian_palisade_guard","woodland_war_party","indigenous_horse_company"]},
+    {"polityIds":["pueblo_world"],"archetypeIds":["pueblo_bow_guard","indigenous_horse_company"]},
+    {"polityIds":["northwest_coast_nations"],"archetypeIds":["woodland_war_party","great_lakes_war_canoe"]},
+    {"polityIds":["mexica_tenochtitlan"],"archetypeIds":["mesoamerican_city_levy","mexica_eagle_warriors","adopted_cannon_battery"]},
+    {"polityIds":["acolhua_texcoco","tepanec_tlacopan","tlaxcallan_confederation","chalco_confederation"],"archetypeIds":["mesoamerican_city_levy","contact_musket_company"]},
+    {"polityIds":["purepecha_state"],"archetypeIds":["mesoamerican_city_levy","purepecha_archers","contact_musket_company"]},
+    {"polityIds":["yucatan_maya_jurisdictions","itza_kingdom","kiche_kingdom","kaqchikel_kingdom"],"archetypeIds":["maya_forest_company","mesoamerican_city_levy"]},
+    {"polityIds":["taino_cacicazgos","kalinago_island_communities"],"archetypeIds":["caribbean_canoe_marines","caribbean_war_pirogue"]},
+    {"polityIds":["muisca_zipazgo","muisca_zacazgo","tairona_chiefdoms"],"archetypeIds":["andean_sling_regiment","woodland_war_party"]},
+    {"polityIds":["tawantinsuyu"],"archetypeIds":["andean_sling_regiment","chasqui_logistics_corps","andean_balsa_transport","adopted_cannon_battery"]},
+    {"polityIds":["chimor_kingdom","chincha_lordship"],"archetypeIds":["andean_sling_regiment","andean_balsa_transport"]},
+    {"polityIds":["amazonian_regional_societies","tupi_coastal_networks","guarani_tekohas"],"archetypeIds":["lowland_forest_war_party","caribbean_war_pirogue"]},
+    {"polityIds":["mapuche_rewe_confederacies"],"archetypeIds":["andean_sling_regiment","indigenous_horse_company","contact_musket_company"]},
+    {"polityIds":["diaguita_calchaqui_lordships"],"archetypeIds":["andean_sling_regiment","indigenous_horse_company"]},
+    {"polityIds":["charrua_minuan_networks"],"archetypeIds":["woodland_war_party","indigenous_horse_company"]},
+    {"polityIds":["selknam_yaghan_communities"],"archetypeIds":["woodland_war_party","arctic_skin_boat_transport"]}
+  ],
+  "historicalEvidence":[
+    {"id":"north_american_warfare","citation":"Wayne E. Lee, Empires and Indigenes (2011); Daniel K. Richter, The Ordeal of the Longhouse (1992).","note":"Supports confederated war parties, woodland ambush, fortified communities, canoe logistics, and selective firearm adoption."},
+    {"id":"mesoamerican_warfare","citation":"Ross Hassig, Aztec Warfare (1988); Ross Hassig, War and Society in Ancient Mesoamerica (1992).","note":"Supports city levies, specialist warrior societies, missile troops, cotton armor, fortifications, and distinct Maya and Purépecha practice."},
+    {"id":"andean_warfare","citation":"Terence N. D'Altroy, The Incas (2014); John Hyslop, The Inka Road System (1984).","note":"Supports sling formations, highland campaigning, state logistics, runners, roads, and Pacific balsa transport."},
+    {"id":"caribbean_amphibious_warfare","citation":"William F. Keegan and Corinne L. Hofman, The Caribbean before Columbus (2017).","note":"Supports Taíno and Kalinago canoe mobility, maritime exchange, boarding, and amphibious raiding."},
+    {"id":"south_american_adaptation","citation":"Matthew Restall, Beyond Black and Red (2015); David J. Weber, Bárbaros (2005).","note":"Supports regional forest warfare and historically contingent adoption of horses, firearms, and artillery after contact rather than in the 1450 baseline."}
+  ]
+}

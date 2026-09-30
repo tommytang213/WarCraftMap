@@ -78,7 +78,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Global geography/navigation topology
 - [x] Multi-map campaign packaging and per-region/subregion physical map build pipeline
 - [x] Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
-- [ ] Regional instance activation, boundary transitions, and cross-map/cross-region travel
+- [x] Regional instance activation, boundary transitions, and cross-map/cross-region travel
 - [x] Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)
 - [x] World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
 - [x] Custom quest journal and quest-to-map tracking integration
@@ -119,8 +119,8 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political authority, priority settlements, ports, routes, transitions, economies, and abstract activation data
 - [x] Historical tech/event timeline
-- [ ] Country-specific units/content
-- [ ] Recruitable characters
+- [x] Country-specific units/content
+- [x] Recruitable characters
 - [ ] Regional and long-chain quests
 - [ ] Treasures/secrets
 
