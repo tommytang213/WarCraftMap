@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "id": "wc3-v3.0-lua-native-save-regression",
+  "target": {"wc3Patch": "v3.0", "scriptBackend": "lua"},
+  "saveName": "AgeOfSailWorld-NativeRegression",
+  "loads": 2,
+  "safeTransactions": ["safe_idle"],
+  "unsafeTransactions": ["map_transition", "city_capture", "campaign_commit"],
+  "runner": {
+    "environmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+    "protocol": "json-files-v1",
+    "timeoutSeconds": 180,
+    "requirements": [
+      "Warcraft III 3.0 executable and data licensed for the runner host",
+      "noninteractive launch of a packaged Lua .w3x",
+      "ability to invoke nativeSaveRegressionStart and restart or restore the Warcraft process/session",
+      "writable Warcraft save and game-cache directories isolated per run",
+      "exit only after writing the requested canonical JSON result file"
+    ]
+  }
+}

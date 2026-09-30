@@ -23,6 +23,7 @@ EXPECTED_METADATA = {
 
 COMPATIBILITY_FILE = "WC3Compatibility.wurst"
 COMPATIBILITY_FIXTURE = "WC3CompatibilityCompileFixture.wurst"
+NATIVE_SAVE_FIXTURE = "NativeSaveRegressionFixture.wurst"
 WRAPPED_NATIVES = (
     "GetEquippedItem", "GetUnequippedItem", "GetItemEquipmentType", "GetItemTag",
     "IsItemEquipped", "IsItemInBag", "UnitEquipItem", "UnitUnequipItem",
@@ -47,6 +48,7 @@ def validate_compatibility_boundary(project_root: Path = PROJECT_ROOT) -> None:
     wurst_root = project_root / "wurst"
     compatibility = wurst_root / COMPATIBILITY_FILE
     fixture = wurst_root / COMPATIBILITY_FIXTURE
+    native_save_fixture = wurst_root / NATIVE_SAVE_FIXTURE
     missing = [path.name for path in (compatibility, fixture) if not path.is_file()]
     if missing:
         raise ValidationError("WC3 compatibility source is missing: " + ", ".join(missing))
@@ -79,6 +81,21 @@ def validate_compatibility_boundary(project_root: Path = PROJECT_ROOT) -> None:
             "wrapped Warcraft natives must only be used in "
             + COMPATIBILITY_FILE + ": " + "; ".join(violations)
         )
+    # Small isolated boundary fixtures used by unit tests predate the native-save
+    # gate. Canonical projects contain this optional companion and validate it.
+    if native_save_fixture.is_file():
+        native_text = native_save_fixture.read_text(encoding="utf-8")
+        for required in (
+            'NATIVE_SAVE_FIXTURE_ID = "wc3-v3.0-lua-native-save-regression"',
+            "nativeSaveRegressionStart", "nativeSaveRegressionAfterLoad",
+            "nativeSaveRegressionRequestDuring", "reconstructRegisteredRuntime",
+            "compatSaveGame(saveName)",
+        ):
+            if required not in native_text:
+                raise ValidationError(f"native save regression fixture is missing {required}")
+        bootstrap = wurst_root / "Bootstrap.wurst"
+        if bootstrap.is_file() and "NativeSaveRegressionFixture" in bootstrap.read_text(encoding="utf-8"):
+            raise ValidationError("native save fixture must remain developer-controlled and dormant in release bootstrap")
 
 
 def _read(path: Path) -> bytes:
