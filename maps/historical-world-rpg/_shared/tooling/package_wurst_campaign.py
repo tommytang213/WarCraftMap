@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import re
 import shutil
@@ -328,16 +327,19 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
         for item in manifest["maps"]:
             if _sha_bytes(zipped.read(item["packagePath"])) != item["sha256"]:
                 raise PackagingError(f"campaign inspection stage failed [{item['id']}]: packaged map checksum differs")
-            with zipfile.ZipFile(io.BytesIO(zipped.read(item["packagePath"]))) as map_archive:
-                runtime_name = f"runtime/{GENERATED_DATA}"
-                if runtime_name not in map_archive.namelist():
-                    raise PackagingError(f"campaign inspection stage failed [{item['id']}]: missing runtime playback data")
-                runtime = json.loads(map_archive.read(runtime_name))
-                audio = runtime.get("audio", {})
-                if audio.get("authority") != "presentation_only" or audio.get("physicalMapId") != item["id"]:
-                    raise PackagingError(f"campaign inspection stage failed [{item['id']}]: invalid audio playback data")
-                if audio.get("manifest", {}).get("format") != "warcraftmap_audio_manifest_v1" or not audio.get("profiles", {}).get("profiles"):
-                    raise PackagingError(f"campaign inspection stage failed [{item['id']}]: missing audio manifest or profiles")
+
+
+def _inspect_audio_runtime(physical: PhysicalMap, generated: Path) -> None:
+    """Inspect staged data before Grill converts the map folder to MPQ."""
+    try:
+        runtime = json.loads((generated / GENERATED_DATA).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: invalid runtime playback data: {error}") from error
+    audio = runtime.get("audio", {})
+    if audio.get("authority") != "presentation_only" or audio.get("physicalMapId") != physical.id:
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: invalid audio playback data")
+    if audio.get("manifest", {}).get("format") != "warcraftmap_audio_manifest_v1" or not audio.get("profiles", {}).get("profiles"):
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: missing audio manifest or profiles")
 
 
 def _sha_bytes(value: bytes) -> str:
@@ -370,6 +372,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         generated = map_root / "generated"
         generate(map_config, generated)
         _localize_runtime(config, world, physical, generated)
+        _inspect_audio_runtime(physical, generated)
         verify_generated(map_config, generated)
         _validate_budget(map_config, physical, generated)
         compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids)

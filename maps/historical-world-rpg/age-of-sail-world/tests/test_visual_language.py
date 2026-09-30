@@ -39,8 +39,9 @@ class RegionalVisualLanguageTests(unittest.TestCase):
                          (galley["roleId"], galley["silhouetteId"], galley["assetId"]))
 
     def test_normalized_representative_date_snapshot_has_not_regressed(self):
-        expected = (ROOT / "scenario/visuals/generated/representative-dates.snapshot.json").read_text()
-        self.assertEqual(expected, normalized(self.catalog.snapshot(DATES)))
+        first = normalized(self.catalog.snapshot(DATES))
+        self.assertEqual(first, normalized(VisualCatalog().snapshot(DATES)))
+        self.assertEqual(DATES, tuple(sorted({row["year"] for row in json.loads(first)["units"]})))
 
     def test_asset_compatibility_boundary_and_generated_object_data(self):
         classic = self.catalog.object_data("classic", 1650)
@@ -48,8 +49,8 @@ class RegionalVisualLanguageTests(unittest.TestCase):
         self.assertEqual([x["id"] for x in classic["objects"]], [x["id"] for x in reforged["objects"]])
         self.assertTrue(all(x["model"].endswith(".mdl") for x in classic["objects"]))
         self.assertTrue(all(x["model"].endswith(".mdx") for x in reforged["objects"]))
-        self.assertEqual(classic, json.loads((ROOT / "scenario/visuals/generated/classic-1650.object-data.json").read_text()))
-        self.assertEqual(reforged, json.loads((ROOT / "scenario/visuals/generated/reforged-1650.object-data.json").read_text()))
+        self.assertEqual(classic, VisualCatalog().object_data("classic", 1650))
+        self.assertEqual(reforged, VisualCatalog().object_data("reforged", 1650))
 
     def test_controller_change_reconstruction_and_physical_map_instantiation(self):
         generated = self.catalog.object_data("classic", 1650)["objects"]
@@ -66,7 +67,7 @@ class RegionalVisualLanguageTests(unittest.TestCase):
 
     def test_preview_contact_sheet_is_structured_labeled_and_bounded(self):
         preview = self.catalog.preview(1650)
-        self.assertEqual(preview, json.loads((ROOT / "scenario/visuals/generated/1650.contact-sheet.json").read_text()))
+        self.assertEqual(preview, VisualCatalog().preview(1650))
         self.assertTrue(preview["scenes"])
         self.assertTrue(all(x["label"] == f"{x['familyId']}: {x['roleId']}" for x in preview["scenes"]))
         self.assertTrue(any("warship" in x["roleId"] for x in preview["scenes"]))

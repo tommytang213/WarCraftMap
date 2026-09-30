@@ -53,6 +53,10 @@ def _scan_markers(config):
             relative = path.relative_to(ROOT).as_posix()
             if path == REPORT:
                 continue
+            # Reproducible developer previews are intentionally untracked and
+            # must not make a clean-checkout release audit differ locally.
+            if relative.startswith("scenario/visuals/generated/"):
+                continue
             text = path.read_text(encoding="utf-8", errors="replace").lower()
             hits = sorted(marker for marker in MARKERS if marker in text)
             if hits:
