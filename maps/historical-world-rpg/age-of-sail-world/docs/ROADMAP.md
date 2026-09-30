@@ -87,7 +87,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 political baseline (polities, provinces, sovereignty, and conflicts)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] Settlements and playable content
-- [ ] Africa
+- [x] Africa
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
@@ -102,7 +102,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political baseline and authoritative settlement content
   - [x] Ports, trade routes, transitions, economy profiles, and abstract activation data
-- [ ] East Asia
+- [x] East Asia
   - [x] Regional instances and geographic reference data
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts)
@@ -113,7 +113,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
   - [x] 1450 political baseline (polities, provinces, sovereignty, relationships, and conflicts)
   - [x] Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data
-- [ ] Pacific
+- [x] Pacific
   - [x] Regional instances and geographic reference data
   - [x] 1450 political baseline (island polities, chiefdoms, confederated and decentralized communities, diplomacy, and political-center exceptions)
   - [x] Authoritative terrain generation and land/naval/amphibious/flying navigation
@@ -121,7 +121,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Historical tech/event timeline
 - [x] Country-specific units/content
 - [x] Recruitable characters
-- [ ] Regional and long-chain quests
+- [x] Regional and long-chain quests
 - [ ] Treasures/secrets
 
 ## Phase 6 — Visual/content production
