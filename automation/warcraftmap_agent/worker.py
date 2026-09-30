@@ -752,9 +752,14 @@ def cleanup_merged_issue(config: Config, issue_number: int) -> list[str]:
 
 
 def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> None:
-    """Keep merge success authoritative even when cleanup reports warnings."""
+    """Keep merge success authoritative even when issue-close/cleanup reports warnings."""
     record["status"] = "merged"
-    errors = cleanup_merged_issue(config, int(number))
+    errors: list[str] = []
+    try:
+        run(["gh", "issue", "close", str(number), "--reason", "completed"], cwd=config.repo_root)
+    except Exception as exc:
+        errors.append(f"could not close merged issue #{number}: {exc}")
+    errors.extend(cleanup_merged_issue(config, int(number)))
     if errors:
         record["cleanup_errors"] = errors
     else:
