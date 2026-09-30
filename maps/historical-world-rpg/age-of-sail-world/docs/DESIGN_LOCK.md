@@ -25,6 +25,19 @@ This file records requirements already agreed with the player. They are defaults
 - Provinces and cities can change hands through war.
 - Settlements can grow and world state can evolve over time.
 
+## AI territorial warfare doctrine
+
+- AI territorial warfare uses a hybrid doctrine: historical ambitions, rivalries, claims, strategic pressures, and regional interests bias otherwise state-driven strategic decisions.
+- Historical pressures are scenario data and modifiers, not scripts. They may raise or lower the attractiveness of wars, objectives, alliances, rivalries, or peace terms, but must not force a war or guarantee a historical outcome when current campaign state no longer supports it.
+- State-driven evaluation remains authoritative. AI polities should consider current ownership/control, claims, border and maritime access, settlement and trade-route value, military and naval strength, manpower/supply, treasury and economy, war exhaustion, diplomacy, alliances, threats, terrain, technology, institutions, and other relevant campaign state before choosing war or peace.
+- War goals should be limited and explicit where practical: recover or press claims, seize strategic ports or provinces, protect trade or allies, weaken a rival, secure access, suppress rebellion, or pursue broader expansion when conditions justify it. AI should not default to indiscriminate total conquest merely because a target is weaker.
+- Peace evaluation should reflect the war's goals, achieved control, relative strength, losses, exhaustion, economic cost, alliance situation, and continuing strategic risk. Terms should be proportionate to plausible objectives and campaign state.
+- Historical biases must weaken, disappear, or redirect when alternate-history divergence removes their basis. A polity should not pursue an obsolete historical rivalry or objective forever after the relevant territory, government, alliance, route, or strategic condition has materially changed.
+- AI polities use the same authoritative ownership, control, diplomacy, war, military, economy, technology, tradition, save/persistence, and cross-map systems as other campaign actors. Doctrine chooses actions; it does not bypass those systems.
+- Decisions must be deterministic from authoritative campaign state plus the campaign's deterministic random source where tie-breaking or bounded variation is useful, so uninterrupted and resumed simulations remain equivalent and testable.
+- Historical weighting and state-driven utility coefficients belong in scenario/configuration data rather than hardcoded Age-of-Sail assumptions in shared engine code.
+- The goal is a recognizable historical strategic texture without railroading the campaign: plausible historical pressures should be visible, while sufficiently changed world state should produce correspondingly different AI behavior.
+
 ## Technology
 
 - Large technology trees with multiple branches.
