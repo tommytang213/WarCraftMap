@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -100,6 +100,7 @@ class MigrationRegistry:
         if current_version == CURRENT_SCHEMA_VERSION:
             self.register(1, _migrate_v1_to_v2)
             self.register(2, _migrate_v2_to_v3)
+            self.register(3, _migrate_v3_to_v4)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -148,6 +149,17 @@ def _migrate_v2_to_v3(document: dict[str, Any]) -> dict[str, Any]:
         "searchAreas": {},
     })
     document["schemaVersion"] = 3
+    return document
+
+
+def _migrate_v3_to_v4(document: dict[str, Any]) -> dict[str, Any]:
+    """Version 4 reserves authoritative deterministic treasure state."""
+    world = document.setdefault("state", {}).setdefault("world", {})
+    world.setdefault("treasures", {
+        "version": 1, "campaignSeed": "", "seedFingerprint": "",
+        "resolved": {}, "knowledge": {}, "collectionCounts": {},
+    })
+    document["schemaVersion"] = 4
     return document
 
 

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.invalid/contracts/treasure.schema.json",
+  "title": "Scenario-neutral deterministic treasure catalog",
+  "type": "object",
+  "required": ["schemaVersion", "candidateLocations", "rewardPools", "clues", "treasures"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "candidateLocations": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "rewardPools": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "guards": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "hazards": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "encounters": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "clues": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}},
+    "treasures": {"type": "array", "items": {"$ref": "#/$defs/stableRecord"}}
+  },
+  "$defs": {"stableRecord": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"}}}}
+}

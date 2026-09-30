@@ -1,5 +1,9 @@
 # Shared Data Contracts
 
+`treasure.schema.json` defines the scenario-neutral stable-ID envelope for
+candidate hiding places, reward pools, clues, guards, hazards, encounters, and
+treasures. Engine validation enforces their cross-references and placement rules.
+
 Scenario content is stored as data and compiled into the Warcraft map. Shared engine code consumes stable IDs and generic records rather than hardcoded Age-of-Sail names.
 
 ## Stable ID rules
