@@ -122,7 +122,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 - [x] Country-specific units/content
 - [x] Recruitable characters
 - [x] Regional and long-chain quests
-- [ ] Treasures/secrets
+- [x] Treasures/secrets
 
 ## Phase 6 — Visual/content production
 

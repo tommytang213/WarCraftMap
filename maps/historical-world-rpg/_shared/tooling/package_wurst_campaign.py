@@ -28,6 +28,9 @@ from package_wurst_map import (
     verify_generated,
 )
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+from treasures import validate_catalog as validate_treasure_catalog  # noqa: E402
+
 STABLE_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 CAMPAIGN_FORMAT = "warcraftmap_physical_maps_v1"
 CAMPAIGN_ARCHIVE_FORMAT = "warcraftmap_campaign_v1"
@@ -184,6 +187,24 @@ def validate_campaign(config: CampaignConfig) -> dict:
     missing = required - set(assigned)
     if missing:
         raise PackagingError("campaign validation stage failed: unassigned required content: " + ", ".join(sorted(missing)))
+    treasure_path = config.project / "scenario/treasures/age-of-sail.json"
+    try:
+        treasure_catalog = json.loads(treasure_path.read_text(encoding="utf-8"))
+        validate_treasure_catalog(treasure_catalog, {
+            "regions": regions,
+            "regionalInstances": set(instance_regions),
+        })
+        physical_by_instance = {instance: item.id for item in config.maps for instance in item.regional_instance_ids}
+        configured_physical_ids = {item.id for item in config.maps}
+        for candidate in treasure_catalog["candidateLocations"]:
+            expected = physical_by_instance.get(candidate["regionalInstanceId"])
+            # A single-map compatibility package legitimately remaps every authored
+            # assignment. In the normal manifest an extant authored map must own it.
+            if candidate["physicalMapId"] in configured_physical_ids and candidate["physicalMapId"] != expected:
+                raise PackagingError(f"treasure candidate {candidate['id']}: physical map does not own regional instance")
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        raise PackagingError(f"campaign treasure validation stage failed: {error}") from error
+    world["treasureCatalog"] = treasure_catalog
     return world
 
 
@@ -192,6 +213,10 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
     instance_ids = set(physical.regional_instance_ids)
     settlements = [item for item in world.get("settlements", []) if item.get("regionalInstanceId") in instance_ids]
+    treasure_catalog = world.get("treasureCatalog", {})
+    local_candidates = [item for item in treasure_catalog.get("candidateLocations", []) if item.get("regionalInstanceId") in instance_ids]
+    local_candidate_ids = {item["id"] for item in local_candidates}
+    local_treasures = [item for item in treasure_catalog.get("treasures", []) if local_candidate_ids.intersection(item.get("candidateLocationIds", []))]
     province_ids = {item["provinceId"] for item in settlements}
     provinces = [item for item in world.get("provinces", []) if item["id"] in province_ids]
     polity_ids = {item.get("legalOwnerPolityId") for item in provinces} | {item.get("controllerPolityId") for item in provinces}
@@ -204,6 +229,8 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
         "polityDefinitions": polities,
         "provinceDefinitions": provinces,
         "settlementDefinitions": settlements,
+        "treasureDefinitions": local_treasures,
+        "treasureCandidateLocations": local_candidates,
         "provinceHoldings": [item for item in world.get("territorialHoldings", []) if item.get("territory", {}).get("kind") == "province" and item["territory"]["id"] in province_ids],
     })
     runtime_path.write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
