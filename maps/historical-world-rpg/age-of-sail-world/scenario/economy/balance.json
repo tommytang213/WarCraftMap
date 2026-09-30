@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "age_of_sail_full_world_economy_balance",
+  "campaignYears": {"start": 1450, "end": 1820},
+  "currency": {"id": "accounting_unit", "minorUnitsPerUnit": 240, "startingTreasuryMinorPerCapacity": 3},
+  "simulationSeeds": [1450, 1492, 1588, 1648, 1713, 1776, 1815],
+  "scenarios": {
+    "peaceful": {"supplyPermille": 1000, "demandPermille": 1000, "routePermille": 1000, "upkeepPermille": 1000},
+    "wartime": {"supplyPermille": 870, "demandPermille": 1120, "routePermille": 820, "upkeepPermille": 1350},
+    "blockade": {"supplyPermille": 820, "demandPermille": 1080, "routePermille": 450, "upkeepPermille": 1150},
+    "occupation": {"supplyPermille": 760, "demandPermille": 1030, "routePermille": 700, "upkeepPermille": 1250},
+    "disrupted_route": {"supplyPermille": 900, "demandPermille": 1050, "routePermille": 300, "upkeepPermille": 1100},
+    "accelerated_development": {"supplyPermille": 1250, "demandPermille": 1190, "routePermille": 1150, "upkeepPermille": 1080},
+    "inactive_region": {"supplyPermille": 1000, "demandPermille": 1000, "routePermille": 1000, "upkeepPermille": 1000}
+  },
+  "settlementClass": {
+    "baseCapacityUnits": 12000,
+    "capitalCapacityPermille": 1500,
+    "portCapacityPermille": 1250,
+    "tradeCenterCapacityPermille": 1350,
+    "startingStockPermille": 520,
+    "personalInventoryCapacityUnits": 120,
+    "warehouseCapacityPermille": 2400,
+    "armyCapacityPermille": 180,
+    "fleetCapacityPermille": 260,
+    "shipCapacityPermille": 55
+  },
+  "stockPolicy": {
+    "producedGoodSharePermille": 520,
+    "importedGoodSharePermille": 300,
+    "shortageGoodSharePermille": 90,
+    "commonStapleSharePermille": 90,
+    "commonStaples": ["grain", "fish", "tools", "ship_provisions"],
+    "minimumGoodStockUnits": 12
+  },
+  "market": {
+    "basePriceMinor": 240,
+    "minimumPricePermille": 480,
+    "maximumPricePermille": 2200,
+    "routeTransactionCostPermille": 90,
+    "maximumRouteShipmentPermille": 35,
+    "maximumDominantRouteProfitPermille": 280
+  },
+  "flows": {
+    "localProductionPermille": 82,
+    "localConsumptionPermille": 70,
+    "importReplenishmentPermille": 38,
+    "shortageConsumptionPermille": 93,
+    "technologyMaximumOutputPermille": 1450,
+    "institutionMaximumEfficiencyPermille": 1250,
+    "occupationMinimumOutputPermille": 600,
+    "blockadeMinimumEssentialSupplyPermille": 160,
+    "spoilageSinkPermille": 6,
+    "tradeLossSinkPermille": 3
+  },
+  "finance": {
+    "startingLiquidityDays": 150,
+    "wageSharePermille": 310,
+    "upkeepSharePermille": 180,
+    "taxSharePermille": 110,
+    "obligationReservePermille": 140,
+    "maximumArbitrageMarginPermille": 280,
+    "minimumTradeMarginPermille": 18,
+    "priceAdjustmentPermille": 75
+  },
+  "envelopes": {
+    "liquidityDays": {"minimum": 30, "maximum": 540},
+    "essentialStockDays": {"minimum": 14, "maximum": 365},
+    "priceIndexPermille": {"minimum": 480, "maximum": 2200},
+    "annualTradeProfitPermille": {"minimum": -180, "maximum": 280},
+    "upkeepBurdenPermille": {"minimum": 40, "maximum": 420},
+    "insolventSettlementPermille": {"minimum": 0, "maximum": 45},
+    "connectedSettlementPermille": {"minimum": 900, "maximum": 1000},
+    "essentialAccessPermille": {"minimum": 950, "maximum": 1000},
+    "annualInflationPermille": {"minimum": -90, "maximum": 120}
+  },
+  "performanceBudgets": {
+    "maximumSettlementGoods": 16,
+    "maximumAnnualOperations": 250000,
+    "maximumReportOutliers": 64,
+    "maximumSimulationSeconds": 30
+  },
+  "essentialGoodClasses": ["staple_food", "tools", "military_supply"],
+  "authorizedSources": ["harvest", "extraction", "institutional_credit", "historical_import"],
+  "authorizedSinks": ["household_consumption", "wages", "military_upkeep", "fleet_upkeep", "taxation", "obligation", "spoilage", "trade_loss"]
+}

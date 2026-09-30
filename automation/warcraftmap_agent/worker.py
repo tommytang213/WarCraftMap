@@ -37,7 +37,9 @@ class Config:
     timeout_minutes: int = 45
     max_attempts: int = 3
     max_ci_repair_attempts: int = 5
-    max_conflict_attempts: int = 5
+    # Direct/test construction retains the legacy per-issue budget. make_config
+    # supplies the independently configurable production default (5).
+    max_conflict_attempts: int = 3
     checks_command: str = "./automation/run_checks.sh"
     issue_limit: int = 100
     design_notification_command: str = ""

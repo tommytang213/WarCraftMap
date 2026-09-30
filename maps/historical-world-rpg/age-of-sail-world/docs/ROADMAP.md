@@ -140,7 +140,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 
 - [ ] Multi-century simulation soak tests
 - [ ] Finalize performance budgets against full-world content
-- [ ] Economy balancing
+- [x] Economy balancing
 - [ ] AI territorial warfare
 - [ ] Save/load stress testing
 - [ ] Native WC3 save/load regression
