@@ -1,7 +1,7 @@
 # Low-priority autonomous worker
 
 This worker consumes open GitHub issues whose titles begin with `[agent-ready]`.
-Titles beginning with `[needs-design]` are never selected. It runs only one
+Titles beginning with `[needs-design]` or `[planned]` are never selected. It runs only one
 process and one issue at a time, in a dedicated `agent/issue-N` branch and
 worktree. Codex runs with `workspace-write`, `--approve-for-me`, a 45-minute
 timeout, and no dangerous sandbox bypass.
@@ -81,6 +81,17 @@ decision. Existing ready work is skipped only when its body says `Blocked by: #N
 or `Depends on: #N` for an open design blocker. A healthy queue causes no planning invocation; an
 exhausted roadmap exits cleanly. Planning and implementation remain sequential,
 so worker concurrency is still one.
+
+Open `[planned] Phase N: ...` issues reserve future roadmap work. Before queue
+selection or replenishment, the worker promotes an eligible reservation in place
+by changing only its prefix to `[agent-ready]`; it never recreates the issue.
+Promotion requires every checkbox in the immediately preceding phase of the
+authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
+the issue body is also a blocker until that referenced issue is closed. General
+`[planned]` issues without a recognizable `Phase N:` title remain untouched.
+All three workflow prefixes normalize to the same logical title, so planned
+reservations suppress duplicate queue-refill issues. Dry-run mode reports each
+promotion that would occur but does not edit GitHub.
 
 Issue bodies should be implementation-ready and contain acceptance criteria.
 If Codex identifies a missing material design decision, the worker renames the
