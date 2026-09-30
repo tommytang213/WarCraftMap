@@ -120,7 +120,7 @@ The player should not be pulled into repetitive feature testing. Development gat
   - [x] 1450 political authority, priority settlements, ports, routes, transitions, economies, and abstract activation data
 - [x] Historical tech/event timeline
 - [x] Country-specific units/content
-- [ ] Recruitable characters
+- [x] Recruitable characters
 - [ ] Regional and long-chain quests
 - [ ] Treasures/secrets
 

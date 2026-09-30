@@ -25180,13 +25180,874 @@
       ]
     }
   ],
-  "traits": [],
-  "skills": [],
-  "professions": [],
-  "personalQuests": [],
-  "characters": [],
-  "relationshipThresholds": [],
-  "companionRelationships": [],
+  "traits": [
+    {
+      "id": "adaptable",
+      "name": "Adaptable",
+      "description": "Adjusts readily to changing courts and campaigns."
+    },
+    {
+      "id": "principled",
+      "name": "Principled",
+      "description": "Values promises and legitimate obligations."
+    },
+    {
+      "id": "bold",
+      "name": "Bold",
+      "description": "Accepts calculated personal and military risks."
+    },
+    {
+      "id": "scholarly",
+      "name": "Scholarly",
+      "description": "Applies sustained study to practical problems."
+    },
+    {
+      "id": "navigator",
+      "name": "Navigator",
+      "description": "Reads winds, waters, landmarks, and charts."
+    },
+    {
+      "id": "diplomatic",
+      "name": "Diplomatic",
+      "description": "Builds working relationships across cultural boundaries."
+    }
+  ],
+  "skills": [
+    {
+      "id": "command",
+      "name": "Command",
+      "description": "Directs forces and maintains cohesion."
+    },
+    {
+      "id": "navigation",
+      "name": "Navigation",
+      "description": "Plans and executes difficult journeys."
+    },
+    {
+      "id": "diplomacy",
+      "name": "Diplomacy",
+      "description": "Negotiates alliances, access, and settlements."
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering",
+      "description": "Designs machines, fortifications, and works."
+    },
+    {
+      "id": "scholarship",
+      "name": "Scholarship",
+      "description": "Interprets technical and historical knowledge."
+    },
+    {
+      "id": "tradecraft",
+      "name": "Tradecraft",
+      "description": "Understands markets, supply, and commercial networks."
+    }
+  ],
+  "professions": [
+    {
+      "id": "commander",
+      "name": "Commander",
+      "description": "A leader of land forces."
+    },
+    {
+      "id": "admiral",
+      "name": "Admiral",
+      "description": "A leader of fleets and naval operations."
+    },
+    {
+      "id": "navigator_profession",
+      "name": "Navigator",
+      "description": "A specialist in routes and pilotage."
+    },
+    {
+      "id": "diplomat",
+      "name": "Diplomat",
+      "description": "An envoy and political intermediary."
+    },
+    {
+      "id": "engineer",
+      "name": "Engineer",
+      "description": "A designer of practical works."
+    },
+    {
+      "id": "scholar",
+      "name": "Scholar",
+      "description": "A researcher, translator, and adviser."
+    }
+  ],
+  "personalQuests": [
+    {
+      "id": "quest_leonardo_codex",
+      "title": "Leonardo Codex",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "leonardo_da_vinci"
+    },
+    {
+      "id": "quest_nelson_band_of_brothers",
+      "title": "Nelson Band Of Brothers",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "horatio_nelson"
+    },
+    {
+      "id": "quest_askia_niger_reforms",
+      "title": "Askia Niger Reforms",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "askia_muhammad"
+    },
+    {
+      "id": "quest_nzinga_independence",
+      "title": "Nzinga Independence",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "nzinga_mbande"
+    },
+    {
+      "id": "quest_piri_kitab_bahriye",
+      "title": "Piri Kitab Bahriye",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "piri_reis"
+    },
+    {
+      "id": "quest_krishnadevaraya_raichur",
+      "title": "Krishnadevaraya Raichur",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "krishnadevaraya"
+    },
+    {
+      "id": "quest_hang_tuah_laksamana",
+      "title": "Hang Tuah Laksamana",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "hang_tuah"
+    },
+    {
+      "id": "quest_hasanuddin_eastern_trade",
+      "title": "Hasanuddin Eastern Trade",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "sultan_hasanuddin"
+    },
+    {
+      "id": "quest_yi_restore_fleet",
+      "title": "Yi Restore Fleet",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "yi_sun_sin"
+    },
+    {
+      "id": "quest_xu_agricultural_treatise",
+      "title": "Xu Agricultural Treatise",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "xu_guangqi"
+    },
+    {
+      "id": "quest_malintzin_many_words",
+      "title": "Malintzin Many Words",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "malintzin"
+    },
+    {
+      "id": "quest_tupac_amaru_rebellion",
+      "title": "Tupac Amaru Rebellion",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "tupac_amaru_ii"
+    },
+    {
+      "id": "quest_tupaia_island_chart",
+      "title": "Tupaia Island Chart",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "tupaia"
+    },
+    {
+      "id": "quest_kamehameha_unification",
+      "title": "Kamehameha Unification",
+      "summary": "A scenario-authored personal objective tied to this companion.",
+      "characterId": "kamehameha_i"
+    }
+  ],
+  "characters": [
+    {
+      "id": "leonardo_da_vinci",
+      "displayName": "Leonardo da Vinci",
+      "biography": "Florentine artist and engineer whose notebooks join observation to practical design.",
+      "epithet": "Engineer and Natural Philosopher",
+      "traitIds": [
+        "scholarly",
+        "adaptable"
+      ],
+      "skills": [
+        {
+          "skillId": "engineering",
+          "rating": 92
+        },
+        {
+          "skillId": "scholarship",
+          "rating": 86
+        }
+      ],
+      "professionIds": [
+        "engineer",
+        "scholar"
+      ],
+      "personalQuestIds": [
+        "quest_leonardo_codex"
+      ],
+      "loyalty": {
+        "score": 5,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "florence",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 900
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "horatio_nelson",
+      "displayName": "Horatio Nelson",
+      "biography": "British naval officer noted for aggressive fleet command and close-action tactics.",
+      "epithet": "Vice-Admiral",
+      "traitIds": [
+        "bold",
+        "principled"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 94
+        },
+        {
+          "skillId": "navigation",
+          "rating": 82
+        }
+      ],
+      "professionIds": [
+        "admiral"
+      ],
+      "personalQuestIds": [
+        "quest_nelson_band_of_brothers"
+      ],
+      "loyalty": {
+        "score": 25,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "england",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1800
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "askia_muhammad",
+      "displayName": "Askia Muhammad I",
+      "biography": "Songhai ruler and organizer associated with administration, commerce, and trans-Saharan power.",
+      "epithet": "Askia of Songhai",
+      "traitIds": [
+        "principled",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 84
+        },
+        {
+          "skillId": "tradecraft",
+          "rating": 78
+        }
+      ],
+      "professionIds": [
+        "commander",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_askia_niger_reforms"
+      ],
+      "loyalty": {
+        "score": 15,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "songhai_kingdom",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1000
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "nzinga_mbande",
+      "displayName": "Nzinga Mbande",
+      "biography": "Ndongo and Matamba ruler, diplomat, and commander who resisted expanding Atlantic pressures.",
+      "epithet": "Queen of Ndongo and Matamba",
+      "traitIds": [
+        "bold",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "diplomacy",
+          "rating": 91
+        },
+        {
+          "skillId": "command",
+          "rating": 83
+        }
+      ],
+      "professionIds": [
+        "commander",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_nzinga_independence"
+      ],
+      "loyalty": {
+        "score": 0,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "kongo_kingdom",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1400
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "piri_reis",
+      "displayName": "Piri Reis",
+      "biography": "Ottoman mariner and cartographer who compiled Mediterranean sailing knowledge and world maps.",
+      "epithet": "Reis (Admiral)",
+      "traitIds": [
+        "navigator",
+        "scholarly"
+      ],
+      "skills": [
+        {
+          "skillId": "navigation",
+          "rating": 93
+        },
+        {
+          "skillId": "scholarship",
+          "rating": 80
+        }
+      ],
+      "professionIds": [
+        "admiral",
+        "navigator_profession"
+      ],
+      "personalQuestIds": [
+        "quest_piri_kitab_bahriye"
+      ],
+      "loyalty": {
+        "score": 20,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "ottoman_empire",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1200
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "krishnadevaraya",
+      "displayName": "Krishnadevaraya",
+      "biography": "Vijayanagara emperor remembered for campaigning, administration, patronage, and multilingual learning.",
+      "epithet": "Maharaya (Emperor)",
+      "traitIds": [
+        "bold",
+        "scholarly"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 88
+        },
+        {
+          "skillId": "diplomacy",
+          "rating": 76
+        }
+      ],
+      "professionIds": [
+        "commander",
+        "scholar"
+      ],
+      "personalQuestIds": [
+        "quest_krishnadevaraya_raichur"
+      ],
+      "loyalty": {
+        "score": 10,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "vijayanagara_empire",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1300
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "hang_tuah",
+      "displayName": "Hang Tuah",
+      "biography": "A historically grounded Malay admiral and court champion drawn from Malaccan traditions.",
+      "epithet": "Laksamana (Admiral)",
+      "traitIds": [
+        "principled",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 82
+        },
+        {
+          "skillId": "diplomacy",
+          "rating": 85
+        }
+      ],
+      "professionIds": [
+        "admiral",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_hang_tuah_laksamana"
+      ],
+      "loyalty": {
+        "score": 35,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "malacca_sultanate",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 850
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "sultan_hasanuddin",
+      "displayName": "Sultan Hasanuddin",
+      "biography": "Gowa ruler and naval strategist who contested control of eastern Indonesian commerce.",
+      "epithet": "Sultan of Gowa",
+      "traitIds": [
+        "bold",
+        "principled"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 89
+        },
+        {
+          "skillId": "tradecraft",
+          "rating": 78
+        }
+      ],
+      "professionIds": [
+        "admiral",
+        "commander"
+      ],
+      "personalQuestIds": [
+        "quest_hasanuddin_eastern_trade"
+      ],
+      "loyalty": {
+        "score": 15,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "makassar_polities",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1350
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "yi_sun_sin",
+      "displayName": "Yi Sun-sin",
+      "biography": "Joseon naval commander associated with disciplined logistics and coastal defense.",
+      "epithet": "Samdo Sugun Tongjesa (Naval Commander)",
+      "traitIds": [
+        "principled",
+        "scholarly"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 96
+        },
+        {
+          "skillId": "engineering",
+          "rating": 84
+        }
+      ],
+      "professionIds": [
+        "admiral",
+        "engineer"
+      ],
+      "personalQuestIds": [
+        "quest_yi_restore_fleet"
+      ],
+      "loyalty": {
+        "score": 30,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "joseon_kingdom",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1500
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "xu_guangqi",
+      "displayName": "Xu Guangqi",
+      "biography": "Ming scholar-official, translator, agronomist, and advocate of mathematical and military learning.",
+      "epithet": "Grand Secretary and Scholar",
+      "traitIds": [
+        "scholarly",
+        "adaptable"
+      ],
+      "skills": [
+        {
+          "skillId": "scholarship",
+          "rating": 92
+        },
+        {
+          "skillId": "engineering",
+          "rating": 80
+        }
+      ],
+      "professionIds": [
+        "scholar",
+        "engineer"
+      ],
+      "personalQuestIds": [
+        "quest_xu_agricultural_treatise"
+      ],
+      "loyalty": {
+        "score": 10,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "ming_empire",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1100
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "malintzin",
+      "displayName": "Malintzin",
+      "biography": "Nahua interpreter and intermediary whose linguistic and diplomatic work shaped the conquest era.",
+      "epithet": "Interpreter and Diplomatic Adviser",
+      "traitIds": [
+        "adaptable",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "diplomacy",
+          "rating": 96
+        },
+        {
+          "skillId": "tradecraft",
+          "rating": 72
+        }
+      ],
+      "professionIds": [
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_malintzin_many_words"
+      ],
+      "loyalty": {
+        "score": 0,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "mexica_tenochtitlan",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 700
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "tupac_amaru_ii",
+      "displayName": "Tupac Amaru II",
+      "biography": "Andean leader of the 1780 uprising against colonial abuses and compulsory labor.",
+      "epithet": "Cacique (Hereditary Chief)",
+      "traitIds": [
+        "bold",
+        "principled"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 84
+        },
+        {
+          "skillId": "diplomacy",
+          "rating": 81
+        }
+      ],
+      "professionIds": [
+        "commander",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_tupac_amaru_rebellion"
+      ],
+      "loyalty": {
+        "score": 5,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "tawantinsuyu",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1250
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "tupaia",
+      "displayName": "Tupaia",
+      "biography": "Ra'iatean navigator, priest, translator, and cartographer who joined Cook's first Pacific voyage.",
+      "epithet": "Tahua and Navigator",
+      "traitIds": [
+        "navigator",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "navigation",
+          "rating": 98
+        },
+        {
+          "skillId": "diplomacy",
+          "rating": 88
+        }
+      ],
+      "professionIds": [
+        "navigator_profession",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_tupaia_island_chart"
+      ],
+      "loyalty": {
+        "score": 15,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "tahiti_chiefdoms",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 950
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    },
+    {
+      "id": "kamehameha_i",
+      "displayName": "Kamehameha I",
+      "biography": "Hawaiian chief and military leader who unified the islands through alliance, logistics, and warfare.",
+      "epithet": "Ali'i Nui (High Chief)",
+      "traitIds": [
+        "bold",
+        "diplomatic"
+      ],
+      "skills": [
+        {
+          "skillId": "command",
+          "rating": 91
+        },
+        {
+          "skillId": "diplomacy",
+          "rating": 80
+        }
+      ],
+      "professionIds": [
+        "commander",
+        "diplomat"
+      ],
+      "personalQuestIds": [
+        "quest_kamehameha_unification"
+      ],
+      "loyalty": {
+        "score": 10,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "hawaii_chiefdom",
+      "available": false,
+      "recruited": false,
+      "active": true,
+      "runtimeTemplateId": "companion_hero",
+      "recruitmentCosts": [
+        {
+          "resourceId": "money",
+          "amount": 1450
+        }
+      ],
+      "rewardIds": [],
+      "titleGrantIds": []
+    }
+  ],
+  "relationshipThresholds": [
+    {
+      "id": "loyal_companion",
+      "scope": "loyalty",
+      "minimum": 60,
+      "maximum": 100,
+      "consequences": [
+        {
+          "kind": "buff",
+          "contentId": "steadfast_companion"
+        }
+      ]
+    },
+    {
+      "id": "trusted_pair",
+      "scope": "companion_relationship",
+      "minimum": 40,
+      "maximum": 100,
+      "consequences": [
+        {
+          "kind": "synergy",
+          "contentId": "measured_cooperation"
+        }
+      ]
+    },
+    {
+      "id": "strained_pair",
+      "scope": "companion_relationship",
+      "minimum": -100,
+      "maximum": -40,
+      "consequences": [
+        {
+          "kind": "friction",
+          "contentId": "restrained_disagreement"
+        }
+      ]
+    }
+  ],
+  "companionRelationships": [
+    {
+      "id": "leonardo_xu_scholars",
+      "characterAId": "leonardo_da_vinci",
+      "characterBId": "xu_guangqi",
+      "score": 20
+    },
+    {
+      "id": "piri_tupaia_navigators",
+      "characterAId": "piri_reis",
+      "characterBId": "tupaia",
+      "score": 15
+    },
+    {
+      "id": "yi_hasanuddin_admirals",
+      "characterAId": "yi_sun_sin",
+      "characterBId": "sultan_hasanuddin",
+      "score": 5
+    },
+    {
+      "id": "nzinga_malintzin_diplomats",
+      "characterAId": "nzinga_mbande",
+      "characterBId": "malintzin",
+      "score": 10
+    },
+    {
+      "id": "nelson_kamehameha_commanders",
+      "characterAId": "horatio_nelson",
+      "characterBId": "kamehameha_i",
+      "score": 0
+    }
+  ],
   "researchBranches": [
     {
       "id": "military",

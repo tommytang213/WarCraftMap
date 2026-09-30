@@ -31,7 +31,9 @@ catalogue, including English narrative/evidence, stable references, conditions,
 weighted alternate outcomes, and balance values. Run
 `python3 tooling/historical_events.py`; pass `--write` to rebuild the canonical world
 event and schedule projection deterministically.
-- characters
+- characters (`characters/global.json` is authoritative; run
+  `python3 tooling/global_characters.py`, or add `--write` to rebuild the world
+  projection; availability and location remain stable-ID simulation state)
 - native title names and generic rank mappings
 - special/national units
 - quests
