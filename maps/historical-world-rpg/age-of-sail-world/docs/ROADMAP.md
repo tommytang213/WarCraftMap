@@ -144,7 +144,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 - [ ] AI territorial warfare
 - [ ] Save/load stress testing
 - [x] Native WC3 save/load regression
-- [ ] City/world integrity recovery tests
+- [x] City/world integrity recovery tests
 
 ## Phase 8 — Player release candidate
 
