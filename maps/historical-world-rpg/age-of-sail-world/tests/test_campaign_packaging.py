@@ -12,6 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_campaign import (  # noqa: E402
     PackagingError,
+    _inspect_audio_runtime,
     _localize_runtime,
     build_campaign,
     load_campaign_config,
@@ -115,6 +116,21 @@ class CampaignPackagingTests(unittest.TestCase):
         self.manifest.write_text(self.manifest.read_text(encoding="utf-8") + "\n", encoding="utf-8")
         with self.assertRaisesRegex(PackagingError, "stale generated data.*physical-maps.json"):
             verify_generated(base, generated)
+
+    def test_audio_runtime_is_inspected_before_map_archive_encoding(self):
+        campaign = load_campaign_config(self.manifest)
+        base = load_config(campaign.map_config_path)
+        generated = self.project / "_build/maps/europe_west/generated"
+        generate(base, generated)
+        world = validate_campaign(campaign)
+        _localize_runtime(campaign, world, campaign.maps[1], generated)
+        _inspect_audio_runtime(campaign.maps[1], generated)
+        runtime_path = generated / "scenario-runtime.json"
+        runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+        runtime["audio"]["physicalMapId"] = "wrong_map"
+        runtime_path.write_text(json.dumps(runtime), encoding="utf-8")
+        with self.assertRaisesRegex(PackagingError, "invalid audio playback data"):
+            _inspect_audio_runtime(campaign.maps[1], generated)
 
     def test_generated_output_detects_stale_southeast_asia_authority(self):
         base = load_config(load_campaign_config(self.manifest).map_config_path)
