@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.invalid/contracts/asset-manifest.schema.json",
+  "title": "Scenario-neutral Warcraft asset manifest",
+  "type": "object",
+  "required": ["format", "warcraftVersion", "assets"],
+  "properties": {
+    "format": {"const": "warcraft_asset_manifest_v1"},
+    "warcraftVersion": {"type": "string", "minLength": 1},
+    "inventorySource": {"type": "string", "minLength": 1},
+    "assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/asset"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "required": ["id", "kind", "locator", "renderers", "animations", "teamColor", "attachmentPoints", "scale", "tintSuitable", "footprint", "relationships", "soundDependencies", "provenance", "license", "validation"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "kind": {"enum": ["unit_model", "building_model", "item_model", "effect_model", "terrain_texture", "icon", "portrait", "sound", "interface_texture"]},
+        "locator": {"type": "object", "required": ["type", "value"], "properties": {"type": {"enum": ["path", "object_id"]}, "value": {"type": "string", "minLength": 1}}, "additionalProperties": false},
+        "renderers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["classic", "reforged"]}},
+        "animations": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "teamColor": {"enum": ["none", "partial", "full"]},
+        "attachmentPoints": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "scale": {"type": "object", "required": ["min", "max"], "properties": {"min": {"type": "number", "exclusiveMinimum": 0}, "max": {"type": "number", "exclusiveMinimum": 0}}, "additionalProperties": false},
+        "tintSuitable": {"type": "boolean"},
+        "footprint": {"type": "object", "required": ["width", "height"], "properties": {"width": {"type": "number", "minimum": 0}, "height": {"type": "number", "minimum": 0}}, "additionalProperties": false},
+        "relationships": {"type": "object", "properties": {"portraitAssetId": {"type": "string"}, "iconAssetId": {"type": "string"}, "modelAssetId": {"type": "string"}}, "additionalProperties": false},
+        "soundDependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "provenance": {"type": "object", "required": ["origin", "source"], "properties": {"origin": {"enum": ["blizzard_stock", "blizzard_reforged", "external", "project"]}, "source": {"type": "string", "minLength": 1}, "attribution": {"type": "string"}}, "additionalProperties": false},
+        "license": {"enum": ["warcraft_iii_game_data", "project_owned", "public_domain", "third_party_documented"]},
+        "validation": {"type": "object", "required": ["status", "method"], "properties": {"status": {"enum": ["verified", "metadata_verified", "pending"]}, "method": {"type": "string", "minLength": 1}}, "additionalProperties": false}
+      },
+      "additionalProperties": false
+    }
+  }
+}

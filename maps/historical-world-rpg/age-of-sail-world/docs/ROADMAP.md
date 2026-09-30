@@ -126,7 +126,7 @@ The player should not be pulled into repetitive feature testing. Development gat
 
 ## Phase 6 — Visual/content production
 
-- [ ] Stock/Reforged asset catalogue and historical-fit matrix
+- [x] Stock/Reforged asset catalogue and historical-fit matrix
 - [ ] Country/unit visual language
 - [ ] Settlement/building visual sets
 - [ ] Custom icons/textures where needed

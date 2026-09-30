@@ -172,3 +172,11 @@ part of this contract and must re-verify a selected destination when implemented
 `timeline.schema.json` defines the reusable proleptic-Gregorian calendar, eras, stable event and schedule IDs, and bounded day/month/year recurrence. Campaign bounds are scenario data (Age of Sail supplies 1450-01-01 through 1820-12-31), not engine constants. Simultaneous occurrences sort by date, ascending explicit priority, stable schedule ID, occurrence number, then event ID. The scheduler consumes no randomness, so a caller seed cannot change this sequence. Missing priority is invalid, so authored ordering metadata is never implicit.
 
 `timeline.py` advances over `(current, target]` pending occurrences (with initial-date occurrences processed on the first advance), so accelerated or skipped intervals emit the same sequence as incremental advancement. Persist `timelineStateVersion`, `currentDate`, and the stable `scheduleId`/`nextDate`/`occurrencesEmitted` records in authoritative world state; never persist runtime timers or handles. Future state-shape changes must increment `timelineStateVersion` and migrate stable fields before `validate_state`; incompatible or missing schedule references fail without mutating the source save. World schema version 7 adds the required timeline object; version 6 migrates by adding scenario-authored timeline data and changing `schemaVersion` to 7.
+
+## Warcraft asset manifest
+
+`asset-manifest.schema.json` is the scenario-neutral contract for stock and
+imported Warcraft assets. It records renderer availability, animation and
+object-level variation bounds, relationships, sound dependencies, provenance,
+licensing, and validation state. Scenario historical judgments do not belong in
+this shared contract.
