@@ -45,6 +45,11 @@ def ships():
         for row in load(path).get("ships", []): answer[row["id"]] = row
     return answer
 
+def custom_character_models():
+    path=SCENARIO/"assets/custom-models/models.json"
+    if not path.is_file(): return {}
+    return {x["id"]:f"war3mapImported/age_of_sail/characters/{x['id']}.mdl" for x in load(path)["models"]}
+
 def family(region, row):
     ident=row["id"]; category=row.get("category", "infantry")
     if row.get("shipId") or category in {"transport","merchant","warship"}: return f"{region}_maritime"
@@ -88,11 +93,12 @@ def build():
         rows.append({"polityId":polity,"regionId":region,"archetypeId":ident,"familyId":fid,
             "paletteId":f"palette_{polity}","culturalMarkingId":f"marking_{fid}","availableFromYear":start,
             "baseline":baseline,"progression":progression,"evidenceIds":[x["id"] for x in load(SCENARIO/"rosters"/REGION_FILES[region]).get("historicalEvidence",[])][:2]})
-    chars=[]; requirements=[]
+    chars=[]; requirements=[]; custom_models=custom_character_models()
     for char in sorted(load(SCENARIO/"characters/global.json")["characters"],key=lambda x:x["id"]):
         region=char["regionId"]; cid=char["id"]
         chars.append({"characterId":cid,"polityId":char.get("allegiancePolityId"),"regionId":region,
             "assetId":"human_footman","iconAssetId":"human_footman_icon","portraitAssetId":"human_footman_portrait",
+            "customModelPath":custom_models.get(cid),
             "paletteId":f"palette_{char.get('allegiancePolityId') or region}","productionRequirementId":f"character_{cid}_identity"})
         requirements.append({"id":f"character_{cid}_identity","entityKind":"character","entityId":cid,
             "priority":"high","type":"custom_icon_texture_model","fallbackAssetIds":["human_footman","human_footman_icon","human_footman_portrait"],
@@ -137,6 +143,7 @@ def validate(document, catalogue):
     for row in document["characterAssignments"]:
         if row.get("productionRequirementId") not in requirements: raise VisualDataError("undeclared high-priority character placeholder")
         if not {row["assetId"],row["iconAssetId"],row["portraitAssetId"]} <= set(assets): raise VisualDataError("invalid character asset")
+        if row.get("customModelPath") != custom_character_models().get(row["characterId"]): raise VisualDataError("missing custom character model integration")
     return True
 
 if __name__ == "__main__":
