@@ -38,7 +38,7 @@
     },
     "quest": {
       "type": "object", "additionalProperties": false, "required": ["id", "title", "summary", "initialStageId", "stages", "objectives", "prerequisites", "outcomes"],
-      "properties": {"id": {"$ref": "#/$defs/stableId"}, "title": {"type": "string", "minLength": 1}, "summary": {"type": "string", "minLength": 1}, "initialStageId": {"$ref": "#/$defs/stableId"}, "stages": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/stage"}}, "objectives": {"type": "array", "items": {"$ref": "#/$defs/objective"}}, "prerequisites": {"type": "array", "items": {"$ref": "#/$defs/prerequisite"}}, "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}}}
+      "properties": {"id": {"$ref": "#/$defs/stableId"}, "title": {"type": "string", "minLength": 1}, "summary": {"type": "string", "minLength": 1}, "initialStageId": {"$ref": "#/$defs/stableId"}, "stages": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/stage"}}, "objectives": {"type": "array", "items": {"$ref": "#/$defs/objective"}}, "prerequisites": {"type": "array", "items": {"$ref": "#/$defs/prerequisite"}}, "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}}, "journal": {"type": "object"}, "campaign": {"type": "object"}}
     },
     "trigger": {
       "type": "object", "additionalProperties": false, "required": ["id", "conditionId", "entityRefs"],

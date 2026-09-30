@@ -14,6 +14,14 @@ Quest and event content likewise supplies display text, declarative condition an
 outcome IDs, graph relationships, and typed world references. Executable logic
 belongs in engine adapters, never in scenario data.
 
+`campaign-quests.json` is the authority for the initial seven regional quest
+chains and the first campaign-spanning long chain. It owns English narrative,
+objectives, branches, divergence policy, reward adapter declarations, location
+precision, and explicit coverage targets. Run `python3 tooling/campaign_quests.py`;
+pass `--write` to rebuild the deterministic quest and quest-location projection
+in `world/world.json`. Physical traversal remains a navigation-runtime concern;
+quest breadcrumbs only use transitions already known to the campaign journal.
+
 Planned data domains:
 
 - polities
