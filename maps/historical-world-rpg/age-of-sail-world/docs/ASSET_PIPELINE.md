@@ -56,3 +56,16 @@ Timeline-specific art belongs to the scenario. A Roman scenario should be able t
 Early engine work should use stock placeholder assets where possible. Final art replacement is intentionally later so art production does not block simulation/system development.
 
 Before the release candidate, placeholders that materially hurt readability or historical identity must be replaced or polished.
+
+## Phase 6 catalogue authority
+
+The pinned Warcraft III 3.0 stock surface used by this scenario is
+`../../_shared/assets/warcraft-3.0-stock.json`. It is inspected from repository
+runtime object IDs and pinned Blizzard game-data virtual paths, without World
+Editor browsing. `scenario/visuals/historical-fit.json` is the generated,
+scenario-owned historical assessment for every currently visualizable entity.
+Regenerate it with `python3 tooling/build_asset_matrix.py`, then run the shared
+validator to produce the deterministic reports under
+`scenario/visuals/reports/`. Metadata resolution is used instead of a rendered
+contact sheet because the repository toolchain does not contain a deterministic
+CASC model renderer.
