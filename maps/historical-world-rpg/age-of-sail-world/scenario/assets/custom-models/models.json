@@ -1,0 +1,50 @@
+{
+  "format": "age_of_sail_custom_models_v1",
+  "scenario": "age_of_sail_world",
+  "pipeline": {
+    "generator": "tooling/build_custom_models.py",
+    "generatorVersion": "1.0.0",
+    "outputFormat": "Warcraft III MDL version 800",
+    "normalization": "UTF-8, LF, stable key and model ordering, six-decimal floats",
+    "validatedEquivalent": "Repository Python 3.11+; no external modelling tool is required"
+  },
+  "budgets": {
+    "modelMaxVertices": 160,
+    "modelMaxTriangles": 220,
+    "modelMaxTextureBytes": 0,
+    "modelMaxAnimations": 5,
+    "activeSceneMaxModels": 96,
+    "activeSceneMaxTriangles": 18000,
+    "activeSceneMaxTextureBytes": 0,
+    "archiveMaxBytes": 524288
+  },
+  "models": [
+    {"id":"askia_muhammad","region":"africa","silhouette":"regal_robe","headgear":"turban","equipment":"sword","height":132},
+    {"id":"hang_tuah","region":"southeast_asia","silhouette":"warrior_tunic","headgear":"tanjak","equipment":"kris","height":126},
+    {"id":"horatio_nelson","region":"europe","silhouette":"naval_coat","headgear":"bicorne","equipment":"sword","height":124},
+    {"id":"kamehameha_i","region":"pacific","silhouette":"feather_cloak","headgear":"crest","equipment":"spear","height":134},
+    {"id":"krishnadevaraya","region":"middle_east_india","silhouette":"regal_robe","headgear":"crown","equipment":"sword","height":130},
+    {"id":"leonardo_da_vinci","region":"europe","silhouette":"scholar_robe","headgear":"cap","equipment":"folio","height":122},
+    {"id":"malintzin","region":"americas_caribbean","silhouette":"draped_dress","headgear":"braids","equipment":"folio","height":119},
+    {"id":"nzinga_mbande","region":"africa","silhouette":"regal_robe","headgear":"crown","equipment":"spear","height":127},
+    {"id":"piri_reis","region":"middle_east_india","silhouette":"naval_coat","headgear":"turban","equipment":"folio","height":125},
+    {"id":"sultan_hasanuddin","region":"southeast_asia","silhouette":"regal_robe","headgear":"songkok","equipment":"kris","height":128},
+    {"id":"tupac_amaru_ii","region":"americas_caribbean","silhouette":"long_coat","headgear":"broad_hat","equipment":"sword","height":126},
+    {"id":"tupaia","region":"pacific","silhouette":"navigator_cloak","headgear":"topknot","equipment":"paddle","height":129},
+    {"id":"xu_guangqi","region":"east_asia","silhouette":"scholar_robe","headgear":"official_hat","equipment":"folio","height":123},
+    {"id":"yi_sun_sin","region":"east_asia","silhouette":"lamellar_armor","headgear":"war_hat","equipment":"sword","height":127}
+  ],
+  "shared": {
+    "author": "WarCraftMap Project",
+    "source": "Original procedural box-mesh source authored for this scenario",
+    "license": "CC0-1.0",
+    "attribution": "WarCraftMap Project contributors",
+    "derivativeOf": null,
+    "teamColor": "ReplaceableId 1",
+    "animations": ["Stand", "Walk", "Attack", "Death", "Decay Flesh"],
+    "attachmentPoints": ["origin", "head", "chest", "hand,left", "hand,right", "weapon"],
+    "camera": "Portrait",
+    "deathDecay": "Death collapses the root; Decay Flesh hides the geoset",
+    "runtimeUse": "Unique recruitable character; at most one live representation per campaign state"
+  }
+}
