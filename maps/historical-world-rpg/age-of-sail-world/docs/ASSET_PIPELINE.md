@@ -143,3 +143,25 @@ transparency/contrast/clipping measurements. Folder-map assembly regenerates
 these files, copies only the Warcraft imports plus their runtime manifest, and
 exposes stable `kind:id` references in `custom2dAssets` within scenario runtime
 data. Generated derivatives and contact sheets remain untracked build outputs.
+
+## Audio pass
+
+`scenario/audio/manifest.json` catalogues the stock Warcraft III 3.0 audio used
+by the scenario, with fit, provenance, licence, attribution, technical metadata,
+and budgets. `scenario/audio/profiles.json` owns the Age of Sail choices. Run
+`python3 tooling/audio_pipeline.py --check` to validate references, loops,
+loudness, imports, budgets, and machine-readable coverage/waveform summaries.
+This pass uses stock audio only and therefore adds no imported archive or
+decoded-audio memory cost.
+
+## Phase 6 final audit
+
+`scenario/assets/phase6-audit.json` defines the final audit inputs, explicit
+legacy-marker allowlist, third-party register, and complete-content budgets.
+Run `python3 tooling/phase6_asset_audit.py --check` to verify the deterministic
+release-facing report at
+`scenario/assets/reports/phase6-asset-audit.json`. The report inventories every
+authored visible and audible entity, records its final stock, controlled stock,
+custom, generic, or data-only resolution, hashes every authority, verifies
+licensing and provenance, and fails if a material placeholder or budget
+violation remains. Generated previews and package outputs remain untracked.

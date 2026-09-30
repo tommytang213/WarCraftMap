@@ -180,3 +180,13 @@ imported Warcraft assets. It records renderer availability, animation and
 object-level variation bounds, relationships, sound dependencies, provenance,
 licensing, and validation state. Scenario historical judgments do not belong in
 this shared contract.
+
+## Audio manifest and playback contract
+
+`audio-manifest.schema.json` defines scenario-neutral music, ambience,
+one-shot, loop, UI, voice/bark, and spatial categories. It records priority,
+concurrency, cooldown, fades, interruption, fallback, provenance, licence,
+technical metadata, and archive/runtime budgets. Scenario track selection and
+regional identity do not belong in the shared contract. `audio_playback.py`
+resolves presentation contexts deterministically and owns ephemeral channels;
+its state is deliberately excluded from authoritative campaign saves.

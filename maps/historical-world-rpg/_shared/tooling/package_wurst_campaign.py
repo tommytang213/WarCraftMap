@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
 import sys
 import zipfile
 from dataclasses import dataclass, replace
@@ -63,6 +64,9 @@ class CampaignConfig:
     bootstrap_map_id: str
     output: Path
     maps: tuple[PhysicalMap, ...]
+    audio_manifest_path: Path
+    audio_profiles_path: Path
+    audio_validator_path: Path
 
 
 def _inside(project: Path, value: object, label: str) -> Path:
@@ -153,6 +157,9 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         campaign_id, file_name, str(campaign.get("name", "")), bootstrap_id,
         _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{file_name}.w3n",
         tuple(maps),
+        _inside(project, raw.get("audioManifest"), "audioManifest"),
+        _inside(project, raw.get("audioProfiles"), "audioProfiles"),
+        _inside(project, raw.get("audioValidator"), "audioValidator"),
     )
 
 
@@ -163,6 +170,14 @@ def validate_campaign(config: CampaignConfig) -> dict:
         presentation = json.loads(config.regional_assignments_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise PackagingError(f"campaign validation stage failed: {error}") from error
+    result = subprocess.run([sys.executable, str(config.audio_validator_path), "--check"], cwd=config.project, text=True, capture_output=True)
+    if result.returncode:
+        raise PackagingError("campaign audio validation stage failed: " + ((result.stderr or result.stdout).strip() or "validator failed"))
+    try:
+        world["audioManifest"] = json.loads(config.audio_manifest_path.read_text(encoding="utf-8"))
+        world["audioProfiles"] = json.loads(config.audio_profiles_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise PackagingError(f"campaign audio validation stage failed: {error}") from error
     regions = {item["id"] for item in world["regionalGeography"]["regions"]}
     instance_regions = presentation.get("regionalInstanceRegions", {})
     terrain_ids = {item[0] for item in base.regional_terrain}
@@ -232,6 +247,15 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
         "treasureDefinitions": local_treasures,
         "treasureCandidateLocations": local_candidates,
         "provinceHoldings": [item for item in world.get("territorialHoldings", []) if item.get("territory", {}).get("kind") == "province" and item["territory"]["id"] in province_ids],
+        "audio": {
+            "authority": "presentation_only",
+            "manifest": world["audioManifest"],
+            "profiles": {
+                **world["audioProfiles"],
+                "profiles": [row for row in world["audioProfiles"]["profiles"] if not row.get("match", {}).get("region_id") or row["match"]["region_id"] in physical.logical_region_ids],
+            },
+            "physicalMapId": physical.id,
+        },
     })
     runtime_path.write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     wurst_path = generated / GENERATED_WURST
@@ -247,6 +271,9 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     provenance["inputs"][str(physical.source_manifest.relative_to(config.project.parent))] = _sha(physical.source_manifest)
     provenance["inputs"][str(config.manifest_path.relative_to(config.project.parent))] = _sha(config.manifest_path)
     provenance["inputs"][str(config.regional_assignments_path.relative_to(config.project.parent))] = _sha(config.regional_assignments_path)
+    provenance["inputs"][str(config.audio_manifest_path.relative_to(config.project.parent))] = _sha(config.audio_manifest_path)
+    provenance["inputs"][str(config.audio_profiles_path.relative_to(config.project.parent))] = _sha(config.audio_profiles_path)
+    provenance["inputs"][str(config.audio_validator_path.relative_to(config.project.parent))] = _sha(config.audio_validator_path)
     provenance["outputs"][GENERATED_DATA] = _sha(runtime_path)
     provenance["outputs"][GENERATED_WURST] = _sha(wurst_path)
     provenance_path.write_text(json.dumps(provenance, sort_keys=True, indent=2) + "\n", encoding="utf-8")
@@ -302,6 +329,19 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
                 raise PackagingError(f"campaign inspection stage failed [{item['id']}]: packaged map checksum differs")
 
 
+def _inspect_audio_runtime(physical: PhysicalMap, generated: Path) -> None:
+    """Inspect staged data before Grill converts the map folder to MPQ."""
+    try:
+        runtime = json.loads((generated / GENERATED_DATA).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: invalid runtime playback data: {error}") from error
+    audio = runtime.get("audio", {})
+    if audio.get("authority") != "presentation_only" or audio.get("physicalMapId") != physical.id:
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: invalid audio playback data")
+    if audio.get("manifest", {}).get("format") != "warcraftmap_audio_manifest_v1" or not audio.get("profiles", {}).get("profiles"):
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: missing audio manifest or profiles")
+
+
 def _sha_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -332,6 +372,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         generated = map_root / "generated"
         generate(map_config, generated)
         _localize_runtime(config, world, physical, generated)
+        _inspect_audio_runtime(physical, generated)
         verify_generated(map_config, generated)
         _validate_budget(map_config, physical, generated)
         compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids)

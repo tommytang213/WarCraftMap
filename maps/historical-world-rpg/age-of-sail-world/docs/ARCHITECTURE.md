@@ -60,6 +60,14 @@ Engine
 
 Simulation state is authoritative. Warcraft units/buildings/destructibles are runtime representations.
 
+## Audio presentation boundary
+
+`_shared/engine/audio_playback.py` owns deterministic, bounded playback
+selection, loop ownership, fades, cooldowns, interruption, fallback, and
+reconstruction. Audio is presentation state and is never authoritative campaign
+state. Age of Sail catalogue and regional/context choices remain in
+`scenario/audio/`; physical-map packaging localizes and embeds validated data.
+
 This is particularly important for settlements: loss of an object instance must not silently erase a bank, quest service, city identity or ownership record.
 
 ## Scenario boundary
