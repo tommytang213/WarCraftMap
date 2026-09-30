@@ -64,6 +64,20 @@ class WorkerCleanupTests(unittest.TestCase):
             self.assertIn(["git", "worktree", "prune"], commands)
             self.assertFalse(any(command[1] in {"branch", "push"} for command in commands))
 
+    def test_finish_merged_issue_explicitly_closes_github_issue(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+            record = {"status": "pr_open", "pr": 42}
+            with patch("automation.warcraftmap_agent.worker.run", return_value=self.completed([])) as mocked, patch(
+                "automation.warcraftmap_agent.worker.cleanup_merged_issue", return_value=[]
+            ):
+                from automation.warcraftmap_agent.worker import finish_merged_issue
+                finish_merged_issue(config, "19", record)
+            commands = [call.args[0] for call in mocked.call_args_list]
+            self.assertIn(["gh", "issue", "close", "19", "--reason", "completed"], commands)
+            self.assertEqual(record["status"], "merged")
+
     def test_cleanup_failure_keeps_confirmed_merge_successful(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
