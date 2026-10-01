@@ -39,6 +39,7 @@ class Config:
     max_weekly_runs: int = 50
     timeout_minutes: int = 45
     max_attempts: int = 3
+    max_validation_repair_attempts: int = 5
     max_ci_repair_attempts: int = 5
     # Direct/test construction retains the legacy per-issue budget. make_config
     # supplies the independently configurable production default (5).
@@ -95,6 +96,7 @@ def make_config(repo_root: Path, env_path: Path) -> Config:
         max_weekly_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_RUNS", 50),
         timeout_minutes=positive_int(values, "WARCRAFTMAP_AGENT_TIMEOUT_MINUTES", 45),
         max_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_ATTEMPTS_PER_ISSUE", 3),
+        max_validation_repair_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_VALIDATION_REPAIR_ATTEMPTS", 5),
         max_ci_repair_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_CI_REPAIR_ATTEMPTS", 5),
         max_conflict_attempts=positive_int(values, "WARCRAFTMAP_AGENT_MAX_CONFLICT_REPAIR_ATTEMPTS", 5),
         checks_command=values.get("WARCRAFTMAP_AGENT_CHECKS_COMMAND", "./automation/run_checks.sh"),
@@ -474,21 +476,27 @@ def issue_blocker_numbers(issue: dict[str, Any]) -> set[int]:
 def repair_kind(record: dict[str, Any]) -> str:
     """Return the retry lane, including recovery for legacy CI-repair records."""
     explicit = str(record.get("repair_kind") or "")
-    if explicit in {"ci", "merge_conflict"}:
+    if explicit in {"validation", "ci", "merge_conflict"}:
         return explicit
-    if record.get("pr") and "GitHub CI failed on PR #" in str(record.get("last_failure", "")):
+    failure = str(record.get("last_failure", ""))
+    if record.get("pr") and "GitHub CI failed on PR #" in failure:
         return "ci"
+    if not record.get("pr") and "./automation/run_checks.sh" in failure:
+        return "validation"
     return ""
 
 
 def attempt_budget(
     record: dict[str, Any],
     max_attempts: int,
+    max_validation_repair_attempts: int = 5,
     max_ci_repair_attempts: int = 5,
     max_conflict_attempts: int = 5,
 ) -> tuple[str, int, int]:
     kind = repair_kind(record)
-    if kind == "ci":
+    if kind == "validation":
+        key, limit = "validation_repair_attempts", max_validation_repair_attempts
+    elif kind == "ci":
         key, limit = "ci_repair_attempts", max_ci_repair_attempts
     elif kind == "merge_conflict":
         key, limit = "conflict_attempts", max_conflict_attempts
@@ -502,6 +510,7 @@ def select_issue(
     state: dict[str, Any],
     max_attempts: int,
     open_design_numbers: set[int] | None = None,
+    max_validation_repair_attempts: int = 5,
     max_ci_repair_attempts: int = 5,
     max_conflict_attempts: int = 5,
 ) -> dict[str, Any] | None:
@@ -515,7 +524,8 @@ def select_issue(
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
         _attempt_key, attempts, limit = attempt_budget(
-            record, max_attempts, max_ci_repair_attempts, max_conflict_attempts
+            record, max_attempts, max_validation_repair_attempts,
+            max_ci_repair_attempts, max_conflict_attempts
         )
         if attempts >= limit:
             continue
@@ -535,6 +545,7 @@ def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, 
             continue
         record["status"] = "queued"
         record["attempts"] = 0
+        record["validation_repair_attempts"] = 0
         record["ci_repair_attempts"] = 0
         record["conflict_attempts"] = 0
         record.pop("last_failure", None)
@@ -1016,6 +1027,7 @@ def main(argv: list[str] | None = None) -> int:
         design_numbers = {int(item["number"]) for item in needs_design}
         selected = select_issue(
             issues, state, config.max_attempts, design_numbers,
+            config.max_validation_repair_attempts,
             config.max_ci_repair_attempts, config.max_conflict_attempts,
         )
         independent_ready_count = sum(not (issue_blocker_numbers(issue) & design_numbers) for issue in issues)
@@ -1086,6 +1098,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         selected = select_issue(
             issues, state, config.max_attempts, design_numbers,
+            config.max_validation_repair_attempts,
             config.max_ci_repair_attempts, config.max_conflict_attempts,
         )
         if not selected:
@@ -1110,7 +1123,7 @@ def main(argv: list[str] | None = None) -> int:
         if kind and not record.get("repair_kind"):
             record["repair_kind"] = kind
         attempt_key, attempts, _limit = attempt_budget(
-            record, config.max_attempts,
+            record, config.max_attempts, config.max_validation_repair_attempts,
             config.max_ci_repair_attempts, config.max_conflict_attempts,
         )
         record[attempt_key] = attempts + 1
@@ -1143,7 +1156,12 @@ def main(argv: list[str] | None = None) -> int:
                 detail = (result.get("summary") or result.get("question") or "technical blocker").strip()
                 raise RuntimeError(f"Codex implementation blocked: {detail}")
             else:
-                run_checks(config, worktree)
+                try:
+                    run_checks(config, worktree)
+                except Exception:
+                    if not record.get("pr"):
+                        record["repair_kind"] = "validation"
+                    raise
                 existing_pr = record.get("pr")
                 if existing_pr:
                     push_existing_pr_repair(worktree, selected["number"], int(existing_pr))
@@ -1155,7 +1173,7 @@ def main(argv: list[str] | None = None) -> int:
                 record.pop("repair_kind", None)
         except Exception as exc:
             attempt_key, attempts, limit = attempt_budget(
-                record, config.max_attempts,
+                record, config.max_attempts, config.max_validation_repair_attempts,
                 config.max_ci_repair_attempts, config.max_conflict_attempts,
             )
             record["status"] = "failed" if attempts >= limit else "repair"
