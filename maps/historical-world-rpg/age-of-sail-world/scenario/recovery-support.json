@@ -1,0 +1,43 @@
+{
+  "format": "warcraftmap_recovery_support_v1",
+  "language": "en",
+  "commands": [
+    {
+      "name": "unstuck",
+      "syntax": "/unstuck [all]",
+      "registrationUsage": "unstuck [all]",
+      "summary": "Recover stuck mobile units.",
+      "help": "Recover selected eligible mobile units, or your main character when nothing is selected. Use 'all' for active units in the current region.",
+      "options": ["all"],
+      "fallbackOrder": ["nearest verified reachable safe position", "verified last-known-safe position", "valid connected recovery anchor", "fail without moving the unit"]
+    },
+    {
+      "name": "god",
+      "syntax": "/god [on|off]",
+      "registrationUsage": "god [on|off]",
+      "summary": "Toggle player-wide god mode.",
+      "help": "Toggle protection for all of your controllable runtime entities, or explicitly use /god on or /god off.",
+      "options": ["on", "off"]
+    }
+  ],
+  "saveSlots": [
+    {"kind": "autosave", "stableId": "autosave_01..autosave_15", "count": 15},
+    {"kind": "manual", "stableId": "manual_N", "count": "player-created"},
+    {"kind": "session_start", "stableId": "session_start", "count": 1},
+    {"kind": "major_milestone", "stableId": "major_milestone", "count": 1}
+  ],
+  "diagnostics": {
+    "compatibility": "warcraftmap_release_save_compatibility_v1",
+    "integrity": "warcraftmap_world_recovery_report_v1",
+    "provenance": "provenance.json"
+  },
+  "maintainerReferences": [
+    "scenario/compatibility/release-save-v1.json",
+    "tests/test_release_save_compatibility.py",
+    "tests/test_world_integrity_recovery.py",
+    "tests/test_cross_map_persistence.py",
+    "tests/test_regional_navigation.py",
+    "tests/test_native_save_regression.py",
+    "tests/test_autosave_scheduler.py"
+  ]
+}
