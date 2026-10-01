@@ -14,6 +14,7 @@ ENGINE = PROJECT.parent / "_shared" / "engine"
 sys.path.insert(0, str(ENGINE))
 import campaign_save
 import full_world_soak
+import release_save_compatibility
 
 CONFIG = PROJECT / "scenario/release-blocker-gate.json"
 REPORT_JSON = PROJECT / "reports/release-blocker-audit.json"
@@ -114,6 +115,26 @@ def _migration_round_trip(state):
     return hashlib.sha256(raw).hexdigest(), loaded["schemaVersion"]
 
 
+def _audit_release_save_compatibility(config):
+    manifest_path = PROJECT / config["releaseSaveCompatibilityManifest"]
+    manifest = release_save_compatibility.load_manifest(manifest_path)
+    results = []
+    for fixture_spec in manifest["fixtures"]:
+        fixture = release_save_compatibility.expand_fixture(manifest, fixture_spec)
+        results.append(release_save_compatibility.validate_release_fixture(
+            fixture, manifest["budgets"]
+        ))
+    if not results:
+        raise GateError("release-save compatibility matrix contains no fixtures")
+    return {
+        "manifest": manifest_path.relative_to(PROJECT).as_posix(),
+        "schemas": [row["schemaVersion"] for row in results],
+        "statuses": [row["status"] for row in results],
+        "authoritySha256": sorted({row["authoritySha256"] for row in results}),
+        "status": "pass",
+    }
+
+
 def _run_journeys(config):
     soak_config_path = PROJECT / "scenario/benchmarks/full-world-soak.json"
     soak_config, sources, profiles = full_world_soak.load_config(soak_config_path)
@@ -164,6 +185,7 @@ def build_report(*, injected_findings=()):
         raise GateError("taxonomy must define campaign_blocker and critical_unclassified")
     audited, report_findings = _audit_reports(config)
     inputs, input_findings = _audit_inputs(config)
+    save_compatibility = _audit_release_save_compatibility(config)
     journeys, soak = _run_journeys(config)
     findings = sorted([*report_findings, *input_findings, *injected_findings], key=lambda x: x["id"])
     for finding in findings:
@@ -183,6 +205,7 @@ def build_report(*, injected_findings=()):
             "gate": "No known campaign-blocking defects", "taxonomy": config["taxonomy"],
             "blockerClasses": config["blockerClasses"], "releaseInputs": inputs,
             "auditedReports": audited, "journeys": journeys,
+            "releaseSaveCompatibility": save_compatibility,
             "soak": {"format": soak["format"], "passed": soak["passed"], "runs": soak["runs"]},
             "knownLimitations": limitations, "findings": findings,
             "unresolvedCampaignBlockers": len(unresolved),
@@ -208,6 +231,7 @@ def render_markdown(report):
             lines.append(f"| `{row['id']}` | {row['severity']} | {row['class']} | {row['context']} | {row['disposition']} |")
     lines += ["", "## Audited release evidence", "", f"- {len(report['auditedReports'])} tracked validation reports",
               f"- {len(report['releaseInputs'])} hashed release inputs",
+              f"- {len(report['releaseSaveCompatibility']['schemas'])} supported release-save schemas migrated and authority-checked",
               f"- {len(report['soak']['runs'])} deterministic 1450–1820 soak runs",
               "- Fresh start, supported-save migration, manual save, rolling autosave, checkpoints, native save/load, interrupted transition recovery, and representation reconstruction are journey-gated.", ""]
     return "\n".join(lines)

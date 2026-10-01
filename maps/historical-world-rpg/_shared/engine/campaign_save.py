@@ -109,6 +109,26 @@ class MigrationRegistry:
             raise ValueError(f"migration from schema {source_version} is already registered")
         self._migrations[source_version] = migration
 
+    def migration_path(self, source_version: int) -> tuple[int, ...]:
+        """Return the executable path, or reject rather than implying support."""
+        version = _integer(source_version, "source schema", minimum=0)
+        if version > self.current_version:
+            raise IncompatibleSaveError(
+                f"save schema {version} is newer than supported schema {self.current_version}"
+            )
+        path = [version]
+        while version < self.current_version:
+            if version not in self._migrations:
+                raise IncompatibleSaveError(f"no migration registered from schema {version}")
+            version += 1
+            path.append(version)
+        return tuple(path)
+
+    def supported_source_versions(self) -> tuple[int, ...]:
+        """Schemas for which a complete path to current is actually registered."""
+        return tuple(version for version in range(self.current_version + 1)
+                     if _has_path(self._migrations, version, self.current_version))
+
     def migrate(self, document: Mapping[str, Any]) -> dict[str, Any]:
         result = copy.deepcopy(dict(document))
         version = _integer(result.get("schemaVersion"), "schemaVersion", minimum=0)
@@ -120,7 +140,12 @@ class MigrationRegistry:
             migration = self._migrations.get(version)
             if migration is None:
                 raise IncompatibleSaveError(f"no migration registered from schema {version}")
-            migrated = migration(copy.deepcopy(result))
+            try:
+                migrated = migration(copy.deepcopy(result))
+            except Exception as exc:
+                raise IncompatibleSaveError(
+                    f"migration from schema {version} failed"
+                ) from exc
             if not isinstance(migrated, dict) or migrated.get("schemaVersion") != version + 1:
                 raise IncompatibleSaveError(
                     f"migration from schema {version} must produce schema {version + 1}"
@@ -129,6 +154,10 @@ class MigrationRegistry:
             version += 1
 
         return result
+
+
+def _has_path(migrations: Mapping[int, Migration], source: int, current: int) -> bool:
+    return source <= current and all(version in migrations for version in range(source, current))
 def _migrate_v1_to_v2(document: dict[str, Any]) -> dict[str, Any]:
     """Version 2 permits persisted regional-instance and pending-crossing state.
 

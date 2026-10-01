@@ -169,7 +169,7 @@ The first serious player test target: a substantially complete game intended to 
   - [ ] Expand world quest density toward roughly 400-600 authored quests/chains plus 50-100 repeatable/dynamic quest templates distributed across settlements and regions.
   - [ ] Expand player-facing land/naval military breadth toward roughly 350-500+ meaningful types/variants while preserving shared runtime templates where appropriate.
   - [ ] Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass.
-- [ ] Release save compatibility
+- [x] Release save compatibility
 - [x] No known campaign-blocking defects
 - [ ] Recovery tooling documented
 - [ ] RC build packaged

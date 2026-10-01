@@ -56,6 +56,15 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         self.assertTrue(all(audit.STABLE_ID.fullmatch(row["id"]) and row["context"] and row["message"]
                             for row in report["findings"]))
 
+    def test_release_save_compatibility_matrix_is_part_of_the_gate(self):
+        compatibility = self.report["releaseSaveCompatibility"]
+        self.assertEqual("pass", compatibility["status"])
+        self.assertEqual([1, 2, 3, 4], compatibility["schemas"])
+        self.assertEqual(["migrated", "migrated", "migrated", "compatible"],
+                         compatibility["statuses"])
+        self.assertEqual(1, len(compatibility["authoritySha256"]))
+        self.assertIn(compatibility["manifest"], self.report["releaseInputs"])
+
     def test_unknown_critical_class_cannot_escape_unclassified_gate(self):
         finding = audit._finding("INJECT-UNKNOWN-CRITICAL", "start_failure", "fixture/unknown",
                                  "unknown failure")
