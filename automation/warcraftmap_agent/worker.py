@@ -537,6 +537,24 @@ def issue_record(state: dict[str, Any], number: int) -> dict[str, Any]:
     return state["issues"].setdefault(str(number), {"attempts": 0, "status": "queued"})
 
 
+def refresh_validation_repair_bases(config: Config, state: dict[str, Any]) -> None:
+    """Revive pre-PR validation repairs when the controller base has advanced."""
+    branch = default_branch(config.repo_root)
+    base_oid = remote_branch_oid(config.repo_root, branch)
+    if not base_oid:
+        return
+    for record in state["issues"].values():
+        if record.get("pr") or repair_kind(record) != "validation":
+            continue
+        previous = str(record.get("validation_base_oid") or "")
+        exhausted = int(record.get("validation_repair_attempts", 0)) >= config.max_validation_repair_attempts
+        if not previous or previous != base_oid:
+            record["validation_base_oid"] = base_oid
+            record["validation_repair_attempts"] = 0
+            if record.get("status") == "failed" or exhausted:
+                record["status"] = "repair"
+
+
 def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, Any]) -> None:
     """Allow externally resolved design issues to re-enter the implementation queue."""
     for issue in issues:
@@ -768,6 +786,30 @@ def run_checks(config: Config, worktree: Path) -> None:
     run(command, cwd=worktree, timeout=config.timeout_minutes * 60)
 
 
+def prepare_validation_repair(config: Config, worktree: Path, issue_number: int) -> tuple[str, list[str]]:
+    """Checkpoint dirty issue work, then merge current main before retrying validation."""
+    run(["git", "fetch", "origin"], cwd=worktree)
+    status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
+    if status.strip():
+        run(["git", "add", "-A"], cwd=worktree)
+        run(["git", "commit", "-m", f"Checkpoint issue #{issue_number} before validation repair"], cwd=worktree)
+    branch = default_branch(config.repo_root)
+    upstream = f"origin/{branch}"
+    base_oid = remote_branch_oid(config.repo_root, branch)
+    merge_head = run(["git", "rev-parse", "--verify", "--quiet", "MERGE_HEAD"], cwd=worktree, check=False)
+    if merge_head.returncode not in {0, 1}:
+        raise RuntimeError(f"could not inspect merge state (git exited {merge_head.returncode})")
+    if merge_head.returncode == 1:
+        merge = run(["git", "merge", "--no-edit", upstream], cwd=worktree, check=False)
+        if merge.returncode:
+            conflicts = run(["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree).stdout.splitlines()
+            if not conflicts:
+                detail = (merge.stderr or merge.stdout).strip()
+                raise RuntimeError(f"could not merge {upstream}: {detail}")
+    conflicts = run(["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree).stdout.splitlines()
+    return base_oid, conflicts
+
+
 def prepare_merge_conflict_repair(config: Config, worktree: Path) -> list[str]:
     """Merge current upstream main, leaving genuine conflicts for Codex."""
     run(["git", "fetch", "origin"], cwd=worktree)
@@ -802,10 +844,14 @@ def push_existing_pr_repair(worktree: Path, issue_number: int, pr: int) -> None:
 
 def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str) -> int:
     status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
-    if not status.strip():
-        raise RuntimeError("Codex reported completion but made no changes")
-    run(["git", "add", "-A"], cwd=worktree)
-    run(["git", "commit", "-m", f"Implement issue #{issue['number']}: {READY.sub('', issue['title'])}"], cwd=worktree)
+    if status.strip():
+        run(["git", "add", "-A"], cwd=worktree)
+        run(["git", "commit", "-m", f"Implement issue #{issue['number']}: {READY.sub('', issue['title'])}"], cwd=worktree)
+    else:
+        upstream = f"origin/{default_branch(config.repo_root)}"
+        ahead = run(["git", "rev-list", "--count", f"{upstream}..HEAD"], cwd=worktree).stdout.strip()
+        if int(ahead or "0") < 1:
+            raise RuntimeError("Codex reported completion but made no changes")
     run(["git", "push", "--set-upstream", "origin", branch], cwd=worktree)
     existing = run(
         ["gh", "pr", "list", "--head", branch, "--state", "open", "--json", "number", "--jq", ".[0].number"],
@@ -1023,6 +1069,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"planned promotion: would make #{issue['number']} [agent-ready] {PLANNED.sub('', issue['title']).strip()}")
         issues = list_issues(config)
         reconcile_ready_issue_states(issues, state)
+        refresh_validation_repair_bases(config, state)
         needs_design = list_needs_design_issues(config)
         design_numbers = {int(item["number"]) for item in needs_design}
         selected = select_issue(
@@ -1146,6 +1193,17 @@ def main(argv: list[str] | None = None) -> int:
                     f"worktree; resolve only these unmerged paths while preserving both work "
                     f"streams: { ', '.join(conflicts) if conflicts else '(none remain)'}"
                 )
+            elif record.get("repair_kind") == "validation":
+                previous_failure = str(record.get("last_failure") or "")
+                base_oid, conflicts = prepare_validation_repair(config, worktree, selected["number"])
+                record["validation_base_oid"] = base_oid
+                record["last_failure"] = (
+                    "Repository validation repair required: current main was merged into this "
+                    "pre-PR worktree before retrying. "
+                    f"Unmerged paths: {', '.join(conflicts) if conflicts else '(none)'}. "
+                    "Preserve the issue implementation and resolve only integration/validation "
+                    "problems. Previous validation failure:\n" + previous_failure[-3000:]
+                )
             result = invoke_codex(config, worktree, selected, record, run_entry)
             # Persist token telemetry before validation/PR work.
             save_state(state_path, state)
@@ -1161,6 +1219,10 @@ def main(argv: list[str] | None = None) -> int:
                 except Exception:
                     if not record.get("pr"):
                         record["repair_kind"] = "validation"
+                        branch_name = default_branch(config.repo_root)
+                        base_oid = remote_branch_oid(config.repo_root, branch_name)
+                        if base_oid:
+                            record["validation_base_oid"] = base_oid
                     raise
                 existing_pr = record.get("pr")
                 if existing_pr:
