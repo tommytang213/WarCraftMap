@@ -10,13 +10,13 @@ sys.path.insert(0,str(ROOT.parent/"_shared"/"engine"))
 sys.path.insert(0,str(ROOT/"tooling"))
 from character import CharacterError, CharacterRuntime
 from character_availability import CharacterAvailabilityError, CharacterAvailabilityRuntime
-from global_characters import equipment_catalog, projection, validate
+from global_characters import equipment_catalog, load_source, projection, validate
 
 
 class GlobalCharacterRosterTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.source=json.loads((ROOT/"scenario/characters/global.json").read_text())
+        cls.source=load_source()
         cls.world=json.loads((ROOT/"scenario/world/world.json").read_text())
         cls.by_id={x["id"]:x for x in cls.source["characters"]}
         cls.settlement_regions={x["id"]:x["regionalInstanceId"].split("_")[0] for x in cls.world["settlements"]}
@@ -41,6 +41,18 @@ class GlobalCharacterRosterTests(unittest.TestCase):
         self.assertTrue(any(x["availabilityWindow"]["startDate"] < "1500" for x in self.source["characters"]))
         self.assertTrue(any(x["availabilityWindow"]["startDate"] > "1750" for x in self.source["characters"]))
         self.assertLess(len(self.source["companionRelationships"]),len(self.source["characters"]))
+        self.assertGreaterEqual(len(self.source["characters"]),35)
+        self.assertTrue(all(sum(c["regionId"]==r for c in self.source["characters"]) >= 5 for r in self.source["coverageRegions"]))
+        self.assertEqual(len(self.source["characters"]),len(self.source["personalQuests"]))
+        self.assertTrue(all(q["objectives"] and q["outcomes"] for q in self.source["personalQuests"]))
+
+    def test_historical_identity_roles_offices_and_commands_are_single_authorities(self):
+        ids=[c["id"] for c in self.source["characters"]]
+        self.assertEqual(len(ids),len(set(ids)))
+        self.assertTrue(all(c["authoredHistorical"] and c["historicalEvidenceIds"] for c in self.source["characters"]))
+        self.assertTrue(any("sovereign" in c["roleIds"] for c in self.source["characters"]))
+        self.assertTrue(any("army_commander" in c["officeEligibility"] for c in self.source["characters"]))
+        self.assertTrue(any("fleet_commander" in c["officeEligibility"] for c in self.source["characters"]))
 
     def test_boundary_dates_conditions_and_deterministic_suppression(self):
         runtime=CharacterAvailabilityRuntime(self.source["characters"])
@@ -69,7 +81,9 @@ class GlobalCharacterRosterTests(unittest.TestCase):
         runtime.refresh(self.context("1768-01-01",activeRegionIds=["europe"]))
         before=runtime.snapshot()
         self.assertIn("tupaia",{x["id"] for x in before["characters"]})
-        self.assertEqual((),runtime.project_region("europe",self.settlement_regions))
+        projected=runtime.project_region("europe",self.settlement_regions)
+        self.assertIn("catherine_ii",projected)
+        self.assertNotIn("tupaia",projected)
         runtime.restore(copy.deepcopy(before)); self.assertEqual(before,runtime.snapshot())
 
     def test_recruited_and_oathbound_survive_impossible_historical_state(self):
