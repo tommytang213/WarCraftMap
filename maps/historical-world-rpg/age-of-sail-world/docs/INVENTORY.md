@@ -20,6 +20,63 @@ An item grants gear bonuses only when its instance is present in `equipment`.
 in outer or backpack storage grant no equipment stats. Runtime adapters must suppress
 ordinary passive bonuses while stored and reconcile from authoritative equip state.
 
+## Player-facing item power, rarity, and identity
+
+Player-use equipment and consumables are a separate content layer from bulk economic
+cargo. A settlement may expose both a commodity market for trade and one or more
+player-use merchants; one catalogue must not stand in for the other.
+
+The release-facing equipment model keeps several dimensions separate:
+
+- **Item level / power level** is the quick comparison number. The long-campaign target
+  supports roughly level 1–300 equipment so item progression can remain readable beside
+  level-300 heroes. Item level describes the item's overall stat/effect budget; it is
+  not a rule that the larger number is always better for every build.
+- **Rarity / quality** communicates craftsmanship, scarcity, affix/effect complexity,
+  and ceiling. The scenario may use an ordered ladder such as Common, Fine, Superior,
+  Rare, Epic, Legendary, and Relic/Artifact; exact labels remain data-driven.
+- **Identity / provenance** is independent of rarity: generic, regional/cultural,
+  polity-specific, profession/specialist, quest reward, equipment-set piece, unique
+  historical item, legendary/relic, or other authored identities may coexist with
+  any appropriate power level.
+- **Enhancement / refinement** may provide bounded per-instance improvement where
+  historically and mechanically appropriate, but cannot bypass era, technology, or
+  equipment-category requirements.
+
+Comparison UI should expose at minimum item level, rarity, enhancement, major stats,
+abilities/passives/conditional effects, set membership and current set thresholds,
+requirements, and green/red deltas against the currently equipped item. Specialized
+effects must remain visible so a lower-level item can rationally outperform a higher-
+level generic item for a particular build.
+
+Historical and otherwise unique items are persistent singular identities unless the
+scenario explicitly says otherwise. They may support bounded restoration/reforging or
+other long-campaign improvement so an important item does not automatically become
+vendor trash merely because the calendar advanced, but old gear must not be freely
+upgraded into technology that does not yet exist.
+
+The current generic inventory contract predates these release-scale fields. Phase 8
+content work must extend the scenario/item schema rather than encoding rarity, item
+level, provenance, or enhancement as ad-hoc display text.
+
+## Player-use merchants and stores
+
+Bulk goods stores/markets serve production, consumption, warehousing, cargo, price,
+and trade-route simulation. Player-use merchants instead sell or service equipment,
+consumables, tools, books/maps, mounts, artifacts, and ship-related supplies.
+
+Useful merchant archetypes include general merchants, armourers/weaponsmiths,
+gunsmiths, tailors/outfitters, apothecaries, booksellers/cartographers, horse/stable
+dealers, specialist military suppliers, relic/artifact merchants, ship chandlers, and
+dockyards. Their inventories are derived from settlement, region/culture, controlling
+polity, campaign year, technology/institutions, local production, trade connectivity,
+wealth, events/quests, and merchant type rather than using one global shop list.
+
+Release-scale content targets roughly 300–500 ordinary player-usable equipment,
+consumable, and tool types, 100+ unique/historical/legendary items, and about 50–80
+authored equipment sets. These are planning ranges, not hard quotas; historical fit,
+build diversity, and meaningful choice matter more than raw count.
+
 ## Equipment sets and threshold bonuses
 
 - Equipment may belong to a scenario-defined set through stable set IDs; the shared inventory engine must not hardcode Age of Sail set names.
