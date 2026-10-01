@@ -26,7 +26,7 @@ class AfricaContentTests(unittest.TestCase):
 
     def test_complete_authority_and_deterministic_projection(self):
         source, politics, geography, positions = validate()
-        self.assertEqual((30, 11, 12, 3), (len(source["settlements"]), sum("port" in x for x in source["settlements"]), len(source["tradeRoutes"]), len(source["transitions"])))
+        self.assertEqual((86, 29, 12, 3), (len(source["settlements"]), sum("port" in x for x in source["settlements"]), len(source["tradeRoutes"]), len(source["transitions"])))
         projected = project(source, politics, geography, positions, self.world)
         self.assertEqual(projected, project(copy.deepcopy(source), politics, geography, positions, self.world))
         selected_ids = {x["id"] for x in source["settlements"]}

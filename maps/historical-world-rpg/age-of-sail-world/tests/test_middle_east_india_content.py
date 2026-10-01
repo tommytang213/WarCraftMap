@@ -13,7 +13,7 @@ class MiddleEastIndiaContentTests(unittest.TestCase):
     def test_authority_projection_and_capture_references(self):
         source,politics,geography,positions=validate(); projected=project(source,politics,geography,positions,self.world)
         self.assertEqual(projected,project(copy.deepcopy(source),politics,geography,positions,self.world)); selected=[x for x in projected["settlements"] if x["id"] in {item["id"] for item in source["settlements"]}]
-        self.assertEqual((26,8,16), (len(selected),sum("portAccess" in x for x in selected),len(source["tradeRoutes"])))
+        self.assertEqual((155,51,59), (len(selected),sum("portAccess" in x for x in selected),len(source["tradeRoutes"])))
         cores={x["id"] for x in projected["cityCores"]}; layouts={x["id"] for x in projected["defenseLayouts"]}
         for item in selected:
             self.assertTrue(item["capturable"] and item["civilianFacilitiesInvulnerable"]); self.assertIn(item["cityCoreId"],cores); self.assertIn(item["defenseLayoutId"],layouts)

@@ -18,7 +18,7 @@ class ProvinceRuntimeTests(unittest.TestCase):
         self.assertEqual(len(self.source["provinces"]),len(self.runtime.ids()))
         self.assertTrue({"kent","normandy","manding","shewa"}.issubset(self.runtime.ids()))
         kent=self.runtime.require("kent")
-        self.assertEqual(("Kent","county",("dover","calais")),(kent.definition.name,kent.definition.administrative_type,kent.definition.settlement_ids))
+        self.assertEqual(("Kent","county",("dover","calais","canterbury")),(kent.definition.name,kent.definition.administrative_type,kent.definition.settlement_ids))
         self.assertEqual(("england","england","england","england",35,False),(kent.legal_owner_polity_id,kent.controller_polity_id,kent.governing_polity_id,kent.sovereign_polity_id,kent.autonomy_percent,kent.occupied))
 
     def test_occupation_control_and_legal_transfer_are_atomic_and_ordered(self):

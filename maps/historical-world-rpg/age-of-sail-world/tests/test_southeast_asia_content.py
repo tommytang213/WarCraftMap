@@ -12,10 +12,10 @@ class SoutheastAsiaContentTests(unittest.TestCase):
         directory=tempfile.TemporaryDirectory(); path=Path(directory.name)/"candidate.json"; path.write_text(json.dumps(value)); return directory,path
     def test_authority_references_coverage_and_deterministic_projection(self):
         source,politics,geography,positions=validate(); projected=project(source,politics,geography,positions,self.world)
-        self.assertEqual((20,15,20,3),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"])))
+        self.assertEqual((85,68,74,3),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"])))
         self.assertEqual(projected,project(copy.deepcopy(source),politics,geography,positions,self.world))
         selected=[x for x in projected["settlements"] if x["id"] in {s["id"] for s in source["settlements"]}]
-        self.assertEqual(20,len(selected)); cores={x["id"] for x in projected["cityCores"]}; layouts={x["id"] for x in projected["defenseLayouts"]}
+        self.assertEqual(85,len(selected)); cores={x["id"] for x in projected["cityCores"]}; layouts={x["id"] for x in projected["defenseLayouts"]}
         for item in selected:
             self.assertTrue(item["capturable"] and item["civilianFacilitiesInvulnerable"]); self.assertIn(item["cityCoreId"],cores); self.assertIn(item["defenseLayoutId"],layouts); self.assertEqual(item["regionalInstanceId"],item["physicalMapId"])
     def test_port_topology_and_inland_maritime_routes_are_rejected(self):
@@ -52,6 +52,6 @@ class SoutheastAsiaContentTests(unittest.TestCase):
     def test_settlement_economy_profiles_and_market_projection_are_deterministic(self):
         source,_,_,_=validate(); a=update_economy(source,self.economy); b=update_economy(copy.deepcopy(source),self.economy); self.assertEqual(a,b)
         markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("sea_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("sea_")]
-        self.assertEqual((20,20),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
+        self.assertEqual((85,85),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
 
 if __name__=="__main__": unittest.main()
