@@ -57,3 +57,11 @@ python3 tooling/run_large_world_stress.py --profile maximum_reasonable_world \
 Profiles and provisional simulation, persistence, state-size, and active-object
 budgets live in `scenario/benchmarks/large-world.json`. Summaries are compact
 canonical JSON; failures are capped and identify the invariant and stable ID.
+
+Phase 7 campaign persistence stress uses the real campaign-save and cross-map
+transaction managers, all rolling/recovery/manual slot types, supported schema
+migrations, repeated map revisits, and normalized authority hashes. Run the
+bounded CI profile with `python3 tooling/run_campaign_save_stress.py`; the
+dedicated enlarged workload selects `--profile bounded_enlarged`. Finalized
+save/load, serialized-size, and growth budgets are in
+`scenario/benchmarks/campaign-save-stress.json`.

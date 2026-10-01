@@ -124,8 +124,9 @@ def generate_fixture(profile):
     for i in range(c["wars"]):
         records["wars"].append({"id": _ident("war", i), "attackerId": _ident("polity", i % c["polities"]), "defenderId": _ident("polity", (i + 1) % c["polities"]), "score": 0})
     for kind in ("quests", "events"):
+        prefix = "quest" if kind == "quests" else "event"
         for i in range(c[kind]):
-            records[kind].append({"id": _ident("army" if kind == "armies" else "fleet", i), "locationId": _ident("location", i % c["locations"]), "due": 1 + i % max(1, profile.duration), "occurrences": 0})
+            records[kind].append({"id": _ident(prefix, i), "locationId": _ident("location", i % c["locations"]), "due": 1 + i % max(1, profile.duration), "occurrences": 0})
     for i in range(c["locations"]):
         records["locations"].append({"id": _ident("location", i), "regionId": region_ids[i % regions], "parentLocationId": None})
     scheduled = []

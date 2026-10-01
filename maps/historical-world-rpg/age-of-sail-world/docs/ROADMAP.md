@@ -142,7 +142,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 - [ ] Finalize performance budgets against full-world content
 - [ ] Economy balancing
 - [ ] AI territorial warfare
-- [ ] Save/load stress testing
+- [x] Save/load stress testing
 - [ ] Native WC3 save/load regression
 - [ ] City/world integrity recovery tests
 
