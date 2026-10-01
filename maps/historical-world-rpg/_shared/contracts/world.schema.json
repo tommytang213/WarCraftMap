@@ -165,6 +165,9 @@
         "$ref": "character.schema.json#/$defs/companionRelationship"
       }
     },
+    "officeTypes": {"type":"array","items":{"$ref":"administration.schema.json#/$defs/officeType"}},
+    "officeNameCultures": {"type":"array","items":{"$ref":"administration.schema.json#/$defs/nameCulture"}},
+    "politicalOffices": {"type":"array","items":{"$ref":"administration.schema.json#/$defs/office"}},
     "researchBranches": {
       "type": "array",
       "items": {

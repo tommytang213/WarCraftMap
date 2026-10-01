@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/administration.schema.json",
+  "title": "Political Office and Administration Contracts",
+  "$defs": {
+    "stableId": {"type":"string","pattern":"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$","maxLength":64},
+    "officeType": {
+      "type":"object","additionalProperties":false,
+      "required":["id","role","title","baseCapacity","prestige"],
+      "properties":{"id":{"$ref":"#/$defs/stableId"},"role":{"enum":["settlement_administrator","province_governor","sovereign","army_commander","fleet_commander"]},"title":{"type":"string","minLength":1},"baseCapacity":{"type":"number","minimum":1},"prestige":{"type":"number","minimum":0}}
+    },
+    "nameCulture": {
+      "type":"object","additionalProperties":false,
+      "required":["id","givenNames","familyNames","traitIds","professionId"],
+      "properties":{"id":{"$ref":"#/$defs/stableId"},"givenNames":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"familyNames":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"traitIds":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/stableId"}},"professionId":{"$ref":"#/$defs/stableId"}}
+    },
+    "office": {
+      "description":"Contains delegation only; ownership, controller and sovereignty are intentionally absent.",
+      "type":"object","additionalProperties":false,
+      "required":["id","officeTypeId","jurisdictionIds"],
+      "properties":{"id":{"$ref":"#/$defs/stableId"},"officeTypeId":{"$ref":"#/$defs/stableId"},"jurisdictionIds":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/stableId"}},"holderCharacterId":{"oneOf":[{"$ref":"#/$defs/stableId"},{"type":"null"}]},"collectiveBodyId":{"$ref":"#/$defs/stableId"},"collectiveBodyName":{"type":"string","minLength":1},"acting":{"type":"boolean"},"residenceSettlementId":{"oneOf":[{"$ref":"#/$defs/stableId"},{"type":"null"}]},"status":{"enum":["active","vacant","abolished"]},"successionState":{"enum":["settled","acting","vacant","contested"]},"modifiers":{"type":"object","additionalProperties":{"type":"number"}},"localSupport":{"type":"number","minimum":0,"maximum":100},"militaryEntrenchment":{"type":"number","minimum":0,"maximum":100}}
+    }
+  }
+}
