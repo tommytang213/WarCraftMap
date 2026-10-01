@@ -18,6 +18,19 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+The Phase 8 integrated release-blocker gate is repository controlled by
+`scenario/release-blocker-gate.json`. It classifies campaign-blocking and
+unclassified critical failures, runs deterministic whole-campaign journeys,
+audits tracked reports and release inputs, and verifies that checked-in
+machine/human reports are current:
+
+```sh
+python3 tooling/release_blocker_audit.py
+```
+
+Use `--write` only after resolving every reported campaign blocker. The command
+cannot close the gate through an allowlist or severity downgrade.
+
 Native Warcraft save/load uses `python3 tooling/run_native_save_regression.py`.
 The default run executes the deterministic reconstruction oracle and reports a
 clear runtime-unavailable skip. See `docs/WC3_COMPATIBILITY.md` for the pinned
