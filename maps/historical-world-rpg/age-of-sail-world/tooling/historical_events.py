@@ -10,7 +10,7 @@ SOURCE=ROOT/"scenario"/"historical-events.json"
 WORLD=ROOT/"scenario"/"world"/"world.json"
 ID=re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 KINDS={"polity":"polities","province":"provinces","settlement":"settlements","technology":"technologies","institution":"institutions","character":"characters","navigation_zone":"navigationZones"}
-CATEGORIES={"political","diplomatic","military","exploration","commercial","institutional","technological","religious","environmental","succession"}
+CATEGORIES={"political","diplomatic","military","exploration","commercial","institutional","technological","religious","environmental","social","succession"}
 CONDITIONS={"entity_exists","entity_absent","owner_is","war_active","war_inactive","research_completed","research_missing"}
 EFFECTS={"adjust_treasury","adjust_relations","set_controller","complete_research","set_flag","adjust_prosperity"}
 
@@ -51,7 +51,10 @@ def validate(source,world):
         if rule: assert rule["unit"] in {"days","months","years"} and rule["interval"]>0 and when<=date.fromisoformat(rule["untilDate"])<=date(1820,12,31)
     # Selective coverage: every pressure class, represented region, and century.
     assert CATEGORIES<=set().union(*(set(x["categories"]) for x in source["events"]))
-    assert {"europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"}<={x["region"] for x in source["events"]}
+    required_regions={"europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"}
+    assert required_regions<={x["region"] for x in source["events"]}
+    assert all(sum(x["region"]==region for x in source["events"])>=4 for region in required_regions)
+    assert len(source["events"])>=36
     assert {14,15,16,17,18}<={date.fromisoformat(x["date"]).year//100 for x in source["events"]}
 
 def project(source,world):

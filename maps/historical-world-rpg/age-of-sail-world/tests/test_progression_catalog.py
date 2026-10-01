@@ -28,8 +28,12 @@ class ProgressionCatalogTests(unittest.TestCase):
         data = progression_catalog.validate()
         self.assertEqual({"military","naval","commercial","administrative","scientific","agricultural","industrial","institutional"},
                          {x["id"] for x in data["branches"]})
-        self.assertGreaterEqual(len(data["technologies"]), 32)
-        self.assertGreaterEqual(len(data["institutions"]), 7)
+        self.assertGreaterEqual(len(data["technologies"]), 50)
+        self.assertGreaterEqual(len(data["institutions"]), 9)
+        unlocks = {tuple(unlock) for node in data["technologies"] + data["institutions"] for unlock in node["unlocks"]}
+        self.assertTrue({("unit","common_sapper_corps"), ("unit","common_wagon_train"),
+                         ("unit","ocean_cruising_frigate"), ("unit","armed_indiaman"),
+                         ("policy","provincial_governors"), ("ability","global_expedition")} <= unlocks)
         self.assertEqual(WORLD, progression_catalog.project(data, WORLD))
         self.assertEqual(len(WORLD["polities"]), len(WORLD["polityResearchStates"]))
         self.assertEqual(len(WORLD["provinces"]), len(WORLD["provinceAdoptionStates"]))
@@ -86,6 +90,16 @@ class ProgressionCatalogTests(unittest.TestCase):
         yearly = run(1)
         self.assertEqual(tuple(sorted(nodes)), yearly)
         self.assertEqual(yearly, run(10))
+
+    def test_every_branch_has_era_depth_and_cross_tree_dependencies(self):
+        nodes = CATALOG["technologies"] + CATALOG["institutions"]
+        by_id = {x["id"]: x for x in nodes}
+        for branch in {x["id"] for x in CATALOG["branches"]}:
+            branch_nodes = [x for x in nodes if x["branchId"] == branch]
+            self.assertGreaterEqual(len(branch_nodes), 4, branch)
+            self.assertGreaterEqual(max(x["preferredYear"] for x in branch_nodes) - min(x["preferredYear"] for x in branch_nodes), 100, branch)
+        cross_tree = [x for x in nodes if any(by_id[p]["branchId"] != x["branchId"] for p in x["prerequisiteIds"])]
+        self.assertGreaterEqual(len(cross_tree), 20)
 
 
 if __name__ == "__main__":
