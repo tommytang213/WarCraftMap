@@ -160,7 +160,7 @@ The first serious player test target: a substantially complete game intended to 
   - [x] Expand technology/institution progression and historical/conditional event coverage across 1450–1820.
   - [x] Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content.
   - [x] Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content.
-- [ ] Release save compatibility
+- [x] Release save compatibility
 - [ ] No known campaign-blocking defects
 - [ ] Recovery tooling documented
 - [ ] RC build packaged
