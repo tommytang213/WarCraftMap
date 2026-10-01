@@ -66,3 +66,13 @@ are equipment-, reform-, resource-, technology-, and date-gated rather than
 fallback coverage outside directly assigned rosters, and validation rejects an
 orphaned polity. With all three slices integrated, the initial country-content
 roster pass is complete.
+
+Phase 8 adds `scenario/rosters/naval-expansion.json` while reusing the bounded
+naval runtime templates. It broadens the catalogue across merchant, transport,
+patrol, raiding, boarding, riverine, oared, cruising, line-of-battle, junk,
+dhow, canoe and proa families. `scenario/naval/phase8.json` owns regional,
+polity and era coverage; explicit exceptions; representative AI/abstract fleet
+fixtures; defense, trade, transport, tradition, visual, audio and packaging
+bindings; and object/import budgets. Regenerate its deterministic report with
+`python3 tooling/validate_naval_roster.py --output
+scenario/naval/reports/coverage.json`.

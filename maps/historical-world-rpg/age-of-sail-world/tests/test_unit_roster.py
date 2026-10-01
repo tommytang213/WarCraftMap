@@ -116,7 +116,7 @@ class UnitRosterTests(unittest.TestCase):
             self.assertEqual(0, validate_unit_roster.main(["--output", str(output)]))
             document = json.loads(output.read_text())
             self.assertEqual(first.digest(), document["digest"])
-            self.assertEqual(77, len(document["units"]))
+            self.assertEqual(105, len(document["units"]))
 
 
 if __name__ == "__main__":

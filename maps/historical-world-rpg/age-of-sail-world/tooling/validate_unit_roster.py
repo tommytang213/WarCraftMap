@@ -13,6 +13,7 @@ SLICE_PATHS = (
     ROOT / "scenario/rosters/europe-africa-middle-east-india.json",
     ROOT / "scenario/rosters/southeast-east-asia-pacific.json",
     ROOT / "scenario/rosters/americas-caribbean.json",
+    ROOT / "scenario/rosters/naval-expansion.json",
 )
 
 

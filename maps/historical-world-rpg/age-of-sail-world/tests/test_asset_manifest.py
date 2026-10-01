@@ -27,7 +27,7 @@ class AssetManifestTests(unittest.TestCase):
         catalogue=assets.validate_manifest(self.manifest)
         rows=assets.validate_matrix(self.matrix,catalogue)
         self.assertEqual(17,len(catalogue))
-        self.assertEqual(551 + 1,len(rows))
+        self.assertEqual(603 + 1,len(rows))
         self.assertEqual(assets.CLASSES,{x["classification"] for x in rows})
 
     def test_matrix_is_deterministically_generated_from_current_scenario(self):
@@ -44,7 +44,7 @@ class AssetManifestTests(unittest.TestCase):
         self.assertEqual(json.loads((reports/"coverage.json").read_text()),report)
         self.assertEqual(json.loads((reports/"unresolved.json").read_text()),unresolved)
         resolved=json.loads((reports/"resolved-manifest.json").read_text())
-        self.assertEqual(552,len(resolved))
+        self.assertEqual(604,len(resolved))
         self.assertEqual({"entityKind","entityId","classification","assetId","locator"},set(resolved[0]))
         self.assertTrue(all(x["locator"] is not None or x["classification"]=="intentionally_invisible_data_only" for x in resolved))
 
