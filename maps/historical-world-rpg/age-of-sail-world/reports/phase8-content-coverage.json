@@ -1,78 +1,366 @@
 {
-  "schemaVersion": 1,
-  "quests": {
-    "total": 24,
-    "byType": {
-      "cross_region": 1,
-      "long": 1,
-      "personal": 7,
-      "regional": 14,
-      "repeatable": 1
+  "schemaVersion": 2,
+  "status": "pass",
+  "campaignYears": [
+    1450,
+    1820
+  ],
+  "snapshotYears": [
+    1450,
+    1550,
+    1650,
+    1750,
+    1820
+  ],
+  "policy": {
+    "minorPolitiesMayShareRegionalContent": true,
+    "majorPowersRequireAdditionalIdentity": true,
+    "sparseCasesRequireExplicitReason": true,
+    "playerQaRequired": false
+  },
+  "regions": {
+    "europe": {
+      "polities": 49,
+      "land": "common_and_regional",
+      "navalFamilies": 1,
+      "goods": 72,
+      "events": 7,
+      "characters": 6,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
     },
-    "byRegionAndType": {
-      "africa": {
-        "personal": 1,
-        "regional": 2
+    "africa": {
+      "polities": 47,
+      "land": "common_and_regional",
+      "navalFamilies": 0,
+      "goods": 30,
+      "events": 5,
+      "characters": 5,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    },
+    "middle_east_india": {
+      "polities": 35,
+      "land": "common_and_regional",
+      "navalFamilies": 2,
+      "goods": 26,
+      "events": 4,
+      "characters": 6,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    },
+    "southeast_asia": {
+      "polities": 27,
+      "land": "common_and_regional",
+      "navalFamilies": 0,
+      "goods": 20,
+      "events": 4,
+      "characters": 5,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    },
+    "east_asia": {
+      "polities": 16,
+      "land": "common_and_regional",
+      "navalFamilies": 1,
+      "goods": 29,
+      "events": 4,
+      "characters": 5,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    },
+    "americas_caribbean": {
+      "polities": 32,
+      "land": "common_and_regional",
+      "navalFamilies": 1,
+      "goods": 22,
+      "events": 6,
+      "characters": 5,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    },
+    "pacific": {
+      "polities": 24,
+      "land": "common_and_regional",
+      "navalFamilies": 1,
+      "goods": 16,
+      "events": 4,
+      "characters": 5,
+      "regionalQuests": 2,
+      "personalQuests": 1,
+      "treasures": 4
+    }
+  },
+  "majorPowers": {
+    "ashikaga_shogunate": {
+      "region": "east_asia",
+      "landSpecific": false,
+      "navalSpecific": true,
+      "historicalCharacters": 1
+    },
+    "castile": {
+      "region": "europe",
+      "landSpecific": false,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    },
+    "england": {
+      "region": "europe",
+      "landSpecific": true,
+      "navalSpecific": true,
+      "historicalCharacters": 1
+    },
+    "france": {
+      "region": "europe",
+      "landSpecific": true,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    },
+    "joseon_kingdom": {
+      "region": "east_asia",
+      "landSpecific": true,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    },
+    "malacca_sultanate": {
+      "region": "southeast_asia",
+      "landSpecific": false,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    },
+    "ming_empire": {
+      "region": "east_asia",
+      "landSpecific": true,
+      "navalSpecific": true,
+      "historicalCharacters": 1
+    },
+    "ottoman_empire": {
+      "region": "europe",
+      "landSpecific": true,
+      "navalSpecific": true,
+      "historicalCharacters": 2
+    },
+    "portugal": {
+      "region": "europe",
+      "landSpecific": false,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    },
+    "venice": {
+      "region": "europe",
+      "landSpecific": false,
+      "navalSpecific": true,
+      "historicalCharacters": 0
+    }
+  },
+  "eras": {
+    "1450": {
+      "landArchetypes": 17,
+      "landLayers": {
+        "common": 6,
+        "elite": 3,
+        "polity": 1,
+        "regional": 7
       },
-      "americas_caribbean": {
-        "personal": 1,
-        "regional": 2
+      "progressionNodesAvailable": 6,
+      "historicalEventsOccurred": 0
+    },
+    "1550": {
+      "landArchetypes": 19,
+      "landLayers": {
+        "common": 7,
+        "elite": 3,
+        "polity": 1,
+        "regional": 8
       },
-      "east_asia": {
-        "personal": 1,
-        "regional": 2
+      "progressionNodesAvailable": 19,
+      "historicalEventsOccurred": 11
+    },
+    "1650": {
+      "landArchetypes": 21,
+      "landLayers": {
+        "common": 8,
+        "elite": 3,
+        "polity": 1,
+        "regional": 9
       },
-      "europe": {
-        "personal": 1,
-        "regional": 2
+      "progressionNodesAvailable": 31,
+      "historicalEventsOccurred": 23
+    },
+    "1750": {
+      "landArchetypes": 22,
+      "landLayers": {
+        "common": 8,
+        "elite": 3,
+        "polity": 1,
+        "regional": 10
       },
-      "global": {
+      "progressionNodesAvailable": 48,
+      "historicalEventsOccurred": 31
+    },
+    "1820": {
+      "landArchetypes": 24,
+      "landLayers": {
+        "common": 8,
+        "elite": 4,
+        "polity": 2,
+        "regional": 10
+      },
+      "progressionNodesAvailable": 59,
+      "historicalEventsOccurred": 36
+    }
+  },
+  "categories": {
+    "land": {
+      "catalogArchetypes": 84,
+      "layers": {
+        "common": 11,
+        "elite": 4,
+        "polity": 2,
+        "regional": 10
+      },
+      "requiredRoles": [
+        "infantry",
+        "ranged",
+        "firearm",
+        "cavalry",
+        "artillery",
+        "siege",
+        "engineer",
+        "marine",
+        "militia",
+        "garrison",
+        "specialist",
+        "transport",
+        "support"
+      ]
+    },
+    "naval": {
+      "archetypes": 48,
+      "roles": {
+        "coastal": 2,
+        "line_of_battle": 2,
+        "merchant": 4,
+        "riverine": 2,
+        "sailing_warship": 2,
+        "transport": 3
+      },
+      "sparseAllowlist": [
+        {
+          "region": "inland_africa",
+          "reason": "No artificial blue-water navy for polities without navigable strategic water."
+        },
+        {
+          "region": "inner_asia",
+          "reason": "Landlocked steppe and plateau polities intentionally lack naval rosters."
+        },
+        {
+          "region": "arctic",
+          "reason": "Existing kayak and umiak abstractions do not receive line-of-battle progression."
+        }
+      ]
+    },
+    "governance": {
+      "representedPolities": 230,
+      "settlementsResolved": 326,
+      "newlyCapturedResolution": "deterministic_acting_official",
+      "generatedIdentity": "culture_name_pool_plus_persistent_character_id",
+      "authoritativePhysicalDuplicates": 0
+    },
+    "garrisons": {
+      "settlementsResolved": 326,
+      "defaultProfile": "local_militia",
+      "captureResolution": "retire_then_rebuild_from_abstract_state",
+      "reinforcementCosts": "positive_manpower_supply_and_time"
+    },
+    "economy": {
+      "goods": 90,
+      "settlementsResolved": 326,
+      "authoredSettlementIdentities": 215,
+      "fallback": "regional_defaults",
+      "tradeRoutes": 114,
+      "diagnostics": {
+        "invalidCargoMappings": 0,
+        "missingItemRepresentations": 0,
+        "unreachableGoods": 0,
+        "unresolvedReferences": 0
+      }
+    },
+    "progression": {
+      "technologies": 50,
+      "institutions": 9,
+      "newAfter1450": 53
+    },
+    "events": {
+      "total": 36,
+      "byRegion": {
+        "africa": 5,
+        "americas_caribbean": 6,
+        "east_asia": 4,
+        "europe": 7,
+        "global": 2,
+        "middle_east_india": 4,
+        "pacific": 4,
+        "southeast_asia": 4
+      }
+    },
+    "characters": {
+      "total": 37,
+      "roles": {
+        "admiral": 11,
+        "adviser": 7,
+        "commander": 25,
+        "diplomat": 15,
+        "engineer": 5,
+        "explorer": 4,
+        "governor": 3,
+        "merchant": 1,
+        "navigator": 1,
+        "scholar": 9,
+        "sovereign": 26
+      },
+      "personalQuests": 37
+    },
+    "quests": {
+      "total": 24,
+      "byType": {
         "cross_region": 1,
         "long": 1,
+        "personal": 7,
+        "regional": 14,
         "repeatable": 1
       },
-      "middle_east_india": {
-        "personal": 1,
-        "regional": 2
-      },
-      "pacific": {
-        "personal": 1,
-        "regional": 2
-      },
-      "southeast_asia": {
-        "personal": 1,
-        "regional": 2
+      "charactersWithObjectives": {
+        "hang_tuah": 2,
+        "kamehameha_i": 2,
+        "krishnadevaraya": 1,
+        "leonardo_da_vinci": 2,
+        "malintzin": 3,
+        "nzinga_mbande": 2,
+        "piri_reis": 2,
+        "tupaia": 1,
+        "xu_guangqi": 2,
+        "yi_sun_sin": 1
       }
-    }
-  },
-  "characters": {
-    "withQuestObjectives": {
-      "hang_tuah": 2,
-      "kamehameha_i": 2,
-      "krishnadevaraya": 1,
-      "leonardo_da_vinci": 2,
-      "malintzin": 3,
-      "nzinga_mbande": 2,
-      "piri_reis": 2,
-      "tupaia": 1,
-      "xu_guangqi": 2,
-      "yi_sun_sin": 1
-    }
-  },
-  "treasures": {
-    "total": 28,
-    "byKind": {
-      "generic": 22,
-      "unique": 6
     },
-    "byRegion": {
-      "africa": 4,
-      "americas_caribbean": 4,
-      "east_asia": 4,
-      "europe": 4,
-      "middle_east_india": 4,
-      "pacific": 4,
-      "southeast_asia": 4
+    "treasures": {
+      "total": 28,
+      "byKind": {
+        "generic": 22,
+        "unique": 6
+      }
+    },
+    "assetsAndBudgets": {
+      "phase6AssetsApproved": true,
+      "phase7CorrectnessClean": true
     }
-  }
+  },
+  "thinContentFlags": [],
+  "failures": []
 }
