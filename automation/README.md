@@ -13,10 +13,10 @@ telemetry can fail or change across Codex versions, emergency caps of 10 runs
 per day and 50 in a rolling seven-day window remain in force. A run is recorded
 before launch, including crashes and timeouts; missing telemetry is recorded as
 unknown rather than treated as a free run. Initial implementation gets at
-most three attempts before a PR exists. Once a PR exists, CI repair and
-merge-conflict repair use separate five-attempt budgets, so an exhausted
-implementation budget cannot strand a repairable PR. If main advances while a
-CI-failing PR is being repaired, that PR receives a fresh CI-repair budget for
+most three initial attempts. Repository-validation repair before a PR, CI
+repair after a PR, and merge-conflict repair each use separate five-attempt
+budgets, so one exhausted lane cannot strand otherwise repairable work. If main
+advances while a CI-failing PR is being repaired, that PR receives a fresh CI-repair budget for
 the new base revision. Exhausted repair lanes become explicit `failed` states
 rather than unselectable `repair` states. Pull requests merge only after
 reported CI checks complete successfully. A PR that becomes unmergeable is
@@ -48,8 +48,8 @@ systemctl --user status warcraftmap-agent.timer
 
 The installer creates `~/.config/warcraftmap-agent.env` only when absent. Edit
 that file to adjust the model, daily/weekly token ceilings, emergency run caps,
-timeout, implementation/CI/conflict retry caps, state directory, or validation
-command. A generic optional
+timeout, implementation/validation/CI/conflict retry caps, state directory, or
+validation command. A generic optional
 `WARCRAFTMAP_AGENT_DESIGN_NOTIFICATION_COMMAND` receives a JSON object on standard
 input when a blocker is first created or an implementation issue first becomes a
 blocker. The object contains `issue_number`, `title`, `url`, and `question`; the
