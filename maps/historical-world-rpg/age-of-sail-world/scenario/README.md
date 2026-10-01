@@ -38,9 +38,10 @@ Planned data domains:
 - institutions
 - historical events
 
-`historical-events.json` owns the selective 1450–1820 dated and recurring pressure
-catalogue, including English narrative/evidence, stable references, conditions,
-weighted alternate outcomes, and balance values. Run
+`historical-events.json` owns the currently authored 1450–1820 dated and recurring
+pressure-event baseline, including English narrative/evidence, stable references,
+conditions, weighted alternate outcomes, and balance values. The current catalogue is
+not the final release breadth and expands under the Phase 8 density targets. Run
 `python3 tooling/historical_events.py`; pass `--write` to rebuild the canonical world
 event and schedule projection deterministically.
 - characters (`characters/global.json` is authoritative; run
