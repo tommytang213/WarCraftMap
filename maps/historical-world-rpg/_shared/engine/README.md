@@ -23,6 +23,12 @@ invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 
 `timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
 
+`full_world_soak.py` is the scenario-neutral authored-dataset soak engine. A
+scenario configuration selects all inputs, seeds, campaign interval, abstract
+workload, checkpoint, step sizes, and active representation cap. Its compact
+reports contain fixture/version identity, growth, bounded diagnostics, and
+normalized state hashes.
+
 `technology_institutions.py` provides fixed-point polity research, graph-prerequisite
 enforcement, finite ahead-of-time costs, typed stable-ID unlock events, independent
 province adoption, and campaign-save snapshots.
