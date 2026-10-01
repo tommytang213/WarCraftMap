@@ -9,13 +9,42 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "scenario/characters/global.json"
+PHASE8_SOURCE = ROOT / "scenario/characters/phase8.json"
 WORLD = ROOT / "scenario/world/world.json"
+REPORT = ROOT / "scenario/characters/reports/coverage.json"
 ROSTERS = ROOT / "scenario/rosters"
 ID = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 REGIONS = {"europe", "africa", "middle_east_india", "southeast_asia", "east_asia", "americas_caribbean", "pacific"}
+ROLES = {"sovereign", "commander", "admiral", "explorer", "navigator", "diplomat", "engineer", "scholar", "merchant", "adviser", "governor"}
+OFFICE_ROLES = {"sovereign", "settlement_administrator", "province_governor", "army_commander", "fleet_commander"}
 
 
 class CharacterRosterError(ValueError): pass
+
+
+def load_source():
+    """Compose the split authoritative catalogues without duplicating identities."""
+    source=json.loads(SOURCE.read_text()); expansion=json.loads(PHASE8_SOURCE.read_text())
+    extensions={x["id"]:x for x in expansion["characterExtensions"]}
+    quest_aliases={
+        "quest_nzinga_independence":"quest_nzinga_diplomatic_web", "quest_piri_kitab_bahriye":"quest_piri_reis_kitab",
+        "quest_krishnadevaraya_raichur":"quest_krishna_rayalaseema", "quest_hang_tuah_laksamana":"quest_hang_tuah_melaka",
+        "quest_hasanuddin_eastern_trade":"quest_hasanuddin_eastern_seas", "quest_yi_restore_fleet":"quest_yi_turtle_fleet",
+        "quest_xu_agricultural_treatise":"quest_xu_calendar", "quest_malintzin_many_words":"quest_malintzin_words",
+        "quest_tupac_amaru_rebellion":"quest_tupac_amaru_corregidor", "quest_tupaia_island_chart":"quest_tupaia_star_paths"}
+    for character in source["characters"]:
+        extra=extensions.pop(character["id"],None)
+        if extra is None: raise CharacterRosterError(f"character {character['id']}: missing Phase 8 role metadata")
+        character.update({k:v for k,v in extra.items() if k!="id"})
+        character["questHookIds"]=[quest_aliases.get(x,x) for x in character["questHookIds"]]
+    if extensions: raise CharacterRosterError(f"unknown character extensions: {sorted(extensions)}")
+    source["characters"].extend(expansion["characters"])
+    source["characterTitles"].update(expansion["characterTitles"])
+    source["personalQuests"]=expansion["personalQuests"]
+    source["historicalEvidence"].extend(expansion["historicalEvidence"])
+    source["companionRelationships"].extend(expansion.get("companionRelationships",[]))
+    source["characterTransitionPolicy"]=expansion["characterTransitionPolicy"]
+    return source
 
 
 def index(values, domain):
@@ -38,8 +67,14 @@ def validate(source, world, equipment):
         raise CharacterRosterError("every character requires one English historical title")
     if set(source.get("coverageRegions", ())) != REGIONS or {x["regionId"] for x in characters.values()} != REGIONS:
         raise CharacterRosterError("global region coverage is incomplete")
-    if not all(sum(x["regionId"] == region for x in characters.values()) >= 2 for region in REGIONS):
-        raise CharacterRosterError("every region requires at least two characters")
+    if len(characters) < 35 or not all(sum(x["regionId"] == region for x in characters.values()) >= 5 for region in REGIONS):
+        raise CharacterRosterError("Phase 8 requires at least 35 characters and five per region")
+    policy=source.get("characterTransitionPolicy",{})
+    if policy != {"historicalWindowsGateInitialAvailability":True,"recruitedCharactersPersistPastWindow":True,
+                  "officeVacanciesUseRuntimeSuccession":True,"historicalSuccessorsNotForced":True}:
+        raise CharacterRosterError("alternate-history transition policy is missing or unsafe")
+    quests=index(source.get("personalQuests", []), "personal quests")
+    evidence=index(source.get("historicalEvidence", []), "historical evidence")
     quest_hooks=set(); discovery_hooks=set()
     for ident,value in characters.items():
         start=date.fromisoformat(value["availabilityWindow"]["startDate"]); end=date.fromisoformat(value["availabilityWindow"]["endDate"])
@@ -68,7 +103,24 @@ def validate(source, world, equipment):
         if any(x not in events for x in value["eventHookIds"]): raise CharacterRosterError(f"character {ident}: missing event hook")
         if any(x not in technologies for x in value["technologyHookIds"]): raise CharacterRosterError(f"character {ident}: missing technology hook")
         if any(x not in discoveries for x in value["discoveryHookIds"]): raise CharacterRosterError(f"character {ident}: missing discovery hook")
+        roles=value.get("roleIds", [])
+        if not roles or len(roles)!=len(set(roles)) or any(x not in ROLES for x in roles): raise CharacterRosterError(f"character {ident}: invalid gameplay roles")
+        offices=value.get("officeEligibility", [])
+        if len(offices)!=len(set(offices)) or any(x not in OFFICE_ROLES for x in offices): raise CharacterRosterError(f"character {ident}: invalid office eligibility")
+        commands=value.get("commandEligibility", [])
+        if len(commands)!=len(set(commands)) or any(x not in {"army","fleet"} for x in commands): raise CharacterRosterError(f"character {ident}: invalid command eligibility")
+        if "army" in commands and "army_commander" not in offices or "fleet" in commands and "fleet_commander" not in offices:
+            raise CharacterRosterError(f"character {ident}: command eligibility lacks matching office")
+        if value.get("authoredHistorical") is not True: raise CharacterRosterError(f"character {ident}: historical identity must be explicit")
+        refs=value.get("historicalEvidenceIds", [])
+        if not refs or any(x not in evidence for x in refs): raise CharacterRosterError(f"character {ident}: missing historical evidence")
+        if not value["questHookIds"]: raise CharacterRosterError(f"character {ident}: personal quest required")
         quest_hooks.update(value["questHookIds"]); discovery_hooks.update(value["discoveryHookIds"])
+    if quest_hooks != set(quests): raise CharacterRosterError("personal quest catalogue and character hooks must match")
+    for ident, quest in quests.items():
+        cid=quest.get("characterId")
+        if cid not in characters or ident not in characters[cid]["questHookIds"]: raise CharacterRosterError(f"personal quest {ident}: invalid character link")
+        if not quest.get("summary") or not quest.get("objectives") or not quest.get("outcomes"): raise CharacterRosterError(f"personal quest {ident}: incomplete authored content")
     relationships=index(source["companionRelationships"],"relationships"); pairs=set()
     for ident,value in relationships.items():
         pair=frozenset((value["characterAId"],value["characterBId"]))
@@ -97,25 +149,47 @@ def equipment_catalog():
 
 def projection(source):
     quests=[]; characters=[]
+    authored_quests={x["id"]:x for x in source["personalQuests"]}
     for value in source["characters"]:
         for quest_id in value["questHookIds"]:
-            quests.append({"id":quest_id,"title":quest_id.removeprefix("quest_").replace("_"," ").title(),"summary":"A scenario-authored personal objective tied to this companion.","characterId":value["id"]})
+            quest=authored_quests[quest_id]
+            quests.append({"id":quest_id,"title":quest["title"],"summary":quest["summary"],"characterId":value["id"],
+                           "objectives":quest["objectives"],"outcomes":quest["outcomes"]})
         characters.append({
             "id":value["id"],"displayName":value["displayName"],"biography":value["biography"],"epithet":source["characterTitles"][value["id"]],
             "traitIds":value["traitIds"],"skills":value["skills"],"professionIds":value["professionIds"],
             "personalQuestIds":value["questHookIds"],"loyalty":{"score":value["loyalty"]["score"],"permanentState":"none"},
             "allegiancePolityId":value["allegiancePolityId"],"available":False,"recruited":False,"active":True,
             "runtimeTemplateId":"companion_hero","recruitmentCosts":value["recruitmentCosts"],"rewardIds":[],"titleGrantIds":value["titleGrantIds"]})
+        characters[-1].update({"regionId":value["regionId"],"availabilityWindow":value["availabilityWindow"],
+            "roleIds":value["roleIds"],"officeEligibility":value["officeEligibility"],
+            "commandEligibility":value["commandEligibility"],"authoredHistorical":True,
+            "historicalEvidenceIds":value["historicalEvidenceIds"]})
     return {"traits":source["traits"],"skills":source["skills"],"professions":source["professions"],"personalQuests":quests,
             "characters":characters,"relationshipThresholds":source["relationshipThresholds"],"companionRelationships":source["companionRelationships"]}
 
 
+def coverage_report(source):
+    characters=source["characters"]
+    eras={"1450_1499":(1450,1499),"1500_1599":(1500,1599),"1600_1699":(1600,1699),
+          "1700_1759":(1700,1759),"1760_1820":(1760,1820)}
+    return {"format":"warcraftmap_character_coverage_v1","characterCount":len(characters),
+        "personalQuestCount":len(source["personalQuests"]),
+        "byRegion":{r:sum(c["regionId"]==r for c in characters) for r in sorted(REGIONS)},
+        "byRole":{r:sum(r in c["roleIds"] for c in characters) for r in sorted(ROLES)},
+        "byEra":{name:sum(int(c["availabilityWindow"]["startDate"][:4])<=hi and int(c["availabilityWindow"]["endDate"][:4])>=lo for c in characters)
+                 for name,(lo,hi) in eras.items()},
+        "authoredHistoricalCount":sum(c.get("authoredHistorical") is True for c in characters),
+        "generatedMinorOfficialsExcluded":True}
+
+
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--write",action="store_true"); args=parser.parse_args()
-    source=json.loads(SOURCE.read_text()); world=json.loads(WORLD.read_text()); equipment=equipment_catalog()
+    source=load_source(); world=json.loads(WORLD.read_text()); equipment=equipment_catalog()
     validate(source,world,equipment); expected=projection(source)
     if args.write:
         world.update(copy.deepcopy(expected)); WORLD.write_text(json.dumps(world,indent=2)+"\n")
+        REPORT.parent.mkdir(parents=True,exist_ok=True); REPORT.write_text(json.dumps(coverage_report(source),indent=2)+"\n")
     else:
         for key,value in expected.items():
             if world.get(key)!=value: raise CharacterRosterError(f"world projection {key} is stale; run tooling/global_characters.py --write")
