@@ -52,8 +52,15 @@ event and schedule projection deterministically.
 scenario modifiers, logistics tiers, source/sink policy, and soak performance
 budget.  It deliberately derives settlement profiles from the historical
 production, import, shortage, role, and route identities in the seven
-authoritative settlement files.  Run `python3 tooling/economy_balance.py`; pass
+authoritative settlement files. Run `python3 tooling/economy_balance.py`; pass
 `--write` to refresh the deterministic regional and settlement balance report.
+
+`economy/global-goods.json` is the authoritative Phase 8 commodity catalogue. It
+defines stable units, runtime item identities, pricing, storage/cargo behavior,
+production and consumption hooks, scarcity, regional defaults, and integration
+boundaries. Settlement production/import/shortage identity remains authoritative in
+the regional settlement files. Run `python3 tooling/global_goods.py`; pass `--write`
+to refresh its deterministic validation and long-campaign simulation report.
 
 The authoritative campaign calendar is `world/world.json.timeline`. Its 1450-01-01 through 1820-12-31 range and era labels are scenario content; the shared engine contains no Age of Sail year constants. Historical event definitions and schedules will be authored there in later content issues.
 
