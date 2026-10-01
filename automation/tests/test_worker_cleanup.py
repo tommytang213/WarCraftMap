@@ -163,7 +163,12 @@ class WorkerCleanupTests(unittest.TestCase):
     def test_dirty_pr_at_conflict_attempt_limit_fails_with_clear_reason(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            config = Config(root, root / "state", max_attempts=3)
+            config = Config(
+                root,
+                root / "state",
+                max_attempts=3,
+                max_conflict_attempts=3,
+            )
             state = {
                 "issues": {
                     "19": {

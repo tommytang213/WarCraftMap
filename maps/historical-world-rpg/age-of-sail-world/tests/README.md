@@ -18,6 +18,11 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+Native Warcraft save/load uses `python3 tooling/run_native_save_regression.py`.
+The default run executes the deterministic reconstruction oracle and reports a
+clear runtime-unavailable skip. See `docs/WC3_COMPATIBILITY.md` for the pinned
+3.0/Lua runner protocol and dedicated CI invocation.
+
 Run the reusable timeline fixture command with, for example:
 
 ```sh
@@ -65,3 +70,25 @@ bounded CI profile with `python3 tooling/run_campaign_save_stress.py`; the
 dedicated enlarged workload selects `--profile bounded_enlarged`. Finalized
 save/load, serialized-size, and growth budgets are in
 `scenario/benchmarks/campaign-save-stress.json`.
+
+Final Phase 7 development and minimum-target gates live in
+`scenario/benchmarks/final-budgets.json`. The manifest records workload
+versions, environments, aggregation/variance policy, calibration samples, and
+the retained Phase 6 archive/audio limits. Both bounded and extended CI use it:
+
+```sh
+python3 tooling/check_final_performance_budgets.py --profile development
+python3 tooling/check_final_performance_budgets.py --profile minimum_target
+```
+
+The routine test suite also runs the bounded `smoke` profile from
+`scenario/benchmarks/full-world-soak.json` against every configured authored
+campaign source. The extended stress workflow runs the four-seed
+`complete_multi_century` profile across 1450–1820. Both normal progression and
+accelerated jumps execute the same logical schedule, and every run proves an
+encoded checkpoint/resume path has the same normalized final state:
+
+```sh
+python3 tooling/run_full_world_soak.py --profile complete_multi_century \
+  --summary-out _build/stress/full-world-multi-century.json
+```

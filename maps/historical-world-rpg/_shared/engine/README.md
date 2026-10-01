@@ -11,12 +11,23 @@ transfer checkpoints, manifest validation, first-visit defaults, visited-map
 reconstruction, and deterministic adapter ordering. Physical-map travel triggers
 remain scenario/runtime concerns.
 
+`world_integrity.py` provides bounded stable-ID scans and transactional recovery for
+scenario-declared authoritative domains. It rebuilds only derived persistence indexes
+and map-local Warcraft representations; unsafe authoritative corruption is rejected
+without mutation.
+
 `inventory.py` implements the reusable personal inventory/equipment contract, data-driven validation, deterministic stack/pickup routing, safe overflow, and over-capacity recovery. Warcraft 3.0 inventory UI is an adapter, not state authority.
 
 `timeline_simulation.py` provides ordered system hooks, deterministic random streams,
 invariant diagnostics, and Warcraft-handle-free resumable checkpoints.
 
 `timeline.py` provides deterministic calendar progression, era queries, scheduled/recurring event emission, stable persistence state, and a finite research-cost time query.
+
+`full_world_soak.py` is the scenario-neutral authored-dataset soak engine. A
+scenario configuration selects all inputs, seeds, campaign interval, abstract
+workload, checkpoint, step sizes, and active representation cap. Its compact
+reports contain fixture/version identity, growth, bounded diagnostics, and
+normalized state hashes.
 
 `technology_institutions.py` provides fixed-point polity research, graph-prerequisite
 enforcement, finite ahead-of-time costs, typed stable-ID unlock events, independent

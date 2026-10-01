@@ -1,7 +1,7 @@
 # Low-priority autonomous worker
 
 This worker consumes open GitHub issues whose titles begin with `[agent-ready]`.
-Titles beginning with `[needs-design]` are never selected. It runs only one
+Titles beginning with `[needs-design]` or `[planned]` are never selected. It runs only one
 process and one issue at a time, in a dedicated `agent/issue-N` branch and
 worktree. Codex runs with `workspace-write`, `--approve-for-me`, a 45-minute
 timeout, and no dangerous sandbox bypass.
@@ -13,10 +13,10 @@ telemetry can fail or change across Codex versions, emergency caps of 10 runs
 per day and 50 in a rolling seven-day window remain in force. A run is recorded
 before launch, including crashes and timeouts; missing telemetry is recorded as
 unknown rather than treated as a free run. Initial implementation gets at
-most three attempts before a PR exists. Once a PR exists, CI repair and
-merge-conflict repair use separate five-attempt budgets, so an exhausted
-implementation budget cannot strand a repairable PR. If main advances while a
-CI-failing PR is being repaired, that PR receives a fresh CI-repair budget for
+most three initial attempts. Repository-validation repair before a PR, CI
+repair after a PR, and merge-conflict repair each use separate five-attempt
+budgets, so one exhausted lane cannot strand otherwise repairable work. If main
+advances while a CI-failing PR is being repaired, that PR receives a fresh CI-repair budget for
 the new base revision. Exhausted repair lanes become explicit `failed` states
 rather than unselectable `repair` states. Pull requests merge only after
 reported CI checks complete successfully. A PR that becomes unmergeable is
@@ -48,8 +48,8 @@ systemctl --user status warcraftmap-agent.timer
 
 The installer creates `~/.config/warcraftmap-agent.env` only when absent. Edit
 that file to adjust the model, daily/weekly token ceilings, emergency run caps,
-timeout, implementation/CI/conflict retry caps, state directory, or validation
-command. A generic optional
+timeout, implementation/validation/CI/conflict retry caps, state directory, or
+validation command. A generic optional
 `WARCRAFTMAP_AGENT_DESIGN_NOTIFICATION_COMMAND` receives a JSON object on standard
 input when a blocker is first created or an implementation issue first becomes a
 blocker. The object contains `issue_number`, `title`, `url`, and `question`; the
@@ -81,6 +81,17 @@ decision. Existing ready work is skipped only when its body says `Blocked by: #N
 or `Depends on: #N` for an open design blocker. A healthy queue causes no planning invocation; an
 exhausted roadmap exits cleanly. Planning and implementation remain sequential,
 so worker concurrency is still one.
+
+Open `[planned] Phase N: ...` issues reserve future roadmap work. Before queue
+selection or replenishment, the worker promotes an eligible reservation in place
+by changing only its prefix to `[agent-ready]`; it never recreates the issue.
+Promotion requires every checkbox in the immediately preceding phase of the
+authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
+the issue body is also a blocker until that referenced issue is closed. General
+`[planned]` issues without a recognizable `Phase N:` title remain untouched.
+All three workflow prefixes normalize to the same logical title, so planned
+reservations suppress duplicate queue-refill issues. Dry-run mode reports each
+promotion that would occur but does not edit GitHub.
 
 Issue bodies should be implementation-ready and contain acceptance criteria.
 If Codex identifies a missing material design decision, the worker renames the

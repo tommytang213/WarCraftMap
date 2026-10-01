@@ -26,3 +26,34 @@ native fail at build time.
 
 Do not put patch conditionals in gameplay packages. Add a separate implementation
 behind this boundary if multiple patch families must coexist.
+
+## Automated native save/load runner
+
+`NativeSaveRegressionFixture.wurst` is a dormant, developer-controlled fixture
+compiled into the packaged Lua map. It is never imported by `Bootstrap`; a
+runner invokes its public lifecycle hooks. The fixture records authoritative
+campaign/autosave/map/modal state in game cache, creates owned runtime objects,
+uses native `SaveGame`, and reconstructs timers, frames, effects, sound and unit
+representations after load. Unsafe transition, capture and campaign-commit
+requests are deferred before the native call.
+
+Run the always-available oracle and structural checks with:
+
+```sh
+python3 tooling/run_native_save_regression.py
+```
+
+No configured runtime produces canonical `status: "skip"` output and exit 0;
+`--require-runtime` converts that condition to exit 1 for the dedicated CI job.
+A configured runner crash, timeout, malformed result, or state mismatch is
+always a failure.
+
+For a native cycle, first package the map with `./tooling/package_release.sh`,
+then set `WC3_NATIVE_SAVE_RUNNER` to a command and pass its `.w3x` using `--map`.
+The command receives `--request <json> --result <json>`. Exact host capabilities,
+timeout and protocol are locked in `scenario/benchmarks/native-save.json`. The
+runner must launch Warcraft III 3.0 noninteractively, invoke the fixture hooks,
+create and load the native save across a restored process/session where the host
+supports that isolation, recover a deliberately missing representation, perform
+the requested repeated loads, and write the observed canonical result. No
+player interaction is part of this gate.

@@ -138,13 +138,13 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 
 ## Phase 7 — Full-world integration and balancing
 
-- [ ] Multi-century simulation soak tests
-- [ ] Finalize performance budgets against full-world content
-- [ ] Economy balancing
-- [ ] AI territorial warfare
+- [x] Multi-century simulation soak tests
+- [x] Finalize performance budgets against full-world content
+- [x] Economy balancing
+- [x] AI territorial warfare
 - [x] Save/load stress testing
-- [ ] Native WC3 save/load regression
-- [ ] City/world integrity recovery tests
+- [x] Native WC3 save/load regression
+- [x] City/world integrity recovery tests
 
 ## Phase 8 — Player release candidate
 
