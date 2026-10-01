@@ -38,12 +38,25 @@ Engine
 ├── Warfare
 │   ├── Army
 │   ├── Fleet
+│   ├── Vessel
+│   │   ├── Equipment / Refit
+│   │   ├── Crew
+│   │   ├── Experience / Veterancy
+│   │   └── ServiceHistory
 │   ├── Siege
 │   └── CityCapture
 ├── Character
+│   ├── Level / Progression
+│   ├── Skills / Mastery
 │   ├── Loyalty
 │   ├── Relationship
-│   └── Traits
+│   ├── Traits
+│   └── Assignment / PhysicalLocation
+├── Inventory
+│   ├── Equipment
+│   ├── EquipmentSet
+│   ├── Consumable / Tool
+│   └── PlayerUseMerchant
 ├── Government
 │   ├── Reputation
 │   ├── Title
@@ -78,6 +91,9 @@ Age of Sail data will define, rather than hardcode into engine logic:
 - provinces/states
 - settlements and defense layouts
 - goods and production
+- player-use items, rarity/item-level/provenance data, equipment sets, and merchant inventories
+- ship equipment/refits, vessel progression tuning, and service-history effects
+- hero progression/mastery data and historical availability
 - technology graphs and historical cost curves
 - institutions
 - special/national units
@@ -103,6 +119,45 @@ Remote command of forces in another physical map is modeled as a command-context
 ## Performance rule
 
 Strategic ownership and physically instantiated Warcraft objects are separate. Large fleets/armies may exist in simulation while only locally relevant entities are instantiated.
+
+## Character roster and local hero instantiation
+
+Recruited-character ownership is authoritative strategic state and is not the same
+thing as physical Warcraft-object instantiation. The long-campaign design permits an
+uncapped recruited strategic hero roster; heroes may be travelling with the player,
+governing settlements, advising, commanding armies/fleets, or serving in other remote
+assignments while retaining exactly one authoritative physical location.
+
+Historical availability windows gate first appearance/recruitment. A successfully
+recruited named hero persists beyond that window and is not removed merely because a
+historical end/death date passes. Character progression is likewise persistent and
+may include levels up to the scenario target of 300, core skills, profession/mastery
+tracks, personal/signature progression, equipment/sets, relationships, loyalty and
+Oathbound, offices/titles, command experience, quests, and other scenario-owned
+tracks.
+
+Only locally relevant recruited heroes are instantiated as Warcraft hero objects.
+The initial release target is to support at least 32 simultaneously instantiated
+player-side heroes in a local field group, subject to final runtime performance
+validation. Raising that physical limit must not require increasing the strategic
+roster cap because there is no arbitrary strategic roster cap.
+
+Ordinary combat defeat of a recruited named hero should resolve through authoritative
+wounded/incapacitated/recovery state by default rather than deleting a long-invested
+character. Any permanent-death campaign rule must be explicit and scenario-controlled.
+
+## Individual vessel authority
+
+A fleet may contain persistent individual vessels whose authoritative state is more
+specific than the shared ship archetype: stable vessel identity, installed
+equipment/refits, crew/veterancy, experience, service history, damage/maintenance,
+captain/admiral assignment, cargo and other persistent state. Runtime ship objects are
+reconstructed from this state and must not be the sole source of vessel progression.
+
+A ship archetype remains the reusable baseline for hull, availability and ordinary
+mechanics; per-vessel state modifies that baseline within bounded compatibility and
+technology rules. Inactive-region vessels remain abstract and do not require Warcraft
+objects merely because they are owned or experienced.
 
 ## Persistence rule
 
