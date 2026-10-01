@@ -5,6 +5,7 @@ on:
       - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
       - "maps/historical-world-rpg/_shared/engine/full_world_soak.py"
       - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
+      - "maps/historical-world-rpg/_shared/engine/final_performance_budget.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/economy/**"
@@ -21,6 +22,7 @@ on:
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_full_world_soak.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_final_performance_budgets.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_full_world_soak.py"
       - ".github/workflows/large-world-stress.yml"
   push:
@@ -29,6 +31,7 @@ on:
       - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
       - "maps/historical-world-rpg/_shared/engine/full_world_soak.py"
       - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
+      - "maps/historical-world-rpg/_shared/engine/final_performance_budget.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/economy/**"
@@ -45,6 +48,7 @@ on:
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_full_world_soak.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_final_performance_budgets.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_full_world_soak.py"
       - ".github/workflows/large-world-stress.yml"
   workflow_dispatch:
@@ -53,6 +57,16 @@ on:
 permissions:
   contents: read
 jobs:
+  bounded-final-budgets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise final-budget fixtures
+        working-directory: maps/historical-world-rpg/age-of-sail-world
+        run: python3 -m unittest -v tests.test_final_performance_budgets
+      - name: Validate development budgets
+        run: python3 maps/historical-world-rpg/age-of-sail-world/tooling/check_final_performance_budgets.py --profile development
   maximum-reasonable-world:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -63,6 +77,8 @@ jobs:
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py \
             --profile maximum_reasonable_world \
             --summary-out maps/historical-world-rpg/age-of-sail-world/_build/stress/maximum-reasonable.json
+      - name: Validate extended minimum-target budgets from the same manifest
+        run: python3 maps/historical-world-rpg/age-of-sail-world/tooling/check_final_performance_budgets.py --profile minimum_target
       - uses: actions/upload-artifact@v4
         with:
           name: maximum-reasonable-world-summary

@@ -63,6 +63,16 @@ Profiles and provisional simulation, persistence, state-size, and active-object
 budgets live in `scenario/benchmarks/large-world.json`. Summaries are compact
 canonical JSON; failures are capped and identify the invariant and stable ID.
 
+Final Phase 7 development and minimum-target gates live in
+`scenario/benchmarks/final-budgets.json`. The manifest records workload
+versions, environments, aggregation/variance policy, calibration samples, and
+the retained Phase 6 archive/audio limits. Both bounded and extended CI use it:
+
+```sh
+python3 tooling/check_final_performance_budgets.py --profile development
+python3 tooling/check_final_performance_budgets.py --profile minimum_target
+```
+
 The routine test suite also runs the bounded `smoke` profile from
 `scenario/benchmarks/full-world-soak.json` against every configured authored
 campaign source. The extended stress workflow runs the four-seed
