@@ -111,6 +111,29 @@ class WorkerTests(unittest.TestCase):
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 111)
 
+    def test_validation_repair_uses_separate_attempt_budget_after_implementation_exhaustion(self):
+        issues = [{"number": 217, "title": "[agent-ready] soak", "createdAt": "2026-01-01"}]
+        state = {
+            "issues": {
+                "217": {
+                    "attempts": 3,
+                    "status": "failed",
+                    "last_failure": "command failed (1): ./automation/run_checks.sh\nFAILED",
+                }
+            }
+        }
+        self.assertEqual(
+            select_issue(
+                issues,
+                state,
+                3,
+                max_validation_repair_attempts=5,
+                max_ci_repair_attempts=5,
+                max_conflict_attempts=5,
+            )["number"],
+            217,
+        )
+
     def test_ci_repair_uses_separate_attempt_budget_after_implementation_exhaustion(self):
         issues = [{"number": 207, "title": "[agent-ready] audio", "createdAt": "2026-01-01"}]
         state = {
