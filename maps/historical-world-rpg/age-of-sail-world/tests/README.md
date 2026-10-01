@@ -62,3 +62,15 @@ python3 tooling/run_large_world_stress.py --profile maximum_reasonable_world \
 Profiles and provisional simulation, persistence, state-size, and active-object
 budgets live in `scenario/benchmarks/large-world.json`. Summaries are compact
 canonical JSON; failures are capped and identify the invariant and stable ID.
+
+The routine test suite also runs the bounded `smoke` profile from
+`scenario/benchmarks/full-world-soak.json` against every configured authored
+campaign source. The extended stress workflow runs the four-seed
+`complete_multi_century` profile across 1450–1820. Both normal progression and
+accelerated jumps execute the same logical schedule, and every run proves an
+encoded checkpoint/resume path has the same normalized final state:
+
+```sh
+python3 tooling/run_full_world_soak.py --profile complete_multi_century \
+  --summary-out _build/stress/full-world-multi-century.json
+```

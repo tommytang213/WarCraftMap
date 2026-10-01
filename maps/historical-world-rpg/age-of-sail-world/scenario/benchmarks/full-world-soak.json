@@ -1,0 +1,76 @@
+{
+  "format": "warcraftmap_full_world_soak_config_v1",
+  "fixtureVersion": 1,
+  "logicalTickDays": 30,
+  "sources": {
+    "world": "../world/world.json",
+    "economy": "../economy/economy.json",
+    "map": "../maps/world-map.json",
+    "events": "../historical-events.json",
+    "quests": "../campaign-quests.json",
+    "treasures": "../treasures/age-of-sail.json",
+    "characters": "../characters/global.json",
+    "progression": "../progression/catalog.json",
+    "militaryTraditions": "../military-traditions.json",
+    "politicsEurope": "../politics/europe-1450.json",
+    "politicsAfrica": "../politics/africa-1450.json",
+    "politicsMiddleEastIndia": "../politics/middle-east-india-1450.json",
+    "politicsSoutheastAsia": "../politics/southeast-asia-1450.json",
+    "politicsEastAsia": "../politics/east-asia-1450.json",
+    "politicsAmericasCaribbean": "../politics/americas-caribbean-1450.json",
+    "politicsPacific": "../politics/pacific-1450.json",
+    "geographyEurope": "../geography/europe.json",
+    "geographyAfrica": "../geography/africa.json",
+    "geographyMiddleEastIndia": "../geography/middle_east_india.json",
+    "geographySoutheastAsia": "../geography/southeast_asia.json",
+    "geographyEastAsia": "../geography/east_asia.json",
+    "geographyAmericasCaribbean": "../geography/americas_caribbean.json",
+    "geographyPacific": "../geography/pacific.json",
+    "settlementsEurope": "../settlements/europe-1450.json",
+    "settlementsAfrica": "../settlements/africa-1450.json",
+    "settlementsMiddleEastIndia": "../settlements/middle-east-india-1450.json",
+    "settlementsSoutheastAsia": "../settlements/southeast-asia-1450.json",
+    "settlementsEastAsia": "../settlements/east-asia-1450.json",
+    "settlementsAmericasCaribbean": "../settlements/americas-caribbean-1450.json",
+    "settlementsPacific": "../settlements/pacific-1450.json"
+  },
+  "workload": {
+    "economy": 1,
+    "research": 1,
+    "events": 1,
+    "quests": 1,
+    "treasures": 1,
+    "wars": 37,
+    "captures": 43,
+    "regionalActivations": 6,
+    "crossMapTransitions": 9,
+    "remoteCommands": 5,
+    "reconstruction": 11
+  },
+  "profiles": {
+    "smoke": {
+      "seeds": [1450, 1701],
+      "stepDays": 365,
+      "jumpDays": 36500,
+      "checkpointDate": "1635-01-01",
+      "representationLimit": 64,
+      "expectedNormalizedStateHashes": {
+        "1450": "da8b20387ffe5f1ff906fdd1f5b42862f2e764027835cef2291fcbb839ff83f9",
+        "1701": "aafb81cb02e7ccd7f4065372917314df287ffd8fd90adb0a162d215d0e0e587c"
+      }
+    },
+    "complete_multi_century": {
+      "seeds": [1450, 1588, 1701, 1815],
+      "stepDays": 30,
+      "jumpDays": 36500,
+      "checkpointDate": "1635-01-01",
+      "representationLimit": 64,
+      "expectedNormalizedStateHashes": {
+        "1450": "da8b20387ffe5f1ff906fdd1f5b42862f2e764027835cef2291fcbb839ff83f9",
+        "1588": "44f37000099aec87007c263ddc73406ed55086afeaa6d11465eedee5accb8925",
+        "1701": "aafb81cb02e7ccd7f4065372917314df287ffd8fd90adb0a162d215d0e0e587c",
+        "1815": "b1c8704ea5554f53ae9cb733016238a40be4963bb483194d4d66086dd6f6d2fa"
+      }
+    }
+  }
+}
