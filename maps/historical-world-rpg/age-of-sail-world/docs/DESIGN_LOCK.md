@@ -38,6 +38,19 @@ This file records requirements already agreed with the player. They are defaults
 - Historical weighting and state-driven utility coefficients belong in scenario/configuration data rather than hardcoded Age-of-Sail assumptions in shared engine code.
 - The goal is a recognizable historical strategic texture without railroading the campaign: plausible historical pressures should be visible, while sufficiently changed world state should produce correspondingly different AI behavior.
 
+## Release-scale content density targets
+
+- The 1450 campaign start should resemble the historically meaningful settlement and political geography of the era rather than assigning an arbitrary equal number of cities to every polity. Large, urbanized, maritime, commercially dense, or administratively complex states should receive correspondingly broader settlement coverage; tiny, nomadic, decentralized, island, or sparsely urbanized polities may legitimately have fewer or differently structured centers.
+- Major capitals, ports, fortified towns, trade centers, provincial/regional seats, historically important cities, and locations needed for routes, events, characters, quests, and warfare should be authored at approximately their real locations and associated with the appropriate 1450 polity/province/control situation. Minor villages and communities may remain abstract when representing them physically would add little gameplay value.
+- As a release-scale planning target, the global authored settlement catalogue should be on the order of 800-1,200 meaningful settlements, with additional minor communities allowed in abstract state. This is a density target, not a quota: historical geography, map readability, and gameplay relevance take priority over forcing every polity to an equal count.
+- Release-scale progression should target roughly 180-250 technologies and 20-30 institutions/reforms across the 1450-1820 span, with meaningful branch depth and era progression rather than long empty gaps.
+- Historical/conditional authored event coverage should target roughly 200-300 significant event definitions, with dynamic systems able to produce many more campaign event instances from current world state.
+- Quest content should target roughly 400-600 authored quests/chains plus approximately 50-100 repeatable/dynamic quest templates distributed across the world, so a long campaign can produce thousands of valid quest instances without requiring thousands of manually unique scripts.
+- Military content should target roughly 350-500+ player-facing land/naval types or meaningful variants across common, regional/cultural, polity-specific, elite, era/technology, merchant, transport, specialist, and warship layers. Shared runtime templates remain encouraged where mechanics overlap.
+- Player-usable RPG inventory should target roughly 300-500 ordinary equipment/consumable/tool items, 100+ unique/historical/legendary items, and about 50-80 authored equipment sets. Bulk trade goods are a separate economic catalogue and do not substitute for usable RPG inventory.
+- Named historical/recruitable hero coverage should target roughly 100-150+ authored characters across regions and eras, with generated officials and minor characters supplementing rather than replacing authored major figures.
+- These ranges are release-planning targets rather than hard ceilings. The final content audit should flag clearly thin regions, eras, major powers, gameplay roles, store inventories, progression branches, or quest/event density even if a global raw-count minimum is technically met.
+
 ## Technology
 
 - Large technology trees with multiple branches.
