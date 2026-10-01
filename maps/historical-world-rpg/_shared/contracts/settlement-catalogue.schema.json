@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/settlement-catalogue.schema.json",
+  "title": "Scenario-neutral authored settlement catalogue",
+  "type": "object",
+  "required": ["schemaVersion", "settlements"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "settlements": {"type": "array", "items": {"$ref": "#/$defs/settlement"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourceId", "claim"],
+      "properties": {"sourceId": {"type": "string", "minLength": 1}, "claim": {"enum": ["identity", "placement", "importance", "ownership", "compression"]}, "note": {"type": "string"}}
+    },
+    "settlement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "names", "regionId", "polityId", "provinceId", "controllerPolityId", "settlementClass", "roles", "representation", "placement", "routeIds", "evidence"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "names": {"type": "object", "required": ["display"], "additionalProperties": {"type": "string", "minLength": 1}},
+        "regionId": {"$ref": "#/$defs/id"}, "polityId": {"$ref": "#/$defs/id"}, "provinceId": {"$ref": "#/$defs/id"}, "controllerPolityId": {"$ref": "#/$defs/id"},
+        "settlementClass": {"enum": ["capital", "city", "town", "village", "fort", "trading_post", "community"]},
+        "roles": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "representation": {"enum": ["physical", "abstract_minor"]},
+        "physicalMapId": {"$ref": "#/$defs/id"},
+        "placement": {
+          "type": "object", "additionalProperties": false, "required": ["basis", "terrainClass", "navigationZoneId"],
+          "properties": {"basis": {"enum": ["longitude_latitude", "regional_map", "regional_centroid"]}, "x": {"type": "number"}, "y": {"type": "number"}, "terrainClass": {"$ref": "#/$defs/id"}, "navigationZoneId": {"$ref": "#/$defs/id"}}
+        },
+        "port": {"type": "object", "required": ["kind", "navigationZoneId"], "properties": {"kind": {"enum": ["port", "anchorage"]}, "navigationZoneId": {"$ref": "#/$defs/id"}}, "additionalProperties": true},
+        "routeIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "historicalImportance": {"enum": ["global", "regional", "local", "supporting"]},
+        "compressionRationale": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"representation": {"const": "physical"}}}, "then": {"required": ["physicalMapId"]}},
+        {"if": {"properties": {"representation": {"const": "abstract_minor"}}}, "then": {"required": ["compressionRationale"]}}
+      ]
+    }
+  }
+}

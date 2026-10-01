@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "globalTarget": {"minimum": 800, "planningMaximum": 1200},
+  "policy": "Evidence-led density: historical urbanization, maritime and commercial density, administrative complexity, routes, warfare and gameplay needs determine coverage; regional ranges are planning expectations, never equal polity quotas.",
+  "regions": [
+    {"regionId":"europe","target":{"minimum":180,"planningMaximum":260},"factors":["dense urban and fortified network","high political fragmentation","Atlantic, Baltic and Mediterranean commerce"]},
+    {"regionId":"africa","target":{"minimum":105,"planningMaximum":165},"factors":["Nile, Maghreb and Sahelian urban networks","trans-Saharan and Indian Ocean routes","large sparsely urbanized areas use selective coverage"]},
+    {"regionId":"middle_east_india","target":{"minimum":155,"planningMaximum":225},"factors":["dense administrative and urban systems","Indian Ocean and caravan commerce","multiple major imperial centers"]},
+    {"regionId":"southeast_asia","target":{"minimum":85,"planningMaximum":130},"factors":["maritime entrepots and straits","river-valley capitals","archipelagic compression"]},
+    {"regionId":"east_asia","target":{"minimum":145,"planningMaximum":210},"factors":["large urbanized states","dense administrative networks","major maritime corridors"]},
+    {"regionId":"americas_caribbean","target":{"minimum":95,"planningMaximum":145},"factors":["Mesoamerican and Andean urban density","regional political and trade centers","decentralized communities may remain abstract"]},
+    {"regionId":"pacific","target":{"minimum":35,"planningMaximum":65},"factors":["widely dispersed islands","navigation and political centers prioritized","small communities often remain abstract"]}
+  ],
+  "importanceExpectations": {
+    "major": "Broad capital, provincial, commercial, military, route and port coverage supported by evidence.",
+    "regional": "Capital plus the polity's evidenced regional centers and gameplay-critical nodes.",
+    "local": "Historically meaningful centers without a forced minimum; abstract communities are valid when physical representation adds little."
+  },
+  "evidenceSources": [
+    {"id":"design_lock_density","path":"docs/DESIGN_LOCK.md","scope":"locked global density and compression rules"},
+    {"id":"regional_settlement_baselines","path":"scenario/settlements/*-1450.json","scope":"authored identities, placement, roles, ports and routes"},
+    {"id":"regional_political_baselines","path":"scenario/politics/*-1450.json","scope":"1450 polity and province context"},
+    {"id":"regional_geography","path":"scenario/geography/*.json","scope":"physical maps and navigation geography"}
+  ]
+}
