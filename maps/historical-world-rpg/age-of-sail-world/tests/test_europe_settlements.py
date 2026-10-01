@@ -21,10 +21,11 @@ class EuropeSettlementTests(unittest.TestCase):
 
     def test_complete_authority_and_projection(self):
         source, politics, geography, world, positions = validate()
-        self.assertEqual((72, 30, 3), (len(source["settlements"]), sum("port" in s for s in source["settlements"]), len(source["transitions"])))
+        self.assertEqual((156, 54, 3), (len(source["settlements"]), sum("port" in s for s in source["settlements"]), len(source["transitions"])))
         projected = project(source, politics, geography, world, positions)
         self.assertEqual(projected, project(copy.deepcopy(source), politics, geography, world, positions))
-        self.assertEqual({s["id"] for s in source["settlements"]}, {s["id"] for s in projected["settlements"]})
+        selected={s["id"] for s in projected["settlements"] if s.get("regionalInstanceId", "").startswith("europe_")}
+        self.assertEqual({s["id"] for s in source["settlements"]}, selected)
 
     def test_inland_port_invalid_position_and_overlap_are_rejected(self):
         cases = []

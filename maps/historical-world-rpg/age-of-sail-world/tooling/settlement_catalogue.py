@@ -18,6 +18,11 @@ def region_for(path): return path.stem.removesuffix("-1450").replace("-","_")
 
 def load():
     mapdoc=read(ROOT/"scenario/maps/world-map.json"); maps=set(mapdoc["regionalInstanceRegions"]); bounds={}
+    # Physical-map packages are distinct from logical regional instances.  The
+    # release-scale sources name the package that owns each concrete placement,
+    # so both namespaces are valid catalogue references.
+    physical_maps=read(ROOT/"physical-maps.json")["physicalMaps"]
+    maps.update(x["id"] for x in physical_maps)
     regions=set(mapdoc["regionalInstanceRegions"].values()); polities=set(); provinces=set(); owners={}
     for path in sorted(POLITICS.glob("*-1450.json")):
         for polity in read(path)["polities"]:

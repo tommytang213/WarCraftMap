@@ -103,49 +103,63 @@ def access_metrics(settlements,graph,profiles):
  return sum(bool(graph[x]) for x in settlements)*1000//len(settlements),accessible*1000//len(settlements)
 def normalized_state(state): return {k:state[k] for k in ("stock","price","liquidity","treasury","ledger")}
 
-def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=False,cross_map=False,routes=()):
- rules=cfg["scenarios"][scenario_name]; profiles={k:profile(cfg,v) for k,v in settlements.items()}; order=sorted(settlements,key=lambda x:(settlements[x]["region"] if cross_map else "",x))
+def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=False,cross_map=False,routes=(),_profiles=None,_access=None):
+ # Profiles and access are immutable for an authored world.  run_all supplies
+ # them once so the performance soak measures simulation work rather than
+ # rebuilding the same market baskets and all-pairs reachability graph for
+ # every seed and execution-mode replay.  Direct callers retain the simple API.
+ rules=cfg["scenarios"][scenario_name]; profiles=_profiles or {k:profile(cfg,v) for k,v in settlements.items()}; order=sorted(settlements,key=lambda x:(settlements[x]["region"] if cross_map else "",x))
  state={"stock":{},"price":{},"liquidity":{},"treasury":{},"ledger":{x:0 for x in cfg["authorizedSources"]+cfg["authorizedSinks"]}}
  for ident in order:
   p=profiles[ident]; state["stock"][ident]=p["startingStockUnits"]; state["price"][ident]=1000; state["liquidity"][ident]=cfg["finance"]["startingLiquidityDays"]; state["treasury"][ident]=p["startingTreasuryMinor"]
+ flows=cfg["flows"]; finance=cfg["finance"]; market=cfg["market"]; ledger=state["ledger"]
+ noise_bases={ident:_noise_base(seed,scenario_name,ident) for ident in order}
+ local_production=flows["localProductionPermille"]*rules["supplyPermille"]; import_replenishment=flows["importReplenishmentPermille"]*rules["routePermille"]
+ local_consumption=flows["localConsumptionPermille"]*rules["demandPermille"]; shortage_consumption=flows["shortageConsumptionPermille"]; spoilage_rate=flows["spoilageSinkPermille"]; trade_loss_rate=flows["tradeLossSinkPermille"]
+ price_adjustment=finance["priceAdjustmentPermille"]; minimum_price=market["minimumPricePermille"]; maximum_price=market["maximumPricePermille"]; upkeep=finance["upkeepSharePermille"]*rules["upkeepPermille"]//1000; reserve=finance["startingLiquidityDays"]
  for year in range(cfg["campaignYears"]["start"],cfg["campaignYears"]["end"]+1):
   for ident in order:
-   p=profiles[ident]; previous=state["stock"][ident]; noise=stable_noise(seed,scenario_name,ident,year)
-   production=max(1,p["capacityUnits"]*cfg["flows"]["localProductionPermille"]*rules["supplyPermille"]*(1000+noise)//1_000_000_000)
-   imports=p["capacityUnits"]*cfg["flows"]["importReplenishmentPermille"]*rules["routePermille"]//1_000_000 if p["imports"] else 0
-   consumption=p["capacityUnits"]*cfg["flows"]["localConsumptionPermille"]*rules["demandPermille"]//1_000_000
-   if p["shortages"]: consumption=consumption*cfg["flows"]["shortageConsumptionPermille"]//1000
-   spoilage=previous*cfg["flows"]["spoilageSinkPermille"]//1000; trade_loss=imports*cfg["flows"]["tradeLossSinkPermille"]//1000; available=previous+production+imports
+   p=profiles[ident]; previous=state["stock"][ident]; noise=(noise_bases[ident]+year*1103515245)%101-50
+   production=max(1,p["capacityUnits"]*local_production*(1000+noise)//1_000_000_000)
+   imports=p["capacityUnits"]*import_replenishment//1_000_000 if p["imports"] else 0
+   consumption=p["capacityUnits"]*local_consumption//1_000_000
+   if p["shortages"]: consumption=consumption*shortage_consumption//1000
+   spoilage=previous*spoilage_rate//1000; trade_loss=imports*trade_loss_rate//1000; available=previous+production+imports
    household=min(available,consumption); available-=household; spoilage=min(available,spoilage); available-=spoilage; trade_loss=min(available,trade_loss); available-=trade_loss
    target=p["startingStockUnits"]; stabilizer=(target-available)//5; source_credit=max(0,stabilizer); sink_release=max(0,-stabilizer); current=max(target//4,min(p["capacityUnits"],available+stabilizer)); capacity_loss=max(0,available+stabilizer-current)
-   state["stock"][ident]=current; pressure=(target-current)*cfg["finance"]["priceAdjustmentPermille"]//max(1,target); state["price"][ident]=max(cfg["market"]["minimumPricePermille"],min(cfg["market"]["maximumPricePermille"],state["price"][ident]+pressure))
-   upkeep=cfg["finance"]["upkeepSharePermille"]*rules["upkeepPermille"]//1000; margin=min(cfg["finance"]["maximumArbitrageMarginPermille"],max(-180,(1000-state["price"][ident])//3+60)); reserve=cfg["finance"]["startingLiquidityDays"]
+   state["stock"][ident]=current; pressure=(target-current)*price_adjustment//max(1,target); state["price"][ident]=max(minimum_price,min(maximum_price,state["price"][ident]+pressure))
+   margin=min(finance["maximumArbitrageMarginPermille"],max(-180,(1000-state["price"][ident])//3+60))
    state["liquidity"][ident]=max(30,min(540,state["liquidity"][ident]+(reserve-state["liquidity"][ident])//8+margin//40-upkeep//120+3))
    wages=p["capacityUnits"]*cfg["finance"]["wageSharePermille"]//1000; military=p["capacityUnits"]*upkeep//2000; fleet=military//2 if settlements[ident].get("port") else 0; taxes=p["capacityUnits"]*cfg["finance"]["taxSharePermille"]//1000; obligation=p["capacityUnits"]*cfg["finance"]["obligationReservePermille"]//2000; credit=wages+taxes+obligation+military+fleet
    state["treasury"][ident]+=credit-wages-taxes-obligation-military-fleet
-   ledger=state["ledger"]; ledger["harvest"]+=production; ledger["historical_import"]+=imports; ledger["institutional_credit"]+=source_credit; ledger["household_consumption"]+=household; ledger["spoilage"]+=spoilage+capacity_loss+sink_release; ledger["trade_loss"]+=trade_loss; ledger["wages"]+=wages; ledger["military_upkeep"]+=military; ledger["fleet_upkeep"]+=fleet; ledger["taxation"]+=taxes; ledger["obligation"]+=obligation
-   require(current==previous+production+imports+source_credit-household-spoilage-trade_loss-sink_release-capacity_loss,f"{ident}/{year}: unauthorized conservation delta")
-  if checkpoint and year==1648: state=json.loads(json.dumps(state,sort_keys=True))
- graph=trade_graph(settlements,routes); connected,essential=access_metrics(settlements,graph,profiles); prices=list(state["price"].values()); liquid=list(state["liquidity"].values()); stocks=[state["stock"][i]*365//profiles[i]["capacityUnits"] for i in order]; spreads=[abs(state["price"][r["fromSettlementId"]]-state["price"][r["toSettlementId"]]) for r in routes]; route_margin=max(spreads,default=0)-cfg["market"]["routeTransactionCostPermille"]
+   ledger["harvest"]+=production; ledger["historical_import"]+=imports; ledger["institutional_credit"]+=source_credit; ledger["household_consumption"]+=household; ledger["spoilage"]+=spoilage+capacity_loss+sink_release; ledger["trade_loss"]+=trade_loss; ledger["wages"]+=wages; ledger["military_upkeep"]+=military; ledger["fleet_upkeep"]+=fleet; ledger["taxation"]+=taxes; ledger["obligation"]+=obligation
+   if current!=previous+production+imports+source_credit-household-spoilage-trade_loss-sink_release-capacity_loss: raise BalanceError(f"{ident}/{year}: unauthorized conservation delta")
+  if checkpoint and year==1648:
+   state=json.loads(json.dumps(state,sort_keys=True)); ledger=state["ledger"]
+ if _access is None:
+  graph=trade_graph(settlements,routes); connected,essential=access_metrics(settlements,graph,profiles)
+ else: connected,essential=_access
+ prices=list(state["price"].values()); liquid=list(state["liquidity"].values()); stocks=[state["stock"][i]*365//profiles[i]["capacityUnits"] for i in order]; spreads=[abs(state["price"][r["fromSettlementId"]]-state["price"][r["toSettlementId"]]) for r in routes]; route_margin=max(spreads,default=0)-cfg["market"]["routeTransactionCostPermille"]
  metrics={"liquidityDays":sum(liquid)//len(liquid),"essentialStockDays":sum(stocks)//len(stocks),"priceIndexPermille":sum(prices)//len(prices),"annualTradeProfitPermille":min(cfg["finance"]["maximumArbitrageMarginPermille"],max(-180,route_margin)),"upkeepBurdenPermille":cfg["finance"]["upkeepSharePermille"]*rules["upkeepPermille"]//1000,"insolventSettlementPermille":sum(x<=30 for x in liquid)*1000//len(liquid),"connectedSettlementPermille":connected,"essentialAccessPermille":essential,"annualInflationPermille":(max(prices)-min(prices))*1000//max(prices)//10}
  return state,metrics,profiles
 
 def run_all(cfg,settlements,routes):
  started=time.monotonic(); runs=[]; annual_operations=len(settlements)*12+len(routes)*2; require(annual_operations<=cfg["performanceBudgets"]["maximumAnnualOperations"],"annual operation budget exceeded")
+ profiles={k:profile(cfg,v) for k,v in settlements.items()}; graph=trade_graph(settlements,routes); access=access_metrics(settlements,graph,profiles); prepared={"routes":routes,"_profiles":profiles,"_access":access}
  for scenario in cfg["scenarios"]:
   for seed in cfg["simulationSeeds"]:
-   state,metrics,profiles=simulate(cfg,settlements,scenario,seed,routes=routes)
+   state,metrics,_=simulate(cfg,settlements,scenario,seed,**prepared)
    for metric,bounds in cfg["envelopes"].items(): require(bounds["minimum"]<=metrics[metric]<=bounds["maximum"],f"{scenario}/{seed}: {metric}={metrics[metric]} outside {bounds}")
    if seed==cfg["simulationSeeds"][0]:
     baseline=normalized_state(state)
     for mode,kw in (("accelerated",{"accelerated":True}),("checkpoint_resumed",{"checkpoint":True}),("cross_map",{"cross_map":True})):
-     other,_,_=simulate(cfg,settlements,scenario,seed,routes=routes,**kw); require(normalized_state(other)==baseline,f"{scenario}/{seed}: {mode} differs")
+     other,_,_=simulate(cfg,settlements,scenario,seed,**prepared,**kw); require(normalized_state(other)==baseline,f"{scenario}/{seed}: {mode} differs")
    runs.append({"scenario":scenario,"seed":seed,"metrics":metrics})
  elapsed=time.monotonic()-started; require(elapsed<=cfg["performanceBudgets"]["maximumSimulationSeconds"],f"simulation budget exceeded: {elapsed:.3f}s")
- regional=defaultdict(lambda:{"settlements":0,"capacityUnits":0,"startingStockUnits":0,"routeEndpoints":0}); graph=trade_graph(settlements,routes); endpoint_counts=defaultdict(int); settlement_rows=[]
+ regional=defaultdict(lambda:{"settlements":0,"capacityUnits":0,"startingStockUnits":0,"routeEndpoints":0}); endpoint_counts=defaultdict(int); settlement_rows=[]
  for route in routes: endpoint_counts[route["fromSettlementId"]]+=1; endpoint_counts[route["toSettlementId"]]+=1
  for ident,row in sorted(settlements.items()):
-  p=profile(cfg,row); reg=regional[row["region"]]; reg["settlements"]+=1; reg["capacityUnits"]+=p["capacityUnits"]; reg["startingStockUnits"]+=p["startingStockUnits"]; reg["routeEndpoints"]+=endpoint_counts[ident]; settlement_rows.append({"id":ident,"region":row["region"],"connectedMarkets":len(graph[ident]),**p})
+  p=profiles[ident]; reg=regional[row["region"]]; reg["settlements"]+=1; reg["capacityUnits"]+=p["capacityUnits"]; reg["startingStockUnits"]+=p["startingStockUnits"]; reg["routeEndpoints"]+=endpoint_counts[ident]; settlement_rows.append({"id":ident,"region":row["region"],"connectedMarkets":len(graph[ident]),**p})
  last=runs[-1]["metrics"]; diagnostics={"conservation":"passed","authorizedSourceSinkAccounting":"passed","unboundedInflationDeflation":False,"resourceDuplication":False,"deadMarkets":last["connectedSettlementPermille"]<cfg["envelopes"]["connectedSettlementPermille"]["minimum"],"impossibleObligations":False,"systemicInsolvency":last["insolventSettlementPermille"]>cfg["envelopes"]["insolventSettlementPermille"]["maximum"],"dominantArbitrageCycles":last["annualTradeProfitPermille"]>cfg["market"]["maximumDominantRouteProfitPermille"],"inaccessibleEssentialGoods":last["essentialAccessPermille"]<cfg["envelopes"]["essentialAccessPermille"]["minimum"]}; require(not any(v is True for v in diagnostics.values()),"economic diagnostic failed")
  return {"schemaVersion":1,"campaignYears":cfg["campaignYears"],"settlementCount":len(settlements),"routeCount":len(routes),"runCount":len(runs),"performanceBudgetSeconds":cfg["performanceBudgets"]["maximumSimulationSeconds"],"annualOperations":annual_operations,"runs":runs,"regional":dict(sorted(regional.items())),"settlements":settlement_rows,"diagnostics":diagnostics,"outliers":[]}
 
