@@ -52,6 +52,37 @@ event and schedule projection deterministically.
 - treasures
 - starting configurations
 
+## Release-scale content authority
+
+The regional files currently contain a validated playable baseline, not a statement
+that their present row counts are the final release density. The release target in
+`docs/DESIGN_LOCK.md` requires historically grounded 1450 settlement coverage at
+approximately real locations and under the appropriate polity/province/control
+context, with roughly 800–1,200 meaningful authored settlements globally as a planning
+range. Density follows historical geography and gameplay relevance rather than equal
+per-polity quotas.
+
+The same rule applies to other content domains: existing presence/coverage is not
+sufficient by itself. The reopened Phase 8 content pass expands technologies and
+institutions, historical/conditional events, authored and repeatable quests,
+land/naval roster variants, named historical heroes, player-use RPG inventory,
+equipment sets, and individual-vessel refit/veterancy content toward the release-scale
+ranges locked in `DESIGN_LOCK.md`.
+
+Bulk commodity goods under `economy/` remain distinct from player-use RPG inventory.
+A settlement may have economic stores/markets for production, cargo, pricing, and
+trade while separately exposing player-use merchants such as armourers, gunsmiths,
+outfitters, apothecaries, booksellers/cartographers, military suppliers, relic
+merchants, ship chandlers, and dockyards. Their usable-item inventories belong to
+scenario content and are resolved from local historical/economic context.
+
+Likewise, naval archetypes under `rosters/` define reusable ship families, while
+persistent owned vessels may carry individual equipment/refits, crew/veterancy,
+experience, and service history. Named historical characters have initial
+availability windows, but recruited characters persist as alternate-history campaign
+state and use long-campaign progression rather than disappearing when that historical
+window closes.
+
 `economy/balance.json` owns the full-world long-campaign economic envelopes,
 scenario modifiers, logistics tiers, source/sink policy, and soak performance
 budget.  It deliberately derives settlement profiles from the historical
@@ -93,7 +124,7 @@ entities are never duplicated between map-local runtime payloads.
 
 `politics/pacific-1450.json` is the authority for the Pacific's 1450 island polities, chiefdoms, confederated and decentralized communities, playable island-group territories, distributed political-center exceptions, preserved compressed communities, diplomacy, and evidence. Open ocean is never territorial coverage. Run `python3 tooling/pacific_politics.py` to validate its historical, geography, navigation, hierarchy, and canonical-world references; pass `--write` to rebuild that projection deterministically.
 
-`politics/east-asia-1450.json` and `settlements/east-asia-1450.json` are the authorities for East Asia's 1450 political baseline and selective playable settlement content. They cover historical provinces and frontier regions, capitals and documented council/mobile courts, ports, trade corridors, transition endpoints, services, production, and abstract settlement representations. Run `python3 tooling/east_asia_politics.py` and `python3 tooling/east_asia_content.py`; pass `--write` to the content command to deterministically rebuild the canonical world and economy projections.
+`politics/east-asia-1450.json` and `settlements/east-asia-1450.json` are the authorities for East Asia's 1450 political baseline and the currently authored playable settlement content. The present catalogue is a validated baseline and must expand toward the release-scale historical-density target rather than remaining intentionally selective. They cover historical provinces and frontier regions, capitals and documented council/mobile courts, ports, trade corridors, transition endpoints, services, production, and abstract settlement representations. Run `python3 tooling/east_asia_politics.py` and `python3 tooling/east_asia_content.py`; pass `--write` to the content command to deterministically rebuild the canonical world and economy projections.
 
 `rosters/foundation.json` is the scenario authority for the ordinary-unit and
 ship roster format and representative cross-category fixtures. It deliberately
@@ -107,8 +138,8 @@ the combined validator checks it together with the foundation and other slices.
 including its regional history, assignments, statistics, requirements, and
 evidence. The first slice alone does not complete the overall roster roadmap.
 
-`settlements/europe-1450.json` is the authority for Europe’s deliberately selected capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
+`settlements/europe-1450.json` is the authority for Europe’s currently authored capitals, ports, trade centers, forts, transition locations, local placements, services, production references, and abstract regional representation data. The current selection is a baseline, not the final release density; expansion follows historically meaningful 1450 settlement geography and map/readability constraints. Run `python3 tooling/europe_settlements.py` to validate it or add `--write` to rebuild its canonical world and economy projections.
 
-`politics/africa-1450.json`, `geography/africa.json`, and `settlements/africa-1450.json` together provide the focused Africa authority for selected capitals, ports, caravan centers, trade endpoints, transition locations, placement, services, and abstract representations. Run `python3 tooling/africa_content.py` to validate all references and topology or add `--write` to rebuild the canonical world and economy projections.
+`politics/africa-1450.json`, `geography/africa.json`, and `settlements/africa-1450.json` together provide the Africa authority for the currently authored capitals, ports, caravan centers, trade endpoints, transition locations, placement, services, and abstract representations. Current coverage is a baseline to expand according to historically meaningful 1450 density rather than a permanently focused subset. Run `python3 tooling/africa_content.py` to validate all references and topology or add `--write` to rebuild the canonical world and economy projections.
 
-`politics/middle-east-india-1450.json` and `settlements/middle-east-india-1450.json` are the focused 1450 authority for the Middle East and India political baseline, settlements, ports, pilgrimage locations, caravan and ocean trade, regional entries, services, defenses, and deterministic abstract representations. Run `python3 tooling/middle_east_india_content.py` to validate the complete integration or add `--write` to rebuild canonical world and economy projections.
+`politics/middle-east-india-1450.json` and `settlements/middle-east-india-1450.json` are the 1450 authority for the Middle East and India political baseline and currently authored settlements, ports, pilgrimage locations, caravan and ocean trade, regional entries, services, defenses, and deterministic abstract representations. Current settlement coverage is a baseline to expand toward historically grounded release density. Run `python3 tooling/middle_east_india_content.py` to validate the complete integration or add `--write` to rebuild canonical world and economy projections.
