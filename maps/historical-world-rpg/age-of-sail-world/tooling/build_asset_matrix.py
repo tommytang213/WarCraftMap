@@ -61,7 +61,9 @@ def choice(entity):
     if kind == "character": return "human_footman","custom_model_candidate",1,"Stock humanoid provides a functional selection silhouette.","Named people require culturally and chronologically distinct portraits/models."
     if kind == "settlement": return "human_town_hall","acceptable_stock_variation",2,"Large civic silhouette and team color communicate ownership.","Architecture is western-European fantasy and cannot carry regional identity alone."
     if kind == "building": return "human_town_hall","custom_model_candidate",2,"Civic footprint is legible.","One hall cannot distinguish specialist institutions."
-    if kind in {"equipment","treasure"}: return "treasure_chest","custom_icon_texture_candidate",2,"Ground pickup is unmistakable.","Chest does not depict the authored object; dedicated icon is needed."
+    if kind in {"equipment","treasure"}:
+        priority = 3 if kind == "treasure" and ident.startswith("secret_") and ident != "secret_pacific_wreck_salvage" else 2
+        return "treasure_chest","custom_icon_texture_candidate",priority,"Ground pickup is unmistakable.","Chest does not depict the authored object; dedicated icon is needed."
     if kind == "ability": return "spell_effect","custom_icon_texture_candidate",3,"Brief effect is visible without obscuring formations.","Holy fantasy language mismatches most mundane abilities."
     if kind == "effect": return "spell_effect","temporary_placeholder",2,"Strong transient feedback at world-map scale.","Magic glow is unsuitable for mundane artillery, research, and travel feedback."
     if kind == "terrain_feature": return "terrain_lordaeron_summer","acceptable_stock_variation",3,"Stock terrain remains performant and readable.","A single temperate texture cannot express all climates and landforms."
