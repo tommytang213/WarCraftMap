@@ -1,5 +1,10 @@
 # Shared Data Contracts
 
+`ai-territorial-warfare.schema.json` defines portable strategic profiles,
+coefficients, historical pressures, safeguards, and decision timing. Historical
+identities, dates, objectives, and weights belong to each scenario; authoritative
+campaign progress and the versioned `aiTerritorialWarfareState` belong to saves.
+
 `treasure.schema.json` defines the scenario-neutral stable-ID envelope for
 candidate hiding places, reward pools, clues, guards, hazards, encounters, and
 treasures. Engine validation enforces their cross-references and placement rules.

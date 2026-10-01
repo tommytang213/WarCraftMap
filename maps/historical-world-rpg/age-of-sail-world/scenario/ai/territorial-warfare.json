@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "age_of_sail_hybrid_territorial_warfare",
+  "rules": {
+    "decisionIntervalDays": 30,
+    "warCooldownDays": 1825,
+    "peaceCooldownDays": 365,
+    "minimumWarDurationDays": 180,
+    "maximumAttackersPerTarget": 3,
+    "tieBreakRange": 3,
+    "diagnosticLimit": 256,
+    "historyLimit": 256,
+    "thresholds": {"prepare": 35, "declare": 70, "join": 75, "offerPeace": 60, "suicidalStrengthRatio": 55}
+  },
+  "coefficients": {
+    "claim": 90, "ownership": 55, "control": 65, "access": 45,
+    "settlementValue": 45, "routeValue": 40, "landStrength": 32, "navalStrength": 22,
+    "manpower": 14, "supply": 24, "treasury": 18, "economy": 16,
+    "exhaustion": 45, "diplomacy": 35, "alliance": 38, "threat": 42,
+    "terrain": 24, "technology": 20, "institutions": 12, "historicalPressure": 65,
+    "goalCompletion": 70, "casualties": 45, "economicCost": 35,
+    "continuingThreat": 40, "strategicRisk": 45
+  },
+  "profiles": [
+    {"id": "balanced_maritime", "aggression": 50, "riskTolerance": 45, "navalPreference": 70, "allianceReliability": 65, "expansionLimit": 35},
+    {"id": "balanced_continental", "aggression": 55, "riskTolerance": 45, "navalPreference": 25, "allianceReliability": 60, "expansionLimit": 40}
+  ],
+  "assignments": {"england": "balanced_maritime", "france": "balanced_continental"},
+  "historicalPressures": [
+    {
+      "id": "english_french_dynastic_claim_pressure", "actorPolityId": "england",
+      "targetPolityId": "france", "goalKind": "press_claim", "weight": 35,
+      "startDay": 0, "endDay": 18250,
+      "basis": [
+        {"kind": "claim", "id": "english_french_dynastic_claim", "equals": true},
+        {"kind": "rivalry", "id": "england_france_rivalry", "equals": true}
+      ]
+    }
+  ]
+}
