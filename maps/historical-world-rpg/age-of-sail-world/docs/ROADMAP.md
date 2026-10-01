@@ -171,5 +171,5 @@ The first serious player test target: a substantially complete game intended to 
   - [ ] Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass.
 - [x] Release save compatibility
 - [ ] No known campaign-blocking defects
-- [ ] Recovery tooling documented
+- [x] Recovery tooling documented
 - [ ] RC build packaged
