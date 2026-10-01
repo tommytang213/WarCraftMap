@@ -1,5 +1,11 @@
 # Shared Data Contracts
 
+`settlement-catalogue.schema.json` defines scenario-neutral release-scale authored
+settlements. It separates stable authoritative records (including valid abstract
+minor communities) from optional physical Warcraft representations. Scenario
+validators resolve polity, province, map, terrain, navigation, route, and evidence
+references before generated content reaches runtime state.
+
 `ai-territorial-warfare.schema.json` defines portable strategic profiles,
 coefficients, historical pressures, safeguards, and decision timing. Historical
 identities, dates, objectives, and weights belong to each scenario; authoritative

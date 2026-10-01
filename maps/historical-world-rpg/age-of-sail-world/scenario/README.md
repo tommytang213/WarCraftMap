@@ -1,5 +1,14 @@
 # Age of Sail Scenario Content
 
+The release-scale settlement foundation is configured by
+`settlements/release-scale-coverage.json`. `tooling/settlement_catalogue.py`
+normalizes all seven 1450 regional sources through the shared contract and writes
+`reports/settlement-coverage-baseline.json`. This is an inventory and target-gap
+artifact, not a completed density gate. Coverage follows evidence-led importance,
+not equal quotas; physical objects remain reconstructable representations of stable
+records, and minor communities may be authoritative `abstract_minor` records with
+an explicit compression rationale.
+
 Scenario-specific content belongs here and must be replaceable by another timeline without rewriting shared engine systems.
 
 Regional terrain sources under `terrain/` contain authoritative geography, traversal zones, declared gameplay distortions, transition anchors, and generation budgets. Generated terrain files are build outputs and must not be edited or committed.
