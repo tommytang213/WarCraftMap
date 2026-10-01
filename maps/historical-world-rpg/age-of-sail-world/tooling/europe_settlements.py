@@ -17,7 +17,7 @@ GEOGRAPHY = ROOT / "scenario/geography/europe.json"
 WORLD = ROOT / "scenario/world/world.json"
 ECONOMY = ROOT / "scenario/economy/economy.json"
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
-ROLES = {"capital", "major_port", "trade_center", "fortified_town", "transition_location", "historical_location"}
+ROLES = {"capital", "major_port", "trade_center", "fortified_town", "transition_location", "historical_location", "production_center", "religious_site"}
 TERRAIN = {"coast", "riverbank", "plains", "upland", "forest", "steppe"}
 SEA_ZONES = {"north_sea_atlantic", "english_channel", "bay_of_biscay", "iberian_atlantic", "western_mediterranean", "adriatic_sea", "baltic_sea", "aegean_black_sea"}
 LAND_ZONE = {
@@ -100,6 +100,7 @@ def _zone(ident, classes): return {"id":ident,"movementClasses":classes,"connect
 
 def project(source, politics, geography, world, positions):
     world=copy.deepcopy(world); settlements=source["settlements"]
+    europe_ids={x["id"] for x in settlements}
     # Retain fixture zones, then add a deterministic Europe land/sea topology.
     zones={z["id"]:z for z in world["navigationZones"]}
     for ident in LAND_ZONE.values(): zones.setdefault(ident,_zone(ident,["land","amphibious","flying"]))
@@ -116,8 +117,14 @@ def project(source, politics, geography, world, positions):
             if a not in zones[b]["connections"][kind]: zones[b]["connections"][kind].append(a)
     world["navigationZones"]=[zones[k] for k in sorted(zones)]
     services={x["id"]:x for x in world["settlementServiceDefinitions"]}; services["warehouse"]={"id":"warehouse","name":"Warehouse"}; world["settlementServiceDefinitions"]=[services[k] for k in sorted(services)]
-    world["settlements"]=[]; world["cityCores"]=[]; world["defenseLayouts"]=[]
-    for p in world["provinces"]: p["settlementIds"]=[]
+    # Replace only authored European rows. Political capital stubs and every other
+    # region remain intact, so a regional density rebuild cannot erase the world.
+    world["settlements"]=[x for x in world["settlements"] if x["id"] not in europe_ids and x.get("regionalInstanceId") not in LAND_ZONE]
+    world["cityCores"]=[x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in europe_ids}]
+    world["defenseLayouts"]=[x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in europe_ids}]
+    europe_provinces={p["id"] for owner in politics["polities"] for p in owner["provinces"]}
+    for p in world["provinces"]:
+        if p["id"] in europe_provinces: p["settlementIds"]=[]
     provinces={p["id"]:p for p in world["provinces"]}
     for s in settlements:
         ident=s["id"]; roles=s["roles"]; defense=s["defenseClass"]
