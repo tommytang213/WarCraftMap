@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-territorial-warfare.schema.json",
+  "title": "Scenario-neutral hybrid territorial warfare configuration",
+  "type": "object",
+  "required": ["schemaVersion", "id", "rules", "coefficients", "profiles", "assignments", "historicalPressures"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"$ref": "#/$defs/id"},
+    "rules": {"type": "object"},
+    "coefficients": {"type": "object", "additionalProperties": {"type": "integer", "minimum": -1000, "maximum": 1000}},
+    "profiles": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "aggression", "riskTolerance", "navalPreference", "allianceReliability", "expansionLimit"]}},
+    "assignments": {"type": "object", "additionalProperties": {"$ref": "#/$defs/id"}},
+    "historicalPressures": {"type": "array", "items": {"type": "object", "required": ["id", "actorPolityId", "targetPolityId", "goalKind", "weight", "basis"]}}
+  },
+  "$defs": {"id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"}}
+}
