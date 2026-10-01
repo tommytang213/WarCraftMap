@@ -116,6 +116,13 @@ Physical-map IDs, source paths, region/instance/terrain assignments, package pat
 budgets, display name, and bootstrap selection are scenario configuration; the
 shared build code is scenario-neutral.
 
+For the Phase 8 player candidate, run `./tooling/package_release_candidate.sh`.
+It performs two clean campaign builds, compares normalized contents, enforces the
+completed content/save/recovery/blocker gates, audits the payload, and writes
+`_build/release/AgeOfSailWorld-phase8-rc1.zip`. The ZIP includes the campaign,
+English player documentation, a checksummed artifact manifest, and reproducible
+build provenance. `./tooling/package_release_candidate.sh clean` removes that ZIP.
+
 Failures name their stage (`inputs`, `scenario validation`, `generation`,
 `provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
 
