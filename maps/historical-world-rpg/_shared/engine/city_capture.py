@@ -95,9 +95,10 @@ class CityCaptureEvent:
 class CityCaptureRuntime:
     """Resolve adapter destruction notifications against stable settlement IDs."""
 
-    def __init__(self, settlements, provinces, diplomacy, adapter: CityCaptureAdapter):
+    def __init__(self, settlements, provinces, diplomacy, adapter: CityCaptureAdapter, administration=None):
         self.settlements, self.provinces, self.diplomacy = settlements, provinces, diplomacy
         self.adapter = adapter
+        self.administration = administration
         self._representations: dict[str, Any] = {}
         self._generation = {sid: 0 for sid in settlements.ids()}
         self._cooldown_until: dict[str, float] = {}
@@ -183,6 +184,7 @@ class CityCaptureRuntime:
                                     self._specification(settlement_id), source)
         settlement_before = self.settlements.snapshot()
         province_before = self.provinces.snapshot()
+        administration_before = self.administration.snapshot() if self.administration is not None else None
         try:
             # Existing authoritative transition APIs retain legal ownership.
             self.settlements.update(settlement_id, controllerPolityId=attacker_polity_id)
@@ -190,9 +192,13 @@ class CityCaptureRuntime:
                 self.provinces.transition(view.province_id,
                     controller_polity_id=attacker_polity_id, reason="city_capture")
             representation = self.adapter.commit(settlement_id, staged)
+            if self.administration is not None:
+                self.administration.on_settlement_acquired(settlement_id, attacker_polity_id)
         except Exception:
             self.settlements.restore(settlement_before, reconstruct=False)
             self.provinces.restore(province_before)
+            if self.administration is not None and administration_before is not None:
+                self.administration.restore(administration_before)
             self.adapter.rollback(staged)
             raise
         self._representations[settlement_id] = representation
