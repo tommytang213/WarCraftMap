@@ -93,13 +93,18 @@ def trade_graph(settlements,routes):
  return graph
 
 def access_metrics(settlements,graph,profiles):
- accessible=0
- for ident in settlements:
-  seen,q={ident},deque([ident])
+ accessible=0; remaining=set(settlements)
+ # Essential access is a connected-component property. Traverse each component
+ # once instead of repeating the same breadth-first search for every settlement;
+ # release-scale catalogues otherwise turn this validation into quadratic work.
+ while remaining:
+  root=next(iter(remaining)); seen={root}; q=deque([root])
   while q:
    for other in graph[q.popleft()]:
     if other not in seen: seen.add(other); q.append(other)
-  accessible+=all(any(set(profiles[x]["goods"])&aliases for x in seen) for aliases in ESSENTIAL_ALIASES.values())
+  remaining-=seen
+  goods=set().union(*(profiles[x]["goods"] for x in seen))
+  if all(goods&aliases for aliases in ESSENTIAL_ALIASES.values()): accessible+=len(seen)
  return sum(bool(graph[x]) for x in settlements)*1000//len(settlements),accessible*1000//len(settlements)
 def normalized_state(state): return {k:state[k] for k in ("stock","price","liquidity","treasury","ledger")}
 

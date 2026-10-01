@@ -37,7 +37,7 @@ def markdown(report):
  lines=["# Middle East, India, and Southeast Asia settlement-density report","","Status: **COMPLETE**","","The regional release-scale pass is complete; the global settlement-density roadmap item remains open. Counts reflect historical networks and map compression rather than equal polity quotas.",""]
  for key,data in report["regions"].items():
   lines += [f"## {key.replace('_',' ').title()}","",f"{data['settlementCount']} settlements, {data['portAndAnchorageCount']} ports/anchorages, and {data['abstractCommunityCount']} compressed community groups.","","| Subregion / physical map | Count |","|---|---:|"]+[f"| {k} | {v} |" for k,v in data["bySubregion"].items()]+["","| Role | Count |","|---|---:|"]+[f"| {k} | {v} |" for k,v in data["byRole"].items()]+[""]
- return "\n".join(lines)+"\n"
+ return "\n".join(lines).rstrip()+"\n"
 
 def main(argv=None):
  argv=sys.argv[1:] if argv is None else argv

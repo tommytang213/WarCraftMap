@@ -54,4 +54,3 @@ This regional Phase 8 pass preserves the global settlement-density roadmap item 
 | religious_site | 1 |
 | trade_center | 73 |
 | transition_location | 4 |
-

@@ -52,4 +52,3 @@ The regional release-scale pass is complete; the global settlement-density roadm
 | religious_location | 3 |
 | trade_center | 83 |
 | transition_location | 3 |
-
