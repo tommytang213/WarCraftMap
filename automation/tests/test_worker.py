@@ -23,6 +23,7 @@ from automation.warcraftmap_agent.worker import (
     promote_planned_issues,
     queue_refill_count,
     reconcile_ready_issue_states,
+    refresh_validation_repair_bases,
     select_issue,
     service_open_prs,
 )
@@ -110,6 +111,49 @@ class WorkerTests(unittest.TestCase):
             }
         }
         self.assertEqual(select_issue(issues, state, 3)["number"], 111)
+
+    def test_exhausted_validation_repair_revives_when_base_is_recorded_or_advances(self):
+        config = Config(
+            repo_root=Path("/repo"),
+            state_dir=Path("/state"),
+            max_validation_repair_attempts=5,
+        )
+        state = {
+            "issues": {
+                "221": {
+                    "attempts": 3,
+                    "validation_repair_attempts": 5,
+                    "repair_kind": "validation",
+                    "status": "failed",
+                    "last_failure": "command failed (1): ./automation/run_checks.sh",
+                }
+            }
+        }
+        with mock.patch("automation.warcraftmap_agent.worker.default_branch", return_value="main"), mock.patch(
+            "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="new-base"
+        ):
+            refresh_validation_repair_bases(config, state)
+        record = state["issues"]["221"]
+        self.assertEqual(record["status"], "repair")
+        self.assertEqual(record["validation_repair_attempts"], 0)
+        self.assertEqual(record["validation_base_oid"], "new-base")
+
+        record["validation_repair_attempts"] = 5
+        record["status"] = "failed"
+        with mock.patch("automation.warcraftmap_agent.worker.default_branch", return_value="main"), mock.patch(
+            "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="new-base"
+        ):
+            refresh_validation_repair_bases(config, state)
+        self.assertEqual(record["status"], "failed")
+        self.assertEqual(record["validation_repair_attempts"], 5)
+
+        with mock.patch("automation.warcraftmap_agent.worker.default_branch", return_value="main"), mock.patch(
+            "automation.warcraftmap_agent.worker.remote_branch_oid", return_value="newer-base"
+        ):
+            refresh_validation_repair_bases(config, state)
+        self.assertEqual(record["status"], "repair")
+        self.assertEqual(record["validation_repair_attempts"], 0)
+        self.assertEqual(record["validation_base_oid"], "newer-base")
 
     def test_validation_repair_uses_separate_attempt_budget_after_implementation_exhaustion(self):
         issues = [{"number": 217, "title": "[agent-ready] soak", "createdAt": "2026-01-01"}]
