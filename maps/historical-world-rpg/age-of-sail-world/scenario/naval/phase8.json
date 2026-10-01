@@ -1,0 +1,24 @@
+{
+  "format":"age_of_sail_naval_phase8_v1",
+  "families":{"merchant":["western_indian_ocean_dhow","east_asian_trading_junk","atlantic_carrack_merchant","armed_indiaman"],"transport":["coastal_transport","riverine_transport","oceanic_voyaging_canoe"],"patrol":["mediterranean_patrol_galley","coastal_patrol_sloop"],"raiding":["maritime_proa_raider","ocean_cruising_frigate"],"boarding":["indigenous_war_canoe","atlantic_galleon"],"coastal":["mediterranean_patrol_galley","coastal_patrol_sloop"],"riverine":["riverine_transport","indigenous_war_canoe"],"galley_oared":["mediterranean_patrol_galley","mediterranean_galleass"],"sailing_warship":["east_asian_war_junk","atlantic_galleon"],"frigate_cruiser":["ocean_cruising_frigate","french_frigate"],"line_of_battle":["ship_of_the_line_generic","british_ship_of_line"],"junk":["east_asian_trading_junk","east_asian_war_junk"],"dhow":["western_indian_ocean_dhow","swahili_armed_dhow"],"canoe_proa_pirogue":["indigenous_war_canoe","maritime_proa_raider","oceanic_voyaging_canoe"]},
+  "regions":[
+    {"id":"europe_atlantic","polityIds":["england","portugal","castile","france","burgundy"],"archetypeIds":["atlantic_carrack_merchant","atlantic_galleon","coastal_patrol_sloop","ocean_cruising_frigate","ship_of_the_line_generic"]},
+    {"id":"mediterranean","polityIds":["venice","ottoman_empire"],"archetypeIds":["mediterranean_patrol_galley","mediterranean_galleass","coastal_patrol_sloop"]},
+    {"id":"indian_ocean","polityIds":["kilwa_sultanate","gujarat_sultanate","kingdom_hormuz","malacca_sultanate"],"archetypeIds":["western_indian_ocean_dhow","east_asian_trading_junk","maritime_proa_raider"]},
+    {"id":"east_asia","polityIds":["ming_empire","joseon_kingdom","ashikaga_shogunate"],"archetypeIds":["east_asian_trading_junk","east_asian_war_junk","riverine_transport"]},
+    {"id":"americas_caribbean","polityIds":["haudenosaunee_nations","taino_cacicazgos","tupi_coastal_networks","chincha_lordship"],"archetypeIds":["riverine_transport","indigenous_war_canoe","coastal_transport"]},
+    {"id":"pacific","polityIds":["tui_tonga_empire","tahiti_chiefdoms","samoan_chiefly_districts","hawaii_chiefdom"],"archetypeIds":["oceanic_voyaging_canoe","indigenous_war_canoe"]}
+  ],
+  "exceptions":[{"region":"inland_africa","reason":"No artificial blue-water navy for polities without navigable strategic water."},{"region":"inner_asia","reason":"Landlocked steppe and plateau polities intentionally lack naval rosters."},{"region":"arctic","reason":"Existing kayak and umiak abstractions do not receive line-of-battle progression."}],
+  "majorPowers":["england","portugal","castile","france","venice","ottoman_empire","ming_empire","joseon_kingdom","ashikaga_shogunate","malacca_sultanate"],
+  "fleets":[
+    {"id":"portuguese_1500","polityId":"portugal","year":1500,"ships":["atlantic_carrack_merchant","portuguese_carrack","coastal_transport"],"technologies":["oceanic_seamanship","celestial_navigation"],"equipment":["naval_ordnance"],"resources":["ship_provisions"]},
+    {"id":"ottoman_1580","polityId":"ottoman_empire","year":1580,"ships":["mediterranean_patrol_galley","ottoman_galleass","mediterranean_galley"],"technologies":["cast_cannon","galleon_design"]},
+    {"id":"ming_1500","polityId":"ming_empire","year":1500,"ships":["ming_ocean_treasure_junk","east_asian_war_junk","riverine_transport"],"technologies":["cast_cannon"]},
+    {"id":"malacca_1580","polityId":"malacca_sultanate","year":1580,"ships":["malaccan_lancaran_raider","east_asian_trading_junk","maritime_proa_raider"],"technologies":[]},
+    {"id":"england_1750","polityId":"england","year":1750,"ships":["coastal_patrol_sloop","ocean_cruising_frigate","ship_of_the_line_generic","armed_indiaman"],"technologies":["oceanic_seamanship","galleon_design","battlefleet_doctrine","joint_stock_enterprise"],"institutions":["public_credit"],"equipment":["naval_ordnance"],"reforms":["permanent_naval_board"],"resources":["ship_provisions"]},
+    {"id":"tonga_1500","polityId":"tui_tonga_empire","year":1500,"ships":["oceanic_voyaging_canoe","polynesian_war_canoe"],"technologies":[]}
+  ],
+  "integration":{"settlementDefense":["coastal_patrol_sloop","mediterranean_patrol_galley","east_asian_war_junk","indigenous_war_canoe"],"trade":["atlantic_carrack_merchant","armed_indiaman","western_indian_ocean_dhow","east_asian_trading_junk"],"transport":["coastal_transport","riverine_transport","oceanic_voyaging_canoe"],"traditions":["sailing_naval_practice"],"audio":["settlement_port","travel_sea","combat_naval"],"visualProfile":"ship","abstractState":"representedStrength","packagePolicy":"stock_runtime_templates_no_new_imports"},
+  "budgets":{"addedHulls":18,"addedArchetypes":32,"runtimeTemplates":6,"fleetObjects":12,"addedImports":0}
+}
