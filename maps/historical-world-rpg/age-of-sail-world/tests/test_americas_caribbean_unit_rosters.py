@@ -25,7 +25,7 @@ class AmericasCaribbeanRosterTests(unittest.TestCase):
 
     def test_every_world_polity_has_direct_or_family_roster_coverage(self):
         self.assertEqual({x["id"] for x in self.world["polities"]}, {p for p, _ in self.catalog.assignments})
-        self.assertEqual(6, len(self.catalog.roster_families))
+        self.assertEqual(7, len(self.catalog.roster_families))
 
     def test_all_americas_polities_have_direct_usable_assignments(self):
         politics = json.loads((ROOT / "scenario/politics/americas-caribbean-1450.json").read_text())
