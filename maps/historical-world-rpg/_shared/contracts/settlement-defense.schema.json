@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://warcraftmap.local/schemas/settlement-defense.schema.json",
+  "title":"Settlement Garrison and Local Defense",
+  "$defs":{
+    "stableId":{"type":"string","pattern":"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+    "composition":{"type":"object","additionalProperties":false,"required":["archetypeId","weight"],"properties":{"archetypeId":{"$ref":"#/$defs/stableId"},"weight":{"type":"integer","minimum":1}}},
+    "profile":{"type":"object","required":["id","baseQuality","composition"],"properties":{"id":{"$ref":"#/$defs/stableId"},"baseQuality":{"type":"integer","minimum":0,"maximum":100},"composition":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/composition"}},"behaviorIds":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/stableId"}}}}
+  },
+  "type":"object","required":["schemaVersion","rules","defaultProfileId","profiles","resolverRules","initialGarrisons"],
+  "properties":{
+    "schemaVersion":{"const":1},"defaultProfileId":{"$ref":"#/$defs/stableId"},
+    "rules":{"type":"object","additionalProperties":false,"required":["reinforcementIntervalSeconds","quietPeriodSeconds","strengthPerUnit","manpowerPerStrength","supplyPerStrength","replenishmentIntervalDays","replenishmentStrength"],"properties":{"reinforcementIntervalSeconds":{"type":"integer","minimum":1},"quietPeriodSeconds":{"type":"integer","minimum":1},"strengthPerUnit":{"type":"integer","minimum":1},"manpowerPerStrength":{"type":"integer","minimum":1},"supplyPerStrength":{"type":"integer","minimum":1},"replenishmentIntervalDays":{"type":"integer","minimum":1},"replenishmentStrength":{"type":"integer","minimum":1}}},
+    "profiles":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/profile"}},
+    "resolverRules":{"type":"array","items":{"type":"object","required":["id","when"],"properties":{"id":{"$ref":"#/$defs/stableId"},"when":{"type":"object"},"addComposition":{"type":"array","items":{"$ref":"#/$defs/composition"}},"removeArchetypeIds":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/stableId"}},"behaviorIds":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/stableId"}}}}},
+    "initialGarrisons":{"type":"array","items":{"type":"object","required":["settlementId","availableStrength","manpower","reserves","supply","readiness","profileId"],"properties":{"settlementId":{"$ref":"#/$defs/stableId"},"availableStrength":{"type":"integer","minimum":0},"manpower":{"type":"integer","minimum":0},"reserves":{"type":"integer","minimum":0},"supply":{"type":"integer","minimum":0},"readiness":{"type":"integer","minimum":0,"maximum":100},"profileId":{"$ref":"#/$defs/stableId"}}}}
+  }
+}
