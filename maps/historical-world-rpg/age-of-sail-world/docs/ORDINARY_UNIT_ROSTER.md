@@ -3,8 +3,8 @@
 `scenario/rosters/foundation.json` owns all Age of Sail names, dates, statistics,
 costs, mechanics, Warcraft rawcodes, and historical evidence. The shared
 `unit_roster.py` module contains only scenario-neutral validation, inheritance,
-availability, persistence, and strategic-to-runtime projection rules. This is a
-foundation catalog, not completion of any regional or country roster.
+availability, roster resolution, persistence, and strategic-to-runtime
+projection rules.
 
 Every definition and reference uses a stable ID. Concrete archetypes declare a
 category, movement, weapons, armor, abilities, land formations or ship hull,
@@ -27,6 +27,22 @@ possible from `earlyAccessYear` when every named early-access technology is
 completed; normal required technologies still apply. The returned historical
 modifier is data-independent and deterministic, leaving eventual scenario
 balance consumers free to apply the value consistently.
+
+Phase 8 adds `phase8-land-rosters.json`. Land definitions can declare a
+validated `rosterLayer` (`common`, `regional`, `polity`, or `elite`) and one or
+more ordinary battlefield `roleIds`. Shared mechanical bases cover levies,
+militia, ranged and light troops, garrisons, artillery and siege trains,
+engineers, marines, cavalry, and army transport/support. Regional families and
+select major-power or elite formations add identity without cloning those
+bases for every polity. Directed replacement chains preserve historical units
+for old saves while suppressing obsolete predecessors when their replacements
+are currently available.
+
+`RosterCatalog.resolve_roster` is the common resolver for recruitment, AI
+forces, settlement garrisons, and abstract military composition. Callers pass
+the controller's family assignments plus the same date, technology,
+institution, equipment, reform, resource, port, and polity context; no consumer
+maintains a parallel roster.
 
 `representedStrength` remains authoritative campaign state. Runtime templates
 only specify strength represented per Warcraft proxy and per-unit proxy caps;
@@ -76,3 +92,8 @@ fixtures; defense, trade, transport, tradition, visual, audio and packaging
 bindings; and object/import budgets. Regenerate its deterministic report with
 `python3 tooling/validate_naval_roster.py --output
 scenario/naval/reports/coverage.json`.
+
+The complementary Phase 8 land roster broadens those families across all seven political
+regions and the 1450, 1550, 1650, 1750, and 1820 deterministic fixtures. The
+machine-readable coverage audit is in
+`scenario/rosters/reports/phase8-land-coverage.json`.

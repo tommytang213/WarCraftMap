@@ -14,6 +14,7 @@ SLICE_PATHS = (
     ROOT / "scenario/rosters/southeast-east-asia-pacific.json",
     ROOT / "scenario/rosters/americas-caribbean.json",
     ROOT / "scenario/rosters/naval-expansion.json",
+    ROOT / "scenario/rosters/phase8-land-rosters.json",
 )
 
 
@@ -77,6 +78,9 @@ def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
     if families.get("format") != "age_of_sail_roster_families_v1":
         raise RosterError("unsupported global roster-family format")
     family_ids, family_polities = set(), set()
+    shared_units = families.get("sharedLandArchetypeIds", [])
+    if not isinstance(shared_units, list) or not shared_units or not set(shared_units) <= set(catalog.archetypes):
+        raise RosterError("global roster families: broken shared land archetype reference")
     for family in families.get("families", []):
         family_id = family.get("id")
         if not isinstance(family_id, str) or family_id in family_ids:
@@ -92,7 +96,7 @@ def load_catalog(path=ROOT / "scenario/rosters/foundation.json"):
             raise RosterError(f"roster family {family_id}: broken archetype reference")
         family_polities.update(polity_ids)
         for polity in polity_ids:
-            for unit in units:
+            for unit in shared_units + units:
                 if catalog.archetypes[unit].get("countryId") not in (None, polity):
                     raise RosterError(f"roster family {family_id} gives {unit} to incompatible polity {polity}")
                 seen.add((polity, unit))

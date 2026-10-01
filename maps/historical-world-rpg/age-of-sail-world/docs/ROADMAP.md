@@ -151,7 +151,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 The first serious player test target: a substantially complete game intended to be played normally rather than as feature-by-feature QA. Phase 8 is a substantial content-completion pass, not merely final polish of the Phase 5 first-pass catalogues.
 
 - [ ] Full content pass
-  - [ ] Expand the land-unit roster into layered common, regional/cultural, polity-specific, era/technology, and elite/unique content with meaningful upgrade/replacement progression.
+  - [x] Expand the land-unit roster into layered common, regional/cultural, polity-specific, era/technology, and elite/unique content with meaningful upgrade/replacement progression.
   - [ ] Expand the naval roster with regional ship families, polity-specific vessels, merchant/transport/warship roles, era/technology progression, and meaningful variants built on reusable hull/runtime families.
   - [ ] Implement settlement administration and political-office appointments, including deterministic culturally appropriate minor officials, player appointments, administrative capacity, loyalty consequences, and office/history persistence.
   - [ ] Implement dynamic settlement garrisons and local-defense simulation: AI-controlled defenders, authoritative reserve/manpower state, bounded reinforcement waves, post-combat despawn/reconstruction, and technology/polity/region/administrator-driven composition.
