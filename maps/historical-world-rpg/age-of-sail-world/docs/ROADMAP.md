@@ -150,16 +150,25 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 
 The first serious player test target: a substantially complete game intended to be played normally rather than as feature-by-feature QA. Phase 8 is a substantial content-completion pass, not merely final polish of the Phase 5 first-pass catalogues.
 
-- [x] Full content pass
+- [ ] Full content pass
   - [x] Expand the land-unit roster into layered common, regional/cultural, polity-specific, era/technology, and elite/unique content with meaningful upgrade/replacement progression.
   - [x] Expand the naval roster with regional ship families, polity-specific vessels, merchant/transport/warship roles, era/technology progression, and meaningful variants built on reusable hull/runtime families.
   - [x] Implement settlement administration and political-office appointments, including deterministic culturally appropriate minor officials, player appointments, administrative capacity, loyalty consequences, and office/history persistence.
-  - [x] Implement dynamic settlement garrisons and local-defense simulation: AI-controlled defenders, authoritative reserve/manpower state, bounded reinforcement waves, post-combat despawn/reconstruction, and technology/polity/region/administrator-driven composition.
+  - [x] Implement dynamic AI settlement garrisons and local-defense simulation: AI-controlled defenders, authoritative reserve/manpower state, bounded reinforcement waves, post-combat despawn/reconstruction, and technology/polity/region/administrator-driven composition.
   - [x] Expand historical rulers, commanders, admirals, recruitable characters, generated officials, personal quests, relationships, and office/command assignments.
   - [x] Expand the prototype goods catalogue into the authored settlement-level global commodity/trade set with production, consumption, availability, pricing, logistics, and regional differentiation.
   - [x] Expand technology/institution progression and historical/conditional event coverage across 1450–1820.
   - [x] Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content.
   - [x] Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content.
+  - [ ] Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context.
+  - [ ] Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets.
+  - [ ] Implement persistent individual ship equipment/refits, crew/veterancy/history progression, and meaningful continuous ship-experience bonuses with role-specific milestone traits.
+  - [ ] Expand named historical/recruitable heroes toward release-scale regional/era coverage and implement long-campaign hero progression to level 300 with deep skill/mastery/personal progression, unlimited recruited roster, and a high local field-group target subject to performance validation.
+  - [ ] Expand progression breadth toward roughly 180-250 technologies and 20-30 institutions/reforms across the full 1450-1820 timeline.
+  - [ ] Expand historical/conditional event breadth toward roughly 200-300 authored events with dynamic world-state-driven event instances.
+  - [ ] Expand world quest density toward roughly 400-600 authored quests/chains plus 50-100 repeatable/dynamic quest templates distributed across settlements and regions.
+  - [ ] Expand player-facing land/naval military breadth toward roughly 350-500+ meaningful types/variants while preserving shared runtime templates where appropriate.
+  - [ ] Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass.
 - [x] Release save compatibility
 - [ ] No known campaign-blocking defects
 - [ ] Recovery tooling documented

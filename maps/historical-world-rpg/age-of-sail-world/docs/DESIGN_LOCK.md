@@ -38,6 +38,19 @@ This file records requirements already agreed with the player. They are defaults
 - Historical weighting and state-driven utility coefficients belong in scenario/configuration data rather than hardcoded Age-of-Sail assumptions in shared engine code.
 - The goal is a recognizable historical strategic texture without railroading the campaign: plausible historical pressures should be visible, while sufficiently changed world state should produce correspondingly different AI behavior.
 
+## Release-scale content density targets
+
+- The 1450 campaign start should resemble the historically meaningful settlement and political geography of the era rather than assigning an arbitrary equal number of cities to every polity. Large, urbanized, maritime, commercially dense, or administratively complex states should receive correspondingly broader settlement coverage; tiny, nomadic, decentralized, island, or sparsely urbanized polities may legitimately have fewer or differently structured centers.
+- Major capitals, ports, fortified towns, trade centers, provincial/regional seats, historically important cities, and locations needed for routes, events, characters, quests, and warfare should be authored at approximately their real locations and associated with the appropriate 1450 polity/province/control situation. Minor villages and communities may remain abstract when representing them physically would add little gameplay value.
+- As a release-scale planning target, the global authored settlement catalogue should be on the order of 800-1,200 meaningful settlements, with additional minor communities allowed in abstract state. This is a density target, not a quota: historical geography, map readability, and gameplay relevance take priority over forcing every polity to an equal count.
+- Release-scale progression should target roughly 180-250 technologies and 20-30 institutions/reforms across the 1450-1820 span, with meaningful branch depth and era progression rather than long empty gaps.
+- Historical/conditional authored event coverage should target roughly 200-300 significant event definitions, with dynamic systems able to produce many more campaign event instances from current world state.
+- Quest content should target roughly 400-600 authored quests/chains plus approximately 50-100 repeatable/dynamic quest templates distributed across the world, so a long campaign can produce thousands of valid quest instances without requiring thousands of manually unique scripts.
+- Military content should target roughly 350-500+ player-facing land/naval types or meaningful variants across common, regional/cultural, polity-specific, elite, era/technology, merchant, transport, specialist, and warship layers. Shared runtime templates remain encouraged where mechanics overlap.
+- Player-usable RPG inventory should target roughly 300-500 ordinary equipment/consumable/tool items, 100+ unique/historical/legendary items, and about 50-80 authored equipment sets. Bulk trade goods are a separate economic catalogue and do not substitute for usable RPG inventory.
+- Named historical/recruitable hero coverage should target roughly 100-150+ authored characters across regions and eras, with generated officials and minor characters supplementing rather than replacing authored major figures.
+- These ranges are release-planning targets rather than hard ceilings. The final content audit should flag clearly thin regions, eras, major powers, gameplay roles, store inventories, progression branches, or quest/event density even if a global raw-count minimum is technically met.
+
 ## Technology
 
 - Large technology trees with multiple branches.
@@ -76,6 +89,41 @@ This file records requirements already agreed with the player. They are defaults
 - Loyalty/relationship thresholds can produce buffs/debuffs and special content.
 - A high-investment permanent loyalty state such as Oathbound is supported.
 - Relationships between companions may create synergies or friction.
+
+## Equipment identity, rarity, level, and comparison
+
+- Equipment uses separate, explicit dimensions for power and identity rather than collapsing everything into one rarity label.
+- Every player-usable equipment item has a player-facing item level / power level for quick comparison. The intended long-campaign scale supports item levels up to roughly the same order as hero progression (target level cap 300), while scenario data may use narrower bands for specific eras or categories.
+- Item level represents the item's overall stat/effect budget and is primarily a comparison aid, not an absolute statement that a higher-level item is always better for every build.
+- Rarity/quality is a separate field and should communicate affix/effect complexity, craftsmanship, scarcity, and ceiling. Use a clear ordered ladder such as Common, Fine, Superior, Rare, Epic, Legendary, and Relic/Artifact, with exact labels kept data-driven.
+- Identity/provenance is also separate from rarity: generic, regional/cultural, polity-specific, profession/specialist, quest reward, equipment-set piece, unique historical item, legendary/relic, or other authored identity may coexist with any appropriate power level.
+- Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability. Historical/unique items remain persistent singular identities unless explicitly authored otherwise.
+- Equipment comparison UI should show item level, rarity, major stats/effects, equipment-set membership, requirements, and green/red deltas against the currently equipped item. Build-specific abilities, resistances, passives, set thresholds, and conditional effects must remain visible so a lower-level specialized item can rationally outperform a higher-level generic one.
+- Equipment may support bounded enhancement/refinement where appropriate, but enhancement must not erase historical/technological gating or make every old item converge into the same endgame stat block.
+- Player-facing stores distinguish bulk trade goods from usable RPG inventory. Settlement merchant types may include general merchants, armourers/weaponsmiths, gunsmiths, tailors/outfitters, apothecaries, booksellers/cartographers, horse dealers, military suppliers, relic/artifact merchants, ship chandlers, and dockyards, with inventory generated from authoritative local context.
+
+## Persistent individual ship progression and refits
+
+- Ships are persistent individual vessels. Two vessels of the same archetype may diverge through installed equipment/refits, crew quality, experience/veterancy, captain/admiral effects, damage/maintenance state, and historical service.
+- Ship equipment/refit categories may include armament, hull, rigging/sails, navigation, cargo/logistics, crew/marines, protection/safety, flagship/command facilities, and other historically/plausibly appropriate systems.
+- Refit availability is constrained by hull compatibility, campaign year, technology/institutions, polity/region, dockyard capability, resources, money, and other authoritative state.
+- Individual ships accumulate persistent experience from meaningful service such as battles, victories, voyages, storms, exploration, trade/escort operations, and other scenario-defined accomplishments.
+- Ship experience provides continuous, player-visible improvement rather than bonuses so tiny that normal play cannot perceive them. Early meaningful service should produce a noticeable few-percent improvement; established veteran ships should commonly reach roughly 10-20% effective improvement in relevant areas, while exceptionally long-lived elite/legendary vessels may reach roughly 25-40% combined improvement across selected relevant stats/effects.
+- Experience bonuses are distributed by role/history rather than multiplying every stat equally. A veteran gunnery ship may improve reload/accuracy/broadside discipline, while an exploration vessel may improve navigation, storm handling, range, supply efficiency, or maneuvering.
+- Continuous veterancy uses diminishing returns or similarly bounded scaling so an ancient obsolete hull does not overpower a vastly superior later design merely through age. Hull, technology, equipment, and era remain the primary power envelope.
+- Milestones such as Experienced, Veteran, Elite, Famous, and Legendary layer distinctive traits, passives, or specialization choices on top of continuous scaling.
+- Persistent vessel history may record battles, defeated ships, voyages, storms survived, distance sailed, ports visited, discoveries, commanders served under, and other notable service for gameplay, traits, naming, and player attachment.
+
+## Long-campaign hero progression and persistence
+
+- Recruited named heroes persist after their historical initial-availability window closes; the historical window gates first availability/recruitment rather than removing an already recruited hero.
+- Recruited heroes must not disappear merely because the historical death/end date is reached. Once recruited, they belong to the campaign's alternate-history state unless removed by an explicit gameplay rule chosen for that campaign.
+- The target named-hero level cap is 300 for the long campaign. Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers.
+- Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently.
+- Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1.
+- The recruited strategic hero roster has no arbitrary gameplay cap. Physical co-location is a runtime/performance concern separate from ownership; the initial target for simultaneously instantiated player-side heroes in one active field group is at least 32, and may be raised after performance validation.
+- Recruited heroes may instead serve as governors, advisers, army commanders, fleet commanders, specialists, or other remote assignments while retaining one authoritative physical location.
+- Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default.
 
 ## Units and ownership
 
