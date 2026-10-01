@@ -172,4 +172,4 @@ The first serious player test target: a substantially complete game intended to 
 - [x] Release save compatibility
 - [ ] No known campaign-blocking defects
 - [x] Recovery tooling documented
-- [ ] RC build packaged
+- [x] RC build packaged

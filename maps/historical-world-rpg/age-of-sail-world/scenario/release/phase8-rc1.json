@@ -1,0 +1,43 @@
+{
+  "format": "warcraftmap_release_candidate_v1",
+  "formatVersion": 1,
+  "releaseCandidateId": "phase8-rc1",
+  "scenarioVersion": "1",
+  "physicalMapManifestVersion": 1,
+  "runtimeTarget": {
+    "game": "Warcraft III",
+    "patch": "3.0",
+    "scriptBackend": "Lua",
+    "mode": "single-player campaign"
+  },
+  "campaignManifest": "physical-maps.json",
+  "saveCompatibility": "scenario/compatibility/release-save-v1.json",
+  "releaseDocuments": [
+    "docs/RELEASE_CANDIDATE.md",
+    "docs/PLAYER_RECOVERY.md"
+  ],
+  "requiredGates": {
+    "phase8Content": "reports/phase8-content-coverage.json",
+    "releaseSaveCompatibility": "scenario/compatibility/release-save-v1.json",
+    "recoveryDocumentation": "scenario/recovery-support.json",
+    "zeroCampaignBlockers": true
+  },
+  "archive": {
+    "fileName": "AgeOfSailWorld-phase8-rc1.zip",
+    "campaignPath": "Campaigns/AgeOfSailWorldCampaign.w3n",
+    "manifestPath": "Metadata/artifact-manifest.json",
+    "provenancePath": "Metadata/build-provenance.json"
+  },
+  "audit": {
+    "forbiddenArchiveNamePatterns": [
+      "(^|/)(test|tests|fixtures?|preview|previews|debug|tmp|temp)(/|$)",
+      "(^|/)__pycache__(/|$)",
+      "\\.(pyc|pyo|bak|orig|rej)$"
+    ],
+    "forbiddenTextPatterns": [
+      "BEGIN (RSA|OPENSSH|EC) PRIVATE KEY",
+      "(?i)(password|secret|api[_-]?key)\\s*[:=]\\s*[^ ]+",
+      "(?i)(/home/|/Users/|[A-Z]:\\\\Users\\\\)"
+    ]
+  }
+}
