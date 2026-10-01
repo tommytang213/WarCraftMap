@@ -19,6 +19,9 @@ LAND = {"infantry", "cavalry", "artillery", "specialist", "marine"}
 NAVAL = CATEGORIES - LAND
 MECHANICS = {"passive", "active", "aura", "formation", "weapon", "morale", "discipline", "resistance", "counter", "logistics", "terrain", "boarding", "siege"}
 ROSTER_STATE_VERSION = 1
+ROSTER_LAYERS = {"common", "regional", "polity", "elite"}
+LAND_ROLES = {"infantry", "ranged", "firearm", "cavalry", "artillery", "siege", "engineer",
+              "marine", "militia", "garrison", "specialist", "transport", "support"}
 
 
 class RosterError(ValueError):
@@ -175,6 +178,13 @@ class RosterCatalog:
             category = row.get("category")
             if category not in CATEGORIES:
                 raise RosterError(f"archetype {ident}: invalid category")
+            layer, roles = row.get("rosterLayer"), row.get("roleIds")
+            if layer is not None and layer not in ROSTER_LAYERS:
+                raise RosterError(f"archetype {ident}: invalid roster layer")
+            if roles is not None:
+                roles = _unique_ids(roles, f"archetype {ident}.roleIds")
+                if not roles or not set(roles) <= LAND_ROLES:
+                    raise RosterError(f"archetype {ident}: invalid land role")
             domain = "land" if category in LAND else "naval"
             movement = row.get("movementClassId")
             if movement not in self.movement_classes or self.movement_classes[movement]["domain"] != domain:
@@ -270,6 +280,21 @@ class RosterCatalog:
 
     def generated_unit_data(self) -> list[dict[str, Any]]:
         return [copy.deepcopy(self.archetypes[x]) for x in sorted(self.archetypes) if not self.archetypes[x].get("abstract")]
+
+    def resolve_roster(self, assigned_archetype_ids: set[str], year: int, completed_technology_ids: set[str], **context: Any) -> tuple[str, ...]:
+        """Resolve one authoritative roster for recruitment, AI, garrisons and abstract forces."""
+        available = []
+        for ident in sorted(assigned_archetype_ids):
+            if ident not in self.archetypes or self.archetypes[ident].get("abstract"):
+                raise RosterError(f"unknown assigned archetype {ident!r}")
+            if self.availability(ident, year, completed_technology_ids, **context).available:
+                available.append(ident)
+        available_set = set(available)
+        # A currently available replacement suppresses its predecessor. This makes
+        # obsolescence explicit without deleting historical formations from saves.
+        obsolete = {ident for ident in available for replacement in self.archetypes[ident]["replacementIds"]
+                    if replacement in available_set}
+        return tuple(ident for ident in available if ident not in obsolete)
 
     def digest(self) -> str:
         raw = json.dumps(self.generated_unit_data(), sort_keys=True, separators=(",", ":")).encode()
