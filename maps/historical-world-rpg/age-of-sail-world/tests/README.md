@@ -62,3 +62,13 @@ python3 tooling/run_large_world_stress.py --profile maximum_reasonable_world \
 Profiles and provisional simulation, persistence, state-size, and active-object
 budgets live in `scenario/benchmarks/large-world.json`. Summaries are compact
 canonical JSON; failures are capped and identify the invariant and stable ID.
+
+Final Phase 7 development and minimum-target gates live in
+`scenario/benchmarks/final-budgets.json`. The manifest records workload
+versions, environments, aggregation/variance policy, calibration samples, and
+the retained Phase 6 archive/audio limits. Both bounded and extended CI use it:
+
+```sh
+python3 tooling/check_final_performance_budgets.py --profile development
+python3 tooling/check_final_performance_budgets.py --profile minimum_target
+```
