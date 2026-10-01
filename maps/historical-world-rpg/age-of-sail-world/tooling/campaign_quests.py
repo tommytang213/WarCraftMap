@@ -41,8 +41,14 @@ def validate(source, world):
     assert len(quest_ids) == len(quests) and all(ID.fullmatch(x) for x in quest_ids)
     regional = [q for q in quests if q["chainKind"] == "regional"]
     long_chains = [q for q in quests if q["chainKind"] == "long"]
+    personal = [q for q in quests if q["chainKind"] == "personal"]
+    cross_region = [q for q in quests if q["chainKind"] == "cross_region"]
+    repeatable = [q for q in quests if q["chainKind"] == "repeatable"]
     assert len(regional) >= coverage["minimumRegionalChains"]
     assert {q["region"] for q in regional} == regions and len(long_chains) >= coverage["minimumLongChains"]
+    assert len(personal) >= coverage.get("minimumPersonalChains", 0)
+    assert len(cross_region) >= coverage.get("minimumCrossRegionChains", 0)
+    assert len(repeatable) >= coverage.get("minimumRepeatableChains", 0)
     objective_kinds, guidance_kinds, used_regions = set(), set(), set()
     reward_adapters = set()
     for quest in quests:
