@@ -157,7 +157,7 @@ The first serious player test target: a substantially complete game intended to 
   - [ ] Implement dynamic settlement garrisons and local-defense simulation: AI-controlled defenders, authoritative reserve/manpower state, bounded reinforcement waves, post-combat despawn/reconstruction, and technology/polity/region/administrator-driven composition.
   - [x] Expand historical rulers, commanders, admirals, recruitable characters, generated officials, personal quests, relationships, and office/command assignments.
   - [x] Expand the prototype goods catalogue into the authored settlement-level global commodity/trade set with production, consumption, availability, pricing, logistics, and regional differentiation.
-  - [ ] Expand technology/institution progression and historical/conditional event coverage across 1450–1820.
+  - [x] Expand technology/institution progression and historical/conditional event coverage across 1450–1820.
   - [ ] Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content.
   - [ ] Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content.
 - [ ] Release save compatibility

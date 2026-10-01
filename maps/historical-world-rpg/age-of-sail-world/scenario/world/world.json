@@ -79,6 +79,48 @@
       },
       {
         "id": "napoleonic_trade_pressure"
+      },
+      {
+        "id": "iberian_union_pressure"
+      },
+      {
+        "id": "thirty_years_confessional_pressure"
+      },
+      {
+        "id": "ethiopian_adal_pressure"
+      },
+      {
+        "id": "west_african_trade_reorientation"
+      },
+      {
+        "id": "safavid_ottoman_frontier_pressure"
+      },
+      {
+        "id": "maratha_deccan_mobilization"
+      },
+      {
+        "id": "aceh_strait_competition"
+      },
+      {
+        "id": "batavia_commercial_pressure"
+      },
+      {
+        "id": "imjin_war_pressure"
+      },
+      {
+        "id": "qing_transition_pressure"
+      },
+      {
+        "id": "potosi_silver_pressure"
+      },
+      {
+        "id": "haudenosaunee_diplomatic_balance"
+      },
+      {
+        "id": "rapa_nui_resource_pressure"
+      },
+      {
+        "id": "pacific_contact_epidemic_pressure"
       }
     ],
     "schedules": [
@@ -249,6 +291,104 @@
         "eventId": "napoleonic_trade_pressure",
         "firstDate": "1806-11-21",
         "priority": 20,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_iberian_union_pressure",
+        "eventId": "iberian_union_pressure",
+        "firstDate": "1580-09-12",
+        "priority": 25,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_thirty_years_confessional_pressure",
+        "eventId": "thirty_years_confessional_pressure",
+        "firstDate": "1618-05-23",
+        "priority": 22,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_ethiopian_adal_pressure",
+        "eventId": "ethiopian_adal_pressure",
+        "firstDate": "1529-03-01",
+        "priority": 20,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_west_african_trade_reorientation",
+        "eventId": "west_african_trade_reorientation",
+        "firstDate": "1750-01-01",
+        "priority": 35,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_safavid_ottoman_frontier_pressure",
+        "eventId": "safavid_ottoman_frontier_pressure",
+        "firstDate": "1514-08-23",
+        "priority": 20,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_maratha_deccan_mobilization",
+        "eventId": "maratha_deccan_mobilization",
+        "firstDate": "1674-06-06",
+        "priority": 25,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_aceh_strait_competition",
+        "eventId": "aceh_strait_competition",
+        "firstDate": "1560-01-01",
+        "priority": 30,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_batavia_commercial_pressure",
+        "eventId": "batavia_commercial_pressure",
+        "firstDate": "1619-05-30",
+        "priority": 30,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_imjin_war_pressure",
+        "eventId": "imjin_war_pressure",
+        "firstDate": "1592-05-23",
+        "priority": 18,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_qing_transition_pressure",
+        "eventId": "qing_transition_pressure",
+        "firstDate": "1644-04-25",
+        "priority": 18,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_potosi_silver_pressure",
+        "eventId": "potosi_silver_pressure",
+        "firstDate": "1545-04-01",
+        "priority": 30,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_haudenosaunee_diplomatic_balance",
+        "eventId": "haudenosaunee_diplomatic_balance",
+        "firstDate": "1701-08-04",
+        "priority": 35,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_rapa_nui_resource_pressure",
+        "eventId": "rapa_nui_resource_pressure",
+        "firstDate": "1650-01-01",
+        "priority": 45,
+        "eraId": "early_modern"
+      },
+      {
+        "id": "schedule_pacific_contact_epidemic_pressure",
+        "eventId": "pacific_contact_epidemic_pressure",
+        "firstDate": "1778-01-18",
+        "priority": 28,
         "eraId": "early_modern"
       }
     ]
@@ -1910,6 +2050,93 @@
   ],
   "events": [
     {
+      "id": "aceh_strait_competition",
+      "title": "Aceh Strait Competition",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "malacca_sultanate"
+            },
+            {
+              "kind": "province",
+              "id": "malacca_sultanate"
+            },
+            {
+              "kind": "settlement",
+              "id": "malacca"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "malacca_sultanate"
+            },
+            {
+              "kind": "province",
+              "id": "malacca_sultanate"
+            },
+            {
+              "kind": "settlement",
+              "id": "malacca"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "southeast_asia",
+        "categories": [
+          "commercial",
+          "military",
+          "religious"
+        ],
+        "evidence": "Sixteenth-century Acehnese expansion intensified competition over trade and religious patronage around the Strait of Malacca.",
+        "alternatives": [
+          {
+            "id": "strait_conflict",
+            "weight": 2,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "malacca_sultanate"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "malacca_sultanate",
+                "value": -3
+              }
+            ]
+          },
+          {
+            "id": "merchant_accommodation",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "strait_merchant_compact",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "american_independence_pressure",
       "title": "American Independence Pressure",
       "repeatable": false,
@@ -2140,6 +2367,180 @@
               {
                 "kind": "set_flag",
                 "targetId": "caribbean_storm_spared",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "batavia_commercial_pressure",
+      "title": "Batavia Commercial Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "majapahit_empire"
+            },
+            {
+              "kind": "province",
+              "id": "majapahit_java"
+            },
+            {
+              "kind": "settlement",
+              "id": "trowulan"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "majapahit_empire"
+            },
+            {
+              "kind": "province",
+              "id": "majapahit_java"
+            },
+            {
+              "kind": "settlement",
+              "id": "trowulan"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "southeast_asia",
+        "categories": [
+          "commercial",
+          "political",
+          "social"
+        ],
+        "evidence": "The establishment of Batavia in 1619 concentrated chartered-company power and redirected Java Sea trade.",
+        "alternatives": [
+          {
+            "id": "company_network_dominates",
+            "weight": 2,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "majapahit_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "java_company_trade_pressure",
+                "value": true
+              }
+            ]
+          },
+          {
+            "id": "local_ports_coordinate",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "majapahit_java",
+                "value": 4
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ethiopian_adal_pressure",
+      "title": "Ethiopian Adal Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ethiopian_empire"
+            },
+            {
+              "kind": "province",
+              "id": "shewa"
+            },
+            {
+              "kind": "settlement",
+              "id": "ethiopian_royal_camp"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ethiopian_empire"
+            },
+            {
+              "kind": "province",
+              "id": "shewa"
+            },
+            {
+              "kind": "settlement",
+              "id": "ethiopian_royal_camp"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "africa",
+        "categories": [
+          "military",
+          "religious",
+          "diplomatic"
+        ],
+        "evidence": "War between the Ethiopian kingdom and the Adal Sultanate reshaped alliances and military practice in the Horn during the sixteenth century.",
+        "alternatives": [
+          {
+            "id": "highland_war",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "ethiopian_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "shewa",
+                "value": -5
+              }
+            ]
+          },
+          {
+            "id": "frontier_truce",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "horn_frontier_truce",
                 "value": true
               }
             ]
@@ -2449,6 +2850,292 @@
       }
     },
     {
+      "id": "haudenosaunee_diplomatic_balance",
+      "title": "Haudenosaunee Diplomatic Balance",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "haudenosaunee_nations"
+            },
+            {
+              "kind": "province",
+              "id": "haudenosaunee_homelands"
+            },
+            {
+              "kind": "settlement",
+              "id": "haudenosaunee_council_fire"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "haudenosaunee_nations"
+            },
+            {
+              "kind": "province",
+              "id": "haudenosaunee_homelands"
+            },
+            {
+              "kind": "settlement",
+              "id": "haudenosaunee_council_fire"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "americas_caribbean",
+        "categories": [
+          "diplomatic",
+          "commercial",
+          "social"
+        ],
+        "evidence": "The Great Peace of Montreal in 1701 reflected Indigenous diplomacy and strategic balancing among many communities and colonial powers.",
+        "alternatives": [
+          {
+            "id": "council_peace",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "haudenosaunee_nations"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "haudenosaunee_homelands",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "id": "frontier_war_continues",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "northeast_frontier_war",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "iberian_union_pressure",
+      "title": "Iberian Union Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "portugal"
+            },
+            {
+              "kind": "polity",
+              "id": "castile"
+            },
+            {
+              "kind": "settlement",
+              "id": "lisbon"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "portugal"
+            },
+            {
+              "kind": "polity",
+              "id": "castile"
+            },
+            {
+              "kind": "settlement",
+              "id": "lisbon"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "europe",
+        "categories": [
+          "succession",
+          "political",
+          "commercial"
+        ],
+        "evidence": "The Portuguese succession crisis of 1580 joined the Iberian crowns while preserving distinct administrations.",
+        "alternatives": [
+          {
+            "id": "crowns_unite",
+            "weight": 2,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "portugal"
+              },
+              {
+                "kind": "entity_exists",
+                "entityId": "castile"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_relations",
+                "targetIds": [
+                  "portugal",
+                  "castile"
+                ],
+                "value": 20
+              }
+            ]
+          },
+          {
+            "id": "portuguese_claim_endures",
+            "weight": 1,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "portugal"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "portuguese_succession_resisted",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "imjin_war_pressure",
+      "title": "Imjin War Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "joseon_kingdom"
+            },
+            {
+              "kind": "polity",
+              "id": "ming_empire"
+            },
+            {
+              "kind": "province",
+              "id": "joseon_central_provinces"
+            },
+            {
+              "kind": "settlement",
+              "id": "hanseong"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "joseon_kingdom"
+            },
+            {
+              "kind": "polity",
+              "id": "ming_empire"
+            },
+            {
+              "kind": "province",
+              "id": "joseon_central_provinces"
+            },
+            {
+              "kind": "settlement",
+              "id": "hanseong"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "east_asia",
+        "categories": [
+          "military",
+          "technological",
+          "diplomatic",
+          "social"
+        ],
+        "evidence": "The invasions of Korea beginning in 1592 mobilized regional alliances, naval forces, firearms, and civilian resistance.",
+        "alternatives": [
+          {
+            "id": "regional_war",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "joseon_kingdom"
+              },
+              {
+                "kind": "entity_exists",
+                "entityId": "ming_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "joseon_central_provinces",
+                "value": -7
+              }
+            ]
+          },
+          {
+            "id": "negotiated_withdrawal",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "imjin_negotiated_withdrawal",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "indian_ocean_route_pressure",
       "title": "Indian Ocean Route Pressure",
       "repeatable": false,
@@ -2713,6 +3400,88 @@
                 "kind": "adjust_prosperity",
                 "targetId": "malacca_sultanate",
                 "value": 4
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "maratha_deccan_mobilization",
+      "title": "Maratha Deccan Mobilization",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "province",
+              "id": "bahmani_deccan"
+            },
+            {
+              "kind": "settlement",
+              "id": "bidar"
+            },
+            {
+              "kind": "polity",
+              "id": "vijayanagara_empire"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "province",
+              "id": "bahmani_deccan"
+            },
+            {
+              "kind": "settlement",
+              "id": "bidar"
+            },
+            {
+              "kind": "polity",
+              "id": "vijayanagara_empire"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "middle_east_india",
+        "categories": [
+          "political",
+          "military",
+          "social"
+        ],
+        "evidence": "Seventeenth-century Maratha mobilization created new military-fiscal networks and challenged established Deccan powers.",
+        "alternatives": [
+          {
+            "id": "mobile_power_expands",
+            "weight": 2,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "deccan_mobile_mobilization",
+                "value": true
+              }
+            ]
+          },
+          {
+            "id": "regional_compact",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "bahmani_deccan",
+                "value": 3
               }
             ]
           }
@@ -3084,6 +3853,94 @@
       }
     },
     {
+      "id": "pacific_contact_epidemic_pressure",
+      "title": "Pacific Contact Epidemic Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "hawaii_chiefdom"
+            },
+            {
+              "kind": "province",
+              "id": "hawaii_island"
+            },
+            {
+              "kind": "settlement",
+              "id": "hawaii_royal_center"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "hawaii_chiefdom"
+            },
+            {
+              "kind": "province",
+              "id": "hawaii_island"
+            },
+            {
+              "kind": "settlement",
+              "id": "hawaii_royal_center"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "pacific",
+        "categories": [
+          "exploration",
+          "environmental",
+          "social",
+          "commercial"
+        ],
+        "evidence": "Sustained outside contact after 1778 brought new exchange networks and severe disease risks to Hawai'i.",
+        "alternatives": [
+          {
+            "id": "contact_disease",
+            "weight": 2,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "hawaii_chiefdom"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "hawaii_island",
+                "value": -5
+              }
+            ]
+          },
+          {
+            "id": "managed_contact",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "hawaiian_managed_contact",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "pacific_voyaging_exchange",
       "title": "Pacific Voyaging Exchange",
       "repeatable": true,
@@ -3258,6 +4115,274 @@
       }
     },
     {
+      "id": "potosi_silver_pressure",
+      "title": "Potosi Silver Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "tawantinsuyu"
+            },
+            {
+              "kind": "province",
+              "id": "inca_cusco_heartland"
+            },
+            {
+              "kind": "settlement",
+              "id": "cusco"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "tawantinsuyu"
+            },
+            {
+              "kind": "province",
+              "id": "inca_cusco_heartland"
+            },
+            {
+              "kind": "settlement",
+              "id": "cusco"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "americas_caribbean",
+        "categories": [
+          "commercial",
+          "technological",
+          "environmental",
+          "social"
+        ],
+        "evidence": "Large-scale Andean silver extraction from the mid-sixteenth century transformed labor systems and global monetary flows.",
+        "alternatives": [
+          {
+            "id": "silver_mobilization",
+            "weight": 2,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "tawantinsuyu"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "inca_cusco_heartland",
+                "value": 5
+              },
+              {
+                "kind": "set_flag",
+                "targetId": "andean_labor_pressure",
+                "value": true
+              }
+            ]
+          },
+          {
+            "id": "local_extraction_limits",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "andean_silver_constrained",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "qing_transition_pressure",
+      "title": "Qing Transition Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ming_empire"
+            },
+            {
+              "kind": "province",
+              "id": "ming_beizhili"
+            },
+            {
+              "kind": "settlement",
+              "id": "beijing"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ming_empire"
+            },
+            {
+              "kind": "province",
+              "id": "ming_beizhili"
+            },
+            {
+              "kind": "settlement",
+              "id": "beijing"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "east_asia",
+        "categories": [
+          "succession",
+          "political",
+          "military",
+          "social"
+        ],
+        "evidence": "The collapse of Ming authority in 1644 opened a prolonged and contested dynastic transition rather than an instantaneous settlement.",
+        "alternatives": [
+          {
+            "id": "dynastic_transition",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "ming_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "ming_dynastic_crisis",
+                "value": true
+              }
+            ]
+          },
+          {
+            "id": "ming_recovery",
+            "weight": 1,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "ming_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "ming_beizhili",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rapa_nui_resource_pressure",
+      "title": "Rapa Nui Resource Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "tahiti_chiefdoms"
+            },
+            {
+              "kind": "province",
+              "id": "society_island_chiefdoms"
+            },
+            {
+              "kind": "settlement",
+              "id": "tahiti_council"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "tahiti_chiefdoms"
+            },
+            {
+              "kind": "province",
+              "id": "society_island_chiefdoms"
+            },
+            {
+              "kind": "settlement",
+              "id": "tahiti_council"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "pacific",
+        "categories": [
+          "environmental",
+          "social",
+          "political"
+        ],
+        "evidence": "Pacific island societies adapted political and subsistence practices to locally varying resource and climate pressures; the schedule represents conditional regional pressure, not a fixed collapse claim.",
+        "alternatives": [
+          {
+            "id": "resource_adaptation",
+            "weight": 3,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "society_island_chiefdoms",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "id": "resource_conflict",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "pacific_resource_conflict",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "reformation_pressure",
       "title": "Reformation Pressure",
       "repeatable": false,
@@ -3337,6 +4462,93 @@
               {
                 "kind": "set_flag",
                 "targetId": "reform_reconciled",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "safavid_ottoman_frontier_pressure",
+      "title": "Safavid Ottoman Frontier Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ottoman_empire"
+            },
+            {
+              "kind": "province",
+              "id": "ottoman_anatolia"
+            },
+            {
+              "kind": "settlement",
+              "id": "bursa"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "ottoman_empire"
+            },
+            {
+              "kind": "province",
+              "id": "ottoman_anatolia"
+            },
+            {
+              "kind": "settlement",
+              "id": "bursa"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "middle_east_india",
+        "categories": [
+          "military",
+          "religious",
+          "diplomatic"
+        ],
+        "evidence": "The Ottoman-Safavid rivalry after Chaldiran made eastern Anatolia a durable military and confessional frontier.",
+        "alternatives": [
+          {
+            "id": "frontier_escalates",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "ottoman_empire"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "ottoman_anatolia",
+                "value": -4
+              }
+            ]
+          },
+          {
+            "id": "marcher_settlement",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "anatolian_frontier_settlement",
                 "value": true
               }
             ]
@@ -3615,6 +4827,94 @@
       }
     },
     {
+      "id": "thirty_years_confessional_pressure",
+      "title": "Thirty Years Confessional Pressure",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "brandenburg"
+            },
+            {
+              "kind": "polity",
+              "id": "papal_states"
+            },
+            {
+              "kind": "settlement",
+              "id": "wittenberg"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "polity",
+              "id": "brandenburg"
+            },
+            {
+              "kind": "polity",
+              "id": "papal_states"
+            },
+            {
+              "kind": "settlement",
+              "id": "wittenberg"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "europe",
+        "categories": [
+          "religious",
+          "diplomatic",
+          "military",
+          "social"
+        ],
+        "evidence": "Confessional and constitutional disputes in the Holy Roman Empire escalated into the Thirty Years' War after 1618.",
+        "alternatives": [
+          {
+            "id": "confessional_war",
+            "weight": 3,
+            "conditions": [
+              {
+                "kind": "entity_exists",
+                "entityId": "brandenburg"
+              }
+            ],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "imperial_confessional_war",
+                "value": true
+              }
+            ]
+          },
+          {
+            "id": "imperial_compromise",
+            "weight": 1,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "set_flag",
+                "targetId": "imperial_confessional_compromise",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "tokugawa_settlement_pressure",
       "title": "Tokugawa Settlement Pressure",
       "repeatable": false,
@@ -3865,6 +5165,88 @@
                 "kind": "set_flag",
                 "targetId": "english_succession_settled",
                 "value": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "west_african_trade_reorientation",
+      "title": "West African Trade Reorientation",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "scheduled",
+          "conditionId": "historical_state_allows",
+          "entityRefs": [
+            {
+              "kind": "province",
+              "id": "middle_niger"
+            },
+            {
+              "kind": "province",
+              "id": "akan_forest"
+            },
+            {
+              "kind": "settlement",
+              "id": "gao"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [
+        {
+          "id": "apply_pressure",
+          "kind": "scenario_outcome",
+          "outcomeId": "resolve_historical_pressure",
+          "entityRefs": [
+            {
+              "kind": "province",
+              "id": "middle_niger"
+            },
+            {
+              "kind": "province",
+              "id": "akan_forest"
+            },
+            {
+              "kind": "settlement",
+              "id": "gao"
+            }
+          ]
+        }
+      ],
+      "historical": {
+        "region": "africa",
+        "categories": [
+          "commercial",
+          "political",
+          "social"
+        ],
+        "evidence": "During the eighteenth century, Atlantic and Saharan commercial networks exerted competing pressures on West African states and communities.",
+        "alternatives": [
+          {
+            "id": "atlantic_routes_expand",
+            "weight": 2,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "akan_forest",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "id": "inland_routes_recover",
+            "weight": 2,
+            "conditions": [],
+            "effects": [
+              {
+                "kind": "adjust_prosperity",
+                "targetId": "middle_niger",
+                "value": 4
               }
             ]
           }
@@ -30175,13 +31557,66 @@
       ]
     },
     {
+      "id": "siege_engineering_corps",
+      "name": "Siege Engineering Corps",
+      "description": "Permanent engineers coordinate sapping, artillery positions, and fortress repair.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "trace_italienne",
+        "cadastral_survey"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 175,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "common_sapper_corps"
+        },
+        {
+          "kind": "ability",
+          "contentId": "siege_engineering"
+        }
+      ]
+    },
+    {
+      "id": "standing_army_system",
+      "name": "Standing Army System",
+      "description": "Permanent regiments, magazines, and officer cadres replace seasonal musters.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "flintlock_drill",
+        "military_fiscal_state"
+      ],
+      "timeCost": {
+        "preferredYear": 1680,
+        "baseCost": 235,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "standing_army_reform"
+        },
+        {
+          "kind": "modifier",
+          "contentId": "garrison_readiness"
+        }
+      ]
+    },
+    {
       "id": "mass_army_logistics",
       "name": "Mass Army Logistics",
       "description": "Conscription registers and organized supply sustain mass armies.",
       "branchId": "military",
       "prerequisiteIds": [
         "mobile_field_artillery",
-        "statistical_administration"
+        "statistical_administration",
+        "standing_army_system"
       ],
       "timeCost": {
         "preferredYear": 1795,
@@ -30193,6 +31628,14 @@
         {
           "kind": "policy",
           "contentId": "mass_conscription"
+        },
+        {
+          "kind": "unit",
+          "contentId": "common_wagon_train"
+        },
+        {
+          "kind": "modifier",
+          "contentId": "supply_efficiency"
         }
       ]
     },
@@ -30320,6 +31763,84 @@
       ]
     },
     {
+      "id": "dockyard_logistics",
+      "name": "Dockyard Logistics",
+      "description": "Permanent yards coordinate timber seasoning, stores, repairs, and fleet victualling.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "standardized_charts",
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 185,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "dry_dock"
+        },
+        {
+          "kind": "unit",
+          "contentId": "coastal_patrol_sloop"
+        }
+      ]
+    },
+    {
+      "id": "naval_gunnery",
+      "name": "Naval Gunnery",
+      "description": "Standard batteries and practiced crews turn shipboard cannon into coordinated broadsides.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "galleon_design",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1630,
+        "baseCost": 225,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "east_asian_war_junk"
+        },
+        {
+          "kind": "modifier",
+          "contentId": "shipbuilding_capacity"
+        }
+      ]
+    },
+    {
+      "id": "frigate_cruising",
+      "name": "Frigate Cruising",
+      "description": "Fast purpose-built cruisers scout fleets, escort trade, and raid commerce.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "battlefleet_doctrine",
+        "insurance_markets"
+      ],
+      "timeCost": {
+        "preferredYear": 1710,
+        "baseCost": 285,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "ocean_cruising_frigate"
+        },
+        {
+          "kind": "ability",
+          "contentId": "convoy_escort"
+        }
+      ]
+    },
+    {
       "id": "steam_navigation",
       "name": "Steam Navigation",
       "description": "Practical engines supplement sail for reliable short-range navigation.",
@@ -30416,12 +31937,64 @@
       "unlocks": []
     },
     {
+      "id": "chartered_companies",
+      "name": "Chartered Companies",
+      "description": "State charters combine pooled capital, delegated authority, and fortified long-distance trade.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "joint_stock_enterprise",
+        "galleon_design"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 205,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "armed_indiaman"
+        },
+        {
+          "kind": "policy",
+          "contentId": "commercial_courts"
+        }
+      ]
+    },
+    {
+      "id": "commodity_exchanges",
+      "name": "Commodity Exchanges",
+      "description": "Organized exchanges and price bulletins deepen wholesale markets and credit.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "insurance_markets",
+        "postal_networks"
+      ],
+      "timeCost": {
+        "preferredYear": 1720,
+        "baseCost": 275,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "credit_liquidity"
+        },
+        {
+          "kind": "building",
+          "contentId": "customs_house"
+        }
+      ]
+    },
+    {
       "id": "integrated_world_markets",
       "name": "Integrated World Markets",
       "description": "Regular information, credit, and shipping connect intercontinental prices.",
       "branchId": "commercial",
       "prerequisiteIds": [
-        "insurance_markets",
+        "commodity_exchanges",
         "industrial_manufacture"
       ],
       "timeCost": {
@@ -30434,6 +32007,10 @@
         {
           "kind": "modifier",
           "contentId": "trade_efficiency"
+        },
+        {
+          "kind": "ability",
+          "contentId": "global_expedition"
         }
       ]
     },
@@ -30495,13 +32072,62 @@
       ]
     },
     {
+      "id": "provincial_governance",
+      "name": "Provincial Governance",
+      "description": "Delegated governors, audit circuits, and durable archives extend rule beyond capitals.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "cadastral_survey",
+        "postal_networks"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 180,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "provincial_governors"
+        },
+        {
+          "kind": "modifier",
+          "contentId": "administrative_reach"
+        }
+      ]
+    },
+    {
+      "id": "postal_networks",
+      "name": "State Postal Networks",
+      "description": "Relays and scheduled couriers carry orders, intelligence, and commercial news.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "professional_bureaucracy",
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1510,
+        "baseCost": 140,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "postal_station"
+        }
+      ]
+    },
+    {
       "id": "statistical_administration",
       "name": "Statistical Administration",
       "description": "Regular censuses and tabulation support population-scale policy.",
       "branchId": "administrative",
       "prerequisiteIds": [
         "military_fiscal_state",
-        "enlightenment_public_sphere"
+        "enlightenment_public_sphere",
+        "provincial_governance"
       ],
       "timeCost": {
         "preferredYear": 1770,
@@ -30568,6 +32194,54 @@
         "additionalMultiplierPerYearAhead": 0.08
       },
       "unlocks": []
+    },
+    {
+      "id": "anatomy_and_medicine",
+      "name": "Anatomy and Clinical Medicine",
+      "description": "Comparative anatomy, case records, and hospitals improve practical medicine.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "experimental_method",
+        "urban_public_health"
+      ],
+      "timeCost": {
+        "preferredYear": 1680,
+        "baseCost": 235,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "ability",
+          "contentId": "epidemic_control"
+        }
+      ]
+    },
+    {
+      "id": "systematic_natural_history",
+      "name": "Systematic Natural History",
+      "description": "Standard classification and collecting connect surveys to agriculture and trade.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "scientific_societies",
+        "standardized_charts"
+      ],
+      "timeCost": {
+        "preferredYear": 1735,
+        "baseCost": 280,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "academy"
+        },
+        {
+          "kind": "ability",
+          "contentId": "scientific_survey"
+        }
+      ]
     },
     {
       "id": "precision_engineering",
@@ -30648,12 +32322,60 @@
       "unlocks": []
     },
     {
+      "id": "irrigation_hydraulics",
+      "name": "Irrigation Hydraulics",
+      "description": "Canals, pumps, and water control stabilize intensive farming in varied climates.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "intensive_crop_rotation",
+        "water_powered_machinery"
+      ],
+      "timeCost": {
+        "preferredYear": 1540,
+        "baseCost": 145,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "harvest_resilience"
+        }
+      ]
+    },
+    {
+      "id": "agrarian_improvement",
+      "name": "Agrarian Improvement",
+      "description": "Surveys, manuals, and experimental farms spread locally adapted husbandry.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "selective_breeding",
+        "scientific_societies"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 285,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "building",
+          "contentId": "granary"
+        },
+        {
+          "kind": "policy",
+          "contentId": "land_tenure_reform"
+        }
+      ]
+    },
+    {
       "id": "agricultural_mechanization",
       "name": "Agricultural Mechanization",
       "description": "Improved seed drills and threshing machinery raise labor productivity.",
       "branchId": "agricultural",
       "prerequisiteIds": [
-        "selective_breeding",
+        "agrarian_improvement",
         "precision_engineering"
       ],
       "timeCost": {
@@ -30739,13 +32461,58 @@
       ]
     },
     {
+      "id": "standardized_ordnance",
+      "name": "Standardized Ordnance",
+      "description": "Gauges and regulated foundries make artillery supply and repair more dependable.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "cast_cannon",
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1620,
+        "baseCost": 205,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "unit",
+          "contentId": "common_siege_battery"
+        }
+      ]
+    },
+    {
+      "id": "textile_mechanization",
+      "name": "Textile Mechanization",
+      "description": "Spinning and weaving machinery concentrate production and accelerate throughput.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "water_powered_machinery",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 335,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "workshop_output"
+        }
+      ]
+    },
+    {
       "id": "industrial_manufacture",
       "name": "Industrial Manufacture",
       "description": "Powered machinery, disciplined labor, and capital combine at factory scale.",
       "branchId": "industrial",
       "prerequisiteIds": [
         "rotative_steam_power",
-        "joint_stock_enterprise"
+        "joint_stock_enterprise",
+        "textile_mechanization"
       ],
       "timeCost": {
         "preferredYear": 1800,
@@ -30882,6 +32649,54 @@
         {
           "kind": "policy",
           "contentId": "free_press"
+        }
+      ]
+    },
+    {
+      "id": "urban_public_health",
+      "name": "Urban Public Health",
+      "description": "Quarantine boards, mortality records, and sanitation rules make epidemic response institutional.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "professional_bureaucracy",
+        "movable_type_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1570,
+        "baseCost": 175,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "public_health"
+        }
+      ]
+    },
+    {
+      "id": "naval_administration",
+      "name": "Naval Administration",
+      "description": "Permanent dockyards, supply boards, and officer records sustain fleets beyond single campaigns.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "military_fiscal_state",
+        "galleon_design"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 230,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "permanent_naval_board"
+        },
+        {
+          "kind": "building",
+          "contentId": "dry_dock"
         }
       ]
     },

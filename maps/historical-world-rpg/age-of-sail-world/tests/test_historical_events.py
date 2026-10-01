@@ -81,4 +81,22 @@ class HistoricalEventTests(unittest.TestCase):
         years={date.fromisoformat(x["firstDate"]).year//100 for x in WORLD["timeline"]["schedules"]}
         self.assertTrue({14,15,16,17,18}<=years)
 
+    def test_multi_century_trajectories_are_relevant_bounded_and_deterministic(self):
+        definition=WORLD["timeline"]
+        occurrences=timeline.advance(definition,timeline.initial_state(definition),"1820-12-31")[1]
+        self.assertEqual(59,len(occurrences))
+        self.assertLessEqual(len(occurrences),80)  # fewer than one pressure per five campaign years
+        for label,mutate in (
+            ("baseline",lambda state:None),
+            ("ottoman_thrace",lambda state:state["ownership"].__setitem__("byzantine_thrace","ottoman_empire")),
+            ("collapsed_polities",lambda state:state["activeEntityIds"].remove("byzantine_empire")),
+        ):
+            state=external_state(); mutate(state)
+            first=runtime(state); historical_events.enqueue_occurrences(first,occurrences); first.process_until(date(1820,12,31).toordinal())
+            second=runtime(copy.deepcopy(state)); historical_events.enqueue_occurrences(second,occurrences); second.process_until(date(1820,12,31).toordinal())
+            self.assertEqual(first.snapshot(),second.snapshot(),label)
+            fired=sum(x["occurrences"] for x in first.snapshot()["events"])
+            self.assertLessEqual(fired,len(occurrences),label)
+            self.assertGreaterEqual(fired,45,label)
+
 if __name__=="__main__": unittest.main()

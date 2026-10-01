@@ -102,7 +102,10 @@ def validate(source_path=SOURCE, world_path=WORLD, require_projection=True):
     if reachable != set(nodes):
         raise CatalogError(f"unreachable nodes {sorted(set(nodes) - reachable)!r}")
 
-    allowed_regions = {"western_europe", "americas_caribbean"}
+    # Origins are authored historical starting points, not an engine preference for
+    # Europe.  Later scenarios may map these broad diffusion regions differently.
+    allowed_regions = {"western_europe", "americas_caribbean", "africa", "middle_east_india",
+                       "southeast_asia", "east_asia", "pacific"}
     for ident, institution in institutions.items():
         origin = institution.get("origin", {})
         requirements = institution.get("adoptionRequirements", {})
@@ -134,6 +137,11 @@ def validate(source_path=SOURCE, world_path=WORLD, require_projection=True):
                 province_adoption[province][node_id] = level
     if not data.get("historicalEvidence") or any(not x.get("citation") or not x.get("note") for x in data["historicalEvidence"]):
         raise CatalogError("historical evidence is required")
+    if len(technologies) < 50 or len(institutions) < 9:
+        raise CatalogError("Phase 8 catalog requires at least 50 technologies and 9 institutions")
+    unlocked_kinds = {unlock[0] for node in nodes.values() for unlock in node["unlocks"]}
+    if unlocked_kinds != KINDS:
+        raise CatalogError(f"Phase 8 unlock integration is incomplete: {sorted(KINDS - unlocked_kinds)!r}")
     if require_projection and project(data, world) != world:
         raise CatalogError("world progression projection is stale; run progression_catalog.py --write")
     return data
