@@ -72,3 +72,15 @@ the retained Phase 6 archive/audio limits. Both bounded and extended CI use it:
 python3 tooling/check_final_performance_budgets.py --profile development
 python3 tooling/check_final_performance_budgets.py --profile minimum_target
 ```
+
+The routine test suite also runs the bounded `smoke` profile from
+`scenario/benchmarks/full-world-soak.json` against every configured authored
+campaign source. The extended stress workflow runs the four-seed
+`complete_multi_century` profile across 1450–1820. Both normal progression and
+accelerated jumps execute the same logical schedule, and every run proves an
+encoded checkpoint/resume path has the same normalized final state:
+
+```sh
+python3 tooling/run_full_world_soak.py --profile complete_multi_century \
+  --summary-out _build/stress/full-world-multi-century.json
+```

@@ -1,25 +1,55 @@
-name: Synthetic large-world stress
+name: Large-world and multi-century stress
 on:
   pull_request:
     paths:
       - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
+      - "maps/historical-world-rpg/_shared/engine/full_world_soak.py"
       - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
       - "maps/historical-world-rpg/_shared/engine/final_performance_budget.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/economy/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/geography/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/maps/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/politics/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/progression/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/characters/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/settlements/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/treasures/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/military-traditions.json"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/campaign-quests.json"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/historical-events.json"
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/run_full_world_soak.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_final_performance_budgets.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_full_world_soak.py"
       - ".github/workflows/large-world-stress.yml"
   push:
     branches: [main]
     paths:
       - "maps/historical-world-rpg/_shared/engine/large_world_stress.py"
+      - "maps/historical-world-rpg/_shared/engine/full_world_soak.py"
       - "maps/historical-world-rpg/_shared/engine/performance_benchmark.py"
       - "maps/historical-world-rpg/_shared/engine/final_performance_budget.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/benchmarks/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/economy/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/geography/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/maps/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/politics/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/progression/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/characters/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/settlements/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/treasures/**"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/military-traditions.json"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/campaign-quests.json"
+      - "maps/historical-world-rpg/age-of-sail-world/scenario/historical-events.json"
       - "maps/historical-world-rpg/age-of-sail-world/tooling/run_large_world_stress.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tooling/run_full_world_soak.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_large_world_stress.py"
       - "maps/historical-world-rpg/age-of-sail-world/tests/test_final_performance_budgets.py"
+      - "maps/historical-world-rpg/age-of-sail-world/tests/test_full_world_soak.py"
       - ".github/workflows/large-world-stress.yml"
   workflow_dispatch:
   schedule:
@@ -53,4 +83,14 @@ jobs:
         with:
           name: maximum-reasonable-world-summary
           path: maps/historical-world-rpg/age-of-sail-world/_build/stress/maximum-reasonable.json
+          if-no-files-found: error
+      - name: Run complete authored 1450-1820 campaign
+        run: |
+          python3 maps/historical-world-rpg/age-of-sail-world/tooling/run_full_world_soak.py \
+            --profile complete_multi_century \
+            --summary-out maps/historical-world-rpg/age-of-sail-world/_build/stress/full-world-multi-century.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-world-multi-century-summary
+          path: maps/historical-world-rpg/age-of-sail-world/_build/stress/full-world-multi-century.json
           if-no-files-found: error

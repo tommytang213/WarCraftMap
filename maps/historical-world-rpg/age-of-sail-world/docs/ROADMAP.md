@@ -138,7 +138,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 
 ## Phase 7 — Full-world integration and balancing
 
-- [ ] Multi-century simulation soak tests
+- [x] Multi-century simulation soak tests
 - [x] Finalize performance budgets against full-world content
 - [x] Economy balancing
 - [ ] AI territorial warfare
