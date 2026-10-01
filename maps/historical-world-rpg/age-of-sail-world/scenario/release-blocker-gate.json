@@ -1,0 +1,43 @@
+{
+  "format": "age_of_sail_release_blocker_gate_v1",
+  "taxonomy": [
+    {"id": "campaign_blocker", "rank": 4, "releaseBlocking": true, "definition": "A reproducible failure that prevents starting, progressing, saving, loading, travelling, recovering, or completing otherwise reachable campaign content."},
+    {"id": "critical_unclassified", "rank": 3, "releaseBlocking": true, "definition": "A critical validation failure whose campaign impact has not yet been classified."},
+    {"id": "major", "rank": 2, "releaseBlocking": false, "definition": "A bounded loss of optional content or degraded behavior with a deterministic workaround; no mandatory route or persisted authority is lost."},
+    {"id": "minor", "rank": 1, "releaseBlocking": false, "definition": "Cosmetic, informational, or low-impact behavior that does not impede campaign play."}
+  ],
+  "blockerClasses": [
+    "start_failure", "progression_dead_end", "save_failure", "load_or_migration_failure",
+    "travel_failure", "recovery_failure", "completion_failure", "invalid_reference",
+    "corrupt_package", "blocking_content_stub", "suppressed_blocker"
+  ],
+  "requiredSystems": [
+    "new_campaign", "regional_activation", "travel", "remote_management", "economy",
+    "diplomacy", "war", "capture", "administration", "garrisons", "characters",
+    "progression", "quests", "treasures", "manual_save", "rolling_autosave",
+    "checkpoint_recovery", "native_save_load", "save_migration", "interrupted_transition_recovery",
+    "representation_reconstruction", "late_campaign"
+  ],
+  "journeys": [
+    {
+      "id": "JOURNEY-ATLANTIC-TO-PACIFIC",
+      "seed": 1450,
+      "branch": "maritime_expansion",
+      "regions": ["europe", "africa", "middle_east_india", "southeast_asia", "east_asia", "americas_caribbean", "pacific"],
+      "physicalMaps": ["europe_west", "africa", "middle_east_india", "southeast_asia", "east_asia", "americas_caribbean", "pacific_north", "europe_west"],
+      "systems": ["new_campaign", "regional_activation", "travel", "remote_management", "economy", "diplomacy", "war", "capture", "administration", "garrisons", "characters", "progression", "quests", "treasures", "manual_save", "rolling_autosave", "checkpoint_recovery", "native_save_load", "save_migration", "interrupted_transition_recovery", "representation_reconstruction", "late_campaign"]
+    },
+    {
+      "id": "JOURNEY-ALTERNATE-HISTORY",
+      "seed": 1701,
+      "branch": "alternate_history",
+      "regions": ["americas_caribbean", "europe", "africa", "middle_east_india", "southeast_asia", "east_asia", "pacific"],
+      "physicalMaps": ["americas_south", "europe_central_east", "africa", "middle_east_india", "southeast_asia", "east_asia", "pacific_polynesia", "americas_south"],
+      "systems": ["new_campaign", "regional_activation", "travel", "remote_management", "economy", "diplomacy", "war", "capture", "administration", "garrisons", "characters", "progression", "quests", "treasures", "manual_save", "rolling_autosave", "checkpoint_recovery", "native_save_load", "save_migration", "interrupted_transition_recovery", "representation_reconstruction", "late_campaign"]
+    }
+  ],
+  "reportGlobs": ["reports/*.json", "scenario/**/reports/*.json"],
+  "releaseSaveCompatibilityManifest": "scenario/compatibility/release-save-v1.json",
+  "releaseInputs": ["package.json", "physical-maps.json", "map/map-source.json", "scenario/world/world.json", "scenario/maps/world-map.json", "scenario/compatibility/release-save-v1.json"],
+  "knownLimitations": []
+}
