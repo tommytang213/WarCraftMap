@@ -14,10 +14,12 @@ from package_wurst_campaign import (  # noqa: E402
     PackagingError,
     _localize_runtime,
     build_campaign,
+    inspect_campaign,
     load_campaign_config,
     validate_campaign,
 )
 from package_wurst_map import generate, load_config, verify_generated  # noqa: E402
+from warcraft_campaign import MpqReader, parse_campaign_metadata  # noqa: E402
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
 import pathlib, sys, zipfile
@@ -77,6 +79,13 @@ class CampaignPackagingTests(unittest.TestCase):
         self.rewrite(lambda d: d["physicalMaps"][1].update(packagePath=d["physicalMaps"][0]["packagePath"].lower()))
         with self.assertRaisesRegex(PackagingError, "conflicting package paths"): load_campaign_config(self.manifest)
 
+    def test_generic_zip_renamed_to_w3n_is_rejected(self):
+        fake_campaign = self.project / "generic.w3n"
+        with zipfile.ZipFile(fake_campaign, "w") as archive:
+            archive.writestr("war3campaign.w3f", b"not campaign metadata")
+        with self.assertRaisesRegex(PackagingError, "invalid Warcraft MPQ campaign"):
+            inspect_campaign(load_campaign_config(self.manifest), fake_campaign)
+
     def test_missing_source_invalid_assignment_and_unassigned_content_are_rejected(self):
         self.assert_invalid(lambda d: d["physicalMaps"][1].update(sourceMap="map/missing.w3x"), "missing source input")
         shutil.copy2(PROJECT_ROOT / "physical-maps.json", self.manifest)
@@ -95,11 +104,11 @@ class CampaignPackagingTests(unittest.TestCase):
         (alternate / "physical-source-marker.txt").write_text("africa source\n", encoding="utf-8")
         self.rewrite(lambda d: d["physicalMaps"][3].update(sourceMap="map/AlternateAfrica.w3x"))
         output = build_campaign(self.manifest, grill=str(self.fake))
-        with zipfile.ZipFile(output) as campaign:
-            africa_path = self.project / "africa.w3x"
-            europe_path = self.project / "europe.w3x"
-            africa_path.write_bytes(campaign.read("Maps/Africa.w3x"))
-            europe_path.write_bytes(campaign.read("Maps/EuropeWest.w3x"))
+        campaign = MpqReader(output)
+        africa_path = self.project / "africa.w3x"
+        europe_path = self.project / "europe.w3x"
+        africa_path.write_bytes(campaign.read("Maps/Africa.w3x"))
+        europe_path.write_bytes(campaign.read("Maps/EuropeWest.w3x"))
         with zipfile.ZipFile(africa_path) as africa, zipfile.ZipFile(europe_path) as europe:
             self.assertIn("physical-source-marker.txt", africa.namelist())
             self.assertNotIn("physical-source-marker.txt", europe.namelist())
@@ -145,9 +154,10 @@ class CampaignPackagingTests(unittest.TestCase):
 
     @staticmethod
     def structure(path):
-        with zipfile.ZipFile(path) as archive:
-            result = {}
-            for name in sorted(archive.namelist()):
+        archive = MpqReader(path)
+        config = load_campaign_config(path.parents[2] / "physical-maps.json")
+        result = {}
+        for name in ["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x in config.maps)]:
                 value = archive.read(name)
                 if name == "campaign-manifest.json":
                     manifest = json.loads(value)
@@ -162,19 +172,26 @@ class CampaignPackagingTests(unittest.TestCase):
                     finally:
                         nested.unlink()
                 result[name] = hashlib.sha256(value).hexdigest()
-            return result
+        return result
 
     def test_clean_builds_are_deterministic_local_and_structurally_complete(self):
         authoritative = [p for root in (self.project / "map", self.project / "scenario") for p in root.rglob("*") if p.is_file()]
         source_hashes = {p.relative_to(self.project): hashlib.sha256(p.read_bytes()).hexdigest() for p in authoritative}
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
-        with zipfile.ZipFile(first) as campaign:
-            campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
-            configured_maps = json.loads(self.manifest.read_text(encoding="utf-8"))["physicalMaps"]
-            self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
-            west_bytes = campaign.read("Maps/EuropeWest.w3x")
-            southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
-            east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
+        # Embedded headless-test maps are ZIPs, so zipfile may find their EOCD;
+        # the outer campaign itself must nevertheless begin with an MPQ header.
+        self.assertEqual(b"MPQ\x1a", first.read_bytes()[:4])
+        campaign = MpqReader(first)
+        campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
+        metadata = parse_campaign_metadata(campaign.read("war3campaign.w3f"))
+        configured_maps = json.loads(self.manifest.read_text(encoding="utf-8"))["physicalMaps"]
+        self.assertEqual("Age of Sail: The World", metadata["name"])
+        self.assertTrue(metadata["description"])
+        self.assertEqual(configured_maps[0]["packagePath"], metadata["buttons"][0][2])
+        self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
+        west_bytes = campaign.read("Maps/EuropeWest.w3x")
+        southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
+        east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
             runtime = json.loads(west.read("runtime/scenario-runtime.json"))

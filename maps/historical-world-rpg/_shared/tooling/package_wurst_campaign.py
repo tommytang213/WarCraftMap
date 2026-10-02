@@ -8,7 +8,6 @@ import re
 import shutil
 import subprocess
 import sys
-import zipfile
 from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 
@@ -28,6 +27,7 @@ from package_wurst_map import (
     validate_scenario,
     verify_generated,
 )
+from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
 from treasures import validate_catalog as validate_treasure_catalog  # noqa: E402
@@ -50,6 +50,7 @@ class PhysicalMap:
     maximum_cells: int
     maximum_output_bytes: int
     bootstrap: bool
+    chapter_title: str
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,7 @@ class CampaignConfig:
     campaign_id: str
     file_name: str
     name: str
+    description: str
     bootstrap_map_id: str
     output: Path
     maps: tuple[PhysicalMap, ...]
@@ -118,6 +120,8 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         map_id = item.get("id")
         if not isinstance(map_id, str) or not STABLE_ID.fullmatch(map_id):
             raise PackagingError(f"campaign configuration: {label}.id is not a stable ID")
+        if not isinstance(item.get("chapterTitle"), str) or not item["chapterTitle"].strip():
+            raise PackagingError(f"campaign configuration: {label}.chapterTitle is required")
         assignments = item.get("assignments", {})
         terrain_budget = item.get("terrainBudget", {})
         if not isinstance(assignments, dict) or not isinstance(terrain_budget, dict):
@@ -139,7 +143,7 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
             _inside(project, item.get("sourceManifest"), f"{label}.sourceManifest"),
             _safe_package_path(item.get("packagePath"), f"{label}.packagePath"),
             ids("logicalRegionIds"), ids("regionalInstanceIds"), ids("generatedTerrainIds"),
-            maximum_cells, maximum_bytes, bool(item.get("bootstrap", False)),
+            maximum_cells, maximum_bytes, bool(item.get("bootstrap", False)), str(item.get("chapterTitle", "")),
         ))
     map_ids = [item.id for item in maps]
     if len(map_ids) != len(set(map_ids)):
@@ -151,10 +155,14 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
     bootstrap_maps = [item.id for item in maps if item.bootstrap]
     if bootstrap_id not in map_ids or bootstrap_maps != [bootstrap_id]:
         raise PackagingError("campaign configuration: bootstrapMapId must identify the one bootstrap physical map")
+    if maps[0].id != bootstrap_id:
+        raise PackagingError("campaign configuration: bootstrap map must be the first chapter")
+    if not isinstance(campaign.get("name"), str) or not campaign["name"].strip() or not isinstance(campaign.get("description"), str) or not campaign["description"].strip():
+        raise PackagingError("campaign configuration: campaign name and description are required")
     return CampaignConfig(
         project, manifest_path, _inside(project, raw.get("mapBuildConfig", "package.json"), "mapBuildConfig"),
         _inside(project, raw.get("regionalAssignments"), "regionalAssignments"),
-        campaign_id, file_name, str(campaign.get("name", "")), bootstrap_id,
+        campaign_id, file_name, str(campaign.get("name", "")), str(campaign.get("description", "")), bootstrap_id,
         _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{file_name}.w3n",
         tuple(maps),
         _inside(project, raw.get("audioManifest"), "audioManifest"),
@@ -302,31 +310,43 @@ def _write_campaign(output: Path, config: CampaignConfig, built: list[tuple[Phys
         "name": config.name, "bootstrapMapId": config.bootstrap_map_id,
         "maps": [{"id": item.id, "packagePath": item.package_path, "sha256": _sha(archive), "bootstrap": item.bootstrap} for item, archive in built],
     }
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as zipped:
-        info = zipfile.ZipInfo("campaign-manifest.json", (1980, 1, 1, 0, 0, 0)); info.external_attr = 0o100644 << 16
-        zipped.writestr(info, json.dumps(manifest, sort_keys=True, indent=2) + "\n")
-        for item, archive in sorted(built, key=lambda pair: pair[0].package_path):
-            info = zipfile.ZipInfo(item.package_path, (1980, 1, 1, 0, 0, 0)); info.external_attr = 0o100644 << 16
-            zipped.writestr(info, archive.read_bytes())
+    # The configured order is the authored chapter order.  In particular the
+    # bootstrap is first, rather than relying on an archive member sort order.
+    chapters = [(item.chapter_title, item.package_path) for item, _ in built]
+    files = {
+        "war3campaign.w3f": campaign_metadata(config.name, config.description, chapters),
+        "campaign-manifest.json": (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode(),
+        "(listfile)": ("\r\n".join(["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x, _ in built)]) + "\r\n").encode(),
+    }
+    files.update((item.package_path, archive.read_bytes()) for item, archive in built)
+    write_mpq(output, files)
 
 
 def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
-    if not zipfile.is_zipfile(archive):
-        raise PackagingError("campaign inspection stage failed: campaign is not a readable archive")
-    with zipfile.ZipFile(archive) as zipped:
-        names = set(zipped.namelist())
-        expected = {"campaign-manifest.json", *(item.package_path for item in config.maps)}
-        if names != expected:
-            raise PackagingError("campaign inspection stage failed: configured map set differs from packaged map set")
-        manifest = json.loads(zipped.read("campaign-manifest.json"))
-        if manifest.get("format") != CAMPAIGN_ARCHIVE_FORMAT or manifest.get("bootstrapMapId") != config.bootstrap_map_id:
-            raise PackagingError("campaign inspection stage failed: campaign metadata is invalid")
-        if {item["id"] for item in manifest["maps"]} != {item.id for item in config.maps}:
-            raise PackagingError("campaign inspection stage failed: physical map IDs are incomplete")
-        for item in manifest["maps"]:
-            if _sha_bytes(zipped.read(item["packagePath"])) != item["sha256"]:
-                raise PackagingError(f"campaign inspection stage failed [{item['id']}]: packaged map checksum differs")
+    try:
+        reader = MpqReader(archive)
+        metadata = parse_campaign_metadata(reader.read("war3campaign.w3f"))
+        manifest = json.loads(reader.read("campaign-manifest.json"))
+    except (OSError, KeyError, ValueError, json.JSONDecodeError) as error:
+        raise PackagingError(f"campaign inspection stage failed: invalid Warcraft MPQ campaign: {error}") from error
+    expected_chapters = [(item.chapter_title, item.package_path) for item in config.maps]
+    if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
+        raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
+    if metadata["version"] != 1 or metadata["maps"] != expected_chapters or [(x[1], x[2]) for x in metadata["buttons"]] != expected_chapters:
+        raise PackagingError("campaign inspection stage failed: chapter metadata or ordering is invalid")
+    if not expected_chapters or expected_chapters[0][1] != next(x.package_path for x in config.maps if x.id == config.bootstrap_map_id):
+        raise PackagingError("campaign inspection stage failed: first chapter is not the bootstrap map")
+    if manifest.get("format") != CAMPAIGN_ARCHIVE_FORMAT or manifest.get("bootstrapMapId") != config.bootstrap_map_id:
+        raise PackagingError("campaign inspection stage failed: campaign metadata is invalid")
+    if {item["id"] for item in manifest.get("maps", [])} != {item.id for item in config.maps}:
+        raise PackagingError("campaign inspection stage failed: physical map IDs are incomplete")
+    for item in manifest["maps"]:
+        try:
+            payload = reader.read(item["packagePath"])
+        except KeyError as error:
+            raise PackagingError(f"campaign inspection stage failed [{item['id']}]: chapter points to missing map") from error
+        if _sha_bytes(payload) != item["sha256"]:
+            raise PackagingError(f"campaign inspection stage failed [{item['id']}]: packaged map checksum differs")
 
 
 def _inspect_audio_runtime(physical: PhysicalMap, generated: Path) -> None:
