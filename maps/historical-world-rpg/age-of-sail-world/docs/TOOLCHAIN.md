@@ -74,7 +74,8 @@ The `Age of Sail campaign artifact` workflow runs the repository-controlled
 after source and world validation. Successful workflow runs currently retain the packaged
 `AgeOfSailWorldCampaign.w3n` for 14 days as the `age-of-sail-world-campaign`
 artifact. It contains every map configured by `physical-maps.json` in one
-single-player campaign package. `Maps/AgeOfSailWorld.w3x` is explicitly the
+single-player campaign MPQ, with Warcraft `war3campaign.w3f` title, description,
+and ordered chapter metadata. `Maps/AgeOfSailWorld.w3x` is explicitly the
 bootstrap/runtime-validation map, not the final whole-world container. Cross-map
 state transfer and transitions remain separate runtime work. Maintainers can download CI artifacts from the **Artifacts**
 section of the run's GitHub Actions summary. CI output is never committed as a release.
@@ -113,7 +114,8 @@ entities and terrain payloads, compiles and inspects every map, then writes
 `_build/release/AgeOfSailWorldCampaign.w3n`. Use
 `./tooling/package_campaign.sh clean` to remove all intermediates and releases.
 Physical-map IDs, source paths, region/instance/terrain assignments, package paths,
-budgets, display name, and bootstrap selection are scenario configuration; the
+budgets, display name, description, chapter titles, and bootstrap selection are
+scenario configuration; the
 shared build code is scenario-neutral.
 
 For the Phase 8 player candidate, run `./tooling/package_release_candidate.sh`.

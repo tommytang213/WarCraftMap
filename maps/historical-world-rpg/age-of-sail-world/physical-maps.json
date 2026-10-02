@@ -10,6 +10,7 @@
   "campaign": {
     "id": "age_of_sail_world",
     "name": "Age of Sail: The World",
+    "description": "Explore, trade, fight, and build a lasting campaign across the Age of Sail world.",
     "fileName": "AgeOfSailWorldCampaign",
     "bootstrapMapId": "bootstrap_runtime_validation"
   },
@@ -20,6 +21,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/AgeOfSailWorld.w3x",
+      "chapterTitle": "Begin the Campaign",
       "assignments": {"logicalRegionIds": [], "regionalInstanceIds": [], "generatedTerrainIds": []},
       "terrainBudget": {"maximumCells": 0, "maximumOutputBytes": 0}
     },
@@ -28,6 +30,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/EuropeWest.w3x",
+      "chapterTitle": "Western Europe",
       "assignments": {
         "logicalRegionIds": ["europe"],
         "regionalInstanceIds": ["europe_atlantic_isles", "europe_france_low_countries", "europe_iberia_western_med", "europe_italy_central_med"],
@@ -40,6 +43,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/EuropeCentralEast.w3x",
+      "chapterTitle": "Central and Eastern Europe",
       "assignments": {
         "logicalRegionIds": ["europe"],
         "regionalInstanceIds": ["europe_balkans_aegean", "europe_baltic_scandinavia", "europe_central_alpine", "europe_eastern_black_sea"],
@@ -52,6 +56,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/Africa.w3x",
+      "chapterTitle": "Africa",
       "assignments": {
         "logicalRegionIds": ["africa"],
         "regionalInstanceIds": ["africa_great_lakes_rift", "africa_horn_swahili", "africa_madagascar_indian_ocean", "africa_maghreb_med_atlantic", "africa_nile_red_sea", "africa_sahara_sahel", "africa_southern_cape", "africa_west_guinea_congo"],
@@ -64,6 +69,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/MiddleEastIndia.w3x",
+      "chapterTitle": "Middle East and India",
       "assignments": {
         "logicalRegionIds": ["middle_east_india"],
         "regionalInstanceIds": ["mei_anatolia_levant", "mei_arabia_red_sea", "mei_bengal_ceylon", "mei_central_asia", "mei_ganges_himalaya", "mei_indus_deccan", "mei_mesopotamia_persia"],
@@ -76,6 +82,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/SoutheastAsia.w3x",
+      "chapterTitle": "Southeast Asia",
       "assignments": {
         "logicalRegionIds": ["southeast_asia"],
         "regionalInstanceIds": ["sea_mainland", "sea_malay_sumatra", "sea_java_sunda", "sea_borneo", "sea_philippines", "sea_sulawesi_moluccas", "sea_new_guinea_west"],
@@ -88,6 +95,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/EastAsia.w3x",
+      "chapterTitle": "East Asia",
       "assignments": {
         "logicalRegionIds": ["east_asia"],
         "regionalInstanceIds": ["east_asia_interior", "east_asia_china_north", "east_asia_china_south", "east_asia_korea", "east_asia_japan", "east_asia_northeast_pacific"],
@@ -100,6 +108,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/AmericasNorthCentral.w3x",
+      "chapterTitle": "North and Central America",
       "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_north_atlantic", "americas_north_pacific", "americas_mexico_central"], "generatedTerrainIds": ["americas_caribbean"]},
       "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 1048576}
     },
@@ -108,6 +117,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/AmericasCaribbean.w3x",
+      "chapterTitle": "The Caribbean",
       "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_caribbean_islands"], "generatedTerrainIds": ["americas_caribbean"]},
       "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 786432}
     },
@@ -116,6 +126,7 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/AmericasSouth.w3x",
+      "chapterTitle": "South America",
       "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_north_south", "americas_amazon_brazil", "americas_andes_southern_cone"], "generatedTerrainIds": ["americas_caribbean"]},
       "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 1048576}
     },
@@ -124,36 +135,37 @@
       "sourceMap": "map/AgeOfSailWorld.w3x",
       "sourceManifest": "map/map-source.json",
       "packagePath": "Maps/AmericasPacificTransition.w3x",
+      "chapterTitle": "Pacific Passage",
       "assignments": {"logicalRegionIds": ["americas_caribbean"], "regionalInstanceIds": ["americas_pacific_transition"], "generatedTerrainIds": ["americas_caribbean"]},
       "terrainBudget": {"maximumCells": 32768, "maximumOutputBytes": 524288}
     },
     {
-      "id":"pacific_north","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNorth.w3x",
+      "id":"pacific_north","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNorth.w3x","chapterTitle":"North Pacific",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_north_hawaii"],"generatedTerrainIds":["pacific"]},
       "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":524288}
     },
     {
-      "id":"pacific_west","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificWest.w3x",
+      "id":"pacific_west","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificWest.w3x","chapterTitle":"West Pacific",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_micronesia"],"generatedTerrainIds":["pacific"]},
       "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":786432}
     },
     {
-      "id":"pacific_melanesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificMelanesia.w3x",
+      "id":"pacific_melanesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificMelanesia.w3x","chapterTitle":"Melanesia",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_melanesia"],"generatedTerrainIds":["pacific"]},
       "terrainBudget":{"maximumCells":32768,"maximumOutputBytes":1048576}
     },
     {
-      "id":"pacific_polynesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificPolynesia.w3x",
+      "id":"pacific_polynesia","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificPolynesia.w3x","chapterTitle":"Polynesia",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_west_polynesia","pacific_east_polynesia"],"generatedTerrainIds":["pacific"]},
       "terrainBudget":{"maximumCells":32768,"maximumOutputBytes":1048576}
     },
     {
-      "id":"pacific_new_zealand","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNewZealand.w3x",
+      "id":"pacific_new_zealand","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificNewZealand.w3x","chapterTitle":"New Zealand",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific_new_zealand"],"generatedTerrainIds":["pacific"]},
       "terrainBudget":{"maximumCells":24576,"maximumOutputBytes":786432}
     },
     {
-      "id":"pacific_open_ocean_encounter","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificOpenOceanEncounter.w3x",
+      "id":"pacific_open_ocean_encounter","sourceMap":"map/AgeOfSailWorld.w3x","sourceManifest":"map/map-source.json","packagePath":"Maps/PacificOpenOceanEncounter.w3x","chapterTitle":"Open Ocean",
       "assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":[],"generatedTerrainIds":[]},
       "terrainBudget":{"maximumCells":8192,"maximumOutputBytes":262144}
     }

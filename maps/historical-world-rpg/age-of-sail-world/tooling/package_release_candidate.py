@@ -23,6 +23,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / "_shared" / "tooling"))
 sys.path.insert(0, str(PROJECT.parent / "_shared" / "engine"))
 from package_wurst_campaign import build_campaign, inspect_campaign, load_campaign_config  # noqa: E402
+from warcraft_campaign import MpqReader  # noqa: E402
 from package_wurst_map import GENERATOR_VERSION, PackagingError  # noqa: E402
 import release_save_compatibility  # noqa: E402
 
@@ -159,39 +160,39 @@ def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
     return compatibility, coverage, fixture_results
 
 
-def normalized_campaign(path: Path) -> dict[str, str]:
-    """Hash semantic entries, ignoring ZIP timestamps/order and nested ZIP metadata."""
+def normalized_campaign(path: Path, campaign_config) -> dict[str, str]:
+    """Hash semantic MPQ entries, ignoring container layout and nested ZIP metadata."""
     result: dict[str, str] = {}
-    with zipfile.ZipFile(path) as campaign:
-        for name in sorted(campaign.namelist()):
-            payload = campaign.read(name)
-            if name.endswith(".json"):
-                document = json.loads(payload)
-                if name == "campaign-manifest.json":
-                    for row in document.get("maps", []):
-                        row.pop("sha256", None)
-                payload = canonical(document)
-            elif name.lower().endswith(".w3x"):
-                # Fake/headless builders emit ZIP maps. Real MPQ maps are already
-                # structurally inspected by the campaign builder and use the
-                # deterministic content digest recorded in its manifest.
-                with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
-                    nested_file.write(payload); nested_file.flush()
-                    if zipfile.is_zipfile(nested_file.name):
-                        with zipfile.ZipFile(nested_file.name) as nested:
-                            payload = canonical({n: sha_bytes(nested.read(n)) for n in sorted(nested.namelist())})
-            result[name] = sha_bytes(payload)
+    campaign = MpqReader(path)
+    for name in ["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x in campaign_config.maps)]:
+        payload = campaign.read(name)
+        if name.endswith(".json"):
+            document = json.loads(payload)
+            if name == "campaign-manifest.json":
+                for row in document.get("maps", []):
+                    row.pop("sha256", None)
+            payload = canonical(document)
+        elif name.lower().endswith(".w3x"):
+            # Fake/headless builders emit ZIP maps. Real MPQ maps are already
+            # structurally inspected by the campaign builder and use the
+            # deterministic content digest recorded in its manifest.
+            with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
+                nested_file.write(payload); nested_file.flush()
+                if zipfile.is_zipfile(nested_file.name):
+                    with zipfile.ZipFile(nested_file.name) as nested:
+                        payload = canonical({n: sha_bytes(nested.read(n)) for n in sorted(nested.namelist())})
+        result[name] = sha_bytes(payload)
     return result
 
 
 def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
     rows = []
-    with zipfile.ZipFile(campaign_path) as archive:
-        embedded = json.loads(archive.read("campaign-manifest.json"))
-        by_id = {item["id"]: item for item in embedded["maps"]}
-        for physical in campaign_config.maps:
-            payload = archive.read(physical.package_path)
-            rows.append({
+    archive = MpqReader(campaign_path)
+    embedded = json.loads(archive.read("campaign-manifest.json"))
+    by_id = {item["id"]: item for item in embedded["maps"]}
+    for physical in campaign_config.maps:
+        payload = archive.read(physical.package_path)
+        rows.append({
                 "filename": PurePosixPath(physical.package_path).name,
                 "archivePath": physical.package_path,
                 "kind": "physical-map",
@@ -200,9 +201,9 @@ def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
                 "logicalRegionIds": list(physical.logical_region_ids),
                 "regionalInstanceIds": list(physical.regional_instance_ids),
                 "generatedTerrainIds": list(physical.terrain_ids),
-            })
-            if by_id[physical.id]["sha256"] != rows[-1]["sha256"]:
-                raise PackagingError(f"manifest stage failed [{physical.id}]: nested checksum mismatch")
+        })
+        if by_id[physical.id]["sha256"] != rows[-1]["sha256"]:
+            raise PackagingError(f"manifest stage failed [{physical.id}]: nested checksum mismatch")
     return rows
 
 
@@ -271,9 +272,9 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
     with tempfile.TemporaryDirectory(prefix="aos-rc-") as temporary:
         first_path = Path(temporary) / "first.w3n"
         shutil.copyfile(build_campaign(campaign_manifest, grill=grill, clean_first=True), first_path)
-        first_normalized = normalized_campaign(first_path)
+        first_normalized = normalized_campaign(first_path, campaign_config)
         second = build_campaign(campaign_manifest, grill=grill, clean_first=True)
-        second_normalized = normalized_campaign(second)
+        second_normalized = normalized_campaign(second, campaign_config)
         if first_normalized != second_normalized:
             difference = sorted(set(first_normalized) | set(second_normalized))
             difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
