@@ -150,7 +150,7 @@ def main():
     if bounds["minX"]<=p[0]<=bounds["maxX"] and bounds["minY"]<=p[1]<=bounds["maxY"] and valid_land and not any(inside(p,m) for m in policy["decorativeWaterMasks"]) and all(math.dist(p,q)>=2 for q in occupied[instance]) and all(a["instanceId"]!=instance or math.dist(p,a["local"])>=3 for a in anchors): chosen=p; break
    if chosen: break
   if chosen is None: raise RuntimeError(f"no valid placement for {ident}")
-  roles=role_text.split(); production=["grain","textiles"] if "production_center" in roles else ["grain","craft_goods"]
+  roles=role_text.split(); production=["grain","textiles"] if "production_center" in roles else ["grain","tools"]
   row={"id":ident,"name":name,"polityId":polity,"provinceId":province,"regionalInstanceId":instance,"sourcePosition":[lon,lat],"position":chosen,"terrainClass":terrain_class,"navigationZoneId":NODE_BY_INSTANCE[instance],"physicalMapId":instance,"roles":roles,"services":services(roles),"economy":{"production":production,"imports":["salt","timber"],"shortages":["horses"]},"defenseClass":"port" if "major_port" in roles else "fortified" if "fortified_town" in roles else "town","historicalEvidenceIds":evidence,"controlContext":{"date":"1450-01-01","status":"legal_and_effective_control","basis":"east_asia_1450_political_baseline"}}
   if math.dist(raw,chosen)>.1: row["declaredDistortion"]={"offset":[round(chosen[0]-raw[0],2),round(chosen[1]-raw[1],2)],"reason":"Bounded gameplay displacement preserves access and separation on the compressed physical map."}
   if "major_port" in roles: row["port"]={"maritimeZoneId":WATER_BY_INSTANCE[instance],"access":"coastal"}
