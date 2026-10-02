@@ -26,7 +26,7 @@ No unresolved or accepted defects were found.
 
 ## Audited release evidence
 
-- 28 tracked validation reports
+- 29 tracked validation reports
 - 6 hashed release inputs
 - 4 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
