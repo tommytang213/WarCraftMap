@@ -40,6 +40,10 @@ def validate(source_path=SOURCE,politics_path=POLITICS):
  rules=source.get("stateProjectionRules",{})
  if set(rules)!={"activation","retirement","reconstruction","capture","inactiveMutation","saveProjection"} or any(not isinstance(v,str) or not v for v in rules.values()): raise PacificContentError("incomplete authoritative state projection rules")
  settlements=_index(source.get("settlements"),"settlements"); polities=_index(politics.get("polities"),"polities"); provinces={p["id"]:(q["id"],p) for q in polities.values() for p in q["provinces"]}; instances=_index(geography["instances"],"instances"); nodes=_index(geography["navigationTopology"]["nodes"],"nodes"); anchors=_index(geography["boundaryAnchors"],"anchors"); policies={x["id"]:x for x in terrain["instancePolicies"]}; positions={}
+ evidence={x["id"] for x in politics["historicalEvidence"]}
+ if {x["capitalSettlementId"] for x in polities.values()}-set(settlements): raise PacificContentError("political-center authority exception is not represented")
+ abstract=_index(source.get("abstractCommunities"),"abstract communities")
+ if {x["polityId"] for x in abstract.values()} != set(polities): raise PacificContentError("abstract communities do not preserve every Pacific authority")
  for sid,x in settlements.items():
   if x.get("polityId") not in polities or x.get("provinceId") not in provinces or provinces[x["provinceId"]][0]!=x["polityId"]: raise PacificContentError(f"settlement {sid}: polity/province mismatch")
   instance=x.get("regionalInstanceId"); pos=x.get("position"); bounds=instances.get(instance,{}).get("localBounds",{})
@@ -49,6 +53,7 @@ def validate(source_path=SOURCE,politics_path=POLITICS):
   if policy is None or not any(_inside(pos,m) for m in policy["landMasks"]) or any(_inside(pos,m) for m in policy["decorativeWaterMasks"]): raise PacificContentError(f"settlement {sid}: position is not valid land terrain")
   if x.get("navigationZoneId") not in nodes or nodes[x["navigationZoneId"]]["instanceId"]!=instance or nodes[x["navigationZoneId"]]["class"] in {"impassable_barrier","decorative_water"}: raise PacificContentError(f"settlement {sid}: invalid navigation zone")
   if not x.get("roles") or not set(x["roles"])<=ROLES or len(x["roles"])!=len(set(x["roles"])): raise PacificContentError(f"settlement {sid}: invalid roles")
+  if not x.get("evidenceIds") or not set(x["evidenceIds"])<=evidence or x.get("authorityType")!=polities[x["polityId"]]["structure"] or x.get("routeImportance") not in {"local","regional","oceanic"}: raise PacificContentError(f"settlement {sid}: invalid evidence or authority metadata")
   econ=x.get("economy",{}); services=x.get("services",[])
   if set(econ)!={"production","imports","shortages","tradeEndpointIds"} or any(not isinstance(econ[k],list) or not econ[k] for k in econ) or set(econ["production"])&set(econ["shortages"]): raise PacificContentError(f"settlement {sid}: invalid economy profile")
   if not {"market","storage"}<=set(services): raise PacificContentError(f"settlement {sid}: missing market or storage service")

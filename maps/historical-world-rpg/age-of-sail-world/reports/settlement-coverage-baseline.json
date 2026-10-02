@@ -2,7 +2,7 @@
   "byHistoricalImportance": {
     "global": 154,
     "local": 82,
-    "regional": 469
+    "regional": 470
   },
   "byPhysicalMap": {
     "africa": 86,
@@ -28,11 +28,11 @@
     "mei_ganges_himalaya": 13,
     "mei_indus_deccan": 34,
     "mei_mesopotamia_persia": 29,
-    "pacific_melanesia": 4,
-    "pacific_new_zealand": 2,
-    "pacific_north": 2,
-    "pacific_polynesia": 5,
-    "pacific_west": 3,
+    "pacific_melanesia": 9,
+    "pacific_new_zealand": 4,
+    "pacific_north": 7,
+    "pacific_polynesia": 11,
+    "pacific_west": 8,
     "sea_borneo": 7,
     "sea_java_sunda": 10,
     "sea_mainland": 28,
@@ -40,7 +40,7 @@
     "sea_new_guinea_west": 5,
     "sea_philippines": 15,
     "sea_sulawesi_moluccas": 9,
-    "unassigned": 67
+    "unassigned": 45
   },
   "byPolityImportance": [
     {
@@ -1118,10 +1118,10 @@
       "polityId": "mamluk_sultanate"
     },
     {
-      "current": 3,
+      "current": 4,
       "expectationClass": "regional",
       "importanceSignals": {
-        "regional": 3
+        "regional": 4
       },
       "polityId": "maori_iwi_hapu"
     },
@@ -2030,7 +2030,7 @@
     "amazon_riverine_societies": 1,
     "amhara": 1,
     "anishinaabe_upper_lakes": 1,
-    "aotearoa_iwi_territories": 3,
+    "aotearoa_iwi_territories": 4,
     "aq_qoyunlu_diyar_bakr": 3,
     "aragon_crown": 3,
     "ashikaga_eastern_honshu": 8,
@@ -2330,7 +2330,7 @@
       "planningMaximum": 225
     },
     "pacific": {
-      "current": 38,
+      "current": 39,
       "gapToMinimum": 0,
       "minimum": 35,
       "planningMaximum": 65
@@ -2343,37 +2343,37 @@
     }
   },
   "byRepresentation": {
-    "abstract_minor": 67,
-    "physical": 638
+    "abstract_minor": 45,
+    "physical": 661
   },
   "bySettlementRole": {
     "administrative_seat": 22,
-    "anchorage": 10,
+    "anchorage": 17,
     "canal_node": 3,
     "capital": 182,
     "caravan_center": 31,
     "cultural_site": 13,
-    "fortified_settlement": 4,
+    "fortified_settlement": 5,
     "fortified_town": 241,
     "frontier_post": 2,
-    "historical_location": 281,
+    "historical_location": 289,
     "major_port": 249,
     "market_center": 48,
     "pilgrimage_location": 4,
-    "political_center": 11,
+    "political_center": 33,
     "production_center": 9,
-    "religious_location": 24,
+    "religious_location": 35,
     "religious_site": 1,
     "river_node": 10,
     "route_node": 11,
-    "trade_center": 468,
+    "trade_center": 472,
     "transition_location": 26,
-    "voyaging_center": 11
+    "voyaging_center": 17
   },
   "format": "settlement_coverage_baseline_v1",
   "global": {
-    "current": 705,
-    "gapToMinimum": 95,
+    "current": 706,
+    "gapToMinimum": 94,
     "minimum": 800,
     "planningMaximum": 1200
   },
@@ -3371,24 +3371,23 @@
       "settlementClass": "town"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "rapa_nui_clans",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
@@ -3396,18 +3395,27 @@
       "names": {
         "display": "Anakena"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_east_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_east_polynesia_sea",
+        "terrainClass": "coast",
+        "x": 89,
+        "y": 5
       },
       "polityId": "rapa_nui_clans",
       "provinceId": "rapa_nui",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_apia_anchorage_anakena"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "kashmir_sultanate",
@@ -3807,43 +3815,50 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "maori_iwi_hapu",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "aotearoa_runanga",
       "names": {
-        "display": "Aotearoa Runanga"
+        "display": "Aotearoa Rūnanga"
       },
+      "physicalMapId": "pacific_new_zealand",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_new_zealand",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_new_zealand_sea",
+        "terrainClass": "upland",
+        "x": 51,
+        "y": 43
       },
       "polityId": "maori_iwi_hapu",
       "provinceId": "aotearoa_iwi_territories",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center"
+      ],
+      "routeIds": [
+        "route_local_tamaki_makaurau_aotearoa_runanga"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "samoan_chiefly_districts",
@@ -3896,6 +3911,10 @@
       ],
       "routeIds": [
         "route_apia_taputapuatea",
+        "route_local_apia_anchorage_anakena",
+        "route_local_apia_anchorage_marquesas_council",
+        "route_local_apia_anchorage_samoa_fono",
+        "route_local_apia_anchorage_tahiti_council",
         "route_mua_apia"
       ],
       "settlementClass": "town"
@@ -5299,43 +5318,50 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "belau_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "belau_council",
       "names": {
-        "display": "Belau Council"
+        "display": "Belau Chiefs' Council"
       },
+      "physicalMapId": "pacific_west",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_micronesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_micronesia_islands",
+        "terrainClass": "island",
+        "x": 19,
+        "y": 17
       },
       "polityId": "belau_chiefdoms",
       "provinceId": "belau_islands",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_hagatna_anchorage_belau_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "serbia",
@@ -5941,43 +5967,50 @@
       "settlementClass": "fort"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "bismarck_island_communities",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "bismarck_council",
       "names": {
-        "display": "Bismarck Council"
+        "display": "Bismarck Island Council"
       },
+      "physicalMapId": "pacific_melanesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_melanesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_melanesia_sea",
+        "terrainClass": "island",
+        "x": 39,
+        "y": 62
       },
       "polityId": "bismarck_island_communities",
       "provinceId": "bismarck_archipelago",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center"
+      ],
+      "routeIds": [
+        "route_local_rabaul_exchange_harbor_bismarck_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "visayan_polities",
@@ -10827,43 +10860,50 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "fijian_vanua",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "fiji_council",
       "names": {
-        "display": "Fiji Council"
+        "display": "Fijian Vanua Council"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_west_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_fiji_coast",
+        "terrainClass": "island",
+        "x": 49,
+        "y": 30
       },
       "polityId": "fijian_vanua",
       "provinceId": "fijian_vanua",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_mua_fiji_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "florence",
@@ -12036,43 +12076,50 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "chamorro_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "guam_council",
       "names": {
-        "display": "Guam Council"
+        "display": "Guåhan Chiefs' Council"
       },
+      "physicalMapId": "pacific_west",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_micronesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_micronesia_islands",
+        "terrainClass": "island",
+        "x": 48,
+        "y": 77
       },
       "polityId": "chamorro_chiefdoms",
       "provinceId": "mariana_chiefdoms",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_hagatna_anchorage_guam_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "ming_empire",
@@ -12454,7 +12501,9 @@
       ],
       "routeIds": [
         "route_hagatna_koror",
-        "route_honolulu_hagatna"
+        "route_honolulu_hagatna",
+        "route_local_hagatna_anchorage_belau_council",
+        "route_local_hagatna_anchorage_guam_council"
       ],
       "settlementClass": "town"
     },
@@ -13106,43 +13155,51 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "hawaii_chiefdom",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "hawaii_royal_center",
       "names": {
-        "display": "Hawaii Royal Center"
+        "display": "Hawaiʻi Royal Center"
       },
+      "physicalMapId": "pacific_north",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_north_hawaii",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_hawaii_coast",
+        "terrainClass": "upland",
+        "x": 22,
+        "y": 8
       },
       "polityId": "hawaii_chiefdom",
       "provinceId": "hawaii_island",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_waipio_hawaii_royal_center"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "palatinate",
@@ -13732,6 +13789,7 @@
       ],
       "routeIds": [
         "route_honolulu_hagatna",
+        "route_maui_royal_center_honolulu_anchorage",
         "route_waipio_honolulu"
       ],
       "settlementClass": "town"
@@ -15485,6 +15543,7 @@
         "trade_center"
       ],
       "routeIds": [
+        "route_local_tamaki_makaurau_kaiapoi_pa",
         "route_tamaki_kaiapoi"
       ],
       "settlementClass": "fort"
@@ -15789,43 +15848,57 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "kanak_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "kanak_council",
       "names": {
-        "display": "Kanak Council"
+        "display": "Kanak Chiefs' Council"
       },
+      "physicalMapId": "pacific_melanesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_melanesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_melanesia_sea",
+        "terrainClass": "island",
+        "x": 78,
+        "y": 31
       },
       "polityId": "kanak_chiefdoms",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_melanesia_sea",
+        "navigationZoneId": "node_melanesia_sea"
+      },
       "provinceId": "kanak_country",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "trade_center"
+      ],
+      "routeIds": [
+        "route_kanak_council_vanuatu_exchange_anchorage"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "ashikaga_shogunate",
@@ -16227,43 +16300,50 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "kauai_chiefdom",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "kauai_royal_center",
       "names": {
-        "display": "Kauai Royal Center"
+        "display": "Kauaʻi Royal Center"
       },
+      "physicalMapId": "pacific_north",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_north_hawaii",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_hawaii_coast",
+        "terrainClass": "island",
+        "x": 18,
+        "y": 62
       },
       "polityId": "kauai_chiefdom",
       "provinceId": "kauai_niihau",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center"
+      ],
+      "routeIds": [
+        "route_local_waipio_kauai_royal_center"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "karamanids",
@@ -16964,7 +17044,8 @@
       ],
       "routeIds": [
         "route_hagatna_koror",
-        "route_koror_nan_madol"
+        "route_koror_nan_madol",
+        "route_yap_council_koror"
       ],
       "settlementClass": "town"
     },
@@ -19761,43 +19842,51 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "marquesan_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "marquesas_council",
       "names": {
-        "display": "Marquesas Council"
+        "display": "Marquesan Valley Council"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_east_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_east_polynesia_sea",
+        "terrainClass": "upland",
+        "x": 52,
+        "y": 58
       },
       "polityId": "marquesan_chiefdoms",
       "provinceId": "marquesan_valleys",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "fortified_settlement",
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_apia_anchorage_marquesas_council"
+      ],
+      "settlementClass": "fort"
     },
     {
       "controllerPolityId": "marinid_morocco",
@@ -19845,43 +19934,57 @@
       "settlementClass": "fort"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "marshallese_irooj_domains",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "marshall_council",
       "names": {
-        "display": "Marshall Council"
+        "display": "Marshall Atoll Irooj Council"
       },
+      "physicalMapId": "pacific_west",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_micronesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_micronesia_islands",
+        "terrainClass": "island",
+        "x": 28,
+        "y": 20
       },
       "polityId": "marshallese_irooj_domains",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_micronesia_islands",
+        "navigationZoneId": "node_micronesia_islands"
+      },
       "provinceId": "marshall_atoll_domains",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_marshall_council_nan_madol"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "hanthawaddy_kingdom",
@@ -20187,24 +20290,23 @@
       "settlementClass": "fort"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "maui_chiefdom",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
@@ -20212,18 +20314,33 @@
       "names": {
         "display": "Maui Royal Center"
       },
+      "physicalMapId": "pacific_north",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_north_hawaii",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_hawaii_coast",
+        "terrainClass": "island",
+        "x": 15,
+        "y": 60
       },
       "polityId": "maui_chiefdom",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_hawaii_coast",
+        "navigationZoneId": "node_hawaii_coast"
+      },
       "provinceId": "maui_nui",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_maui_royal_center_honolulu_anchorage"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "luzon_polities",
@@ -21415,6 +21532,7 @@
       ],
       "routeIds": [
         "route_lakeba_mua",
+        "route_local_mua_fiji_council",
         "route_mua_apia"
       ],
       "settlementClass": "fort"
@@ -22185,7 +22303,9 @@
       ],
       "routeIds": [
         "route_koror_nan_madol",
-        "route_nan_madol_rabaul"
+        "route_marshall_council_nan_madol",
+        "route_nan_madol_rabaul",
+        "route_tungaru_maneaba_nan_madol"
       ],
       "settlementClass": "fort"
     },
@@ -22533,48 +22653,63 @@
         "trade_center"
       ],
       "routeIds": [
+        "route_local_rabaul_exchange_harbor_new_guinea_coastal_exchange",
         "route_new_guinea_rabaul"
       ],
       "settlementClass": "town"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "new_guinea_exchange_communities",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "new_guinea_council",
       "names": {
-        "display": "New Guinea Council"
+        "display": "Eastern New Guinea Exchange Council"
       },
+      "physicalMapId": "pacific_melanesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_melanesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_melanesia_sea",
+        "terrainClass": "coast",
+        "x": 10,
+        "y": 62
       },
       "polityId": "new_guinea_exchange_communities",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_melanesia_sea",
+        "navigationZoneId": "node_melanesia_sea"
+      },
       "provinceId": "eastern_new_guinea_communities",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "trade_center"
+      ],
+      "routeIds": [
+        "route_new_guinea_council_rabaul_exchange_harbor"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "england",
@@ -23637,43 +23772,50 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "oahu_chiefdom",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "oahu_royal_center",
       "names": {
-        "display": "Oahu Royal Center"
+        "display": "Oʻahu Royal Center"
       },
+      "physicalMapId": "pacific_north",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_north_hawaii",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_hawaii_coast",
+        "terrainClass": "island",
+        "x": 39,
+        "y": 60
       },
       "polityId": "oahu_chiefdom",
       "provinceId": "oahu",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_waipio_oahu_royal_center"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "ashikaga_shogunate",
@@ -26167,7 +26309,12 @@
         "voyaging_center"
       ],
       "routeIds": [
+        "route_local_rabaul_exchange_harbor_bismarck_council",
+        "route_local_rabaul_exchange_harbor_new_guinea_coastal_exchange",
+        "route_local_rabaul_exchange_harbor_solomon_council",
+        "route_local_rabaul_exchange_harbor_vanuatu_council",
         "route_nan_madol_rabaul",
+        "route_new_guinea_council_rabaul_exchange_harbor",
         "route_new_guinea_rabaul",
         "route_rabaul_nggela"
       ],
@@ -26755,6 +26902,52 @@
       "settlementClass": "city"
     },
     {
+      "controllerPolityId": "maori_iwi_hapu",
+      "evidence": [
+        {
+          "claim": "identity",
+          "sourceId": "scenario/settlements/pacific-1450.json"
+        },
+        {
+          "claim": "placement",
+          "sourceId": "scenario/settlements/pacific-1450.json"
+        },
+        {
+          "claim": "ownership",
+          "sourceId": "scenario/settlements/pacific-1450.json"
+        },
+        {
+          "claim": "importance",
+          "sourceId": "scenario/settlements/pacific-1450.json"
+        }
+      ],
+      "historicalImportance": "regional",
+      "id": "rotorua_kainga",
+      "names": {
+        "display": "Rotorua Kāinga"
+      },
+      "physicalMapId": "pacific_new_zealand",
+      "placement": {
+        "basis": "regional_map",
+        "navigationZoneId": "node_new_zealand_sea",
+        "terrainClass": "upland",
+        "x": 63,
+        "y": 32
+      },
+      "polityId": "maori_iwi_hapu",
+      "provinceId": "aotearoa_iwi_territories",
+      "regionId": "pacific",
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "trade_center"
+      ],
+      "routeIds": [
+        "route_local_tamaki_makaurau_rotorua_kainga"
+      ],
+      "settlementClass": "town"
+    },
+    {
       "controllerPolityId": "france",
       "evidence": [
         {
@@ -27295,43 +27488,50 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "samoan_chiefly_districts",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "samoa_fono",
       "names": {
-        "display": "Samoa Fono"
+        "display": "Samoan Fono"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_east_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_east_polynesia_sea",
+        "terrainClass": "island",
+        "x": 14,
+        "y": 45
       },
       "polityId": "samoan_chiefly_districts",
       "provinceId": "samoan_districts",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_apia_anchorage_samoa_fono"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "yemen",
@@ -29055,43 +29255,50 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "solomon_island_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "solomon_council",
       "names": {
-        "display": "Solomon Council"
+        "display": "Solomon Island Chiefs' Council"
       },
+      "physicalMapId": "pacific_melanesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_melanesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_melanesia_sea",
+        "terrainClass": "island",
+        "x": 64,
+        "y": 46
       },
       "polityId": "solomon_island_chiefdoms",
       "provinceId": "solomon_archipelago",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center"
+      ],
+      "routeIds": [
+        "route_local_rabaul_exchange_harbor_solomon_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "ming_empire",
@@ -30065,43 +30272,50 @@
       "settlementClass": "town"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "tahiti_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "tahiti_council",
       "names": {
-        "display": "Tahiti Council"
+        "display": "Tahiti Chiefs' Council"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_east_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_east_polynesia_sea",
+        "terrainClass": "island",
+        "x": 40,
+        "y": 35
       },
       "polityId": "tahiti_chiefdoms",
       "provinceId": "society_island_chiefdoms",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_apia_anchorage_tahiti_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "sharifate_mecca",
@@ -30588,6 +30802,9 @@
       ],
       "routeIds": [
         "route_lakeba_tamaki",
+        "route_local_tamaki_makaurau_aotearoa_runanga",
+        "route_local_tamaki_makaurau_kaiapoi_pa",
+        "route_local_tamaki_makaurau_rotorua_kainga",
         "route_tamaki_kaiapoi"
       ],
       "settlementClass": "city"
@@ -30697,7 +30914,8 @@
       ],
       "routeIds": [
         "route_apia_taputapuatea",
-        "route_taputapuatea_hanga_roa"
+        "route_taputapuatea_hanga_roa",
+        "route_tuamotu_council_taputapuatea"
       ],
       "settlementClass": "town"
     },
@@ -32618,43 +32836,57 @@
       "settlementClass": "capital"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "tuamotu_atoll_communities",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "tuamotu_council",
       "names": {
-        "display": "Tuamotu Council"
+        "display": "Tuamotu Atoll Council Anchorage"
       },
+      "physicalMapId": "pacific_polynesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_east_polynesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_east_polynesia_sea",
+        "terrainClass": "island",
+        "x": 34,
+        "y": 42
       },
       "polityId": "tuamotu_atoll_communities",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_east_polynesia_sea",
+        "navigationZoneId": "node_east_polynesia_sea"
+      },
       "provinceId": "tuamotu_gambier_communities",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_tuamotu_council_taputapuatea"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "majapahit_empire",
@@ -32710,24 +32942,23 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "tungaru_maneaba_communities",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
@@ -32735,18 +32966,34 @@
       "names": {
         "display": "Tungaru Maneaba"
       },
+      "physicalMapId": "pacific_west",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_micronesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_micronesia_islands",
+        "terrainClass": "island",
+        "x": 65,
+        "y": 13
       },
       "polityId": "tungaru_maneaba_communities",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_micronesia_islands",
+        "navigationZoneId": "node_micronesia_islands"
+      },
       "provinceId": "tungaru_atoll_communities",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "religious_location",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_tungaru_maneaba_nan_madol"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "hafsid_sultanate",
@@ -33320,43 +33567,51 @@
       "settlementClass": "fort"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "unangan_island_communities",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "unangan_council",
       "names": {
-        "display": "Unangan Council"
+        "display": "Unangan Island Council"
       },
+      "physicalMapId": "pacific_north",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_north_hawaii",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_hawaii_coast",
+        "terrainClass": "upland",
+        "x": 13,
+        "y": 82
       },
       "polityId": "unangan_island_communities",
       "provinceId": "aleutian_island_communities",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "historical_location",
+        "political_center",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_local_waipio_unangan_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "aq_qoyunlu",
@@ -33594,43 +33849,50 @@
       "settlementClass": "city"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "vanuatu_chiefdoms",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "vanuatu_council",
       "names": {
-        "display": "Vanuatu Council"
+        "display": "Vanuatu Chiefs' Council"
       },
+      "physicalMapId": "pacific_melanesia",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_melanesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_melanesia_sea",
+        "terrainClass": "island",
+        "x": 91,
+        "y": 15
       },
       "polityId": "vanuatu_chiefdoms",
       "provinceId": "vanuatu_archipelago",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "political_center",
+        "religious_location"
+      ],
+      "routeIds": [
+        "route_local_rabaul_exchange_harbor_vanuatu_council"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "vanuatu_chiefdoms",
@@ -33681,6 +33943,7 @@
         "voyaging_center"
       ],
       "routeIds": [
+        "route_kanak_council_vanuatu_exchange_anchorage",
         "route_nggela_vanuatu",
         "route_vanuatu_lakeba"
       ],
@@ -34295,6 +34558,10 @@
         "political_center"
       ],
       "routeIds": [
+        "route_local_waipio_hawaii_royal_center",
+        "route_local_waipio_kauai_royal_center",
+        "route_local_waipio_oahu_royal_center",
+        "route_local_waipio_unangan_council",
         "route_waipio_honolulu"
       ],
       "settlementClass": "fort"
@@ -35186,43 +35453,58 @@
       "settlementClass": "town"
     },
     {
-      "compressionRationale": "Existing authoritative minor centre retained abstract until regional evidence supports precise physical placement.",
       "controllerPolityId": "yapese_domains",
       "evidence": [
         {
           "claim": "identity",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "placement",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "ownership",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         },
         {
           "claim": "importance",
-          "sourceId": "scenario/world/world.json"
+          "sourceId": "scenario/settlements/pacific-1450.json"
         }
       ],
       "historicalImportance": "regional",
       "id": "yap_council",
       "names": {
-        "display": "Yap Council"
+        "display": "Yap Council and Exchange Anchorage"
       },
+      "physicalMapId": "pacific_west",
       "placement": {
-        "basis": "regional_centroid",
-        "navigationZoneId": "pacific_micronesia",
-        "terrainClass": "abstract"
+        "basis": "regional_map",
+        "navigationZoneId": "node_micronesia_islands",
+        "terrainClass": "island",
+        "x": 44,
+        "y": 42
       },
       "polityId": "yapese_domains",
+      "port": {
+        "access": "island_anchorage",
+        "kind": "anchorage",
+        "maritimeZoneId": "node_micronesia_islands",
+        "navigationZoneId": "node_micronesia_islands"
+      },
       "provinceId": "western_caroline_domains",
       "regionId": "pacific",
-      "representation": "abstract_minor",
-      "roles": [],
-      "routeIds": [],
-      "settlementClass": "capital"
+      "representation": "physical",
+      "roles": [
+        "anchorage",
+        "political_center",
+        "trade_center",
+        "voyaging_center"
+      ],
+      "routeIds": [
+        "route_yap_council_koror"
+      ],
+      "settlementClass": "town"
     },
     {
       "controllerPolityId": "timurid_empire",
