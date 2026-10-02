@@ -2,6 +2,7 @@
 """Validate and deterministically project Age of Sail historical event data."""
 from __future__ import annotations
 import argparse, copy, json, re
+from collections import Counter
 from datetime import date
 from pathlib import Path
 
@@ -10,7 +11,7 @@ SOURCE=ROOT/"scenario"/"historical-events.json"
 WORLD=ROOT/"scenario"/"world"/"world.json"
 ID=re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 KINDS={"polity":"polities","province":"provinces","settlement":"settlements","technology":"technologies","institution":"institutions","character":"characters","navigation_zone":"navigationZones"}
-CATEGORIES={"political","diplomatic","military","exploration","commercial","institutional","technological","religious","environmental","social","succession"}
+CATEGORIES={"political","diplomatic","succession","military","naval","exploration","commercial","institutional","technological","religious","environmental","social","character","settlement"}
 CONDITIONS={"entity_exists","entity_absent","owner_is","war_active","war_inactive","research_completed","research_missing"}
 EFFECTS={"adjust_treasury","adjust_relations","set_controller","complete_research","set_flag","adjust_prosperity"}
 
@@ -25,6 +26,9 @@ def validate(source,world):
         when=date.fromisoformat(event["date"]); assert date(1450,1,1)<=when<=date(1820,12,31)
         assert isinstance(event["priority"],int) and event["categories"] and set(event["categories"])<=CATEGORIES
         assert event["evidence"].strip() and event["region"] in {"global","europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"}
+        assert event["title"].strip() and event["triggerType"] in {"dated_conditional","recurring_world_state"}
+        assert event["evidenceClass"] in {"historical_synthesis","primary_source","scholarly_reference"}
+        assert event["outcomeSystems"] and len(event["evidence"].split())>=6
         seen=set()
         for kind,ref in event["refs"]:
             assert kind in indexes and ref in indexes[kind] and (kind,ref) not in seen; seen.add((kind,ref))
@@ -54,8 +58,24 @@ def validate(source,world):
     required_regions={"europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"}
     assert required_regions<={x["region"] for x in source["events"]}
     assert all(sum(x["region"]==region for x in source["events"])>=4 for region in required_regions)
-    assert len(source["events"])>=36
+    assert 200<=len(source["events"])<=300
     assert {14,15,16,17,18}<={date.fromisoformat(x["date"]).year//100 for x in source["events"]}
+    assert len({x["evidence"] for x in source["events"]})==len(source["events"])
+    for region in required_regions:
+        assert sum(x["region"]==region for x in source["events"])>=24
+
+def report(source):
+    events=source["events"]
+    dimensions={
+      "region":Counter(x["region"] for x in events),
+      "century":Counter(str(date.fromisoformat(x["date"]).year//100) for x in events),
+      "category":Counter(c for x in events for c in x["categories"]),
+      "triggerType":Counter(x["triggerType"] for x in events),
+      "outcomeSystem":Counter(s for x in events for s in x["outcomeSystems"]),
+      "recurrencePolicy":Counter("recurring" if x.get("recurrence") else "one_shot" for x in events),
+      "evidenceClass":Counter(x["evidenceClass"] for x in events)}
+    return {"schemaVersion":1,"authoredDefinitionCount":len(events),"dimensions":{k:dict(sorted(v.items())) for k,v in dimensions.items()},
+      "sparseCases":[],"gates":{"releaseScale":200<=len(events)<=300,"allRegionsAtLeast24":all(sum(x["region"]==r for x in events)>=24 for r in {"europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"})}}
 
 def project(source,world):
     result=copy.deepcopy(world)
@@ -76,7 +96,13 @@ def project(source,world):
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--write",action="store_true"); args=parser.parse_args()
     source,world=load(SOURCE),load(WORLD); validate(source,world); expected=project(source,world)
-    if args.write: WORLD.write_text(json.dumps(expected,indent=2)+"\n",encoding="utf-8")
+    if args.write:
+        WORLD.write_text(json.dumps(expected,indent=2)+"\n",encoding="utf-8")
+        coverage=report(source); reports=ROOT/"reports"; reports.mkdir(exist_ok=True)
+        (reports/"historical-event-coverage.json").write_text(json.dumps(coverage,indent=2)+"\n",encoding="utf-8")
+        lines=["# Historical event coverage","",f"Authored definitions: **{coverage['authoredDefinitionCount']}**.",""]
+        for name,counts in coverage["dimensions"].items(): lines += [f"## {name}",""]+[f"- {key}: {value}" for key,value in counts.items()]+[""]
+        (reports/"historical-event-coverage.md").write_text("\n".join(lines),encoding="utf-8")
     elif expected!=world: raise SystemExit("historical event projection is stale; run tooling/historical_events.py --write")
     print(f"validated {len(source['events'])} historical events")
 if __name__=="__main__": main()

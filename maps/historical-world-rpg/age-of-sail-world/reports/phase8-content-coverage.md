@@ -8,23 +8,23 @@ This deterministic release-candidate gate audits regional and era breadth; it do
 
 | Region | Polities | Goods | Events | Characters | Regional quests | Personal quests | Treasures |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| europe | 49 | 156 | 7 | 6 | 2 | 1 | 4 |
-| africa | 47 | 86 | 5 | 5 | 2 | 1 | 4 |
-| middle_east_india | 35 | 26 | 4 | 6 | 2 | 1 | 4 |
-| southeast_asia | 27 | 20 | 4 | 5 | 2 | 1 | 4 |
-| east_asia | 16 | 118 | 4 | 5 | 2 | 1 | 4 |
-| americas_caribbean | 32 | 22 | 6 | 5 | 2 | 1 | 4 |
-| pacific | 24 | 16 | 4 | 5 | 2 | 1 | 4 |
+| europe | 49 | 156 | 31 | 6 | 2 | 1 | 4 |
+| africa | 47 | 86 | 29 | 5 | 2 | 1 | 4 |
+| middle_east_india | 35 | 26 | 28 | 6 | 2 | 1 | 4 |
+| southeast_asia | 27 | 20 | 28 | 5 | 2 | 1 | 4 |
+| east_asia | 16 | 118 | 28 | 5 | 2 | 1 | 4 |
+| americas_caribbean | 32 | 22 | 30 | 5 | 2 | 1 | 4 |
+| pacific | 24 | 16 | 28 | 5 | 2 | 1 | 4 |
 
 ## Era snapshots
 
 | Year | Active land archetypes | Progression nodes | Events occurred |
 |---:|---:|---:|---:|
-| 1450 | 17 | 6 | 0 |
-| 1550 | 19 | 19 | 11 |
-| 1650 | 21 | 31 | 23 |
-| 1750 | 22 | 48 | 31 |
-| 1820 | 24 | 59 | 36 |
+| 1450 | 17 | 6 | 2 |
+| 1550 | 19 | 19 | 45 |
+| 1650 | 21 | 31 | 101 |
+| 1750 | 22 | 48 | 143 |
+| 1820 | 24 | 59 | 204 |
 
 ## Gate findings
 
