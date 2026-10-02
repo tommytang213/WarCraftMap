@@ -1,0 +1,55 @@
+package CountryDiplomacyScreenTests
+
+import CountryDiplomacyScreen
+import Wurstunit
+
+class RecordingDiplomacyPresentation implements CountryDiplomacyPresentation
+	string last = ""
+	override function showCountry(string polityId, string summary, string interactions)
+		last = "country:" + polityId
+	override function showPeace(string offerId, string terms, string explanation)
+		last = "offer:" + offerId
+	override function showResult(string message)
+		last = message
+
+class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
+	boolean changed = false
+	override function isKnown(string polityId) returns boolean
+		return polityId == "france"
+	override function countrySummary(string polityId) returns string
+		return "At war; known ruler; Kent occupied"
+	override function availableInteractions(string polityId) returns string
+		return "serve, rewards, access, negotiate"
+	override function activeConflictWith(string polityId) returns string
+		return "channel_war"
+	override function validateOffer(string conflictId, string recipientPolityId, string terms) returns string
+		if terms == "return_kent"
+			return ""
+		return "Those terms are impossible."
+	override function createOffer(string conflictId, string recipientPolityId, string terms) returns string
+		return "player_offer_1"
+	override function respondToOffer(string offerId, boolean accept, boolean confirmed) returns string
+		if accept and confirmed
+			changed = true
+			return "Peace concluded; Kent returned."
+		return "Confirmation required."
+
+@test function playerCanOpenOfferRespondAndObserveWorldChange()
+	let authority = new FakeDiplomacyAuthority()
+	let presentation = new RecordingDiplomacyPresentation()
+	let controller = new CountryDiplomacyController(authority, presentation)
+	controller.openFromMapContext("france").assertTrue()
+	presentation.last.assertEquals("country:france")
+	controller.propose("france", "return_kent").assertTrue()
+	presentation.last.assertEquals("offer:player_offer_1")
+	controller.respond("player_offer_1", true, true).assertTrue()
+	authority.changed.assertTrue()
+	presentation.last.assertEquals("Peace concluded; Kent returned.")
+
+@test function undiscoveredAndInvalidOffersStayClosed()
+	let authority = new FakeDiplomacyAuthority()
+	let presentation = new RecordingDiplomacyPresentation()
+	let controller = new CountryDiplomacyController(authority, presentation)
+	controller.openFromRuler("castile").assertFalse()
+	controller.propose("france", "impossible").assertFalse()
+	presentation.last.assertEquals("Those terms are impossible.")
