@@ -1,0 +1,2406 @@
+{
+  "schemaVersion": 1,
+  "selectionPolicy": {
+    "algorithm": "sha256_rank_v1",
+    "inputs": [
+      "campaign_seed",
+      "settlement_id",
+      "slot",
+      "cycle",
+      "family_id",
+      "variant_id"
+    ],
+    "rerollOnBoardOpen": false
+  },
+  "families": [
+    {
+      "id": "neighbors_in_need",
+      "category": "civilian",
+      "requiredAnyTags": [
+        "civilian"
+      ],
+      "cooldownDays": 20,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Neighbors in Need: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Households ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Deliver agreed aid; verify it reached the named households.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Neighbors in Need: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Households ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Deliver agreed aid; verify it reached the named households.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Neighbors in Need: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Households ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Deliver agreed aid; verify it reached the named households.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Neighbors in Need: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Households ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Deliver agreed aid; verify it reached the named households.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "market_shortfall",
+      "category": "shortage_supply",
+      "requiredAnyTags": [
+        "shortage",
+        "trade"
+      ],
+      "cooldownDays": 30,
+      "campaignCompletionCap": 4,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Market Shortfall: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Staple Stores ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Source a scarce staple; inspect quality before delivery.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "trade_throughput",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Source a scarce staple; inspect quality before delivery."
+        },
+        {
+          "id": "contested",
+          "title": "Market Shortfall: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Staple Stores ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Source a scarce staple; inspect quality before delivery.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "trade_throughput",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Source a scarce staple; inspect quality before delivery."
+        },
+        {
+          "id": "urgent",
+          "title": "Market Shortfall: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Staple Stores ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Source a scarce staple; inspect quality before delivery.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "trade_throughput",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Source a scarce staple; inspect quality before delivery."
+        },
+        {
+          "id": "scarce",
+          "title": "Market Shortfall: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Staple Stores ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Source a scarce staple; inspect quality before delivery.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "trade_throughput",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Source a scarce staple; inspect quality before delivery."
+        }
+      ]
+    },
+    {
+      "id": "sealed_dispatch",
+      "category": "delivery",
+      "requiredAnyTags": [
+        "delivery",
+        "administration"
+      ],
+      "cooldownDays": 40,
+      "campaignCompletionCap": 5,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "A Sealed Dispatch: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "polity_favor",
+              "amountBand": "small",
+              "scope": "polity"
+            }
+          ],
+          "strategicAccomplishment": "Carry a sealed dispatch; obtain a valid receipt or return it intact."
+        },
+        {
+          "id": "contested",
+          "title": "A Sealed Dispatch: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "polity_favor",
+              "amountBand": "small",
+              "scope": "polity"
+            }
+          ],
+          "strategicAccomplishment": "Carry a sealed dispatch; obtain a valid receipt or return it intact."
+        },
+        {
+          "id": "urgent",
+          "title": "A Sealed Dispatch: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "polity_favor",
+              "amountBand": "small",
+              "scope": "polity"
+            }
+          ],
+          "strategicAccomplishment": "Carry a sealed dispatch; obtain a valid receipt or return it intact."
+        },
+        {
+          "id": "scarce",
+          "title": "A Sealed Dispatch: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "polity_favor",
+              "amountBand": "small",
+              "scope": "polity"
+            }
+          ],
+          "strategicAccomplishment": "Carry a sealed dispatch; obtain a valid receipt or return it intact."
+        }
+      ]
+    },
+    {
+      "id": "road_companions",
+      "category": "escort",
+      "requiredAnyTags": [
+        "escort",
+        "trade"
+      ],
+      "cooldownDays": 50,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Road Companions: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "A Vulnerable Traveling Party ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Meet the party; escort it through the declared danger and account for losses.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Road Companions: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "A Vulnerable Traveling Party ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Meet the party; escort it through the declared danger and account for losses.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Road Companions: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "A Vulnerable Traveling Party ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Meet the party; escort it through the declared danger and account for losses.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Road Companions: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "A Vulnerable Traveling Party ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Meet the party; escort it through the declared danger and account for losses.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "marks_in_dust",
+      "category": "investigation",
+      "requiredAnyTags": [
+        "investigation"
+      ],
+      "cooldownDays": 60,
+      "campaignCompletionCap": 4,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Marks in Dust: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Contradictory Local Witnesses ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Gather separate testimony; recover physical evidence and report without accusation by rumor.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Marks in Dust: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Contradictory Local Witnesses ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Gather separate testimony; recover physical evidence and report without accusation by rumor.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Marks in Dust: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Contradictory Local Witnesses ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Gather separate testimony; recover physical evidence and report without accusation by rumor.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Marks in Dust: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Contradictory Local Witnesses ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Gather separate testimony; recover physical evidence and report without accusation by rumor.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "tools_recovered",
+      "category": "recovery",
+      "requiredAnyTags": [
+        "recovery",
+        "civilian"
+      ],
+      "cooldownDays": 20,
+      "campaignCompletionCap": 5,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Tools Recovered: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "A Working Household ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Locate the lost tools; establish ownership and return or compensate them.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "profession_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Tools Recovered: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "A Working Household ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Locate the lost tools; establish ownership and return or compensate them.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "profession_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Tools Recovered: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "A Working Household ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Locate the lost tools; establish ownership and return or compensate them.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "profession_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Tools Recovered: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "A Working Household ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Locate the lost tools; establish ownership and return or compensate them.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "profession_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "edge_of_the_chart",
+      "category": "exploration",
+      "requiredAnyTags": [
+        "exploration",
+        "frontier"
+      ],
+      "cooldownDays": 30,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Edge of the Chart: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Local Guides ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the bounded area; return observations without revealing unearned locations.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Edge of the Chart: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Local Guides ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the bounded area; return observations without revealing unearned locations.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Edge of the Chart: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Local Guides ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the bounded area; return observations without revealing unearned locations.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Edge of the Chart: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Local Guides ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the bounded area; return observations without revealing unearned locations.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "master_and_apprentice",
+      "category": "profession",
+      "requiredAnyTags": [
+        "profession"
+      ],
+      "cooldownDays": 40,
+      "campaignCompletionCap": 4,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Master and Apprentice: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "A Local Craft ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Obtain suitable materials; complete a supervised piece to the stated standard.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Master and Apprentice: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "A Local Craft ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Obtain suitable materials; complete a supervised piece to the stated standard.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Master and Apprentice: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "A Local Craft ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Obtain suitable materials; complete a supervised piece to the stated standard.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Master and Apprentice: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "A Local Craft ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Obtain suitable materials; complete a supervised piece to the stated standard.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "quiet_watch",
+      "category": "criminal_security",
+      "requiredAnyTags": [
+        "security"
+      ],
+      "cooldownDays": 50,
+      "campaignCompletionCap": 5,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "The Quiet Watch: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "The Night Watch ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Observe the named approach; identify the network and choose arrest or warning.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_crime",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "The Quiet Watch: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "The Night Watch ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Observe the named approach; identify the network and choose arrest or warning.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_crime",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "The Quiet Watch: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "The Night Watch ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Observe the named approach; identify the network and choose arrest or warning.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_crime",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "The Quiet Watch: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "The Night Watch ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Observe the named approach; identify the network and choose arrest or warning.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_crime",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "stores_for_watch",
+      "category": "military_support",
+      "requiredAnyTags": [
+        "military"
+      ],
+      "cooldownDays": 60,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Stores for the Watch: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "The Local Defenders ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Audit the request; deliver serviceable supplies and witness their issue.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "garrison_readiness",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Audit the request; deliver serviceable supplies and witness their issue."
+        },
+        {
+          "id": "contested",
+          "title": "Stores for the Watch: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "The Local Defenders ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Audit the request; deliver serviceable supplies and witness their issue.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "garrison_readiness",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Audit the request; deliver serviceable supplies and witness their issue."
+        },
+        {
+          "id": "urgent",
+          "title": "Stores for the Watch: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "The Local Defenders ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Audit the request; deliver serviceable supplies and witness their issue.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "garrison_readiness",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Audit the request; deliver serviceable supplies and witness their issue."
+        },
+        {
+          "id": "scarce",
+          "title": "Stores for the Watch: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "The Local Defenders ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Audit the request; deliver serviceable supplies and witness their issue.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "garrison_readiness",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Audit the request; deliver serviceable supplies and witness their issue."
+        }
+      ]
+    },
+    {
+      "id": "tide_and_rigging",
+      "category": "maritime",
+      "requiredAnyTags": [
+        "maritime",
+        "port"
+      ],
+      "cooldownDays": 20,
+      "campaignCompletionCap": 4,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Tide and Rigging: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Waterfront Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect the vessel or beacon; acquire fittings and complete a safe trial.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "fleet_supply",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Inspect the vessel or beacon; acquire fittings and complete a safe trial."
+        },
+        {
+          "id": "contested",
+          "title": "Tide and Rigging: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Waterfront Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect the vessel or beacon; acquire fittings and complete a safe trial.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "fleet_supply",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Inspect the vessel or beacon; acquire fittings and complete a safe trial."
+        },
+        {
+          "id": "urgent",
+          "title": "Tide and Rigging: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Waterfront Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect the vessel or beacon; acquire fittings and complete a safe trial.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "fleet_supply",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Inspect the vessel or beacon; acquire fittings and complete a safe trial."
+        },
+        {
+          "id": "scarce",
+          "title": "Tide and Rigging: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Waterfront Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect the vessel or beacon; acquire fittings and complete a safe trial.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "fleet_supply",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Inspect the vessel or beacon; acquire fittings and complete a safe trial."
+        }
+      ]
+    },
+    {
+      "id": "ledger_in_arrears",
+      "category": "administration",
+      "requiredAnyTags": [
+        "administration"
+      ],
+      "cooldownDays": 30,
+      "campaignCompletionCap": 5,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "The Ledger in Arrears: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconcile two records; hear an appeal and file a corrected account.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "stability",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+        },
+        {
+          "id": "contested",
+          "title": "The Ledger in Arrears: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconcile two records; hear an appeal and file a corrected account.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "stability",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+        },
+        {
+          "id": "urgent",
+          "title": "The Ledger in Arrears: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconcile two records; hear an appeal and file a corrected account.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "stability",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+        },
+        {
+          "id": "scarce",
+          "title": "The Ledger in Arrears: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconcile two records; hear an appeal and file a corrected account.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "stability",
+              "amountBand": "small",
+              "scope": "polity",
+              "temporary": true
+            }
+          ],
+          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+        }
+      ]
+    },
+    {
+      "id": "boundary_stones",
+      "category": "local_dispute",
+      "requiredAnyTags": [
+        "dispute",
+        "civilian"
+      ],
+      "cooldownDays": 40,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Boundary Stones: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Neighboring Claimants ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the disputed use; hear both claims and witness a temporary accord.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Boundary Stones: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Neighboring Claimants ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the disputed use; hear both claims and witness a temporary accord.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Boundary Stones: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Neighboring Claimants ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the disputed use; hear both claims and witness a temporary accord.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Boundary Stones: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Neighboring Claimants ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Survey the disputed use; hear both claims and witness a temporary accord.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "reduced_unrest",
+              "amountBand": "small",
+              "scope": "settlement",
+              "temporary": false
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "bales_and_balances",
+      "category": "trade",
+      "requiredAnyTags": [
+        "trade"
+      ],
+      "cooldownDays": 50,
+      "campaignCompletionCap": 4,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Bales and Balances: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Market Factors ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect weights and goods; complete a fair exchange through the current market.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Bales and Balances: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Market Factors ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect weights and goods; complete a fair exchange through the current market.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Bales and Balances: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Market Factors ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect weights and goods; complete a fair exchange through the current market.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Bales and Balances: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Market Factors ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Inspect weights and goods; complete a fair exchange through the current market.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "route_hazards",
+      "category": "transport",
+      "requiredAnyTags": [
+        "delivery",
+        "trade"
+      ],
+      "cooldownDays": 60,
+      "campaignCompletionCap": 5,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Hazards on the Route: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Carriers And Route Keepers ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Confirm the obstruction; clear or bypass it and guide a test consignment.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Hazards on the Route: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Carriers And Route Keepers ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Confirm the obstruction; clear or bypass it and guide a test consignment.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Hazards on the Route: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Carriers And Route Keepers ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Confirm the obstruction; clear or bypass it and guide a test consignment.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Hazards on the Route: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Carriers And Route Keepers ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Confirm the obstruction; clear or bypass it and guide a test consignment.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    },
+    {
+      "id": "harbor_missing",
+      "category": "search_rescue",
+      "requiredAnyTags": [
+        "maritime",
+        "civilian"
+      ],
+      "cooldownDays": 20,
+      "campaignCompletionCap": 3,
+      "refillRule": "terminal_then_cooldown",
+      "variants": [
+        {
+          "id": "plain",
+          "title": "Missing at the Harbor: Plain",
+          "summary": "A routine request has become difficult because local conditions changed.",
+          "dialogue": "Families And Harbor Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconstruct the last sighting; search safely and return survivors or evidence.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
+          "failure": "Failure records the loss and delays replacement.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "contested",
+          "title": "Missing at the Harbor: Contested",
+          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
+          "dialogue": "Families And Harbor Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconstruct the last sighting; search safely and return survivors or evidence.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Broker a limited compromise if the original remedy is blocked.",
+          "failure": "Escalation closes the offer without granting rewards.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "urgent",
+          "title": "Missing at the Harbor: Urgent",
+          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
+          "dialogue": "Families And Harbor Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconstruct the last sighting; search safely and return survivors or evidence.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
+          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        },
+        {
+          "id": "scarce",
+          "title": "Missing at the Harbor: Scarce",
+          "summary": "Scarcity makes quality, price, and allocation as important as delivery.",
+          "dialogue": "Families And Harbor Crews ask for accountable help, not an unquestioned errand.",
+          "objectives": [
+            "Reconstruct the last sighting; search safely and return survivors or evidence.",
+            "Return to the originating settlement and make a witnessed accounting."
+          ],
+          "alternate": "Substitute only a context-appropriate material with consent.",
+          "failure": "Waste or fraud fails the request and consumes no reward.",
+          "guidance": {
+            "precision": "exact",
+            "originPersistent": true,
+            "blockedRoutePolicy": "show_authored_alternate",
+            "undiscoveredLeak": false
+          },
+          "rewards": [
+            {
+              "kind": "currency",
+              "scale": "difficulty_travel_scarcity_means",
+              "bounded": true
+            },
+            {
+              "kind": "experience",
+              "amountBand": "small"
+            },
+            {
+              "kind": "settlement_reputation",
+              "amountBand": "small",
+              "scope": "local"
+            }
+          ],
+          "strategicAccomplishment": null
+        }
+      ]
+    }
+  ]
+}
