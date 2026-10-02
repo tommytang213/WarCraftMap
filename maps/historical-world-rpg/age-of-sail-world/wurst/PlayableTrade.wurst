@@ -1,0 +1,144 @@
+package PlayableTrade
+
+/** Warcraft runtime boundary for the authoritative campaign trade state.
+ * Handles and frames never own stock: adapters rebuild this model from stable
+ * save IDs and commit the returned state through the campaign-save manager. */
+public class TradeStore
+	string id
+	int capacity
+	int cargo=0
+	int money=0
+	construct(string storeId,int capacityUnits,int currencyMinor)
+		id=storeId
+		capacity=capacityUnits
+		money=currencyMinor
+	function freeCapacity() returns int
+		return capacity-cargo
+
+public class RuntimeMarket
+	string id
+	string goodName
+	int stock
+	int money
+	int buyUnitPrice
+	int sellUnitPrice
+	int previousUnitPrice
+	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
+		id=marketId
+		goodName=displayedGood
+		stock=initialStock
+		money=currencyMinor
+		buyUnitPrice=buyPrice
+		sellUnitPrice=sellPrice
+		previousUnitPrice=buyPrice
+	function trend() returns string
+		if buyUnitPrice>previousUnitPrice
+			return "rising"
+		if buyUnitPrice<previousUnitPrice
+			return "falling"
+		return "steady"
+	function inspect() returns string
+		return goodName+": "+stock.toString()+" available; buy "+buyUnitPrice.toString()+"; sell "+sellUnitPrice.toString()+"; "+trend()
+
+public class MerchantProgress
+	int standing=0
+	int realizedProfit=0
+	int completedRouteCount=0
+	function warehouseAccess() returns boolean
+		return standing>=100
+	function marketIntelligence() returns boolean
+		return standing>=500
+
+public class PlayableTradeController
+	MerchantProgress progress
+	string array[128] processed
+	int processedCount=0
+	int carriedCost=0
+	int carriedQuantity=0
+	string carriedOrigin=""
+	construct(MerchantProgress p)
+		progress=p
+	function seen(string transactionId) returns boolean
+		for i=0 to processedCount-1
+			if processed[i]==transactionId
+				return true
+		return false
+	function mark(string transactionId)
+		processed[processedCount]=transactionId
+		processedCount++
+	function buy(string transactionId,RuntimeMarket market,TradeStore destination,int quantity) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if quantity<=0
+			return "Quantity must be positive."
+		let charge=market.buyUnitPrice*quantity
+		if market.stock<quantity
+			return "Market stock is insufficient."
+		if destination.money<charge
+			return "Funds are insufficient."
+		if destination.freeCapacity()<quantity
+			return "Cargo capacity is insufficient."
+		market.stock-=quantity
+		market.money+=charge
+		destination.cargo+=quantity
+		destination.money-=charge
+		carriedCost+=charge
+		carriedQuantity+=quantity
+		carriedOrigin=market.id
+		mark(transactionId)
+		return "Bought "+quantity.toString()+" "+market.goodName+"."
+	function sell(string transactionId,RuntimeMarket market,TradeStore source,int quantity,int difficultyPermille) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if quantity<=0 or source.cargo<quantity
+			return "Cargo is insufficient."
+		let proceeds=market.sellUnitPrice*quantity
+		if market.money<proceeds
+			return "Market funds are insufficient."
+		let cost=0
+		if carriedQuantity>=quantity
+			cost=carriedCost*quantity div carriedQuantity
+			carriedCost-=cost
+			carriedQuantity-=quantity
+		market.stock+=quantity
+		market.money-=proceeds
+		source.cargo-=quantity
+		source.money+=proceeds
+		let profit=proceeds-cost
+		progress.realizedProfit+=profit
+		if cost>0 and profit>0 and carriedOrigin!="" and carriedOrigin!=market.id
+			let divisor=1000+progress.completedRouteCount*500
+			progress.standing+=profit*difficultyPermille div divisor
+			progress.completedRouteCount++
+		mark(transactionId)
+		return "Sold "+quantity.toString()+" "+market.goodName+"; realized P/L "+profit.toString()+"."
+	function moveCargo(string transactionId,TradeStore source,TradeStore destination,int quantity) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if quantity<=0 or source.cargo<quantity
+			return "Cargo is insufficient."
+		if destination.freeCapacity()<quantity
+			return "Cargo capacity is insufficient."
+		source.cargo-=quantity
+		destination.cargo+=quantity
+		mark(transactionId)
+		return "Cargo moved."
+
+public interface TradePresentation
+	function showMarket(player viewer,string marketId,string rows)
+	function showTradeResult(player viewer,string message)
+
+public class WarcraftTradePresentation implements TradePresentation
+	override function showMarket(player viewer,string marketId,string rows)
+		DisplayTimedTextToPlayer(viewer,0.,0.,15.,"Market: "+marketId+"\n"+rows)
+	override function showTradeResult(player viewer,string message)
+		DisplayTimedTextToPlayer(viewer,0.,0.,10.,message)
+
+/** Adapter entry points used by settlement interaction frames and integration tests. */
+public function inspectMarket(player viewer,RuntimeMarket market,TradePresentation presentation)
+	presentation.showMarket(viewer,market.id,market.inspect())
+public function buyCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,PlayableTradeController controller,TradePresentation presentation)
+	presentation.showTradeResult(viewer,controller.buy(transactionId,market,store,quantity))
+public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
+	presentation.showTradeResult(viewer,controller.sell(transactionId,market,store,quantity,difficultyPermille))
+
