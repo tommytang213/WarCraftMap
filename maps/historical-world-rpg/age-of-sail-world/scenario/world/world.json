@@ -89132,6 +89132,34 @@
       "entryNodeIds": [
         "movable_type_printing"
       ]
+    },
+    {
+      "id": "logistical",
+      "name": "Logistical",
+      "entryNodeIds": [
+        "pack_train_contracts"
+      ]
+    },
+    {
+      "id": "exploration",
+      "name": "Exploration",
+      "entryNodeIds": [
+        "pilot_books"
+      ]
+    },
+    {
+      "id": "medical",
+      "name": "Medical",
+      "entryNodeIds": [
+        "quarantine_practice"
+      ]
+    },
+    {
+      "id": "communications",
+      "name": "Communications",
+      "entryNodeIds": [
+        "courier_relays"
+      ]
     }
   ],
   "technologies": [
@@ -89356,7 +89384,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_celestial_navigation"
+        }
+      ]
     },
     {
       "id": "standardized_charts",
@@ -89579,7 +89612,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_bill_of_exchange_networks"
+        }
+      ]
     },
     {
       "id": "joint_stock_enterprise",
@@ -89618,7 +89656,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_insurance_markets"
+        }
+      ]
     },
     {
       "id": "chartered_companies",
@@ -89731,7 +89774,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_cadastral_survey"
+        }
+      ]
     },
     {
       "id": "military_fiscal_state",
@@ -89838,7 +89886,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_scholastic_natural_philosophy"
+        }
+      ]
     },
     {
       "id": "experimental_method",
@@ -89877,7 +89930,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_newtonian_science"
+        }
+      ]
     },
     {
       "id": "anatomy_and_medicine",
@@ -90003,7 +90061,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_selective_breeding"
+        }
+      ]
     },
     {
       "id": "irrigation_hydraulics",
@@ -90087,7 +90150,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_water_powered_machinery"
+        }
+      ]
     },
     {
       "id": "cast_cannon",
@@ -90103,7 +90171,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_cast_cannon"
+        }
+      ]
     },
     {
       "id": "coke_smelted_iron",
@@ -90120,7 +90193,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_coke_smelted_iron"
+        }
+      ]
     },
     {
       "id": "rotative_steam_power",
@@ -90210,6 +90288,2774 @@
           "contentId": "industrial_output"
         }
       ]
+    },
+    {
+      "id": "arquebus_volley_drill",
+      "name": "Arquebus Volley Drill",
+      "description": "Improves battlefield organization, equipment, and command through arquebus volley drill.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "pike_and_shot"
+      ],
+      "timeCost": {
+        "preferredYear": 1490,
+        "baseCost": 108,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_arquebus_volley_drill"
+        }
+      ]
+    },
+    {
+      "id": "field_entrenchment",
+      "name": "Field Entrenchment",
+      "description": "Improves battlefield organization, equipment, and command through field entrenchment.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "arquebus_volley_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1525,
+        "baseCost": 140,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_field_entrenchment"
+        }
+      ]
+    },
+    {
+      "id": "regimental_organization",
+      "name": "Regimental Organization",
+      "description": "Improves battlefield organization, equipment, and command through regimental organization.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "field_entrenchment"
+      ],
+      "timeCost": {
+        "preferredYear": 1570,
+        "baseCost": 181,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_regimental_organization"
+        }
+      ]
+    },
+    {
+      "id": "countermarch_fire",
+      "name": "Countermarch Fire",
+      "description": "Improves battlefield organization, equipment, and command through countermarch fire.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "regimental_organization"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 210,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_countermarch_fire"
+        }
+      ]
+    },
+    {
+      "id": "bayonet_system",
+      "name": "Socket Bayonet System",
+      "description": "Improves battlefield organization, equipment, and command through socket bayonet system.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "countermarch_fire",
+        "insurance_markets"
+      ],
+      "timeCost": {
+        "preferredYear": 1690,
+        "baseCost": 288,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_bayonet_system"
+        }
+      ]
+    },
+    {
+      "id": "officer_academies",
+      "name": "Officer Academies",
+      "description": "Improves battlefield organization, equipment, and command through officer academies.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "bayonet_system"
+      ],
+      "timeCost": {
+        "preferredYear": 1715,
+        "baseCost": 312,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_officer_academies"
+        }
+      ]
+    },
+    {
+      "id": "horse_artillery",
+      "name": "Horse Artillery",
+      "description": "Improves battlefield organization, equipment, and command through horse artillery.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "officer_academies"
+      ],
+      "timeCost": {
+        "preferredYear": 1775,
+        "baseCost": 366,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_horse_artillery"
+        }
+      ]
+    },
+    {
+      "id": "skirmisher_doctrine",
+      "name": "Skirmisher Doctrine",
+      "description": "Improves battlefield organization, equipment, and command through skirmisher doctrine.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "horse_artillery"
+      ],
+      "timeCost": {
+        "preferredYear": 1785,
+        "baseCost": 378,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_skirmisher_doctrine"
+        }
+      ]
+    },
+    {
+      "id": "general_staff_methods",
+      "name": "General Staff Methods",
+      "description": "Improves battlefield organization, equipment, and command through general staff methods.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "skirmisher_doctrine",
+        "rotative_steam_power"
+      ],
+      "timeCost": {
+        "preferredYear": 1805,
+        "baseCost": 398,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_general_staff_methods"
+        }
+      ]
+    },
+    {
+      "id": "rifled_infantry_trials",
+      "name": "Rifled Infantry Trials",
+      "description": "Improves battlefield organization, equipment, and command through rifled infantry trials.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "general_staff_methods"
+      ],
+      "timeCost": {
+        "preferredYear": 1815,
+        "baseCost": 410,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_rifled_infantry_trials"
+        }
+      ]
+    },
+    {
+      "id": "reserve_mobilization",
+      "name": "Reserve Mobilization",
+      "description": "Improves battlefield organization, equipment, and command through reserve mobilization.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "rifled_infantry_trials"
+      ],
+      "timeCost": {
+        "preferredYear": 1818,
+        "baseCost": 417,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_reserve_mobilization"
+        }
+      ]
+    },
+    {
+      "id": "combined_arms_columns",
+      "name": "Combined-arms Columns",
+      "description": "Improves battlefield organization, equipment, and command through combined-arms columns.",
+      "branchId": "military",
+      "prerequisiteIds": [
+        "reserve_mobilization"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 406,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_combined_arms_columns"
+        }
+      ]
+    },
+    {
+      "id": "carvel_hull_construction",
+      "name": "Carvel Hull Construction",
+      "description": "Makes fleets safer and more effective through carvel hull construction.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "oceanic_seamanship"
+      ],
+      "timeCost": {
+        "preferredYear": 1460,
+        "baseCost": 83,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_carvel_hull_construction"
+        }
+      ]
+    },
+    {
+      "id": "lateen_square_rig",
+      "name": "Composite Sailing Rigs",
+      "description": "Makes fleets safer and more effective through composite sailing rigs.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "carvel_hull_construction"
+      ],
+      "timeCost": {
+        "preferredYear": 1490,
+        "baseCost": 112,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_lateen_square_rig"
+        }
+      ]
+    },
+    {
+      "id": "shipboard_artillery_decks",
+      "name": "Shipboard Artillery Decks",
+      "description": "Makes fleets safer and more effective through shipboard artillery decks.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "lateen_square_rig"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 140,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_shipboard_artillery_decks"
+        }
+      ]
+    },
+    {
+      "id": "naval_signal_books",
+      "name": "Naval Signal Books",
+      "description": "Makes fleets safer and more effective through naval signal books.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "shipboard_artillery_decks"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 194,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_naval_signal_books"
+        }
+      ]
+    },
+    {
+      "id": "copper_sheathing",
+      "name": "Copper Sheathing",
+      "description": "Makes fleets safer and more effective through copper sheathing.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "naval_signal_books",
+        "precision_engineering"
+      ],
+      "timeCost": {
+        "preferredYear": 1760,
+        "baseCost": 345,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_copper_sheathing"
+        }
+      ]
+    },
+    {
+      "id": "careening_stations",
+      "name": "Overseas Careening Stations",
+      "description": "Makes fleets safer and more effective through overseas careening stations.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "copper_sheathing"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 218,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_careening_stations"
+        }
+      ]
+    },
+    {
+      "id": "fleet_victualling",
+      "name": "Fleet Victualling",
+      "description": "Makes fleets safer and more effective through fleet victualling.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "careening_stations"
+      ],
+      "timeCost": {
+        "preferredYear": 1640,
+        "baseCost": 255,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_fleet_victualling"
+        }
+      ]
+    },
+    {
+      "id": "naval_hospitals",
+      "name": "Naval Hospitals",
+      "description": "Makes fleets safer and more effective through naval hospitals.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "fleet_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 308,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_naval_hospitals"
+        }
+      ]
+    },
+    {
+      "id": "rated_warships",
+      "name": "Rated Warship System",
+      "description": "Makes fleets safer and more effective through rated warship system.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "naval_hospitals",
+        "coke_smelted_iron"
+      ],
+      "timeCost": {
+        "preferredYear": 1720,
+        "baseCost": 328,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_rated_warships"
+        }
+      ]
+    },
+    {
+      "id": "carronade_batteries",
+      "name": "Carronade Batteries",
+      "description": "Makes fleets safer and more effective through carronade batteries.",
+      "branchId": "naval",
+      "prerequisiteIds": [
+        "rated_warships"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 382,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_carronade_batteries"
+        }
+      ]
+    },
+    {
+      "id": "merchant_correspondence",
+      "name": "Merchant Correspondence",
+      "description": "Extends trustworthy exchange and market coordination through merchant correspondence.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "double_entry_bookkeeping"
+      ],
+      "timeCost": {
+        "preferredYear": 1460,
+        "baseCost": 83,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_merchant_correspondence"
+        }
+      ]
+    },
+    {
+      "id": "warehouse_warrants",
+      "name": "Warehouse Warrants",
+      "description": "Extends trustworthy exchange and market coordination through warehouse warrants.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "merchant_correspondence"
+      ],
+      "timeCost": {
+        "preferredYear": 1510,
+        "baseCost": 128,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_warehouse_warrants"
+        }
+      ]
+    },
+    {
+      "id": "consular_trade_networks",
+      "name": "Consular Trade Networks",
+      "description": "Extends trustworthy exchange and market coordination through consular trade networks.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "warehouse_warrants"
+      ],
+      "timeCost": {
+        "preferredYear": 1540,
+        "baseCost": 157,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_consular_trade_networks"
+        }
+      ]
+    },
+    {
+      "id": "auction_markets",
+      "name": "Auction Markets",
+      "description": "Extends trustworthy exchange and market coordination through auction markets.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "consular_trade_networks"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 194,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_auction_markets"
+        }
+      ]
+    },
+    {
+      "id": "central_banking",
+      "name": "Central Banking",
+      "description": "Extends trustworthy exchange and market coordination through central banking.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "auction_markets",
+        "standing_army_system"
+      ],
+      "timeCost": {
+        "preferredYear": 1695,
+        "baseCost": 292,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_central_banking"
+        }
+      ]
+    },
+    {
+      "id": "commercial_statistics",
+      "name": "Commercial Statistics",
+      "description": "Extends trustworthy exchange and market coordination through commercial statistics.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "central_banking"
+      ],
+      "timeCost": {
+        "preferredYear": 1740,
+        "baseCost": 333,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_commercial_statistics"
+        }
+      ]
+    },
+    {
+      "id": "canal_tolls_finance",
+      "name": "Canal Finance",
+      "description": "Extends trustworthy exchange and market coordination through canal finance.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "commercial_statistics"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 345,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_canal_tolls_finance"
+        }
+      ]
+    },
+    {
+      "id": "brokerage_houses",
+      "name": "Brokerage Houses",
+      "description": "Extends trustworthy exchange and market coordination through brokerage houses.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "canal_tolls_finance"
+      ],
+      "timeCost": {
+        "preferredYear": 1710,
+        "baseCost": 316,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_brokerage_houses"
+        }
+      ]
+    },
+    {
+      "id": "manufacturing_credit",
+      "name": "Manufacturing Credit",
+      "description": "Extends trustworthy exchange and market coordination through manufacturing credit.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "brokerage_houses",
+        "mobile_field_artillery"
+      ],
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 369,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_manufacturing_credit"
+        }
+      ]
+    },
+    {
+      "id": "global_price_bulletins",
+      "name": "Global Price Bulletins",
+      "description": "Extends trustworthy exchange and market coordination through global price bulletins.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "manufacturing_credit"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 398,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_global_price_bulletins"
+        }
+      ]
+    },
+    {
+      "id": "savings_banks",
+      "name": "Savings Banks",
+      "description": "Extends trustworthy exchange and market coordination through savings banks.",
+      "branchId": "commercial",
+      "prerequisiteIds": [
+        "global_price_bulletins"
+      ],
+      "timeCost": {
+        "preferredYear": 1810,
+        "baseCost": 410,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_savings_banks"
+        }
+      ]
+    },
+    {
+      "id": "chancery_archives",
+      "name": "Chancery Archives",
+      "description": "Makes durable government records and decisions possible through chancery archives.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1470,
+        "baseCost": 91,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_chancery_archives"
+        }
+      ]
+    },
+    {
+      "id": "trained_magistracy",
+      "name": "Trained Magistracy",
+      "description": "Makes durable government records and decisions possible through trained magistracy.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "chancery_archives"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 136,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_trained_magistracy"
+        }
+      ]
+    },
+    {
+      "id": "fiscal_cadastres",
+      "name": "Fiscal Cadastres",
+      "description": "Makes durable government records and decisions possible through fiscal cadastres.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "trained_magistracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 165,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_fiscal_cadastres"
+        }
+      ]
+    },
+    {
+      "id": "provincial_audits",
+      "name": "Provincial Audits",
+      "description": "Makes durable government records and decisions possible through provincial audits.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "fiscal_cadastres"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 210,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_provincial_audits"
+        }
+      ]
+    },
+    {
+      "id": "civil_service_examinations",
+      "name": "Civil Service Examinations",
+      "description": "Makes durable government records and decisions possible through civil service examinations.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "provincial_audits",
+        "fleet_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 255,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_civil_service_examinations"
+        }
+      ]
+    },
+    {
+      "id": "population_census",
+      "name": "Population Census",
+      "description": "Makes durable government records and decisions possible through population census.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "civil_service_examinations"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 300,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_population_census"
+        }
+      ]
+    },
+    {
+      "id": "municipal_charters",
+      "name": "Municipal Charters",
+      "description": "Makes durable government records and decisions possible through municipal charters.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "population_census"
+      ],
+      "timeCost": {
+        "preferredYear": 1725,
+        "baseCost": 324,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_municipal_charters"
+        }
+      ]
+    },
+    {
+      "id": "codified_law",
+      "name": "Codified Law",
+      "description": "Makes durable government records and decisions possible through codified law.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "municipal_charters"
+      ],
+      "timeCost": {
+        "preferredYear": 1760,
+        "baseCost": 357,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_codified_law"
+        }
+      ]
+    },
+    {
+      "id": "ministerial_cabinets",
+      "name": "Ministerial Cabinets",
+      "description": "Makes durable government records and decisions possible through ministerial cabinets.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "codified_law",
+        "textile_mechanization"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 378,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_ministerial_cabinets"
+        }
+      ]
+    },
+    {
+      "id": "merit_civil_service",
+      "name": "Merit Civil Service",
+      "description": "Makes durable government records and decisions possible through merit civil service.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "ministerial_cabinets"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 398,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_merit_civil_service"
+        }
+      ]
+    },
+    {
+      "id": "national_accounts",
+      "name": "National Accounts",
+      "description": "Makes durable government records and decisions possible through national accounts.",
+      "branchId": "administrative",
+      "prerequisiteIds": [
+        "merit_civil_service"
+      ],
+      "timeCost": {
+        "preferredYear": 1815,
+        "baseCost": 414,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_national_accounts"
+        }
+      ]
+    },
+    {
+      "id": "printed_observation_tables",
+      "name": "Printed Observation Tables",
+      "description": "Turns repeatable observation into usable knowledge through printed observation tables.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "scholastic_natural_philosophy"
+      ],
+      "timeCost": {
+        "preferredYear": 1490,
+        "baseCost": 108,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_printed_observation_tables"
+        }
+      ]
+    },
+    {
+      "id": "surveying_instruments",
+      "name": "Surveying Instruments",
+      "description": "Turns repeatable observation into usable knowledge through surveying instruments.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "printed_observation_tables"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 136,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_surveying_instruments"
+        }
+      ]
+    },
+    {
+      "id": "microscopy",
+      "name": "Microscopy",
+      "description": "Turns repeatable observation into usable knowledge through microscopy.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "surveying_instruments"
+      ],
+      "timeCost": {
+        "preferredYear": 1665,
+        "baseCost": 259,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_microscopy"
+        }
+      ]
+    },
+    {
+      "id": "barometric_measurement",
+      "name": "Barometric Measurement",
+      "description": "Turns repeatable observation into usable knowledge through barometric measurement.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "microscopy"
+      ],
+      "timeCost": {
+        "preferredYear": 1640,
+        "baseCost": 243,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_barometric_measurement"
+        }
+      ]
+    },
+    {
+      "id": "calculus_methods",
+      "name": "Calculus Methods",
+      "description": "Turns repeatable observation into usable knowledge through calculus methods.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "barometric_measurement",
+        "flintlock_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1685,
+        "baseCost": 284,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_calculus_methods"
+        }
+      ]
+    },
+    {
+      "id": "electrical_experimentation",
+      "name": "Electrical Experimentation",
+      "description": "Turns repeatable observation into usable knowledge through electrical experimentation.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "calculus_methods"
+      ],
+      "timeCost": {
+        "preferredYear": 1745,
+        "baseCost": 337,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_electrical_experimentation"
+        }
+      ]
+    },
+    {
+      "id": "chemical_classification",
+      "name": "Chemical Classification",
+      "description": "Turns repeatable observation into usable knowledge through chemical classification.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "electrical_experimentation"
+      ],
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 361,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_chemical_classification"
+        }
+      ]
+    },
+    {
+      "id": "geological_survey",
+      "name": "Geological Survey",
+      "description": "Turns repeatable observation into usable knowledge through geological survey.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "chemical_classification"
+      ],
+      "timeCost": {
+        "preferredYear": 1790,
+        "baseCost": 382,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_geological_survey"
+        }
+      ]
+    },
+    {
+      "id": "metric_metrology",
+      "name": "Metric Metrology",
+      "description": "Turns repeatable observation into usable knowledge through metric metrology.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "geological_survey",
+        "skirmisher_doctrine"
+      ],
+      "timeCost": {
+        "preferredYear": 1795,
+        "baseCost": 390,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_metric_metrology"
+        }
+      ]
+    },
+    {
+      "id": "comparative_linguistics",
+      "name": "Comparative Linguistics",
+      "description": "Turns repeatable observation into usable knowledge through comparative linguistics.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "metric_metrology"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 398,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_comparative_linguistics"
+        }
+      ]
+    },
+    {
+      "id": "electromagnetic_experiment",
+      "name": "Electromagnetic Experiment",
+      "description": "Turns repeatable observation into usable knowledge through electromagnetic experiment.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "comparative_linguistics"
+      ],
+      "timeCost": {
+        "preferredYear": 1820,
+        "baseCost": 418,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_electromagnetic_experiment"
+        }
+      ]
+    },
+    {
+      "id": "probability_statistics",
+      "name": "Probability and Statistics",
+      "description": "Turns repeatable observation into usable knowledge through probability and statistics.",
+      "branchId": "scientific",
+      "prerequisiteIds": [
+        "electromagnetic_experiment"
+      ],
+      "timeCost": {
+        "preferredYear": 1710,
+        "baseCost": 332,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_probability_statistics"
+        }
+      ]
+    },
+    {
+      "id": "terrace_conservation",
+      "name": "Terrace Conservation",
+      "description": "Raises resilient food and commodity production through terrace conservation.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "intensive_crop_rotation"
+      ],
+      "timeCost": {
+        "preferredYear": 1460,
+        "baseCost": 83,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_terrace_conservation"
+        }
+      ]
+    },
+    {
+      "id": "regional_seed_exchange",
+      "name": "Regional Seed Exchange",
+      "description": "Raises resilient food and commodity production through regional seed exchange.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "terrace_conservation"
+      ],
+      "timeCost": {
+        "preferredYear": 1490,
+        "baseCost": 112,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_regional_seed_exchange"
+        }
+      ]
+    },
+    {
+      "id": "market_gardening",
+      "name": "Market Gardening",
+      "description": "Raises resilient food and commodity production through market gardening.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "regional_seed_exchange"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 165,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_market_gardening"
+        }
+      ]
+    },
+    {
+      "id": "drainage_reclamation",
+      "name": "Drainage and Reclamation",
+      "description": "Raises resilient food and commodity production through drainage and reclamation.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "market_gardening"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 210,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_drainage_reclamation"
+        }
+      ]
+    },
+    {
+      "id": "fodder_crop_systems",
+      "name": "Fodder Crop Systems",
+      "description": "Raises resilient food and commodity production through fodder crop systems.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "drainage_reclamation",
+        "fleet_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 255,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_fodder_crop_systems"
+        }
+      ]
+    },
+    {
+      "id": "plantation_processing",
+      "name": "Plantation Processing",
+      "description": "Raises resilient food and commodity production through plantation processing.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "fodder_crop_systems"
+      ],
+      "timeCost": {
+        "preferredYear": 1670,
+        "baseCost": 275,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_plantation_processing"
+        }
+      ]
+    },
+    {
+      "id": "seed_drill",
+      "name": "Seed Drill",
+      "description": "Raises resilient food and commodity production through seed drill.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "plantation_processing"
+      ],
+      "timeCost": {
+        "preferredYear": 1701,
+        "baseCost": 305,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_seed_drill"
+        }
+      ]
+    },
+    {
+      "id": "veterinary_husbandry",
+      "name": "Veterinary Husbandry",
+      "description": "Raises resilient food and commodity production through veterinary husbandry.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "seed_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1740,
+        "baseCost": 341,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_veterinary_husbandry"
+        }
+      ]
+    },
+    {
+      "id": "soil_chemistry",
+      "name": "Soil Chemistry",
+      "description": "Raises resilient food and commodity production through soil chemistry.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "veterinary_husbandry",
+        "geological_survey"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_soil_chemistry"
+        }
+      ]
+    },
+    {
+      "id": "iron_ploughs",
+      "name": "Iron Ploughs",
+      "description": "Raises resilient food and commodity production through iron ploughs.",
+      "branchId": "agricultural",
+      "prerequisiteIds": [
+        "soil_chemistry"
+      ],
+      "timeCost": {
+        "preferredYear": 1780,
+        "baseCost": 382,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_iron_ploughs"
+        }
+      ]
+    },
+    {
+      "id": "blast_furnace_practice",
+      "name": "Blast Furnace Practice",
+      "description": "Expands reproducible workshop and manufacturing capacity through blast furnace practice.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "water_powered_machinery"
+      ],
+      "timeCost": {
+        "preferredYear": 1500,
+        "baseCost": 116,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_blast_furnace_practice"
+        }
+      ]
+    },
+    {
+      "id": "wire_drawing_mills",
+      "name": "Wire-drawing Mills",
+      "description": "Expands reproducible workshop and manufacturing capacity through wire-drawing mills.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "blast_furnace_practice"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 136,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_wire_drawing_mills"
+        }
+      ]
+    },
+    {
+      "id": "deep_mine_drainage",
+      "name": "Deep-mine Drainage",
+      "description": "Expands reproducible workshop and manufacturing capacity through deep-mine drainage.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "wire_drawing_mills"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 206,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_deep_mine_drainage"
+        }
+      ]
+    },
+    {
+      "id": "boring_mills",
+      "name": "Precision Boring Mills",
+      "description": "Expands reproducible workshop and manufacturing capacity through precision boring mills.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "deep_mine_drainage"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 333,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_boring_mills"
+        }
+      ]
+    },
+    {
+      "id": "puddling_iron",
+      "name": "Puddling Iron",
+      "description": "Expands reproducible workshop and manufacturing capacity through puddling iron.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "boring_mills",
+        "statistical_administration"
+      ],
+      "timeCost": {
+        "preferredYear": 1784,
+        "baseCost": 365,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_puddling_iron"
+        }
+      ]
+    },
+    {
+      "id": "machine_tools",
+      "name": "Machine Tools",
+      "description": "Expands reproducible workshop and manufacturing capacity through machine tools.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "puddling_iron"
+      ],
+      "timeCost": {
+        "preferredYear": 1795,
+        "baseCost": 378,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_machine_tools"
+        }
+      ]
+    },
+    {
+      "id": "interchangeable_parts",
+      "name": "Interchangeable Parts",
+      "description": "Expands reproducible workshop and manufacturing capacity through interchangeable parts.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "machine_tools"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 386,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_interchangeable_parts"
+        }
+      ]
+    },
+    {
+      "id": "gas_lighting",
+      "name": "Gas Lighting",
+      "description": "Expands reproducible workshop and manufacturing capacity through gas lighting.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "interchangeable_parts"
+      ],
+      "timeCost": {
+        "preferredYear": 1805,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_gas_lighting"
+        }
+      ]
+    },
+    {
+      "id": "high_pressure_steam",
+      "name": "High-pressure Steam",
+      "description": "Expands reproducible workshop and manufacturing capacity through high-pressure steam.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "gas_lighting",
+        "geological_survey"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_high_pressure_steam"
+        }
+      ]
+    },
+    {
+      "id": "mechanized_paper_making",
+      "name": "Mechanized Papermaking",
+      "description": "Expands reproducible workshop and manufacturing capacity through mechanized papermaking.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "high_pressure_steam"
+      ],
+      "timeCost": {
+        "preferredYear": 1803,
+        "baseCost": 400,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_mechanized_paper_making"
+        }
+      ]
+    },
+    {
+      "id": "steam_hammer_concepts",
+      "name": "Steam Hammer Concepts",
+      "description": "Expands reproducible workshop and manufacturing capacity through steam hammer concepts.",
+      "branchId": "industrial",
+      "prerequisiteIds": [
+        "mechanized_paper_making"
+      ],
+      "timeCost": {
+        "preferredYear": 1818,
+        "baseCost": 417,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_steam_hammer_concepts"
+        }
+      ]
+    },
+    {
+      "id": "pack_train_contracts",
+      "name": "Pack-train Contracts",
+      "description": "Sustains armies, cities, and routes through pack-train contracts.",
+      "branchId": "logistical",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 75,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_pack_train_contracts"
+        }
+      ]
+    },
+    {
+      "id": "military_magazines",
+      "name": "Military Magazines",
+      "description": "Sustains armies, cities, and routes through military magazines.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "pack_train_contracts"
+      ],
+      "timeCost": {
+        "preferredYear": 1510,
+        "baseCost": 128,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_military_magazines"
+        }
+      ]
+    },
+    {
+      "id": "road_waystations",
+      "name": "Road Waystations",
+      "description": "Sustains armies, cities, and routes through road waystations.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "military_magazines"
+      ],
+      "timeCost": {
+        "preferredYear": 1540,
+        "baseCost": 157,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_road_waystations"
+        }
+      ]
+    },
+    {
+      "id": "river_transport_bureaus",
+      "name": "River Transport Bureaus",
+      "description": "Sustains armies, cities, and routes through river transport bureaus.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "road_waystations"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 194,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_river_transport_bureaus"
+        }
+      ]
+    },
+    {
+      "id": "standard_supply_weights",
+      "name": "Standard Supply Weights",
+      "description": "Sustains armies, cities, and routes through standard supply weights.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "river_transport_bureaus",
+        "provincial_audits"
+      ],
+      "timeCost": {
+        "preferredYear": 1620,
+        "baseCost": 230,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_standard_supply_weights"
+        }
+      ]
+    },
+    {
+      "id": "contract_victualling",
+      "name": "Contract Victualling",
+      "description": "Sustains armies, cities, and routes through contract victualling.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "standard_supply_weights"
+      ],
+      "timeCost": {
+        "preferredYear": 1660,
+        "baseCost": 267,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_contract_victualling"
+        }
+      ]
+    },
+    {
+      "id": "campaign_bakeries",
+      "name": "Campaign Bakeries",
+      "description": "Sustains armies, cities, and routes through campaign bakeries.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "contract_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 304,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_campaign_bakeries"
+        }
+      ]
+    },
+    {
+      "id": "artillery_train",
+      "name": "Artillery Train",
+      "description": "Sustains armies, cities, and routes through artillery train.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "campaign_bakeries"
+      ],
+      "timeCost": {
+        "preferredYear": 1730,
+        "baseCost": 333,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_artillery_train"
+        }
+      ]
+    },
+    {
+      "id": "turnpike_networks",
+      "name": "Turnpike Networks",
+      "description": "Sustains armies, cities, and routes through turnpike networks.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "artillery_train",
+        "veterinary_husbandry"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 353,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_turnpike_networks"
+        }
+      ]
+    },
+    {
+      "id": "canal_logistics",
+      "name": "Canal Logistics",
+      "description": "Sustains armies, cities, and routes through canal logistics.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "turnpike_networks"
+      ],
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 373,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_canal_logistics"
+        }
+      ]
+    },
+    {
+      "id": "quartermaster_corps",
+      "name": "Quartermaster Corps",
+      "description": "Sustains armies, cities, and routes through quartermaster corps.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "canal_logistics"
+      ],
+      "timeCost": {
+        "preferredYear": 1790,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_quartermaster_corps"
+        }
+      ]
+    },
+    {
+      "id": "preserved_rations",
+      "name": "Preserved Rations",
+      "description": "Sustains armies, cities, and routes through preserved rations.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "quartermaster_corps"
+      ],
+      "timeCost": {
+        "preferredYear": 1809,
+        "baseCost": 413,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_preserved_rations"
+        }
+      ]
+    },
+    {
+      "id": "steam_towage",
+      "name": "Steam Towage",
+      "description": "Sustains armies, cities, and routes through steam towage.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "preserved_rations",
+        "general_staff_methods"
+      ],
+      "timeCost": {
+        "preferredYear": 1817,
+        "baseCost": 424,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_steam_towage"
+        }
+      ]
+    },
+    {
+      "id": "strategic_depots",
+      "name": "Strategic Depots",
+      "description": "Sustains armies, cities, and routes through strategic depots.",
+      "branchId": "logistical",
+      "prerequisiteIds": [
+        "steam_towage"
+      ],
+      "timeCost": {
+        "preferredYear": 1820,
+        "baseCost": 430,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_strategic_depots"
+        }
+      ]
+    },
+    {
+      "id": "pilot_books",
+      "name": "Pilot Books",
+      "description": "Reduces uncertainty on distant routes through pilot books.",
+      "branchId": "exploration",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 75,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_pilot_books"
+        }
+      ]
+    },
+    {
+      "id": "coastal_triangulation",
+      "name": "Coastal Triangulation",
+      "description": "Reduces uncertainty on distant routes through coastal triangulation.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "pilot_books"
+      ],
+      "timeCost": {
+        "preferredYear": 1480,
+        "baseCost": 104,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_coastal_triangulation"
+        }
+      ]
+    },
+    {
+      "id": "trade_wind_routes",
+      "name": "Trade-wind Routes",
+      "description": "Reduces uncertainty on distant routes through trade-wind routes.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "coastal_triangulation"
+      ],
+      "timeCost": {
+        "preferredYear": 1500,
+        "baseCost": 124,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_trade_wind_routes"
+        }
+      ]
+    },
+    {
+      "id": "monsoon_route_almanacs",
+      "name": "Monsoon Route Almanacs",
+      "description": "Reduces uncertainty on distant routes through monsoon route almanacs.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "trade_wind_routes"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 144,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_monsoon_route_almanacs"
+        }
+      ]
+    },
+    {
+      "id": "overland_caravan_surveys",
+      "name": "Caravan Route Surveys",
+      "description": "Reduces uncertainty on distant routes through caravan route surveys.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "monsoon_route_almanacs",
+        "road_waystations"
+      ],
+      "timeCost": {
+        "preferredYear": 1550,
+        "baseCost": 173,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_overland_caravan_surveys"
+        }
+      ]
+    },
+    {
+      "id": "botanical_collecting",
+      "name": "Botanical Collecting",
+      "description": "Reduces uncertainty on distant routes through botanical collecting.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "overland_caravan_surveys"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 218,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_botanical_collecting"
+        }
+      ]
+    },
+    {
+      "id": "longitude_lunar_distance",
+      "name": "Lunar-distance Navigation",
+      "description": "Reduces uncertainty on distant routes through lunar-distance navigation.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "botanical_collecting"
+      ],
+      "timeCost": {
+        "preferredYear": 1675,
+        "baseCost": 284,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_longitude_lunar_distance"
+        }
+      ]
+    },
+    {
+      "id": "polar_navigation",
+      "name": "Polar Navigation",
+      "description": "Reduces uncertainty on distant routes through polar navigation.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "longitude_lunar_distance"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 308,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_polar_navigation"
+        }
+      ]
+    },
+    {
+      "id": "geodetic_arcs",
+      "name": "Geodetic Arc Surveys",
+      "description": "Reduces uncertainty on distant routes through geodetic arc surveys.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "polar_navigation",
+        "municipal_charters"
+      ],
+      "timeCost": {
+        "preferredYear": 1735,
+        "baseCost": 341,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_geodetic_arcs"
+        }
+      ]
+    },
+    {
+      "id": "pacific_charting",
+      "name": "Pacific Charting",
+      "description": "Reduces uncertainty on distant routes through pacific charting.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "geodetic_arcs"
+      ],
+      "timeCost": {
+        "preferredYear": 1760,
+        "baseCost": 365,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_pacific_charting"
+        }
+      ]
+    },
+    {
+      "id": "global_hydrography",
+      "name": "Global Hydrography",
+      "description": "Reduces uncertainty on distant routes through global hydrography.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "pacific_charting"
+      ],
+      "timeCost": {
+        "preferredYear": 1790,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_global_hydrography"
+        }
+      ]
+    },
+    {
+      "id": "expeditionary_ethnography",
+      "name": "Expeditionary Ethnography",
+      "description": "Reduces uncertainty on distant routes through expeditionary ethnography.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "global_hydrography"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 406,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_expeditionary_ethnography"
+        }
+      ]
+    },
+    {
+      "id": "deep_sea_sounding",
+      "name": "Deep-sea Sounding",
+      "description": "Reduces uncertainty on distant routes through deep-sea sounding.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "expeditionary_ethnography",
+        "soil_chemistry"
+      ],
+      "timeCost": {
+        "preferredYear": 1810,
+        "baseCost": 418,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_deep_sea_sounding"
+        }
+      ]
+    },
+    {
+      "id": "continental_interiors",
+      "name": "Continental Interior Surveys",
+      "description": "Reduces uncertainty on distant routes through continental interior surveys.",
+      "branchId": "exploration",
+      "prerequisiteIds": [
+        "deep_sea_sounding"
+      ],
+      "timeCost": {
+        "preferredYear": 1820,
+        "baseCost": 430,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_continental_interiors"
+        }
+      ]
+    },
+    {
+      "id": "quarantine_practice",
+      "name": "Quarantine Practice",
+      "description": "Protects crews, armies, and settlements through quarantine practice.",
+      "branchId": "medical",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 75,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_quarantine_practice"
+        }
+      ]
+    },
+    {
+      "id": "herbal_pharmacopoeia",
+      "name": "Comparative Pharmacopoeia",
+      "description": "Protects crews, armies, and settlements through comparative pharmacopoeia.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "quarantine_practice"
+      ],
+      "timeCost": {
+        "preferredYear": 1490,
+        "baseCost": 112,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_herbal_pharmacopoeia"
+        }
+      ]
+    },
+    {
+      "id": "surgical_anatomy",
+      "name": "Surgical Anatomy",
+      "description": "Protects crews, armies, and settlements through surgical anatomy.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "herbal_pharmacopoeia"
+      ],
+      "timeCost": {
+        "preferredYear": 1540,
+        "baseCost": 157,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_surgical_anatomy"
+        }
+      ]
+    },
+    {
+      "id": "military_field_hospitals",
+      "name": "Military Field Hospitals",
+      "description": "Protects crews, armies, and settlements through military field hospitals.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "surgical_anatomy"
+      ],
+      "timeCost": {
+        "preferredYear": 1580,
+        "baseCost": 194,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_military_field_hospitals"
+        }
+      ]
+    },
+    {
+      "id": "smallpox_inoculation",
+      "name": "Smallpox Inoculation",
+      "description": "Protects crews, armies, and settlements through smallpox inoculation.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "military_field_hospitals",
+        "probability_statistics"
+      ],
+      "timeCost": {
+        "preferredYear": 1720,
+        "baseCost": 312,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_smallpox_inoculation"
+        }
+      ]
+    },
+    {
+      "id": "obstetric_training",
+      "name": "Obstetric Training",
+      "description": "Protects crews, armies, and settlements through obstetric training.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "smallpox_inoculation"
+      ],
+      "timeCost": {
+        "preferredYear": 1740,
+        "baseCost": 333,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_obstetric_training"
+        }
+      ]
+    },
+    {
+      "id": "clinical_case_records",
+      "name": "Clinical Case Records",
+      "description": "Protects crews, armies, and settlements through clinical case records.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "obstetric_training"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 345,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_clinical_case_records"
+        }
+      ]
+    },
+    {
+      "id": "naval_scurvy_prevention",
+      "name": "Scurvy Prevention",
+      "description": "Protects crews, armies, and settlements through scurvy prevention.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "clinical_case_records"
+      ],
+      "timeCost": {
+        "preferredYear": 1755,
+        "baseCost": 353,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_naval_scurvy_prevention"
+        }
+      ]
+    },
+    {
+      "id": "vaccination",
+      "name": "Vaccination",
+      "description": "Protects crews, armies, and settlements through vaccination.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "naval_scurvy_prevention",
+        "skirmisher_doctrine"
+      ],
+      "timeCost": {
+        "preferredYear": 1796,
+        "baseCost": 391,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_vaccination"
+        }
+      ]
+    },
+    {
+      "id": "pathological_anatomy",
+      "name": "Pathological Anatomy",
+      "description": "Protects crews, armies, and settlements through pathological anatomy.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "vaccination"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 398,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_pathological_anatomy"
+        }
+      ]
+    },
+    {
+      "id": "emergency_triage",
+      "name": "Emergency Triage",
+      "description": "Protects crews, armies, and settlements through emergency triage.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "pathological_anatomy"
+      ],
+      "timeCost": {
+        "preferredYear": 1810,
+        "baseCost": 410,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_emergency_triage"
+        }
+      ]
+    },
+    {
+      "id": "public_mortality_statistics",
+      "name": "Mortality Statistics",
+      "description": "Protects crews, armies, and settlements through mortality statistics.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "emergency_triage"
+      ],
+      "timeCost": {
+        "preferredYear": 1815,
+        "baseCost": 418,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_public_mortality_statistics"
+        }
+      ]
+    },
+    {
+      "id": "courier_relays",
+      "name": "Courier Relays",
+      "description": "Carries authoritative news and orders through courier relays.",
+      "branchId": "communications",
+      "prerequisiteIds": [],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 75,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_courier_relays"
+        }
+      ]
+    },
+    {
+      "id": "ciphered_dispatches",
+      "name": "Ciphered Dispatches",
+      "description": "Carries authoritative news and orders through ciphered dispatches.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "courier_relays"
+      ],
+      "timeCost": {
+        "preferredYear": 1480,
+        "baseCost": 104,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_ciphered_dispatches"
+        }
+      ]
+    },
+    {
+      "id": "printed_broadsheets",
+      "name": "Printed Broadsheets",
+      "description": "Carries authoritative news and orders through printed broadsheets.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "ciphered_dispatches"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 140,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_printed_broadsheets"
+        }
+      ]
+    },
+    {
+      "id": "semaphore_signals",
+      "name": "Semaphore Signals",
+      "description": "Carries authoritative news and orders through semaphore signals.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "printed_broadsheets"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 210,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_semaphore_signals"
+        }
+      ]
+    },
+    {
+      "id": "scheduled_post",
+      "name": "Scheduled Post",
+      "description": "Carries authoritative news and orders through scheduled post.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "semaphore_signals",
+        "fleet_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 255,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_scheduled_post"
+        }
+      ]
+    },
+    {
+      "id": "newspaper_exchanges",
+      "name": "Newspaper Exchanges",
+      "description": "Carries authoritative news and orders through newspaper exchanges.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "scheduled_post"
+      ],
+      "timeCost": {
+        "preferredYear": 1700,
+        "baseCost": 300,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_newspaper_exchanges"
+        }
+      ]
+    },
+    {
+      "id": "optical_telegraph",
+      "name": "Optical Telegraph",
+      "description": "Carries authoritative news and orders through optical telegraph.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "newspaper_exchanges"
+      ],
+      "timeCost": {
+        "preferredYear": 1792,
+        "baseCost": 379,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_optical_telegraph"
+        }
+      ]
+    },
+    {
+      "id": "naval_flag_signals",
+      "name": "Standard Naval Flag Signals",
+      "description": "Carries authoritative news and orders through standard naval flag signals.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "optical_telegraph"
+      ],
+      "timeCost": {
+        "preferredYear": 1799,
+        "baseCost": 389,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_naval_flag_signals"
+        }
+      ]
+    },
+    {
+      "id": "lithographic_printing",
+      "name": "Lithographic Printing",
+      "description": "Carries authoritative news and orders through lithographic printing.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "naval_flag_signals",
+        "quartermaster_corps"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 394,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_lithographic_printing"
+        }
+      ]
+    },
+    {
+      "id": "mass_postal_service",
+      "name": "Mass Postal Service",
+      "description": "Carries authoritative news and orders through mass postal service.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "lithographic_printing"
+      ],
+      "timeCost": {
+        "preferredYear": 1810,
+        "baseCost": 406,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_mass_postal_service"
+        }
+      ]
+    },
+    {
+      "id": "field_signal_corps",
+      "name": "Field Signal Corps",
+      "description": "Carries authoritative news and orders through field signal corps.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "mass_postal_service"
+      ],
+      "timeCost": {
+        "preferredYear": 1815,
+        "baseCost": 414,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_field_signal_corps"
+        }
+      ]
+    },
+    {
+      "id": "electrical_telegraph_concepts",
+      "name": "Electrical Telegraph Concepts",
+      "description": "Carries authoritative news and orders through electrical telegraph concepts.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "field_signal_corps"
+      ],
+      "timeCost": {
+        "preferredYear": 1820,
+        "baseCost": 422,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_electrical_telegraph_concepts"
+        }
+      ]
+    },
+    {
+      "id": "signal_intelligence_bureaus",
+      "name": "Signal Intelligence Bureaus",
+      "description": "Carries authoritative news and orders through signal intelligence bureaus.",
+      "branchId": "communications",
+      "prerequisiteIds": [
+        "newspaper_exchanges"
+      ],
+      "timeCost": {
+        "preferredYear": 1760,
+        "baseCost": 353,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_signal_intelligence_bureaus"
+        }
+      ]
+    },
+    {
+      "id": "civic_pest_hospitals",
+      "name": "Civic Pest Hospitals",
+      "description": "Protects crews, armies, and settlements through civic pest hospitals.",
+      "branchId": "medical",
+      "prerequisiteIds": [
+        "military_field_hospitals",
+        "fleet_victualling"
+      ],
+      "timeCost": {
+        "preferredYear": 1650,
+        "baseCost": 255,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "modifier",
+          "contentId": "progression_civic_pest_hospitals"
+        }
+      ]
     }
   ],
   "institutions": [
@@ -90246,7 +93092,12 @@
         "aheadOfTimeCostMultiplier": 8,
         "additionalMultiplierPerYearAhead": 0.08
       },
-      "unlocks": []
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_renaissance_humanism"
+        }
+      ]
     },
     {
       "id": "confessional_state",
@@ -90403,6 +93254,342 @@
         {
           "kind": "policy",
           "contentId": "constitutional_government"
+        }
+      ]
+    },
+    {
+      "id": "merchant_diasporas",
+      "name": "Merchant Diaspora Networks",
+      "description": "Durable organizations spread merchant diaspora networks unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1450,
+        "baseCost": 100,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_merchant_diasporas"
+        }
+      ]
+    },
+    {
+      "id": "chartered_municipalities",
+      "name": "Chartered Municipal Government",
+      "description": "Durable organizations spread chartered municipal government unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "chancery_archives"
+      ],
+      "timeCost": {
+        "preferredYear": 1480,
+        "baseCost": 122,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_chartered_municipalities"
+        }
+      ]
+    },
+    {
+      "id": "artillery_offices",
+      "name": "Permanent Artillery Offices",
+      "description": "Durable organizations spread permanent artillery offices unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "arquebus_volley_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1520,
+        "baseCost": 152,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_artillery_offices"
+        }
+      ]
+    },
+    {
+      "id": "royal_dockyards",
+      "name": "Royal Dockyard System",
+      "description": "Durable organizations spread royal dockyard system unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "carvel_hull_construction"
+      ],
+      "timeCost": {
+        "preferredYear": 1540,
+        "baseCost": 168,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_royal_dockyards"
+        }
+      ]
+    },
+    {
+      "id": "commercial_courts_institution",
+      "name": "Commercial Courts",
+      "description": "Durable organizations spread commercial courts unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "merchant_correspondence"
+      ],
+      "timeCost": {
+        "preferredYear": 1560,
+        "baseCost": 182,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_commercial_courts_institution"
+        }
+      ]
+    },
+    {
+      "id": "colonial_councils",
+      "name": "Overseas Colonial Councils",
+      "description": "Durable organizations spread overseas colonial councils unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "chancery_archives"
+      ],
+      "timeCost": {
+        "preferredYear": 1600,
+        "baseCost": 212,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_colonial_councils"
+        }
+      ]
+    },
+    {
+      "id": "standing_army_establishment",
+      "name": "Standing Army Establishment",
+      "description": "Durable organizations spread standing army establishment unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "arquebus_volley_drill"
+      ],
+      "timeCost": {
+        "preferredYear": 1660,
+        "baseCost": 258,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_standing_army_establishment"
+        }
+      ]
+    },
+    {
+      "id": "central_bank_institution",
+      "name": "Central Bank",
+      "description": "Durable organizations spread central bank unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "merchant_correspondence"
+      ],
+      "timeCost": {
+        "preferredYear": 1694,
+        "baseCost": 283,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_central_bank_institution"
+        }
+      ]
+    },
+    {
+      "id": "agricultural_societies",
+      "name": "Agricultural Societies",
+      "description": "Durable organizations spread agricultural societies unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "terrace_conservation"
+      ],
+      "timeCost": {
+        "preferredYear": 1720,
+        "baseCost": 302,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_agricultural_societies"
+        }
+      ]
+    },
+    {
+      "id": "professional_medical_colleges",
+      "name": "Professional Medical Colleges",
+      "description": "Durable organizations spread professional medical colleges unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "quarantine_practice"
+      ],
+      "timeCost": {
+        "preferredYear": 1730,
+        "baseCost": 310,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_professional_medical_colleges"
+        }
+      ]
+    },
+    {
+      "id": "patent_offices",
+      "name": "Patent Offices",
+      "description": "Durable organizations spread patent offices unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "blast_furnace_practice"
+      ],
+      "timeCost": {
+        "preferredYear": 1750,
+        "baseCost": 325,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_patent_offices"
+        }
+      ]
+    },
+    {
+      "id": "abolitionist_public_sphere",
+      "name": "Abolitionist Public Sphere",
+      "description": "Durable organizations spread abolitionist public sphere unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "professional_bureaucracy"
+      ],
+      "timeCost": {
+        "preferredYear": 1770,
+        "baseCost": 340,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_abolitionist_public_sphere"
+        }
+      ]
+    },
+    {
+      "id": "representative_assemblies",
+      "name": "Representative Assemblies",
+      "description": "Durable organizations spread representative assemblies unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "chancery_archives"
+      ],
+      "timeCost": {
+        "preferredYear": 1776,
+        "baseCost": 344,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_representative_assemblies"
+        }
+      ]
+    },
+    {
+      "id": "metric_standardization",
+      "name": "Metric Standardization",
+      "description": "Durable organizations spread metric standardization unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "printed_observation_tables"
+      ],
+      "timeCost": {
+        "preferredYear": 1795,
+        "baseCost": 359,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_metric_standardization"
+        }
+      ]
+    },
+    {
+      "id": "mass_education",
+      "name": "Mass Education",
+      "description": "Durable organizations spread mass education unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "courier_relays"
+      ],
+      "timeCost": {
+        "preferredYear": 1800,
+        "baseCost": 362,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_mass_education"
+        }
+      ]
+    },
+    {
+      "id": "professional_civil_service",
+      "name": "Professional Civil Service",
+      "description": "Durable organizations spread professional civil service unevenly through political, urban, and trade networks.",
+      "branchId": "institutional",
+      "prerequisiteIds": [
+        "chancery_archives"
+      ],
+      "timeCost": {
+        "preferredYear": 1810,
+        "baseCost": 370,
+        "aheadOfTimeCostMultiplier": 8,
+        "additionalMultiplierPerYearAhead": 0.08
+      },
+      "unlocks": [
+        {
+          "kind": "policy",
+          "contentId": "progression_professional_civil_service"
         }
       ]
     }
