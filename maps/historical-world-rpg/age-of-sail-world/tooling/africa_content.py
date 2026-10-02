@@ -142,10 +142,21 @@ def _zone(ident, movement):
 def project(source, politics, geography, positions, world):
     world = copy.deepcopy(world)
     africa_settlements = {x["id"] for x in source["settlements"]}
-    world["settlements"] = [x for x in world["settlements"] if x["id"] not in africa_settlements]
-    world["cityCores"] = [x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in africa_settlements}]
-    world["defenseLayouts"] = [x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in africa_settlements}]
+    # Earlier polity projection created abstract capital records before the
+    # regional catalogue supplied their physical records.  Remove those stale
+    # same-identity aliases as well as records being rebuilt; retaining both
+    # would inflate global density and split persistence across two stable IDs.
+    identity = {(x["name"].casefold(), x["polityId"], x["provinceId"])
+                for x in source["settlements"]}
+    retired = {x["id"] for x in world["settlements"]
+               if x["id"] in africa_settlements or
+               (x["name"].casefold(), x["legalOwnerPolityId"], x["provinceId"]) in identity}
+    world["settlements"] = [x for x in world["settlements"] if x["id"] not in retired]
+    world["cityCores"] = [x for x in world["cityCores"] if x["id"] not in {"city_core_"+s for s in retired}]
+    world["defenseLayouts"] = [x for x in world["defenseLayouts"] if x["id"] not in {"defense_"+s for s in retired}]
     provinces = {p["id"]: p for p in world["provinces"]}
+    for province in provinces.values():
+        province["settlementIds"] = [x for x in province["settlementIds"] if x not in retired]
     zones = {z["id"]: z for z in world["navigationZones"]}
     zones.setdefault(LAND_ZONE, _zone(LAND_ZONE, ["land", "amphibious", "flying"]))
     for sea in sorted(SEA_ZONES):
