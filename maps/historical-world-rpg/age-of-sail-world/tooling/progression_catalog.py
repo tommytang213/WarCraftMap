@@ -137,8 +137,30 @@ def validate(source_path=SOURCE, world_path=WORLD, require_projection=True):
                 province_adoption[province][node_id] = level
     if not data.get("historicalEvidence") or any(not x.get("citation") or not x.get("note") for x in data["historicalEvidence"]):
         raise CatalogError("historical evidence is required")
-    if len(technologies) < 50 or len(institutions) < 9:
-        raise CatalogError("Phase 8 catalog requires at least 50 technologies and 9 institutions")
+    if not 180 <= len(technologies) <= 250 or not 20 <= len(institutions) <= 30:
+        raise CatalogError("release catalog requires 180–250 technologies and 20–30 institutions")
+    required_branches = {"military", "naval", "commercial", "administrative", "scientific",
+                         "agricultural", "industrial", "logistical", "exploration", "medical",
+                         "communications", "institutional"}
+    if set(branches) != required_branches:
+        raise CatalogError(f"release progression branches incomplete: {sorted(required_branches-set(branches))!r}")
+    evidence_ids = {x.get("id") for x in data["historicalEvidence"]}
+    descriptions = set()
+    for ident, node in nodes.items():
+        description = node.get("description", "").strip()
+        if len(description) < 35 or description in descriptions:
+            raise CatalogError(f"node {ident}: trivial or repeated description")
+        descriptions.add(description)
+        if not node["unlocks"]:
+            raise CatalogError(f"node {ident}: empty unlocks")
+        if not node.get("evidenceIds") or not set(node["evidenceIds"]) <= evidence_ids:
+            raise CatalogError(f"node {ident}: missing historical evidence")
+    for branch_id in required_branches:
+        branch_nodes = sorted((x for x in nodes.values() if x["branchId"] == branch_id), key=lambda x:x["preferredYear"])
+        if len(branch_nodes) < 9 or branch_nodes[-1]["preferredYear"]-branch_nodes[0]["preferredYear"] < 250:
+            raise CatalogError(f"branch {branch_id}: insufficient release depth")
+        if any(b["preferredYear"]-a["preferredYear"] > 120 for a,b in zip(branch_nodes,branch_nodes[1:])):
+            raise CatalogError(f"branch {branch_id}: empty era gap")
     unlocked_kinds = {unlock[0] for node in nodes.values() for unlock in node["unlocks"]}
     if unlocked_kinds != KINDS:
         raise CatalogError(f"Phase 8 unlock integration is incomplete: {sorted(KINDS - unlocked_kinds)!r}")

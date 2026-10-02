@@ -20,11 +20,11 @@ This deterministic release-candidate gate audits regional and era breadth; it do
 
 | Year | Active land archetypes | Progression nodes | Events occurred |
 |---:|---:|---:|---:|
-| 1450 | 17 | 6 | 0 |
-| 1550 | 19 | 19 | 11 |
-| 1650 | 21 | 31 | 23 |
-| 1750 | 22 | 48 | 31 |
-| 1820 | 24 | 59 | 36 |
+| 1450 | 17 | 11 | 0 |
+| 1550 | 19 | 55 | 11 |
+| 1650 | 21 | 88 | 23 |
+| 1750 | 22 | 139 | 31 |
+| 1820 | 24 | 206 | 36 |
 
 ## Gate findings
 
