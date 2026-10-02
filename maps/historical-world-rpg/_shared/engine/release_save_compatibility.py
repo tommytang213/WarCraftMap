@@ -63,7 +63,7 @@ def load_manifest(path: str | Path) -> dict[str, Any]:
     if raw.get("matrix") != compatibility_matrix():
         raise CompatibilityError("compatibility manifest does not match executable migration registry")
     fixtures = raw.get("fixtures")
-    if not isinstance(fixtures, list) or {x.get("schemaVersion") for x in fixtures if isinstance(x, dict)} != {1, 2, 3, 4}:
+    if not isinstance(fixtures, list) or {x.get("schemaVersion") for x in fixtures if isinstance(x, dict)} != set(range(1, campaign_save.CURRENT_SCHEMA_VERSION + 1)):
         raise CompatibilityError("one immutable fixture is required for every supported campaign schema")
     return raw
 

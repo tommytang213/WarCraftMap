@@ -59,8 +59,8 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def test_release_save_compatibility_matrix_is_part_of_the_gate(self):
         compatibility = self.report["releaseSaveCompatibility"]
         self.assertEqual("pass", compatibility["status"])
-        self.assertEqual([1, 2, 3, 4], compatibility["schemas"])
-        self.assertEqual(["migrated", "migrated", "migrated", "compatible"],
+        self.assertEqual([1, 2, 3, 4, 5], compatibility["schemas"])
+        self.assertEqual(["migrated", "migrated", "migrated", "migrated", "compatible"],
                          compatibility["statuses"])
         self.assertEqual(1, len(compatibility["authoritySha256"]))
         self.assertIn(compatibility["manifest"], self.report["releaseInputs"])
