@@ -23,8 +23,8 @@ class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		tradition = lifePermille
 		ability = milestoneAbilityId
-	override function protectRepresentation(string stableId, boolean protected)
-		if protected
+	override function protectRepresentation(string stableId, boolean shouldProtect)
+		if shouldProtect
 			protectedId += stableId + "|"
 		else
 			protectedId += "released:" + stableId + "|"

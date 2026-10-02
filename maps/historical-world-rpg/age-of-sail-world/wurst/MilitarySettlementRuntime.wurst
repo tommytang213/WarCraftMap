@@ -29,13 +29,13 @@ public class RuntimeForce
 	real x
 	real y
 	boolean active = true
-	construct(string id, string controllerId, string regionId, string categoryId, int kind, int typeId, int strength, int supply, real x, real y)
+	construct(string id, string controllerId, string regionId, string categoryId, int kind, int unitTypeId, int strength, int supply, real x, real y)
 		this.id = id
 		this.controllerId = controllerId
 		this.regionId = regionId
 		this.categoryId = categoryId
 		this.kind = kind
-		this.typeId = typeId
+		typeId = unitTypeId
 		this.strength = strength
 		maximumStrength = strength
 		this.supply = supply
@@ -123,7 +123,7 @@ public interface MilitarySettlementAdapter
 	function removeRepresentation(string stableId)
 	function changeRepresentationOwner(string stableId, player owner)
 	function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
-	function protectRepresentation(string stableId, boolean protected)
+	function protectRepresentation(string stableId, boolean shouldProtect)
 	function showManagement(player viewer, string heading, string body)
 
 public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdapter
@@ -172,10 +172,10 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			if milestoneAbilityId != 0
 				compatAddUnitAbility(handles[found], milestoneAbilityId)
 			appliedMilestoneAbility[found] = milestoneAbilityId
-	override function protectRepresentation(string stableId, boolean protected)
+	override function protectRepresentation(string stableId, boolean shouldProtect)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			compatSetUnitInvulnerable(handles[found], protected)
+			compatSetUnitInvulnerable(handles[found], shouldProtect)
 	override function showManagement(player viewer, string heading, string body)
 		DisplayTimedTextToPlayer(viewer, 0., 0., 60., heading + "\n" + body + "\nUse /management-close to resume the campaign.")
 
