@@ -2,6 +2,7 @@
 """Build, validate, and project the focused Americas/Caribbean content pass."""
 from __future__ import annotations
 import copy, json, math, re, sys
+from datetime import date
 from pathlib import Path
 
 from americas_caribbean_politics import project as project_politics
@@ -81,12 +82,22 @@ def validate(source_path=SOURCE):
  source=json.loads(Path(source_path).read_text()); politics=json.loads(POLITICS.read_text()); geography=json.loads(GEOGRAPHY.read_text()); terrain=json.loads(TERRAIN.read_text()); maps=json.loads(MAPS.read_text())
  settlements=_index(source.get("settlements"),"settlements"); polities=_index(politics["polities"],"polities"); provinces={p["id"]:(x["id"],p) for x in polities.values() for p in x["provinces"]}; instances=_index(geography["instances"],"instances"); nodes=_index(geography["navigationTopology"]["nodes"],"navigation nodes"); anchors=_index(geography["boundaryAnchors"],"anchors"); policies={x["id"]:x for x in terrain["instancePolicies"]}
  if source.get("schemaVersion")!=1 or source.get("campaignStartDate")!="1450-01-01": raise AmericasContentError("invalid content version")
+ evidence=_index(source.get("historicalEvidence"),"historical evidence"); names=set()
  positions={}
  for sid,x in settlements.items():
   if x.get("polityId") not in polities or x.get("provinceId") not in provinces or provinces[x["provinceId"]][0]!=x["polityId"]: raise AmericasContentError(f"settlement {sid}: polity/province mismatch")
   rid=x.get("regionalInstanceId"); pos=x.get("position"); bounds=instances.get(rid,{}).get("localBounds",{})
   if x.get("physicalMapId")!=rid or maps["regionalInstanceRegions"].get(rid)!="americas_caribbean": raise AmericasContentError(f"settlement {sid}: invalid physical-map assignment")
   if not isinstance(pos,list) or len(pos)!=2 or not bounds.get("minX",1)<=pos[0]<=bounds.get("maxX",0) or not bounds.get("minY",1)<=pos[1]<=bounds.get("maxY",0): raise AmericasContentError(f"settlement {sid}: position outside local bounds")
+  if not isinstance(x.get("sourcePosition"),list) or len(x["sourcePosition"])!=2 or not -180<=x["sourcePosition"][0]<=180 or not -90<=x["sourcePosition"][1]<=90: raise AmericasContentError(f"settlement {sid}: invalid geographic source position")
+  normalized=re.sub(r"[^a-z0-9]","",x.get("name","").lower())
+  if not normalized or normalized in names: raise AmericasContentError(f"settlement {sid}: duplicate or invalid name")
+  names.add(normalized)
+  if not set(x.get("historicalEvidenceIds",[])) or not set(x["historicalEvidenceIds"])<=set(evidence): raise AmericasContentError(f"settlement {sid}: invalid evidence")
+  control=x.get("controlContext",{}); availability=x.get("availability",{})
+  try: start=date.fromisoformat(availability.get("from","")); end=date.fromisoformat(availability["to"]) if availability.get("to") else None
+  except (TypeError,ValueError): raise AmericasContentError(f"settlement {sid}: invalid availability")
+  if start>date(1450,1,1) or end and end<start or control.get("date")!="1450-01-01" or control.get("basis")!="political_baseline": raise AmericasContentError(f"settlement {sid}: anachronistic or invalid control context")
   masks=policies[rid]["landMasks"]
   if masks and not any(_inside(pos,m) for m in masks): raise AmericasContentError(f"settlement {sid}: position is not valid land terrain")
   if x.get("navigationZoneId") not in nodes or nodes[x["navigationZoneId"]]["class"] in {"impassable_barrier","decorative_water"}: raise AmericasContentError(f"settlement {sid}: invalid navigation zone")
@@ -131,6 +142,7 @@ def project(source,politics,geography,positions,world):
  world["navigationZones"]=[zones[x] for x in sorted(zones)]
  for x in source["settlements"]:
   sid=x["id"]; roles=x["roles"]; record={"id":sid,"name":x["name"],"kind":"capital" if "capital" in roles else "port" if "major_port" in roles else "fort" if "fortified_town" in roles else "major_city","provinceId":x["provinceId"],"legalOwnerPolityId":x["polityId"],"controllerPolityId":x["polityId"],"capturable":True,"civilianFacilitiesInvulnerable":True,"navigationZoneId":x["navigationZoneId"],"cityCoreId":"city_core_"+sid,"defenseLayoutId":"defense_"+sid,"serviceIds":x["services"],"regionalInstanceId":x["regionalInstanceId"],"physicalMapId":x["physicalMapId"],"localPosition":positions[sid],"terrainClass":x["terrainClass"],"roleIds":roles,"activation":{"runtimeState":"abstract","representationTemplateId":"settlement_representation","deterministicKey":sid},"economicProfile":copy.deepcopy(x["economy"]),"productionRefs":x["economy"]["production"]}
+  record["availability"]=copy.deepcopy(x["availability"]); record["historicalEvidenceIds"]=list(x["historicalEvidenceIds"]); record["controlContext"]=copy.deepcopy(x["controlContext"])
   if x.get("port"): record["portAccess"]=copy.deepcopy(x["port"])
   world["settlements"].append(record); world["cityCores"].append({"id":"city_core_"+sid,"objectTemplateId":"capital_city_core" if "capital" in roles else "city_core"}); world["defenseLayouts"].append({"id":"defense_"+sid,"objectTemplateIds":["capital_defenses" if "capital" in roles else "port_defenses" if "major_port" in roles else "city_defenses"]})
  for p in world["provinces"]: p["settlementIds"]=[x["id"] for x in world["settlements"] if x.get("provinceId")==p["id"]]

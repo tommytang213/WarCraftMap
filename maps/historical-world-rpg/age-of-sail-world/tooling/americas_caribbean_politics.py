@@ -44,7 +44,18 @@ def validate(source_path=SOURCE, world_path=WORLD, geography_path=GEOGRAPHY, req
 
 
 def project(data, world):
-    return _project(data, world)
+    projected = _project(data, world)
+    # Political projection owns boundaries and control, while the settlement
+    # authority owns the complete (not merely capital) province membership.
+    # Rebuilding that derived membership keeps either projection order stable.
+    settlement_provinces = {}
+    for settlement in projected.get("settlements", []):
+        settlement_provinces.setdefault(settlement.get("provinceId"), []).append(settlement["id"])
+    authored = {province["id"] for polity in data["polities"] for province in polity["provinces"]}
+    for province in projected["provinces"]:
+        if province["id"] in authored:
+            province["settlementIds"] = settlement_provinces.get(province["id"], [])
+    return projected
 
 
 def main(argv=None):
