@@ -1,43 +1,7000 @@
 {
-  "schemaVersion":1,"id":"middle_east_india_settlements_1450","campaignStartDate":"1450-01-01",
-  "selectionRule":"Focused capitals, ports, trade and caravan centers, forts, pilgrimage sites, and adjoining-region entries.",
-  "placementRules":{"minimumSeparationCells":2,"entryAnchorClearanceCells":3},
-  "settlements":[
-    {"id":"bursa","name":"Bursa","polityId":"ottoman_empire","provinceId":"ottoman_anatolia","regionalInstanceId":"mei_anatolia_levant","position":[10,72],"terrainClass":"upland","roles":["trade_center","historical_location","transition_location"],"services":["market","banking","warehouse"],"productionRefs":["cloth"],"defenseClass":"city"},
-    {"id":"konya","name":"Konya","polityId":"karamanids","provinceId":"karaman","regionalInstanceId":"mei_anatolia_levant","position":[16,67],"terrainClass":"upland","roles":["capital","trade_center","fortified_town"],"services":["market","warehouse","quest_hub"],"productionRefs":["horses"],"defenseClass":"capital"},
-    {"id":"aleppo","name":"Aleppo","polityId":"mamluk_sultanate","provinceId":"mamluk_syria","regionalInstanceId":"mei_anatolia_levant","position":[23,62],"terrainClass":"plains","roles":["trade_center","caravan_center","fortified_town"],"services":["market","banking","warehouse"],"productionRefs":["cloth"],"defenseClass":"city"},
-    {"id":"damascus","name":"Damascus","polityId":"mamluk_sultanate","provinceId":"mamluk_syria","regionalInstanceId":"mei_anatolia_levant","position":[20,55],"terrainClass":"riverbank","roles":["trade_center","caravan_center","fortified_town","pilgrimage_location"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"city"},
-    {"id":"jerusalem","name":"Jerusalem","polityId":"mamluk_sultanate","provinceId":"mamluk_syria","regionalInstanceId":"mei_anatolia_levant","position":[17,51],"terrainClass":"upland","roles":["pilgrimage_location","historical_location","fortified_town"],"services":["market","quest_hub"],"productionRefs":["olive_oil"],"defenseClass":"city"},
-    {"id":"jeddah","name":"Jeddah","polityId":"sharifate_mecca","provinceId":"hejaz","regionalInstanceId":"mei_arabia_red_sea","position":[17,34],"terrainClass":"coast","roles":["major_port","trade_center","pilgrimage_location"],"port":{"maritimeZoneId":"red_sea_navigation","access":"coastal"},"services":["market","port_services","warehouse"],"productionRefs":["ship_provisions"],"defenseClass":"port"},
-    {"id":"mecca","name":"Mecca","polityId":"sharifate_mecca","provinceId":"hejaz","regionalInstanceId":"mei_arabia_red_sea","position":[20,35],"terrainClass":"desert","roles":["capital","pilgrimage_location","trade_center","caravan_center"],"services":["market","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"capital"},
-    {"id":"zabid","name":"Zabid","polityId":"yemen","provinceId":"yemen","regionalInstanceId":"mei_arabia_red_sea","position":[22,23],"terrainClass":"coast","roles":["historical_location","trade_center","fortified_town"],"services":["market","warehouse","quest_hub"],"productionRefs":["coffee"],"defenseClass":"city"},
-    {"id":"aden","name":"Aden","polityId":"yemen","provinceId":"yemen","regionalInstanceId":"mei_arabia_red_sea","position":[27,18],"terrainClass":"coast","roles":["major_port","trade_center","transition_location","fortified_town"],"port":{"maritimeZoneId":"arabian_sea_navigation","access":"coastal"},"services":["market","banking","port_services","warehouse"],"productionRefs":["ship_provisions"],"defenseClass":"port"},
-    {"id":"baghdad","name":"Baghdad","polityId":"qara_qoyunlu","provinceId":"qara_qoyunlu_iraq","regionalInstanceId":"mei_mesopotamia_persia","position":[36,57],"terrainClass":"riverbank","roles":["trade_center","caravan_center","historical_location"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["manuscripts"],"defenseClass":"city"},
-    {"id":"tabriz","name":"Tabriz","polityId":"qara_qoyunlu","provinceId":"qara_qoyunlu_azerbaijan","regionalInstanceId":"mei_mesopotamia_persia","position":[38,72],"terrainClass":"upland","roles":["capital","trade_center","caravan_center","fortified_town"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"capital"},
-    {"id":"hormuz","name":"Hormuz","polityId":"kingdom_hormuz","provinceId":"hormuz","regionalInstanceId":"mei_mesopotamia_persia","position":[49,36],"terrainClass":"island","roles":["capital","major_port","trade_center","fortified_town"],"port":{"maritimeZoneId":"persian_gulf_navigation","access":"island_harbor"},"services":["market","banking","port_services","warehouse","quest_hub"],"productionRefs":["ship_provisions"],"defenseClass":"capital"},
-    {"id":"herat","name":"Herat","polityId":"timurid_empire","provinceId":"khurasan","regionalInstanceId":"mei_mesopotamia_persia","position":[54,68],"terrainClass":"upland","roles":["trade_center","caravan_center","fortified_town"],"services":["market","banking","warehouse"],"productionRefs":["cloth"],"defenseClass":"city"},
-    {"id":"samarkand","name":"Samarkand","polityId":"timurid_empire","provinceId":"transoxiana","regionalInstanceId":"mei_central_asia","position":[58,82],"terrainClass":"steppe","roles":["capital","trade_center","caravan_center","historical_location"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["horses"],"defenseClass":"capital"},
-    {"id":"lahore","name":"Lahore","polityId":"delhi_sultanate","provinceId":"punjab_delhi","regionalInstanceId":"mei_ganges_himalaya","position":[64,62],"terrainClass":"riverbank","roles":["trade_center","caravan_center","fortified_town"],"services":["market","warehouse"],"productionRefs":["cloth"],"defenseClass":"city"},
-    {"id":"delhi","name":"Delhi","polityId":"delhi_sultanate","provinceId":"punjab_delhi","regionalInstanceId":"mei_ganges_himalaya","position":[72,59],"terrainClass":"riverbank","roles":["capital","trade_center","fortified_town"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"capital"},
-    {"id":"ahmadabad","name":"Ahmadabad","polityId":"gujarat_sultanate","provinceId":"gujarat","regionalInstanceId":"mei_indus_deccan","position":[68,49],"terrainClass":"riverbank","roles":["capital","trade_center","fortified_town"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"capital"},
-    {"id":"khambhat","name":"Khambhat","polityId":"gujarat_sultanate","provinceId":"gujarat","regionalInstanceId":"mei_indus_deccan","position":[67,45],"terrainClass":"coast","roles":["major_port","trade_center"],"port":{"maritimeZoneId":"arabian_sea_navigation","access":"estuary"},"services":["market","banking","port_services","warehouse"],"productionRefs":["cloth"],"defenseClass":"port"},
-    {"id":"mandu","name":"Mandu","polityId":"malwa_sultanate","provinceId":"malwa","regionalInstanceId":"mei_indus_deccan","position":[73,50],"terrainClass":"upland","roles":["capital","fortified_town","trade_center"],"services":["market","warehouse","quest_hub"],"productionRefs":["grain"],"defenseClass":"capital"},
-    {"id":"bidar","name":"Bidar","polityId":"bahmani_sultanate","provinceId":"bahmani_deccan","regionalInstanceId":"mei_indus_deccan","position":[76,39],"terrainClass":"upland","roles":["capital","fortified_town","trade_center"],"services":["market","warehouse","quest_hub"],"productionRefs":["horses"],"defenseClass":"capital"},
-    {"id":"goa","name":"Goa","polityId":"bahmani_sultanate","provinceId":"bahmani_deccan","regionalInstanceId":"mei_indus_deccan","position":[70,34],"terrainClass":"coast","roles":["major_port","trade_center"],"port":{"maritimeZoneId":"arabian_sea_navigation","access":"estuary"},"services":["market","port_services","warehouse"],"productionRefs":["ship_provisions"],"defenseClass":"port"},
-    {"id":"vijayanagara","name":"Vijayanagara","polityId":"vijayanagara_empire","provinceId":"vijayanagara","regionalInstanceId":"mei_indus_deccan","position":[76,31],"terrainClass":"upland","roles":["capital","trade_center","fortified_town","historical_location"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["horses"],"defenseClass":"capital"},
-    {"id":"calicut","name":"Calicut","polityId":"vijayanagara_empire","provinceId":"vijayanagara","regionalInstanceId":"mei_indus_deccan","position":[71,27],"terrainClass":"coast","roles":["major_port","trade_center"],"port":{"maritimeZoneId":"arabian_sea_navigation","access":"coastal"},"services":["market","banking","port_services","warehouse"],"productionRefs":["pepper"],"defenseClass":"port"},
-    {"id":"gaur","name":"Gaur","polityId":"bengal_sultanate","provinceId":"bengal","regionalInstanceId":"mei_bengal_ceylon","position":[88,57],"terrainClass":"riverbank","roles":["capital","trade_center","fortified_town"],"services":["market","banking","warehouse","quest_hub"],"productionRefs":["cloth"],"defenseClass":"capital"},
-    {"id":"chittagong","name":"Chittagong","polityId":"bengal_sultanate","provinceId":"bengal","regionalInstanceId":"mei_bengal_ceylon","position":[94,48],"terrainClass":"coast","roles":["major_port","trade_center","transition_location"],"port":{"maritimeZoneId":"bay_of_bengal_navigation","access":"estuary"},"services":["market","port_services","warehouse"],"productionRefs":["ship_provisions"],"defenseClass":"port"},
-    {"id":"kotte","name":"Kotte","polityId":"kotte","provinceId":"kotte","regionalInstanceId":"mei_bengal_ceylon","position":[79,15],"terrainClass":"island","roles":["major_port","trade_center","historical_location"],"port":{"maritimeZoneId":"arabian_sea_navigation","access":"island_harbor"},"services":["market","port_services","warehouse","quest_hub"],"productionRefs":["cinnamon"],"defenseClass":"port"}
+  "schemaVersion": 1,
+  "id": "middle_east_india_settlements_1450",
+  "campaignStartDate": "1450-01-01",
+  "selectionRule": "Focused capitals, ports, trade and caravan centers, forts, pilgrimage sites, and adjoining-region entries.",
+  "placementRules": {
+    "minimumSeparationCells": 2,
+    "entryAnchorClearanceCells": 3
+  },
+  "settlements": [
+    {
+      "id": "bursa",
+      "name": "Bursa",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "position": [
+        10,
+        72
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "transition_location"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        22.5,
+        23.0
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_anatolia_levant"
+    },
+    {
+      "id": "konya",
+      "name": "Konya",
+      "polityId": "karamanids",
+      "provinceId": "karaman",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "position": [
+        16,
+        67
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "horses"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        24.0,
+        21.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_anatolia_levant"
+    },
+    {
+      "id": "aleppo",
+      "name": "Aleppo",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "position": [
+        23,
+        62
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        25.75,
+        20.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_anatolia_levant"
+    },
+    {
+      "id": "damascus",
+      "name": "Damascus",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "position": [
+        20,
+        55
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town",
+        "pilgrimage_location"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        25.0,
+        18.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_anatolia_levant"
+    },
+    {
+      "id": "jerusalem",
+      "name": "Jerusalem",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "position": [
+        17,
+        51
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "pilgrimage_location",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "olive_oil"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        24.25,
+        17.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_anatolia_levant"
+    },
+    {
+      "id": "jeddah",
+      "name": "Jeddah",
+      "polityId": "sharifate_mecca",
+      "provinceId": "hejaz",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "position": [
+        17,
+        34
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "pilgrimage_location"
+      ],
+      "port": {
+        "maritimeZoneId": "red_sea_navigation",
+        "access": "coastal"
+      },
+      "services": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        24.25,
+        13.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_arabia_red_sea"
+    },
+    {
+      "id": "mecca",
+      "name": "Mecca",
+      "polityId": "sharifate_mecca",
+      "provinceId": "hejaz",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "position": [
+        20,
+        35
+      ],
+      "terrainClass": "desert",
+      "roles": [
+        "capital",
+        "pilgrimage_location",
+        "trade_center",
+        "caravan_center"
+      ],
+      "services": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        25.0,
+        13.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_arabia_red_sea"
+    },
+    {
+      "id": "zabid",
+      "name": "Zabid",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "position": [
+        22,
+        23
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "historical_location",
+        "trade_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "coffee"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        25.5,
+        10.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_arabia_red_sea"
+    },
+    {
+      "id": "aden",
+      "name": "Aden",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "position": [
+        27,
+        18
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "transition_location",
+        "fortified_town"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal"
+      },
+      "services": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        26.75,
+        9.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_arabia_red_sea"
+    },
+    {
+      "id": "baghdad",
+      "name": "Baghdad",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_iraq",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "position": [
+        36,
+        57
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "manuscripts"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        29.0,
+        19.25
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_mesopotamia_persia"
+    },
+    {
+      "id": "tabriz",
+      "name": "Tabriz",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "position": [
+        38,
+        72
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        29.5,
+        23.0
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_mesopotamia_persia"
+    },
+    {
+      "id": "hormuz",
+      "name": "Hormuz",
+      "polityId": "kingdom_hormuz",
+      "provinceId": "hormuz",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "position": [
+        49,
+        36
+      ],
+      "terrainClass": "island",
+      "roles": [
+        "capital",
+        "major_port",
+        "trade_center",
+        "fortified_town"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "island_harbor"
+      },
+      "services": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        32.25,
+        14.0
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_mesopotamia_persia"
+    },
+    {
+      "id": "herat",
+      "name": "Herat",
+      "polityId": "timurid_empire",
+      "provinceId": "khurasan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "position": [
+        54,
+        68
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        33.5,
+        22.0
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_mesopotamia_persia"
+    },
+    {
+      "id": "samarkand",
+      "name": "Samarkand",
+      "polityId": "timurid_empire",
+      "provinceId": "transoxiana",
+      "regionalInstanceId": "mei_central_asia",
+      "position": [
+        58,
+        82
+      ],
+      "terrainClass": "steppe",
+      "roles": [
+        "capital",
+        "trade_center",
+        "caravan_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "horses"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        34.5,
+        25.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_central_asia"
+    },
+    {
+      "id": "lahore",
+      "name": "Lahore",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "position": [
+        64,
+        62
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "caravan_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "city",
+      "sourcePosition": [
+        36.0,
+        20.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_ganges_himalaya"
+    },
+    {
+      "id": "delhi",
+      "name": "Delhi",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "position": [
+        72,
+        59
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        38.0,
+        19.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_ganges_himalaya"
+    },
+    {
+      "id": "ahmadabad",
+      "name": "Ahmadabad",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        68,
+        49
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        37.0,
+        17.25
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "khambhat",
+      "name": "Khambhat",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        67,
+        45
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "estuary"
+      },
+      "services": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        36.75,
+        16.25
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "mandu",
+      "name": "Mandu",
+      "polityId": "malwa_sultanate",
+      "provinceId": "malwa",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        73,
+        50
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "services": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "grain"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        38.25,
+        17.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "bidar",
+      "name": "Bidar",
+      "polityId": "bahmani_sultanate",
+      "provinceId": "bahmani_deccan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        76,
+        39
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "capital",
+        "fortified_town",
+        "trade_center"
+      ],
+      "services": [
+        "market",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "horses"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        39.0,
+        14.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "goa",
+      "name": "Goa",
+      "polityId": "bahmani_sultanate",
+      "provinceId": "bahmani_deccan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        70,
+        34
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "estuary"
+      },
+      "services": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        37.5,
+        13.5
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "vijayanagara",
+      "name": "Vijayanagara",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        76,
+        31
+      ],
+      "terrainClass": "upland",
+      "roles": [
+        "capital",
+        "trade_center",
+        "fortified_town",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "horses"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        39.0,
+        12.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "calicut",
+      "name": "Calicut",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "position": [
+        71,
+        27
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal"
+      },
+      "services": [
+        "market",
+        "banking",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "pepper"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        37.75,
+        11.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_indus_deccan"
+    },
+    {
+      "id": "gaur",
+      "name": "Gaur",
+      "polityId": "bengal_sultanate",
+      "provinceId": "bengal",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "position": [
+        88,
+        57
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "capital",
+        "trade_center",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "banking",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cloth"
+      ],
+      "defenseClass": "capital",
+      "sourcePosition": [
+        42.0,
+        19.25
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_bengal_ceylon"
+    },
+    {
+      "id": "chittagong",
+      "name": "Chittagong",
+      "polityId": "bengal_sultanate",
+      "provinceId": "bengal",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "position": [
+        94,
+        48
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "transition_location"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "estuary"
+      },
+      "services": [
+        "market",
+        "port_services",
+        "warehouse"
+      ],
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        43.5,
+        17.0
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_bengal_ceylon"
+    },
+    {
+      "id": "kotte",
+      "name": "Kotte",
+      "polityId": "kotte",
+      "provinceId": "kotte",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "position": [
+        79,
+        15
+      ],
+      "terrainClass": "island",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "island_harbor"
+      },
+      "services": [
+        "market",
+        "port_services",
+        "warehouse",
+        "quest_hub"
+      ],
+      "productionRefs": [
+        "cinnamon"
+      ],
+      "defenseClass": "port",
+      "sourcePosition": [
+        39.75,
+        8.75
+      ],
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "physicalMapId": "mei_bengal_ceylon"
+    },
+    {
+      "id": "bolu",
+      "name": "Bolu",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        29.68,
+        39.86
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "iznik",
+      "name": "Iznik",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        30.0,
+        39.86
+      ],
+      "position": [
+        3,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "ankara",
+      "name": "Ankara",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        30.32,
+        39.86
+      ],
+      "position": [
+        5,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "amasya",
+      "name": "Amasya",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        29.68,
+        40.14
+      ],
+      "position": [
+        7,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "tokat",
+      "name": "Tokat",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        30.0,
+        40.14
+      ],
+      "position": [
+        9,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "sinop",
+      "name": "Sinop",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        30.32,
+        40.14
+      ],
+      "position": [
+        11,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "antalya",
+      "name": "Antalya",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        29.68,
+        40.42
+      ],
+      "position": [
+        13,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "kutahya",
+      "name": "Kutahya",
+      "polityId": "ottoman_empire",
+      "provinceId": "ottoman_anatolia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        30.0,
+        40.42
+      ],
+      "position": [
+        15,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "karaman",
+      "name": "Karaman",
+      "polityId": "karamanids",
+      "provinceId": "karaman",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        32.68,
+        37.36
+      ],
+      "position": [
+        17,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "larende",
+      "name": "Larende",
+      "polityId": "karamanids",
+      "provinceId": "karaman",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        33.0,
+        37.36
+      ],
+      "position": [
+        19,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "alaiye",
+      "name": "Alaiye",
+      "polityId": "karamanids",
+      "provinceId": "karaman",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        33.32,
+        37.36
+      ],
+      "position": [
+        21,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "kayseri",
+      "name": "Kayseri",
+      "polityId": "karamanids",
+      "provinceId": "karaman",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        32.68,
+        37.64
+      ],
+      "position": [
+        23,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "trebizond",
+      "name": "Trebizond",
+      "polityId": "trebizond_empire",
+      "provinceId": "trebizond",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        39.18,
+        40.66
+      ],
+      "position": [
+        25,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "giresun",
+      "name": "Giresun",
+      "polityId": "trebizond_empire",
+      "provinceId": "trebizond",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        39.5,
+        40.66
+      ],
+      "position": [
+        27,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "el_bistan",
+      "name": "El Bistan",
+      "polityId": "dulkadirids",
+      "provinceId": "dulkadir",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        36.68,
+        37.86
+      ],
+      "position": [
+        29,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "marash",
+      "name": "Marash",
+      "polityId": "dulkadirids",
+      "provinceId": "dulkadir",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        37.0,
+        37.86
+      ],
+      "position": [
+        31,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "tbilisi",
+      "name": "Tbilisi",
+      "polityId": "georgia",
+      "provinceId": "georgia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        43.18,
+        41.56
+      ],
+      "position": [
+        33,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "kutaisi",
+      "name": "Kutaisi",
+      "polityId": "georgia",
+      "provinceId": "georgia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        43.5,
+        41.56
+      ],
+      "position": [
+        35,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "gori",
+      "name": "Gori",
+      "polityId": "georgia",
+      "provinceId": "georgia",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        43.82,
+        41.56
+      ],
+      "position": [
+        37,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "nicosia",
+      "name": "Nicosia",
+      "polityId": "cyprus",
+      "provinceId": "cyprus",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        32.88,
+        34.86
+      ],
+      "position": [
+        39,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "famagusta",
+      "name": "Famagusta",
+      "polityId": "cyprus",
+      "provinceId": "cyprus",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        33.2,
+        34.86
+      ],
+      "position": [
+        41,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "limassol",
+      "name": "Limassol",
+      "polityId": "cyprus",
+      "provinceId": "cyprus",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        33.52,
+        34.86
+      ],
+      "position": [
+        43,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "gaza",
+      "name": "Gaza",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.18,
+        33.36
+      ],
+      "position": [
+        45,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "acre",
+      "name": "Acre",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.5,
+        33.36
+      ],
+      "position": [
+        47,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "tripoli_levant",
+      "name": "Tripoli Levant",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.82,
+        33.36
+      ],
+      "position": [
+        49,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "hamah",
+      "name": "Hamah",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.18,
+        33.64
+      ],
+      "position": [
+        51,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "homs",
+      "name": "Homs",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.5,
+        33.64
+      ],
+      "position": [
+        53,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "safad",
+      "name": "Safad",
+      "polityId": "mamluk_sultanate",
+      "provinceId": "mamluk_syria",
+      "regionalInstanceId": "mei_anatolia_levant",
+      "physicalMapId": "mei_anatolia_levant",
+      "sourcePosition": [
+        35.82,
+        33.64
+      ],
+      "position": [
+        55,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "medina",
+      "name": "Medina",
+      "polityId": "sharifate_mecca",
+      "provinceId": "hejaz",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        39.18,
+        22.86
+      ],
+      "position": [
+        57,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "yanbu",
+      "name": "Yanbu",
+      "polityId": "sharifate_mecca",
+      "provinceId": "hejaz",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        39.5,
+        22.86
+      ],
+      "position": [
+        59,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "red_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "taif",
+      "name": "Taif",
+      "polityId": "sharifate_mecca",
+      "provinceId": "hejaz",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        39.82,
+        22.86
+      ],
+      "position": [
+        61,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "sanaa",
+      "name": "Sanaa",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        43.68,
+        14.86
+      ],
+      "position": [
+        63,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "taizz",
+      "name": "Taizz",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        44.0,
+        14.86
+      ],
+      "position": [
+        65,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mokha",
+      "name": "Mokha",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        44.32,
+        14.86
+      ],
+      "position": [
+        67,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "red_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "hodeidah",
+      "name": "Hodeidah",
+      "polityId": "yemen",
+      "provinceId": "yemen",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        43.68,
+        15.14
+      ],
+      "position": [
+        69,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "red_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "seiyun",
+      "name": "Seiyun",
+      "polityId": "kathiri",
+      "provinceId": "hadramawt",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.18,
+        15.66
+      ],
+      "position": [
+        71,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "tarim",
+      "name": "Tarim",
+      "polityId": "kathiri",
+      "provinceId": "hadramawt",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.5,
+        15.66
+      ],
+      "position": [
+        73,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "shihr",
+      "name": "Shihr",
+      "polityId": "kathiri",
+      "provinceId": "hadramawt",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.82,
+        15.66
+      ],
+      "position": [
+        1,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "mukalla",
+      "name": "Mukalla",
+      "polityId": "kathiri",
+      "provinceId": "hadramawt",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.18,
+        15.94
+      ],
+      "position": [
+        3,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "nizwa",
+      "name": "Nizwa",
+      "polityId": "nabhanid_oman",
+      "provinceId": "oman",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        56.68,
+        22.86
+      ],
+      "position": [
+        5,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "muscat",
+      "name": "Muscat",
+      "polityId": "nabhanid_oman",
+      "provinceId": "oman",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        57.0,
+        22.86
+      ],
+      "position": [
+        7,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "sohar",
+      "name": "Sohar",
+      "polityId": "nabhanid_oman",
+      "provinceId": "oman",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        57.32,
+        22.86
+      ],
+      "position": [
+        9,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "sur_oman",
+      "name": "Sur Oman",
+      "polityId": "nabhanid_oman",
+      "provinceId": "oman",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        56.68,
+        23.14
+      ],
+      "position": [
+        11,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "al_ahsa",
+      "name": "Al Ahsa",
+      "polityId": "jabrids",
+      "provinceId": "najd_bahrain",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        47.68,
+        25.86
+      ],
+      "position": [
+        13,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "qatif",
+      "name": "Qatif",
+      "polityId": "jabrids",
+      "provinceId": "najd_bahrain",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.0,
+        25.86
+      ],
+      "position": [
+        15,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "manama",
+      "name": "Manama",
+      "polityId": "jabrids",
+      "provinceId": "najd_bahrain",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        48.32,
+        25.86
+      ],
+      "position": [
+        17,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "riyadh_oasis",
+      "name": "Riyadh Oasis",
+      "polityId": "jabrids",
+      "provinceId": "najd_bahrain",
+      "regionalInstanceId": "mei_arabia_red_sea",
+      "physicalMapId": "mei_arabia_red_sea",
+      "sourcePosition": [
+        47.68,
+        26.14
+      ],
+      "position": [
+        19,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "julfar",
+      "name": "Julfar",
+      "polityId": "kingdom_hormuz",
+      "provinceId": "hormuz",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        55.68,
+        26.36
+      ],
+      "position": [
+        75,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "qeshm",
+      "name": "Qeshm",
+      "polityId": "kingdom_hormuz",
+      "provinceId": "hormuz",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        56.0,
+        26.36
+      ],
+      "position": [
+        77,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "bandar_abbas",
+      "name": "Bandar Abbas",
+      "polityId": "kingdom_hormuz",
+      "provinceId": "hormuz",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        56.32,
+        26.36
+      ],
+      "position": [
+        79,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "ardabil",
+      "name": "Ardabil",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        46.18,
+        37.86
+      ],
+      "position": [
+        81,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "maragha",
+      "name": "Maragha",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        46.5,
+        37.86
+      ],
+      "position": [
+        83,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "van",
+      "name": "Van",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_azerbaijan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        46.82,
+        37.86
+      ],
+      "position": [
+        85,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mosul",
+      "name": "Mosul",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_iraq",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        43.68,
+        33.86
+      ],
+      "position": [
+        87,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "kirkuk",
+      "name": "Kirkuk",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_iraq",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        44.0,
+        33.86
+      ],
+      "position": [
+        89,
+        1
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "basra",
+      "name": "Basra",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_iraq",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        44.32,
+        33.86
+      ],
+      "position": [
+        91,
+        1
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "hillah",
+      "name": "Hillah",
+      "polityId": "qara_qoyunlu",
+      "provinceId": "qara_qoyunlu_iraq",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        43.68,
+        34.14
+      ],
+      "position": [
+        93,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "amid",
+      "name": "Amid",
+      "polityId": "aq_qoyunlu",
+      "provinceId": "aq_qoyunlu_diyar_bakr",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        39.68,
+        37.86
+      ],
+      "position": [
+        95,
+        1
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mardin",
+      "name": "Mardin",
+      "polityId": "aq_qoyunlu",
+      "provinceId": "aq_qoyunlu_diyar_bakr",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        40.0,
+        37.86
+      ],
+      "position": [
+        21,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "urfa",
+      "name": "Urfa",
+      "polityId": "aq_qoyunlu",
+      "provinceId": "aq_qoyunlu_diyar_bakr",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        40.32,
+        37.86
+      ],
+      "position": [
+        23,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "shamakhi",
+      "name": "Shamakhi",
+      "polityId": "shirvan",
+      "provinceId": "shirvan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        48.68,
+        40.36
+      ],
+      "position": [
+        25,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "baku",
+      "name": "Baku",
+      "polityId": "shirvan",
+      "provinceId": "shirvan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        49.0,
+        40.36
+      ],
+      "position": [
+        27,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "derbent",
+      "name": "Derbent",
+      "polityId": "shirvan",
+      "provinceId": "shirvan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        49.32,
+        40.36
+      ],
+      "position": [
+        29,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "persian_gulf_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "bukhara",
+      "name": "Bukhara",
+      "polityId": "timurid_empire",
+      "provinceId": "transoxiana",
+      "regionalInstanceId": "mei_central_asia",
+      "physicalMapId": "mei_central_asia",
+      "sourcePosition": [
+        65.68,
+        39.86
+      ],
+      "position": [
+        31,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "tashkent",
+      "name": "Tashkent",
+      "polityId": "timurid_empire",
+      "provinceId": "transoxiana",
+      "regionalInstanceId": "mei_central_asia",
+      "physicalMapId": "mei_central_asia",
+      "sourcePosition": [
+        66.0,
+        39.86
+      ],
+      "position": [
+        33,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "khujand",
+      "name": "Khujand",
+      "polityId": "timurid_empire",
+      "provinceId": "transoxiana",
+      "regionalInstanceId": "mei_central_asia",
+      "physicalMapId": "mei_central_asia",
+      "sourcePosition": [
+        66.32,
+        39.86
+      ],
+      "position": [
+        35,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "termiz",
+      "name": "Termiz",
+      "polityId": "timurid_empire",
+      "provinceId": "transoxiana",
+      "regionalInstanceId": "mei_central_asia",
+      "physicalMapId": "mei_central_asia",
+      "sourcePosition": [
+        65.68,
+        40.14
+      ],
+      "position": [
+        37,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "merv",
+      "name": "Merv",
+      "polityId": "timurid_empire",
+      "provinceId": "khurasan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        57.68,
+        34.86
+      ],
+      "position": [
+        39,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mashhad",
+      "name": "Mashhad",
+      "polityId": "timurid_empire",
+      "provinceId": "khurasan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        58.0,
+        34.86
+      ],
+      "position": [
+        41,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "nishapur",
+      "name": "Nishapur",
+      "polityId": "timurid_empire",
+      "provinceId": "khurasan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        58.32,
+        34.86
+      ],
+      "position": [
+        43,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "balkh",
+      "name": "Balkh",
+      "polityId": "timurid_empire",
+      "provinceId": "khurasan",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        57.68,
+        35.14
+      ],
+      "position": [
+        45,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "shiraz",
+      "name": "Shiraz",
+      "polityId": "timurid_empire",
+      "provinceId": "fars",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        52.18,
+        30.36
+      ],
+      "position": [
+        47,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "isfahan",
+      "name": "Isfahan",
+      "polityId": "timurid_empire",
+      "provinceId": "fars",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        52.5,
+        30.36
+      ],
+      "position": [
+        49,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "yazd",
+      "name": "Yazd",
+      "polityId": "timurid_empire",
+      "provinceId": "fars",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        52.82,
+        30.36
+      ],
+      "position": [
+        51,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "kerman",
+      "name": "Kerman",
+      "polityId": "timurid_empire",
+      "provinceId": "fars",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        52.18,
+        30.64
+      ],
+      "position": [
+        53,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "siraf",
+      "name": "Siraf",
+      "polityId": "timurid_empire",
+      "provinceId": "fars",
+      "regionalInstanceId": "mei_mesopotamia_persia",
+      "physicalMapId": "mei_mesopotamia_persia",
+      "sourcePosition": [
+        52.5,
+        30.64
+      ],
+      "position": [
+        55,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "thatta",
+      "name": "Thatta",
+      "polityId": "samma_sindh",
+      "provinceId": "sindh",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        67.68,
+        24.86
+      ],
+      "position": [
+        57,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "sehwan",
+      "name": "Sehwan",
+      "polityId": "samma_sindh",
+      "provinceId": "sindh",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        68.0,
+        24.86
+      ],
+      "position": [
+        59,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "bukkur",
+      "name": "Bukkur",
+      "polityId": "samma_sindh",
+      "provinceId": "sindh",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        68.32,
+        24.86
+      ],
+      "position": [
+        61,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "lahari_bandar",
+      "name": "Lahari Bandar",
+      "polityId": "samma_sindh",
+      "provinceId": "sindh",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        67.68,
+        25.14
+      ],
+      "position": [
+        63,
+        3
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "multan",
+      "name": "Multan",
+      "polityId": "langah_multan",
+      "provinceId": "multan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        71.18,
+        29.86
+      ],
+      "position": [
+        65,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "uch",
+      "name": "Uch",
+      "polityId": "langah_multan",
+      "provinceId": "multan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        71.5,
+        29.86
+      ],
+      "position": [
+        67,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "dipalpur",
+      "name": "Dipalpur",
+      "polityId": "langah_multan",
+      "provinceId": "multan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        71.82,
+        29.86
+      ],
+      "position": [
+        69,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "sirhind",
+      "name": "Sirhind",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        75.68,
+        28.86
+      ],
+      "position": [
+        71,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "panipat",
+      "name": "Panipat",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        76.0,
+        28.86
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "hisar",
+      "name": "Hisar",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        76.32,
+        28.86
+      ],
+      "position": [
+        3,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "agra",
+      "name": "Agra",
+      "polityId": "delhi_sultanate",
+      "provinceId": "punjab_delhi",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        75.68,
+        29.14
+      ],
+      "position": [
+        5,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "srinagar",
+      "name": "Srinagar",
+      "polityId": "kashmir_sultanate",
+      "provinceId": "kashmir",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        74.18,
+        33.86
+      ],
+      "position": [
+        7,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "anantnag",
+      "name": "Anantnag",
+      "polityId": "kashmir_sultanate",
+      "provinceId": "kashmir",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        74.5,
+        33.86
+      ],
+      "position": [
+        9,
+        5
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "baramulla",
+      "name": "Baramulla",
+      "polityId": "kashmir_sultanate",
+      "provinceId": "kashmir",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        74.82,
+        33.86
+      ],
+      "position": [
+        11,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "chittor",
+      "name": "Chittor",
+      "polityId": "rajput_confederacies",
+      "provinceId": "rajputana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        73.68,
+        25.86
+      ],
+      "position": [
+        73,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "jodhpur",
+      "name": "Jodhpur",
+      "polityId": "rajput_confederacies",
+      "provinceId": "rajputana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        74.0,
+        25.86
+      ],
+      "position": [
+        75,
+        3
+      ],
+      "terrainClass": "riverbank",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "jaisalmer",
+      "name": "Jaisalmer",
+      "polityId": "rajput_confederacies",
+      "provinceId": "rajputana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        74.32,
+        25.86
+      ],
+      "position": [
+        77,
+        3
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "bikaner",
+      "name": "Bikaner",
+      "polityId": "rajput_confederacies",
+      "provinceId": "rajputana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        73.68,
+        26.14
+      ],
+      "position": [
+        13,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "ajmer",
+      "name": "Ajmer",
+      "polityId": "rajput_confederacies",
+      "provinceId": "rajputana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        74.0,
+        26.14
+      ],
+      "position": [
+        15,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "patan",
+      "name": "Patan",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        71.68,
+        22.36
+      ],
+      "position": [
+        17,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "bharuch",
+      "name": "Bharuch",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        72.0,
+        22.36
+      ],
+      "position": [
+        19,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "surat",
+      "name": "Surat",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        72.32,
+        22.36
+      ],
+      "position": [
+        21,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "diu",
+      "name": "Diu",
+      "polityId": "gujarat_sultanate",
+      "provinceId": "gujarat",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        71.68,
+        22.64
+      ],
+      "position": [
+        23,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "ujjain",
+      "name": "Ujjain",
+      "polityId": "malwa_sultanate",
+      "provinceId": "malwa",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        75.68,
+        22.86
+      ],
+      "position": [
+        27,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "burhanpur",
+      "name": "Burhanpur",
+      "polityId": "khandesh_sultanate",
+      "provinceId": "khandesh",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        74.68,
+        20.86
+      ],
+      "position": [
+        33,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "gulbarga",
+      "name": "Gulbarga",
+      "polityId": "bahmani_sultanate",
+      "provinceId": "bahmani_deccan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        75.68,
+        17.36
+      ],
+      "position": [
+        39,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "dabhol",
+      "name": "Dabhol",
+      "polityId": "bahmani_sultanate",
+      "provinceId": "bahmani_deccan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        75.68,
+        17.64
+      ],
+      "position": [
+        45,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "chaul",
+      "name": "Chaul",
+      "polityId": "bahmani_sultanate",
+      "provinceId": "bahmani_deccan",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        76.0,
+        17.64
+      ],
+      "position": [
+        47,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "srirangapatna",
+      "name": "Srirangapatna",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        76.68,
+        12.86
+      ],
+      "position": [
+        49,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "tiruchirappalli",
+      "name": "Tiruchirappalli",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        76.68,
+        13.14
+      ],
+      "position": [
+        55,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mangalore",
+      "name": "Mangalore",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        77.0,
+        13.14
+      ],
+      "position": [
+        57,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "cochin",
+      "name": "Cochin",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        77.32,
+        13.14
+      ],
+      "position": [
+        59,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "kollam",
+      "name": "Kollam",
+      "polityId": "vijayanagara_empire",
+      "provinceId": "vijayanagara",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        76.68,
+        13.42
+      ],
+      "position": [
+        61,
+        5
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "arabian_sea_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "garha",
+      "name": "Garha",
+      "polityId": "gond_kingdoms",
+      "provinceId": "gondwana",
+      "regionalInstanceId": "mei_indus_deccan",
+      "physicalMapId": "mei_indus_deccan",
+      "sourcePosition": [
+        79.68,
+        21.86
+      ],
+      "position": [
+        63,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "jaunpur",
+      "name": "Jaunpur",
+      "polityId": "jaunpur_sultanate",
+      "provinceId": "jaunpur",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        81.68,
+        25.86
+      ],
+      "position": [
+        69,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "ayodhya",
+      "name": "Ayodhya",
+      "polityId": "jaunpur_sultanate",
+      "provinceId": "jaunpur",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        81.68,
+        26.14
+      ],
+      "position": [
+        3,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "kathmandu",
+      "name": "Kathmandu",
+      "polityId": "nepal_malla",
+      "provinceId": "nepal",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        84.98,
+        27.56
+      ],
+      "position": [
+        5,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "jumla",
+      "name": "Jumla",
+      "polityId": "western_himalayan_states",
+      "provinceId": "western_himalaya",
+      "regionalInstanceId": "mei_ganges_himalaya",
+      "physicalMapId": "mei_ganges_himalaya",
+      "sourcePosition": [
+        79.68,
+        29.86
+      ],
+      "position": [
+        11,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "pandua",
+      "name": "Pandua",
+      "polityId": "bengal_sultanate",
+      "provinceId": "bengal",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        88.68,
+        23.86
+      ],
+      "position": [
+        73,
+        5
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "satgaon",
+      "name": "Satgaon",
+      "polityId": "bengal_sultanate",
+      "provinceId": "bengal",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        89.32,
+        23.86
+      ],
+      "position": [
+        19,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "sylhet",
+      "name": "Sylhet",
+      "polityId": "bengal_sultanate",
+      "provinceId": "bengal",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        88.68,
+        24.14
+      ],
+      "position": [
+        21,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "cuttack",
+      "name": "Cuttack",
+      "polityId": "gajapati_empire",
+      "provinceId": "gajapati_orissa",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        84.68,
+        19.36
+      ],
+      "position": [
+        25,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "masulipatnam",
+      "name": "Masulipatnam",
+      "polityId": "gajapati_empire",
+      "provinceId": "gajapati_orissa",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        84.68,
+        19.64
+      ],
+      "position": [
+        31,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "kamatapur",
+      "name": "Kamatapur",
+      "polityId": "kamata_ahom_states",
+      "provinceId": "kamata_ahom",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        90.68,
+        25.86
+      ],
+      "position": [
+        33,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "hajo",
+      "name": "Hajo",
+      "polityId": "kamata_ahom_states",
+      "provinceId": "kamata_ahom",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        90.68,
+        26.14
+      ],
+      "position": [
+        39,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse"
+      ],
+      "defenseClass": "city",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "sri_jayawardenepura_kotte",
+      "name": "Sri Jayawardenepura Kotte",
+      "polityId": "kotte",
+      "provinceId": "kotte",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        80.18,
+        6.86
+      ],
+      "position": [
+        41,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "colombo",
+      "name": "Colombo",
+      "polityId": "kotte",
+      "provinceId": "kotte",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        80.5,
+        6.86
+      ],
+      "position": [
+        43,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "galle",
+      "name": "Galle",
+      "polityId": "kotte",
+      "provinceId": "kotte",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        80.82,
+        6.86
+      ],
+      "position": [
+        45,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "nallur",
+      "name": "Nallur",
+      "polityId": "jaffna",
+      "provinceId": "jaffna",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        79.68,
+        9.36
+      ],
+      "position": [
+        47,
+        7
+      ],
+      "terrainClass": "plains",
+      "roles": [
+        "capital",
+        "trade_center",
+        "historical_location",
+        "fortified_town"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "grain"
+      ]
+    },
+    {
+      "id": "mannar",
+      "name": "Mannar",
+      "polityId": "jaffna",
+      "provinceId": "jaffna",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        80.0,
+        9.36
+      ],
+      "position": [
+        49,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "trincomalee",
+      "name": "Trincomalee",
+      "polityId": "jaffna",
+      "provinceId": "jaffna",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        80.32,
+        9.36
+      ],
+      "position": [
+        51,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "male",
+      "name": "Male",
+      "polityId": "maldives_sultanate",
+      "provinceId": "maldives",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        72.68,
+        3.86
+      ],
+      "position": [
+        53,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "capital",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services",
+        "banking"
+      ],
+      "defenseClass": "capital",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    },
+    {
+      "id": "addu",
+      "name": "Addu",
+      "polityId": "maldives_sultanate",
+      "provinceId": "maldives",
+      "regionalInstanceId": "mei_bengal_ceylon",
+      "physicalMapId": "mei_bengal_ceylon",
+      "sourcePosition": [
+        73.0,
+        3.86
+      ],
+      "position": [
+        55,
+        7
+      ],
+      "terrainClass": "coast",
+      "roles": [
+        "major_port",
+        "trade_center",
+        "historical_location"
+      ],
+      "services": [
+        "market",
+        "quest_hub",
+        "warehouse",
+        "port_services"
+      ],
+      "defenseClass": "port",
+      "historicalEvidenceIds": [
+        "mei_gazetteer",
+        "indian_ocean"
+      ],
+      "controlContext": {
+        "date": "1450-01-01",
+        "status": "legal_and_effective_control",
+        "basis": "political_baseline"
+      },
+      "productionRefs": [
+        "ship_provisions"
+      ],
+      "port": {
+        "maritimeZoneId": "bay_of_bengal_navigation",
+        "access": "coastal_anchorage"
+      },
+      "navigationZoneId": null
+    }
   ],
-  "requiredOverlandEndpoints":["aleppo","damascus","mecca","baghdad","tabriz","herat","samarkand","lahore","delhi","gaur"],
-  "tradeRoutes":[
-    {"id":"levant_caravan","fromSettlementId":"aleppo","toSettlementId":"damascus","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"hajj_caravan","fromSettlementId":"damascus","toSettlementId":"mecca","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"silk_road_iraq","fromSettlementId":"aleppo","toSettlementId":"baghdad","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"silk_road_tabriz","fromSettlementId":"baghdad","toSettlementId":"tabriz","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"silk_road_khurasan","fromSettlementId":"tabriz","toSettlementId":"herat","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"silk_road_transoxiana","fromSettlementId":"herat","toSettlementId":"samarkand","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"khyber_trade","fromSettlementId":"herat","toSettlementId":"lahore","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"grand_trunk_west","fromSettlementId":"lahore","toSettlementId":"delhi","kind":"overland","contract":"settlement_trade_endpoint"},{"id":"grand_trunk_east","fromSettlementId":"delhi","toSettlementId":"gaur","kind":"overland","contract":"settlement_trade_endpoint"},
-    {"id":"red_sea_trade","fromSettlementId":"jeddah","toSettlementId":"aden","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"gulf_trade","fromSettlementId":"hormuz","toSettlementId":"aden","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"western_indian_ocean_trade","fromSettlementId":"aden","toSettlementId":"calicut","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"gujarat_trade","fromSettlementId":"hormuz","toSettlementId":"khambhat","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"konkan_trade","fromSettlementId":"khambhat","toSettlementId":"goa","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"malabar_ceylon_trade","fromSettlementId":"calicut","toSettlementId":"kotte","kind":"maritime","contract":"settlement_trade_endpoint"},{"id":"bay_of_bengal_trade","fromSettlementId":"kotte","toSettlementId":"chittagong","kind":"maritime","contract":"settlement_trade_endpoint"}
+  "requiredOverlandEndpoints": [
+    "aleppo",
+    "damascus",
+    "mecca",
+    "baghdad",
+    "tabriz",
+    "herat",
+    "samarkand",
+    "lahore",
+    "delhi",
+    "gaur"
   ],
-  "transitions":[
-    {"id":"mei_europe_departure","settlementId":"bursa","boundaryAnchorId":"middle_east_india_europe_entry","neighborRegionId":"europe","stub":true},
-    {"id":"mei_africa_departure","settlementId":"aden","boundaryAnchorId":"middle_east_india_africa_entry","neighborRegionId":"africa","stub":true},
-    {"id":"mei_southeast_asia_departure","settlementId":"chittagong","boundaryAnchorId":"middle_east_india_east","neighborRegionId":"southeast_asia","stub":true}
+  "tradeRoutes": [
+    {
+      "id": "levant_caravan",
+      "fromSettlementId": "aleppo",
+      "toSettlementId": "damascus",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "hajj_caravan",
+      "fromSettlementId": "damascus",
+      "toSettlementId": "mecca",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "silk_road_iraq",
+      "fromSettlementId": "aleppo",
+      "toSettlementId": "baghdad",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "silk_road_tabriz",
+      "fromSettlementId": "baghdad",
+      "toSettlementId": "tabriz",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "silk_road_khurasan",
+      "fromSettlementId": "tabriz",
+      "toSettlementId": "herat",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "silk_road_transoxiana",
+      "fromSettlementId": "herat",
+      "toSettlementId": "samarkand",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "khyber_trade",
+      "fromSettlementId": "herat",
+      "toSettlementId": "lahore",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "grand_trunk_west",
+      "fromSettlementId": "lahore",
+      "toSettlementId": "delhi",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "grand_trunk_east",
+      "fromSettlementId": "delhi",
+      "toSettlementId": "gaur",
+      "kind": "overland",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "red_sea_trade",
+      "fromSettlementId": "jeddah",
+      "toSettlementId": "aden",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "gulf_trade",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "aden",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "western_indian_ocean_trade",
+      "fromSettlementId": "aden",
+      "toSettlementId": "calicut",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "gujarat_trade",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "khambhat",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "konkan_trade",
+      "fromSettlementId": "khambhat",
+      "toSettlementId": "goa",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "malabar_ceylon_trade",
+      "fromSettlementId": "calicut",
+      "toSettlementId": "kotte",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "bay_of_bengal_trade",
+      "fromSettlementId": "kotte",
+      "toSettlementId": "chittagong",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_sinop",
+      "fromSettlementId": "aden",
+      "toSettlementId": "sinop",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_antalya",
+      "fromSettlementId": "aden",
+      "toSettlementId": "antalya",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_alaiye",
+      "fromSettlementId": "aden",
+      "toSettlementId": "alaiye",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_trebizond",
+      "fromSettlementId": "aden",
+      "toSettlementId": "trebizond",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_giresun",
+      "fromSettlementId": "aden",
+      "toSettlementId": "giresun",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_famagusta",
+      "fromSettlementId": "aden",
+      "toSettlementId": "famagusta",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_limassol",
+      "fromSettlementId": "aden",
+      "toSettlementId": "limassol",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_acre",
+      "fromSettlementId": "aden",
+      "toSettlementId": "acre",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_tripoli_levant",
+      "fromSettlementId": "aden",
+      "toSettlementId": "tripoli_levant",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_yanbu",
+      "fromSettlementId": "jeddah",
+      "toSettlementId": "yanbu",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_mokha",
+      "fromSettlementId": "jeddah",
+      "toSettlementId": "mokha",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_hodeidah",
+      "fromSettlementId": "jeddah",
+      "toSettlementId": "hodeidah",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_shihr",
+      "fromSettlementId": "aden",
+      "toSettlementId": "shihr",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_mukalla",
+      "fromSettlementId": "aden",
+      "toSettlementId": "mukalla",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_muscat",
+      "fromSettlementId": "aden",
+      "toSettlementId": "muscat",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_sohar",
+      "fromSettlementId": "aden",
+      "toSettlementId": "sohar",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_sur_oman",
+      "fromSettlementId": "aden",
+      "toSettlementId": "sur_oman",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_qatif",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "qatif",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_manama",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "manama",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_julfar",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "julfar",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_qeshm",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "qeshm",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_bandar_abbas",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "bandar_abbas",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_basra",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "basra",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_baku",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "baku",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_derbent",
+      "fromSettlementId": "hormuz",
+      "toSettlementId": "derbent",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_siraf",
+      "fromSettlementId": "aden",
+      "toSettlementId": "siraf",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_lahari_bandar",
+      "fromSettlementId": "aden",
+      "toSettlementId": "lahari_bandar",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_bharuch",
+      "fromSettlementId": "aden",
+      "toSettlementId": "bharuch",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_surat",
+      "fromSettlementId": "aden",
+      "toSettlementId": "surat",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_diu",
+      "fromSettlementId": "aden",
+      "toSettlementId": "diu",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_dabhol",
+      "fromSettlementId": "aden",
+      "toSettlementId": "dabhol",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_chaul",
+      "fromSettlementId": "aden",
+      "toSettlementId": "chaul",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_mangalore",
+      "fromSettlementId": "aden",
+      "toSettlementId": "mangalore",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_cochin",
+      "fromSettlementId": "aden",
+      "toSettlementId": "cochin",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_kollam",
+      "fromSettlementId": "aden",
+      "toSettlementId": "kollam",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_satgaon",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "satgaon",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_masulipatnam",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "masulipatnam",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_colombo",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "colombo",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_galle",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "galle",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_mannar",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "mannar",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_trincomalee",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "trincomalee",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_male",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "male",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    },
+    {
+      "id": "density_maritime_addu",
+      "fromSettlementId": "chittagong",
+      "toSettlementId": "addu",
+      "kind": "maritime",
+      "contract": "settlement_trade_endpoint"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "mei_europe_departure",
+      "settlementId": "bursa",
+      "boundaryAnchorId": "middle_east_india_europe_entry",
+      "neighborRegionId": "europe",
+      "stub": true
+    },
+    {
+      "id": "mei_africa_departure",
+      "settlementId": "aden",
+      "boundaryAnchorId": "middle_east_india_africa_entry",
+      "neighborRegionId": "africa",
+      "stub": true
+    },
+    {
+      "id": "mei_southeast_asia_departure",
+      "settlementId": "chittagong",
+      "boundaryAnchorId": "middle_east_india_east",
+      "neighborRegionId": "southeast_asia",
+      "stub": true
+    }
+  ],
+  "historicalEvidence": [
+    {
+      "id": "mei_gazetteer",
+      "citation": "C. E. Bosworth, Historic Cities of the Islamic World (2007); Joseph E. Schwartzberg, A Historical Atlas of South Asia, 2nd ed. (1992).",
+      "note": "Supports 1450 political context, urban hierarchy, ports, pilgrimage and caravan networks from Anatolia through India."
+    },
+    {
+      "id": "indian_ocean",
+      "citation": "K. N. Chaudhuri, Trade and Civilisation in the Indian Ocean (1985); R. J. Barendse, The Arabian Seas (2002).",
+      "note": "Supports Gulf, Red Sea, Indian coast, island and monsoon-route settlement roles."
+    }
+  ],
+  "abstractCommunities": [
+    {
+      "id": "middle_east_india_compressed_communities",
+      "kind": "decentralized_and_rural",
+      "rationale": "Smaller rural, mobile, upland, riverine, and island communities remain authoritative simulated state where individual physical objects would exceed compression and active-object budgets."
+    }
   ]
 }

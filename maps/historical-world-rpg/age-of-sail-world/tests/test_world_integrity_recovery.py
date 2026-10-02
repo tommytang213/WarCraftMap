@@ -63,7 +63,7 @@ POLICY = IntegrityPolicy(
     ),
     field_matches=(FieldMatch("settlements", "provinceId", "provinces", "controllerPolityId"),),
     representation_domains=("settlements",), maximum_diagnostics=12,
-    maximum_active_objects=512, maximum_scan_ms=1500,
+    maximum_active_objects=800, maximum_scan_ms=1500,
 )
 
 
@@ -80,7 +80,7 @@ class WorldIntegrityRecoveryTests(unittest.TestCase):
         second, repeated = self.recover(first)
         self.assertEqual(authoritative, state_hash(first, authoritative_only=True))
         self.assertEqual(first, second)
-        self.assertEqual((0, 0, 458), (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
+        self.assertEqual((0, 0, 616), (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
         self.assertEqual(report["authoritativeHash"], repeated["authoritativeHash"])
 
     def test_every_runtime_loss_class_and_stale_map_object_is_repaired(self):
