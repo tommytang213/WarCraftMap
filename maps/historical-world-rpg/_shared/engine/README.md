@@ -64,3 +64,12 @@ Planned modules include:
 - Warcraft compatibility layer
 
 Scenario content must plug into these systems through stable data contracts.
+
+## Individual vessels
+
+`vessel_progression.py` is the scenario-neutral authority for persistent individual
+vessels. It validates per-hull refit slots and requirements, performs atomic refit and
+repair operations, derives bounded role-specific veterancy, records bounded service
+history, and reconstructs local ship representations from stable IDs. Scenario data
+owns every Age of Sail identity, availability rule, balance value, and historical
+source. Runtime object handles are never serialized.
