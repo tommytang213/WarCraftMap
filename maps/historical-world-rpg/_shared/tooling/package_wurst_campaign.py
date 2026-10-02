@@ -281,7 +281,7 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     text = wurst_path.read_text(encoding="utf-8")
     encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
     text = re.sub(r'public constant string SCENARIO_RUNTIME_JSON = ".*"', f'public constant string SCENARIO_RUNTIME_JSON = "{encoded}"', text)
-    text = text.replace("import CampaignTimeline\n", "import CampaignTimeline\nimport NewCampaignOriginSelection\n")
+    text = text.replace("import CampaignTimeline\n", "import CampaignTimeline\nimport CommandRouter\n")
     text += "\npublic function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
     for origin in origins:
         start = origin["startingLocation"]
