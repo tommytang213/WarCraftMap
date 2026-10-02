@@ -281,14 +281,17 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     text = wurst_path.read_text(encoding="utf-8")
     encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
     text = re.sub(r'public constant string SCENARIO_RUNTIME_JSON = ".*"', f'public constant string SCENARIO_RUNTIME_JSON = "{encoded}"', text)
-    text = text.replace("import CampaignTimeline\n", "import CampaignTimeline\nimport CommandRouter\n")
-    text += "\npublic function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
+    origin_configuration = "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
     for origin in origins:
         start = origin["startingLocation"]
         values = [origin["polityId"], origin["name"], start["physicalMapId"],
                   start["regionalInstanceId"], start["settlementId"]]
         args = ", ".join(json.dumps(value, ensure_ascii=False) for value in values)
-        text += f"\tcontroller.add({args})\n"
+        origin_configuration += f"\tcontroller.add({args})\n"
+    text = text.replace(
+        "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n\tskip\n",
+        origin_configuration,
+    )
     text += f'\npublic constant string PHYSICAL_MAP_ID = "{physical.id}"\n'
     wurst_path.write_text(text, encoding="utf-8")
     provenance_path = generated / PROVENANCE

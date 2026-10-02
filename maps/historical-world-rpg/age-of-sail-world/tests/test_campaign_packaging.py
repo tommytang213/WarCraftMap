@@ -111,6 +111,9 @@ class CampaignPackagingTests(unittest.TestCase):
         generate(base, generated)
         world = validate_campaign(campaign)
         _localize_runtime(campaign, world, campaign.maps[1], generated)
+        generated_wurst = (generated / "ScenarioData.wurst").read_text()
+        self.assertNotIn("\tskip\n", generated_wurst)
+        self.assertEqual(len(world["polities"]), generated_wurst.count("\tcontroller.add("))
         verify_generated(base, generated)
         self.manifest.write_text(self.manifest.read_text(encoding="utf-8") + "\n", encoding="utf-8")
         with self.assertRaisesRegex(PackagingError, "stale generated data.*physical-maps.json"):

@@ -240,7 +240,7 @@ public class PlayerCampaignIdentity
 	function hasOrigin() returns boolean
 		return originPolityId != ""
 
-	function begin(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean
+	function startCampaign(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean
 		if hasOrigin() or polityId == "" or physicalMapId == "" or regionalInstanceId == "" or settlementId == ""
 			return false
 		originPolityId = polityId
@@ -310,7 +310,7 @@ public class NewCampaignOriginController
 
 	function matches(OriginDefinition row) returns boolean
 		let wanted = StringCase(query, false)
-		return wanted == "" or indexOf(StringCase(row.name, false), wanted) >= 0 or indexOf(StringCase(row.polityId, false), wanted) >= 0
+		return wanted == "" or StringCase(row.name, false).indexOf(wanted) >= 0 or StringCase(row.polityId, false).indexOf(wanted) >= 0
 
 	function matchCount() returns int
 		var result = 0
@@ -354,7 +354,7 @@ public class NewCampaignOriginController
 		for i = 0 to count - 1
 			let row = definitions[i]
 			if row.polityId == polityId
-				if identity.begin(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
+				if identity.startCampaign(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
 					presentation.close()
 					return true
 		presentation.showError("That polity is not active in the authoritative 1450 world.")
