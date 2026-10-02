@@ -30,7 +30,8 @@ class TechnologyInstitutionTests(unittest.TestCase):
             runtime.advance_research("france","standardized_charts",1000,"1600-01-01")
         self.assertEqual(baseline,runtime.snapshot())
         events=runtime.advance_research("france","celestial_navigation",39,"1600-01-01")
-        self.assertEqual(["technology_completed"],[x.kind for x in events])
+        self.assertEqual(["technology_completed","content_unlocked"],[x.kind for x in events])
+        self.assertEqual("progression_celestial_navigation",events[1].content_id)
         events=runtime.advance_research("france","standardized_charts",165,"1600-01-01")
         self.assertEqual(
             [("technology_completed",None),("content_unlocked","ability"),("content_unlocked","policy")],

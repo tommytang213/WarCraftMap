@@ -84,8 +84,9 @@ class HistoricalEventTests(unittest.TestCase):
     def test_multi_century_trajectories_are_relevant_bounded_and_deterministic(self):
         definition=WORLD["timeline"]
         occurrences=timeline.advance(definition,timeline.initial_state(definition),"1820-12-31")[1]
-        self.assertEqual(59,len(occurrences))
-        self.assertLessEqual(len(occurrences),80)  # fewer than one pressure per five campaign years
+        self.assertGreaterEqual(len(SOURCE["events"]),200)
+        self.assertGreater(len(occurrences),len(SOURCE["events"]))
+        self.assertLessEqual(len(occurrences),350)  # recurring templates remain bounded
         for label,mutate in (
             ("baseline",lambda state:None),
             ("ottoman_thrace",lambda state:state["ownership"].__setitem__("byzantine_thrace","ottoman_empire")),
@@ -97,6 +98,6 @@ class HistoricalEventTests(unittest.TestCase):
             self.assertEqual(first.snapshot(),second.snapshot(),label)
             fired=sum(x["occurrences"] for x in first.snapshot()["events"])
             self.assertLessEqual(fired,len(occurrences),label)
-            self.assertGreaterEqual(fired,45,label)
+            self.assertGreaterEqual(fired,190,label)
 
 if __name__=="__main__": unittest.main()

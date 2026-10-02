@@ -26,10 +26,12 @@ class ProgressionCatalogTests(unittest.TestCase):
 
     def test_complete_catalog_covers_required_domains_and_projects_exactly(self):
         data = progression_catalog.validate()
-        self.assertEqual({"military","naval","commercial","administrative","scientific","agricultural","industrial","institutional"},
+        self.assertEqual({"military","naval","commercial","administrative","scientific","agricultural","industrial","logistical","exploration","medical","communications","institutional"},
                          {x["id"] for x in data["branches"]})
-        self.assertGreaterEqual(len(data["technologies"]), 50)
-        self.assertGreaterEqual(len(data["institutions"]), 9)
+        self.assertGreaterEqual(len(data["technologies"]), 180)
+        self.assertLessEqual(len(data["technologies"]), 250)
+        self.assertGreaterEqual(len(data["institutions"]), 20)
+        self.assertLessEqual(len(data["institutions"]), 30)
         unlocks = {tuple(unlock) for node in data["technologies"] + data["institutions"] for unlock in node["unlocks"]}
         self.assertTrue({("unit","common_sapper_corps"), ("unit","common_wagon_train"),
                          ("unit","ocean_cruising_frigate"), ("unit","armed_indiaman"),
