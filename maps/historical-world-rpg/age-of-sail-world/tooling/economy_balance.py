@@ -128,14 +128,25 @@ def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=F
  # consume the validator's wall-clock budget even though operation counts are
  # still within the finalized simulation envelope.
  wage_share=finance["wageSharePermille"]; tax_share=finance["taxSharePermille"]; obligation_share=finance["obligationReservePermille"]
- stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]; treasury=state["treasury"]
+ stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]
+ # Accumulate the fixed ledger buckets in locals.  Updating eleven dictionary
+ # entries for every settlement-year was a material, host-load-sensitive cost
+ # in CI (more than one hundred million hash-table operations for run_all).
+ # Flush at the serialization boundary and at completion so the persisted
+ # state and deterministic report remain byte-for-byte equivalent.
+ harvest=historical_import=institutional_credit=household_consumption=0
+ spoilage_total=trade_loss_total=0
+ annual_wages=annual_military_upkeep=annual_fleet_upkeep=0
+ annual_taxation=annual_obligation=0
  prepared_rows=[]
  for ident in order:
   p=profiles[ident]; capacity=p["capacityUnits"]
-  prepared_rows.append((ident,capacity,p["startingStockUnits"],bool(p["imports"]),bool(p["shortages"]),bool(settlements[ident].get("port")),noise_bases[ident],capacity*wage_share//1000,capacity*upkeep//2000,capacity*tax_share//1000,capacity*obligation_share//2000))
+  wages=capacity*wage_share//1000; military=capacity*upkeep//2000; fleet=military//2 if settlements[ident].get("port") else 0; taxes=capacity*tax_share//1000; obligation=capacity*obligation_share//2000
+  annual_wages+=wages; annual_military_upkeep+=military; annual_fleet_upkeep+=fleet; annual_taxation+=taxes; annual_obligation+=obligation
+  prepared_rows.append((ident,capacity,p["startingStockUnits"],bool(p["imports"]),bool(p["shortages"]),noise_bases[ident]))
  for year in range(cfg["campaignYears"]["start"],cfg["campaignYears"]["end"]+1):
   year_noise=year*1103515245
-  for ident,capacity,target,has_imports,has_shortages,is_port,noise_base,wages,military,taxes,obligation in prepared_rows:
+  for ident,capacity,target,has_imports,has_shortages,noise_base in prepared_rows:
    previous=stock[ident]; noise=(noise_base+year_noise)%101-50
    production=max(1,capacity*local_production*(1000+noise)//1_000_000_000)
    imports=capacity*import_replenishment//1_000_000 if has_imports else 0
@@ -147,12 +158,14 @@ def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=F
    stock[ident]=current; pressure=(target-current)*price_adjustment//max(1,target); current_price=max(minimum_price,min(maximum_price,price[ident]+pressure)); price[ident]=current_price
    margin=min(finance["maximumArbitrageMarginPermille"],max(-180,(1000-current_price)//3+60))
    current_liquidity=liquidity[ident]; liquidity[ident]=max(30,min(540,current_liquidity+(reserve-current_liquidity)//8+margin//40-upkeep//120+3))
-   fleet=military//2 if is_port else 0; credit=wages+taxes+obligation+military+fleet
-   treasury[ident]+=credit-wages-taxes-obligation-military-fleet
-   ledger["harvest"]+=production; ledger["historical_import"]+=imports; ledger["institutional_credit"]+=source_credit; ledger["household_consumption"]+=household; ledger["spoilage"]+=spoilage+capacity_loss+sink_release; ledger["trade_loss"]+=trade_loss; ledger["wages"]+=wages; ledger["military_upkeep"]+=military; ledger["fleet_upkeep"]+=fleet; ledger["taxation"]+=taxes; ledger["obligation"]+=obligation
+   harvest+=production; historical_import+=imports; institutional_credit+=source_credit; household_consumption+=household; spoilage_total+=spoilage+capacity_loss+sink_release; trade_loss_total+=trade_loss
    if current!=previous+production+imports+source_credit-household-spoilage-trade_loss-sink_release-capacity_loss: raise BalanceError(f"{ident}/{year}: unauthorized conservation delta")
   if checkpoint and year==1648:
-   state=json.loads(json.dumps(state,sort_keys=True)); stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]; treasury=state["treasury"]; ledger=state["ledger"]
+   years=year-cfg["campaignYears"]["start"]+1
+   ledger.update(harvest=harvest,historical_import=historical_import,institutional_credit=institutional_credit,household_consumption=household_consumption,spoilage=spoilage_total,trade_loss=trade_loss_total,wages=annual_wages*years,military_upkeep=annual_military_upkeep*years,fleet_upkeep=annual_fleet_upkeep*years,taxation=annual_taxation*years,obligation=annual_obligation*years)
+   state=json.loads(json.dumps(state,sort_keys=True)); stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]; ledger=state["ledger"]
+ years=cfg["campaignYears"]["end"]-cfg["campaignYears"]["start"]+1
+ ledger.update(harvest=harvest,historical_import=historical_import,institutional_credit=institutional_credit,household_consumption=household_consumption,spoilage=spoilage_total,trade_loss=trade_loss_total,wages=annual_wages*years,military_upkeep=annual_military_upkeep*years,fleet_upkeep=annual_fleet_upkeep*years,taxation=annual_taxation*years,obligation=annual_obligation*years)
  if _access is None:
   graph=trade_graph(settlements,routes); connected,essential=access_metrics(settlements,graph,profiles)
  else: connected,essential=_access
