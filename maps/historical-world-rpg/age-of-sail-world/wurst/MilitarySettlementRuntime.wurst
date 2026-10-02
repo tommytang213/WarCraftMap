@@ -1,0 +1,456 @@
+package MilitarySettlementRuntime
+
+import WC3Compatibility
+import CommandRouter
+import ManagementScreenPauseController
+
+/**
+ * Warcraft projection of the authoritative warfare, settlement and office state.
+ * Stable records below are saveable campaign state. Unit handles live exclusively
+ * in MilitarySettlementAdapter and may be discarded/rebuilt at any time.
+ */
+public constant int FORCE_ARMY = 1
+public constant int FORCE_FLEET = 2
+public constant int FORCE_GARRISON = 3
+public constant int FORCE_CITY_CORE = 4
+public constant int FORCE_DEFENSE = 5
+public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
+
+public class RuntimeForce
+	string id
+	string controllerId
+	string regionId
+	string categoryId
+	int kind
+	int typeId
+	int strength
+	int maximumStrength
+	int supply
+	real x
+	real y
+	boolean active = true
+	construct(string id, string controllerId, string regionId, string categoryId, int kind, int typeId, int strength, int supply, real x, real y)
+		this.id = id
+		this.controllerId = controllerId
+		this.regionId = regionId
+		this.categoryId = categoryId
+		this.kind = kind
+		this.typeId = typeId
+		this.strength = strength
+		maximumStrength = strength
+		this.supply = supply
+		this.x = x
+		this.y = y
+
+public class TraditionState
+	string controllerId
+	string categoryId
+	int experience
+	int lifePermillePerHundredXp
+	int milestoneXp
+	int milestoneAbilityId
+	construct(string controllerId, string categoryId, int rate, int milestoneXp, int milestoneAbilityId)
+		this.controllerId = controllerId
+		this.categoryId = categoryId
+		lifePermillePerHundredXp = rate
+		this.milestoneXp = milestoneXp
+		this.milestoneAbilityId = milestoneAbilityId
+
+public class SettlementRuntimeState
+	string id
+	string controllerId
+	string regionId
+	int coreTypeId
+	int defenderTypeId
+	int garrisonStrength
+	int garrisonMaximum
+	int reserves
+	int manpower
+	int supply
+	int waveSize
+	real reinforcementInterval
+	real quietPeriod
+	real nextWaveAt
+	real lastCombatAt
+	real captureImmuneUntil
+	real x
+	real y
+	boolean underAttack = false
+	construct(string id, string controllerId, string regionId, int coreTypeId, int defenderTypeId, int strength, int reserves, int manpower, int supply, real x, real y)
+		this.id = id
+		this.controllerId = controllerId
+		this.regionId = regionId
+		this.coreTypeId = coreTypeId
+		this.defenderTypeId = defenderTypeId
+		garrisonStrength = strength
+		garrisonMaximum = strength
+		this.reserves = reserves
+		this.manpower = manpower
+		this.supply = supply
+		waveSize = 10
+		reinforcementInterval = 10.
+		quietPeriod = 20.
+		this.x = x
+		this.y = y
+
+public class AdministratorState
+	string characterId
+	string name
+	string title
+	string controllerId
+	string physicalRegionId
+	string jurisdiction
+	int loyalty
+	int administration
+	int command
+	int capacity
+	boolean oathbound
+	construct(string characterId, string name, string title, string controllerId, string physicalRegionId, string jurisdiction, int loyalty, int administration, int command, int capacity)
+		this.characterId = characterId
+		this.name = name
+		this.title = title
+		this.controllerId = controllerId
+		this.physicalRegionId = physicalRegionId
+		this.jurisdiction = jurisdiction
+		this.loyalty = loyalty
+		this.administration = administration
+		this.command = command
+		this.capacity = capacity
+
+public interface MilitarySettlementAdapter
+	function playerForController(string controllerId, boolean localDefense) returns player
+	function createRepresentation(RuntimeForce force, player owner) returns unit
+	function removeRepresentation(string stableId)
+	function changeRepresentationOwner(string stableId, player owner)
+	function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+	function protectRepresentation(string stableId, boolean protected)
+	function showManagement(player viewer, string heading, string body)
+
+public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdapter
+	string array[2048] ids
+	unit array[2048] handles
+	int array[2048] baseMaximumLife
+	int array[2048] appliedMilestoneAbility
+	int count = 0
+	function indexOf(string id) returns int
+		for i = 0 to count - 1
+			if ids[i] == id
+				return i
+		return -1
+	override function playerForController(string controllerId, boolean localDefense) returns player
+		// Slot 0 is the local campaign controller; local defenses use dedicated AI
+		// slots and therefore can never be selected, loaded or marched by the player.
+		if controllerId == "player" and not localDefense
+			return Player(0)
+		return Player(11)
+	override function createRepresentation(RuntimeForce force, player owner) returns unit
+		let made = compatCreateUnit(owner, force.typeId, force.x, force.y, 0.)
+		let found = indexOf(force.id)
+		if found < 0
+			found = count
+			ids[count] = force.id
+			count++
+		handles[found] = made
+		baseMaximumLife[found] = compatGetUnitMaxLife(made)
+		appliedMilestoneAbility[found] = 0
+		return made
+	override function removeRepresentation(string stableId)
+		let found = indexOf(stableId)
+		if found >= 0 and handles[found] != null
+			compatRemoveUnit(handles[found])
+			handles[found] = null
+	override function changeRepresentationOwner(string stableId, player owner)
+		let found = indexOf(stableId)
+		if found >= 0 and handles[found] != null
+			compatSetUnitOwner(handles[found], owner, true)
+	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+		let found = indexOf(stableId)
+		if found >= 0 and handles[found] != null
+			compatSetUnitMaxLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
+			if appliedMilestoneAbility[found] != 0 and appliedMilestoneAbility[found] != milestoneAbilityId
+				compatRemoveUnitAbility(handles[found], appliedMilestoneAbility[found])
+			if milestoneAbilityId != 0
+				compatAddUnitAbility(handles[found], milestoneAbilityId)
+			appliedMilestoneAbility[found] = milestoneAbilityId
+	override function protectRepresentation(string stableId, boolean protected)
+		let found = indexOf(stableId)
+		if found >= 0 and handles[found] != null
+			compatSetUnitInvulnerable(handles[found], protected)
+	override function showManagement(player viewer, string heading, string body)
+		DisplayTimedTextToPlayer(viewer, 0., 0., 60., heading + "\n" + body + "\nUse /management-close to resume the campaign.")
+
+public class MilitarySettlementRuntime
+	MilitarySettlementAdapter adapter
+	RuntimeForce array[2048] forces
+	TraditionState array[256] traditions
+	SettlementRuntimeState array[512] settlements
+	AdministratorState array[512] administrators
+	string array[512] administratorSettlementIds
+	string array[256] warAttackers
+	string array[256] warDefenders
+	int forceCount = 0
+	int traditionCount = 0
+	int settlementCount = 0
+	int administratorCount = 0
+	int warCount = 0
+	string activeRegionId = ""
+	construct(MilitarySettlementAdapter adapter)
+		this.adapter = adapter
+	function forceIndex(string id) returns int
+		for i = 0 to forceCount - 1
+			if forces[i].id == id
+				return i
+		return -1
+	function hasPrefix(string value, string prefix) returns boolean
+		return StringLength(value) >= StringLength(prefix) and SubString(value, 0, StringLength(prefix)) == prefix
+	function settlementIndex(string id) returns int
+		for i = 0 to settlementCount - 1
+			if settlements[i].id == id
+				return i
+		return -1
+	function traditionIndex(string controllerId, string categoryId) returns int
+		for i = 0 to traditionCount - 1
+			if traditions[i].controllerId == controllerId and traditions[i].categoryId == categoryId
+				return i
+		return -1
+	function administratorIndex(string settlementId) returns int
+		for i = 0 to administratorCount - 1
+			if administratorSettlementIds[i] == settlementId
+				return i
+		return -1
+	function registerForce(RuntimeForce force)
+		forces[forceCount] = force
+		forceCount++
+	function registerTradition(TraditionState state)
+		traditions[traditionCount] = state
+		traditionCount++
+	function registerSettlement(SettlementRuntimeState state)
+		settlements[settlementCount] = state
+		settlementCount++
+		registerForce(new RuntimeForce("core:" + state.id, state.controllerId, state.regionId, "siege", FORCE_CITY_CORE, state.coreTypeId, 100, state.supply, state.x, state.y))
+	function appoint(string settlementId, AdministratorState administrator) returns string
+		let settlement = settlementIndex(settlementId)
+		if settlement < 0 or settlements[settlement].controllerId != administrator.controllerId
+			return "The candidate lacks authority in that settlement."
+		let current = administratorIndex(settlementId)
+		if current >= 0
+			let old = administrators[current]
+			if old.characterId == administrator.characterId
+				return "That administrator already holds this office."
+			if not old.oathbound
+				old.loyalty = old.loyalty - 5
+			administrators[current] = administrator
+		else
+			administratorSettlementIds[administratorCount] = settlementId
+			administrators[administratorCount] = administrator
+			administratorCount++
+		return "Administrator appointed."
+	function replacementWarning(string settlementId) returns string
+		let found = administratorIndex(settlementId)
+		if found >= 0 and administrators[found].loyalty < 30
+			return "Warning: replacement may trigger refusal, defection, mutiny, or rebellion."
+		return ""
+	function setWar(string first, string second, boolean active)
+		if active
+			warAttackers[warCount] = first
+			warDefenders[warCount] = second
+			warCount++
+		else
+			for i = 0 to warCount - 1
+				if (warAttackers[i] == first and warDefenders[i] == second) or (warAttackers[i] == second and warDefenders[i] == first)
+					warAttackers[i] = ""
+					warDefenders[i] = ""
+	function atWar(string first, string second) returns boolean
+		for i = 0 to warCount - 1
+			if (warAttackers[i] == first and warDefenders[i] == second) or (warAttackers[i] == second and warDefenders[i] == first)
+				return true
+		return false
+	function traditionLifePermille(RuntimeForce force) returns int
+		let found = traditionIndex(force.controllerId, force.categoryId)
+		if found < 0
+			return 0
+		return traditions[found].experience * traditions[found].lifePermillePerHundredXp div 100
+	function traditionAbility(RuntimeForce force) returns int
+		let found = traditionIndex(force.controllerId, force.categoryId)
+		if found >= 0 and traditions[found].experience >= traditions[found].milestoneXp
+			return traditions[found].milestoneAbilityId
+		return 0
+	function instantiate(RuntimeForce force)
+		if not force.active or force.regionId != activeRegionId
+			return
+		let localDefense = force.kind == FORCE_GARRISON or force.kind == FORCE_CITY_CORE
+		adapter.createRepresentation(force, adapter.playerForController(force.controllerId, localDefense))
+		adapter.applyTradition(force.id, traditionLifePermille(force), traditionAbility(force))
+	function activateRegion(string regionId)
+		if activeRegionId != ""
+			for i = 0 to forceCount - 1
+				if forces[i].regionId == activeRegionId
+					adapter.removeRepresentation(forces[i].id)
+		activeRegionId = regionId
+		for i = 0 to forceCount - 1
+			instantiate(forces[i])
+	function recruit(RuntimeForce force) returns boolean
+		if force.strength <= 0 or force.supply <= 0 or forceIndex(force.id) >= 0
+			return false
+		registerForce(force)
+		instantiate(force)
+		return true
+	function reinforce(string forceId, int strength, int supplyCost) returns boolean
+		let found = forceIndex(forceId)
+		if found < 0 or strength <= 0 or supplyCost < 0 or forces[found].supply < supplyCost
+			return false
+		forces[found].supply = forces[found].supply - supplyCost
+		forces[found].strength = IMinBJ(forces[found].maximumStrength, forces[found].strength + strength)
+		return true
+	function recordLoss(string forceId, int loss)
+		let found = forceIndex(forceId)
+		if found < 0 or loss <= 0
+			return
+		forces[found].strength = IMaxBJ(0, forces[found].strength - loss)
+		if forces[found].strength == 0
+			forces[found].active = false
+			adapter.removeRepresentation(forceId)
+	function transferControl(string forceId, string controllerId)
+		let found = forceIndex(forceId)
+		if found >= 0
+			forces[found].controllerId = controllerId
+			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, false))
+			adapter.applyTradition(forceId, traditionLifePermille(forces[found]), traditionAbility(forces[found]))
+	function awardTradition(string controllerId, string categoryId, int experience)
+		let found = traditionIndex(controllerId, categoryId)
+		if found < 0 or experience <= 0
+			return
+		traditions[found].experience = traditions[found].experience + experience
+		for i = 0 to forceCount - 1
+			if forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and forces[i].regionId == activeRegionId
+				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
+	function beginSettlementAttack(string settlementId, string attackerId, real now) returns boolean
+		let found = settlementIndex(settlementId)
+		if found < 0 or now < settlements[found].captureImmuneUntil or not atWar(attackerId, settlements[found].controllerId)
+			return false
+		let state = settlements[found]
+		state.underAttack = true
+		state.lastCombatAt = now
+		state.nextWaveAt = now
+		return true
+	function spawnGarrisonWave(SettlementRuntimeState state, real now)
+		let available = IMinBJ(state.waveSize, IMinBJ(state.garrisonStrength, IMinBJ(state.reserves, IMinBJ(state.manpower, state.supply))))
+		if available <= 0
+			return
+		state.reserves = state.reserves - available
+		state.manpower = state.manpower - available
+		state.supply = state.supply - available
+		let waveId = "garrison:" + state.id + ":" + R2I(now).toString()
+		registerForce(new RuntimeForce(waveId, state.controllerId, state.regionId, "infantry", FORCE_GARRISON, state.defenderTypeId, available, available, state.x + 96., state.y))
+		instantiate(forces[forceCount - 1])
+		state.nextWaveAt = now + state.reinforcementInterval
+	function tick(real now)
+		for i = 0 to settlementCount - 1
+			let state = settlements[i]
+			if state.underAttack and now >= state.nextWaveAt
+				spawnGarrisonWave(state, now)
+			if state.underAttack and now - state.lastCombatAt >= state.quietPeriod
+				state.underAttack = false
+				for j = 0 to forceCount - 1
+					if forces[j].kind == FORCE_GARRISON and hasPrefix(forces[j].id, "garrison:" + state.id + ":")
+						adapter.removeRepresentation(forces[j].id)
+	function recordGarrisonLoss(string settlementId, string forceId, int loss, real now)
+		let found = settlementIndex(settlementId)
+		if found < 0
+			return
+		settlements[found].lastCombatAt = now
+		settlements[found].garrisonStrength = IMaxBJ(0, settlements[found].garrisonStrength - loss)
+		recordLoss(forceId, loss)
+	function replenishGarrison(string settlementId, int amount, int manpowerCost, int supplyCost) returns boolean
+		let found = settlementIndex(settlementId)
+		if found < 0 or settlements[found].underAttack or amount <= 0 or settlements[found].manpower < manpowerCost or settlements[found].supply < supplyCost
+			return false
+		let state = settlements[found]
+		state.manpower = state.manpower - manpowerCost
+		state.supply = state.supply - supplyCost
+		state.garrisonStrength = IMinBJ(state.garrisonMaximum, state.garrisonStrength + amount)
+		state.reserves = state.reserves + amount
+		return true
+	function capture(string settlementId, string attackerId, real now) returns boolean
+		let found = settlementIndex(settlementId)
+		if found < 0
+			return false
+		let state = settlements[found]
+		if now < state.captureImmuneUntil or not atWar(attackerId, state.controllerId)
+			return false
+		// Cleanup all old local military representations before rebuilding the core.
+		for i = 0 to forceCount - 1
+			if forces[i].id == "core:" + settlementId or hasPrefix(forces[i].id, "garrison:" + settlementId + ":") or hasPrefix(forces[i].id, "defense:" + settlementId + ":")
+				forces[i].active = false
+				adapter.removeRepresentation(forces[i].id)
+		state.controllerId = attackerId
+		state.captureImmuneUntil = now + CITY_CAPTURE_IMMUNITY_SECONDS
+		state.underAttack = false
+		state.garrisonStrength = 0
+		state.reserves = 0
+		let core = forces[forceIndex("core:" + settlementId)]
+		core.controllerId = attackerId
+		core.active = true
+		instantiate(core)
+		adapter.protectRepresentation(core.id, true)
+		// Pre-authored defense records retain their exact type and coordinates.
+		for i = 0 to forceCount - 1
+			if hasPrefix(forces[i].id, "defense:" + settlementId + ":")
+				forces[i].controllerId = attackerId
+				forces[i].active = true
+				instantiate(forces[i])
+				adapter.protectRepresentation(forces[i].id, true)
+		return true
+	function releaseCaptureProtection(real now)
+		for i = 0 to settlementCount - 1
+			if settlements[i].captureImmuneUntil > 0. and now >= settlements[i].captureImmuneUntil
+				adapter.protectRepresentation("core:" + settlements[i].id, false)
+				for j = 0 to forceCount - 1
+					if hasPrefix(forces[j].id, "defense:" + settlements[i].id + ":")
+						adapter.protectRepresentation(forces[j].id, false)
+				settlements[i].captureImmuneUntil = 0.
+	function managementSummary(string subjectId) returns string
+		let f = forceIndex(subjectId)
+		if f >= 0
+			let force = forces[f]
+			return "Controller: " + force.controllerId + " | Strength: " + force.strength.toString() + "/" + force.maximumStrength.toString() + " | Supply: " + force.supply.toString() + " | Region: " + force.regionId
+		let s = settlementIndex(subjectId)
+		if s >= 0
+			let state = settlements[s]
+			var result = "Controller: " + state.controllerId + " | Garrison: " + state.garrisonStrength.toString() + "/" + state.garrisonMaximum.toString() + " | Reserves: " + state.reserves.toString() + " | Manpower: " + state.manpower.toString() + " | Supply: " + state.supply.toString()
+			let a = administratorIndex(subjectId)
+			if a >= 0
+				let office = administrators[a]
+				result += "\n" + office.title + ": " + office.name + " | Loyalty: " + office.loyalty.toString() + " | Administration: " + office.administration.toString() + " | Command: " + office.command.toString() + " | Capacity: " + office.capacity.toString() + " | Jurisdiction: " + office.jurisdiction + " | Residence: " + office.physicalRegionId
+				if office.physicalRegionId != state.regionId
+					result += " (absent; represented by a local deputy)"
+				let warning = replacementWarning(subjectId)
+				if warning != ""
+					result += "\n" + warning
+			return result
+		return "No authoritative army, fleet, or settlement has that identifier."
+
+public MilitarySettlementRuntime militarySettlementRuntime = new MilitarySettlementRuntime(new WarcraftMilitarySettlementAdapter())
+ModalManagementScreen activeMilitaryManagementScreen = null
+
+public class MilitaryManagementCommand implements CommandHandler
+	MilitarySettlementRuntime runtime
+	construct(MilitarySettlementRuntime runtime)
+		this.runtime = runtime
+	override function execute(player sender, string arguments)
+		if activeMilitaryManagementScreen == null or not activeMilitaryManagementScreen.isOpen()
+			activeMilitaryManagementScreen = openModalManagementScreen()
+		runtime.adapter.showManagement(sender, "Campaign management: " + arguments, runtime.managementSummary(arguments))
+
+public class CloseMilitaryManagementCommand implements CommandHandler
+	override function execute(player sender, string arguments)
+		if activeMilitaryManagementScreen != null
+			activeMilitaryManagementScreen.close()
+			activeMilitaryManagementScreen = null
+
+public function registerMilitarySettlementCommands(CommandRegistry commands, MilitarySettlementRuntime runtime)
+	commands.register("army", "fleet,settlement,administration", "army ID", "Open army, fleet, settlement, or administration management.", "Shows authoritative strength, supply, garrison, control, office effects, loyalty, jurisdiction, capacity, residence, and replacement warnings.", 1, 1, COMMAND_RELEASE, new MilitaryManagementCommand(runtime))
+	commands.register("management-close", "", "management-close", "Close management and resume the campaign.", "Closes the current modal military/settlement screen.", 0, 0, COMMAND_RELEASE, new CloseMilitaryManagementCommand())
+
+public function initializeMilitarySettlementRuntime(CommandRegistry commands)
+	registerMilitarySettlementCommands(commands, militarySettlementRuntime)

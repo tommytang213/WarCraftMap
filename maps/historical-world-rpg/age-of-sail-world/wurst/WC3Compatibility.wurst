@@ -129,6 +129,14 @@ public function compatGetUnitMaxLife(unit target) returns int
 	return BlzGetUnitMaxHP(target)
 public function compatSetUnitMaxLife(unit target, int life)
 	BlzSetUnitMaxHP(target, life)
+public function compatSetUnitOwner(unit target, player owner, boolean changeColor)
+	SetUnitOwner(target, owner, changeColor)
+public function compatSetUnitInvulnerable(unit target, boolean protected)
+	SetUnitInvulnerable(target, protected)
+public function compatAddUnitAbility(unit target, int abilityId)
+	UnitAddAbility(target, abilityId)
+public function compatRemoveUnitAbility(unit target, int abilityId)
+	UnitRemoveAbility(target, abilityId)
 public function compatGetUnitCollisionSize(unit target) returns real
 	return BlzGetUnitCollisionSize(target)
 
