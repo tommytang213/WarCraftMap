@@ -45,6 +45,7 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
     stat_signatures = {}
     allowed_provenance = {"generic","regional","cultural","polity","profession","quest","set_piece","historical","legendary"}
     allowed_categories = {"equipment","consumable","tool","book_map","artifact"}
+    unique_identities = set()
     for item_id, item in items.items():
         required = ("name","category","itemLevel","rarityId","provenance","unique","requirements","enhancement","merchant","comparison")
         if any(k not in item for k in required): raise PlayerItemError(f"item {item_id}: missing release-scale field")
@@ -54,6 +55,10 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
         if item["provenance"].get("kind") not in allowed_provenance: raise PlayerItemError(f"item {item_id}: invalid provenance")
         if not isinstance(item["unique"], bool): raise PlayerItemError(f"item {item_id}: unique must be boolean")
         if item["unique"] and not item["provenance"].get("identityId"): raise PlayerItemError(f"item {item_id}: unique item needs identityId")
+        if item["unique"]:
+            identity = item["provenance"]["identityId"]
+            if identity in unique_identities: raise PlayerItemError(f"item {item_id}: duplicate unique identity {identity}")
+            unique_identities.add(identity)
         req=item["requirements"]
         if req.get("startYear",1450)>req.get("endYear",1820): raise PlayerItemError(f"item {item_id}: invalid era")
         enh=item["enhancement"]
@@ -74,6 +79,8 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
         stat_signatures[signature]=item_id
         for effect_id in comparison.get("effectIds",[]):
             if effect_id not in effects: raise PlayerItemError(f"item {item_id}: unknown effect {effect_id}")
+        for conditional in comparison.get("conditionalEffects",[]):
+            if conditional.get("id") not in effects: raise PlayerItemError(f"item {item_id}: unknown conditional effect")
         set_id=comparison.get("setId")
         if set_id and set_id not in sets: raise PlayerItemError(f"item {item_id}: unknown set {set_id}")
         for evidence_id in item.get("evidenceIds",[]):
@@ -113,7 +120,7 @@ def _available(item, archetype_id, context):
     if not req.get("startYear",1450)<=year<=req.get("endYear",1820): return False
     for key,ctx in (("technologyIds","technologyIds"),("institutionIds","institutionIds"),("eventFlagIds","eventFlagIds"),("questFlagIds","questFlagIds")):
         if not set(req.get(key,[])) <= set(context.get(ctx,[])): return False
-    for key,ctx in (("regionIds","regionId"),("cultureIds","cultureId"),("controllerIds","controllerId")):
+    for key,ctx in (("regionIds","regionId"),("cultureIds","cultureId"),("controllerIds","controllerId"),("settlementIds","settlementId")):
         if req.get(key) and context.get(ctx) not in req[key]: return False
     local=item["merchant"].get("localProductionAny",[])
     if local and not set(local)&set(context.get("localProductionIds",[])): return False
@@ -231,3 +238,13 @@ def transact_sale(stock, inventory, unique_owners, data, *, item_type_id, owner_
     owners=dict(unique_owners)
     if item["unique"]: owners[item["provenance"]["identityId"]]=f"merchant:{owner_id}"
     return {"stock":tuple(sorted(new_stock,key=lambda x:x.item_type_id)),"inventory":tuple(new_inventory),"uniqueOwners":owners,"fundsMinor":funds_minor+price_minor}
+
+
+def transact_consume(inventory, data, *, item_type_id):
+    """Atomically consume one player-use item and expose its authored effects."""
+    items=_ids(data["items"],"items"); item=items.get(item_type_id)
+    if not item or item["category"] != "consumable": raise PlayerItemError("item is not consumable")
+    if item_type_id not in inventory: raise PlayerItemError("consumer does not own item")
+    result=list(inventory); result.remove(item_type_id)
+    return {"inventory":tuple(result),"effectIds":tuple(item["comparison"].get("effectIds",[])),
+            "majorStats":dict(item["comparison"].get("majorStats",{}))}
