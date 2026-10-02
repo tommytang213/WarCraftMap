@@ -1,0 +1,40 @@
+{
+  "format": "warcraftmap_hero_progression_v1",
+  "levelCap": 300,
+  "growth": {"skillPointEveryLevels": 1, "choicePointEveryLevels": 10, "masteryPointEveryLevels": 5},
+  "startingProgressionPolicy": {"basis": ["campaign_date", "career_stage", "reputation", "role", "campaign_state"], "minimumAccomplishedLevel": 20, "lateEraScale": 0.22},
+  "respec": {"supported": false, "reason": "Scenario does not currently expose respecialization; invalid rewrites are rejected atomically."},
+  "experienceSources": [
+    {"id":"combat_participation","kind":"combat","baseAward":120}, {"id":"command_victory","kind":"command","baseAward":220},
+    {"id":"quest_completion","kind":"quest","baseAward":400}, {"id":"office_service","kind":"office","baseAward":80},
+    {"id":"charted_discovery","kind":"exploration","baseAward":180}, {"id":"treaty_concluded","kind":"diplomacy","baseAward":160},
+    {"id":"masterwork_completed","kind":"craft","baseAward":150}, {"id":"historical_event_resolved","kind":"event","baseAward":300}
+  ],
+  "skills": [
+    {"id":"command","name":"Command"},{"id":"navigation","name":"Navigation"},{"id":"diplomacy","name":"Diplomacy"},
+    {"id":"administration","name":"Administration"},{"id":"engineering","name":"Engineering"},{"id":"scholarship","name":"Scholarship"},{"id":"commerce","name":"Commerce"}
+  ],
+  "masteries": [
+    {"id":"land_warfare","name":"Land Warfare"},{"id":"sea_command","name":"Sea Command"},{"id":"statecraft","name":"Statecraft"},
+    {"id":"wayfinding","name":"Wayfinding"},{"id":"learned_arts","name":"Learned Arts"},{"id":"enterprise","name":"Enterprise"}
+  ],
+  "abilities": [
+    {"id":"rally_company","name":"Rally Company"},{"id":"coordinated_broadside","name":"Coordinated Broadside"},
+    {"id":"governors_council","name":"Governor's Council"},{"id":"far_horizon","name":"Far Horizon"},
+    {"id":"practical_genius","name":"Practical Genius"},{"id":"trusted_intercessor","name":"Trusted Intercessor"}
+  ],
+  "perks": [
+    {"id":"martial_initiate","abilityId":"rally_company","minimumLevel":10,"prerequisitePerkIds":[]},
+    {"id":"martial_veteran","abilityId":"coordinated_broadside","minimumLevel":30,"prerequisitePerkIds":["martial_initiate"]},
+    {"id":"civic_initiate","abilityId":"governors_council","minimumLevel":10,"prerequisitePerkIds":[]},
+    {"id":"civic_veteran","abilityId":"trusted_intercessor","minimumLevel":30,"prerequisitePerkIds":["civic_initiate"]},
+    {"id":"discovery_initiate","abilityId":"far_horizon","minimumLevel":10,"prerequisitePerkIds":[]},
+    {"id":"discovery_veteran","abilityId":"practical_genius","minimumLevel":30,"prerequisitePerkIds":["discovery_initiate"]}
+  ],
+  "personalTrees": [
+    {"id":"martial_signature","perkIds":["martial_initiate","martial_veteran"]},
+    {"id":"civic_signature","perkIds":["civic_initiate","civic_veteran"]},
+    {"id":"discovery_signature","perkIds":["discovery_initiate","discovery_veteran"]}
+  ],
+  "characterProfiles": []
+}
