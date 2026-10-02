@@ -50,6 +50,14 @@ quest actually improves that actor. Unique historical items and major permanent
 strategic rewards remain explicitly authored and cannot leak into generic random
 reward tables.
 
+`local-random-quests.json` is the authoritative family and variant catalogue.
+The scenario-neutral local quest runtime persists selected instances under
+`localQuestState`; noticeboards, journal entries, and map transitions are derived
+views and cannot reroll them. Run `python3 tooling/local_quest_coverage.py` to
+validate deterministic starting allocations and regenerate the separate density
+report. Legacy saves acquire an initial allocation through the runtime save
+adapter without changing existing campaign authority.
+
 Planned data domains:
 
 - polities
