@@ -150,7 +150,7 @@ Status: complete. All Phase 6 integration gates are recorded in the deterministi
 
 The first serious player test target: a substantially complete game intended to be played normally rather than as feature-by-feature QA. Phase 8 is a substantial content-completion pass, not merely final polish of the Phase 5 first-pass catalogues.
 
-- [ ] Full content pass
+- [x] Full content pass
   - [x] Expand the land-unit roster into layered common, regional/cultural, polity-specific, era/technology, and elite/unique content with meaningful upgrade/replacement progression.
   - [x] Expand the naval roster with regional ship families, polity-specific vessels, merchant/transport/warship roles, era/technology progression, and meaningful variants built on reusable hull/runtime families.
   - [x] Implement settlement administration and political-office appointments, including deterministic culturally appropriate minor officials, player appointments, administrative capacity, loyalty consequences, and office/history persistence.
@@ -168,7 +168,7 @@ The first serious player test target: a substantially complete game intended to 
   - [x] Expand historical/conditional event breadth toward roughly 200-300 authored events with dynamic world-state-driven event instances.
   - [x] Expand world quest density toward roughly 400-600 authored campaign/regional/personal/polity/event-linked quests/chains plus a separate release-scale settlement-local random side-quest catalogue. Every ordinary playable settlement should normally expose at least one local random quest at campaign start, with more simultaneous opportunities in larger/wealthier/more connected cities; selection, persistence, rewards, and anti-farming rules follow the locked settlement-local quest design.
   - [x] Expand player-facing land/naval military breadth toward roughly 350-500+ meaningful types/variants while preserving shared runtime templates where appropriate.
-  - [ ] Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass.
+  - [x] Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass.
 - [x] Release save compatibility
 - [x] No known campaign-blocking defects
 - [x] Recovery tooling documented

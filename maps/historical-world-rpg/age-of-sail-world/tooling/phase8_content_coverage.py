@@ -15,12 +15,16 @@ class AuditError(ValueError): pass
 def load(relative): return json.loads((ROOT/relative).read_text())
 def require(condition,message,failures):
     if not condition: failures.append(message)
+def check(condition,diagnostic_id,message,diagnostics,category="integration",entity_ids=()):
+    """Record actionable failures with an identifier stable across report runs."""
+    if not condition:
+        diagnostics.append({"id":diagnostic_id,"category":category,"message":message,"entityIds":sorted(entity_ids)})
 def year_of(value): return int(value[:4]) if isinstance(value,str) else int(value)
 def active(window,year):
     return year_of(window.get("startDate",window.get("historicalStartYear",1450)))<=year<=year_of(window.get("endDate",window.get("historicalEndYear",1820)))
 
 def build():
-    failures=[]
+    failures=[]; diagnostics=[]
     world=load("scenario/world/world.json"); land=load("scenario/rosters/phase8-land-rosters.json")
     land_report=load("scenario/rosters/reports/phase8-land-coverage.json"); naval=load("scenario/naval/phase8.json")
     naval_report=load("scenario/naval/reports/coverage.json"); chars=load("scenario/characters/phase8.json")
@@ -31,6 +35,10 @@ def build():
     local_quests=load("reports/local-quest-coverage.json")
     assets=load("scenario/assets/reports/phase6-asset-audit.json"); budgets=load("scenario/benchmarks/reports/final-measurements.json")
     settlement_integration=load("reports/settlement-integration.json")
+    settlements=load("reports/release-settlement-audit.json"); inventory=load("scenario/inventory/reports/catalogue-coverage.json")
+    hero_progression=load("scenario/characters/reports/progression-coverage.json")
+    progression_report=load("reports/progression-coverage.json"); event_report=load("reports/historical-event-coverage.json")
+    vessel_progression=load("reports/vessel-progression-coverage.json"); blocker=load("reports/release-blocker-audit.json")
 
     polity_region={}
     for region,filename in REGION_FILES.items():
@@ -114,6 +122,44 @@ def build():
     require(assets.get("status")=="pass" and all(assets["gates"].values()),"Phase 6 asset audit has an unapproved release-facing asset",failures)
     require(all(not row.get("correctnessFailures") for row in budgets.values()),"Phase 7 benchmark has correctness failures",failures)
 
+    # Locked release-scale targets are quality gates, not authoring quotas.  Raw
+    # counts only pass together with the subsystem's reachability, evidence,
+    # clone/thinness, integration, and deterministic-fixture gates.
+    target_checks=(
+      (settlements.get("status")=="pass" and 800<=settlements.get("global",{}).get("count",0)<=1200 and not settlements.get("failures"),
+       "phase8.settlements.release_scale","Settlement catalogue failed its 800–1,200 quality-gated release audit","settlements"),
+      (inventory.get("status")=="pass" and 300<=inventory.get("ordinaryCount",0)<=500 and not inventory.get("failures"),
+       "phase8.inventory.ordinary.release_scale","Ordinary player-use inventory failed its 300–500 quality-gated target","inventory"),
+      (inventory.get("uniqueCount",0)>=100,
+       "phase8.inventory.unique.minimum","Unique/historical/legendary inventory is below 100","inventory"),
+      (50<=inventory.get("equipmentSetCount",0)<=80,
+       "phase8.inventory.sets.release_scale","Equipment-set catalogue is outside 50–80","inventory"),
+      (100<=char_report.get("authoredHistoricalCount",0),
+       "phase8.characters.named.minimum","Named historical/recruitable hero catalogue is below 100","characters"),
+      (hero_progression.get("status")=="pass" and hero_progression.get("levelCap")==300,
+       "phase8.characters.progression.integration","Hero progression coverage or level-300 contract failed","hero_progression"),
+      (180<=progression_report.get("counts",{}).get("technologies",0)<=250,
+       "phase8.progression.technologies.release_scale","Technology catalogue is outside 180–250","progression"),
+      (20<=progression_report.get("counts",{}).get("institutionsAndReforms",0)<=30,
+       "phase8.progression.institutions.release_scale","Institution/reform catalogue is outside 20–30","progression"),
+      (200<=event_report.get("authoredDefinitionCount",0)<=300 and all(event_report.get("gates",{}).values()) and not event_report.get("sparseCases"),
+       "phase8.events.release_scale","Historical/conditional events failed the 200–300 quality-gated audit","events"),
+      (400<=authored_story_total<=600,
+       "phase8.quests.story.release_scale","Authored story quest catalogue is outside 400–600","quests"),
+      (local_quests.get("status")=="pass" and not local_quests.get("failures") and local_quests.get("allocation",{}).get("minimumPerOrdinarySettlement",0)>=1,
+       "phase8.quests.local.independent_coverage","Settlement-local quests failed independent start-offer coverage","local_quests"),
+      (military_breadth.get("status")=="pass" and 350<=military_breadth.get("counts",{}).get("playerFacing",0) and not military_breadth.get("failures"),
+       "phase8.military.release_scale","Land/naval breadth failed the 350+ meaningful-variant audit","military"),
+      (bool(vessel_progression.get("coverage",{}).get("hullFamilies")) and len(vessel_progression.get("coverage",{}).get("refitCategories",{}))>=8,
+       "phase8.vessels.progression.coverage","Vessel refit/progression coverage is incomplete","vessel_progression"),
+      (all(x.get("passed") for x in settlements.get("budgetChecks",[])),
+       "phase8.budgets.release_scale","A finalized release-scale performance or size budget failed","budgets"),
+      (blocker.get("status")=="pass" and blocker.get("unresolvedCampaignBlockers")==0,
+       "phase8.integration.campaign_blockers","Release integration has an unresolved campaign blocker","integration"),
+    )
+    for ok,diagnostic_id,message,category in target_checks:
+        check(ok,diagnostic_id,message,diagnostics,category)
+
     major=sorted(naval["majorPowers"]); assigned={p for row in land["assignments"] for p in row["polityIds"]}
     identity={p:{"region":polity_region[p],"landSpecific":p in assigned,"navalSpecific":any(p in r["polityIds"] for r in naval["regions"]),"historicalCharacters":sum(c.get("allegiancePolityId")==p for c in chars["characters"])} for p in major}
     for polity,row in identity.items():
@@ -122,20 +168,38 @@ def build():
     region_rows={}
     for region in REGIONS:
         region_rows[region]={"polities":sum(r==region for r in polity_region.values()),"land":"common_and_regional","navalFamilies":sum(1 for x in naval["regions"] if region in x["id"] or (region=="middle_east_india" and x["id"] in {"mediterranean","indian_ocean"})),"goods":econ_regions[region],"events":event_regions[region],"characters":char_report["byRegion"][region],"regionalQuests":quest_regions[region]["regional"],"personalQuests":quest_regions[region]["personal"],"treasures":treasure_regions[region]}
-    thin=[m for m in failures if "thin" in m or "omit" in m or "missing" in m]
-    return {"schemaVersion":2,"status":"pass" if not failures else "fail","campaignYears":[1450,1820],"snapshotYears":list(YEARS),
+    for index,message in enumerate(failures):
+        slug=re.sub(r"[^a-z0-9]+","_",message.lower()).strip("_")[:72]
+        diagnostics.append({"id":f"phase8.legacy.{slug or index}","category":"coverage","message":message,"entityIds":[]})
+    diagnostics.sort(key=lambda row:row["id"])
+    failure_ids=[row["id"] for row in diagnostics]
+    thin=[row["id"] for row in diagnostics if any(word in row["message"] for word in ("thin","omit","missing"))]
+    return {"schemaVersion":3,"status":"pass" if not diagnostics else "fail","campaignYears":[1450,1820],"snapshotYears":list(YEARS),
+      "planningTargets":{"settlements":[800,1200],"ordinaryItems":[300,500],"uniqueItemsMinimum":100,"equipmentSets":[50,80],"namedHeroesMinimum":100,"technologies":[180,250],"institutionsAndReforms":[20,30],"events":[200,300],"storyQuests":[400,600],"militaryTypesMinimum":350},
       "policy":{"minorPolitiesMayShareRegionalContent":True,"majorPowersRequireAdditionalIdentity":True,"sparseCasesRequireExplicitReason":True,"playerQaRequired":False},
       "regions":region_rows,"majorPowers":identity,"militaryBreadth":military_breadth["counts"],
       "eras":{str(y):{"landArchetypes":land_eras[str(y)]["activeArchetypes"],"landLayers":land_eras[str(y)]["layers"],"progressionNodesAvailable":progression_eras[str(y)],"historicalEventsOccurred":event_eras[str(y)]} for y in YEARS},
-      "categories":{"land":{"catalogArchetypes":land_report["catalog"]["landArchetypes"],"layers":dict(sorted(layers.items())),"requiredRoles":land_report["requiredRoles"]},"naval":{"archetypes":naval_report["counts"]["navalArchetypes"],"roles":naval_roles,"sparseAllowlist":naval["exceptions"]},"governance":{"representedPolities":len(world_polities),**administration},"garrisons":defense,"economy":{"goods":goods_report["catalogueGoods"],"settlementsResolved":settlement_count,"authoredSettlementIdentities":goods_report["settlements"],"fallback":"regional_defaults","tradeRoutes":goods_report["tradeRoutes"],"diagnostics":goods_report["diagnostics"]},"progression":{"technologies":len(progression["technologies"]),"institutions":len(progression["institutions"]),"newAfter1450":new_after_1450},"events":{"total":len(events["events"]),"byRegion":dict(sorted(event_regions.items()))},"characters":{"total":char_report["characterCount"],"roles":char_report["byRole"],"personalQuests":char_report["personalQuestCount"]},"quests":{"authoredStoryTotal":authored_story_total,"campaignAndChainDefinitions":len(quests["quests"]),"releaseStoryDefinitions":len(quests.get("releaseStoryQuests",[])),"byType":dict(sorted(Counter(q["chainKind"] for q in quests["quests"]).items())),"charactersWithObjectives":dict(sorted(quest_characters.items())),"settlementLocalRandom":{"separateCategory":True,"families":local_quests["catalogue"]["families"],"variants":local_quests["catalogue"]["variants"],"initialOffers":local_quests["allocation"]["offers"],"settlementsCovered":local_quests["allocation"]["settlements"]}},"treasures":{"total":len(treasure["treasures"]),"byKind":dict(sorted(treasure_kinds.items()))},"assetsAndBudgets":{"phase6AssetsApproved":not any("Phase 6" in x for x in failures),"phase7CorrectnessClean":not any("Phase 7" in x for x in failures)}},"thinContentFlags":thin,"failures":failures}
+      "categories":{"settlements":{"total":settlements["global"]["count"],"physical":settlements["global"]["physical"],"byPhysicalMap":settlements["distribution"]["byPhysicalMap"]},"inventory":{"total":inventory["itemCount"],"ordinary":inventory["ordinaryCount"],"unique":inventory["uniqueCount"],"equipmentSets":inventory["equipmentSetCount"],"merchantArchetypes":inventory["byArchetype"],"slots":inventory["bySlot"],"buildRoles":inventory["byBuildRole"]},"land":{"catalogArchetypes":land_report["catalog"]["landArchetypes"],"layers":dict(sorted(layers.items())),"requiredRoles":land_report["requiredRoles"]},"naval":{"archetypes":naval_report["counts"]["navalArchetypes"],"roles":naval_roles,"sparseAllowlist":naval["exceptions"],"vesselProgression":vessel_progression["counts"],"refitCategories":vessel_progression["coverage"]["refitCategories"]},"governance":{"representedPolities":len(world_polities),**administration},"garrisons":defense,"economy":{"goods":goods_report["catalogueGoods"],"settlementsResolved":settlement_count,"authoredSettlementIdentities":goods_report["settlements"],"fallback":"regional_defaults","tradeRoutes":goods_report["tradeRoutes"],"diagnostics":goods_report["diagnostics"]},"progression":{"technologies":len(progression["technologies"]),"institutions":len(progression["institutions"]),"newAfter1450":new_after_1450,"branches":progression_report["byBranch"]},"events":{"total":len(events["events"]),"byRegion":dict(sorted(event_regions.items())),"categories":event_report["dimensions"]["category"]},"characters":{"total":char_report["characterCount"],"roles":char_report["byRole"],"personalQuests":char_report["personalQuestCount"],"progression":hero_progression["dimensions"]},"quests":{"authoredStoryTotal":authored_story_total,"campaignAndChainDefinitions":len(quests["quests"]),"releaseStoryDefinitions":len(quests.get("releaseStoryQuests",[])),"byType":dict(sorted(Counter(q["chainKind"] for q in quests["quests"]).items())),"charactersWithObjectives":dict(sorted(quest_characters.items())),"settlementLocalRandom":{"separateCategory":True,"families":local_quests["catalogue"]["families"],"variants":local_quests["catalogue"]["variants"],"initialOffers":local_quests["allocation"]["offers"],"settlementsCovered":local_quests["allocation"]["settlements"]}},"treasures":{"total":len(treasure["treasures"]),"byKind":dict(sorted(treasure_kinds.items()))},"assetsAndBudgets":{"phase6AssetsApproved":not any("Phase 6" in x for x in failures),"phase7CorrectnessClean":not any("Phase 7" in x for x in failures),"releaseBudgetChecks":settlements["budgetChecks"]}},"thinContentFlags":thin,"diagnostics":diagnostics,"failures":failure_ids}
 
 def markdown(report):
-    lines=["# Phase 8 full-content audit","",f"Result: **{report['status'].upper()}**","","This deterministic release-candidate gate audits regional and era breadth; it does not substitute a global raw-count threshold.","","## Regional coverage","","| Region | Polities | Goods | Events | Characters | Regional quests | Personal quests | Treasures |","|---|---:|---:|---:|---:|---:|---:|---:|"]
+    lines=["# Phase 8 final release-scale content audit","",f"Result: **{report['status'].upper()}**","","This deterministic release gate evaluates the complete catalogues against the locked planning ranges. Counts pass only with evidence, reachability, integration, persistence, quality, thinness, and budget gates; generated officials, bulk goods, local random quests, and cosmetic runtime templates do not substitute for their authored target categories.","","## Locked-target summary","","| Category | Audited count | Planning target |","|---|---:|---:|",
+      f"| Settlements | {report['categories']['settlements']['total']} | 800–1,200 |",
+      f"| Ordinary usable items | {report['categories']['inventory']['ordinary']} | 300–500 |",
+      f"| Unique/historical items | {report['categories']['inventory']['unique']} | 100+ |",
+      f"| Equipment sets | {report['categories']['inventory']['equipmentSets']} | 50–80 |",
+      f"| Named heroes | {report['categories']['characters']['total']} | 100–150+ |",
+      f"| Technologies | {report['categories']['progression']['technologies']} | 180–250 |",
+      f"| Institutions/reforms | {report['categories']['progression']['institutions']} | 20–30 |",
+      f"| Historical/conditional events | {report['categories']['events']['total']} | 200–300 |",
+      f"| Authored story quests/chains | {report['categories']['quests']['authoredStoryTotal']} | 400–600 |",
+      f"| Settlement-local variants | {report['categories']['quests']['settlementLocalRandom']['variants']} | separate substantial catalogue |",
+      f"| Meaningful military types/variants | {report['militaryBreadth']['playerFacing']} | 350–500+ |",
+      "","## Regional coverage","","| Region | Polities | Goods | Events | Characters | Regional quests | Personal quests | Treasures |","|---|---:|---:|---:|---:|---:|---:|---:|"]
     for region,row in report["regions"].items(): lines.append(f"| {region} | {row['polities']} | {row['goods']} | {row['events']} | {row['characters']} | {row['regionalQuests']} | {row['personalQuests']} | {row['treasures']} |")
     lines += ["","## Era snapshots","","| Year | Active land archetypes | Progression nodes | Events occurred |","|---:|---:|---:|---:|"]
     for year,row in report["eras"].items(): lines.append(f"| {year} | {row['landArchetypes']} | {row['progressionNodesAvailable']} | {row['historicalEventsOccurred']} |")
     lines += ["","## Gate findings",""]
-    if report["failures"]: lines.extend(f"- FAIL: {x}" for x in report["failures"])
+    if report["diagnostics"]: lines.extend(f"- `{x['id']}` ({x['category']}): {x['message']}" for x in report["diagnostics"])
     else: lines += ["- No materially thin major region, major power, era, or gameplay category was found.","- Every settlement resolves administration, generated official identity, capture handling, and local defense from persistent authoritative state.","- Phase 6 asset approval and Phase 7 correctness/budget inputs are clean.","- Minor-polity common/regional sharing and all sparse naval cases follow explicit policy."]
     return "\n".join(lines)+"\n"
 

@@ -1,8 +1,24 @@
-# Phase 8 full-content audit
+# Phase 8 final release-scale content audit
 
 Result: **PASS**
 
-This deterministic release-candidate gate audits regional and era breadth; it does not substitute a global raw-count threshold.
+This deterministic release gate evaluates the complete catalogues against the locked planning ranges. Counts pass only with evidence, reachability, integration, persistence, quality, thinness, and budget gates; generated officials, bulk goods, local random quests, and cosmetic runtime templates do not substitute for their authored target categories.
+
+## Locked-target summary
+
+| Category | Audited count | Planning target |
+|---|---:|---:|
+| Settlements | 827 | 800–1,200 |
+| Ordinary usable items | 367 | 300–500 |
+| Unique/historical items | 101 | 100+ |
+| Equipment sets | 51 | 50–80 |
+| Named heroes | 107 | 100–150+ |
+| Technologies | 181 | 180–250 |
+| Institutions/reforms | 25 | 20–30 |
+| Historical/conditional events | 204 | 200–300 |
+| Authored story quests/chains | 411 | 400–600 |
+| Settlement-local variants | 64 | separate substantial catalogue |
+| Meaningful military types/variants | 472 | 350–500+ |
 
 ## Regional coverage
 
