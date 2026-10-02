@@ -12,7 +12,7 @@ class PacificContentTests(unittest.TestCase):
   d=tempfile.TemporaryDirectory(); p=Path(d.name)/"candidate.json"; p.write_text(json.dumps(value)); return d,p
  def test_political_authority_coverage_and_deterministic_projection(self):
   politics=validate_politics(); source,politics,geography,positions=validate(); a=project(source,politics,geography,positions,self.world); b=project(copy.deepcopy(source),politics,geography,positions,self.world)
-  self.assertEqual((24,16,13,15),(len(politics["polities"]),len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]))); self.assertEqual(a,b)
+  self.assertEqual((24,39,20,40),(len(politics["polities"]),len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]))); self.assertEqual(a,b)
   selected={x["id"]:x for x in a["settlements"] if x["id"] in {s["id"] for s in source["settlements"]}}; cores={x["id"] for x in a["cityCores"]}; defenses={x["id"] for x in a["defenseLayouts"]}
   for item in source["settlements"]:
    row=selected[item["id"]]; self.assertEqual(item["physicalMapId"],row["physicalMapId"]); self.assertEqual(item["captureModel"]=="city_core",row["capturable"])
@@ -46,6 +46,6 @@ class PacificContentTests(unittest.TestCase):
   runtime=SettlementRuntime(self.world,RecordingSettlementAdapter()); runtime.activate_region("pacific_west_polynesia"); runtime.update("mua",controllerPolityId="fijian_vanua"); runtime.set_service_available("mua","market",False); runtime.retire_region("pacific_west_polynesia"); runtime.update("mua",kind="fort"); saved=runtime.snapshot(); restored=SettlementRuntime(self.world,RecordingSettlementAdapter()); restored.restore(saved,reconstruct=True)
   self.assertEqual("fijian_vanua",restored.require("mua").controller_polity_id); self.assertEqual("fort",restored.require("mua").kind); self.assertFalse(restored.require("mua").services["market"]); self.assertTrue(restored.require("mua").represented)
  def test_settlement_economies_and_deterministic_market_projection(self):
-  source,_,_,_=validate(); a=update_economy(source,self.economy); self.assertEqual(a,update_economy(copy.deepcopy(source),self.economy)); markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("pac_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("pac_")]; self.assertEqual((16,16),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),12)
+  source,_,_,_=validate(); a=update_economy(source,self.economy); self.assertEqual(a,update_economy(copy.deepcopy(source),self.economy)); markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("pac_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("pac_")]; self.assertEqual((39,39),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),12)
 
 if __name__=="__main__": unittest.main()
