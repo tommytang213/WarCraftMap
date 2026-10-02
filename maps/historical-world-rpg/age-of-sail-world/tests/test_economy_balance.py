@@ -28,6 +28,10 @@ class EconomyBalanceTests(unittest.TestCase):
         self.assertEqual(len(self.cfg["scenarios"])*len(self.cfg["simulationSeeds"]),report["runCount"])
         self.assertEqual(set(eb.REGIONS),set(report["regional"]))
         self.assertEqual(len(self.settlements),len(report["settlements"]))
+        self.assertEqual(
+            ["baseline","accelerated","checkpoint_resumed","cross_map"],
+            report["executionModeProbe"]["modes"],
+        )
         self.assertEqual([],report["outliers"])
         self.assertTrue(all(not value for value in report["diagnostics"].values() if isinstance(value,bool)))
 
