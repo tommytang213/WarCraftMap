@@ -95,7 +95,7 @@ public class PlayableTradeController
 		let proceeds=market.sellUnitPrice*quantity
 		if market.money<proceeds
 			return "Market funds are insufficient."
-		let cost=0
+		var cost=0
 		if carriedQuantity>=quantity
 			cost=carriedCost*quantity div carriedQuantity
 			carriedCost-=cost
@@ -141,4 +141,3 @@ public function buyCargo(player viewer,string transactionId,RuntimeMarket market
 	presentation.showTradeResult(viewer,controller.buy(transactionId,market,store,quantity))
 public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
 	presentation.showTradeResult(viewer,controller.sell(transactionId,market,store,quantity,difficultyPermille))
-
