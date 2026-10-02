@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -101,6 +101,7 @@ class MigrationRegistry:
             self.register(1, _migrate_v1_to_v2)
             self.register(2, _migrate_v2_to_v3)
             self.register(3, _migrate_v3_to_v4)
+            self.register(4, _migrate_v4_to_v5)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -189,6 +190,19 @@ def _migrate_v3_to_v4(document: dict[str, Any]) -> dict[str, Any]:
         "resolved": {}, "knowledge": {}, "collectionCounts": {},
     })
     document["schemaVersion"] = 4
+    return document
+
+
+def _migrate_v4_to_v5(document: dict[str, Any]) -> dict[str, Any]:
+    """Version 5 reserves explicit origin/allegiance onboarding state.
+
+    Legacy saves are intentionally marked for selection; inventing a country
+    from the map they happened to be saved on would privilege bootstrap data.
+    """
+    # Absence is the unambiguous legacy/onboarding marker.  Do not fabricate
+    # empty stable IDs inside arbitrary historical player dictionaries; the
+    # new-campaign service supplies the complete identity atomically.
+    document["schemaVersion"] = 5
     return document
 
 
