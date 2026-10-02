@@ -8,13 +8,13 @@ class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 	string removed = ""
 	string protectedId = ""
 	int tradition = 0
-	int ability = 0
+	int appliedAbility = 0
 	override function playerForController(string controllerId, boolean localDefense) returns player
 		if localDefense
 			return Player(11)
 		return Player(0)
-	override function createRepresentation(RuntimeForce force, player owner) returns unit
-		created += force.id + "|"
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		created += runtimeForce.id + "|"
 		return null
 	override function removeRepresentation(string stableId)
 		removed += stableId + "|"
@@ -22,7 +22,7 @@ class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 		created += "owner:" + stableId + "|"
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		tradition = lifePermille
-		ability = milestoneAbilityId
+		appliedAbility = milestoneAbilityId
 	override function protectRepresentation(string stableId, boolean shouldProtect)
 		if shouldProtect
 			protectedId += stableId + "|"
@@ -51,7 +51,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	army.supply.assertEquals(17)
 	runtime.awardTradition("england", "infantry", 100)
 	adapter.tradition.assertEquals(2)
-	adapter.ability.assertEquals('Adef')
+	adapter.appliedAbility.assertEquals('Adef')
 
 @test function legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity()
 	let adapter = new RecordingMilitaryAdapter()

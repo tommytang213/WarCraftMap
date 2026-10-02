@@ -119,7 +119,7 @@ public class AdministratorState
 
 public interface MilitarySettlementAdapter
 	function playerForController(string controllerId, boolean localDefense) returns player
-	function createRepresentation(RuntimeForce force, player owner) returns unit
+	function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
 	function removeRepresentation(string stableId)
 	function changeRepresentationOwner(string stableId, player owner)
 	function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
@@ -143,12 +143,12 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		if controllerId == "player" and not localDefense
 			return Player(0)
 		return Player(11)
-	override function createRepresentation(RuntimeForce force, player owner) returns unit
-		let made = compatCreateUnit(owner, force.typeId, force.x, force.y, 0.)
-		let found = indexOf(force.id)
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		let made = compatCreateUnit(owner, runtimeForce.typeId, runtimeForce.x, runtimeForce.y, 0.)
+		var found = indexOf(runtimeForce.id)
 		if found < 0
 			found = count
-			ids[count] = force.id
+			ids[count] = runtimeForce.id
 			count++
 		handles[found] = made
 		baseMaximumLife[found] = compatGetUnitMaxLife(made)
@@ -218,8 +218,8 @@ public class MilitarySettlementRuntime
 			if administratorSettlementIds[i] == settlementId
 				return i
 		return -1
-	function registerForce(RuntimeForce force)
-		forces[forceCount] = force
+	function registerForce(RuntimeForce runtimeForce)
+		forces[forceCount] = runtimeForce
 		forceCount++
 	function registerTradition(TraditionState state)
 		traditions[traditionCount] = state
@@ -265,22 +265,22 @@ public class MilitarySettlementRuntime
 			if (warAttackers[i] == first and warDefenders[i] == second) or (warAttackers[i] == second and warDefenders[i] == first)
 				return true
 		return false
-	function traditionLifePermille(RuntimeForce force) returns int
-		let found = traditionIndex(force.controllerId, force.categoryId)
+	function traditionLifePermille(RuntimeForce runtimeForce) returns int
+		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 		if found < 0
 			return 0
 		return traditions[found].experience * traditions[found].lifePermillePerHundredXp div 100
-	function traditionAbility(RuntimeForce force) returns int
-		let found = traditionIndex(force.controllerId, force.categoryId)
+	function traditionAbility(RuntimeForce runtimeForce) returns int
+		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 		if found >= 0 and traditions[found].experience >= traditions[found].milestoneXp
 			return traditions[found].milestoneAbilityId
 		return 0
-	function instantiate(RuntimeForce force)
-		if not force.active or force.regionId != activeRegionId
+	function instantiate(RuntimeForce runtimeForce)
+		if not runtimeForce.active or runtimeForce.regionId != activeRegionId
 			return
-		let localDefense = force.kind == FORCE_GARRISON or force.kind == FORCE_CITY_CORE
-		adapter.createRepresentation(force, adapter.playerForController(force.controllerId, localDefense))
-		adapter.applyTradition(force.id, traditionLifePermille(force), traditionAbility(force))
+		let localDefense = runtimeForce.kind == FORCE_GARRISON or runtimeForce.kind == FORCE_CITY_CORE
+		adapter.createRepresentation(runtimeForce, adapter.playerForController(runtimeForce.controllerId, localDefense))
+		adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 	function activateRegion(string regionId)
 		if activeRegionId != ""
 			for i = 0 to forceCount - 1
@@ -289,11 +289,11 @@ public class MilitarySettlementRuntime
 		activeRegionId = regionId
 		for i = 0 to forceCount - 1
 			instantiate(forces[i])
-	function recruit(RuntimeForce force) returns boolean
-		if force.strength <= 0 or force.supply <= 0 or forceIndex(force.id) >= 0
+	function recruit(RuntimeForce runtimeForce) returns boolean
+		if runtimeForce.strength <= 0 or runtimeForce.supply <= 0 or forceIndex(runtimeForce.id) >= 0
 			return false
-		registerForce(force)
-		instantiate(force)
+		registerForce(runtimeForce)
+		instantiate(runtimeForce)
 		return true
 	function reinforce(string forceId, int strength, int supplyCost) returns boolean
 		let found = forceIndex(forceId)
@@ -412,8 +412,8 @@ public class MilitarySettlementRuntime
 	function managementSummary(string subjectId) returns string
 		let f = forceIndex(subjectId)
 		if f >= 0
-			let force = forces[f]
-			return "Controller: " + force.controllerId + " | Strength: " + force.strength.toString() + "/" + force.maximumStrength.toString() + " | Supply: " + force.supply.toString() + " | Region: " + force.regionId
+			let runtimeForce = forces[f]
+			return "Controller: " + runtimeForce.controllerId + " | Strength: " + runtimeForce.strength.toString() + "/" + runtimeForce.maximumStrength.toString() + " | Supply: " + runtimeForce.supply.toString() + " | Region: " + runtimeForce.regionId
 		let s = settlementIndex(subjectId)
 		if s >= 0
 			let state = settlements[s]
