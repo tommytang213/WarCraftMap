@@ -122,45 +122,37 @@ def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=F
  local_production=flows["localProductionPermille"]*rules["supplyPermille"]; import_replenishment=flows["importReplenishmentPermille"]*rules["routePermille"]
  local_consumption=flows["localConsumptionPermille"]*rules["demandPermille"]; shortage_consumption=flows["shortageConsumptionPermille"]; spoilage_rate=flows["spoilageSinkPermille"]; trade_loss_rate=flows["tradeLossSinkPermille"]
  price_adjustment=finance["priceAdjustmentPermille"]; minimum_price=market["minimumPricePermille"]; maximum_price=market["maximumPricePermille"]; upkeep=finance["upkeepSharePermille"]*rules["upkeepPermille"]//1000; reserve=finance["startingLiquidityDays"]
+ # Hoist authored invariants and the hot state dictionaries out of the
+ # 371-year loop.  Release-scale catalogues execute this body millions of
+ # times, so repeated nested-dict lookups and constant finance arithmetic can
+ # consume the validator's wall-clock budget even though operation counts are
+ # still within the finalized simulation envelope.
+ wage_share=finance["wageSharePermille"]; tax_share=finance["taxSharePermille"]; obligation_share=finance["obligationReservePermille"]
+ stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]; treasury=state["treasury"]
+ prepared_rows=[]
+ for ident in order:
+  p=profiles[ident]; capacity=p["capacityUnits"]
+  prepared_rows.append((ident,capacity,p["startingStockUnits"],bool(p["imports"]),bool(p["shortages"]),bool(settlements[ident].get("port")),noise_bases[ident],capacity*wage_share//1000,capacity*upkeep//2000,capacity*tax_share//1000,capacity*obligation_share//2000))
  for year in range(cfg["campaignYears"]["start"],cfg["campaignYears"]["end"]+1):
-  for ident in order:
-   p=profiles[ident]; previous=state["stock"][ident]; noise=(noise_bases[ident]+year*1103515245)%101-50
-   production=p["capacityUnits"]*local_production*(1000+noise)//1_000_000_000
-   if production<1: production=1
-   imports=p["capacityUnits"]*import_replenishment//1_000_000 if p["imports"] else 0
-   consumption=p["capacityUnits"]*local_consumption//1_000_000
-   if p["shortages"]: consumption=consumption*shortage_consumption//1000
+  year_noise=year*1103515245
+  for ident,capacity,target,has_imports,has_shortages,is_port,noise_base,wages,military,taxes,obligation in prepared_rows:
+   previous=stock[ident]; noise=(noise_base+year_noise)%101-50
+   production=max(1,capacity*local_production*(1000+noise)//1_000_000_000)
+   imports=capacity*import_replenishment//1_000_000 if has_imports else 0
+   consumption=capacity*local_consumption//1_000_000
+   if has_shortages: consumption=consumption*shortage_consumption//1000
    spoilage=previous*spoilage_rate//1000; trade_loss=imports*trade_loss_rate//1000; available=previous+production+imports
-   household=consumption if consumption<available else available; available-=household
-   if spoilage>available: spoilage=available
-   available-=spoilage
-   if trade_loss>available: trade_loss=available
-   available-=trade_loss
-   target=p["startingStockUnits"]; stabilizer=(target-available)//5
-   source_credit=stabilizer if stabilizer>0 else 0; sink_release=-stabilizer if stabilizer<0 else 0
-   unstopped=available+stabilizer; current=unstopped
-   if current>p["capacityUnits"]: current=p["capacityUnits"]
-   floor=target//4
-   if current<floor: current=floor
-   capacity_loss=unstopped-current if unstopped>current else 0
-   state["stock"][ident]=current; pressure=(target-current)*price_adjustment//(target if target>0 else 1)
-   price=state["price"][ident]+pressure
-   if price<minimum_price: price=minimum_price
-   elif price>maximum_price: price=maximum_price
-   state["price"][ident]=price
-   margin=(1000-price)//3+60
-   if margin < -180: margin=-180
-   elif margin>finance["maximumArbitrageMarginPermille"]: margin=finance["maximumArbitrageMarginPermille"]
-   liquidity=state["liquidity"][ident]; liquidity+=((reserve-liquidity)//8+margin//40-upkeep//120+3)
-   if liquidity<30: liquidity=30
-   elif liquidity>540: liquidity=540
-   state["liquidity"][ident]=liquidity
-   wages=p["capacityUnits"]*cfg["finance"]["wageSharePermille"]//1000; military=p["capacityUnits"]*upkeep//2000; fleet=military//2 if settlements[ident].get("port") else 0; taxes=p["capacityUnits"]*cfg["finance"]["taxSharePermille"]//1000; obligation=p["capacityUnits"]*cfg["finance"]["obligationReservePermille"]//2000; credit=wages+taxes+obligation+military+fleet
-   state["treasury"][ident]+=credit-wages-taxes-obligation-military-fleet
+   household=min(available,consumption); available-=household; spoilage=min(available,spoilage); available-=spoilage; trade_loss=min(available,trade_loss); available-=trade_loss
+   stabilizer=(target-available)//5; source_credit=max(0,stabilizer); sink_release=max(0,-stabilizer); current=max(target//4,min(capacity,available+stabilizer)); capacity_loss=max(0,available+stabilizer-current)
+   stock[ident]=current; pressure=(target-current)*price_adjustment//max(1,target); current_price=max(minimum_price,min(maximum_price,price[ident]+pressure)); price[ident]=current_price
+   margin=min(finance["maximumArbitrageMarginPermille"],max(-180,(1000-current_price)//3+60))
+   current_liquidity=liquidity[ident]; liquidity[ident]=max(30,min(540,current_liquidity+(reserve-current_liquidity)//8+margin//40-upkeep//120+3))
+   fleet=military//2 if is_port else 0; credit=wages+taxes+obligation+military+fleet
+   treasury[ident]+=credit-wages-taxes-obligation-military-fleet
    ledger["harvest"]+=production; ledger["historical_import"]+=imports; ledger["institutional_credit"]+=source_credit; ledger["household_consumption"]+=household; ledger["spoilage"]+=spoilage+capacity_loss+sink_release; ledger["trade_loss"]+=trade_loss; ledger["wages"]+=wages; ledger["military_upkeep"]+=military; ledger["fleet_upkeep"]+=fleet; ledger["taxation"]+=taxes; ledger["obligation"]+=obligation
    if current!=previous+production+imports+source_credit-household-spoilage-trade_loss-sink_release-capacity_loss: raise BalanceError(f"{ident}/{year}: unauthorized conservation delta")
   if checkpoint and year==1648:
-   state=json.loads(json.dumps(state,sort_keys=True)); ledger=state["ledger"]
+   state=json.loads(json.dumps(state,sort_keys=True)); stock=state["stock"]; price=state["price"]; liquidity=state["liquidity"]; treasury=state["treasury"]; ledger=state["ledger"]
  if _access is None:
   graph=trade_graph(settlements,routes); connected,essential=access_metrics(settlements,graph,profiles)
  else: connected,essential=_access
