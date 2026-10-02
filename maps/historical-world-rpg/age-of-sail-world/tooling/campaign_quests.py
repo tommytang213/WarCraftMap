@@ -37,8 +37,19 @@ def validate(source, world):
     indexes = {kind: {x["id"] for x in world[name]} for kind, name in COLLECTIONS.items()}
     events = {x["id"] for x in world["events"]}
     quests = source["quests"]
+    story = source.get("releaseStoryQuests", [])
     quest_ids = {q["id"] for q in quests}
     assert len(quest_ids) == len(quests) and all(ID.fullmatch(x) for x in quest_ids)
+    story_ids = {q["id"] for q in story}
+    assert len(story_ids) == len(story) and not story_ids & quest_ids and all(ID.fullmatch(x) for x in story_ids)
+    assert len(quests) + len(story) + len(world.get("personalQuests", [])) >= coverage["minimumAuthoredStoryQuests"]
+    assert {"regional", "personal", "polity", "event_linked", "administration"} <= {q["category"] for q in story}
+    for quest in story:
+        assert quest["region"] in regions and quest["giverSettlementId"] in indexes["settlement"]
+        assert quest["title"].strip() and quest["summary"].strip() and len(quest["objectives"]) >= 3
+        assert all(str(x).strip() for x in quest["objectives"])
+        assert quest["alternateOutcome"].strip() and quest["failureRecovery"].strip()
+        assert {"region", "approximate", "return_to_giver"} <= set(quest["guidance"])
     regional = [q for q in quests if q["chainKind"] == "regional"]
     long_chains = [q for q in quests if q["chainKind"] == "long"]
     personal = [q for q in quests if q["chainKind"] == "personal"]
@@ -143,6 +154,39 @@ def project(source, world):
             "turnIn": {"kind": turn_kind, "id": turn_id}, "destinations": destinations,
             "turnInDestination": {"precision": "exact", "regionId": turn_region, "settlementId": turn_id, "locationId": turn_location}},
           "campaign": campaign})
+    # Release-story records deliberately use the same proven quest runtime while
+    # retaining their own category. Their prose, objectives and recovery behavior
+    # remain scenario data rather than engine conditionals.
+    for quest in source.get("releaseStoryQuests", []):
+        settlement_id=quest["giverSettlementId"]; region=quest["region"]
+        location_id=f"quest_location_{settlement_id}"
+        if location_id not in locations:
+            settlement=settlements[settlement_id]
+            locations[location_id]={"id":location_id,"regionId":region,"settlementId":settlement_id,
+                                    "position":copy.deepcopy(settlement.get("localPosition",{"x":50,"y":50}))}
+        objective_ids=[f"task_{n+1}" for n in range(len(quest["objectives"]))]
+        stages=[]; objectives=[]; destinations={}
+        for n,(objective_id,text) in enumerate(zip(objective_ids,quest["objectives"])):
+            stage_id=f"stage_{n+1}"; next_ids=[f"stage_{n+2}"] if n+1<len(objective_ids) else []
+            stages.append({"id":stage_id,"title":text,"objectiveIds":[objective_id],"nextStageIds":next_ids})
+            objectives.append({"id":objective_id,"description":text,"conditionId":"quest_story_objective_satisfied",
+                               "entityRefs":[{"kind":"settlement","id":settlement_id}]})
+            if n == 0:
+                destinations[objective_id]={"precision":"region","regionId":region}
+            elif n == len(objective_ids)-1:
+                destinations[objective_id]={"precision":"exact","regionId":region,"settlementId":settlement_id,"locationId":location_id,
+                                               "purpose":"return_to_giver"}
+            else:
+                destinations[objective_id]={"precision":"approximate","regionId":region,
+                                             "searchAreas":[{"x":50,"y":50,"radius":20}]}
+        projected.append({"id":quest["id"],"title":quest["title"],"summary":quest["summary"],"initialStageId":"stage_1",
+          "stages":stages,"objectives":objectives,"prerequisites":[],
+          "outcomes":[{"id":"bounded_service_reward","kind":"scenario_outcome","outcomeId":"quest_bounded_story_service",
+                       "entityRefs":[{"kind":"settlement","id":settlement_id}]}],
+          "journal":{"giver":{"kind":"settlement","id":settlement_id},"turnIn":{"kind":"settlement","id":settlement_id},
+                     "destinations":destinations,"turnInDestination":{"precision":"exact","regionId":region,"settlementId":settlement_id,"locationId":location_id}},
+          "campaign":{"region":region,"chainKind":quest["category"],"objectiveKinds":["story_service"],"historicalEventIds":[],
+                      "divergences":[quest["alternateOutcome"],quest["failureRecovery"]],"rewards":[{"profile":quest["rewardProfile"]}]}})
     result["quests"] = sorted(projected, key=lambda x: x["id"])
     result["questLocations"] = sorted(locations.values(), key=lambda x: x["id"])
     return result
