@@ -80,7 +80,7 @@ class WorldIntegrityRecoveryTests(unittest.TestCase):
         second, repeated = self.recover(first)
         self.assertEqual(authoritative, state_hash(first, authoritative_only=True))
         self.assertEqual(first, second)
-        self.assertEqual((0, 0, 828), (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
+        self.assertEqual((0, 0, 829), (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
         self.assertEqual(report["authoritativeHash"], repeated["authoritativeHash"])
 
     def test_every_runtime_loss_class_and_stale_map_object_is_repaired(self):
