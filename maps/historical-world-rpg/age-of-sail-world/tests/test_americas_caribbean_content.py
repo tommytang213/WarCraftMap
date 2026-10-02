@@ -11,7 +11,7 @@ class AmericasContentTests(unittest.TestCase):
   d=tempfile.TemporaryDirectory(); p=Path(d.name)/"candidate.json"; p.write_text(json.dumps(value)); return d,p
  def test_authority_coverage_and_deterministic_projection(self):
   source,politics,geography,positions=validate(); a=project(source,politics,geography,positions,self.world); b=project(copy.deepcopy(source),politics,geography,positions,self.world)
-  self.assertEqual((22,8,20,4),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"]))); self.assertEqual(a,b)
+  self.assertEqual((155,40,52,4),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"]))); self.assertEqual(a,b)
   ids={x["id"] for x in source["settlements"]}; selected=[x for x in a["settlements"] if x["id"] in ids]; cores={x["id"] for x in a["cityCores"]}; defenses={x["id"] for x in a["defenseLayouts"]}
   for x in selected: self.assertTrue(x["capturable"] and x["civilianFacilitiesInvulnerable"]); self.assertIn(x["cityCoreId"],cores); self.assertIn(x["defenseLayoutId"],defenses); self.assertEqual(x["regionalInstanceId"],x["physicalMapId"])
  def test_port_and_inland_maritime_rejection(self):
@@ -35,5 +35,5 @@ class AmericasContentTests(unittest.TestCase):
   runtime=SettlementRuntime(self.world,RecordingSettlementAdapter()); runtime.activate_region("americas_mexico_central"); runtime.update("tenochtitlan",controllerPolityId="acolhua_texcoco"); runtime.set_service_available("tenochtitlan","market",False); runtime.retire_region("americas_mexico_central"); runtime.update("tenochtitlan",kind="fort"); saved=runtime.snapshot(); replacement=SettlementRuntime(self.world,RecordingSettlementAdapter()); replacement.restore(saved,reconstruct=True)
   self.assertEqual("acolhua_texcoco",replacement.require("tenochtitlan").controller_polity_id); self.assertEqual("fort",replacement.require("tenochtitlan").kind); self.assertFalse(replacement.require("tenochtitlan").services["market"]); self.assertTrue(replacement.require("tenochtitlan").represented)
  def test_economy_profiles_and_market_projection(self):
-  source,_,_,_=validate(); a=update_economy(source,self.economy); self.assertEqual(a,update_economy(copy.deepcopy(source),self.economy)); markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("amer_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("amer_")]; self.assertEqual((22,22),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
+  source,_,_,_=validate(); a=update_economy(source,self.economy); self.assertEqual(a,update_economy(copy.deepcopy(source),self.economy)); markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("amer_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("amer_")]; self.assertEqual((155,155),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
 if __name__=="__main__": unittest.main()
