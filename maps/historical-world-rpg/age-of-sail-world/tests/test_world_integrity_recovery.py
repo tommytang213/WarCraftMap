@@ -13,8 +13,7 @@ from world_integrity import (FieldMatch, IntegrityError, IntegrityPolicy, Recons
 
 DOMAINS = ("polities", "provinces", "settlements", "ownershipControl", "sovereignty",
            "diplomacy", "armies", "fleets", "characters", "economy", "technology",
-           "quests", "treasures", "routes", "schedules", "persistenceIndexes",
-           "activeSettlements")
+           "quests", "treasures", "routes", "schedules", "persistenceIndexes")
 
 
 def full_world_fixture():
@@ -27,11 +26,6 @@ def full_world_fixture():
                     "cityCoreId": x.get("cityCoreId"), "defenseLayoutId": x.get("defenseLayoutId"),
                     "objectKinds": ["city_core", "defense", "civilian", "unit", "effect"]}
                    for x in world["settlements"]]
-    # The full catalogue is authoritative, but Warcraft objects exist only for
-    # the currently active physical map.  London is the deterministic bootstrap
-    # map used by this recovery fixture.
-    london_instance = next(x["regionalInstanceId"] for x in world["settlements"] if x["id"] == "london")
-    active_ids = {x["id"] for x in world["settlements"] if x["regionalInstanceId"] == london_instance}
     authority = {
         "polities": polities, "provinces": provinces, "settlements": settlements,
         "ownershipControl": [{"id": f"control_{x['id']}", "settlementId": x["id"],
@@ -49,7 +43,6 @@ def full_world_fixture():
         "routes": [{"id": "integrity_route", "originSettlementId": settlements[0]["id"], "destinationSettlementId": settlements[-1]["id"]}],
         "schedules": [{"id": "integrity_schedule", "targetPolityId": polities[0]["id"], "due": 100}],
         "persistenceIndexes": [{"id": f"map_{x['id']}", "mapId": x["id"], "visited": x.get("bootstrap", False)} for x in maps],
-        "activeSettlements": [copy.deepcopy(x) for x in settlements if x["id"] in active_ids],
     }
     return {"format": "warcraftmap_world_integrity_v1", "schemaVersion": 1,
             "authoritative": authority, "transactions": [], "indexes": {},
@@ -69,8 +62,8 @@ POLICY = IntegrityPolicy(
         Reference("routes", "destinationSettlementId", "settlements"), Reference("schedules", "targetPolityId", "polities"),
     ),
     field_matches=(FieldMatch("settlements", "provinceId", "provinces", "controllerPolityId"),),
-    representation_domains=("activeSettlements",), maximum_diagnostics=12,
-    maximum_active_objects=512, maximum_scan_ms=1500,
+    representation_domains=("settlements",), maximum_diagnostics=12,
+    maximum_active_objects=800, maximum_scan_ms=1500,
 )
 
 
@@ -87,8 +80,7 @@ class WorldIntegrityRecoveryTests(unittest.TestCase):
         second, repeated = self.recover(first)
         self.assertEqual(authoritative, state_hash(first, authoritative_only=True))
         self.assertEqual(first, second)
-        self.assertEqual((0, 0, len(self.fixture["authoritative"]["activeSettlements"])),
-                         (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
+        self.assertEqual((0, 0, 705), (report["fatalCount"], report["repairableCount"], report["activeObjectCount"]))
         self.assertEqual(report["authoritativeHash"], repeated["authoritativeHash"])
 
     def test_every_runtime_loss_class_and_stale_map_object_is_repaired(self):

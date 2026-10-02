@@ -48,7 +48,7 @@ def markdown(report):
     lines=["# Europe and Africa settlement-density report","","Status: **COMPLETE**","","This regional Phase 8 pass preserves the global settlement-density roadmap item as incomplete. Counts follow historical density, not equal polity quotas; inactive settlements remain authoritative abstract state.",""]
     for region,data in report["regions"].items():
         lines += [f"## {region.title()}","",f"{data['settlementCount']} physical settlements, {data['portCount']} ports, and {data['abstractCommunityCount']} explicit abstract-community groups.","","| Subregion | Settlements |","|---|---:|"]+[f"| {k} | {v} |" for k,v in data["bySubregion"].items()]+["","| Role | Count |","|---|---:|"]+[f"| {k} | {v} |" for k,v in data["byRole"].items()]+[""]
-    return "\n".join(lines)+"\n"
+    return "\n".join(lines).rstrip()+"\n"
 
 def main(argv=None):
     argv=sys.argv[1:] if argv is None else argv

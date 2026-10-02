@@ -115,6 +115,14 @@ def project(source,politics,geography,positions,world):
         if item.get("port"): record["portAccess"]=copy.deepcopy(item["port"])
         world["settlements"].append(record); provinces[item["provinceId"]]["settlementIds"].append(ident)
         world["cityCores"].append({"id":"city_core_"+ident,"objectTemplateId":"capital_city_core" if "capital" in roles else "city_core"}); world["defenseLayouts"].append({"id":"defense_"+ident,"objectTemplateIds":["capital_defenses" if defense=="capital" else "port_defenses" if defense=="port" else "city_defenses"]})
+    # Cross-regional boundary cities (notably Ottoman Edirne) may move from an
+    # earlier abstract political projection to another region's physical pass.
+    # Rebuild membership from settlement authority so stale province references
+    # cannot survive a deterministic reprojection.
+    membership={key:[] for key in provinces}
+    for settlement in world["settlements"]:
+        if settlement.get("provinceId") in membership: membership[settlement["provinceId"]].append(settlement["id"])
+    for key,ids in membership.items(): provinces[key]["settlementIds"]=ids
     return world
 
 def update_economy(source,economy):
