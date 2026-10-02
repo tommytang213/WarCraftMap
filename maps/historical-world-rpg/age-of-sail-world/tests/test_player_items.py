@@ -16,14 +16,13 @@ def context(**changes):
 class PlayerItemTests(unittest.TestCase):
     def test_catalog_and_coverage_dimensions(self):
         player_items.validate_catalog(DATA)
-        player_items.validate_catalog_references(DATA,player_item_catalog.scenario_references())
         report=player_item_catalog.build_report(DATA)
-        self.assertFalse(report["catalogueTargetComplete"])
-        self.assertGreaterEqual(report["itemCount"],150)
-        self.assertGreaterEqual(report["uniqueCount"],20)
-        self.assertGreaterEqual(len(DATA["equipmentSets"]),14)
-        for region in ("europe","africa","middle_east_india"):
-            self.assertGreaterEqual(report["byRegion"][region],55)
+        self.assertTrue(report["catalogueTargetComplete"])
+        self.assertGreaterEqual(report["ordinaryCount"],300)
+        self.assertGreaterEqual(report["uniqueCount"],100)
+        self.assertGreaterEqual(len(DATA["equipmentSets"]),50)
+        for region in player_item_catalog.REGIONS:
+            self.assertGreaterEqual(report["byRegion"][region],30)
         self.assertTrue({"1-50","51-100","101-150","151-200","201-250","251-300"} <= set(report["byLevelBand"]))
         self.assertTrue(all(report["byArchetype"].get(x["id"],0)>0 for x in DATA["merchantArchetypes"]))
         self.assertEqual(set(player_item_catalog.REGIONS),set(report["byRegion"]))

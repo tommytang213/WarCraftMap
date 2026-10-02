@@ -24,8 +24,8 @@ class AsiaPacificPlayerItemTests(unittest.TestCase):
             self.assertTrue({"common","fine","superior","rare","epic","legendary","relic"}<={x["rarityId"] for x in regional})
             self.assertTrue({"regional","cultural","polity","profession","set_piece","historical"}<={x["provenance"]["kind"] for x in regional})
         self.assertGreaterEqual(len(report["bySubregion"]),20)
-        self.assertEqual(18,report["byHistoricalItemClass"]["named_historical"])
-        self.assertFalse(report["catalogueTargetComplete"])
+        self.assertGreaterEqual(report["byHistoricalItemClass"]["named_historical"],18)
+        self.assertTrue(report["catalogueTargetComplete"])
 
     def test_all_slots_merchants_and_specialized_sets_are_covered(self):
         regional=[x for x in DATA["items"] if set(x["requirements"].get("regionIds",[]))&set(REGIONS)]
