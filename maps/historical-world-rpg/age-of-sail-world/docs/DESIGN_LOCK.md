@@ -400,6 +400,49 @@ This file records requirements already agreed with the player. They are defaults
 - The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation.
 - Remote management shows only campaign information the player is already authorized to know.
 
+## Player-facing country interaction and negotiated peace
+
+- The player remains an individual. A country screen is reachable from a known
+  country, its known ruler/government, map context, or a relevant quest; every
+  entry path applies the same persistent discovery filter.
+- The screen reports the current relation and war state, whether the player
+  currently serves the polity, immutable-origin/history relevance, reputation,
+  favor and service standing, known government, active wars, discovered
+  partners, territorial disputes/occupations, and currently eligible government
+  interactions. Unknown rulers, partners, wars, territory, and clauses are not
+  inferred merely because they exist in authoritative simulation state.
+- Serving, allegiance changes, rewards, privileges/access, and negotiations are
+  eligibility-checked at commit time. Origin never changes with allegiance.
+  Reward and access grants remain subject to their owning authoritative systems.
+- An active war involving the player or the polity they represent exposes a
+  proper offer/response flow. Every offer names its conflict, parties, explicit
+  terms, creation/expiry time, and initiator. AI governments may create offers
+  through the same validation and persistence boundary as the player.
+- Territory terms identify province/settlement, grantor, and beneficiary. The
+  grantor must legally own the territory and must either control it or be ceding
+  it to its current wartime occupier. Every occupation is resolved explicitly at
+  peace: named cessions transfer title and control; otherwise occupied territory
+  returns to its legal owner. Territory state, not a Warcraft object, is final.
+- Treaty clauses are scenario data. The shared initial vocabulary covers
+  territory, immediate payment/reparations, temporary tribute, recognition or
+  independence, vassalage/overlordship, trade and military access, ceasefire,
+  non-aggression, and alliance. Scenario extensions use stable clause IDs and the
+  same authority checks. A government cannot cede territory it does not own,
+  spend funds absent from its treasury without an authored debt mechanism, or
+  grant a capability it lacks.
+- AI acceptance uses current war goals/balance, occupations, relative strength,
+  casualties, exhaustion, economic cost and treasury pressure, allies, ongoing
+  threat, strategic risk, diplomatic history, reputation, and the practical
+  value/cost of terms. Historical pressure is a bounded bias only and never
+  overrides authoritative alternate-history state.
+- Player explanations contain at most three plain-language reasons, never raw
+  coefficients. Territory, sovereignty/independence, vassalage, and payments
+  require an explicit confirmation before acceptance commits.
+- Pending, accepted, rejected, and expired offers; treaties and their clauses;
+  cooldowns; discoveries; government rights; standing; territorial results; and
+  diplomatic history use stable IDs and persist across save/load and map
+  transitions. Warcraft screens and handles are projections and are never saved.
+
 ## Performance and simulation scale
 
 - Performance is a design constraint throughout content production, not a cleanup task deferred until final integration.
