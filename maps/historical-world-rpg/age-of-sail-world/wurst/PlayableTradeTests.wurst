@@ -1,0 +1,54 @@
+package PlayableTradeTests
+import PlayableTrade
+
+class Presentation implements TradePresentation
+	string market=""
+	string result=""
+	override function showMarket(player p,string marketId,string rows)
+		market=marketId+"|"+rows
+	override function showTradeResult(player p,string message)
+		result=message
+
+@test function playerCanInspectBuyCarryMoveAndSellCargo()
+	let progress=new MerchantProgress()
+	let controller=new PlayableTradeController(progress)
+	let ui=new Presentation()
+	let calicut=new RuntimeMarket("calicut","Pepper",100,10000,10,8)
+	let london=new RuntimeMarket("london","Pepper",5,10000,30,25)
+	let ship=new TradeStore("ship_hold",12,1000)
+	let warehouse=new TradeStore("london_warehouse",50,0)
+	inspectMarket(null,calicut,ui)
+	ui.market.assertEquals("calicut|Pepper: 100 available; buy 10; sell 8; steady")
+	buyCargo(null,"buy_1",calicut,ship,10,controller,ui)
+	ui.result.assertEquals("Bought 10 Pepper.")
+	ship.cargo.assertEquals(10)
+	controller.moveCargo("unload",ship,warehouse,4).assertEquals("Cargo moved.")
+	controller.moveCargo("reload",warehouse,ship,4).assertEquals("Cargo moved.")
+	sellCargo(null,"sell_1",london,ship,10,2000,controller,ui)
+	ui.result.assertEquals("Sold 10 Pepper; realized P/L 150.")
+	ship.cargo.assertEquals(0)
+	progress.standing.assertEquals(300)
+	progress.warehouseAccess().assertEquals(true)
+
+@test function runtimeRejectsCapacityAndDuplicateTransactions()
+	let controller=new PlayableTradeController(new MerchantProgress())
+	let market=new RuntimeMarket("port","Grain",100,1000,2,1)
+	let ship=new TradeStore("ship",3,100)
+	controller.buy("large",market,ship,4).assertEquals("Cargo capacity is insufficient.")
+	controller.buy("once",market,ship,2).assertEquals("Bought 2 Grain.")
+	controller.buy("once",market,ship,1).assertEquals("Transaction already processed.")
+	ship.cargo.assertEquals(2)
+
+@test function repeatedRouteStandingDiminishes()
+	let progress=new MerchantProgress()
+	let controller=new PlayableTradeController(progress)
+	let source=new RuntimeMarket("source","Silk",100,10000,10,8)
+	let sink=new RuntimeMarket("sink","Silk",1,10000,30,25)
+	let ship=new TradeStore("ship",20,1000)
+	controller.buy("b1",source,ship,2)
+	controller.sell("s1",sink,ship,2,1000)
+	let first=progress.standing
+	controller.buy("b2",source,ship,2)
+	controller.sell("s2",sink,ship,2,1000)
+	let second=progress.standing-first
+	(first>second).assertEquals(true)
