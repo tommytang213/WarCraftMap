@@ -125,16 +125,36 @@ def simulate(cfg,settlements,scenario_name,seed,*,accelerated=False,checkpoint=F
  for year in range(cfg["campaignYears"]["start"],cfg["campaignYears"]["end"]+1):
   for ident in order:
    p=profiles[ident]; previous=state["stock"][ident]; noise=(noise_bases[ident]+year*1103515245)%101-50
-   production=max(1,p["capacityUnits"]*local_production*(1000+noise)//1_000_000_000)
+   production=p["capacityUnits"]*local_production*(1000+noise)//1_000_000_000
+   if production<1: production=1
    imports=p["capacityUnits"]*import_replenishment//1_000_000 if p["imports"] else 0
    consumption=p["capacityUnits"]*local_consumption//1_000_000
    if p["shortages"]: consumption=consumption*shortage_consumption//1000
    spoilage=previous*spoilage_rate//1000; trade_loss=imports*trade_loss_rate//1000; available=previous+production+imports
-   household=min(available,consumption); available-=household; spoilage=min(available,spoilage); available-=spoilage; trade_loss=min(available,trade_loss); available-=trade_loss
-   target=p["startingStockUnits"]; stabilizer=(target-available)//5; source_credit=max(0,stabilizer); sink_release=max(0,-stabilizer); current=max(target//4,min(p["capacityUnits"],available+stabilizer)); capacity_loss=max(0,available+stabilizer-current)
-   state["stock"][ident]=current; pressure=(target-current)*price_adjustment//max(1,target); state["price"][ident]=max(minimum_price,min(maximum_price,state["price"][ident]+pressure))
-   margin=min(finance["maximumArbitrageMarginPermille"],max(-180,(1000-state["price"][ident])//3+60))
-   state["liquidity"][ident]=max(30,min(540,state["liquidity"][ident]+(reserve-state["liquidity"][ident])//8+margin//40-upkeep//120+3))
+   household=consumption if consumption<available else available; available-=household
+   if spoilage>available: spoilage=available
+   available-=spoilage
+   if trade_loss>available: trade_loss=available
+   available-=trade_loss
+   target=p["startingStockUnits"]; stabilizer=(target-available)//5
+   source_credit=stabilizer if stabilizer>0 else 0; sink_release=-stabilizer if stabilizer<0 else 0
+   unstopped=available+stabilizer; current=unstopped
+   if current>p["capacityUnits"]: current=p["capacityUnits"]
+   floor=target//4
+   if current<floor: current=floor
+   capacity_loss=unstopped-current if unstopped>current else 0
+   state["stock"][ident]=current; pressure=(target-current)*price_adjustment//(target if target>0 else 1)
+   price=state["price"][ident]+pressure
+   if price<minimum_price: price=minimum_price
+   elif price>maximum_price: price=maximum_price
+   state["price"][ident]=price
+   margin=(1000-price)//3+60
+   if margin < -180: margin=-180
+   elif margin>finance["maximumArbitrageMarginPermille"]: margin=finance["maximumArbitrageMarginPermille"]
+   liquidity=state["liquidity"][ident]; liquidity+=((reserve-liquidity)//8+margin//40-upkeep//120+3)
+   if liquidity<30: liquidity=30
+   elif liquidity>540: liquidity=540
+   state["liquidity"][ident]=liquidity
    wages=p["capacityUnits"]*cfg["finance"]["wageSharePermille"]//1000; military=p["capacityUnits"]*upkeep//2000; fleet=military//2 if settlements[ident].get("port") else 0; taxes=p["capacityUnits"]*cfg["finance"]["taxSharePermille"]//1000; obligation=p["capacityUnits"]*cfg["finance"]["obligationReservePermille"]//2000; credit=wages+taxes+obligation+military+fleet
    state["treasury"][ident]+=credit-wages-taxes-obligation-military-fleet
    ledger["harvest"]+=production; ledger["historical_import"]+=imports; ledger["institutional_credit"]+=source_credit; ledger["household_consumption"]+=household; ledger["spoilage"]+=spoilage+capacity_loss+sink_release; ledger["trade_loss"]+=trade_loss; ledger["wages"]+=wages; ledger["military_upkeep"]+=military; ledger["fleet_upkeep"]+=fleet; ledger["taxation"]+=taxes; ledger["obligation"]+=obligation
