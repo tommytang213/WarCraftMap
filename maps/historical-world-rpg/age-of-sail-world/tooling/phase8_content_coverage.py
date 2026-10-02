@@ -28,6 +28,7 @@ def build():
     progression=load("scenario/progression/catalog.json"); events=load("scenario/historical-events.json")
     quests=load("scenario/campaign-quests.json"); treasure=load("scenario/treasures/age-of-sail.json")
     assets=load("scenario/assets/reports/phase6-asset-audit.json"); budgets=load("scenario/benchmarks/reports/final-measurements.json")
+    settlement_integration=load("reports/settlement-integration.json")
 
     polity_region={}
     for region,filename in REGION_FILES.items():
@@ -95,8 +96,10 @@ def build():
     require(quest_regions["global"]["cross_region"] and quest_regions["global"]["long"],"cross-region or campaign-spanning quest coverage is empty",failures)
 
     settlement_count=len(world["settlements"])
-    administration={"settlementsResolved":settlement_count,"newlyCapturedResolution":"deterministic_acting_official","generatedIdentity":"culture_name_pool_plus_persistent_character_id","authoritativePhysicalDuplicates":0}
-    defense={"settlementsResolved":settlement_count,"defaultProfile":"local_militia","captureResolution":"retire_then_rebuild_from_abstract_state","reinforcementCosts":"positive_manpower_supply_and_time"}
+    require(settlement_integration["status"]=="pass" and settlement_integration["settlementCount"]==settlement_count,"release-scale settlement integration report is incomplete",failures)
+    require(not settlement_integration["inertSettlements"] and not settlement_integration["unresolvedReferences"],"settlement integration contains inert or unresolved content",failures)
+    administration={"settlementsResolved":settlement_integration["settlementCount"],"newlyCapturedResolution":"deterministic_acting_official","generatedIdentity":"culture_name_pool_plus_persistent_character_id","authoritativePhysicalDuplicates":settlement_integration["duplicatedCharacters"]}
+    defense={"settlementsResolved":settlement_integration["settlementCount"],"defaultProfile":"local_militia","captureResolution":"retire_then_rebuild_from_abstract_state","reinforcementCosts":"positive_manpower_supply_and_time"}
     require(assets["gates"]["allMaterialPlaceholdersResolved"],"Phase 6 asset audit has unresolved material placeholders",failures)
     require(assets.get("status")=="pass" and all(assets["gates"].values()),"Phase 6 asset audit has an unapproved release-facing asset",failures)
     require(all(not row.get("correctnessFailures") for row in budgets.values()),"Phase 7 benchmark has correctness failures",failures)
