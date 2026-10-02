@@ -41,6 +41,8 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
     merchants = _ids(data.get("merchantArchetypes", []), "merchantArchetypes")
     evidence = _ids(data.get("historicalEvidence", []), "historicalEvidence")
     items = _ids(data.get("items", []), "items")
+    bulk_goods = {"grain","fish","timber","iron","copper","salt","wine","wool","cloth","spices","sugar","tobacco","coffee","tea","silk","porcelain","slaves"}
+    stat_signatures = {}
     allowed_provenance = {"generic","regional","cultural","polity","profession","quest","set_piece","historical","legendary"}
     allowed_categories = {"equipment","consumable","tool","book_map","artifact"}
     for item_id, item in items.items():
@@ -62,6 +64,14 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
         unknown=set(merchant.get("archetypeIds",[]))-set(merchants)
         if unknown: raise PlayerItemError(f"item {item_id}: unknown merchant archetypes {sorted(unknown)}")
         comparison=item["comparison"]
+        slots=comparison.get("slotIds",[])
+        if item["category"] == "equipment" and not slots: raise PlayerItemError(f"item {item_id}: equipment has no slot")
+        if item["category"] != "equipment" and slots and item["category"] != "artifact": raise PlayerItemError(f"item {item_id}: non-equipment uses equipment slot")
+        if item_id in bulk_goods or item["name"].lower() in bulk_goods: raise PlayerItemError(f"item {item_id}: bulk good leaked into player catalogue")
+        signature=(item["itemLevel"],item["rarityId"],item["category"],tuple(slots),tuple(sorted(comparison.get("majorStats",{}).items())),tuple(sorted(comparison.get("effectIds",[]))))
+        if signature in stat_signatures and item["name"] != items[stat_signatures[signature]]["name"]:
+            raise PlayerItemError(f"item {item_id}: stat clone of {stat_signatures[signature]}")
+        stat_signatures[signature]=item_id
         for effect_id in comparison.get("effectIds",[]):
             if effect_id not in effects: raise PlayerItemError(f"item {item_id}: unknown effect {effect_id}")
         set_id=comparison.get("setId")
@@ -79,6 +89,24 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
             if set(threshold.get("effectIds",[]))-set(effects): raise PlayerItemError(f"set {set_id}: unknown threshold effect")
 
 
+def validate_catalog_references(data: Mapping[str,Any], references: Mapping[str,set[str]]) -> None:
+    """Validate scenario-owned availability references without coupling the engine to files."""
+    validate_catalog(data)
+    mapping=(("regionIds","regions"),("cultureIds","cultures"),("controllerIds","controllers"),
+             ("technologyIds","technologies"),("institutionIds","institutions"),
+             ("questFlagIds","quests"),("eventFlagIds","events"))
+    for item in data["items"]:
+        for field,domain in mapping:
+            unknown=set(item["requirements"].get(field,[]))-references.get(domain,set())
+            if unknown: raise PlayerItemError(f"item {item['id']}: unknown {domain} {sorted(unknown)}")
+        unknown=set(item["merchant"].get("settlementIds",[]))-references.get("settlements",set())
+        if unknown: raise PlayerItemError(f"item {item['id']}: unknown settlements {sorted(unknown)}")
+        if not item["merchant"]["eligible"] and not item["unique"]:
+            raise PlayerItemError(f"item {item['id']}: unreachable non-unique item")
+        if item["unique"] and not (item["merchant"]["eligible"] or item["requirements"].get("questFlagIds") or item["requirements"].get("eventFlagIds") or item["evidenceIds"]):
+            raise PlayerItemError(f"item {item['id']}: unreachable unique item")
+
+
 def _available(item, archetype_id, context):
     if not item["merchant"]["eligible"] or archetype_id not in item["merchant"]["archetypeIds"]: return False
     req=item["requirements"]; year=context["year"]
@@ -91,6 +119,8 @@ def _available(item, archetype_id, context):
     if local and not set(local)&set(context.get("localProductionIds",[])): return False
     if item["merchant"].get("requiresTradeAccess") and not context.get("tradeAccess",False): return False
     if context.get("wealth",0)<item["merchant"].get("minimumWealth",0): return False
+    settlements=item["merchant"].get("settlementIds",[])
+    if settlements and context.get("settlementId") not in settlements: return False
     if item["id"] in set(context.get("scarceItemTypeIds",[])): return False
     return True
 

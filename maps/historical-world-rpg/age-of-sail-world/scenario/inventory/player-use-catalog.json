@@ -1,39 +1,7432 @@
 {
   "schemaVersion": 1,
   "rarities": [
-    {"id":"common","name":"Common","rank":0},{"id":"fine","name":"Fine","rank":1},{"id":"superior","name":"Superior","rank":2},{"id":"rare","name":"Rare","rank":3},{"id":"epic","name":"Epic","rank":4},{"id":"legendary","name":"Legendary","rank":5},{"id":"relic","name":"Relic","rank":6}
+    {
+      "id": "common",
+      "name": "Common",
+      "rank": 0
+    },
+    {
+      "id": "fine",
+      "name": "Fine",
+      "rank": 1
+    },
+    {
+      "id": "superior",
+      "name": "Superior",
+      "rank": 2
+    },
+    {
+      "id": "rare",
+      "name": "Rare",
+      "rank": 3
+    },
+    {
+      "id": "epic",
+      "name": "Epic",
+      "rank": 4
+    },
+    {
+      "id": "legendary",
+      "name": "Legendary",
+      "rank": 5
+    },
+    {
+      "id": "relic",
+      "name": "Relic",
+      "rank": 6
+    }
   ],
   "effects": [
-    {"id":"steady_guard","kind":"passive"},{"id":"boarding_edge","kind":"conditional"},{"id":"fever_relief","kind":"active"},{"id":"route_finding","kind":"passive"},{"id":"powder_drill","kind":"conditional"},{"id":"desert_endurance","kind":"conditional"},{"id":"set_watch","kind":"threshold"},{"id":"set_command","kind":"threshold"}
+    {
+      "id": "armor_guard",
+      "kind": "passive"
+    },
+    {
+      "id": "boarding_edge",
+      "kind": "conditional"
+    },
+    {
+      "id": "caravan_lore",
+      "kind": "passive"
+    },
+    {
+      "id": "cold_endurance",
+      "kind": "passive"
+    },
+    {
+      "id": "courtly_presence",
+      "kind": "passive"
+    },
+    {
+      "id": "desert_endurance",
+      "kind": "conditional"
+    },
+    {
+      "id": "diplomatic_access",
+      "kind": "passive"
+    },
+    {
+      "id": "faithful_resolve",
+      "kind": "passive"
+    },
+    {
+      "id": "fever_relief",
+      "kind": "active"
+    },
+    {
+      "id": "field_medicine",
+      "kind": "passive"
+    },
+    {
+      "id": "forest_craft",
+      "kind": "passive"
+    },
+    {
+      "id": "melee_finesse",
+      "kind": "passive"
+    },
+    {
+      "id": "monsoon_lore",
+      "kind": "passive"
+    },
+    {
+      "id": "mounted_mastery",
+      "kind": "passive"
+    },
+    {
+      "id": "powder_drill",
+      "kind": "conditional"
+    },
+    {
+      "id": "ranged_drill",
+      "kind": "passive"
+    },
+    {
+      "id": "route_finding",
+      "kind": "passive"
+    },
+    {
+      "id": "scholarly_insight",
+      "kind": "passive"
+    },
+    {
+      "id": "set_command",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_mastery",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_mobility",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_precision",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_resilience",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_supply",
+      "kind": "threshold"
+    },
+    {
+      "id": "set_watch",
+      "kind": "threshold"
+    },
+    {
+      "id": "siegecraft",
+      "kind": "passive"
+    },
+    {
+      "id": "steady_guard",
+      "kind": "passive"
+    },
+    {
+      "id": "trade_bargain",
+      "kind": "passive"
+    }
   ],
   "merchantArchetypes": [
-    {"id":"general_merchant","stockLimit":8},{"id":"armourer","stockLimit":7},{"id":"gunsmith","stockLimit":6},{"id":"outfitter","stockLimit":7},{"id":"apothecary","stockLimit":8},{"id":"bookseller_cartographer","stockLimit":7},{"id":"horse_dealer","stockLimit":5},{"id":"military_supplier","stockLimit":7},{"id":"relic_merchant","stockLimit":4},{"id":"ship_chandler","stockLimit":7},{"id":"dockyard","stockLimit":6}
+    {
+      "id": "general_merchant",
+      "stockLimit": 8
+    },
+    {
+      "id": "armourer",
+      "stockLimit": 7
+    },
+    {
+      "id": "gunsmith",
+      "stockLimit": 6
+    },
+    {
+      "id": "outfitter",
+      "stockLimit": 7
+    },
+    {
+      "id": "apothecary",
+      "stockLimit": 8
+    },
+    {
+      "id": "bookseller_cartographer",
+      "stockLimit": 7
+    },
+    {
+      "id": "horse_dealer",
+      "stockLimit": 5
+    },
+    {
+      "id": "military_supplier",
+      "stockLimit": 7
+    },
+    {
+      "id": "relic_merchant",
+      "stockLimit": 4
+    },
+    {
+      "id": "ship_chandler",
+      "stockLimit": 7
+    },
+    {
+      "id": "dockyard",
+      "stockLimit": 6
+    }
   ],
   "equipmentSets": [
-    {"id":"ocean_navigator_set","name":"Ocean Navigator's Instruments","itemTypeIds":["mariners_astrolabe","portolan_chart","brass_dividers"],"thresholds":[{"pieceCount":2,"effectIds":["route_finding"]},{"pieceCount":3,"effectIds":["set_watch"]}]},
-    {"id":"company_officer_set","name":"Company Officer's Kit","itemTypeIds":["buff_coat","naval_hanger","officers_sash"],"thresholds":[{"pieceCount":2,"effectIds":["steady_guard"]},{"pieceCount":3,"effectIds":["set_command"]}]}
+    {
+      "id": "akan_diplomat_set",
+      "name": "Akan Diplomat Kit",
+      "itemTypeIds": [
+        "akan_diplomat_ceremonial_sword",
+        "akan_diplomat_woven_robe",
+        "akan_diplomat_goldweight_scale",
+        "akan_diplomat_state_emblem"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "company_officer_set",
+      "name": "Company Officer's Kit",
+      "itemTypeIds": [
+        "buff_coat",
+        "naval_hanger",
+        "officers_sash"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "steady_guard"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_command"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enlightenment_savant_set",
+      "name": "Enlightenment Savant Kit",
+      "itemTypeIds": [
+        "enlightenment_savant_lens",
+        "enlightenment_savant_scholars_coat",
+        "enlightenment_savant_calipers",
+        "enlightenment_savant_notebook"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ethiopian_highland_set",
+      "name": "Ethiopian Highland Kit",
+      "itemTypeIds": [
+        "ethiopian_highland_shotel",
+        "ethiopian_highland_lamellar_coat",
+        "ethiopian_highland_highland_sandals",
+        "ethiopian_highland_processional_cross"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iberian_explorer_set",
+      "name": "Iberian Explorer Kit",
+      "itemTypeIds": [
+        "iberian_explorer_primary",
+        "iberian_explorer_chest",
+        "iberian_explorer_boots",
+        "iberian_explorer_trinket"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "indian_ocean_hakim_set",
+      "name": "Indian Ocean Hakim Kit",
+      "itemTypeIds": [
+        "indian_ocean_hakim_surgical_lancet",
+        "indian_ocean_hakim_physicians_robe",
+        "indian_ocean_hakim_medicine_case",
+        "indian_ocean_hakim_medical_canon"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maratha_light_horse_set",
+      "name": "Maratha Light Horse Kit",
+      "itemTypeIds": [
+        "maratha_light_horse_tulwar",
+        "maratha_light_horse_quilted_coat",
+        "maratha_light_horse_riding_shoes",
+        "maratha_light_horse_bargir_tack"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mughal_mansabdar_set",
+      "name": "Mughal Mansabdar Kit",
+      "itemTypeIds": [
+        "mughal_mansabdar_shamshir",
+        "mughal_mansabdar_char_aina",
+        "mughal_mansabdar_court_sash",
+        "mughal_mansabdar_jeweled_tack"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "northern_privateer_set",
+      "name": "Northern Privateer Kit",
+      "itemTypeIds": [
+        "northern_privateer_cutlass",
+        "northern_privateer_sea_coat",
+        "northern_privateer_sea_boots",
+        "northern_privateer_letter_of_marque"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ocean_navigator_set",
+      "name": "Ocean Navigator's Instruments",
+      "itemTypeIds": [
+        "mariners_astrolabe",
+        "portolan_chart",
+        "brass_dividers"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "route_finding"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_watch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ottoman_sipahi_set",
+      "name": "Ottoman Sipahi Kit",
+      "itemTypeIds": [
+        "ottoman_sipahi_kilij",
+        "ottoman_sipahi_mail_coat",
+        "ottoman_sipahi_riding_boots",
+        "ottoman_sipahi_horse_tack"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "royal_cavalry_set",
+      "name": "Royal Cavalry Kit",
+      "itemTypeIds": [
+        "royal_cavalry_sabre",
+        "royal_cavalry_cuirass",
+        "royal_cavalry_riding_boots",
+        "royal_cavalry_war_saddle"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saharan_caravan_set",
+      "name": "Saharan Caravan Kit",
+      "itemTypeIds": [
+        "saharan_caravan_takoba",
+        "saharan_caravan_desert_robe",
+        "saharan_caravan_caravan_boots",
+        "saharan_caravan_camel_saddle"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swahili_pilot_set",
+      "name": "Swahili Pilot Kit",
+      "itemTypeIds": [
+        "swahili_pilot_boarding_blade",
+        "swahili_pilot_coastal_coat",
+        "swahili_pilot_pilot_compass",
+        "swahili_pilot_monsoon_ledger"
+      ],
+      "thresholds": [
+        {
+          "pieceCount": 2,
+          "effectIds": [
+            "set_resilience"
+          ]
+        },
+        {
+          "pieceCount": 3,
+          "effectIds": [
+            "set_mobility"
+          ]
+        },
+        {
+          "pieceCount": 4,
+          "effectIds": [
+            "set_mastery"
+          ]
+        }
+      ]
+    }
   ],
   "items": [
-    {"id":"arming_sword","name":"Arming Sword","category":"equipment","itemLevel":12,"rarityId":"common","provenance":{"kind":"generic"},"unique":false,"requirements":{"startYear":1450,"endYear":1650},"enhancement":{"maxRank":3,"maxRestoration":1},"merchant":{"eligible":true,"archetypeIds":["armourer","general_merchant"],"basePriceMinor":120,"minimumWealth":5,"localProductionAny":["iron"]},"comparison":{"slotIds":["primary"],"majorStats":{"meleePower":8,"guard":2},"effectIds":[]},"evidenceIds":[]},
-    {"id":"matchlock_musket","name":"Matchlock Musket","category":"equipment","itemLevel":42,"rarityId":"fine","provenance":{"kind":"profession","identityId":"gunsmith_musket"},"unique":false,"requirements":{"startYear":1520,"endYear":1720,"technologyIds":["cast_cannon"]},"enhancement":{"maxRank":4,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["gunsmith","military_supplier"],"basePriceMinor":460,"minimumWealth":20,"requiresTradeAccess":true},"comparison":{"slotIds":["primary"],"majorStats":{"rangedPower":25,"reload":-8},"effectIds":["powder_drill"]},"evidenceIds":[]},
-    {"id":"buff_coat","name":"Buff Coat","category":"equipment","itemLevel":36,"rarityId":"fine","provenance":{"kind":"set_piece","identityId":"company_officer_coat"},"unique":false,"requirements":{"startYear":1550,"endYear":1780},"enhancement":{"maxRank":4,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["armourer","outfitter","military_supplier"],"basePriceMinor":330,"minimumWealth":15},"comparison":{"slotIds":["chest"],"majorStats":{"armor":13,"mobility":-2},"effectIds":["steady_guard"],"setId":"company_officer_set"},"evidenceIds":[]},
-    {"id":"naval_hanger","name":"Naval Hanger","category":"equipment","itemLevel":44,"rarityId":"superior","provenance":{"kind":"set_piece","identityId":"company_officer_blade"},"unique":false,"requirements":{"startYear":1600,"endYear":1820},"enhancement":{"maxRank":5,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["military_supplier","ship_chandler"],"basePriceMinor":490,"minimumWealth":20,"requiresTradeAccess":true},"comparison":{"slotIds":["primary"],"majorStats":{"meleePower":18,"boarding":12},"effectIds":["boarding_edge"],"conditionalEffects":[{"id":"boarding_edge","condition":"aboard_ship"}],"setId":"company_officer_set"},"evidenceIds":[]},
-    {"id":"officers_sash","name":"Officer's Sash","category":"equipment","itemLevel":32,"rarityId":"fine","provenance":{"kind":"set_piece","identityId":"company_officer_sash"},"unique":false,"requirements":{"startYear":1550,"endYear":1820},"enhancement":{"maxRank":3,"maxRestoration":1},"merchant":{"eligible":true,"archetypeIds":["outfitter","military_supplier"],"basePriceMinor":260,"minimumWealth":15},"comparison":{"slotIds":["trinket"],"majorStats":{"command":10,"armor":1},"effectIds":[],"setId":"company_officer_set"},"evidenceIds":[]},
-    {"id":"quinine_bark_dose","name":"Cinchona Bark Dose","category":"consumable","itemLevel":28,"rarityId":"rare","provenance":{"kind":"regional","identityId":"andean_cinchona"},"unique":false,"requirements":{"startYear":1630,"endYear":1820,"regionIds":["americas_caribbean"]},"enhancement":{"maxRank":0,"maxRestoration":0},"merchant":{"eligible":true,"archetypeIds":["apothecary","general_merchant"],"basePriceMinor":180,"minimumWealth":10,"requiresTradeAccess":true},"comparison":{"slotIds":[],"majorStats":{"healing":20},"effectIds":["fever_relief"]},"evidenceIds":[]},
-    {"id":"west_african_leather_charm","name":"Sahelian Leather Charm","category":"equipment","itemLevel":24,"rarityId":"superior","provenance":{"kind":"cultural","identityId":"sahel_leatherwork"},"unique":false,"requirements":{"startYear":1450,"endYear":1820,"regionIds":["africa"]},"enhancement":{"maxRank":3,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["outfitter","relic_merchant"],"basePriceMinor":220,"minimumWealth":10},"comparison":{"slotIds":["trinket"],"majorStats":{"heatResistance":14,"armor":2},"effectIds":["desert_endurance"]},"evidenceIds":[]},
-    {"id":"indian_wootz_tulwar","name":"Wootz Tulwar","category":"equipment","itemLevel":58,"rarityId":"rare","provenance":{"kind":"regional","identityId":"deccan_wootz"},"unique":false,"requirements":{"startYear":1450,"endYear":1800,"regionIds":["middle_east_india"]},"enhancement":{"maxRank":5,"maxRestoration":3},"merchant":{"eligible":true,"archetypeIds":["armourer","relic_merchant"],"basePriceMinor":720,"minimumWealth":30,"requiresTradeAccess":true},"comparison":{"slotIds":["primary"],"majorStats":{"meleePower":30,"armorPiercing":14},"effectIds":[]},"evidenceIds":[]},
-    {"id":"japanese_lacquered_jingasa","name":"Lacquered Jingasa","category":"equipment","itemLevel":34,"rarityId":"superior","provenance":{"kind":"cultural","identityId":"japanese_lacquer"},"unique":false,"requirements":{"startYear":1500,"endYear":1820,"regionIds":["east_asia"]},"enhancement":{"maxRank":4,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["armourer","outfitter"],"basePriceMinor":370,"minimumWealth":15},"comparison":{"slotIds":["head"],"majorStats":{"armor":11,"rangedResistance":5},"effectIds":[]},"evidenceIds":[]},
-    {"id":"malay_kris","name":"Malay Kris","category":"equipment","itemLevel":30,"rarityId":"fine","provenance":{"kind":"cultural","identityId":"malay_kris"},"unique":false,"requirements":{"startYear":1450,"endYear":1820,"regionIds":["southeast_asia"]},"enhancement":{"maxRank":4,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["armourer","general_merchant"],"basePriceMinor":310,"minimumWealth":10},"comparison":{"slotIds":["primary"],"majorStats":{"meleePower":14,"concealment":8},"effectIds":[]},"evidenceIds":[]},
-    {"id":"polynesian_adze","name":"Polynesian Adze","category":"tool","itemLevel":18,"rarityId":"fine","provenance":{"kind":"regional","identityId":"pacific_adze"},"unique":false,"requirements":{"startYear":1450,"endYear":1820,"regionIds":["pacific"]},"enhancement":{"maxRank":2,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["general_merchant","ship_chandler","dockyard"],"basePriceMinor":140,"minimumWealth":5},"comparison":{"slotIds":[],"majorStats":{"repair":12,"woodcraft":15},"effectIds":[]},"evidenceIds":[]},
-    {"id":"cavalry_saddle","name":"Cavalry Saddle","category":"equipment","itemLevel":26,"rarityId":"common","provenance":{"kind":"profession","identityId":"saddler_work"},"unique":false,"requirements":{"startYear":1450,"endYear":1820},"enhancement":{"maxRank":3,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["horse_dealer","military_supplier"],"basePriceMinor":280,"minimumWealth":10,"localProductionAny":["leather"]},"comparison":{"slotIds":["mount"],"majorStats":{"mountedMobility":12,"mountedGuard":4},"effectIds":[]},"evidenceIds":[]},
-    {"id":"mariners_astrolabe","name":"Mariner's Astrolabe","category":"tool","itemLevel":25,"rarityId":"fine","provenance":{"kind":"set_piece","identityId":"navigator_astrolabe"},"unique":false,"requirements":{"startYear":1480,"endYear":1750,"technologyIds":["oceanic_seamanship"]},"enhancement":{"maxRank":3,"maxRestoration":2},"merchant":{"eligible":true,"archetypeIds":["bookseller_cartographer","ship_chandler"],"basePriceMinor":290,"minimumWealth":15,"requiresTradeAccess":true},"comparison":{"slotIds":[],"majorStats":{"navigation":16},"effectIds":["route_finding"],"setId":"ocean_navigator_set"},"evidenceIds":[]},
-    {"id":"portolan_chart","name":"Portolan Chart","category":"book_map","itemLevel":22,"rarityId":"fine","provenance":{"kind":"set_piece","identityId":"navigator_portolan"},"unique":false,"requirements":{"startYear":1450,"endYear":1750},"enhancement":{"maxRank":2,"maxRestoration":1},"merchant":{"eligible":true,"archetypeIds":["bookseller_cartographer","ship_chandler"],"basePriceMinor":240,"minimumWealth":15,"requiresTradeAccess":true},"comparison":{"slotIds":[],"majorStats":{"navigation":12,"tradeRange":4},"effectIds":[],"setId":"ocean_navigator_set"},"evidenceIds":[]},
-    {"id":"brass_dividers","name":"Brass Chart Dividers","category":"tool","itemLevel":20,"rarityId":"common","provenance":{"kind":"set_piece","identityId":"navigator_dividers"},"unique":false,"requirements":{"startYear":1450,"endYear":1820},"enhancement":{"maxRank":2,"maxRestoration":1},"merchant":{"eligible":true,"archetypeIds":["bookseller_cartographer","ship_chandler"],"basePriceMinor":170,"minimumWealth":10,"localProductionAny":["brass"]},"comparison":{"slotIds":[],"majorStats":{"navigation":8,"survey":5},"effectIds":[],"setId":"ocean_navigator_set"},"evidenceIds":[]},
-    {"id":"magellans_compass","name":"Compass of the Victoria Expedition","category":"artifact","itemLevel":78,"rarityId":"legendary","provenance":{"kind":"historical","identityId":"magellan_victoria_compass"},"unique":true,"requirements":{"startYear":1522,"endYear":1820,"questFlagIds":["circumnavigation_legacy"]},"enhancement":{"maxRank":3,"maxRestoration":5},"merchant":{"eligible":false,"archetypeIds":[],"basePriceMinor":5000,"minimumWealth":0},"comparison":{"slotIds":["trinket"],"majorStats":{"navigation":35,"morale":8},"effectIds":["route_finding"]},"evidenceIds":["magellan_expedition"]},
-    {"id":"tipu_sultans_tiger_emblem","name":"Tiger Emblem of Mysore","category":"artifact","itemLevel":115,"rarityId":"relic","provenance":{"kind":"historical","identityId":"mysore_tiger_emblem"},"unique":true,"requirements":{"startYear":1782,"endYear":1820,"controllerIds":["mysore_kingdom"]},"enhancement":{"maxRank":2,"maxRestoration":5},"merchant":{"eligible":true,"archetypeIds":["relic_merchant"],"basePriceMinor":9000,"minimumWealth":80,"requiresTradeAccess":true},"comparison":{"slotIds":["trinket"],"majorStats":{"command":30,"morale":22},"effectIds":["set_command"]},"evidenceIds":["mysore_tiger"]}
+    {
+      "id": "afghan_pulwar",
+      "name": "Afghan Pulwar",
+      "category": "equipment",
+      "itemLevel": 86,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "afghan_pulwar"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1600,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1198,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 40,
+          "mountedPower": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ahmad_ibn_ibrahim_campaign_shotel",
+      "name": "Ahmad ibn Ibrahim Campaign Shotel",
+      "category": "equipment",
+      "itemLevel": 158,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "gragn_campaign_shotel"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1527,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2134,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 52,
+          "morale": 15
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "adal_campaign"
+      ]
+    },
+    {
+      "id": "akan_diplomat_ceremonial_sword",
+      "name": "Akan Diplomat Ceremonial Sword",
+      "category": "equipment",
+      "itemLevel": 109,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "akan_diplomat_ceremonial_sword"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1497,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 36
+        },
+        "effectIds": [],
+        "setId": "akan_diplomat_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "akan_diplomat_goldweight_scale",
+      "name": "Akan Diplomat Goldweight Scale",
+      "category": "equipment",
+      "itemLevel": 116,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "akan_diplomat_goldweight_scale"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1588,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "utility": 29,
+          "mobility": 9
+        },
+        "effectIds": [],
+        "setId": "akan_diplomat_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "akan_diplomat_state_emblem",
+      "name": "Akan Diplomat State Emblem",
+      "category": "equipment",
+      "itemLevel": 124,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "akan_diplomat_state_emblem"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1692,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 31,
+          "mobility": 10
+        },
+        "effectIds": [],
+        "setId": "akan_diplomat_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "akan_diplomat_woven_robe",
+      "name": "Akan Diplomat Woven Robe",
+      "category": "equipment",
+      "itemLevel": 101,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "akan_diplomat_woven_robe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1393,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 25
+        },
+        "effectIds": [],
+        "setId": "akan_diplomat_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "akan_goldweight_charm",
+      "name": "Akan Goldweight Charm",
+      "category": "equipment",
+      "itemLevel": 58,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "akan_goldweight_charm"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "general_merchant",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 834,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "trade": 23,
+          "diplomacy": 9
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "akbars_sun_emblem",
+      "name": "Akbars Sun Emblem",
+      "category": "artifact",
+      "itemLevel": 202,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "akbar_sun_emblem"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1582,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2706,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 33,
+          "scholarship": 25
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "akbar_emblem"
+      ]
+    },
+    {
+      "id": "arabian_courser_tack",
+      "name": "Arabian Courser Tack",
+      "category": "equipment",
+      "itemLevel": 89,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "arabian_courser_tack"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer"
+        ],
+        "basePriceMinor": 1237,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 34,
+          "heatResistance": 13
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "arming_sword",
+      "name": "Arming Sword",
+      "category": "equipment",
+      "itemLevel": 12,
+      "rarityId": "common",
+      "provenance": {
+        "kind": "generic"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1650
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 120,
+        "minimumWealth": 5,
+        "localProductionAny": [
+          "iron"
+        ]
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 8,
+          "guard": 2
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "askia_muhammads_pilgrimage_sword",
+      "name": "Askia Muhammads Pilgrimage Sword",
+      "category": "equipment",
+      "itemLevel": 143,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "askia_pilgrimage_sword"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1497,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 1939,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 47,
+          "morale": 14
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "askia_pilgrimage"
+      ]
+    },
+    {
+      "id": "baburs_memoir_manuscript",
+      "name": "Baburs Memoir Manuscript",
+      "category": "artifact",
+      "itemLevel": 173,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "baburnama_manuscript"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1526,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2329,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 28,
+          "scholarship": 21
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "baburnama"
+      ]
+    },
+    {
+      "id": "block_printed_angarkha",
+      "name": "Block Printed Angarkha",
+      "category": "equipment",
+      "itemLevel": 45,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "block_printed_angarkha"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "general_merchant"
+        ],
+        "basePriceMinor": 665,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "heatResistance": 16,
+          "diplomacy": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "bornu_cavalry_lance",
+      "name": "Bornu Cavalry Lance",
+      "category": "equipment",
+      "itemLevel": 82,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "bornu_cavalry_lance"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "horse_dealer"
+        ],
+        "basePriceMinor": 1146,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 31,
+          "mountedPower": 24
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "brass_dividers",
+      "name": "Brass Chart Dividers",
+      "category": "tool",
+      "itemLevel": 20,
+      "rarityId": "common",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "navigator_dividers"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 170,
+        "minimumWealth": 10,
+        "localProductionAny": [
+          "brass"
+        ]
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 8,
+          "survey": 5
+        },
+        "effectIds": [],
+        "setId": "ocean_navigator_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "brass_sextant",
+      "name": "Brass Sextant",
+      "category": "tool",
+      "itemLevel": 145,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "brass_sextant"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1731,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1965,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 52,
+          "survey": 17
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "buff_coat",
+      "name": "Buff Coat",
+      "category": "equipment",
+      "itemLevel": 36,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "company_officer_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1780
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "outfitter",
+          "military_supplier"
+        ],
+        "basePriceMinor": 330,
+        "minimumWealth": 15
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 13,
+          "mobility": -2
+        },
+        "effectIds": [
+          "steady_guard"
+        ],
+        "setId": "company_officer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "calabash_medical_kit",
+      "name": "Calabash Medical Kit",
+      "category": "tool",
+      "itemLevel": 37,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "calabash_medical_kit"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary",
+          "general_merchant"
+        ],
+        "basePriceMinor": 561,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 18,
+          "poisonResistance": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "cape_aloe_poultice",
+      "name": "Cape Aloe Poultice",
+      "category": "consumable",
+      "itemLevel": 47,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "cape_aloe_poultice"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 611,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 23,
+          "burnResistance": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "caravan_astrolabe",
+      "name": "Caravan Astrolabe",
+      "category": "tool",
+      "itemLevel": 54,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "caravan_astrolabe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1750,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 782,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 20,
+          "caravanRange": 13
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "cavalry_saddle",
+      "name": "Cavalry Saddle",
+      "category": "equipment",
+      "itemLevel": 26,
+      "rarityId": "common",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "saddler_work"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 280,
+        "minimumWealth": 10,
+        "localProductionAny": [
+          "leather"
+        ]
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 12,
+          "mountedGuard": 4
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "char_aina_armour",
+      "name": "Char Aina Armour",
+      "category": "equipment",
+      "itemLevel": 93,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "char_aina_armour"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1289,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 39,
+          "mobility": -3
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "cossack_shashka",
+      "name": "Cossack Shashka",
+      "category": "equipment",
+      "itemLevel": 97,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "cossack_shashka"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1341,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 39,
+          "mountedMobility": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "dahomey_flintlock",
+      "name": "Dahomey Flintlock",
+      "category": "equipment",
+      "itemLevel": 139,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "dahomey_flintlock"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1720,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ],
+        "eventFlagIds": [
+          "atlantic_routes_expand"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1887,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 57,
+          "mobility": 4
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "deccani_katar",
+      "name": "Deccani Katar",
+      "category": "equipment",
+      "itemLevel": 61,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "deccani_katar"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 873,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "meleePower": 24,
+          "concealment": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "drakes_circumnavigation_astrolabe",
+      "name": "Drakes Circumnavigation Astrolabe",
+      "category": "artifact",
+      "itemLevel": 184,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "drake_astrolabe"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2472,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 30,
+          "scholarship": 23
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "drake_voyage"
+      ]
+    },
+    {
+      "id": "east_african_sailmakers_palm",
+      "name": "East African Sailmakers Palm",
+      "category": "tool",
+      "itemLevel": 46,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "east_african_sailmakers_palm"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "ship_chandler",
+          "dockyard"
+        ],
+        "basePriceMinor": 678,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "repair": 20,
+          "sailcraft": 14
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "english_longbow",
+      "name": "English Longbow",
+      "category": "equipment",
+      "itemLevel": 31,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "english_longbow"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1650,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 483,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 19,
+          "reload": 3
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "enlightenment_savant_calipers",
+      "name": "Enlightenment Savant Calipers",
+      "category": "equipment",
+      "itemLevel": 111,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "enlightenment_savant_calipers"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1680,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1523,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "utility": 27,
+          "mobility": 9
+        },
+        "effectIds": [],
+        "setId": "enlightenment_savant_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "enlightenment_savant_lens",
+      "name": "Enlightenment Savant Lens",
+      "category": "equipment",
+      "itemLevel": 125,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "enlightenment_savant_lens"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1680,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1705,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 31,
+          "mobility": 10
+        },
+        "effectIds": [],
+        "setId": "enlightenment_savant_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "enlightenment_savant_notebook",
+      "name": "Enlightenment Savant Notebook",
+      "category": "equipment",
+      "itemLevel": 132,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "enlightenment_savant_notebook"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1680,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1796,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 33,
+          "mobility": 11
+        },
+        "effectIds": [],
+        "setId": "enlightenment_savant_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "enlightenment_savant_scholars_coat",
+      "name": "Enlightenment Savant Scholars Coat",
+      "category": "equipment",
+      "itemLevel": 118,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "enlightenment_savant_scholars_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1680,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1614,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 29
+        },
+        "effectIds": [],
+        "setId": "enlightenment_savant_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_hide_shield",
+      "name": "Ethiopian Hide Shield",
+      "category": "equipment",
+      "itemLevel": 44,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "ethiopian_hide_shield"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer"
+        ],
+        "basePriceMinor": 652,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "guard": 22,
+          "rangedResistance": 6
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_highland_highland_sandals",
+      "name": "Ethiopian Highland Highland Sandals",
+      "category": "equipment",
+      "itemLevel": 74,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ethiopian_highland_highland_sandals"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1042,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 18,
+          "mobility": 6
+        },
+        "effectIds": [],
+        "setId": "ethiopian_highland_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_highland_lamellar_coat",
+      "name": "Ethiopian Highland Lamellar Coat",
+      "category": "equipment",
+      "itemLevel": 90,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ethiopian_highland_lamellar_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1250,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 22
+        },
+        "effectIds": [],
+        "setId": "ethiopian_highland_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_highland_processional_cross",
+      "name": "Ethiopian Highland Processional Cross",
+      "category": "equipment",
+      "itemLevel": 96,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ethiopian_highland_processional_cross"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1328,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 24,
+          "mobility": 8
+        },
+        "effectIds": [],
+        "setId": "ethiopian_highland_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_highland_shotel",
+      "name": "Ethiopian Highland Shotel",
+      "category": "equipment",
+      "itemLevel": 83,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ethiopian_highland_shotel"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1159,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 27
+        },
+        "effectIds": [],
+        "setId": "ethiopian_highland_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_illuminated_psalter",
+      "name": "Ethiopian Illuminated Psalter",
+      "category": "book_map",
+      "itemLevel": 84,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "ethiopian_illuminated_psalter"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 1172,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "resolve": 23,
+          "scholarship": 18
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ethiopian_shotel",
+      "name": "Ethiopian Shotel",
+      "category": "equipment",
+      "itemLevel": 63,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "ethiopian_shotel"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 899,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 29,
+          "armorPiercing": 16
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "field_surgeons_case",
+      "name": "Field Surgeons Case",
+      "category": "tool",
+      "itemLevel": 88,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "field_surgeons_case"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1600,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1224,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 31,
+          "surgery": 18
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "flintlock_fusil",
+      "name": "Flintlock Fusil",
+      "category": "equipment",
+      "itemLevel": 106,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "flintlock_fusil"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1630,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1458,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 46,
+          "reload": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "grenadier_mitre",
+      "name": "Grenadier Mitre",
+      "category": "equipment",
+      "itemLevel": 119,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "grenadier_mitre"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1680,
+        "endYear": 1800,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1627,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "armor": 12,
+          "morale": 24
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "guild_forged_rondel",
+      "name": "Guild Forged Rondel",
+      "category": "equipment",
+      "itemLevel": 18,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "guild_forged_rondel"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1650,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer"
+        ],
+        "basePriceMinor": 314,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 9,
+          "armorPiercing": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "haoussa_saddle",
+      "name": "Haoussa Saddle",
+      "category": "equipment",
+      "itemLevel": 69,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "haoussa_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer"
+        ],
+        "basePriceMinor": 977,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 25,
+          "heatResistance": 11
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "henry_viii_field_armour",
+      "name": "Henry VIII Field Armour",
+      "category": "equipment",
+      "itemLevel": 172,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "henry_viii_field_armour"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1520,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2316,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "meleePower": 57,
+          "morale": 17
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "henry_armour"
+      ]
+    },
+    {
+      "id": "iberian_explorer_boots",
+      "name": "Iberian Explorer Boots",
+      "category": "equipment",
+      "itemLevel": 55,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "iberian_explorer_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 795,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 13,
+          "mobility": 4
+        },
+        "effectIds": [],
+        "setId": "iberian_explorer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "iberian_explorer_chest",
+      "name": "Iberian Explorer Chest",
+      "category": "equipment",
+      "itemLevel": 61,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "iberian_explorer_chest"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 873,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 15
+        },
+        "effectIds": [],
+        "setId": "iberian_explorer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "iberian_explorer_primary",
+      "name": "Iberian Explorer Primary",
+      "category": "equipment",
+      "itemLevel": 68,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "iberian_explorer_primary"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 964,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 22
+        },
+        "effectIds": [],
+        "setId": "iberian_explorer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "iberian_explorer_trinket",
+      "name": "Iberian Explorer Trinket",
+      "category": "equipment",
+      "itemLevel": 72,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "iberian_explorer_trinket"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1016,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 18,
+          "mobility": 6
+        },
+        "effectIds": [],
+        "setId": "iberian_explorer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "idris_aloomas_qurancase",
+      "name": "Idris Aloomas Qurancase",
+      "category": "artifact",
+      "itemLevel": 181,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "idris_alooma_qurancase"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1571,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2433,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 30,
+          "scholarship": 22
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "idris_alooma"
+      ]
+    },
+    {
+      "id": "indian_ocean_hakim_medical_canon",
+      "name": "Indian Ocean Hakim Medical Canon",
+      "category": "equipment",
+      "itemLevel": 110,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "indian_ocean_hakim_medical_canon"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1510,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 27,
+          "mobility": 9
+        },
+        "effectIds": [],
+        "setId": "indian_ocean_hakim_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "indian_ocean_hakim_medicine_case",
+      "name": "Indian Ocean Hakim Medicine Case",
+      "category": "equipment",
+      "itemLevel": 102,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "indian_ocean_hakim_medicine_case"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1406,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "utility": 25,
+          "mobility": 8
+        },
+        "effectIds": [],
+        "setId": "indian_ocean_hakim_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "indian_ocean_hakim_physicians_robe",
+      "name": "Indian Ocean Hakim Physicians Robe",
+      "category": "equipment",
+      "itemLevel": 87,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "indian_ocean_hakim_physicians_robe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1211,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 21
+        },
+        "effectIds": [],
+        "setId": "indian_ocean_hakim_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "indian_ocean_hakim_surgical_lancet",
+      "name": "Indian Ocean Hakim Surgical Lancet",
+      "category": "equipment",
+      "itemLevel": 94,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "indian_ocean_hakim_surgical_lancet"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1302,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 31
+        },
+        "effectIds": [],
+        "setId": "indian_ocean_hakim_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "indian_wootz_tulwar",
+      "name": "Wootz Tulwar",
+      "category": "equipment",
+      "itemLevel": 58,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "deccan_wootz"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1800,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 3
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 720,
+        "minimumWealth": 30,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 30,
+          "armorPiercing": 14
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "janissary_bork",
+      "name": "Janissary Bork",
+      "category": "equipment",
+      "itemLevel": 72,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "janissary_bork"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1016,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "morale": 21,
+          "command": 9
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "japanese_lacquered_jingasa",
+      "name": "Lacquered Jingasa",
+      "category": "equipment",
+      "itemLevel": 34,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "japanese_lacquer"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "east_asia"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "outfitter"
+        ],
+        "basePriceMinor": 370,
+        "minimumWealth": 15
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "armor": 11,
+          "rangedResistance": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "jesuit_bark_tonic",
+      "name": "Jesuit Bark Tonic",
+      "category": "consumable",
+      "itemLevel": 101,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "jesuit_bark_tonic"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 1313,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 34,
+          "feverResistance": 25
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "kaskara_broadsword",
+      "name": "Kaskara Broadsword",
+      "category": "equipment",
+      "itemLevel": 71,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "kaskara_broadsword"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 1003,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 34,
+          "guard": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "kola_restorative",
+      "name": "Kola Restorative",
+      "category": "consumable",
+      "itemLevel": 34,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "kola_restorative"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary",
+          "general_merchant"
+        ],
+        "basePriceMinor": 442,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "fatigueRelief": 19,
+          "morale": 6
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "landsknecht_katzbalger",
+      "name": "Landsknecht Katzbalger",
+      "category": "equipment",
+      "itemLevel": 47,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "landsknecht_katzbalger"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1485,
+        "endYear": 1650,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 691,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 22,
+          "morale": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "laudanum_phial",
+      "name": "Laudanum Phial",
+      "category": "consumable",
+      "itemLevel": 66,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "generic"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1670,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 858,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 26,
+          "fatigueRelief": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "leonardos_survey_notebook",
+      "name": "Leonardos Survey Notebook",
+      "category": "artifact",
+      "itemLevel": 155,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "quest",
+        "identityId": "leonardo_survey_notebook"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1480,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ],
+        "questFlagIds": [
+          "leonardo_da_vinci_loyalty"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2095,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 25,
+          "scholarship": 19
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "magellans_compass",
+      "name": "Compass of the Victoria Expedition",
+      "category": "artifact",
+      "itemLevel": 78,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "magellan_victoria_compass"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1522,
+        "endYear": 1820,
+        "questFlagIds": [
+          "circumnavigation_legacy"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 5000,
+        "minimumWealth": 0
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "navigation": 35,
+          "morale": 8
+        },
+        "effectIds": [
+          "route_finding"
+        ]
+      },
+      "evidenceIds": [
+        "magellan_expedition"
+      ]
+    },
+    {
+      "id": "maghrebi_nimcha",
+      "name": "Maghrebi Nimcha",
+      "category": "equipment",
+      "itemLevel": 55,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "maghrebi_nimcha"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 795,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 27,
+          "boarding": 9
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mail_and_quilted_jibba",
+      "name": "Mail and Quilted Jibba",
+      "category": "equipment",
+      "itemLevel": 67,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "mail_and_quilted_jibba"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1800,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 951,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 29,
+          "heatResistance": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "malay_kris",
+      "name": "Malay Kris",
+      "category": "equipment",
+      "itemLevel": 30,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "malay_kris"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "southeast_asia"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 310,
+        "minimumWealth": 10
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 14,
+          "concealment": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mandinka_hide_shield",
+      "name": "Mandinka Hide Shield",
+      "category": "equipment",
+      "itemLevel": 29,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "mandinka_hide_shield"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 457,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "guard": 16,
+          "heatResistance": 7
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maratha_bargir_saddle",
+      "name": "Maratha Bargir Saddle",
+      "category": "equipment",
+      "itemLevel": 102,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "maratha_bargir_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1406,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 38,
+          "supplyEfficiency": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maratha_light_horse_bargir_tack",
+      "name": "Maratha Light Horse Bargir Tack",
+      "category": "equipment",
+      "itemLevel": 147,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "maratha_light_horse_bargir_tack"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1991,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 36
+        },
+        "effectIds": [],
+        "setId": "maratha_light_horse_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maratha_light_horse_quilted_coat",
+      "name": "Maratha Light Horse Quilted Coat",
+      "category": "equipment",
+      "itemLevel": 131,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "maratha_light_horse_quilted_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1783,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 32
+        },
+        "effectIds": [],
+        "setId": "maratha_light_horse_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maratha_light_horse_riding_shoes",
+      "name": "Maratha Light Horse Riding Shoes",
+      "category": "equipment",
+      "itemLevel": 124,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "maratha_light_horse_riding_shoes"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1692,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 31,
+          "mobility": 10
+        },
+        "effectIds": [],
+        "setId": "maratha_light_horse_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maratha_light_horse_tulwar",
+      "name": "Maratha Light Horse Tulwar",
+      "category": "equipment",
+      "itemLevel": 139,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "maratha_light_horse_tulwar"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1887,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 46
+        },
+        "effectIds": [],
+        "setId": "maratha_light_horse_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "marine_chronometer",
+      "name": "Marine Chronometer",
+      "category": "tool",
+      "itemLevel": 211,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "marine_chronometer"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1761,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ],
+        "technologyIds": [
+          "marine_chronometer"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 3
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 2823,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 72,
+          "survey": 21
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mariners_astrolabe",
+      "name": "Mariner's Astrolabe",
+      "category": "tool",
+      "itemLevel": 25,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "navigator_astrolabe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1480,
+        "endYear": 1750,
+        "technologyIds": [
+          "oceanic_seamanship"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 290,
+        "minimumWealth": 15,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 16
+        },
+        "effectIds": [
+          "route_finding"
+        ],
+        "setId": "ocean_navigator_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "matchlock_musket",
+      "name": "Matchlock Musket",
+      "category": "equipment",
+      "itemLevel": 42,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "gunsmith_musket"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1520,
+        "endYear": 1720,
+        "technologyIds": [
+          "cast_cannon"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 460,
+        "minimumWealth": 20,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 25,
+          "reload": -8
+        },
+        "effectIds": [
+          "powder_drill"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "maximilian_cuirass",
+      "name": "Maximilian Cuirass",
+      "category": "equipment",
+      "itemLevel": 62,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "maximilian_cuirass"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1510,
+        "endYear": 1650,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 886,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 28,
+          "mobility": -5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mercator_projection_chart",
+      "name": "Mercator Projection Chart",
+      "category": "book_map",
+      "itemLevel": 81,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "mercator_1569_projection"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1569,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1133,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 29,
+          "tradeRange": 11
+        },
+        "effectIds": []
+      },
+      "evidenceIds": [
+        "mercator_projection"
+      ]
+    },
+    {
+      "id": "milanese_sallet",
+      "name": "Milanese Sallet",
+      "category": "equipment",
+      "itemLevel": 34,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "milanese_sallet"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1600,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer"
+        ],
+        "basePriceMinor": 522,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "armor": 14,
+          "mobility": 1
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "monsoon_kamal",
+      "name": "Monsoon Kamal",
+      "category": "tool",
+      "itemLevel": 32,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "monsoon_kamal"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1700,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 496,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 17,
+          "monsoonKnowledge": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "moroccan_snaphaunce",
+      "name": "Moroccan Snaphaunce",
+      "category": "equipment",
+      "itemLevel": 96,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "moroccan_snaphaunce"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1630,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1328,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 41,
+          "reload": 6
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_kulah_khud",
+      "name": "Mughal Kulah Khud",
+      "category": "equipment",
+      "itemLevel": 88,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "mughal_kulah_khud"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1224,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "armor": 27,
+          "command": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_mansabdar_char_aina",
+      "name": "Mughal Mansabdar Char Aina",
+      "category": "equipment",
+      "itemLevel": 128,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "mughal_mansabdar_char_aina"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1744,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 32
+        },
+        "effectIds": [],
+        "setId": "mughal_mansabdar_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_mansabdar_court_sash",
+      "name": "Mughal Mansabdar Court Sash",
+      "category": "equipment",
+      "itemLevel": 112,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "mughal_mansabdar_court_sash"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1536,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 28,
+          "mobility": 9
+        },
+        "effectIds": [],
+        "setId": "mughal_mansabdar_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_mansabdar_jeweled_tack",
+      "name": "Mughal Mansabdar Jeweled Tack",
+      "category": "equipment",
+      "itemLevel": 136,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "mughal_mansabdar_jeweled_tack"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1848,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 34
+        },
+        "effectIds": [],
+        "setId": "mughal_mansabdar_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_mansabdar_shamshir",
+      "name": "Mughal Mansabdar Shamshir",
+      "category": "equipment",
+      "itemLevel": 119,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "mughal_mansabdar_shamshir"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1627,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 39
+        },
+        "effectIds": [],
+        "setId": "mughal_mansabdar_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_pharmacopoeia",
+      "name": "Mughal Pharmacopoeia",
+      "category": "book_map",
+      "itemLevel": 107,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "mughal_pharmacopoeia"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "apothecary"
+        ],
+        "basePriceMinor": 1471,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 31,
+          "scholarship": 24
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mughal_toradar",
+      "name": "Mughal Toradar",
+      "category": "equipment",
+      "itemLevel": 99,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "mughal_toradar"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1367,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 45,
+          "range": 13
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "myrrh_wound_salve",
+      "name": "Myrrh Wound Salve",
+      "category": "consumable",
+      "itemLevel": 28,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "myrrh_wound_salve"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 364,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 17,
+          "infectionResistance": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "mysorean_rocket_case",
+      "name": "Mysorean Rocket Case",
+      "category": "tool",
+      "itemLevel": 177,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "mysorean_rocket_case"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1780,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ],
+        "controllerIds": [
+          "mysore_kingdom"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier"
+        ],
+        "basePriceMinor": 2381,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "siegePower": 64,
+          "terror": 18
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "naval_hanger",
+      "name": "Naval Hanger",
+      "category": "equipment",
+      "itemLevel": 44,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "company_officer_blade"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1600,
+        "endYear": 1820
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 490,
+        "minimumWealth": 20,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 18,
+          "boarding": 12
+        },
+        "effectIds": [
+          "boarding_edge"
+        ],
+        "conditionalEffects": [
+          {
+            "id": "boarding_edge",
+            "condition": "aboard_ship"
+          }
+        ],
+        "setId": "company_officer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "nelsons_nile_sword",
+      "name": "Nelsons Nile Sword",
+      "category": "equipment",
+      "itemLevel": 264,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "nelson_nile_sword"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1798,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 6,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 3512,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 88,
+          "morale": 26
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "nelson_nile"
+      ]
+    },
+    {
+      "id": "newton_principia_presentation_copy",
+      "name": "Newton Principia Presentation Copy",
+      "category": "artifact",
+      "itemLevel": 221,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "newton_principia_copy"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1687,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2953,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 36,
+          "scholarship": 27
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "newton_principia"
+      ]
+    },
+    {
+      "id": "northern_privateer_cutlass",
+      "name": "Northern Privateer Cutlass",
+      "category": "equipment",
+      "itemLevel": 86,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "northern_privateer_cutlass"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1198,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 28
+        },
+        "effectIds": [],
+        "setId": "northern_privateer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "northern_privateer_letter_of_marque",
+      "name": "Northern Privateer Letter of Marque",
+      "category": "equipment",
+      "itemLevel": 91,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "northern_privateer_letter_of_marque"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1263,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 22,
+          "mobility": 7
+        },
+        "effectIds": [],
+        "setId": "northern_privateer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "northern_privateer_sea_boots",
+      "name": "Northern Privateer Sea Boots",
+      "category": "equipment",
+      "itemLevel": 70,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "northern_privateer_sea_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 990,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 17,
+          "mobility": 5
+        },
+        "effectIds": [],
+        "setId": "northern_privateer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "northern_privateer_sea_coat",
+      "name": "Northern Privateer Sea Coat",
+      "category": "equipment",
+      "itemLevel": 79,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "northern_privateer_sea_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1580,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1107,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 19
+        },
+        "effectIds": [],
+        "setId": "northern_privateer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "nzinga_mbandes_diplomatic_staff",
+      "name": "Nzinga Mbandes Diplomatic Staff",
+      "category": "equipment",
+      "itemLevel": 197,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "quest",
+        "identityId": "nzinga_diplomatic_staff"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1624,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ],
+        "questFlagIds": [
+          "nzinga_mbande_loyalty"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2641,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 65,
+          "morale": 19
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "officers_sash",
+      "name": "Officer's Sash",
+      "category": "equipment",
+      "itemLevel": 32,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "company_officer_sash"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "military_supplier"
+        ],
+        "basePriceMinor": 260,
+        "minimumWealth": 15
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 10,
+          "armor": 1
+        },
+        "effectIds": [],
+        "setId": "company_officer_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "opium_pain_draught",
+      "name": "Opium Pain Draught",
+      "category": "consumable",
+      "itemLevel": 62,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "opium_pain_draught"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 806,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 25,
+          "fatigueRelief": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "osei_tutus_state_sword",
+      "name": "Osei Tutus State Sword",
+      "category": "equipment",
+      "itemLevel": 226,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "osei_tutu_state_sword"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1701,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 3018,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 75,
+          "morale": 22
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "osei_tutu"
+      ]
+    },
+    {
+      "id": "ottoman_kalkan",
+      "name": "Ottoman Kalkan",
+      "category": "equipment",
+      "itemLevel": 59,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "ottoman_kalkan"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1750,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 847,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "guard": 27,
+          "rangedResistance": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_kilij",
+      "name": "Ottoman Kilij",
+      "category": "equipment",
+      "itemLevel": 66,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "ottoman_kilij"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 938,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 32,
+          "mountedPower": 13
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_mail_and_plate",
+      "name": "Ottoman Mail and Plate",
+      "category": "equipment",
+      "itemLevel": 78,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "ottoman_mail_and_plate"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1750,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1094,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 35,
+          "mountedGuard": 9
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_matchlock_tufek",
+      "name": "Ottoman Matchlock Tufek",
+      "category": "equipment",
+      "itemLevel": 82,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "ottoman_matchlock_tufek"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1520,
+        "endYear": 1750,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1146,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 37,
+          "reload": -4
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_sipahi_horse_tack",
+      "name": "Ottoman Sipahi Horse Tack",
+      "category": "equipment",
+      "itemLevel": 104,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ottoman_sipahi_horse_tack"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1432,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 26
+        },
+        "effectIds": [],
+        "setId": "ottoman_sipahi_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_sipahi_kilij",
+      "name": "Ottoman Sipahi Kilij",
+      "category": "equipment",
+      "itemLevel": 89,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ottoman_sipahi_kilij"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1237,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 29
+        },
+        "effectIds": [],
+        "setId": "ottoman_sipahi_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_sipahi_mail_coat",
+      "name": "Ottoman Sipahi Mail Coat",
+      "category": "equipment",
+      "itemLevel": 97,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ottoman_sipahi_mail_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1341,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 24
+        },
+        "effectIds": [],
+        "setId": "ottoman_sipahi_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "ottoman_sipahi_riding_boots",
+      "name": "Ottoman Sipahi Riding Boots",
+      "category": "equipment",
+      "itemLevel": 81,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "ottoman_sipahi_riding_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1133,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 20,
+          "mobility": 6
+        },
+        "effectIds": [],
+        "setId": "ottoman_sipahi_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "pattern_infantry_musket",
+      "name": "Pattern Infantry Musket",
+      "category": "equipment",
+      "itemLevel": 158,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "pattern_infantry_musket"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1720,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ],
+        "technologyIds": [
+          "flintlock_drill"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 2134,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "rangedPower": 68,
+          "reload": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "persian_astrolabe",
+      "name": "Persian Astrolabe",
+      "category": "tool",
+      "itemLevel": 70,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "persian_astrolabe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1750,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 990,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 26,
+          "scholarship": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "persian_shamshir",
+      "name": "Persian Shamshir",
+      "category": "equipment",
+      "itemLevel": 74,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "persian_shamshir"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 1042,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 36,
+          "meleeFinesse": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "piri_reis_coastal_chart",
+      "name": "Piri Reis Coastal Chart",
+      "category": "book_map",
+      "itemLevel": 94,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "piri_reis_bahriye_chart"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1513,
+        "endYear": 1750,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1302,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 38,
+          "survey": 17
+        },
+        "effectIds": []
+      },
+      "evidenceIds": [
+        "piri_reis_chart"
+      ]
+    },
+    {
+      "id": "piri_reis_master_portolan",
+      "name": "Piri Reis Master Portolan",
+      "category": "artifact",
+      "itemLevel": 188,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "quest",
+        "identityId": "piri_reis_master_portolan"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1513,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ],
+        "questFlagIds": [
+          "piri_reis_loyalty"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2524,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 31,
+          "scholarship": 23
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "polish_hussar_saddle",
+      "name": "Polish Hussar Saddle",
+      "category": "equipment",
+      "itemLevel": 112,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "polity",
+        "identityId": "polish_hussar_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1575,
+        "endYear": 1775,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1536,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedGuard": 30,
+          "mountedMobility": 24
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "polynesian_adze",
+      "name": "Polynesian Adze",
+      "category": "tool",
+      "itemLevel": 18,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "pacific_adze"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "pacific"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "general_merchant",
+          "ship_chandler",
+          "dockyard"
+        ],
+        "basePriceMinor": 140,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "repair": 12,
+          "woodcraft": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "portolan_chart",
+      "name": "Portolan Chart",
+      "category": "book_map",
+      "itemLevel": 22,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "navigator_portolan"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1750
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 240,
+        "minimumWealth": 15,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 12,
+          "tradeRange": 4
+        },
+        "effectIds": [],
+        "setId": "ocean_navigator_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "postillion_saddle",
+      "name": "Postillion Saddle",
+      "category": "equipment",
+      "itemLevel": 74,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "postillion_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1600,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer"
+        ],
+        "basePriceMinor": 1042,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 28,
+          "travelSpeed": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "printer_scholars_folio",
+      "name": "Printer Scholars Folio",
+      "category": "book_map",
+      "itemLevel": 45,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "printer_scholars_folio"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1470,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ],
+        "institutionIds": [
+          "movable_type_printing"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer"
+        ],
+        "basePriceMinor": 665,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "scholarship": 20,
+          "research": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "quinine_bark_dose",
+      "name": "Cinchona Bark Dose",
+      "category": "consumable",
+      "itemLevel": 28,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "andean_cinchona"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1630,
+        "endYear": 1820,
+        "regionIds": [
+          "americas_caribbean"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary",
+          "general_merchant"
+        ],
+        "basePriceMinor": 180,
+        "minimumWealth": 10,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 20
+        },
+        "effectIds": [
+          "fever_relief"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "rajput_khanda",
+      "name": "Rajput Khanda",
+      "category": "equipment",
+      "itemLevel": 69,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "rajput_khanda"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 977,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 35,
+          "armorPiercing": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "rosewater_cooling_draught",
+      "name": "Rosewater Cooling Draught",
+      "category": "consumable",
+      "itemLevel": 35,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "rosewater_cooling_draught"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 0,
+        "maxRestoration": 0
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary",
+          "general_merchant"
+        ],
+        "basePriceMinor": 455,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 12,
+          "heatResistance": 15
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "royal_cavalry_cuirass",
+      "name": "Royal Cavalry Cuirass",
+      "category": "equipment",
+      "itemLevel": 150,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "royal_cavalry_cuirass"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 2030,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 37
+        },
+        "effectIds": [],
+        "setId": "royal_cavalry_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "royal_cavalry_riding_boots",
+      "name": "Royal Cavalry Riding Boots",
+      "category": "equipment",
+      "itemLevel": 134,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "royal_cavalry_riding_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1822,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 33,
+          "mobility": 11
+        },
+        "effectIds": [],
+        "setId": "royal_cavalry_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "royal_cavalry_sabre",
+      "name": "Royal Cavalry Sabre",
+      "category": "equipment",
+      "itemLevel": 142,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "royal_cavalry_sabre"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1926,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 47
+        },
+        "effectIds": [],
+        "setId": "royal_cavalry_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "royal_cavalry_war_saddle",
+      "name": "Royal Cavalry War Saddle",
+      "category": "equipment",
+      "itemLevel": 158,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "royal_cavalry_war_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 2134,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 39
+        },
+        "effectIds": [],
+        "setId": "royal_cavalry_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "saharan_camel_tack",
+      "name": "Saharan Camel Tack",
+      "category": "equipment",
+      "itemLevel": 51,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "saharan_camel_tack"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 743,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "travelSpeed": 18,
+          "heatResistance": 18
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "saharan_caravan_camel_saddle",
+      "name": "Saharan Caravan Camel Saddle",
+      "category": "equipment",
+      "itemLevel": 58,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "saharan_caravan_camel_saddle"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "horse_dealer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 834,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "mount"
+        ],
+        "majorStats": {
+          "mountedMobility": 14
+        },
+        "effectIds": [],
+        "setId": "saharan_caravan_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "saharan_caravan_caravan_boots",
+      "name": "Saharan Caravan Caravan Boots",
+      "category": "equipment",
+      "itemLevel": 41,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "saharan_caravan_caravan_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 613,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "utility": 10,
+          "mobility": 3
+        },
+        "effectIds": [],
+        "setId": "saharan_caravan_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "saharan_caravan_desert_robe",
+      "name": "Saharan Caravan Desert Robe",
+      "category": "equipment",
+      "itemLevel": 45,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "saharan_caravan_desert_robe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 665,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 11
+        },
+        "effectIds": [],
+        "setId": "saharan_caravan_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "saharan_caravan_takoba",
+      "name": "Saharan Caravan Takoba",
+      "category": "equipment",
+      "itemLevel": 52,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "saharan_caravan_takoba"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 756,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 17
+        },
+        "effectIds": [],
+        "setId": "saharan_caravan_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "sahelian_takoba",
+      "name": "Sahelian Takoba",
+      "category": "equipment",
+      "itemLevel": 48,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "sahelian_takoba"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer",
+          "general_merchant"
+        ],
+        "basePriceMinor": 704,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 24,
+          "heatResistance": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "scottish_targe",
+      "name": "Scottish Targe",
+      "category": "equipment",
+      "itemLevel": 38,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "scottish_targe"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1750,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "armourer"
+        ],
+        "basePriceMinor": 574,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "guard": 19,
+          "rangedResistance": 5
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "sea_officers_justaucorps",
+      "name": "Sea Officers Justaucorps",
+      "category": "equipment",
+      "itemLevel": 92,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "sea_officers_justaucorps"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1660,
+        "endYear": 1790,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1276,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 13,
+          "command": 19
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "shivajis_bhawani_tulwar",
+      "name": "Shivajis Bhawani Tulwar",
+      "category": "equipment",
+      "itemLevel": 238,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "legendary",
+        "identityId": "shivaji_bhawani_tulwar"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1674,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 5,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 3174,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 79,
+          "morale": 23
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "shivaji_bhawani"
+      ]
+    },
+    {
+      "id": "surat_navigators_almanac",
+      "name": "Surat Navigators Almanac",
+      "category": "book_map",
+      "itemLevel": 116,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "surat_navigators_almanac"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1650,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1588,
+        "minimumWealth": 5,
+        "settlementIds": [
+          "surat",
+          "khambhat"
+        ]
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 42,
+          "tradeRange": 19
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "surveyors_plane_table",
+      "name": "Surveyors Plane Table",
+      "category": "tool",
+      "itemLevel": 68,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "surveyors_plane_table"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1550,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "military_supplier"
+        ],
+        "basePriceMinor": 964,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "survey": 27,
+          "engineering": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_kanzu",
+      "name": "Swahili Kanzu",
+      "category": "equipment",
+      "itemLevel": 42,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "swahili_kanzu"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "general_merchant"
+        ],
+        "basePriceMinor": 626,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "heatResistance": 14,
+          "diplomacy": 10
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_pilot_boarding_blade",
+      "name": "Swahili Pilot Boarding Blade",
+      "category": "equipment",
+      "itemLevel": 77,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "swahili_pilot_boarding_blade"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1081,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 25
+        },
+        "effectIds": [],
+        "setId": "swahili_pilot_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_pilot_book",
+      "name": "Swahili Pilot Book",
+      "category": "book_map",
+      "itemLevel": 91,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "swahili_pilot_book"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 1263,
+        "minimumWealth": 5,
+        "settlementIds": [
+          "kilwa",
+          "mombasa",
+          "zanzibar"
+        ]
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "navigation": 34,
+          "monsoonKnowledge": 17
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_pilot_coastal_coat",
+      "name": "Swahili Pilot Coastal Coat",
+      "category": "equipment",
+      "itemLevel": 69,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "swahili_pilot_coastal_coat"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 977,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "chest"
+        ],
+        "majorStats": {
+          "armor": 17
+        },
+        "effectIds": [],
+        "setId": "swahili_pilot_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_pilot_monsoon_ledger",
+      "name": "Swahili Pilot Monsoon Ledger",
+      "category": "equipment",
+      "itemLevel": 91,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "swahili_pilot_monsoon_ledger"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1263,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "utility": 22,
+          "mobility": 7
+        },
+        "effectIds": [],
+        "setId": "swahili_pilot_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "swahili_pilot_pilot_compass",
+      "name": "Swahili Pilot Pilot Compass",
+      "category": "equipment",
+      "itemLevel": 84,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "set_piece",
+        "identityId": "swahili_pilot_pilot_compass"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "military_supplier",
+          "outfitter"
+        ],
+        "basePriceMinor": 1172,
+        "minimumWealth": 25,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "utility": 21,
+          "mobility": 7
+        },
+        "effectIds": [],
+        "setId": "swahili_pilot_set"
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "sword_of_charles_the_bold",
+      "name": "Sword of Charles the Bold",
+      "category": "equipment",
+      "itemLevel": 128,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "charles_bold_sword"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1477,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 1744,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 42,
+          "morale": 12
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "charles_bold_arms"
+      ]
+    },
+    {
+      "id": "sword_of_mehmed_the_conqueror",
+      "name": "Sword of Mehmed the Conqueror",
+      "category": "equipment",
+      "itemLevel": 151,
+      "rarityId": "legendary",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "mehmed_conqueror_sword"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1453,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2043,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "primary"
+        ],
+        "majorStats": {
+          "meleePower": 50,
+          "morale": 15
+        },
+        "effectIds": [
+          "melee_finesse"
+        ]
+      },
+      "evidenceIds": [
+        "mehmed_sword"
+      ]
+    },
+    {
+      "id": "timbuktu_legal_manuscript",
+      "name": "Timbuktu Legal Manuscript",
+      "category": "book_map",
+      "itemLevel": 76,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "timbuktu_legal_manuscript"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1800,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 1068,
+        "minimumWealth": 5,
+        "settlementIds": [
+          "timbuktu"
+        ]
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "scholarship": 27,
+          "diplomacy": 13
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "timbuktu_restored_chronicle",
+      "name": "Timbuktu Restored Chronicle",
+      "category": "artifact",
+      "itemLevel": 166,
+      "rarityId": "epic",
+      "provenance": {
+        "kind": "quest",
+        "identityId": "timbuktu_restored_chronicle"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ],
+        "questFlagIds": [
+          "restore_archive"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 4,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 2238,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 27,
+          "scholarship": 20
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "tipu_sultans_rocket_codex",
+      "name": "Tipu Sultans Rocket Codex",
+      "category": "artifact",
+      "itemLevel": 271,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "tipu_rocket_codex"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1780,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 6,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": false,
+        "archetypeIds": [],
+        "basePriceMinor": 3603,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 45,
+          "scholarship": 33
+        },
+        "effectIds": [
+          "diplomatic_access"
+        ]
+      },
+      "evidenceIds": [
+        "tipu_rockets"
+      ]
+    },
+    {
+      "id": "tipu_sultans_tiger_emblem",
+      "name": "Tiger Emblem of Mysore",
+      "category": "artifact",
+      "itemLevel": 115,
+      "rarityId": "relic",
+      "provenance": {
+        "kind": "historical",
+        "identityId": "mysore_tiger_emblem"
+      },
+      "unique": true,
+      "requirements": {
+        "startYear": 1782,
+        "endYear": 1820,
+        "controllerIds": [
+          "mysore_kingdom"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 5
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "relic_merchant"
+        ],
+        "basePriceMinor": 9000,
+        "minimumWealth": 80,
+        "requiresTradeAccess": true
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "command": 30,
+          "morale": 22
+        },
+        "effectIds": [
+          "set_command"
+        ]
+      },
+      "evidenceIds": [
+        "mysore_tiger"
+      ]
+    },
+    {
+      "id": "tuareg_tagelmust",
+      "name": "Tuareg Tagelmust",
+      "category": "equipment",
+      "itemLevel": 39,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "tuareg_tagelmust"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "general_merchant"
+        ],
+        "basePriceMinor": 587,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "head"
+        ],
+        "majorStats": {
+          "heatResistance": 20,
+          "concealment": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "unani_physicians_chest",
+      "name": "Unani Physicians Chest",
+      "category": "tool",
+      "itemLevel": 81,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "unani_physicians_chest"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "middle_east_india"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "apothecary"
+        ],
+        "basePriceMinor": 1133,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [],
+        "majorStats": {
+          "healing": 30,
+          "diagnosis": 17
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "venetian_glass_lenses",
+      "name": "Venetian Glass Lenses",
+      "category": "equipment",
+      "itemLevel": 52,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "regional",
+        "identityId": "venetian_glass_lenses"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1500,
+        "endYear": 1750,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "bookseller_cartographer",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 756,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "survey": 18,
+          "scholarship": 12
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "waxed_mariners_boots",
+      "name": "Waxed Mariners Boots",
+      "category": "equipment",
+      "itemLevel": 35,
+      "rarityId": "fine",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "waxed_mariners_boots"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 2,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "ship_chandler"
+        ],
+        "basePriceMinor": 535,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "boots"
+        ],
+        "majorStats": {
+          "mobility": 9,
+          "coldResistance": 8
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "west_african_leather_charm",
+      "name": "Sahelian Leather Charm",
+      "category": "equipment",
+      "itemLevel": 24,
+      "rarityId": "superior",
+      "provenance": {
+        "kind": "cultural",
+        "identityId": "sahel_leatherwork"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1450,
+        "endYear": 1820,
+        "regionIds": [
+          "africa"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 2
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "outfitter",
+          "relic_merchant"
+        ],
+        "basePriceMinor": 220,
+        "minimumWealth": 10
+      },
+      "comparison": {
+        "slotIds": [
+          "trinket"
+        ],
+        "majorStats": {
+          "heatResistance": 14,
+          "armor": 2
+        },
+        "effectIds": [
+          "desert_endurance"
+        ]
+      },
+      "evidenceIds": []
+    },
+    {
+      "id": "wheel_lock_pistol",
+      "name": "Wheel Lock Pistol",
+      "category": "equipment",
+      "itemLevel": 73,
+      "rarityId": "rare",
+      "provenance": {
+        "kind": "profession",
+        "identityId": "wheel_lock_pistol"
+      },
+      "unique": false,
+      "requirements": {
+        "startYear": 1540,
+        "endYear": 1720,
+        "regionIds": [
+          "europe"
+        ]
+      },
+      "enhancement": {
+        "maxRank": 3,
+        "maxRestoration": 1
+      },
+      "merchant": {
+        "eligible": true,
+        "archetypeIds": [
+          "gunsmith",
+          "military_supplier"
+        ],
+        "basePriceMinor": 1029,
+        "minimumWealth": 5
+      },
+      "comparison": {
+        "slotIds": [
+          "offhand"
+        ],
+        "majorStats": {
+          "rangedPower": 32,
+          "concealment": 6
+        },
+        "effectIds": []
+      },
+      "evidenceIds": []
+    }
   ],
   "historicalEvidence": [
-    {"id":"magellan_expedition","citation":"Antonio Pigafetta, The First Voyage Around the World","note":"Supports the expedition provenance; the compass is an authored game identity."},
-    {"id":"mysore_tiger","citation":"Kate Brittlebank, Tipu Sultan's Search for Legitimacy","note":"Supports Tipu's tiger emblem as a political identity; this portable item is a gameplay abstraction."}
+    {
+      "id": "adal_campaign",
+      "citation": "Shihab al-Din Ahmad, Futuh al-Habasa (The Conquest of Abyssinia)",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "akbar_emblem",
+      "citation": "Abu'l-Fazl, Akbarnama and Ain-i-Akbari",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "askia_pilgrimage",
+      "citation": "Mahmud Kati, Tarikh al-Fattash, account of Askia Muhammad",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "baburnama",
+      "citation": "Zahir al-Din Muhammad Babur, Baburnama",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "charles_bold_arms",
+      "citation": "Royal Armouries, Leeds, arms and armour associated with Charles the Bold",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "drake_voyage",
+      "citation": "The World Encompassed by Sir Francis Drake (1628)",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "henry_armour",
+      "citation": "Royal Armouries, Leeds, field armour of Henry VIII, inventory number II.6",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "idris_alooma",
+      "citation": "Ahmad ibn Furtu, Kitab Ghazawat Barnu, chronicle of Idris Alooma",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "magellan_expedition",
+      "citation": "Antonio Pigafetta, The First Voyage Around the World",
+      "note": "Supports the expedition provenance; the compass is an authored game identity."
+    },
+    {
+      "id": "mehmed_sword",
+      "citation": "Topkapi Palace Museum, sword attributed to Sultan Mehmed II",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "mercator_projection",
+      "citation": "Gerardus Mercator, Nova et Aucta Orbis Terrae Descriptio (1569)",
+      "note": "Supports the dated projection and chart tradition."
+    },
+    {
+      "id": "mysore_tiger",
+      "citation": "Kate Brittlebank, Tipu Sultan's Search for Legitimacy",
+      "note": "Supports Tipu's tiger emblem as a political identity; this portable item is a gameplay abstraction."
+    },
+    {
+      "id": "nelson_nile",
+      "citation": "National Maritime Museum, Greenwich, Nelson collection and Battle of the Nile records",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "newton_principia",
+      "citation": "Isaac Newton, Philosophiae Naturalis Principia Mathematica (1687)",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "osei_tutu",
+      "citation": "Ivor Wilks, Asante in the Nineteenth Century, traditions of Osei Tutu's state regalia",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "piri_reis_chart",
+      "citation": "Piri Reis, Kitab-i Bahriye and surviving 1513 world map",
+      "note": "Supports Ottoman coastal-chart provenance and date."
+    },
+    {
+      "id": "shivaji_bhawani",
+      "citation": "British Museum, sword and firangi traditions associated with Shivaji",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    },
+    {
+      "id": "tipu_rockets",
+      "citation": "Royal Armouries, Leeds, Mysorean rocket specimens captured at Seringapatam (1799)",
+      "note": "Supports the named person, object tradition, and historical availability; gameplay statistics are authored abstractions."
+    }
   ]
 }
