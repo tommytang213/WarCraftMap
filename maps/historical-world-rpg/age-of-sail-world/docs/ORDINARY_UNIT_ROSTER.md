@@ -150,3 +150,11 @@ The complementary Phase 8 land roster broadens those families across all seven p
 regions and the 1450, 1550, 1650, 1750, and 1820 deterministic fixtures. The
 machine-readable coverage audit is in
 `scenario/rosters/reports/phase8-land-coverage.json`.
+
+The release breadth slice is `scenario/rosters/release-military-breadth.json`.
+It raises the combined catalogue to 350–500+ player-facing types while retaining
+the six bounded runtime templates. Regional operating practice, era doctrine,
+role mechanics, equipment, movement, supply, port and technology gates, and
+directed replacement lineages distinguish its variants. Regenerate and verify
+it with `tooling/expand_release_military_breadth.py` and
+`tooling/validate_release_military_breadth.py --write`.
