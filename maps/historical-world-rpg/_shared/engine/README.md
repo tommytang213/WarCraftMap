@@ -73,3 +73,9 @@ repair operations, derives bounded role-specific veterancy, records bounded serv
 history, and reconstructs local ship representations from stable IDs. Scenario data
 owns every Age of Sail identity, availability rule, balance value, and historical
 source. Runtime object handles are never serialized.
+
+`contribution_rewards.py` resolves government contribution offers from a complete
+set of polity-owned profiles and current authoritative campaign inputs. It keeps
+immutable origin distinct from current allegiance, validates land/control and
+material affordability, blocks duplicate contribution/grant keys, and persists
+reward tracks and grant history through save and cross-map state.
