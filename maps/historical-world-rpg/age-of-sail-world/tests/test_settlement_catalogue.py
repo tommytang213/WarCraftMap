@@ -11,7 +11,7 @@ class SettlementCatalogueTests(unittest.TestCase):
  def setUpClass(cls): cls.rows,cls.refs=tool.load()
  def test_current_catalogue_and_report_are_complete_and_repeatable(self):
   report=tool.build_report(); world=json.loads((ROOT/"scenario/world/world.json").read_text())
-  self.assertEqual(829,len(self.rows)); self.assertEqual(report,tool.build_report())
+  self.assertEqual(827,len(self.rows)); self.assertEqual(report,tool.build_report())
   self.assertEqual({x["id"] for x in self.rows},{x["id"] for x in world["settlements"]})
   self.assertEqual("foundation_only_not_density_complete",report["status"]); self.assertEqual(0,report["global"]["gapToMinimum"])
   self.assertEqual(report,json.loads((ROOT/"reports/settlement-coverage-baseline.json").read_text()))

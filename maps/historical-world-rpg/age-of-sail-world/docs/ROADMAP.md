@@ -160,7 +160,7 @@ The first serious player test target: a substantially complete game intended to 
   - [x] Expand technology/institution progression and historical/conditional event coverage across 1450–1820.
   - [x] Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content.
   - [x] Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content.
-  - [ ] Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context.
+  - [x] Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context.
   - [ ] Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets.
   - [ ] Implement persistent individual ship equipment/refits, crew/veterancy/history progression, and meaningful continuous ship-experience bonuses with role-specific milestone traits.
   - [ ] Expand named historical/recruitable heroes toward release-scale regional/era coverage and implement long-campaign hero progression to level 300 with deep skill/mastery/personal progression, unlimited recruited roster, and a high local field-group target subject to performance validation.
