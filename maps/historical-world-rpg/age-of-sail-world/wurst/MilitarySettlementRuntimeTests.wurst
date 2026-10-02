@@ -1,0 +1,123 @@
+package MilitarySettlementRuntimeTests
+
+import MilitarySettlementRuntime
+import Wurstunit
+
+class RecordingMilitaryAdapter implements MilitarySettlementAdapter
+	string created = ""
+	string removed = ""
+	string protectedId = ""
+	int tradition = 0
+	int appliedAbility = 0
+	override function playerForController(string controllerId, boolean localDefense) returns player
+		if localDefense
+			return Player(11)
+		return Player(0)
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		created += runtimeForce.id + "|"
+		return null
+	override function removeRepresentation(string stableId)
+		removed += stableId + "|"
+	override function changeRepresentationOwner(string stableId, player owner)
+		created += "owner:" + stableId + "|"
+	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+		tradition = lifePermille
+		appliedAbility = milestoneAbilityId
+	override function protectRepresentation(string stableId, boolean shouldProtect)
+		if shouldProtect
+			protectedId += stableId + "|"
+		else
+			protectedId += "released:" + stableId + "|"
+	override function showManagement(player viewer, string heading, string body)
+		skip
+
+function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRuntime
+	let runtime = new MilitarySettlementRuntime(adapter)
+	runtime.registerTradition(new TraditionState("england", "infantry", 2, 100, 'Adef'))
+	runtime.registerTradition(new TraditionState("france", "infantry", 1, 100, 'Adef'))
+	runtime.registerSettlement(new SettlementRuntimeState("london", "england", "europe", 'htow', 'hfoo', 30, 20, 50, 50, 0., 0.))
+	runtime.registerForce(new RuntimeForce("defense:london:gate", "england", "europe", "siege", FORCE_DEFENSE, 'hgtw', 100, 0, 64., 0.))
+	return runtime
+
+@test function recruitmentLossReinforcementAndTraditionReachRuntimeUnits()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	runtime.activateRegion("europe")
+	let army = new RuntimeForce("army:one", "england", "europe", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 10., 10.)
+	runtime.recruit(army).assertTrue()
+	runtime.recordLoss("army:one", 15)
+	runtime.reinforce("army:one", 5, 3).assertTrue()
+	army.strength.assertEquals(30)
+	army.supply.assertEquals(17)
+	runtime.awardTradition("england", "infantry", 100)
+	adapter.tradition.assertEquals(2)
+	adapter.appliedAbility.assertEquals('Adef')
+
+@test function legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	runtime.activateRegion("europe")
+	runtime.capture("london", "france", 10.).assertFalse()
+	runtime.setWar("england", "france", true)
+	runtime.capture("london", "france", 10.).assertTrue()
+	runtime.settlements[0].controllerId.assertEquals("france")
+	runtime.settlements[0].captureImmuneUntil.assertEquals(15.)
+	adapter.created.contains("core:london|").assertTrue()
+	adapter.created.contains("defense:london:gate|").assertTrue()
+	runtime.capture("london", "england", 14.999).assertFalse()
+	runtime.releaseCaptureProtection(15.)
+	adapter.protectedId.contains("released:core:london|").assertTrue()
+
+@test function garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	runtime.activateRegion("europe")
+	runtime.setWar("england", "france", true)
+	runtime.beginSettlementAttack("london", "france", 1.).assertTrue()
+	runtime.tick(1.)
+	runtime.settlements[0].reserves.assertEquals(10)
+	runtime.settlements[0].manpower.assertEquals(40)
+	runtime.settlements[0].supply.assertEquals(40)
+	runtime.recordGarrisonLoss("london", "garrison:london:1", 6, 2.)
+	runtime.settlements[0].garrisonStrength.assertEquals(24)
+	runtime.tick(22.)
+	runtime.settlements[0].underAttack.assertFalse()
+	adapter.removed.contains("garrison:london:1|").assertTrue()
+	runtime.replenishGarrison("london", 4, 4, 4).assertTrue()
+	runtime.settlements[0].garrisonStrength.assertEquals(28)
+
+@test function governorReplacementWarnsAndNeverImpliesPhysicalClone()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	let old = new AdministratorState("official:old", "Anne Ward", "Governor", "england", "africa", "london", 20, 60, 40, 2)
+	runtime.appoint("london", old).assertEquals("Administrator appointed.")
+	runtime.managementSummary("london").contains("absent; represented by a local deputy").assertTrue()
+	runtime.managementSummary("london").contains("may trigger refusal").assertTrue()
+	let replacement = new AdministratorState("official:new", "Thomas Hawkins", "Mayor", "england", "europe", "london", 70, 75, 55, 3)
+	runtime.appoint("london", replacement).assertEquals("Administrator appointed.")
+	old.loyalty.assertEquals(15)
+	runtime.managementSummary("london").contains("Thomas Hawkins").assertTrue()
+
+@test function inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	let fleet = new RuntimeForce("fleet:channel", "england", "europe", "naval", FORCE_FLEET, 'hfoo', 50, 30, 0., 0.)
+	runtime.registerForce(fleet)
+	runtime.activateRegion("africa")
+	runtime.recordLoss("fleet:channel", 12)
+	runtime.awardTradition("england", "infantry", 50)
+	adapter.created.contains("fleet:channel|").assertFalse()
+	runtime.activateRegion("europe")
+	adapter.created.contains("fleet:channel|").assertTrue()
+	fleet.strength.assertEquals(38)
+
+@test function captureStateSurvivesMapRetirementAndReconstruction()
+	let adapter = new RecordingMilitaryAdapter()
+	let runtime = fixture(adapter)
+	runtime.setWar("england", "france", true)
+	runtime.activateRegion("europe")
+	runtime.capture("london", "france", 5.).assertTrue()
+	runtime.activateRegion("africa")
+	runtime.activateRegion("europe")
+	runtime.settlements[0].controllerId.assertEquals("france")
+	runtime.forces[runtime.forceIndex("core:london")].controllerId.assertEquals("france")

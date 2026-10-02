@@ -8,6 +8,7 @@ import WarcraftRecoveryRuntime
 import PlayerGodMode
 import CampaignTimeline
 import WarcraftRegionalRuntime
+import MilitarySettlementRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -20,6 +21,8 @@ init
 	clock.attachTimer(new WarcraftCampaignTimerAdapter(), 1.)
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
+	configureMilitarySettlementScenario(militarySettlementRuntime)
+	initializeMilitarySettlementRuntime(commands)
 	let playerIdentity = new PlayerCampaignIdentity()
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), playerIdentity)
 	configureGeneratedOrigins(originSelection)
