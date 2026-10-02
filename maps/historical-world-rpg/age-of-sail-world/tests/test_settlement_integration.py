@@ -15,7 +15,7 @@ class SettlementIntegrationTests(unittest.TestCase):
 
  def test_all_authoritative_settlements_have_every_gameplay_role(self):
   report=tool.build_report(self.manifest); world=json.loads((ROOT/"scenario/world/world.json").read_text())
-  self.assertEqual(706,len(self.rows)); self.assertEqual({x["id"] for x in world["settlements"]},set(self.rows))
+  self.assertEqual(len(world["settlements"]),len(self.rows)); self.assertEqual({x["id"] for x in world["settlements"]},set(self.rows))
   self.assertEqual("pass",report["status"]); self.assertEqual(0,report["inertSettlements"])
   self.assertFalse(report["roadmapDensityComplete"])
   self.assertEqual(report,json.loads((ROOT/"reports/settlement-integration.json").read_text()))
@@ -38,7 +38,7 @@ class SettlementIntegrationTests(unittest.TestCase):
   self.assertEqual(legal,captured["legalOwnerPolityId"]); self.assertEqual("test_controller",captured["controllerPolityId"])
   saved=runtime.snapshot(); restored=SettlementIntegrationRuntime(self.manifest); restored.restore(saved); self.assertEqual(saved,restored.snapshot())
   old=copy.deepcopy(before); old["settlements"].pop(next(iter(old["settlements"])))
-  restored.restore(old); self.assertEqual(706,len(restored.state))
+  restored.restore(old); self.assertEqual(len(self.rows),len(restored.state))
   runtime.retire(); self.assertEqual(0,runtime.active_object_count)
 
  def test_representative_conditions_and_budget_fail_transactionally(self):
