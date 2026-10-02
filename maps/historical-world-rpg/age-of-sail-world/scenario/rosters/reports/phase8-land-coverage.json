@@ -1,16 +1,69 @@
 {
-  "format":"age_of_sail_phase8_land_coverage_v1",
-  "status":"complete",
-  "catalog":{"totalArchetypes":132,"landArchetypes":84,"coveredPolities":230,"assignmentPairs":4422},
-  "layers":{"common":11,"regional":10,"polity":2,"elite":4,"prePhase8Compatible":57},
-  "requiredRoles":["infantry","ranged","firearm","cavalry","artillery","siege","engineer","marine","militia","garrison","specialist","transport","support"],
-  "regions":["europe","africa","middle_east_india","southeast_asia","east_asia","americas_caribbean","pacific"],
-  "fixtureYears":[1450,1550,1650,1750,1820],
-  "explicitExceptions":[
-    {"scope":"1450 firearm roles","reason":"Firearm families require their authored technology, equipment, reform, and regional adoption gates; calendar year never grants them alone."},
-    {"scope":"landlocked marine recruitment","reason":"Marine archetypes belong to the shared authoritative family, but scenario consumers may require local port access before recruitment."},
-    {"scope":"minor-polity elite layer","reason":"Minor polities use common and regional families unless evidence supports a distinctive formation; elite duplication is intentionally omitted."}
+  "format": "age_of_sail_phase8_land_coverage_v1",
+  "status": "complete",
+  "catalog": {
+    "totalArchetypes": 472,
+    "landArchetypes": 354,
+    "coveredPolities": 230,
+    "assignmentPairs": 15766
+  },
+  "layers": {
+    "common": 11,
+    "regional": 10,
+    "polity": 2,
+    "elite": 4,
+    "prePhase8Compatible": 57
+  },
+  "requiredRoles": [
+    "infantry",
+    "ranged",
+    "firearm",
+    "cavalry",
+    "artillery",
+    "siege",
+    "engineer",
+    "marine",
+    "militia",
+    "garrison",
+    "specialist",
+    "transport",
+    "support"
   ],
-  "evidenceIds":["phase8_early_modern_land_progression","phase8_global_gunpowder_armies","phase8_african_american_pacific_land_warfare","phase8_late_armies"],
-  "validation":"tests/test_phase8_land_rosters.py"
+  "regions": [
+    "europe",
+    "africa",
+    "middle_east_india",
+    "southeast_asia",
+    "east_asia",
+    "americas_caribbean",
+    "pacific"
+  ],
+  "fixtureYears": [
+    1450,
+    1550,
+    1650,
+    1750,
+    1820
+  ],
+  "explicitExceptions": [
+    {
+      "scope": "1450 firearm roles",
+      "reason": "Firearm families require their authored technology, equipment, reform, and regional adoption gates; calendar year never grants them alone."
+    },
+    {
+      "scope": "landlocked marine recruitment",
+      "reason": "Marine archetypes belong to the shared authoritative family, but scenario consumers may require local port access before recruitment."
+    },
+    {
+      "scope": "minor-polity elite layer",
+      "reason": "Minor polities use common and regional families unless evidence supports a distinctive formation; elite duplication is intentionally omitted."
+    }
+  ],
+  "evidenceIds": [
+    "phase8_early_modern_land_progression",
+    "phase8_global_gunpowder_armies",
+    "phase8_african_american_pacific_land_warfare",
+    "phase8_late_armies"
+  ],
+  "validation": "tests/test_phase8_land_rosters.py"
 }

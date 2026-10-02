@@ -24,6 +24,7 @@ def build():
     world=load("scenario/world/world.json"); land=load("scenario/rosters/phase8-land-rosters.json")
     land_report=load("scenario/rosters/reports/phase8-land-coverage.json"); naval=load("scenario/naval/phase8.json")
     naval_report=load("scenario/naval/reports/coverage.json"); chars=load("scenario/characters/phase8.json")
+    military_breadth=load("scenario/rosters/reports/release-military-breadth.json")
     char_report=load("scenario/characters/reports/coverage.json"); goods_report=load("scenario/economy/reports/global-goods-validation.json")
     progression=load("scenario/progression/catalog.json"); events=load("scenario/historical-events.json")
     quests=load("scenario/campaign-quests.json"); treasure=load("scenario/treasures/age-of-sail.json")
@@ -51,6 +52,10 @@ def build():
     naval_roles={k:len(v) for k,v in sorted(naval_report["families"].items()) if k in {"merchant","transport","sailing_warship","line_of_battle","coastal","riverine"}}
     require(all(naval_roles.get(x,0) for x in ("merchant","transport","sailing_warship")),"naval merchant/transport/warship coverage is incomplete",failures)
     require(all(x.get("region") and x.get("reason") for x in naval.get("exceptions",[])),"naval sparse-case allowlist has an unexplained entry",failures)
+    require(military_breadth.get("status")=="pass","release military-breadth report is not complete",failures)
+    require(350<=military_breadth.get("counts",{}).get("playerFacing",0)<=550,"release military breadth is outside the 350-500+ planning range",failures)
+    require(set(military_breadth.get("coverage",{}).get("regions",[]))==set(REGIONS),"military breadth omits a major region",failures)
+    require(tuple(military_breadth.get("coverage",{}).get("years",[]))==YEARS,"military breadth omits an era fixture",failures)
 
     econ_regions={k.replace("-","_"):v for k,v in goods_report["regionalCoverage"].items()}
     require(set(econ_regions)==set(REGIONS),"economy report does not cover every major region",failures)
@@ -115,7 +120,7 @@ def build():
     thin=[m for m in failures if "thin" in m or "omit" in m or "missing" in m]
     return {"schemaVersion":2,"status":"pass" if not failures else "fail","campaignYears":[1450,1820],"snapshotYears":list(YEARS),
       "policy":{"minorPolitiesMayShareRegionalContent":True,"majorPowersRequireAdditionalIdentity":True,"sparseCasesRequireExplicitReason":True,"playerQaRequired":False},
-      "regions":region_rows,"majorPowers":identity,
+      "regions":region_rows,"majorPowers":identity,"militaryBreadth":military_breadth["counts"],
       "eras":{str(y):{"landArchetypes":land_eras[str(y)]["activeArchetypes"],"landLayers":land_eras[str(y)]["layers"],"progressionNodesAvailable":progression_eras[str(y)],"historicalEventsOccurred":event_eras[str(y)]} for y in YEARS},
       "categories":{"land":{"catalogArchetypes":land_report["catalog"]["landArchetypes"],"layers":dict(sorted(layers.items())),"requiredRoles":land_report["requiredRoles"]},"naval":{"archetypes":naval_report["counts"]["navalArchetypes"],"roles":naval_roles,"sparseAllowlist":naval["exceptions"]},"governance":{"representedPolities":len(world_polities),**administration},"garrisons":defense,"economy":{"goods":goods_report["catalogueGoods"],"settlementsResolved":settlement_count,"authoredSettlementIdentities":goods_report["settlements"],"fallback":"regional_defaults","tradeRoutes":goods_report["tradeRoutes"],"diagnostics":goods_report["diagnostics"]},"progression":{"technologies":len(progression["technologies"]),"institutions":len(progression["institutions"]),"newAfter1450":new_after_1450},"events":{"total":len(events["events"]),"byRegion":dict(sorted(event_regions.items()))},"characters":{"total":char_report["characterCount"],"roles":char_report["byRole"],"personalQuests":char_report["personalQuestCount"]},"quests":{"total":len(quests["quests"]),"byType":dict(sorted(Counter(q["chainKind"] for q in quests["quests"]).items())),"charactersWithObjectives":dict(sorted(quest_characters.items()))},"treasures":{"total":len(treasure["treasures"]),"byKind":dict(sorted(treasure_kinds.items()))},"assetsAndBudgets":{"phase6AssetsApproved":not any("Phase 6" in x for x in failures),"phase7CorrectnessClean":not any("Phase 7" in x for x in failures)}},"thinContentFlags":thin,"failures":failures}
 

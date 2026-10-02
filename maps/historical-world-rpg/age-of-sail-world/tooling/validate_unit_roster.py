@@ -15,6 +15,7 @@ SLICE_PATHS = (
     ROOT / "scenario/rosters/americas-caribbean.json",
     ROOT / "scenario/rosters/naval-expansion.json",
     ROOT / "scenario/rosters/phase8-land-rosters.json",
+    ROOT / "scenario/rosters/release-military-breadth.json",
 )
 
 
