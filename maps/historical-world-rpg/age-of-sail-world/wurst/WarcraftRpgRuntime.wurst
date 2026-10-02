@@ -1,0 +1,548 @@
+package WarcraftRpgRuntime
+
+import WC3Compatibility
+import ManagementScreenPauseController
+import CommandRouter
+
+public constant int RPG_LEVEL_CAP = 300
+public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
+public constant string QUEST_OFFERED = "offered"
+public constant string QUEST_ACTIVE = "active"
+public constant string QUEST_READY = "ready_to_turn_in"
+public constant string QUEST_COMPLETE = "complete"
+public constant string QUEST_FAILED = "failed"
+
+function textContains(string haystack,string needle) returns boolean
+	if needle == ""
+		return true
+	for i=0 to StringLength(haystack)-StringLength(needle)
+		if SubString(haystack,i,i+StringLength(needle)) == needle
+			return true
+	return false
+
+/** Authoritative character state.  The Warcraft handle is deliberately kept by
+ * the projection, not here, so a dead/unloaded object can never erase a hero. */
+public class RpgHero
+	string id
+	string name
+	int unitTypeId
+	int level = 1
+	int experience = 0
+	int skillPoints = 0
+	int masteryPoints = 0
+	int commandExperience = 0
+	int loyalty = 50
+	boolean oathbound = false
+	boolean recruited = false
+	boolean incapacitated = false
+	int recoveryDay = 0
+	string assignment = "unrecruited"
+	string regionId = ""
+	string professionId = ""
+	string personalQuestId = ""
+	string signatureProgressionId = ""
+	string chosenPerks = ""
+	construct(string id, string name, int unitTypeId)
+		this.id = id
+		this.name = name
+		this.unitTypeId = unitTypeId
+	function awardExperience(int amount)
+		if amount <= 0
+			return
+		experience += amount
+		while level < RPG_LEVEL_CAP and experience >= level * 100
+			experience -= level * 100
+			level++
+			skillPoints++
+			if level % 5 == 0
+				masteryPoints++
+	function applyLaterEraStart(int campaignYear,int careerStartYear)
+		if campaignYear > careerStartYear
+			level=IMinBJ(RPG_LEVEL_CAP,1+(campaignYear-careerStartYear)/2)
+			skillPoints=level-1
+			masteryPoints=level/5
+	function choosePerk(string perkId,int requiredLevel) returns boolean
+		if perkId == "" or level < requiredLevel or textContains(chosenPerks,"|"+perkId+"|")
+			return false
+		chosenPerks += "|"+perkId+"|"
+		return true
+	function changeLoyalty(int delta)
+		if oathbound and delta < 0
+			return
+		loyalty = IMaxBJ(0, IMinBJ(100, loyalty + delta))
+	function becomeOathbound()
+		oathbound = true
+		loyalty = 100
+	function wound(int currentDay, int recoveryDays)
+		incapacitated = true
+		recoveryDay = currentDay + IMaxBJ(1, recoveryDays)
+		assignment = "recovering"
+	function advanceRecovery(int currentDay)
+		if incapacitated and currentDay >= recoveryDay
+			incapacitated = false
+			assignment = "reserve"
+
+public class HeroRoster
+	RpgHero array[2048] heroes
+	unit array[2048] projected
+	int count = 0
+	int activeLimit = RPG_DEFAULT_ACTIVE_HERO_LIMIT
+	function indexOf(string id) returns int
+		for i = 0 to count - 1
+			if heroes[i].id == id
+				return i
+		return -1
+	function register(RpgHero hero)
+		if indexOf(hero.id) < 0
+			heroes[count] = hero
+			count++
+	function get(string id) returns RpgHero
+		let i = indexOf(id)
+		if i >= 0
+			return heroes[i]
+		return null
+	function recruit(string id) returns boolean
+		let hero = get(id)
+		if hero == null or hero.recruited
+			return false
+		hero.recruited = true
+		hero.assignment = "reserve"
+		return true
+	function strategicRosterSize() returns int
+		var result = 0
+		for i = 0 to count - 1
+			if heroes[i].recruited
+				result++
+		return result
+	function activeCount() returns int
+		var result = 0
+		for i = 0 to count - 1
+			if projected[i] != null and GetUnitTypeId(projected[i]) != 0
+				result++
+		return result
+	function deploy(string id, player owner, real x, real y) returns boolean
+		let i = indexOf(id)
+		if i < 0 or not heroes[i].recruited or heroes[i].incapacitated or activeCount() >= activeLimit
+			return false
+		if projected[i] == null or GetUnitTypeId(projected[i]) == 0
+			projected[i] = compatCreateUnit(owner, heroes[i].unitTypeId, x, y, 0.)
+		heroes[i].assignment = "field"
+		return true
+	function assignRemote(string id, string assignment, string regionId) returns boolean
+		let i = indexOf(id)
+		if i < 0 or not heroes[i].recruited or heroes[i].incapacitated or assignment == ""
+			return false
+		if projected[i] != null
+			compatRemoveUnit(projected[i])
+			projected[i] = null
+		heroes[i].assignment = assignment
+		heroes[i].regionId = regionId
+		return true
+	function loseRuntimeObjects()
+		for i = 0 to count - 1
+			projected[i] = null
+	function reconstructField(player owner, real x, real y)
+		for i = 0 to count - 1
+			if heroes[i].recruited and heroes[i].assignment == "field" and not heroes[i].incapacitated and activeCount() < activeLimit
+				projected[i] = compatCreateUnit(owner, heroes[i].unitTypeId, x, y, 0.)
+
+public class RpgItem
+	string id
+	string name
+	string slotId
+	string rarity
+	string setId
+	int itemLevel
+	int power
+	int requiredLevel
+	int startYear
+	int endYear
+	string technologyId
+	string institutionId
+	string source
+	boolean unique
+	construct(string id, string name, string slotId, string rarity, int itemLevel, int power)
+		this.id=id
+		this.name=name
+		this.slotId=slotId
+		this.rarity=rarity
+		this.itemLevel=itemLevel
+		this.power=power
+
+public class EquipmentSet
+	string id
+	int partialPieces
+	int partialPower
+	int fullPieces
+	int fullPower
+	construct(string id, int partialPieces, int partialPower, int fullPieces, int fullPower)
+		this.id=id
+		this.partialPieces=partialPieces
+		this.partialPower=partialPower
+		this.fullPieces=fullPieces
+		this.fullPower=fullPower
+
+public class PlayerInventory
+	RpgItem array[4096] definitions
+	int definitionCount = 0
+	string array[4096] owned
+	int ownedCount = 0
+	string array[32] equippedSlots
+	string array[32] equippedItems
+	int equippedCount = 0
+	EquipmentSet array[256] sets
+	int setCount = 0
+	function registerItem(RpgItem item)
+		definitions[definitionCount] = item
+		definitionCount++
+	function registerSet(EquipmentSet setDefinition)
+		sets[setCount] = setDefinition
+		setCount++
+	function item(string id) returns RpgItem
+		for i = 0 to definitionCount - 1
+			if definitions[i].id == id
+				return definitions[i]
+		return null
+	function owns(string id) returns boolean
+		for i = 0 to ownedCount - 1
+			if owned[i] == id
+				return true
+		return false
+	function grant(string id) returns boolean
+		let value = item(id)
+		if value == null or value.unique and owns(id)
+			return false
+		owned[ownedCount] = id
+		ownedCount++
+		return true
+	function slotIndex(string slotId) returns int
+		for i = 0 to equippedCount - 1
+			if equippedSlots[i] == slotId
+				return i
+		return -1
+	function available(RpgItem value, RpgHero hero, int year, string technologies, string institutions) returns boolean
+		return value != null and hero != null and hero.level >= value.requiredLevel and (value.startYear == 0 or year >= value.startYear) and (value.endYear == 0 or year <= value.endYear) and (value.technologyId == "" or textContains(technologies,value.technologyId)) and (value.institutionId == "" or textContains(institutions,value.institutionId))
+	function equip(string heroId, string itemId, RpgHero hero, int year, string technologies, string institutions) returns boolean
+		let value = item(itemId)
+		if not owns(itemId) or not available(value, hero, year, technologies, institutions)
+			return false
+		let slot = slotIndex(value.slotId)
+		if slot < 0
+			slot = equippedCount
+			equippedSlots[slot] = value.slotId
+			equippedCount++
+		equippedItems[slot] = itemId
+		return true
+	function comparison(string itemId) returns string
+		let value = item(itemId)
+		if value == null
+			return "Unknown item"
+		let slot = slotIndex(value.slotId)
+		var delta = value.power
+		if slot >= 0 and item(equippedItems[slot]) != null
+			delta -= item(equippedItems[slot]).power
+		var color = "|cffaaaaaa"
+		if delta > 0
+			color = "|cff00ff00+"
+		else if delta < 0
+			color = "|cffff4040"
+		return value.name + " | Item level " + value.itemLevel + " | " + value.rarity + " | " + color + delta + " power|r | Set: " + value.setId
+	function setPieceCount(string setId) returns int
+		var result = 0
+		for i = 0 to equippedCount - 1
+			let value = item(equippedItems[i])
+			if value != null and value.setId == setId
+				result++
+		return result
+	function setBonusPower() returns int
+		var result = 0
+		for i = 0 to setCount - 1
+			let pieces = setPieceCount(sets[i].id)
+			if pieces >= sets[i].partialPieces
+				result += sets[i].partialPower
+			if pieces >= sets[i].fullPieces
+				result += sets[i].fullPower
+		return result
+
+public class RuntimeQuest
+	string id
+	string title
+	string kind
+	string regionId
+	string giverId
+	string turnInId
+	string precision
+	string destinationId
+	string state = QUEST_OFFERED
+	int objective = 0
+	int objectiveTarget = 1
+	int rewardExperience = 0
+	int rewardCurrency = 0
+	int cooldownUntil = 0
+	int completions = 0
+	int completionCap = 1
+	construct(string id, string title, string kind)
+		this.id=id
+		this.title=title
+		this.kind=kind
+
+public class QuestJournalRuntime
+	RuntimeQuest array[2048] quests
+	int count = 0
+	string trackedId = ""
+	int currency = 0
+	function register(RuntimeQuest quest)
+		quests[count]=quest
+		count++
+	function get(string id) returns RuntimeQuest
+		for i = 0 to count - 1
+			if quests[i].id == id
+				return quests[i]
+		return null
+	function deterministicOffer(string settlementId, int epoch) returns RuntimeQuest
+		if count == 0
+			return null
+		var start = ModuloInteger(StringLength(settlementId) * 31 + epoch, count)
+		for offset = 0 to count - 1
+			let candidate = quests[ModuloInteger(start + offset, count)]
+			if candidate.state == QUEST_OFFERED and candidate.completions < candidate.completionCap and epoch >= candidate.cooldownUntil
+				return candidate
+		return null
+	function accept(string id) returns boolean
+		let quest=get(id)
+		if quest == null or quest.state != QUEST_OFFERED
+			return false
+		quest.state=QUEST_ACTIVE
+		return true
+	function progress(string id, int amount) returns boolean
+		let quest=get(id)
+		if quest == null or quest.state != QUEST_ACTIVE or amount <= 0
+			return false
+		quest.objective=IMinBJ(quest.objectiveTarget,quest.objective+amount)
+		if quest.objective >= quest.objectiveTarget
+			quest.state=QUEST_READY
+		return true
+	function fail(string id, int day, int cooldownDays) returns boolean
+		let quest=get(id)
+		if quest == null or quest.state != QUEST_ACTIVE
+			return false
+		quest.state=QUEST_FAILED
+		quest.cooldownUntil=day+cooldownDays
+		return true
+	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
+		let quest=get(id)
+		if quest == null or quest.state != QUEST_READY
+			return false
+		quest.state=QUEST_COMPLETE
+		quest.completions++
+		quest.cooldownUntil=day+cooldownDays
+		currency+=quest.rewardCurrency
+		if hero != null
+			hero.awardExperience(quest.rewardExperience)
+		return true
+	function refill(int day)
+		for i = 0 to count - 1
+			if (quests[i].state == QUEST_COMPLETE or quests[i].state == QUEST_FAILED) and quests[i].completions < quests[i].completionCap and day >= quests[i].cooldownUntil
+				quests[i].state=QUEST_OFFERED
+				quests[i].objective=0
+	function track(string id) returns string
+		let quest=get(id)
+		if quest == null
+			return "Quest is unknown."
+		trackedId=id
+		if quest.precision == "hidden"
+			return "No destination is revealed yet."
+		return quest.precision + ":" + quest.regionId + ":" + quest.destinationId
+
+public class RuntimeTreasure
+	string id
+	string regionId
+	string resolvedLocationId
+	int clueStage = 0
+	int clueCount = 1
+	boolean discovered = false
+	string rewardItemId = ""
+	construct(string id, string regionId, string resolvedLocationId)
+		this.id=id
+		this.regionId=regionId
+		this.resolvedLocationId=resolvedLocationId
+
+public class TreasureRuntime
+	RuntimeTreasure array[512] treasures
+	int count=0
+	function register(RuntimeTreasure treasure)
+		treasures[count]=treasure
+		count++
+	function get(string id) returns RuntimeTreasure
+		for i=0 to count-1
+			if treasures[i].id == id
+				return treasures[i]
+		return null
+	function advanceClue(string id) returns boolean
+		let treasure=get(id)
+		if treasure == null or treasure.discovered
+			return false
+		treasure.clueStage=IMinBJ(treasure.clueCount,treasure.clueStage+1)
+		return true
+	function discover(string id, string locationId, PlayerInventory inventory) returns boolean
+		let treasure=get(id)
+		if treasure == null or treasure.discovered or treasure.clueStage < treasure.clueCount or treasure.resolvedLocationId != locationId
+			return false
+		treasure.discovered=true
+		if treasure.rewardItemId != ""
+			inventory.grant(treasure.rewardItemId)
+		return true
+
+public interface TechnologyEffectPort
+	function applyTechnology(string controllerId, string effectId, int magnitude)
+	function clearTechnologyLayer(string controllerId)
+
+public class RuntimeTechnology
+	string id
+	string name
+	string kind = "technology"
+	int historicalYear
+	int baseCost
+	string prerequisiteId
+	string effectId
+	int effectMagnitude
+	construct(string id,string name,int historicalYear,int baseCost)
+		this.id=id
+		this.name=name
+		this.historicalYear=historicalYear
+		this.baseCost=baseCost
+
+public class TechnologyRuntime
+	RuntimeTechnology array[512] definitions
+	int count=0
+	string array[2048] unlockedKeys
+	int unlockedCount=0
+	TechnologyEffectPort effects
+	construct(TechnologyEffectPort effects)
+		this.effects=effects
+	function register(RuntimeTechnology technology)
+		definitions[count]=technology
+		count++
+	function get(string id) returns RuntimeTechnology
+		for i=0 to count-1
+			if definitions[i].id == id
+				return definitions[i]
+		return null
+	function isUnlocked(string controllerId,string id) returns boolean
+		for i=0 to unlockedCount-1
+			if unlockedKeys[i] == controllerId+":"+id
+				return true
+		return false
+	function cost(string id,int year,int provincialAdoption,int institutionalSupport) returns int
+		let technology=get(id)
+		if technology == null
+			return 0
+		var ahead=IMaxBJ(0,technology.historicalYear-year)
+		return IMaxBJ(1,technology.baseCost+ahead*technology.baseCost/20-provincialAdoption-institutionalSupport)
+	function unlock(string controllerId,string id,int year,int paid,int provincialAdoption,int institutionalSupport) returns boolean
+		let technology=get(id)
+		if technology == null or isUnlocked(controllerId,id) or paid < cost(id,year,provincialAdoption,institutionalSupport) or technology.prerequisiteId != "" and not isUnlocked(controllerId,technology.prerequisiteId)
+			return false
+		unlockedKeys[unlockedCount]=controllerId+":"+id
+		unlockedCount++
+		if effects != null
+			effects.applyTechnology(controllerId,technology.effectId,technology.effectMagnitude)
+		return true
+	function reconstruct(string controllerId)
+		if effects == null
+			return
+		effects.clearTechnologyLayer(controllerId)
+		for i=0 to count-1
+			if isUnlocked(controllerId,definitions[i].id)
+				effects.applyTechnology(controllerId,definitions[i].effectId,definitions[i].effectMagnitude)
+
+/** One owner for authoritative RPG state. Serialization ports capture these
+ * stable fields; reconstruct() recreates only transient Warcraft projections. */
+public class WarcraftRpgRuntime
+	HeroRoster heroes = new HeroRoster()
+	PlayerInventory inventory = new PlayerInventory()
+	QuestJournalRuntime journal = new QuestJournalRuntime()
+	TreasureRuntime treasures = new TreasureRuntime()
+	TechnologyRuntime technologies
+	construct(TechnologyEffectPort effects)
+		technologies = new TechnologyRuntime(effects)
+	function reconstruct(player owner, real x, real y, string controllerId)
+		heroes.loseRuntimeObjects()
+		heroes.reconstructField(owner,x,y)
+		technologies.reconstruct(controllerId)
+
+/** Player-facing fallback presentation. Frame screens can implement the same
+ * controller calls; these commands ensure every system is usable in-game. */
+public function showRoster(player viewer, WarcraftRpgRuntime runtime)
+	var rows="Heroes (strategic " + runtime.heroes.strategicRosterSize() + ", active " + runtime.heroes.activeCount() + "/" + runtime.heroes.activeLimit + ")"
+	for i=0 to runtime.heroes.count-1
+		let hero=runtime.heroes.heroes[i]
+		if hero.recruited
+			rows += "\n"+hero.name+" - level "+hero.level+", "+hero.assignment+", loyalty "+hero.loyalty
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+
+public function showInventory(player viewer, WarcraftRpgRuntime runtime)
+	var rows="Inventory and Equipment"
+	for i=0 to runtime.inventory.ownedCount-1
+		rows += "\n"+runtime.inventory.comparison(runtime.inventory.owned[i])
+	rows += "\nActive set bonus: +"+runtime.inventory.setBonusPower()+" power"
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+
+public function showJournal(player viewer, WarcraftRpgRuntime runtime)
+	var rows="Quest Journal"
+	for i=0 to runtime.journal.count-1
+		let quest=runtime.journal.quests[i]
+		if quest.state != QUEST_OFFERED
+			rows += "\n"+quest.title+" - "+quest.state+" ["+quest.precision+"]"
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+
+public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
+	var rows="Technology and Institutions"
+	for i=0 to runtime.technologies.count-1
+		let technology=runtime.technologies.definitions[i]
+		rows += "\n"+technology.name+" - cost "+runtime.technologies.cost(technology.id,year,0,0)
+		if runtime.technologies.isUnlocked(controllerId,technology.id)
+			rows += " (unlocked)"
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+
+class RpgScreenCommand implements CommandHandler
+	WarcraftRpgRuntime runtime
+	string screen
+	construct(WarcraftRpgRuntime runtime,string screen)
+		this.runtime=runtime
+		this.screen=screen
+	override function execute(player sender,string arguments)
+		if screen == "roster"
+			showRoster(sender,runtime)
+		else if screen == "inventory"
+			showInventory(sender,runtime)
+		else if screen == "journal"
+			showJournal(sender,runtime)
+		else
+			showTechnology(sender,runtime,"player",1450)
+
+class RecruitHeroCommand implements CommandHandler
+	WarcraftRpgRuntime runtime
+	construct(WarcraftRpgRuntime runtime)
+		this.runtime=runtime
+	override function execute(player sender,string arguments)
+		if runtime.heroes.recruit(arguments)
+			let hero=runtime.heroes.get(arguments)
+			DisplayTimedTextToPlayer(sender,0.,0.,15.,hero.name+" joined your strategic roster. Use assignments to choose who enters the active field group.")
+		else
+			DisplayTimedTextToPlayer(sender,0.,0.,15.,"That character is unavailable or already recruited.")
+
+class TrackQuestCommand implements CommandHandler
+	WarcraftRpgRuntime runtime
+	construct(WarcraftRpgRuntime runtime)
+		this.runtime=runtime
+	override function execute(player sender,string arguments)
+		DisplayTimedTextToPlayer(sender,0.,0.,20.,runtime.journal.track(arguments))
+
+public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime)
+	commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster"))
+	commands.register("inventory","equipment,items","inventory","Open inventory and equipment.","Shows item level, rarity, requirements, comparisons and set bonuses.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory"))
+	commands.register("journal","quests","journal","Open the custom quest journal.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal"))
+	commands.register("technology","research,institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology"))
+	commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
+	commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))

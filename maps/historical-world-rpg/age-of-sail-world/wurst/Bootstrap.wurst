@@ -8,9 +8,27 @@ import WarcraftRecoveryRuntime
 import PlayerGodMode
 import CampaignTimeline
 import WarcraftRegionalRuntime
+import WarcraftRpgRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
+
+/** Applies the replaceable technology layer to live Warcraft dependants.  The
+ * strategic technology state remains authoritative and rebuilds this layer. */
+class WarcraftTechnologyEffects implements TechnologyEffectPort
+	string array[4096] keys
+	int array[4096] magnitudes
+	int count=0
+	override function applyTechnology(string controllerId,string effectId,int magnitude)
+		keys[count]=controllerId+":"+effectId
+		magnitudes[count]=magnitude
+		count++
+	override function clearTechnologyLayer(string controllerId)
+		for i=0 to count-1
+			if SubString(keys[i],0,StringLength(controllerId)+1) == controllerId+":"
+				keys[i]=""
+
+public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 
 init
 	requireWC3Compatibility()
@@ -23,8 +41,10 @@ init
 	let playerIdentity = new PlayerCampaignIdentity()
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), playerIdentity)
 	configureGeneratedOrigins(originSelection)
+	configureGeneratedRpg(rpgRuntime)
 	registerOriginSelection(commands, originSelection)
 	registerUnstuckCommand(commands, recoveryService)
+	registerRpgRuntimeCommands(commands,rpgRuntime)
 	installPlayerGodMode(commands, null)
 	installCommandRegistry(commands)
 	PauseGame(true)
