@@ -38,7 +38,7 @@ POLITIES = [
   ("ajuran_realm","Ajuran Realm","sultanate",["warsangali","mogadishu_hinterland"])]),
  ("mogadishu_sultanate","Sultanate of Mogadishu","Mogadishan","king","Sultan","mogadishu","africa_horn_swahili",["coast_somali_swahili"],[
   ("mogadishu_hinterland","Mogadishu and Benadir","city_state_hinterland",["ajuran_realm","lamu_archipelago"])]),
- ("kilwa_sultanate","Kilwa Sultanate","Kilwan","king","Sultan","kilwa_kisiwani","africa_horn_swahili",["coast_somali_swahili","island_zanzibar_pemba"],[
+ ("kilwa_sultanate","Kilwa Sultanate","Kilwan","king","Sultan","kilwa","africa_horn_swahili",["coast_somali_swahili","island_zanzibar_pemba"],[
   ("kilwa_coast","Kilwa Coast","sultanate_domains",["zanzibar_pemba","sofala_coast"]),("zanzibar_pemba","Zanzibar and Pemba","island_domains",["kilwa_coast","mombasa"]),("sofala_coast","Sofala Coast","tributary_port_region",["kilwa_coast","mutapa"])]),
  ("mombasa","Mombasa","Mombasan","prince","Sheikh","mombasa_city","africa_horn_swahili",["coast_somali_swahili"],[
   ("mombasa","Mombasa","city_state",["zanzibar_pemba","malindi"])]),
@@ -73,7 +73,7 @@ POLITIES = [
   ("oyo_realm","Oyo Realm","kingdom",["benin_realm","nupe","akan_forest"])]),
  ("nupe_kingdom","Kingdom of Nupe","Nupe","king","Etsu","nupeko","africa_west_guinea_congo",["coast_guinea_congo"],[
   ("nupe","Nupe","kingdom",["oyo_realm","hausa_west","lower_niger"])]),
- ("igala_kingdom","Igala Kingdom","Igala","king","Ata","idah","africa_west_guinea_congo",["coast_guinea_congo"],[
+ ("igala_kingdom","Igala Kingdom","Igala","king","Ata","ida","africa_west_guinea_congo",["coast_guinea_congo"],[
   ("lower_niger","Lower Niger","kingdom",["nupe","benin_realm","kwararafa"])]),
  ("kwararafa_confederacy","Kwararafa Confederacy","Jukun","none","Aku Uka","wukari","africa_west_guinea_congo",["coast_guinea_congo"],[
   ("kwararafa","Kwararafa","confederacy",["lower_niger","bornu"])]),
