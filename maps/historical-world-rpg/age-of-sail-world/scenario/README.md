@@ -24,16 +24,31 @@ outcome IDs, graph relationships, and typed world references. Executable logic
 belongs in engine adapters, never in scenario data.
 
 `campaign-quests.json` is the authority for the expanded regional, personal,
-cross-region, campaign-spanning, and repeatable quest catalogue. It records
-chains and the first campaign-spanning long chain. It owns English narrative,
-objectives, branches, divergence policy, reward adapter declarations, location
-precision, and explicit coverage targets. Run `python3 tooling/campaign_quests.py`;
+cross-region, campaign-spanning, polity/event-linked, and other authored story
+quest catalogue. Settlement-local random side quests are a separate content category:
+they use authored families/variants selected deterministically from settlement context
+and must not be treated as free-form dynamic narrative or as substitutes for campaign,
+historical/event, country/polity, or personal quests. The quest data owns English
+narrative, objectives, branches, divergence policy, reward adapter declarations,
+location precision, and explicit coverage targets. Run `python3 tooling/campaign_quests.py`;
 pass `--write` to rebuild the deterministic quest and quest-location projection
 in `world/world.json`. Physical traversal remains a navigation-runtime concern;
 quest breadcrumbs only use transitions already known to the campaign journal.
 `python3 tooling/phase8_content_coverage.py` validates the committed
 region/quest-type/character/treasure coverage report; use `--write` after an
 authored content change.
+
+Release-scale local-random quest coverage should normally provide every ordinary
+playable settlement with at least one initial local offer, with larger/wealthier/
+better-connected settlements exposing more simultaneous opportunities. Selection is
+persistent for a campaign seed and may depend on settlement size/role, polity/culture,
+economy, port/frontier/route context, services, administration, defense, unrest,
+technology/era, and other authored state. Local-random rewards may include currency,
+equipment/consumables, experience/mastery, settlement or polity reputation/favor,
+access/services, and proportional authoritative settlement/polity benefits when the
+quest actually improves that actor. Unique historical items and major permanent
+strategic rewards remain explicitly authored and cannot leak into generic random
+reward tables.
 
 Planned data domains:
 
