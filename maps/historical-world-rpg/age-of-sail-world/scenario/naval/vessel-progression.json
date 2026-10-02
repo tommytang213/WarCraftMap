@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "format": "age_of_sail_vessel_progression_v1",
+  "slotDefinitions": [
+    {"id":"armament_mounts","category":"armament","capacity":2},
+    {"id":"hull_works","category":"hull","capacity":1},
+    {"id":"sail_plan","category":"rigging_sails","capacity":1},
+    {"id":"navigation_fittings","category":"navigation","capacity":1},
+    {"id":"cargo_spaces","category":"cargo_logistics","capacity":1},
+    {"id":"crew_establishment","category":"crew_marines","capacity":1},
+    {"id":"safety_fittings","category":"protection_safety","capacity":1},
+    {"id":"command_spaces","category":"flagship_command","capacity":1}
+  ],
+  "archetypes": [
+    {"id":"atlantic_galleon","hullFamilyId":"galleon","runtimeTemplateId":"sailing_ship_default","roleIds":["combat","escort","transport","command"],"slotIds":["armament_mounts","hull_works","sail_plan","navigation_fittings","cargo_spaces","crew_establishment","safety_fittings","command_spaces"],"powerRating":700,"regionIds":["europe_atlantic"],"eraBand":"1550_1650"},
+    {"id":"ocean_cruising_frigate","hullFamilyId":"frigate","runtimeTemplateId":"sailing_ship_default","roleIds":["combat","exploration","escort","command"],"slotIds":["armament_mounts","hull_works","sail_plan","navigation_fittings","cargo_spaces","crew_establishment","safety_fittings","command_spaces"],"powerRating":900,"regionIds":["europe_atlantic"],"eraBand":"1650_1820"},
+    {"id":"east_asian_war_junk","hullFamilyId":"junk","runtimeTemplateId":"sailing_ship_default","roleIds":["combat","escort","transport","command"],"slotIds":["armament_mounts","hull_works","sail_plan","navigation_fittings","cargo_spaces","crew_establishment","safety_fittings","command_spaces"],"powerRating":650,"regionIds":["east_asia"],"eraBand":"1450_1820"},
+    {"id":"western_indian_ocean_dhow","hullFamilyId":"dhow","runtimeTemplateId":"sailing_ship_default","roleIds":["trade","exploration","transport","escort"],"slotIds":["armament_mounts","hull_works","sail_plan","navigation_fittings","cargo_spaces","crew_establishment","safety_fittings"],"powerRating":360,"regionIds":["africa","middle_east_india"],"eraBand":"1450_1820"},
+    {"id":"oceanic_voyaging_canoe","hullFamilyId":"voyaging_canoe","runtimeTemplateId":"sailing_ship_default","roleIds":["exploration","trade","transport"],"slotIds":["sail_plan","navigation_fittings","cargo_spaces","crew_establishment","safety_fittings"],"powerRating":220,"regionIds":["pacific"],"eraBand":"1450_1820"}
+  ],
+  "refits": [
+    {"id":"cast_bronze_battery","name":"Cast-bronze Battery","category":"armament","slotId":"armament_mounts","slotCost":2,"compatibleArchetypeIds":["atlantic_galleon","east_asian_war_junk"],"minimumYear":1500,"maximumYear":1700,"technologyIds":["cast_cannon"],"institutionIds":[],"polityIds":[],"regionIds":["europe_atlantic","east_asia"],"requirementIds":[],"dockyardCapability":2,"moneyCost":900,"removalMoneyCost":120,"repairMoneyPerPoint":3,"resourceCosts":{"timber":12,"arms":8},"effects":{"accuracy":500,"reload":350},"evidenceId":"evidence_shipboard_ordnance"},
+    {"id":"standardized_broadside_drill","name":"Standardized Broadside Drill","category":"armament","slotId":"armament_mounts","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","ocean_cruising_frigate","east_asian_war_junk"],"minimumYear":1650,"maximumYear":1820,"technologyIds":["naval_gunnery"],"institutionIds":["naval_administration"],"polityIds":[],"regionIds":[],"requirementIds":[],"dockyardCapability":3,"moneyCost":1250,"removalMoneyCost":160,"repairMoneyPerPoint":4,"resourceCosts":{"arms":12},"effects":{"accuracy":650,"reload":700},"evidenceId":"evidence_fighting_sail"},
+    {"id":"diagonal_hull_bracing","name":"Diagonal Hull Bracing","category":"hull","slotId":"hull_works","slotCost":1,"compatibleArchetypeIds":["ocean_cruising_frigate"],"minimumYear":1750,"maximumYear":1820,"technologyIds":["dockyard_logistics"],"institutionIds":["naval_administration"],"polityIds":[],"regionIds":["europe_atlantic"],"requirementIds":[],"dockyardCapability":4,"moneyCost":1800,"removalMoneyCost":300,"repairMoneyPerPoint":5,"resourceCosts":{"timber":25},"effects":{"stormHandling":450,"repair":400},"evidenceId":"evidence_dockyard_practice"},
+    {"id":"lateen_sail_recut","name":"Lateen Sail Recut","category":"rigging_sails","slotId":"sail_plan","slotCost":1,"compatibleArchetypeIds":["western_indian_ocean_dhow"],"minimumYear":1450,"maximumYear":1820,"technologyIds":[],"institutionIds":[],"polityIds":[],"regionIds":["africa","middle_east_india"],"requirementIds":[],"dockyardCapability":1,"moneyCost":260,"removalMoneyCost":35,"repairMoneyPerPoint":1,"resourceCosts":{"canvas":6},"effects":{"maneuver":550,"speed":350},"evidenceId":"evidence_indian_ocean_rig"},
+    {"id":"oceanic_sail_and_lashing_renewal","name":"Oceanic Sail and Lashing Renewal","category":"rigging_sails","slotId":"sail_plan","slotCost":1,"compatibleArchetypeIds":["oceanic_voyaging_canoe"],"minimumYear":1450,"maximumYear":1820,"technologyIds":[],"institutionIds":[],"polityIds":[],"regionIds":["pacific"],"requirementIds":[],"dockyardCapability":1,"moneyCost":120,"removalMoneyCost":15,"repairMoneyPerPoint":1,"resourceCosts":{"canvas":3},"effects":{"speed":400,"stormHandling":600},"evidenceId":"evidence_pacific_voyaging"},
+    {"id":"standardized_chart_room","name":"Standardized Chart Room","category":"navigation","slotId":"navigation_fittings","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","ocean_cruising_frigate","east_asian_war_junk","western_indian_ocean_dhow"],"minimumYear":1550,"maximumYear":1820,"technologyIds":["standardized_charts"],"institutionIds":[],"polityIds":[],"regionIds":[],"requirementIds":[],"dockyardCapability":2,"moneyCost":700,"removalMoneyCost":80,"repairMoneyPerPoint":2,"resourceCosts":{"canvas":2},"effects":{"range":600,"stormHandling":300},"evidenceId":"evidence_navigation"},
+    {"id":"marine_chronometer_room","name":"Chronometer and Observation Room","category":"navigation","slotId":"navigation_fittings","slotCost":1,"compatibleArchetypeIds":["ocean_cruising_frigate"],"minimumYear":1760,"maximumYear":1820,"technologyIds":["marine_chronometer"],"institutionIds":["scientific_societies"],"polityIds":["england","france"],"regionIds":["europe_atlantic"],"requirementIds":[],"dockyardCapability":4,"moneyCost":2200,"removalMoneyCost":250,"repairMoneyPerPoint":5,"resourceCosts":{"copper":4},"effects":{"range":1000,"stormHandling":500},"evidenceId":"evidence_navigation"},
+    {"id":"partitioned_cargo_stowage","name":"Partitioned Cargo Stowage","category":"cargo_logistics","slotId":"cargo_spaces","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","western_indian_ocean_dhow","east_asian_war_junk"],"minimumYear":1450,"maximumYear":1820,"technologyIds":[],"institutionIds":[],"polityIds":[],"regionIds":[],"requirementIds":[],"dockyardCapability":1,"moneyCost":420,"removalMoneyCost":60,"repairMoneyPerPoint":1,"resourceCosts":{"timber":5},"effects":{"cargoCapacity":850,"supplyEfficiency":350},"evidenceId":"evidence_maritime_trade"},
+    {"id":"trained_marine_detachment","name":"Trained Marine Detachment","category":"crew_marines","slotId":"crew_establishment","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","ocean_cruising_frigate","east_asian_war_junk"],"minimumYear":1550,"maximumYear":1820,"technologyIds":[],"institutionIds":["naval_administration"],"polityIds":[],"regionIds":[],"requirementIds":[],"dockyardCapability":2,"moneyCost":800,"removalMoneyCost":100,"repairMoneyPerPoint":2,"resourceCosts":{"ship_provisions":10},"effects":{"boarding":900,"command":250},"evidenceId":"evidence_fighting_sail"},
+    {"id":"lined_magazine_and_fire_pumps","name":"Lined Magazine and Fire Pumps","category":"protection_safety","slotId":"safety_fittings","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","ocean_cruising_frigate","east_asian_war_junk"],"minimumYear":1650,"maximumYear":1820,"technologyIds":["dockyard_logistics"],"institutionIds":[],"polityIds":[],"regionIds":[],"requirementIds":[],"dockyardCapability":3,"moneyCost":1100,"removalMoneyCost":140,"repairMoneyPerPoint":3,"resourceCosts":{"timber":8,"arms":3},"effects":{"repair":700,"stormHandling":200},"evidenceId":"evidence_dockyard_practice"},
+    {"id":"fleet_signal_and_council_spaces","name":"Fleet Signal and Council Spaces","category":"flagship_command","slotId":"command_spaces","slotCost":1,"compatibleArchetypeIds":["atlantic_galleon","ocean_cruising_frigate","east_asian_war_junk"],"minimumYear":1600,"maximumYear":1820,"technologyIds":["battlefleet_doctrine"],"institutionIds":["naval_administration"],"polityIds":[],"regionIds":[],"requirementIds":["fleet_flagship_authority"],"dockyardCapability":3,"moneyCost":1400,"removalMoneyCost":180,"repairMoneyPerPoint":4,"resourceCosts":{"canvas":4,"timber":6},"effects":{"command":1100,"range":200},"evidenceId":"evidence_fighting_sail"}
+  ],
+  "experienceAwards": [
+    {"id":"battle_fought","experience":60,"oneShot":false,"roleIds":["combat","escort","command"]},
+    {"id":"battle_victory","experience":100,"oneShot":true,"roleIds":["combat","escort","command"]},
+    {"id":"voyage_completed","experience":35,"oneShot":false,"roleIds":["exploration","trade","escort","transport","command"]},
+    {"id":"storm_survived","experience":55,"oneShot":true,"roleIds":["exploration","trade","escort","transport","command"]},
+    {"id":"discovery_recorded","experience":120,"oneShot":true,"roleIds":["exploration","command"]},
+    {"id":"escort_completed","experience":50,"oneShot":true,"roleIds":["escort","combat","command"]},
+    {"id":"trade_run_completed","experience":40,"oneShot":true,"roleIds":["trade","transport"]}
+  ],
+  "milestones": [
+    {"id":"experienced","name":"Experienced","experience":200,"traitIds":["settled_ship_company"],"specializationIds":[]},
+    {"id":"veteran","name":"Veteran","experience":700,"traitIds":["veteran_damage_control"],"specializationIds":["gunnery_ship","blue_water_explorer","seasoned_trader","convoy_guard","fleet_flagship"]},
+    {"id":"elite","name":"Elite","experience":1600,"traitIds":["elite_ship_handling"],"specializationIds":["gunnery_ship","blue_water_explorer","seasoned_trader","convoy_guard","fleet_flagship"]},
+    {"id":"famous","name":"Famous","experience":3000,"traitIds":["famous_name"],"specializationIds":["gunnery_ship","blue_water_explorer","seasoned_trader","convoy_guard","fleet_flagship"]},
+    {"id":"legendary","name":"Legendary","experience":6000,"traitIds":["legendary_cohesion"],"specializationIds":["gunnery_ship","blue_water_explorer","seasoned_trader","convoy_guard","fleet_flagship"]}
+  ],
+  "traits": [
+    {"id":"settled_ship_company","roleIds":["combat","exploration","trade","escort","transport","command"],"effects":{"maneuver":100,"supplyEfficiency":100}},
+    {"id":"veteran_damage_control","roleIds":["combat","exploration","trade","escort","transport","command"],"effects":{"repair":200,"stormHandling":100}},
+    {"id":"elite_ship_handling","roleIds":["combat","exploration","trade","escort","transport","command"],"effects":{"maneuver":200}},
+    {"id":"famous_name","roleIds":["combat","exploration","trade","escort","transport","command"],"effects":{"command":250}},
+    {"id":"legendary_cohesion","roleIds":["combat","exploration","trade","escort","transport","command"],"effects":{"reload":150,"stormHandling":150,"supplyEfficiency":150}}
+  ],
+  "specializations": [
+    {"id":"gunnery_ship","roleIds":["combat"],"effects":{"accuracy":350,"reload":350}},
+    {"id":"blue_water_explorer","roleIds":["exploration"],"effects":{"range":400,"stormHandling":350}},
+    {"id":"seasoned_trader","roleIds":["trade"],"effects":{"cargoCapacity":400,"supplyEfficiency":350}},
+    {"id":"convoy_guard","roleIds":["escort"],"effects":{"maneuver":250,"accuracy":250,"command":200}},
+    {"id":"fleet_flagship","roleIds":["command"],"effects":{"command":700}}
+  ],
+  "historicalEvidence": [
+    {"id":"evidence_shipboard_ordnance","citation":"Guilmartin, Gunpowder and Galleys (1974)","supports":["cast_bronze_battery"]},
+    {"id":"evidence_fighting_sail","citation":"Rodger, The Command of the Ocean (2004)","supports":["standardized_broadside_drill","trained_marine_detachment","fleet_signal_and_council_spaces"]},
+    {"id":"evidence_dockyard_practice","citation":"Lavery, The Arming and Fitting of English Ships of War (1987)","supports":["diagonal_hull_bracing","lined_magazine_and_fire_pumps"]},
+    {"id":"evidence_indian_ocean_rig","citation":"Pearson, The Indian Ocean (2003)","supports":["lateen_sail_recut"]},
+    {"id":"evidence_pacific_voyaging","citation":"Finney, Voyage of Rediscovery (1994)","supports":["oceanic_sail_and_lashing_renewal"]},
+    {"id":"evidence_navigation","citation":"Taylor, The Haven-Finding Art (1956)","supports":["standardized_chart_room","marine_chronometer_room"]},
+    {"id":"evidence_maritime_trade","citation":"Unger, The Ship in the Medieval Economy (1980)","supports":["partitioned_cargo_stowage"]}
+  ],
+  "initialVessels": [
+    {"id":"english_patrol_vessel","name":"Lion of Dover","archetypeId":"atlantic_galleon","fleetId":"english_channel_fleet","ownerPolityId":"england","controllerPolityId":"england","roleId":"combat","crewQuality":58,"hullCondition":92,"maintenance":86,"captainCharacterId":null,"admiralCharacterId":null,"locallyRelevant":true},
+    {"id":"kilwa_trade_vessel","name":"Mwamba","archetypeId":"western_indian_ocean_dhow","fleetId":null,"ownerPolityId":"kilwa_sultanate","controllerPolityId":"kilwa_sultanate","roleId":"trade","crewQuality":62,"hullCondition":95,"maintenance":90,"captainCharacterId":null,"admiralCharacterId":null,"locallyRelevant":false},
+    {"id":"pacific_voyaging_vessel","name":"Te Moana","archetypeId":"oceanic_voyaging_canoe","fleetId":null,"ownerPolityId":"tui_tonga_empire","controllerPolityId":"tui_tonga_empire","roleId":"exploration","crewQuality":70,"hullCondition":96,"maintenance":92,"captainCharacterId":null,"admiralCharacterId":null,"locallyRelevant":false}
+  ],
+  "tuning": {
+    "curveScale": 900,
+    "maximumContinuousBasisPoints": 2800,
+    "maximumCombinedBasisPoints": 4000,
+    "historyEventLimit": 128,
+    "transactionIdLimit": 256,
+    "hullRepairMoneyPerPoint": 12,
+    "maintenanceMoneyPerPoint": 8,
+    "roleWeights": {
+      "combat":{"accuracy":3000,"reload":3000,"boarding":1500,"maneuver":1500,"repair":1000},
+      "exploration":{"range":3000,"stormHandling":2500,"speed":1500,"maneuver":1500,"supplyEfficiency":1500},
+      "trade":{"cargoCapacity":3000,"supplyEfficiency":3000,"range":1500,"stormHandling":1500,"speed":1000},
+      "escort":{"accuracy":2000,"maneuver":2000,"speed":1500,"range":1500,"stormHandling":1500,"command":1500},
+      "transport":{"cargoCapacity":3000,"supplyEfficiency":2500,"stormHandling":2000,"range":1500,"speed":1000},
+      "command":{"command":3500,"accuracy":1500,"reload":1500,"maneuver":1000,"range":1000,"supplyEfficiency":1500}
+    }
+  }
+}

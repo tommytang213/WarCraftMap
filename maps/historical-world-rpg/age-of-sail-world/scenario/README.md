@@ -93,6 +93,14 @@ availability windows, but recruited characters persist as alternate-history camp
 state and use long-campaign progression rather than disappearing when that historical
 window closes.
 
+`naval/vessel-progression.json` owns individual-vessel hull compatibility, refit
+slots and costs, experience awards, role curves, milestone traits, specializations,
+initial vessel identities, and historical evidence. Bulk materials and money are
+consumed through atomic service transactions; rejected work leaves both the vessel
+and payer unchanged. Validate references and regenerate the deterministic coverage
+and balance artifact with `python3 tooling/vessel_progression_report.py --output
+reports/vessel-progression-coverage.json`.
+
 `economy/balance.json` owns the full-world long-campaign economic envelopes,
 scenario modifiers, logistics tiers, source/sink policy, and soak performance
 budget.  It deliberately derives settlement profiles from the historical
