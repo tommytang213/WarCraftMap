@@ -11,7 +11,8 @@ SOURCE=ROOT/"scenario/settlements/east-asia-1450.json"; POLITICS=ROOT/"scenario/
 GEOGRAPHY=ROOT/"scenario/geography/east_asia.json"; WORLD=ROOT/"scenario/world/world.json"; ECONOMY=ROOT/"scenario/economy/economy.json"; MAPS=ROOT/"scenario/maps/world-map.json"
 TERRAIN=ROOT/"scenario/terrain/east-asia.json"
 ID=re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
-ROLES={"capital","major_port","trade_center","fortified_town","transition_location","historical_location","religious_location"}
+ROLES={"capital","major_port","trade_center","fortified_town","transition_location","historical_location","religious_location",
+       "administrative_seat","market_center","production_center","river_node","canal_node","cultural_site","frontier_post","route_node"}
 TERRAINS={"coast","riverbank","plains","upland","forest","island"}
 WATER={"node_south_china_sea","node_taiwan_coast","node_east_china_sea","node_japan_sea","node_okhotsk_sea","node_north_pacific"}
 
@@ -49,11 +50,17 @@ def validate(source_path=SOURCE,politics_path=POLITICS):
     settlements=_index(source.get("settlements"),"settlements"); polities=_index(politics.get("polities"),"polities"); instances=_index(geography.get("instances"),"regional instances"); anchors=_index(geography.get("boundaryAnchors"),"boundary anchors")
     provinces={p["id"]:(owner["id"],p) for owner in polities.values() for p in owner.get("provinces",[])}; nodes=_index(geography["navigationTopology"]["nodes"],"navigation nodes")
     assignments=maps.get("regionalInstanceRegions",{}); policies={x["id"]:x for x in terrain["instancePolicies"]}
-    capitals={p["capitalSettlementId"] for p in polities.values()}; positions={}
+    capitals={p["capitalSettlementId"] for p in polities.values()}; positions={}; evidence=_index(source.get("historicalEvidence"),"historical evidence")
     for ident,item in settlements.items():
-        required=("name","polityId","provinceId","regionalInstanceId","position","terrainClass","navigationZoneId","physicalMapId","roles","services","economy","defenseClass")
+        required=("name","polityId","provinceId","regionalInstanceId","sourcePosition","position","terrainClass","navigationZoneId","physicalMapId","roles","services","economy","defenseClass","historicalEvidenceIds","controlContext")
         if any(x not in item for x in required): raise EastAsiaContentError(f"settlement {ident}: missing required field")
         if item["polityId"] not in polities or item["provinceId"] not in provinces or provinces[item["provinceId"]][0]!=item["polityId"]: raise EastAsiaContentError(f"settlement {ident}: polity/province mismatch")
+        if not isinstance(item["sourcePosition"],list) or len(item["sourcePosition"])!=2 or any(not isinstance(x,(int,float)) or isinstance(x,bool) or not math.isfinite(x) for x in item["sourcePosition"]): raise EastAsiaContentError(f"settlement {ident}: invalid source coordinates")
+        if not item["historicalEvidenceIds"] or not set(item["historicalEvidenceIds"])<=set(evidence): raise EastAsiaContentError(f"settlement {ident}: invalid historical evidence")
+        control=item["controlContext"]
+        if control.get("date")!="1450-01-01" or control.get("status")!="legal_and_effective_control" or not control.get("basis"): raise EastAsiaContentError(f"settlement {ident}: invalid control context")
+        distortion=item.get("declaredDistortion")
+        if distortion is not None and (not isinstance(distortion.get("offset"),list) or len(distortion["offset"])!=2 or not distortion.get("reason")): raise EastAsiaContentError(f"settlement {ident}: invalid declared distortion")
         instance=item["regionalInstanceId"]
         if instance not in instances or item["physicalMapId"]!=instance or assignments.get(instance)!="east_asia": raise EastAsiaContentError(f"settlement {ident}: invalid physical-map assignment")
         pos=item["position"]; bounds=instances[instance]["localBounds"]
@@ -131,7 +138,10 @@ def project(source,politics,geography,positions,world):
         if settlement.get("provinceId") in settlements_by_province: settlements_by_province[settlement["provinceId"]].append(settlement["id"])
     for province in world["provinces"]:
         if province["id"] in settlements_by_province: province["settlementIds"]=settlements_by_province[province["id"]]
-    return world
+    # Reapply the political projection after rebuilding province settlement
+    # membership.  Besides retaining the authoritative hierarchy, this keeps
+    # capital placement in each province list canonically idempotent.
+    return project_politics(politics,world)
 
 def update_economy(source,economy):
     economy=copy.deepcopy(economy); catalog=economy["catalog"]; state=economy["state"]; keep=lambda rows:[x for x in rows if not x.get("id","").startswith("eas_")]

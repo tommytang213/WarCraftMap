@@ -12,7 +12,7 @@ class EastAsiaContentTests(unittest.TestCase):
         directory=tempfile.TemporaryDirectory(); path=Path(directory.name)/"candidate.json"; path.write_text(json.dumps(value)); return directory,path
     def test_authority_coverage_and_deterministic_projection(self):
         source,politics,geography,positions=validate(); projected=project(source,politics,geography,positions,self.world)
-        self.assertEqual((29,13,31,4),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"])))
+        self.assertEqual((118,36,144,4),(len(source["settlements"]),sum("port" in x for x in source["settlements"]),len(source["tradeRoutes"]),len(source["transitions"])))
         self.assertEqual(projected,project(copy.deepcopy(source),politics,geography,positions,self.world))
         selected=[x for x in projected["settlements"] if x["id"] in {s["id"] for s in source["settlements"]}]
         cores={x["id"] for x in projected["cityCores"]}; layouts={x["id"] for x in projected["defenseLayouts"]}
@@ -52,6 +52,6 @@ class EastAsiaContentTests(unittest.TestCase):
     def test_economy_projection_is_deterministic_and_diverse(self):
         source,_,_,_=validate(); a=update_economy(source,self.economy); b=update_economy(copy.deepcopy(source),self.economy); self.assertEqual(a,b)
         markets=[x for x in a["catalog"]["markets"] if x["id"].startswith("eas_")]; balances=[x for x in a["state"]["storeBalances"] if x["id"].startswith("eas_")]
-        self.assertEqual((29,29),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
+        self.assertEqual((118,118),(len(markets),len(balances))); self.assertGreater(len({x["currencies"][0]["amountMinor"] for x in balances}),10)
 
 if __name__=="__main__": unittest.main()
