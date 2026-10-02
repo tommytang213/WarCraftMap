@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "age_of_sail_playable_trade",
+  "marketDefaults": {
+    "spreadPermille": 80,
+    "priceFloorPermille": 350,
+    "priceCeilingPermille": 4000
+  },
+  "reputationTiers": [
+    {"id": "known_factor", "standingRequired": 100, "benefitIds": ["warehouse_access", "merchant_introductions"]},
+    {"id": "trusted_factor", "standingRequired": 500, "benefitIds": ["market_intelligence", "larger_contracts", "convoy_opportunities"]},
+    {"id": "merchant_prince", "standingRequired": 2000, "benefitIds": ["specialist_merchants", "major_contracts", "trade_network_privileges"]}
+  ],
+  "contributionPolicy": {
+    "requiresRealizedProfitForOrdinaryStanding": true,
+    "requiresPersistedCostBasis": true,
+    "sameRouteRepetitionStepPermille": 500,
+    "routeDifficultyMinimumPermille": 500,
+    "routeDifficultyMaximumPermille": 2500,
+    "diversityBonusMaximumPermille": 500
+  },
+  "integrationModifierIds": [
+    "production", "consumption", "imports", "shortage", "trade_connectivity",
+    "blockade", "war", "occupation", "technology", "institutions", "historical_event",
+    "quest", "exploration", "government_standing"
+  ]
+}

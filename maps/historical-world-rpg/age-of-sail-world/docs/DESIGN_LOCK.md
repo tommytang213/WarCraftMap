@@ -83,6 +83,17 @@ This file records requirements already agreed with the player. They are defaults
 - Regional content data should therefore define settlement-specific economic profiles and use region-level rules as modifiers/defaults rather than as the authoritative complete market inventory.
 - The current small economy catalog is prototype content and must not be interpreted as the intended final breadth of goods.
 
+## Playable markets and merchant standing
+
+- Settlement commodity markets are player-facing projections of authoritative campaign state. Every quote uses current local stock, supply/demand pressure, production and consumption, imports and connectivity, shortages, war, blockade, occupation, technology, institutions, and active event/quest modifiers. A UI quote is informational and is recalculated when a transaction commits.
+- Buying and selling are atomic conserved exchanges of cargo and currency. Cargo must enter an eligible authoritative personal, ship, fleet, warehouse, army, or other explicitly supported store and must respect that store's capacity and commodity compatibility. Warcraft items, units, frames, and cached price text are representations, never the authority.
+- Market UI shows the commodity, available quantity, current buy/sell price, recent observed trend, and known realized or projected profit/loss. Exact information and disruption causes are limited to what the player has discovered or unlocked; the UI must not leak undiscovered markets or hidden campaign state.
+- Stock movement changes the next quote and large orders use marginal/midpoint pressure. Transaction IDs, persisted market observations, deterministic integer pricing, bounded price floors/ceilings, and campaign-time-driven updates prevent duplicate trades, stale-price arbitrage, save/load rerolls, and unbounded refresh farming.
+- Merchant standing is a dedicated persistent player progression value, separate from polity, settlement, country, faction, and character reputation. It rewards legitimate realized trade profit, volume, route distance/difficulty, diversity, reliability, contracts, and rare cargo only through data-authored contributions.
+- Repeating the same commodity/route receives diminishing standing, and cargo without a recorded legitimate cost basis may be sold but cannot generate ordinary profit-based standing. Splitting an order, reopening the UI, changing maps, or reloading a save must not reset saturation, repetition, transaction, or cost-basis history.
+- Data-defined standing tiers may unlock merchant introductions and specialists, larger or major contracts, warehouse/services access, better market information, convoy opportunities, trade-network privileges, and financing only when a scenario implements authoritative debt and repayment. Standing never silently grants unsupported credit or bypasses government access, war, blockade, technology, institutional, quest, or cultural requirements.
+- Market stock/history, cargo stores and cost basis, processed transaction IDs, route/repetition history, realized profit, merchant standing, and unlocked benefits persist in campaign saves and across physical-map transitions. Quests, exploration, ships/fleets, governments, wars, historical events, technologies, and institutions integrate through stable IDs and explicit modifiers rather than hardcoded Age of Sail content in the shared trade engine.
+
 ## Characters
 
 - Named recruitable characters have skills, traits, quests and relationships.
