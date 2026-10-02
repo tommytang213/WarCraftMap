@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "scenario/characters/global.json"
 PHASE8_SOURCE = ROOT / "scenario/characters/phase8.json"
+RELEASE_SCALE_SOURCE = ROOT / "scenario/characters/release-scale.json"
 WORLD = ROOT / "scenario/world/world.json"
 REPORT = ROOT / "scenario/characters/reports/coverage.json"
 ROSTERS = ROOT / "scenario/rosters"
@@ -44,6 +45,26 @@ def load_source():
     source["historicalEvidence"].extend(expansion["historicalEvidence"])
     source["companionRelationships"].extend(expansion.get("companionRelationships",[]))
     source["characterTransitionPolicy"]=expansion["characterTransitionPolicy"]
+    # Compact authored records contain identity/career evidence; shared mechanical
+    # defaults are expanded here so catalogue scale does not duplicate boilerplate.
+    release=json.loads(RELEASE_SCALE_SOURCE.read_text())
+    exemplars={r:next(x for x in source["characters"] if x["regionId"]==r) for r in REGIONS}
+    evidence_alias={"americas_caribbean":"americas"}
+    evidence_by_region={r:next(x for x in source["historicalEvidence"] if x["id"]==f"evidence_{evidence_alias.get(r,r)}") for r in REGIONS}
+    for seed in release["characters"]:
+        base=copy.deepcopy(exemplars[seed["regionId"]]); ident=seed["id"]
+        base.update({"id":ident,"displayName":seed["displayName"],"biography":seed["biography"],
+            "availabilityWindow":{"startDate":f"{seed['careerStart']}-01-01","endDate":f"{seed['careerEnd']}-12-31"},
+            "roleIds":seed["roleIds"],"authoredHistorical":True,
+            "historicalEvidenceIds":[evidence_by_region[seed["regionId"]]["id"]],
+            "questHookIds":[f"quest_{ident}_legacy"],"eventHookIds":[],"technologyHookIds":[],"discoveryHookIds":[],
+            "officeEligibility":(["province_governor"] if set(seed["roleIds"]) & {"sovereign","governor","adviser"} else []) +
+                (["army_commander"] if "commander" in seed["roleIds"] else []) + (["fleet_commander"] if "admiral" in seed["roleIds"] else []),
+            "commandEligibility":(["army"] if "commander" in seed["roleIds"] else []) + (["fleet"] if "admiral" in seed["roleIds"] else [])})
+        source["characters"].append(base); source["characterTitles"][ident]=seed["title"]
+        source["personalQuests"].append({"id":f"quest_{ident}_legacy","title":seed["questTitle"],
+            "summary":f"Resolve a defining problem from {seed['displayName']}'s documented career without forcing its historical outcome.",
+            "characterId":ident,"objectives":["establish_local_support","complete_role_challenge"],"outcomes":[f"{ident}_legacy_bonus"]})
     return source
 
 
@@ -67,8 +88,8 @@ def validate(source, world, equipment):
         raise CharacterRosterError("every character requires one English historical title")
     if set(source.get("coverageRegions", ())) != REGIONS or {x["regionId"] for x in characters.values()} != REGIONS:
         raise CharacterRosterError("global region coverage is incomplete")
-    if len(characters) < 35 or not all(sum(x["regionId"] == region for x in characters.values()) >= 5 for region in REGIONS):
-        raise CharacterRosterError("Phase 8 requires at least 35 characters and five per region")
+    if len(characters) < 100 or not all(sum(x["regionId"] == region for x in characters.values()) >= 12 for region in REGIONS):
+        raise CharacterRosterError("release scale requires at least 100 characters and twelve per region")
     policy=source.get("characterTransitionPolicy",{})
     if policy != {"historicalWindowsGateInitialAvailability":True,"recruitedCharactersPersistPastWindow":True,
                   "officeVacanciesUseRuntimeSuccession":True,"historicalSuccessorsNotForced":True}:

@@ -8,13 +8,13 @@ This deterministic release-candidate gate audits regional and era breadth; it do
 
 | Region | Polities | Goods | Events | Characters | Regional quests | Personal quests | Treasures |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| europe | 49 | 156 | 31 | 6 | 2 | 1 | 4 |
-| africa | 47 | 86 | 29 | 5 | 2 | 1 | 4 |
-| middle_east_india | 35 | 26 | 28 | 6 | 2 | 1 | 4 |
-| southeast_asia | 27 | 20 | 28 | 5 | 2 | 1 | 4 |
-| east_asia | 16 | 118 | 28 | 5 | 2 | 1 | 4 |
-| americas_caribbean | 32 | 22 | 30 | 5 | 2 | 1 | 4 |
-| pacific | 24 | 16 | 28 | 5 | 2 | 1 | 4 |
+| europe | 49 | 156 | 31 | 16 | 2 | 1 | 4 |
+| africa | 47 | 86 | 29 | 15 | 2 | 1 | 4 |
+| middle_east_india | 35 | 26 | 28 | 16 | 2 | 1 | 4 |
+| southeast_asia | 27 | 20 | 28 | 15 | 2 | 1 | 4 |
+| east_asia | 16 | 118 | 28 | 15 | 2 | 1 | 4 |
+| americas_caribbean | 32 | 22 | 30 | 15 | 2 | 1 | 4 |
+| pacific | 24 | 16 | 28 | 15 | 2 | 1 | 4 |
 
 ## Era snapshots
 
