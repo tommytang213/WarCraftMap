@@ -78,6 +78,8 @@ class PackagingTests(unittest.TestCase):
         generated_wurst = (generated / "ScenarioData.wurst").read_text()
         self.assertIn("public constant int SCENARIO_SCHEMA_VERSION", generated_wurst)
         self.assertIn("public function getScenarioRuntimeData", generated_wurst)
+        self.assertIn("public function configureGeneratedOrigins", generated_wurst)
+        self.assertIn("\tskip\n", generated_wurst)
         (generated / "scenario-runtime.json").write_text("stale")
         with self.assertRaisesRegex(PackagingError, "stale generated data"):
             verify_generated(config, generated)

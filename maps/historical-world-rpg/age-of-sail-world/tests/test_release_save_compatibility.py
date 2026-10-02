@@ -20,18 +20,18 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
 
     def test_matrix_is_derived_from_complete_registered_paths(self):
         registry = saves.MigrationRegistry()
-        self.assertEqual((1, 2, 3, 4), registry.supported_source_versions())
-        self.assertEqual((1, 2, 3, 4), registry.migration_path(1))
-        partial = saves.MigrationRegistry(current_version=5)
-        partial.register(4, lambda d: dict(d, schemaVersion=5))
-        self.assertEqual((4, 5), partial.supported_source_versions())
-        with self.assertRaises(saves.IncompatibleSaveError): partial.migration_path(3)
+        self.assertEqual((1, 2, 3, 4, 5), registry.supported_source_versions())
+        self.assertEqual((1, 2, 3, 4, 5), registry.migration_path(1))
+        partial = saves.MigrationRegistry(current_version=6)
+        partial.register(5, lambda d: dict(d, schemaVersion=6))
+        self.assertEqual((5, 6), partial.supported_source_versions())
+        with self.assertRaises(saves.IncompatibleSaveError): partial.migration_path(4)
 
     def test_every_immutable_fixture_migrates_and_resaves_deterministically(self):
         results = [release.validate_release_fixture(f, self.manifest["budgets"]) for f in self.fixtures]
-        self.assertEqual([1, 2, 3, 4], [r["schemaVersion"] for r in results])
+        self.assertEqual([1, 2, 3, 4, 5], [r["schemaVersion"] for r in results])
         self.assertEqual({self.fixtures[0]["expectedAuthoritySha256"]}, {r["authoritySha256"] for r in results})
-        self.assertEqual(["migrated", "migrated", "migrated", "compatible"], [r["status"] for r in results])
+        self.assertEqual(["migrated"] * 4 + ["compatible"], [r["status"] for r in results])
 
     def test_direct_multistep_and_idempotent_paths_preserve_all_authority(self):
         expected = self.manifest["expectedCurrentAuthority"]

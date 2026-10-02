@@ -28,6 +28,6 @@ No unresolved or accepted defects were found.
 
 - 31 tracked validation reports
 - 6 hashed release inputs
-- 4 supported release-save schemas migrated and authority-checked
+- 5 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
 - Fresh start, supported-save migration, manual save, rolling autosave, checkpoints, native save/load, interrupted transition recovery, and representation reconstruction are journey-gated.

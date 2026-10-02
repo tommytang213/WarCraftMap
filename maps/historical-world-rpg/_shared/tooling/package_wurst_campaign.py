@@ -236,12 +236,31 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     provinces = [item for item in world.get("provinces", []) if item["id"] in province_ids]
     polity_ids = {item.get("legalOwnerPolityId") for item in provinces} | {item.get("controllerPolityId") for item in provinces}
     polities = [item for item in world.get("polities", []) if item["id"] in polity_ids]
+    map_for_instance = {instance_id: item.id for item in config.maps
+                        for instance_id in item.regional_instance_ids}
+    settlements_by_polity = {}
+    for item in world.get("settlements", []):
+        settlements_by_polity.setdefault(item.get("legalOwnerPolityId"), []).append(item)
+    origins = []
+    for polity in world.get("polities", []):
+        owned = sorted(settlements_by_polity.get(polity["id"], []), key=lambda row: row["id"])
+        capital = next((row for row in owned if row["id"] == polity.get("capitalSettlementId")), None)
+        start = capital or (owned[0] if owned else None)
+        if start is None or start.get("regionalInstanceId") not in map_for_instance:
+            raise PackagingError(f"origin selection: polity {polity['id']} has no valid physical start")
+        origins.append({"polityId": polity["id"], "name": polity["name"],
+            "startingLocation": {"physicalMapId": map_for_instance[start["regionalInstanceId"]],
+                "regionalInstanceId": start["regionalInstanceId"], "settlementId": start["id"]}})
+    origins.sort(key=lambda row: (row["name"].casefold(), row["polityId"]))
     runtime.update({
         "physicalMap": {
             "id": physical.id, "bootstrap": physical.bootstrap, "packagePath": physical.package_path,
             "logicalRegionIds": list(physical.logical_region_ids), "regionalInstanceIds": list(physical.regional_instance_ids),
         },
         "polityDefinitions": polities,
+        # Global onboarding data is intentionally not localized to the current
+        # map: every active 1450 origin must remain selectable on bootstrap.
+        "newCampaignOrigins": origins,
         "provinceDefinitions": provinces,
         "settlementDefinitions": settlements,
         "treasureDefinitions": local_treasures,
@@ -262,6 +281,17 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     text = wurst_path.read_text(encoding="utf-8")
     encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
     text = re.sub(r'public constant string SCENARIO_RUNTIME_JSON = ".*"', f'public constant string SCENARIO_RUNTIME_JSON = "{encoded}"', text)
+    origin_configuration = "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
+    for origin in origins:
+        start = origin["startingLocation"]
+        values = [origin["polityId"], origin["name"], start["physicalMapId"],
+                  start["regionalInstanceId"], start["settlementId"]]
+        args = ", ".join(json.dumps(value, ensure_ascii=False) for value in values)
+        origin_configuration += f"\tcontroller.add({args})\n"
+    text = text.replace(
+        "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n\tskip\n",
+        origin_configuration,
+    )
     text += f'\npublic constant string PHYSICAL_MAP_ID = "{physical.id}"\n'
     wurst_path.write_text(text, encoding="utf-8")
     provenance_path = generated / PROVENANCE
