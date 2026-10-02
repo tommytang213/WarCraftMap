@@ -326,6 +326,35 @@ This file records requirements already agreed with the player. They are defaults
 
 ## Settlement-local random side quests
 
+## Government contribution rewards
+
+- Government contribution rewards are polity-owned profiles, never one global
+  reward table copied to every country. Profile coverage is mandatory for every
+  active polity and may define its own culturally and politically appropriate
+  money, equipment, office, privilege, access, title, land, favor, reputation,
+  promise, and military or naval support tracks.
+- A profile's 1450 means are only its starting fallback. Every offer is resolved
+  again from authoritative campaign state, including liquid treasury, economic
+  and trade strength, controlled territory, war exhaustion and strategic urgency,
+  military/naval condition, technology and institutions, ruler/government state,
+  player reputation and favor, current allegiance, immutable origin, prior
+  service, contribution type/magnitude, scarcity, and already-granted history.
+- Collapse cannot mint cash, equipment, units, titles, offices, or land that the
+  polity cannot fund, supply, authorize, or control. Weak states remain attractive
+  through their own affordable favors, privileges, access, exemptions, offices,
+  promises, claims, and honors; alternate-history prosperity or expansion raises
+  practical capacity rather than preserving a historical poverty ceiling.
+- Origin and current allegiance are separate fields. Allegiance controls ordinary
+  service eligibility; origin is consulted only by explicitly authored
+  history-sensitive rewards and never silently substitutes for allegiance.
+- Contribution source keys and grant keys are persistent and unique. Reward-track
+  progress, consumed uniqueness/scarcity, and full grant history survive save/load
+  and map transitions; title/office/land grants are non-repeatable and land must be
+  under current polity control when offered and again when the transaction commits.
+- Explicit exceptional story/quest rewards may bypass ordinary affordability only
+  through an authored override. Such overrides still obey stable identity,
+  uniqueness, historical justification, and authoritative grant persistence.
+
 - Settlement-local random side quests are a distinct quest category. They must not be conflated with campaign quests, historical/event quests, country/polity quests, personal hero quests, scripted regional chains, treasures, or other authored story content.
 - Local random quests come from authored quest families/variants and are deterministically selected for settlements from campaign seed plus the settlement's starting/local context. They are not free-form dynamically generated narrative and must retain authored objectives, dialogue/description structures, reward rules, failure rules, and validation.
 - At campaign start, every ordinary playable settlement should normally expose at least one local random side quest. Sparse/remote locations may have only one or a very small pool, while larger, wealthier, denser, more connected, administratively important, militarily important, or commercially active settlements should support more simultaneous local quest opportunities.
