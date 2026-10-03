@@ -30,6 +30,17 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertFalse(trade["stages"]["playerFacingComplete"])
         self.assertTrue(any(message.startswith("trade:") for message in report["failures"]))
 
+    def test_country_diplomacy_and_government_rewards_use_real_release_entry_points(self):
+        report = runtime.audit_sources()
+        rows = {row["id"]: row for row in report["systems"]}
+        for system_id in ("country_diplomacy", "government_rewards"):
+            self.assertEqual({stage: True for stage in runtime.STAGES},
+                             rows[system_id]["stages"])
+            self.assertEqual([], rows[system_id]["diagnostics"])
+        self.assertFalse(any("RUNTIME-MISSING-COUNTRY-DIPLOMACY" in failure or
+                             "RUNTIME-MISSING-GOVERNMENT-REWARDS" in failure
+                             for failure in report["failures"]))
+
     def test_compiled_artifact_must_contain_every_required_link_marker(self):
         manifest = runtime.load_manifest()
         script = "\n".join(token for row in manifest["systems"] if row["releaseRequired"]

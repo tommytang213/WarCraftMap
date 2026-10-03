@@ -16,6 +16,7 @@ public interface CountryDiplomacyAuthority
 	function validateOffer(string conflictId, string recipientPolityId, string terms) returns string
 	function createOffer(string conflictId, string recipientPolityId, string terms) returns string
 	function respondToOffer(string offerId, boolean accept, boolean confirmed) returns string
+	function requestGovernmentReward(string polityId, string rewardId) returns string
 
 public class WarcraftCountryDiplomacyPresentation implements CountryDiplomacyPresentation
 	override function showCountry(string polityId, string summary, string interactions)
@@ -62,6 +63,13 @@ public class CountryDiplomacyController
 		let result = authority.respondToOffer(offerId, accept, confirmed)
 		presentation.showResult(result)
 		return result != ""
+	function requestReward(string polityId, string rewardId) returns boolean
+		if polityId == "" or not authority.isKnown(polityId)
+			presentation.showResult("You cannot request a reward from an undiscovered government.")
+			return false
+		let result = authority.requestGovernmentReward(polityId, rewardId)
+		presentation.showResult(result)
+		return result.startsWith("Reward granted:")
 
 function splitDiplomacyArgument(string arguments) returns int
 	for i = 0 to StringLength(arguments) - 1
@@ -87,6 +95,18 @@ public class PeaceCommandHandler implements CommandHandler
 		else
 			controller.propose(SubString(arguments, 0, cut), SubString(arguments, cut + 1, StringLength(arguments)))
 
+public class GovernmentRewardCommandHandler implements CommandHandler
+	CountryDiplomacyController controller
+	construct(CountryDiplomacyController controller)
+		this.controller = controller
+	override function execute(player sender, string arguments)
+		let cut = splitDiplomacyArgument(arguments)
+		if cut < 0
+			controller.requestReward(arguments, "")
+		else
+			controller.requestReward(SubString(arguments, 0, cut), SubString(arguments, cut + 1, StringLength(arguments)))
+
 public function registerCountryDiplomacyCommands(CommandRegistry commands, CountryDiplomacyController controller)
 	commands.register("country", "polity,diplomacy", "country POLITY", "Open a known country's interaction screen.", "Shows discovered relations, allegiance, history, standing, government, wars, partners, occupations, and available interactions.", 1, 1, COMMAND_RELEASE, new CountryCommandHandler(controller))
 	commands.register("peace", "negotiate", "peace POLITY TERMS", "Propose explicit peace terms.", "Opens validated negotiations with a known wartime government. Irreversible terms require confirmation.", 2, 99, COMMAND_RELEASE, new PeaceCommandHandler(controller))
+	commands.register("reward", "government-reward", "reward POLITY REWARD", "Request an earned government reward.", "Validates origin, current allegiance, standing, contribution history, the polity reward profile, and current polity resources before one atomic grant.", 2, 2, COMMAND_RELEASE, new GovernmentRewardCommandHandler(controller))
