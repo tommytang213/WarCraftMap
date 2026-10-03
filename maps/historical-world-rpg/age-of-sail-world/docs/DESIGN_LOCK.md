@@ -223,6 +223,42 @@ This file records requirements already agreed with the player. They are defaults
 - Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command.
 - AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier.
 
+## Religion and faith traditions
+
+- Religion is a reusable, scenario-neutral system. Faith traditions, denominations,
+  reforms, schisms, syncretic and local traditions, their relationships, labels,
+  influence curves, and benefit profiles are scenario data; the engine contains no
+  closed list of religions.
+- Personal faith/affiliations, polity-supported faiths, government tolerance or
+  persecution policy, settlement/province population composition, institutions,
+  and global influence are separate authoritative domains. A character may be
+  non-aligned or carry weighted affiliations; a polity may support multiple or no
+  faiths; a mixed region is not collapsed into its largest community.
+- Current influence is recomputed from authoritative population shares, active
+  centers and institutions, government support, prestige, and persistent event
+  effects. Alternate-history rise, decline, reform, and suppression therefore alter
+  effects dynamically instead of preserving a frozen historical starting score.
+- A main character's passive benefits combine two independent inputs: personal
+  investment/progression and current campaign influence. Both axes use deterministic
+  integer diminishing-return curves, and each scenario-authored attribute has a hard
+  cap. Benefit profiles are narrow and thematic, never blanket statistical
+  superiority.
+- Conversion is an atomic campaign action with an explicit cost, deterministic
+  sequence, campaign time, prior/new faith, and reputation consequences. Its history
+  is authoritative and cannot be rerolled by loading or changing maps.
+- The system exposes stable context (personal faith, government support, local
+  share, policy, institutional state) to quests, events, diplomacy, offices,
+  settlement unrest/stability, recruitment, and content availability. Those systems
+  decide their scenario-authored outcomes; Warcraft objects are not authority.
+- Faith state, regional composition, policies, institutions, influence inputs,
+  conversion history, and derived-effect inputs persist across saves and physical-map
+  transitions. Runtime modifiers and the religion overview are reconstructed. The
+  overview names each benefit and cap and explains the current personal-investment
+  and campaign-influence inputs.
+- Deterministic tests cover mixed regions, rise and decline, alternate-history
+  divergence, conversion history, independent scaling axes, diminishing caps, and
+  1450-1820 save/resume equivalence.
+
 ## City capture
 
 - Civilian facilities are invulnerable.

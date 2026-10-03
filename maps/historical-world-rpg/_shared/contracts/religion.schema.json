@@ -1,0 +1,10 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://warcraftmap.local/schemas/religion.schema.json",
+  "title":"Scenario Religion Definitions",
+  "type":"object",
+  "required":["format","schemaVersion","characterIds","polityIds","regionIds","faiths","policies","initialState"],
+  "properties":{"format":{"const":"warcraftmap_religion_v1"},"schemaVersion":{"const":1},"characterIds":{"type":"array","items":{"$ref":"#/$defs/id"}},"polityIds":{"type":"array","items":{"$ref":"#/$defs/id"}},"regionIds":{"type":"array","items":{"$ref":"#/$defs/id"}},"faiths":{"type":"array","minItems":1,"items":{"type":"object"}},"policies":{"type":"array","minItems":1,"items":{"type":"object"}},"initialState":{"type":"object"}},
+  "additionalProperties":false,
+  "$defs":{"id":{"type":"string","pattern":"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"}}
+}

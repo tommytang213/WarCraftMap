@@ -33,6 +33,11 @@ normalized state hashes.
 enforcement, finite ahead-of-time costs, typed stable-ID unlock events, independent
 province adoption, and campaign-save snapshots.
 
+`religion.py` provides scenario-defined faith/tradition identities, mixed regional
+composition, polity policy and institutions, dynamic influence, deterministic
+conversion history, and bounded two-axis character passives.  It exposes stable
+interaction context for quest, diplomacy, office, unrest, and recruitment systems.
+
 `military.py` owns authoritative strategic units, armies, fleets, movement,
 operational state, and stable-ID persistence. Warcraft objects are transient,
 locally relevant representations created only through a compatibility adapter.
