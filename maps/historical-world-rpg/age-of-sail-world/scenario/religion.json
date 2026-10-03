@@ -1,0 +1,44 @@
+{
+  "format": "warcraftmap_religion_v1",
+  "schemaVersion": 1,
+  "characterIds": ["player_captain"],
+  "polityIds": ["england", "ottoman_empire", "bahmani_sultanate"],
+  "regionIds": ["london", "constantinople", "goa"],
+  "faiths": [
+    {"id":"latin_christianity","name":"Latin Christianity","kind":"tradition","parentId":null,"influenceCurve":{"personalHalfSaturation":80,"influenceHalfSaturation":6000},"benefits":[{"attributeId":"diplomatic_reputation","capBasisPoints":900,"description":"Shared institutions strengthen diplomatic reputation."},{"attributeId":"administration","capBasisPoints":650,"description":"Clerical learning supports administration."}]},
+    {"id":"reformed_christianity","name":"Reformed Christianity","kind":"denomination","parentId":"latin_christianity","influenceCurve":{"personalHalfSaturation":70,"influenceHalfSaturation":4500},"benefits":[{"attributeId":"learning","capBasisPoints":850,"description":"Vernacular study supports learning."},{"attributeId":"commercial_networks","capBasisPoints":700,"description":"Congregational networks support commerce."}]},
+    {"id":"sunni_islam","name":"Sunni Islam","kind":"tradition","parentId":null,"influenceCurve":{"personalHalfSaturation":75,"influenceHalfSaturation":5500},"benefits":[{"attributeId":"travel_support","capBasisPoints":800,"description":"Pilgrimage and scholarly networks support travel."},{"attributeId":"military_cohesion","capBasisPoints":650,"description":"Shared institutions support military cohesion."}]},
+    {"id":"shia_islam","name":"Shia Islam","kind":"denomination","parentId":"sunni_islam","influenceCurve":{"personalHalfSaturation":75,"influenceHalfSaturation":3500},"benefits":[{"attributeId":"community_morale","capBasisPoints":850,"description":"Community institutions strengthen morale."},{"attributeId":"healing_support","capBasisPoints":600,"description":"Endowments provide healing and support."}]},
+    {"id":"hindu_traditions","name":"Hindu Traditions","kind":"tradition","parentId":null,"influenceCurve":{"personalHalfSaturation":85,"influenceHalfSaturation":5000},"benefits":[{"attributeId":"local_reputation","capBasisPoints":750,"description":"Temple and community ties support local reputation."},{"attributeId":"administration","capBasisPoints":700,"description":"Scholarly traditions support administration."}]},
+    {"id":"indo_islamic_syncretism","name":"Indo-Islamic Court Tradition","kind":"syncretic","parentId":null,"influenceCurve":{"personalHalfSaturation":80,"influenceHalfSaturation":2600},"benefits":[{"attributeId":"interfaith_diplomacy","capBasisPoints":900,"description":"A plural court tradition aids interfaith diplomacy."},{"attributeId":"cultural_learning","capBasisPoints":700,"description":"Multiple scholarly traditions broaden learning."}]},
+    {"id":"yoruba_traditions","name":"Yoruba Traditions","kind":"local","parentId":null,"influenceCurve":{"personalHalfSaturation":65,"influenceHalfSaturation":1800},"benefits":[{"attributeId":"community_support","capBasisPoints":850,"description":"Local sacred and kinship networks provide support."},{"attributeId":"healing_support","capBasisPoints":650,"description":"Ritual specialists support healing."}]}
+  ],
+  "policies": [
+    {"id":"confessional_support","name":"Confessional Support","toleranceBasisPoints":-1200,"supportedInfluenceBasisPoints":900,"minorityUnrestBasisPoints":700},
+    {"id":"managed_pluralism","name":"Managed Pluralism","toleranceBasisPoints":1400,"supportedInfluenceBasisPoints":450,"minorityUnrestBasisPoints":-500},
+    {"id":"secular_non_aligned","name":"Secular / Non-aligned","toleranceBasisPoints":1800,"supportedInfluenceBasisPoints":0,"minorityUnrestBasisPoints":-700}
+  ],
+  "initialState": {
+    "schemaVersion":1,
+    "characters":[{"characterId":"player_captain","primaryFaithId":null,"affiliations":[],"personalInvestment":0}],
+    "polities":[
+      {"polityId":"england","policyId":"confessional_support","supportedFaithIds":["latin_christianity"],"institutionalState":"established_church"},
+      {"polityId":"ottoman_empire","policyId":"managed_pluralism","supportedFaithIds":["sunni_islam"],"institutionalState":"millet_system"},
+      {"polityId":"bahmani_sultanate","policyId":"managed_pluralism","supportedFaithIds":["sunni_islam","indo_islamic_syncretism"],"institutionalState":"plural_court"}
+    ],
+    "regions":[
+      {"regionId":"london","populationUnits":5000,"composition":[{"faithId":"latin_christianity","shareBasisPoints":9300},{"faithId":"reformed_christianity","shareBasisPoints":400},{"faithId":"sunni_islam","shareBasisPoints":100},{"faithId":"hindu_traditions","shareBasisPoints":100},{"faithId":"yoruba_traditions","shareBasisPoints":100}]},
+      {"regionId":"constantinople","populationUnits":6500,"composition":[{"faithId":"sunni_islam","shareBasisPoints":6500},{"faithId":"latin_christianity","shareBasisPoints":2200},{"faithId":"reformed_christianity","shareBasisPoints":300},{"faithId":"shia_islam","shareBasisPoints":600},{"faithId":"hindu_traditions","shareBasisPoints":200},{"faithId":"indo_islamic_syncretism","shareBasisPoints":100},{"faithId":"yoruba_traditions","shareBasisPoints":100}]},
+      {"regionId":"goa","populationUnits":4200,"composition":[{"faithId":"hindu_traditions","shareBasisPoints":6100},{"faithId":"sunni_islam","shareBasisPoints":1800},{"faithId":"latin_christianity","shareBasisPoints":1200},{"faithId":"indo_islamic_syncretism","shareBasisPoints":700},{"faithId":"yoruba_traditions","shareBasisPoints":200}]}
+    ],
+    "institutions":[
+      {"id":"rome_network","faithId":"latin_christianity","kind":"major_center","influenceUnits":1500,"active":true},
+      {"id":"constantinople_ulema","faithId":"sunni_islam","kind":"clergy_organization","influenceUnits":1200,"active":true},
+      {"id":"goa_temple_network","faithId":"hindu_traditions","kind":"local_institutions","influenceUnits":800,"active":true}
+    ],
+    "influence":[
+      {"faithId":"latin_christianity","prestigeUnits":500,"eventUnits":0},{"faithId":"reformed_christianity","prestigeUnits":0,"eventUnits":0},{"faithId":"sunni_islam","prestigeUnits":450,"eventUnits":0},{"faithId":"shia_islam","prestigeUnits":150,"eventUnits":0},{"faithId":"hindu_traditions","prestigeUnits":300,"eventUnits":0},{"faithId":"indo_islamic_syncretism","prestigeUnits":100,"eventUnits":0},{"faithId":"yoruba_traditions","prestigeUnits":100,"eventUnits":0}
+    ],
+    "conversionHistory":[],"nextEventSequence":1
+  }
+}
