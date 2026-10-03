@@ -19,16 +19,15 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def setUpClass(cls):
         cls.report = audit.build_report()
 
-    def test_gate_fails_loudly_for_known_backend_only_runtime_gaps(self):
+    def test_gate_passes_when_all_player_runtime_paths_are_release_validated(self):
         self.assertEqual(cls_json(self.report), cls_json(audit.build_report()))
-        self.assertEqual("fail", self.report["status"])
-        self.assertGreater(self.report["unresolvedCampaignBlockers"], 0)
-        self.assertEqual("release_blocked", self.report["disposition"])
+        self.assertEqual("pass", self.report["status"])
+        self.assertEqual(0, self.report["unresolvedCampaignBlockers"])
+        self.assertEqual("gate_closed", self.report["disposition"])
         runtime = self.report["runtimeAcceptance"]
-        self.assertEqual("fail", runtime["status"])
+        self.assertEqual("pass", runtime["status"])
         by_id = {row["id"]: row for row in runtime["systems"]}
-        self.assertTrue(by_id["trade"]["stages"]["dataComplete"])
-        self.assertFalse(by_id["trade"]["stages"]["runtimeIntegrated"])
+        self.assertTrue(all(by_id["trade"]["stages"].values()))
 
     def test_taxonomy_explicitly_blocks_campaign_failures_and_unclassified_critical_failures(self):
         taxonomy = {row["id"]: row for row in self.report["taxonomy"]}
@@ -83,10 +82,10 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def test_checked_in_machine_and_human_reports_are_current(self):
         completed = subprocess.run([sys.executable, str(TOOL)], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
-        self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
+        self.assertEqual(0, completed.returncode, completed.stderr or completed.stdout)
         summary = json.loads(completed.stdout)
-        self.assertEqual("fail", summary["status"])
-        self.assertGreater(summary["unresolvedCampaignBlockers"], 0)
+        self.assertEqual("pass", summary["status"])
+        self.assertEqual(0, summary["unresolvedCampaignBlockers"])
         human = (PROJECT / "reports/release-blocker-audit.md").read_text()
         self.assertIn("JOURNEY-ALTERNATE-HISTORY", human)
         self.assertIn("Player-facing runtime acceptance", human)

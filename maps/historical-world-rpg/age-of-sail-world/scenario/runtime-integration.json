@@ -206,15 +206,20 @@
         {
           "path": "../_shared/engine/trade.py",
           "contains": [
-            "TradeResult"
+            "TradeResult",
+            "execute",
+            "transfer_cargo"
           ]
         }
       ],
       "headlessVerification": [
         {
-          "path": "tests/test_trade.py",
+          "path": "tests/test_playable_trade.py",
           "contains": [
-            "trade"
+            "test_long_distance_buy_carry_sell_profit_and_unlock",
+            "test_capacity_replay_and_stale_quote_exploits_fail",
+            "test_saturation_anti_farming_and_uncosted_rewards",
+            "test_knowledge_trends_warehouse_transfer_and_save_resume_equivalence"
           ]
         }
       ],
@@ -223,7 +228,7 @@
           "path": "wurst/Bootstrap.wurst",
           "contains": [
             "import PlayableTrade",
-            "registerPlayableTrade"
+            "registerPlayableTrade(commands, campaign)"
           ]
         }
       ],
@@ -231,16 +236,20 @@
         {
           "path": "wurst/PlayableTrade.wurst",
           "contains": [
-            "player",
-            "trade"
+            "commands.register(\"trade\"",
+            "inspectMarket",
+            "buyCargo",
+            "sellCargo"
           ]
         }
       ],
       "persistence": [
         {
-          "path": "../_shared/engine/trade.py",
+          "path": "wurst/PlayableTrade.wurst",
           "contains": [
-            "trade_state"
+            "CampaignRuntimeExtension",
+            "capture()",
+            "reconstruct(string document)"
           ]
         }
       ],
@@ -248,13 +257,16 @@
         {
           "path": "wurst/PlayableTradeTests.wurst",
           "contains": [
-            "@test"
+            "playerCanInspectBuyCarryMoveAndSellCargo",
+            "staleDisplayRestrictionsAndFailuresRollbackAtomically",
+            "tradeAuthoritySurvivesRuntimeReconstruction"
           ]
         }
       ],
       "artifactMarkers": [
         "registerPlayableTrade",
-        "PlayableTrade"
+        "TradeCommand",
+        "Open the current settlement commodity market."
       ]
     },
     {
@@ -1291,6 +1303,13 @@
           "path": "wurst/PlayableCampaignRuntimeTests.wurst",
           "contains": [
             "@test"
+          ]
+        },
+        {
+          "path": "wurst/PlayableTradeTests.wurst",
+          "contains": [
+            "playerCanInspectBuyCarryMoveAndSellCargo",
+            "tradeAuthoritySurvivesRuntimeReconstruction"
           ]
         },
         {

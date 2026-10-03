@@ -52,3 +52,40 @@ class Presentation implements TradePresentation
 	controller.sell("s2",sink,ship,2,1000)
 	let second=progress.standing-first
 	(first>second).assertEquals(true)
+
+@test function staleDisplayRestrictionsAndFailuresRollbackAtomically()
+	let controller=new PlayableTradeController(new MerchantProgress())
+	let market=new RuntimeMarket("port","Grain",5,100,10,8)
+	let ship=new TradeStore("ship",2,15)
+	let displayed=market.buyUnitPrice
+	market.buyUnitPrice=12
+	controller.buy("repriced",market,ship,1).assertEquals("Bought 1 Grain.")
+	(displayed<market.buyUnitPrice).assertEquals(true)
+	let stock=market.stock
+	let money=ship.money
+	controller.buy("no-money",market,ship,1).assertEquals("Funds are insufficient.")
+	market.stock.assertEquals(stock)
+	ship.money.assertEquals(money)
+	market.blockaded=true
+	controller.sell("blocked",market,ship,1,1000).assertEquals("Market access is restricted.")
+	ship.cargo.assertEquals(1)
+	market.blockaded=false
+	market.occupiedByHostile=true
+	controller.buy("occupied",market,ship,1).assertEquals("Market access is restricted.")
+	market.occupiedByHostile=false
+	market.discovered=false
+	controller.buy("hidden",market,ship,1).assertEquals("Commodity is not discovered.")
+
+@test function tradeAuthoritySurvivesRuntimeReconstruction()
+	let original=new PlayableTradeRuntime()
+	original.newCampaign("calicut")
+	original.controller.buy("persist-buy",original.market,original.hold,3)
+	original.controller.sell("persist-sell",new RuntimeMarket("london","Grain",5,10000,30,25),original.hold,1,2000)
+	let saved=original.capture()
+	let resumed=new PlayableTradeRuntime()
+	resumed.reconstruct(saved).assertEquals(true)
+	resumed.hold.cargo.assertEquals(original.hold.cargo)
+	resumed.controller.carriedCost.assertEquals(original.controller.carriedCost)
+	resumed.progress.realizedProfit.assertEquals(original.progress.realizedProfit)
+	resumed.progress.standing.assertEquals(original.progress.standing)
+	resumed.controller.buy("persist-buy",resumed.market,resumed.hold,1).assertEquals("Transaction already processed.")

@@ -11,6 +11,7 @@ import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import PlayableCampaignRuntime
+import PlayableTrade
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import ReligionRuntime
@@ -75,6 +76,7 @@ init
 	let commands = createCommandRegistry(false)
 	configureGeneratedReligion(religionRuntime)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID, religionRuntime)
+	registerPlayableTrade(commands, campaign)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)

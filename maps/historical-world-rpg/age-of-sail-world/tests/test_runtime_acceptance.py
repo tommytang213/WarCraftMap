@@ -21,14 +21,14 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                          "cross_map_travel", "world_map", "remote_management",
                          "government_rewards"} <= ids)
         self.assertEqual(list(runtime.STAGES), report["stages"])
-        self.assertEqual("fail", report["status"])
+        self.assertEqual("pass", report["status"])
 
-    def test_backend_only_feature_is_a_release_failure(self):
+    def test_trade_has_real_runtime_entry_and_release_evidence(self):
         report = runtime.audit_sources()
         trade = next(row for row in report["systems"] if row["id"] == "trade")
-        self.assertTrue(trade["stages"]["dataComplete"])
-        self.assertFalse(trade["stages"]["playerFacingComplete"])
-        self.assertTrue(any(message.startswith("trade:") for message in report["failures"]))
+        self.assertEqual({stage: True for stage in runtime.STAGES}, trade["stages"])
+        self.assertEqual([], trade["diagnostics"])
+        self.assertFalse(any(message.startswith("trade:") for message in report["failures"]))
 
     def test_country_diplomacy_and_government_rewards_use_real_release_entry_points(self):
         report = runtime.audit_sources()
