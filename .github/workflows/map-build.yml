@@ -33,18 +33,28 @@ jobs:
 
       - name: Typecheck and package with pinned Wurst image
         run: |
+          artifact_dir="$RUNNER_TEMP/age-of-sail-campaign"
+          mkdir -p "$artifact_dir"
+
           docker run --rm \
             --user root \
-            -v "$PWD:/workspace" \
-            -w "/workspace/$MAP_PROJECT" \
+            -e MAP_PROJECT \
+            -e MAP_ARTIFACT \
+            -v "$PWD:/source:ro" \
+            -v "$artifact_dir:/out" \
             "$WURST_IMAGE" \
             /bin/sh -lc '
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
-              chown -R wurstuser:wurstuser /workspace/maps/historical-world-rpg/age-of-sail-world
-              su -s /bin/sh wurstuser -c "PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
+              cp -a /source /tmp/workspace
+              chown -R wurstuser:wurstuser /tmp/workspace
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
+              cp "/tmp/workspace/$MAP_ARTIFACT" /out/AgeOfSailWorldCampaign.w3n
             '
+
+          mkdir -p "$(dirname "$MAP_ARTIFACT")"
+          cp "$artifact_dir/AgeOfSailWorldCampaign.w3n" "$MAP_ARTIFACT"
 
       - name: Confirm packaged campaign
         run: test -s "$MAP_ARTIFACT"

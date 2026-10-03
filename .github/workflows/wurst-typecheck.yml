@@ -14,6 +14,8 @@ on:
 jobs:
   age-of-sail-world:
     runs-on: ubuntu-latest
+    env:
+      WURST_IMAGE: frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,10 +25,15 @@ jobs:
 
       - name: Typecheck and build Age of Sail
         run: |
-          docker run --rm             --user root             -v "$PWD:/workspace"             -w /workspace/maps/historical-world-rpg/age-of-sail-world             frotty/wurstscript:latest             /bin/sh -lc '
+          docker run --rm \
+            --user root \
+            -v "$PWD:/source:ro" \
+            "$WURST_IMAGE" \
+            /bin/sh -lc '
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
-              grill install wurstscript
-              ./tooling/package_release.sh
+              cp -a /source /tmp/workspace
+              chown -R wurstuser:wurstuser /tmp/workspace
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/maps/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
             '
