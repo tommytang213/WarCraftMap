@@ -9,7 +9,7 @@
   "blockerClasses": [
     "start_failure", "progression_dead_end", "save_failure", "load_or_migration_failure",
     "travel_failure", "recovery_failure", "completion_failure", "invalid_reference",
-    "corrupt_package", "blocking_content_stub", "suppressed_blocker"
+    "corrupt_package", "blocking_content_stub", "suppressed_blocker", "missing_runtime_integration"
   ],
   "requiredSystems": [
     "new_campaign", "regional_activation", "travel", "remote_management", "economy",
@@ -38,6 +38,6 @@
   ],
   "reportGlobs": ["reports/*.json", "scenario/**/reports/*.json"],
   "releaseSaveCompatibilityManifest": "scenario/compatibility/release-save-v1.json",
-  "releaseInputs": ["package.json", "physical-maps.json", "map/map-source.json", "scenario/world/world.json", "scenario/maps/world-map.json", "scenario/compatibility/release-save-v1.json"],
+  "releaseInputs": ["package.json", "physical-maps.json", "map/map-source.json", "scenario/world/world.json", "scenario/maps/world-map.json", "scenario/compatibility/release-save-v1.json", "scenario/runtime-integration.json"],
   "knownLimitations": []
 }

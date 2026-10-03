@@ -1,8 +1,8 @@
 # Phase 8 release-blocker audit
 
-Result: **PASS**
+Result: **FAIL**
 
-Unresolved campaign blockers: **0**
+Unresolved campaign blockers: **12**
 
 ## Severity taxonomy
 
@@ -20,14 +20,52 @@ Unresolved campaign blockers: **0**
 | `JOURNEY-ATLANTIC-TO-PACIFIC` | maritime_expansion | 1450 | 7 | 8 | pass |
 | `JOURNEY-ALTERNATE-HISTORY` | alternate_history | 1701 | 7 | 8 | pass |
 
+## Player-facing runtime acceptance
+
+| System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |
+|---|---:|---:|---:|---:|---:|
+| `campaign_launch` | yes | yes | yes | yes | yes |
+| `origin_selection` | yes | yes | yes | yes | yes |
+| `country_diplomacy` | yes | yes | no | no | no |
+| `trade` | yes | no | no | no | no |
+| `army_fleet_control` | yes | no | no | no | no |
+| `city_capture` | yes | yes | no | no | no |
+| `garrisons` | yes | no | no | no | no |
+| `administration` | yes | yes | no | no | no |
+| `heroes` | yes | yes | no | no | no |
+| `inventory_equipment` | yes | yes | no | no | no |
+| `technology_institutions` | yes | yes | no | no | no |
+| `quests_journal` | yes | yes | no | no | no |
+| `treasures_discovery` | yes | yes | no | no | no |
+| `save_autosave_load` | yes | yes | yes | yes | yes |
+| `cross_map_travel` | yes | yes | yes | yes | yes |
+| `world_map` | yes | yes | yes | yes | yes |
+| `remote_management` | yes | yes | yes | yes | yes |
+| `government_rewards` | yes | yes | no | no | no |
+| `religion` | yes | yes | no | no | no |
+| `piracy` | yes | no | no | no | no |
+
 ## Findings
 
-No unresolved or accepted defects were found.
+| Stable ID | Severity | Class | Context | Disposition |
+|---|---|---|---|---|
+| `RUNTIME-MISSING-ADMINISTRATION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-ARMY-FLEET-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-CITY-CAPTURE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-COUNTRY-DIPLOMACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-GARRISONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-GOVERNMENT-REWARDS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-HEROES` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TREASURES-DISCOVERY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence
 
 - 31 tracked validation reports
-- 6 hashed release inputs
+- 7 hashed release inputs
 - 5 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
 - Fresh start, supported-save migration, manual save, rolling autosave, checkpoints, native save/load, interrupted transition recovery, and representation reconstruction are journey-gated.

@@ -22,10 +22,12 @@ from pathlib import Path, PurePosixPath
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / "_shared" / "tooling"))
 sys.path.insert(0, str(PROJECT.parent / "_shared" / "engine"))
+sys.path.insert(0, str(PROJECT / "tooling"))
 from package_wurst_campaign import build_campaign, inspect_campaign, load_campaign_config  # noqa: E402
 from warcraft_campaign import MpqReader  # noqa: E402
 from package_wurst_map import GENERATOR_VERSION, PackagingError  # noqa: E402
 import release_save_compatibility  # noqa: E402
+import runtime_acceptance  # noqa: E402
 
 FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
@@ -134,6 +136,10 @@ def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
     gates = config["requiredGates"]
     if gates.get("zeroCampaignBlockers") is not True:
         raise PackagingError("gate stage failed: zero-campaign-blocker gate is not complete")
+    runtime = runtime_acceptance.audit_sources()
+    if runtime["status"] != "pass":
+        raise PackagingError("gate stage failed: player-facing runtime acceptance failed: " +
+                             "; ".join(runtime["failures"]))
     coverage = json.loads(_source_path(gates["phase8Content"], "phase8Content").read_text())
     if coverage.get("status") != "pass" or coverage.get("failures"):
         raise PackagingError("gate stage failed: Phase 8 content coverage does not pass")
@@ -207,6 +213,23 @@ def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
     return rows
 
 
+def verify_campaign_runtime(campaign_path: Path, campaign_config) -> None:
+    campaign = MpqReader(campaign_path)
+    for physical in campaign_config.maps:
+        payload = campaign.read(physical.package_path)
+        with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
+            nested_file.write(payload); nested_file.flush()
+            nested = MpqReader(Path(nested_file.name))
+            try:
+                script = nested.read("war3map.lua").decode("utf-8", errors="replace")
+            except Exception as error:
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: missing compiled script") from error
+            result = runtime_acceptance.verify_compiled_script(script)
+            if result["status"] != "pass":
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: " +
+                                     "; ".join(result["failures"]))
+
+
 def audit_payloads(payloads: dict[str, bytes], config: dict) -> None:
     names = list(payloads)
     if len(names) != len(set(n.casefold() for n in names)):
@@ -275,6 +298,7 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         first_normalized = normalized_campaign(first_path, campaign_config)
         second = build_campaign(campaign_manifest, grill=grill, clean_first=True)
         second_normalized = normalized_campaign(second, campaign_config)
+        verify_campaign_runtime(second, campaign_config)
         if first_normalized != second_normalized:
             difference = sorted(set(first_normalized) | set(second_normalized))
             difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]

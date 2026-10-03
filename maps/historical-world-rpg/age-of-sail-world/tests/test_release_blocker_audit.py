@@ -19,11 +19,16 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def setUpClass(cls):
         cls.report = audit.build_report()
 
-    def test_clean_integrated_gate_is_deterministic_and_has_zero_blockers(self):
+    def test_gate_fails_loudly_for_known_backend_only_runtime_gaps(self):
         self.assertEqual(cls_json(self.report), cls_json(audit.build_report()))
-        self.assertEqual("pass", self.report["status"])
-        self.assertEqual(0, self.report["unresolvedCampaignBlockers"])
-        self.assertEqual("gate_closed", self.report["disposition"])
+        self.assertEqual("fail", self.report["status"])
+        self.assertGreater(self.report["unresolvedCampaignBlockers"], 0)
+        self.assertEqual("release_blocked", self.report["disposition"])
+        runtime = self.report["runtimeAcceptance"]
+        self.assertEqual("fail", runtime["status"])
+        by_id = {row["id"]: row for row in runtime["systems"]}
+        self.assertTrue(by_id["trade"]["stages"]["dataComplete"])
+        self.assertFalse(by_id["trade"]["stages"]["runtimeIntegrated"])
 
     def test_taxonomy_explicitly_blocks_campaign_failures_and_unclassified_critical_failures(self):
         taxonomy = {row["id"]: row for row in self.report["taxonomy"]}
@@ -51,7 +56,7 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
                     for index, kind in enumerate(config["blockerClasses"], 1)]
         report = audit.build_report(injected_findings=injected)
         self.assertEqual("fail", report["status"])
-        self.assertEqual(len(injected), report["unresolvedCampaignBlockers"])
+        self.assertGreaterEqual(report["unresolvedCampaignBlockers"], len(injected))
         self.assertEqual(set(config["blockerClasses"]), {row["class"] for row in report["findings"]})
         self.assertTrue(all(audit.STABLE_ID.fullmatch(row["id"]) and row["context"] and row["message"]
                             for row in report["findings"]))
@@ -71,18 +76,20 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         finding["class"] = "not_classified"
         finding["severity"] = "invented"
         report = audit.build_report(injected_findings=[finding])
-        self.assertEqual("critical_unclassified", report["findings"][0]["severity"])
+        unknown = next(row for row in report["findings"] if row["id"] == "INJECT-UNKNOWN-CRITICAL")
+        self.assertEqual("critical_unclassified", unknown["severity"])
         self.assertEqual("fail", report["status"])
 
     def test_checked_in_machine_and_human_reports_are_current(self):
         completed = subprocess.run([sys.executable, str(TOOL)], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
-        self.assertEqual(0, completed.returncode, completed.stderr or completed.stdout)
+        self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
         summary = json.loads(completed.stdout)
-        self.assertEqual({"status": "pass", "unresolvedCampaignBlockers": 0}, summary)
+        self.assertEqual("fail", summary["status"])
+        self.assertGreater(summary["unresolvedCampaignBlockers"], 0)
         human = (PROJECT / "reports/release-blocker-audit.md").read_text()
         self.assertIn("JOURNEY-ALTERNATE-HISTORY", human)
-        self.assertIn("Unresolved campaign blockers: **0**", human)
+        self.assertIn("Player-facing runtime acceptance", human)
 
 
 def cls_json(value):
