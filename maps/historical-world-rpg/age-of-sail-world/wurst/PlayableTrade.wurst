@@ -219,6 +219,19 @@ function compactField(string document,int wanted) returns string
 			start=i+1
 	return ""
 
+/** Store IDs use a kind:id form. Keep that colon out of the legacy
+ * colon-delimited campaign extension document. Authored IDs are restricted to
+ * identifier characters, so semicolon is an unambiguous on-save substitute. */
+function tradeSafeId(string value) returns string
+	var result=""
+	for i=0 to StringLength(value)-1
+		let character=SubString(value,i,i+1)
+		if character==":"
+			result+=";"
+		else
+			result+=character
+	return result
+
 /** Authoritative stable-ID trade domain. Frames and command text only project it. */
 public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	MerchantProgress progress = new MerchantProgress()
@@ -306,8 +319,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		for i=0 to storeCount-1
 			if i>0
 				storeState+="~"
-			storeState+=stores[i].id+","+stores[i].cargo.toString()+","+stores[i].money.toString()+","+stores[i].capacity.toString()+","+stores[i].goodId
-		return settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.cargo.toString()+":"+hold.money.toString()+":"+controller.carriedCost.toString()+":"+controller.carriedQuantity.toString()+":"+controller.carriedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+hold.id+":"+hold.capacity.toString()+":"+storeState
+			storeState+=tradeSafeId(stores[i].id)+","+stores[i].cargo.toString()+","+stores[i].money.toString()+","+stores[i].capacity.toString()+","+stores[i].goodId
+		return settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.cargo.toString()+":"+hold.money.toString()+":"+controller.carriedCost.toString()+":"+controller.carriedQuantity.toString()+":"+controller.carriedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+tradeSafeId(hold.id)+":"+hold.capacity.toString()+":"+storeState
 	override function reconstruct(string document) returns boolean
 		if document==""
 			return true
@@ -356,8 +369,11 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						markets[j].blockaded=compactField(record,9)=="1"
 						markets[j].occupiedByHostile=compactField(record,10)=="1"
 				recordStart=i+1
-		if tradeField(document,17)!=""
-			hold.id=tradeField(document,17)
+		let savedHoldId=tradeField(document,17)
+		if savedHoldId!=""
+			for i=0 to storeCount-1
+				if tradeSafeId(stores[i].id)==savedHoldId
+					hold=stores[i]
 			hold.capacity=S2I(tradeField(document,18))
 		let savedStores=tradeField(document,19)
 		recordStart=0
@@ -365,7 +381,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 			if i==StringLength(savedStores) or SubString(savedStores,i,i+1)=="~"
 				let record=SubString(savedStores,recordStart,i)
 				for j=0 to storeCount-1
-					if stores[j].id==compactField(record,0)
+					if tradeSafeId(stores[j].id)==compactField(record,0)
 						stores[j].cargo=S2I(compactField(record,1))
 						stores[j].money=S2I(compactField(record,2))
 						stores[j].capacity=S2I(compactField(record,3))
