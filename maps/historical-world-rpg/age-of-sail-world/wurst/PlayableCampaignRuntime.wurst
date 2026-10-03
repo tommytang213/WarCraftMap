@@ -75,6 +75,26 @@ function withoutCountryAuthority(string document) returns string
 		return document
 	return SubString(document, 0, cut)
 
+/** Replaces the location tuple instead of accumulating stale transition keys
+ * over repeated multi-hop travel. Other authoritative domains are untouched. */
+function withoutTravelAuthority(string document) returns string
+	let first = document.indexOf(";")
+	if first < 0
+		return document
+	var result = SubString(document, 0, first)
+	var remaining = SubString(document, first + 1, StringLength(document))
+	while remaining != ""
+		let separator = remaining.indexOf(";")
+		var field = remaining
+		if separator >= 0
+			field = SubString(remaining, 0, separator)
+			remaining = SubString(remaining, separator + 1, StringLength(remaining))
+		else
+			remaining = ""
+		if not field.startsWith("map=") and not field.startsWith("region=") and not field.startsWith("boundary=") and not field.startsWith("position=") and not field.startsWith("transition=") and not field.startsWith("arrival=")
+			result += ";" + field
+	return result
+
 /**
  * The compact runtime authority uses stable IDs only. Domain payloads are supplied by the
  * gameplay systems (quests, settlements, inventory, fleets, orders and discovery); Warcraft
@@ -309,7 +329,7 @@ public class CampaignTravelRuntime
 		let previous = state.authorityDocument()
 		let arrival = boundary.destinationPosition(normalized)
 		state.beginTransition()
-		state.replaceAuthority(previous + ";transition=" + boundary.id + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";arrival=" + arrival.toString())
+		state.replaceAuthority(withoutTravelAuthority(previous) + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";boundary=" + boundary.id + ";position=" + arrival.toString() + ";transition=" + boundary.id + ";arrival=" + arrival.toString())
 		state.finishTransition()
 		if not saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
 			state.replaceAuthority(previous)
@@ -325,6 +345,83 @@ public class CampaignTravelRuntime
 		return true
 	function diagnostic() returns string
 		return lastDiagnostic
+
+/** Map-local edge triggers are projections of scenario-owned correspondence
+ * records. They contain no campaign authority and are rebuilt on every map. */
+public class PhysicalBoundaryRegistry
+	CampaignTravelRuntime travel
+	PlayableRegionAccess access
+	BoundaryCorrespondence array[64] boundaries
+	trigger array[64] listeners
+	string array[64] edges
+	real array[64] intervalStarts
+	real array[64] intervalEnds
+	boolean array[64] discoveryRequired
+	int count = 0
+	boolean transitioning = false
+	construct(CampaignTravelRuntime travel, PlayableRegionAccess access)
+		this.travel = travel
+		this.access = access
+	function add(string id, string sourceMapId, string destinationMapId, string destinationPath, string destinationRegionId, string sourceEdge, real intervalStart, real intervalEnd, boolean reverse, real scale, real offset, boolean requiresDiscovery)
+		boundaries[count] = new BoundaryCorrespondence(id, sourceMapId, destinationMapId, destinationPath, destinationRegionId, reverse, scale, offset)
+		edges[count] = sourceEdge
+		intervalStarts[count] = intervalStart
+		intervalEnds[count] = intervalEnd
+		discoveryRequired[count] = requiresDiscovery
+		count++
+	function normalizedPosition(int index, unit entering) returns real
+		let world = GetPlayableMapRect()
+		if edges[index] == "east" or edges[index] == "west"
+			return (GetUnitY(entering) - GetRectMinY(world)) / (GetRectMaxY(world) - GetRectMinY(world))
+		return (GetUnitX(entering) - GetRectMinX(world)) / (GetRectMaxX(world) - GetRectMinX(world))
+	function entered()
+		if transitioning
+			return
+		let entering = GetEnteringUnit()
+		if entering == null or GetOwningPlayer(entering) != Player(0)
+			return
+		let fired = GetTriggeringTrigger()
+		for i = 0 to count - 1
+			if listeners[i] == fired
+				if discoveryRequired[i] and not access.regionIsKnown(Player(0), boundaries[i].destinationRegionId)
+					print("This route has not been discovered.")
+					return
+				let position = normalizedPosition(i, entering)
+				let local = (position - intervalStarts[i]) / (intervalEnds[i] - intervalStarts[i])
+				transitioning = true
+				if not travel.transition(boundaries[i], local, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+					transitioning = false
+					print(travel.diagnostic())
+				return
+	function install()
+		installPhysicalBoundaryRegistry(this)
+		let world = GetPlayableMapRect()
+		let minX = GetRectMinX(world)
+		let maxX = GetRectMaxX(world)
+		let minY = GetRectMinY(world)
+		let maxY = GetRectMaxY(world)
+		for i = 0 to count - 1
+			var area = world
+			if edges[i] == "west"
+				area = Rect(minX, minY + (maxY-minY)*intervalStarts[i], minX+128., minY + (maxY-minY)*intervalEnds[i])
+			else if edges[i] == "east"
+				area = Rect(maxX-128., minY + (maxY-minY)*intervalStarts[i], maxX, minY + (maxY-minY)*intervalEnds[i])
+			else if edges[i] == "south"
+				area = Rect(minX + (maxX-minX)*intervalStarts[i], minY, minX + (maxX-minX)*intervalEnds[i], minY+128.)
+			else
+				area = Rect(minX + (maxX-minX)*intervalStarts[i], maxY-128., minX + (maxX-minX)*intervalEnds[i], maxY)
+			listeners[i] = CreateTrigger()
+			TriggerRegisterEnterRectSimple(listeners[i], area)
+			TriggerAddAction(listeners[i], function physicalBoundaryEntered)
+
+PhysicalBoundaryRegistry installedPhysicalBoundaries = null
+
+function installPhysicalBoundaryRegistry(PhysicalBoundaryRegistry registry)
+	installedPhysicalBoundaries = registry
+
+function physicalBoundaryEntered()
+	if installedPhysicalBoundaries != null
+		installedPhysicalBoundaries.entered()
 
 public class SaveCommand implements CommandHandler
 	CampaignSaveManager saves

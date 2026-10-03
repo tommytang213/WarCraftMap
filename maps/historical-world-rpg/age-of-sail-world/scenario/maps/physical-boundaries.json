@@ -1,0 +1,57 @@
+{
+  "format": "warcraftmap_physical_boundaries_v1",
+  "formatVersion": 1,
+  "description": "Authoritative, reachable edge correspondences between Age of Sail physical maps. Each directed record owns one edge segment and names the exact packaged destination.",
+  "boundaries": [
+    {"id":"europe_west_to_europe_central_east","sourceMapId":"europe_west","destinationMapId":"europe_central_east","destinationRegionId":"europe","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"europe_central_east_to_europe_west","sourceMapId":"europe_central_east","destinationMapId":"europe_west","destinationRegionId":"europe","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"europe_west_to_africa","sourceMapId":"europe_west","destinationMapId":"africa","destinationRegionId":"africa","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"africa_to_europe_west","sourceMapId":"africa","destinationMapId":"europe_west","destinationRegionId":"europe","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"europe_central_east_to_middle_east_india","sourceMapId":"europe_central_east","destinationMapId":"middle_east_india","destinationRegionId":"middle_east_india","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"middle_east_india_to_europe_central_east","sourceMapId":"middle_east_india","destinationMapId":"europe_central_east","destinationRegionId":"europe","sourceEdge":"west","sourceInterval":[0,0.5],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"africa_to_middle_east_india","sourceMapId":"africa","destinationMapId":"middle_east_india","destinationRegionId":"middle_east_india","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"middle_east_india_to_africa","sourceMapId":"middle_east_india","destinationMapId":"africa","destinationRegionId":"africa","sourceEdge":"west","sourceInterval":[0.5,1],"arrivalTransform":{"reverse":true,"scale":1,"offset":0}},
+
+    {"id":"middle_east_india_to_southeast_asia","sourceMapId":"middle_east_india","destinationMapId":"southeast_asia","destinationRegionId":"southeast_asia","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"southeast_asia_to_middle_east_india","sourceMapId":"southeast_asia","destinationMapId":"middle_east_india","destinationRegionId":"middle_east_india","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"southeast_asia_to_east_asia","sourceMapId":"southeast_asia","destinationMapId":"east_asia","destinationRegionId":"east_asia","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"east_asia_to_southeast_asia","sourceMapId":"east_asia","destinationMapId":"southeast_asia","destinationRegionId":"southeast_asia","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"east_asia_to_pacific_north","sourceMapId":"east_asia","destinationMapId":"pacific_north","destinationRegionId":"pacific","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_north_to_east_asia","sourceMapId":"pacific_north","destinationMapId":"east_asia","destinationRegionId":"east_asia","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"southeast_asia_to_pacific_west","sourceMapId":"southeast_asia","destinationMapId":"pacific_west","destinationRegionId":"pacific","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_west_to_southeast_asia","sourceMapId":"pacific_west","destinationMapId":"southeast_asia","destinationRegionId":"southeast_asia","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"pacific_north_to_pacific_west","sourceMapId":"pacific_north","destinationMapId":"pacific_west","destinationRegionId":"pacific","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_west_to_pacific_north","sourceMapId":"pacific_west","destinationMapId":"pacific_north","destinationRegionId":"pacific","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"pacific_west_to_pacific_melanesia","sourceMapId":"pacific_west","destinationMapId":"pacific_melanesia","destinationRegionId":"pacific","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_melanesia_to_pacific_west","sourceMapId":"pacific_melanesia","destinationMapId":"pacific_west","destinationRegionId":"pacific","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"pacific_melanesia_to_pacific_polynesia","sourceMapId":"pacific_melanesia","destinationMapId":"pacific_polynesia","destinationRegionId":"pacific","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_polynesia_to_pacific_melanesia","sourceMapId":"pacific_polynesia","destinationMapId":"pacific_melanesia","destinationRegionId":"pacific","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"pacific_melanesia_to_pacific_new_zealand","sourceMapId":"pacific_melanesia","destinationMapId":"pacific_new_zealand","destinationRegionId":"pacific","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"pacific_new_zealand_to_pacific_melanesia","sourceMapId":"pacific_new_zealand","destinationMapId":"pacific_melanesia","destinationRegionId":"pacific","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"pacific_polynesia_to_americas_pacific_transition","sourceMapId":"pacific_polynesia","destinationMapId":"americas_pacific_transition","destinationRegionId":"americas_caribbean","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"americas_pacific_transition_to_pacific_polynesia","sourceMapId":"americas_pacific_transition","destinationMapId":"pacific_polynesia","destinationRegionId":"pacific","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"americas_pacific_transition_to_americas_north_central","sourceMapId":"americas_pacific_transition","destinationMapId":"americas_north_central","destinationRegionId":"americas_caribbean","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"americas_north_central_to_americas_pacific_transition","sourceMapId":"americas_north_central","destinationMapId":"americas_pacific_transition","destinationRegionId":"americas_caribbean","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"americas_north_central_to_americas_caribbean","sourceMapId":"americas_north_central","destinationMapId":"americas_caribbean","destinationRegionId":"americas_caribbean","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"americas_caribbean_to_americas_north_central","sourceMapId":"americas_caribbean","destinationMapId":"americas_north_central","destinationRegionId":"americas_caribbean","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"americas_caribbean_to_americas_south","sourceMapId":"americas_caribbean","destinationMapId":"americas_south","destinationRegionId":"americas_caribbean","sourceEdge":"south","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+    {"id":"americas_south_to_americas_caribbean","sourceMapId":"americas_south","destinationMapId":"americas_caribbean","destinationRegionId":"americas_caribbean","sourceEdge":"north","sourceInterval":[0,1],"arrivalTransform":{"reverse":false,"scale":1,"offset":0}},
+
+    {"id":"americas_caribbean_to_europe_west","sourceMapId":"americas_caribbean","destinationMapId":"europe_west","destinationRegionId":"europe","sourceEdge":"east","sourceInterval":[0,1],"arrivalTransform":{"reverse":true,"scale":1,"offset":0}},
+    {"id":"europe_west_to_americas_caribbean","sourceMapId":"europe_west","destinationMapId":"americas_caribbean","destinationRegionId":"americas_caribbean","sourceEdge":"west","sourceInterval":[0,1],"arrivalTransform":{"reverse":true,"scale":1,"offset":0}}
+  ]
+}

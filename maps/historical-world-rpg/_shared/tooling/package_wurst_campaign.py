@@ -38,7 +38,7 @@ from treasures import validate_catalog as validate_treasure_catalog  # noqa: E40
 STABLE_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 CAMPAIGN_FORMAT = "warcraftmap_physical_maps_v1"
 CAMPAIGN_ARCHIVE_FORMAT = "warcraftmap_campaign_v1"
-LOCAL_PROVENANCE_VERSION = 2
+LOCAL_PROVENANCE_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -57,6 +57,21 @@ class PhysicalMap:
 
 
 @dataclass(frozen=True)
+class PhysicalBoundary:
+    id: str
+    source_map_id: str
+    destination_map_id: str
+    destination_region_id: str
+    source_edge: str
+    interval_start: float
+    interval_end: float
+    reverse: bool
+    scale: float
+    offset: float
+    requires_discovery: bool
+
+
+@dataclass(frozen=True)
 class CampaignConfig:
     project: Path
     manifest_path: Path
@@ -72,6 +87,8 @@ class CampaignConfig:
     audio_manifest_path: Path
     audio_profiles_path: Path
     audio_validator_path: Path
+    boundaries: tuple[PhysicalBoundary, ...]
+    boundary_manifest_path: Path
 
 
 def _inside(project: Path, value: object, label: str) -> Path:
@@ -160,6 +177,64 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         raise PackagingError("campaign configuration: bootstrapMapId must identify the one bootstrap physical map")
     if maps[0].id != bootstrap_id:
         raise PackagingError("campaign configuration: bootstrap map must be the first chapter")
+    boundary_path = _inside(project, raw.get("boundaryManifest"), "boundaryManifest")
+    try:
+        boundary_raw = json.loads(boundary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise PackagingError(f"campaign configuration: cannot read boundary manifest: {error}") from error
+    if boundary_raw.get("format") != "warcraftmap_physical_boundaries_v1" or boundary_raw.get("formatVersion") != 1:
+        raise PackagingError("campaign configuration: unsupported physical boundary manifest")
+    boundaries = []
+    boundary_ids = set()
+    occupied = set()
+    map_by_id = {item.id: item for item in maps}
+    single_map_compatibility = len(maps) == 2 and maps[0].bootstrap and not maps[1].bootstrap
+    for index, item in enumerate(boundary_raw.get("boundaries", [])):
+        label = f"boundaries[{index}]"
+        boundary_id = item.get("id")
+        source = item.get("sourceMapId")
+        destination = item.get("destinationMapId")
+        edge = item.get("sourceEdge")
+        interval = item.get("sourceInterval")
+        destination_region = item.get("destinationRegionId")
+        transform = item.get("arrivalTransform", {})
+        if not isinstance(boundary_id, str) or not STABLE_ID.fullmatch(boundary_id) or boundary_id in boundary_ids:
+            raise PackagingError(f"campaign configuration: {label}.id is invalid or duplicated")
+        if single_map_compatibility and (source not in map_by_id or destination not in map_by_id):
+            continue
+        if source not in map_by_id or destination not in map_by_id or source == bootstrap_id or destination == bootstrap_id or source == destination:
+            raise PackagingError(f"campaign configuration: {label} references an invalid physical map")
+        if edge not in {"north", "east", "south", "west"} or not isinstance(interval, list) or len(interval) != 2 or not all(isinstance(v, (int, float)) for v in interval) or not 0 <= interval[0] < interval[1] <= 1:
+            raise PackagingError(f"campaign configuration: {label} has an invalid reachable edge interval")
+        if destination_region not in map_by_id[destination].logical_region_ids:
+            raise PackagingError(f"campaign configuration: {label} has an invalid destination region")
+        scale, offset = transform.get("scale", 1.0), transform.get("offset", 0.0)
+        reverse = transform.get("reverse", False)
+        if not isinstance(scale, (int, float)) or scale <= 0 or not isinstance(offset, (int, float)) or not isinstance(reverse, bool):
+            raise PackagingError(f"campaign configuration: {label} has an invalid arrival transform")
+        key = (source, edge, float(interval[0]), float(interval[1]))
+        if key in occupied:
+            raise PackagingError(f"campaign configuration: {label} duplicates an interaction interval")
+        occupied.add(key); boundary_ids.add(boundary_id)
+        boundaries.append(PhysicalBoundary(boundary_id, source, destination, destination_region, edge,
+            float(interval[0]), float(interval[1]), reverse, float(scale), float(offset), bool(item.get("requiresDiscovery", False))))
+    if not boundaries and not single_map_compatibility:
+        raise PackagingError("campaign configuration: physical boundary manifest has no boundaries")
+    directed = {(item.source_map_id, item.destination_map_id) for item in boundaries}
+    for source, destination in directed:
+        if (destination, source) not in directed:
+            raise PackagingError(f"campaign configuration: authored route {source} -> {destination} has no reverse boundary")
+    reachable = {bootstrap_id}
+    # Origin handoff reaches every content component via at least one configured start.
+    frontier = {item.id for item in maps if not item.bootstrap and item.regional_instance_ids}
+    graph_seen = {next(iter(frontier))} if frontier else set()
+    while True:
+        expanded = graph_seen | {b.destination_map_id for b in boundaries if b.source_map_id in graph_seen}
+        if expanded == graph_seen: break
+        graph_seen = expanded
+    missing_routes = {item.id for item in maps if not item.bootstrap and item.regional_instance_ids} - graph_seen
+    if missing_routes and not single_map_compatibility:
+        raise PackagingError("campaign configuration: physical maps are disconnected from boundary travel: " + ", ".join(sorted(missing_routes)))
     if not isinstance(campaign.get("name"), str) or not campaign["name"].strip() or not isinstance(campaign.get("description"), str) or not campaign["description"].strip():
         raise PackagingError("campaign configuration: campaign name and description are required")
     return CampaignConfig(
@@ -170,7 +245,7 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         tuple(maps),
         _inside(project, raw.get("audioManifest"), "audioManifest"),
         _inside(project, raw.get("audioProfiles"), "audioProfiles"),
-        _inside(project, raw.get("audioValidator"), "audioValidator"),
+        _inside(project, raw.get("audioValidator"), "audioValidator"), tuple(boundaries), boundary_path,
     )
 
 
@@ -276,6 +351,15 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
         "settlementDefinitions": settlements,
         "treasureDefinitions": local_treasures,
         "treasureCandidateLocations": local_candidates,
+        "physicalBoundaries": [{
+            "id": item.id, "sourceMapId": item.source_map_id,
+            "destinationMapId": item.destination_map_id,
+            "destinationPackagePath": next(x.package_path for x in config.maps if x.id == item.destination_map_id),
+            "destinationRegionId": item.destination_region_id, "sourceEdge": item.source_edge,
+            "sourceInterval": [item.interval_start, item.interval_end],
+            "arrivalTransform": {"reverse": item.reverse, "scale": item.scale, "offset": item.offset},
+            "requiresDiscovery": item.requires_discovery,
+        } for item in config.boundaries if item.source_map_id == physical.id],
         "provinceHoldings": [item for item in world.get("territorialHoldings", []) if item.get("territory", {}).get("kind") == "province" and item["territory"]["id"] in province_ids],
         "audio": {
             "authority": "presentation_only",
@@ -302,6 +386,23 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
         "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n\tskip\n",
         origin_configuration,
     )
+    boundary_configuration = "public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n"
+    package_by_id = {item.id: item.package_path for item in config.maps}
+    local_boundaries = [item for item in config.boundaries if item.source_map_id == physical.id]
+    for boundary in local_boundaries:
+        values = [boundary.id, boundary.source_map_id, boundary.destination_map_id,
+                  package_by_id[boundary.destination_map_id], boundary.destination_region_id,
+                  boundary.source_edge]
+        args = ", ".join(json.dumps(value) for value in values)
+        boundary_configuration += (f"\tregistry.add({args}, {boundary.interval_start}, {boundary.interval_end}, "
+            f"{str(boundary.reverse).lower()}, {boundary.scale}, {boundary.offset}, "
+            f"{str(boundary.requires_discovery).lower()})\n")
+    if not local_boundaries:
+        boundary_configuration += "\tskip\n"
+    text = text.replace(
+        "public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n",
+        boundary_configuration,
+    )
     identity_pattern = r'public constant string PHYSICAL_MAP_ID = "[^"]*"'
     if len(re.findall(identity_pattern, text)) != 1:
         raise PackagingError(
@@ -315,6 +416,7 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     provenance["localizationVersion"] = LOCAL_PROVENANCE_VERSION
     provenance["inputs"][str(physical.source_manifest.relative_to(config.project.parent))] = _sha(physical.source_manifest)
     provenance["inputs"][str(config.manifest_path.relative_to(config.project.parent))] = _sha(config.manifest_path)
+    provenance["inputs"][str(config.boundary_manifest_path.relative_to(config.project.parent))] = _sha(config.boundary_manifest_path)
     provenance["inputs"][str(config.regional_assignments_path.relative_to(config.project.parent))] = _sha(config.regional_assignments_path)
     provenance["inputs"][str(config.audio_manifest_path.relative_to(config.project.parent))] = _sha(config.audio_manifest_path)
     provenance["inputs"][str(config.audio_profiles_path.relative_to(config.project.parent))] = _sha(config.audio_profiles_path)
