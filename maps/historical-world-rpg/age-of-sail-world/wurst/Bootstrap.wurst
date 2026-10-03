@@ -118,6 +118,35 @@ class CampaignPiracyActionAuthority implements PiracyActionAuthority
 					return true
 		return false
 
+/** Commits peace into the persistent military/settlement authority.  Territory
+ * clauses use cede:settlement_id:grantor_polity_id:beneficiary_polity_id; the
+ * country screen remains only a projection over this state. */
+class CampaignCountryPeaceAuthority implements CountryPeaceAuthority
+	MilitarySettlementRuntime military
+	construct(MilitarySettlementRuntime military)
+		this.military = military
+	override function commitPeace(string conflictId, string terms) returns boolean
+		if terms.startsWith("cede:")
+			let remainder = SubString(terms, 5, StringLength(terms))
+			let first = remainder.indexOf(":")
+			if first <= 0
+				return false
+			let parties = SubString(remainder, first + 1, StringLength(remainder))
+			let second = parties.indexOf(":")
+			if second <= 0
+				return false
+			let settlementId = SubString(remainder, 0, first)
+			let grantor = SubString(parties, 0, second)
+			let beneficiary = SubString(parties, second + 1, StringLength(parties))
+			if beneficiary == "" or beneficiary == grantor
+				return false
+			for i = 0 to military.settlementCount - 1
+				if military.settlements[i].id == settlementId and military.settlements[i].controllerId == grantor
+					military.settlements[i].controllerId = beneficiary
+					return true
+			return false
+		return terms != ""
+
 init
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
@@ -138,6 +167,7 @@ init
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
+	campaign.countries.setPeaceAuthority(new CampaignCountryPeaceAuthority(militarySettlementRuntime))
 	militarySettlementRuntime.activateRegion(PHYSICAL_MAP_ID)
 	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
 	piracyRuntime.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries,campaign.identity,militarySettlementRuntime))
