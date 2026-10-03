@@ -3,12 +3,13 @@
 Release candidate: **phase8-rc2**
 Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
-Status: **BLOCKED pending rebuilt-artifact human launch smoke test.** The rc2
+Status: **BLOCKED pending rebuilt-artifact human launch and regional-map smoke test.** The rc2
 campaign metadata used a malformed private layout and crashed Warcraft III 3.0
 when Custom Campaigns was opened. The rebuilt artifact now uses the v3 layout
 and the raw-MPQ W3N container found in an independent 3.0 fixture, but must not
 be promoted until the next real-game launch confirms that the campaign list and
-first chapter open.
+first chapter open, and that an ordinary regional chapter loads its materialized
+terrain, pathing, settlement/port representations, and player arrival anchor.
 
 ## Install and launch
 

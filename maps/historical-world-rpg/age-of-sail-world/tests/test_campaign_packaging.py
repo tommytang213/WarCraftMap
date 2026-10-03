@@ -298,15 +298,25 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual(1, len(metadata["buttons"]))
         self.assertEqual(len(configured_maps), len(metadata["maps"]))
         self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
+        physical_hashes = set()
         for configured in configured_maps:
             packaged = self.project / (configured["id"] + "-identity.w3x")
             packaged.write_bytes(campaign.read(configured["packagePath"]))
             with zipfile.ZipFile(packaged) as map_archive:
                 lua = map_archive.read("war3map.lua").decode("utf-8")
+                if not configured.get("bootstrap", False):
+                    w3e = map_archive.read("war3map.w3e"); wpm = map_archive.read("war3map.wpm")
+                    physical_hashes.add((hashlib.sha256(w3e).hexdigest(), hashlib.sha256(wpm).hexdigest()))
+                    physical = json.loads(map_archive.read("runtime/physical-map.json"))
+                    runtime_local = json.loads(map_archive.read("runtime/scenario-runtime.json"))
+                    self.assertEqual({x["id"] for x in runtime_local["settlementDefinitions"]},
+                                     {x["id"] for x in physical["objects"]["settlements"]})
+                    self.assertEqual(1, physical["objects"]["spawnCount"])
             identity = f'public constant string PHYSICAL_MAP_ID = "{configured["id"]}"'
             self.assertEqual(1, lua.count("public constant string PHYSICAL_MAP_ID"))
             self.assertIn(identity, lua)
             self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
+        self.assertGreater(len(physical_hashes), 1, "regional maps reused placeholder terrain/pathing")
         west_bytes = campaign.read("Maps/EuropeWest.w3x")
         southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
         east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
