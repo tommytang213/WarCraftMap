@@ -1,4 +1,6 @@
 package PlayableTrade
+import CommandRouter
+import PlayableCampaignRuntime
 
 /** Warcraft runtime boundary for the authoritative campaign trade state.
  * Handles and frames never own stock: adapters rebuild this model from stable
@@ -23,6 +25,9 @@ public class RuntimeMarket
 	int buyUnitPrice
 	int sellUnitPrice
 	int previousUnitPrice
+	boolean discovered=true
+	boolean blockaded=false
+	boolean occupiedByHostile=false
 	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
 		id=marketId
 		goodName=displayedGood
@@ -38,6 +43,10 @@ public class RuntimeMarket
 			return "falling"
 		return "steady"
 	function inspect() returns string
+		if not discovered
+			return "No discovered commodities."
+		if blockaded or occupiedByHostile
+			return "Market access is restricted."
 		return goodName+": "+stock.toString()+" available; buy "+buyUnitPrice.toString()+"; sell "+sellUnitPrice.toString()+"; "+trend()
 
 public class MerchantProgress
@@ -71,6 +80,10 @@ public class PlayableTradeController
 			return "Transaction already processed."
 		if quantity<=0
 			return "Quantity must be positive."
+		if not market.discovered
+			return "Commodity is not discovered."
+		if market.blockaded or market.occupiedByHostile
+			return "Market access is restricted."
 		let charge=market.buyUnitPrice*quantity
 		if market.stock<quantity
 			return "Market stock is insufficient."
@@ -92,6 +105,10 @@ public class PlayableTradeController
 			return "Transaction already processed."
 		if quantity<=0 or source.cargo<quantity
 			return "Cargo is insufficient."
+		if not market.discovered
+			return "Commodity is not discovered."
+		if market.blockaded or market.occupiedByHostile
+			return "Market access is restricted."
 		let proceeds=market.sellUnitPrice*quantity
 		if market.money<proceeds
 			return "Market funds are insufficient."
@@ -141,3 +158,104 @@ public function buyCargo(player viewer,string transactionId,RuntimeMarket market
 	presentation.showTradeResult(viewer,controller.buy(transactionId,market,store,quantity))
 public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
 	presentation.showTradeResult(viewer,controller.sell(transactionId,market,store,quantity,difficultyPermille))
+
+function tradeField(string document,int wanted) returns string
+	var start=0
+	var field=0
+	for i=0 to StringLength(document)
+		if i==StringLength(document) or SubString(document,i,i+1)==":"
+			if field==wanted
+				return SubString(document,start,i)
+			field++
+			start=i+1
+	return ""
+
+/** Authoritative stable-ID trade domain. Frames and command text only project it. */
+public class PlayableTradeRuntime implements CampaignRuntimeExtension
+	MerchantProgress progress = new MerchantProgress()
+	PlayableTradeController controller = new PlayableTradeController(progress)
+	RuntimeMarket market = new RuntimeMarket("starting_settlement","Grain",100,10000,10,8)
+	TradeStore hold = new TradeStore("player_ship_hold",30,1000)
+	string settlementId = "starting_settlement"
+	int nextTransaction = 1
+	override function newCampaign(string startingSettlementId)
+		progress = new MerchantProgress()
+		controller = new PlayableTradeController(progress)
+		settlementId = startingSettlementId
+		market = new RuntimeMarket(startingSettlementId,"Grain",100,10000,10,8)
+		hold = new TradeStore("player_ship_hold",30,1000)
+		nextTransaction = 1
+	override function capture() returns string
+		var history=""
+		for i=0 to controller.processedCount-1
+			if i>0
+				history+=","
+			history+=controller.processed[i]
+		return settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.cargo.toString()+":"+hold.money.toString()+":"+controller.carriedCost.toString()+":"+controller.carriedQuantity.toString()+":"+controller.carriedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history
+	override function reconstruct(string document) returns boolean
+		if document==""
+			return true
+		let restoredSettlement=tradeField(document,0)
+		if restoredSettlement==""
+			return false
+		settlementId=restoredSettlement
+		market.id=restoredSettlement
+		market.stock=S2I(tradeField(document,1))
+		market.money=S2I(tradeField(document,2))
+		market.buyUnitPrice=S2I(tradeField(document,3))
+		market.sellUnitPrice=S2I(tradeField(document,4))
+		market.previousUnitPrice=S2I(tradeField(document,5))
+		hold.cargo=S2I(tradeField(document,6))
+		hold.money=S2I(tradeField(document,7))
+		controller.carriedCost=S2I(tradeField(document,8))
+		controller.carriedQuantity=S2I(tradeField(document,9))
+		controller.carriedOrigin=tradeField(document,10)
+		progress.standing=S2I(tradeField(document,11))
+		progress.realizedProfit=S2I(tradeField(document,12))
+		progress.completedRouteCount=S2I(tradeField(document,13))
+		nextTransaction=S2I(tradeField(document,14))
+		controller.processedCount=0
+		let history=tradeField(document,15)
+		var start=0
+		for i=0 to StringLength(history)
+			if i==StringLength(history) or SubString(history,i,i+1)==","
+				if i>start
+					controller.processed[controller.processedCount]=SubString(history,start,i)
+					controller.processedCount++
+				start=i+1
+		return true
+	function transactionId(string side) returns string
+		let result="runtime-"+side+"-"+nextTransaction.toString()
+		nextTransaction++
+		return result
+
+public class TradeCommand implements CommandHandler
+	PlayableTradeRuntime runtime
+	TradePresentation presentation
+	construct(PlayableTradeRuntime runtime,TradePresentation presentation)
+		this.runtime=runtime
+		this.presentation=presentation
+	override function execute(player sender,string arguments)
+		let cut=arguments.indexOf(" ")
+		var action=arguments
+		var quantity=0
+		if cut>=0
+			action=SubString(arguments,0,cut)
+			quantity=S2I(SubString(arguments,cut+1,StringLength(arguments)))
+		if action=="inspect" or action=="open"
+			inspectMarket(sender,runtime.market,presentation)
+		else if action=="buy"
+			buyCargo(sender,runtime.transactionId("buy"),runtime.market,runtime.hold,quantity,runtime.controller,presentation)
+		else if action=="sell"
+			sellCargo(sender,runtime.transactionId("sell"),runtime.market,runtime.hold,quantity,1000,runtime.controller,presentation)
+		else
+			presentation.showTradeResult(sender,"Use /trade inspect, /trade buy QUANTITY, or /trade sell QUANTITY.")
+
+public PlayableTradeRuntime playableTradeRuntime = null
+
+/** Registers the reachable settlement market for new games, resumed maps and loads. */
+public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns PlayableTradeRuntime
+	playableTradeRuntime = new PlayableTradeRuntime()
+	campaign.registerExtension(playableTradeRuntime)
+	commands.register("trade","market","trade <inspect|buy QUANTITY|sell QUANTITY>","Open the current settlement commodity market.","Inspect current authoritative quotes and atomically buy or sell cargo in an eligible ship hold.",1,2,COMMAND_RELEASE,new TradeCommand(playableTradeRuntime,new WarcraftTradePresentation()))
+	return playableTradeRuntime

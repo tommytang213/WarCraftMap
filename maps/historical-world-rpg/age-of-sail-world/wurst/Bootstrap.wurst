@@ -11,6 +11,7 @@ import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import PlayableCampaignRuntime
+import PlayableTrade
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 
@@ -59,6 +60,7 @@ init
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	registerPlayableTrade(commands, campaign)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
