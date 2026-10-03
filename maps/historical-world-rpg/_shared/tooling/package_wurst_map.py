@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 9
+GENERATOR_VERSION = 10
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -58,6 +58,56 @@ def load_config(config_path: Path) -> BuildConfig:
 def _fail(stage: str, message: object) -> PackagingError: return PackagingError(f"{stage} stage failed: {message}")
 def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
 
+def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict]:
+    """Join world identity/control to authoritative regional physical placement."""
+    world_by_id = {row["id"]: row for row in world.get("settlements", [])}
+    integration_path = config.project / "scenario/integration/release-scale-settlements.json"
+    integration = json.loads(integration_path.read_text(encoding="utf-8")) if integration_path.is_file() else {"settlements": []}
+    integration_by_id = {row["settlementId"]: row for row in integration.get("settlements", [])}
+    playable_ids = {row["settlementId"] for row in integration.get("settlements", [])
+        if row.get("gameplayRoles", {}).get("physicalMap", {}).get("modelId") != "abstract_regional_projection"}
+    if not integration_by_id:
+        playable_ids = set(world_by_id)
+    result = []
+    for path in sorted((config.project / "scenario/settlements").glob("*-1450.json")):
+        source = json.loads(path.read_text(encoding="utf-8"))
+        stem = path.name.removesuffix("-1450.json")
+        geography_path = next((item for item in (
+            config.project / f"scenario/geography/{stem.replace('-', '_')}.json",
+            config.project / f"scenario/geography/{stem}.json",
+        ) if item.is_file()), None)
+        if geography_path is None:
+            raise PackagingError(f"generation: no geography authority for {path.name}")
+        geography = json.loads(geography_path.read_text(encoding="utf-8"))
+        instances = {row["id"]: row for row in geography.get("instances", [])}
+        for authored in source.get("settlements", []):
+            authoritative = world_by_id.get(authored["id"])
+            if authoritative is None or authored["id"] not in playable_ids:
+                continue
+            position = authored.get("position") or authored.get("localPosition")
+            if isinstance(position, dict): position = [position["x"], position["y"]]
+            if position is None:
+                transform = instances.get(authored["regionalInstanceId"], {}).get("transform", {})
+                origin, scale = transform.get("sourceOrigin"), transform.get("scale")
+                source_position, offset = authored.get("sourcePosition"), transform.get("offset", [0, 0])
+                if not source_position or not origin or not scale:
+                    raise PackagingError(f"generation: settlement {authored['id']} has no resolvable position")
+                position = [(source_position[i] - origin[i]) * scale[i] + offset[i] for i in range(2)]
+            defense = authored.get("defenseClass", authoritative.get("kind", "town"))
+            strength = {"capital": 40, "fortified": 32, "fort": 32, "port": 24}.get(defense, 20)
+            result.append({"id": authored["id"], "controllerId": authoritative["controllerPolityId"],
+                "regionId": authored.get("physicalMapId", authored["regionalInstanceId"]),
+                "x": round(float(position[0]) * 128.0, 3), "y": round(float(position[1]) * 128.0, 3),
+                "strength": strength, "reserves": strength * 2, "manpower": strength * 4, "supply": strength * 3,
+                "official": integration_by_id.get(authored["id"], {}).get("official", {
+                    "characterId": "official_" + authored["id"], "displayName": "Local Council"})})
+    missing = playable_ids - {row["id"] for row in result}
+    if missing:
+        raise PackagingError("generation: playable settlements lack runtime placement: " + ", ".join(sorted(missing)[:10]))
+    if world_by_id and not result:
+        raise PackagingError("generation: scenario contains settlements but generated Wurst would register zero settlements")
+    return sorted(result, key=lambda row: row["id"])
+
 def validate_inputs(config: BuildConfig, grill: str | None = None) -> str:
     required = {"source map folder": config.source_map, "source manifest": config.manifest, "Wurst source folder": config.wurst_source, "scenario data": config.scenario_file, "scenario validator": config.scenario_validator, "wurst.build": config.project / "wurst.build"}
     missing = [f"{label} ({path})" for label, path in required.items() if not path.exists()]
@@ -104,7 +154,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         (generated / output_name).write_bytes(canonical_bytes(terrain))
         terrain_outputs[terrain_id] = output_name
     domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
-    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", [])}
+    settlement_runtime = _load_settlement_runtime_data(config, world)
+    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", []), "settlementRuntimeStates": settlement_runtime}
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -221,13 +272,26 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 f'\ttreasure{index}.clueCount={len(row.get("clueIds", []))}', f'\truntime.treasures.register(treasure{index})']
     templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
     military_lines = ["\npublic function configureMilitarySettlementScenario(MilitarySettlementRuntime runtime)"]
+    for row in settlement_runtime:
+        military_lines.append(f'\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}))')
+        military_lines.append(f'\truntime.registerForce(new RuntimeForce("defense:{ws(row["id"])}:primary", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "siege", FORCE_DEFENSE, \'hgtw\', {row["strength"]}, {row["supply"]}, {row["x"] + 192.}, {row["y"]}))')
+        official = row["official"]
+        military_lines.append(f'\truntime.appoint("{ws(row["id"])}", new AdministratorState("{ws(official["characterId"])}", "{ws(official["displayName"])}", "Acting Administrator", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "{ws(row["id"])}", 50, 50, 40, 1))')
+    traditions_path = config.project / "scenario/military-traditions.json"
+    if traditions_path.is_file():
+        tradition_data = json.loads(traditions_path.read_text(encoding="utf-8"))
+        for controller in tradition_data.get("eligibleControllerIds", []):
+            for tradition in tradition_data.get("traditions", []):
+                milestone = (tradition.get("milestones") or [{}])[0]
+                military_lines.append(f'\truntime.registerTradition(new TraditionState("{ws(controller)}", "{ws(tradition["categoryId"])}", 1, {int(milestone.get("threshold", 0))}, 0))')
     for row in world.get("strategicUnits", []):
         template = templates[row["runtimeInstantiation"]["runtimeTemplateId"]]
         kind = "FORCE_FLEET" if row["kind"] == "ship" else "FORCE_ARMY"
         category = "sailing_naval" if row["kind"] == "ship" else "land_formation"
         type_id = template["warcraftUnitTypeId"]
         supply = row.get("operationalState", {}).get("supply", 0)
-        military_lines.append(f'\truntime.registerForce(new RuntimeForce("{row["id"]}", "{row["controllerPolityId"]}", "{row["currentLocationId"]}", "{category}", {kind}, \'{type_id}\', {row["representedStrength"]}, {supply}, 0., 0.))')
+        location = next((item for item in settlement_runtime if item["id"] == row["currentLocationId"]), settlement_runtime[0])
+        military_lines.append(f'\truntime.registerForce(new RuntimeForce("{row["id"]}", "{row["controllerPolityId"]}", "{location["regionId"]}", "{category}", {kind}, \'{type_id}\', {row["representedStrength"]}, {supply}, {location["x"]}, {location["y"]}))')
     if len(military_lines) == 1:
         military_lines.append("\tskip")
     countries = ["\npublic function configureGeneratedCountryInteractions(PlayableCountryInteractionRuntime runtime)"]
@@ -284,6 +348,12 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *terrain_authorities,
         *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
         *(path for path in catalogue_paths.values() if path.is_file()),
+        *(config.project / "scenario/settlements").glob("*-1450.json"),
+        *(config.project / "scenario/geography").glob("*.json"),
+        *(path for path in (
+            config.project / "scenario/integration/release-scale-settlements.json",
+            config.project / "scenario/military-traditions.json",
+        ) if path.is_file()),
     )
     inputs = {}
     for path in input_paths:
