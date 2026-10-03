@@ -188,11 +188,11 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 
 public class MilitarySettlementRuntime
 	MilitarySettlementAdapter adapter
-	RuntimeForce array[2048] forces
+	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
-	SettlementRuntimeState array[512] settlements
-	AdministratorState array[512] administrators
-	string array[512] administratorSettlementIds
+	SettlementRuntimeState array[1024] settlements
+	AdministratorState array[1024] administrators
+	string array[1024] administratorSettlementIds
 	string array[256] warAttackers
 	string array[256] warDefenders
 	int forceCount = 0
@@ -470,7 +470,7 @@ public class MilitarySettlementRuntime
 			return true
 		if kind == "f"
 			let id = snapshotField(record, 1)
-			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 2048
+			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 4096
 				return false
 			let f = new RuntimeForce(id, snapshotField(record, 2), snapshotField(record, 3), snapshotField(record, 4), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)), S2I(snapshotField(record, 7)), S2I(snapshotField(record, 9)), S2R(snapshotField(record, 10)), S2R(snapshotField(record, 11)))
 			f.maximumStrength = S2I(snapshotField(record, 8))
@@ -482,7 +482,7 @@ public class MilitarySettlementRuntime
 			return f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
 		if kind == "s"
 			let id = snapshotField(record, 1)
-			if id == "" or target.settlementIndex(id) >= 0 or target.settlementCount >= 512
+			if id == "" or target.settlementIndex(id) >= 0 or target.settlementCount >= 1024
 				return false
 			let s = new SettlementRuntimeState(id, snapshotField(record, 2), snapshotField(record, 3), S2I(snapshotField(record, 4)), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)), S2I(snapshotField(record, 8)), S2I(snapshotField(record, 9)), S2I(snapshotField(record, 10)), S2R(snapshotField(record, 17)), S2R(snapshotField(record, 18)))
 			s.garrisonMaximum = S2I(snapshotField(record, 7))
@@ -498,7 +498,7 @@ public class MilitarySettlementRuntime
 			return s.controllerId != "" and s.regionId != "" and s.garrisonMaximum >= s.garrisonStrength and s.garrisonStrength >= 0 and s.reserves >= 0 and s.manpower >= 0 and s.supply >= 0
 		if kind == "d"
 			let settlementId = snapshotField(record, 1)
-			if settlementId == "" or target.administratorIndex(settlementId) >= 0 or target.administratorCount >= 512
+			if settlementId == "" or target.administratorIndex(settlementId) >= 0 or target.administratorCount >= 1024
 				return false
 			let d = new AdministratorState(snapshotField(record, 2), snapshotField(record, 3), snapshotField(record, 4), snapshotField(record, 5), snapshotField(record, 6), snapshotField(record, 7), S2I(snapshotField(record, 8)), S2I(snapshotField(record, 9)), S2I(snapshotField(record, 10)), S2I(snapshotField(record, 11)))
 			d.oathbound = snapshotField(record, 12) == "1"
@@ -551,7 +551,12 @@ public class MilitarySettlementRuntime
 		for i = 0 to parsed.settlementCount - 1
 			if parsed.forceIndex("core:" + parsed.settlements[i].id) < 0
 				return false
-		let restoredRegion = parsed.activeRegionId
+		// A freshly loaded physical map activates itself before campaign restore.
+		// Preserve that projection target while restoring the snapshot's global
+		// authority; a detached/test runtime still follows the saved region.
+		var restoredRegion = parsed.activeRegionId
+		if activeRegionId != ""
+			restoredRegion = activeRegionId
 		if activeRegionId != ""
 			for i = 0 to forceCount - 1
 				if forces[i].regionId == activeRegionId

@@ -138,6 +138,7 @@ init
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
+	militarySettlementRuntime.activateRegion(PHYSICAL_MAP_ID)
 	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
 	piracyRuntime.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries,campaign.identity,militarySettlementRuntime))
 	piracyRuntime.setActionAuthority(new CampaignPiracyActionAuthority(militarySettlementRuntime))
