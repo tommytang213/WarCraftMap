@@ -43,7 +43,7 @@ Unresolved campaign blockers: **1**
 | `remote_management` | yes | yes | yes | yes | yes |
 | `government_rewards` | yes | yes | yes | yes | yes |
 | `religion` | yes | yes | no | no | no |
-| `piracy` | yes | yes | no | no | no |
+| `piracy` | yes | yes | yes | yes | yes |
 
 ## Findings
 

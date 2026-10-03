@@ -13,6 +13,7 @@ import MilitarySettlementRuntime
 import PlayableCampaignRuntime
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
+import PlayablePiracy
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 2
@@ -49,6 +50,46 @@ class WarcraftRpgProjections implements RpgProjectionPort
 		skip
 
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
+public PiracyRuntime piracyRuntime
+
+/** Founding bridge into the same campaign authorities used by normal states.
+ * Captured settlement/force records remain the military and territorial source
+ * of truth; the country runtime supplies treasury, diplomacy and war/peace. */
+class CampaignPiratePolityAuthority implements PiratePolityAuthority
+	PlayableCountryInteractionRuntime countries
+	PlayerCampaignIdentity identity
+	MilitarySettlementRuntime military
+	construct(PlayableCountryInteractionRuntime c,PlayerCampaignIdentity i,MilitarySettlementRuntime m)
+		countries=c; identity=i; military=m
+	override function foundIndependentPolity(PiratePolityState polity) returns boolean
+		var capitalFound=false
+		for i=0 to military.settlementCount-1
+			if military.settlements[i].id==polity.capitalSettlementId
+				military.settlements[i].controllerId=polity.id
+				capitalFound=true
+		if not capitalFound
+			return false
+		countries.registerPolity(polity.id,0)
+		countries.discover(polity.id)
+		identity.changeAllegiance(polity.id)
+		return true
+	override function setRecognition(string polityId,string countryId,string status)
+		countries.discover(countryId)
+
+class CampaignPiracyActionAuthority implements PiracyActionAuthority
+	MilitarySettlementRuntime military
+	construct(MilitarySettlementRuntime m)
+		military=m
+	override function validateTarget(PrizeProposal proposal) returns boolean
+		if proposal.targetKind=="coastal_target"
+			for i=0 to military.settlementCount-1
+				if military.settlements[i].id==proposal.targetId and military.settlements[i].controllerId==proposal.victimPolityId
+					return true
+		else
+			for i=0 to military.forceCount-1
+				if military.forces[i].id==proposal.targetId and military.forces[i].controllerId==proposal.victimPolityId and military.forces[i].kind==FORCE_FLEET
+					return true
+		return false
 
 init
 	requireWC3Compatibility()
@@ -58,11 +99,16 @@ init
 	clock.attachTimer(new WarcraftCampaignTimerAdapter(), 1.)
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
+	piracyRuntime = createGeneratedPiracyRuntime()
+	configureGeneratedPiracy(piracyRuntime)
+	registerPiracy(commands,piracyRuntime)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
+	piracyRuntime.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries,campaign.identity,militarySettlementRuntime))
+	piracyRuntime.setActionAuthority(new CampaignPiracyActionAuthority(militarySettlementRuntime))
 	initializeMilitarySettlementRuntime(commands)
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 	originSelection.setObserver(campaign)

@@ -1,0 +1,97 @@
+package PlayablePiracyTests
+import PlayablePiracy
+
+class OrdinarySystems implements PiratePolityAuthority
+	boolean accept=true
+	string founded=""
+	string recognized=""
+	override function foundIndependentPolity(PiratePolityState polity) returns boolean
+		if accept
+			founded=polity.id+":"+polity.capitalSettlementId+":"+polity.governmentFormId
+		return accept
+	override function setRecognition(string polityId,string countryId,string status)
+		recognized=polityId+":"+countryId+":"+status
+
+function rules() returns PiracyRules
+	return new PiracyRules(30,20,5000,3,150)
+
+function prize(string id,string target,string kind,string commission,string outcome,int tick,boolean validated) returns PrizeProposal
+	return new PrizeProposal(id,target,kind,"spain","caribbean",commission,outcome,"sugar",4,2000,2,"ransom",tick,validated)
+
+@test function bootstrapContractSupportsCommissionedPrivateeringAndPrizeDisposition()
+	let runtime=new PiracyRuntime(rules())
+	runtime.issueCommission("marque_1","england","spain",100,250).assertTrue()
+	let proposal=prize("action_1","ship_1","merchant_ship","marque_1","capture",10,true)
+	(runtime.previewPrize(proposal).indexOf("LAWFUL PRIVATEERING")>=0).assertTrue()
+	(runtime.previewPrize(proposal).indexOf("known consequences")>=0).assertTrue()
+	(runtime.commitPrize(proposal).indexOf("cargo seized and vessel capture")>=0).assertTrue()
+	runtime.state.piracyWealthMinor.assertEquals(2500)
+	runtime.state.bountyMinor.assertEquals(0)
+	(runtime.commitPrize(proposal)).assertEquals("Action already processed.")
+
+@test function unlicensedPiracyCreatesNotorietyBountyPressureAndExhaustion()
+	let runtime=new PiracyRuntime(rules())
+	let proposal=prize("raid_1","port_1","coastal_target","","release",40,true)
+	(runtime.previewPrize(proposal).indexOf("PIRACY")>=0).assertTrue()
+	runtime.commitPrize(proposal)
+	runtime.state.outlaw.assertTrue()
+	runtime.state.notoriety.assertEquals(4)
+	runtime.state.bountyMinor.assertEquals(600)
+	runtime.regionalPressure[0].assertEquals(4)
+	(runtime.commitPrize(prize("raid_2","port_1","coastal_target","","release",41,true)).indexOf("exhausted")>=0).assertTrue()
+	(runtime.bountyResponse().indexOf("patrol and expedition")>=0).assertTrue()
+
+@test function rejectsExpiredRevokedIneligibleAndInvalidPrizeActionsAtomically()
+	let runtime=new PiracyRuntime(rules())
+	runtime.issueCommission("old_marque","england","spain",20,250)
+	(runtime.commitPrize(prize("expired","ship_2","merchant_ship","old_marque","capture",20,true))).assertEquals("Commission is expired or revoked.")
+	runtime.issueCommission("revoked","england","spain",100,250)
+	runtime.revokeCommission("revoked")
+	(runtime.commitPrize(prize("revoked_action","ship_3","merchant_ship","revoked","capture",21,true))).assertEquals("Commission is expired or revoked.")
+	(runtime.commitPrize(prize("bad_kind","ship_4","fortress","","release",22,true))).assertEquals("Ineligible piracy target.")
+	(runtime.commitPrize(prize("bad_outcome","port_2","coastal_target","","capture",23,true)).indexOf("Rejected prize action")>=0).assertTrue()
+	(runtime.commitPrize(prize("unvalidated","ship_5","merchant_ship","","capture",24,false))).assertEquals("War/crime authority was not validated.")
+	runtime.state.prizesTaken.assertEquals(0)
+	runtime.processedCount.assertEquals(0)
+
+@test function havenAndIndependentPolityUseOrdinaryCampaignAuthorities()
+	let runtime=new PiracyRuntime(rules())
+	runtime.registerHaven("caribbean_free_haven",2,"fence,repair,refit,recruit,contract")
+	runtime.registerGovernmentForm("free_republic","First Captain")
+	(runtime.useHaven("caribbean_free_haven","repair",1).indexOf("unavailable")>=0).assertTrue()
+	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=6000; runtime.state.prizesTaken=3
+	runtime.useHaven("caribbean_free_haven","repair",2).assertEquals("Haven service used: repair.")
+	runtime.state.havenStanding[0].assertEquals(1)
+	let ordinary=new OrdinarySystems()
+	runtime.setPolityAuthority(ordinary)
+	runtime.foundPolity("free_tortuga","free_republic","Free Tortuga","First Captain","tortuga","tortuga,nassau").assertEquals("Independent polity founded and handed to ordinary campaign systems.")
+	ordinary.founded.assertEquals("free_tortuga:tortuga:free_republic")
+	runtime.setRecognition("england","recognized").assertTrue()
+	ordinary.recognized.assertEquals("free_tortuga:england:recognized")
+	runtime.state.outlaw.assertFalse()
+
+@test function insufficientFoundingAndRejectedOrdinaryHandoffRollBack()
+	let runtime=new PiracyRuntime(rules())
+	runtime.registerGovernmentForm("free_republic","Captain")
+	runtime.foundPolity("free_port","free_republic","Free Port","Captain","port","port").assertEquals("Pirate polity founding conditions are not met.")
+	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=5000; runtime.state.prizesTaken=3
+	let ordinary=new OrdinarySystems(); ordinary.accept=false; runtime.setPolityAuthority(ordinary)
+	(runtime.foundPolity("free_port","free_republic","Free Port","Captain","port","port").indexOf("no state changed")>=0).assertTrue()
+	runtime.state.polityId.assertEquals("")
+
+@test function saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition()
+	let runtime=new PiracyRuntime(rules())
+	runtime.registerGovernmentForm("pirate_confederacy","Admiral")
+	runtime.commitPrize(prize("captured_vessel_1","ship_9","military_ship","","capture",50,true))
+	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=6000; runtime.state.prizesTaken=3
+	let ordinary=new OrdinarySystems(); runtime.setPolityAuthority(ordinary)
+	runtime.foundPolity("free_nassau","pirate_confederacy","Nassau","Admiral","nassau","nassau")
+	runtime.setRecognition("england","tolerated")
+	let saved=runtime.snapshot()
+	let resumed=new PiracyRuntime(rules()); resumed.restore(saved)
+	resumed.actionSeen("captured_vessel_1").assertTrue()
+	resumed.regionalPressure[0].assertEquals(4)
+	resumed.polity.capitalSettlementId.assertEquals("nassau")
+	resumed.polity.governmentFormId.assertEquals("pirate_confederacy")
+	(resumed.polity.recognition.indexOf("england:tolerated")>=0).assertTrue()
+	resumed.state.polityId.assertEquals("free_nassau")

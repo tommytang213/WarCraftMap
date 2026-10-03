@@ -1205,29 +1205,33 @@
     },
     {
       "id": "piracy",
-      "releaseRequired": false,
-      "simulationOnly": true,
+      "releaseRequired": true,
+      "simulationOnly": false,
       "authority": [
         {
-          "path": "../_shared/engine/military.py",
+          "path": "../_shared/engine/piracy.py",
           "contains": [
-            "fleet"
+            "class PiracyRuntime",
+            "found_polity"
           ]
         }
       ],
       "headlessVerification": [
         {
-          "path": "tests/test_military.py",
+          "path": "tests/test_piracy.py",
           "contains": [
-            "fleet"
+            "privateering",
+            "reconstruct"
           ]
         }
       ],
       "runtime": [
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst/PlayablePiracy.wurst",
           "contains": [
-            "PiracyRuntime"
+            "class PiracyRuntime",
+            "previewPrize",
+            "PiratePolityAuthority"
           ]
         }
       ],
@@ -1235,27 +1239,36 @@
         {
           "path": "wurst/Bootstrap.wurst",
           "contains": [
-            "registerPiracy"
+            "registerPiracy",
+            "configureGeneratedPiracy"
           ]
         }
       ],
       "persistence": [
         {
-          "path": "../_shared/engine/campaign_save.py",
+          "path": "../_shared/engine/piracy.py",
           "contains": [
-            "world"
+            "PiracySaveAdapter",
+            "regionalPressure",
+            "piratePolities"
           ]
         }
       ],
       "runtimeVerification": [
         {
-          "path": "tests/test_military.py",
+          "path": "wurst/PlayablePiracyTests.wurst",
           "contains": [
-            "fleet"
+            "bootstrapContractSupportsCommissionedPrivateeringAndPrizeDisposition",
+            "saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition",
+            "RollBack"
           ]
         }
       ],
-      "artifactMarkers": []
+      "artifactMarkers": [
+        "registerPiracy",
+        "LAWFUL PRIVATEERING",
+        "Independent polity founded"
+      ]
     }
   ],
   "smokeJourneys": [
@@ -1265,6 +1278,7 @@
         "campaign_launch",
         "origin_selection",
         "country_diplomacy",
+        "piracy",
         "trade",
         "army_fleet_control",
         "city_capture",
@@ -1278,6 +1292,13 @@
         "save_autosave_load"
       ],
       "verification": [
+        {
+          "path": "wurst/PlayablePiracyTests.wurst",
+          "contains": [
+            "@test",
+            "ordinary campaign systems"
+          ]
+        },
         {
           "path": "wurst/PlayableCampaignRuntimeTests.wurst",
           "contains": [
