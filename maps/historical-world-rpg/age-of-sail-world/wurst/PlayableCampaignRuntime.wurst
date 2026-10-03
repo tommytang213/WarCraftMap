@@ -8,6 +8,10 @@ import ManagementScreenPauseController
 import RemoteRegionManagement
 import WarcraftRegionalRuntime
 import WC3Compatibility
+import CountryDiplomacyScreen
+import PlayableCountryInteractions
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
 
 /** Stable-domain extensions participate in every campaign lifecycle without
  * making their Warcraft projections part of the save authority. */
@@ -45,24 +49,51 @@ function lastAuthorityValue(string document, string key) returns string
 		return tail
 	return SubString(tail, 0, finish)
 
+function playerAuthorityValue(string document, string key) returns string
+	let players = lastAuthorityValue(document, "players")
+	let marker = key + ":"
+	let position = players.indexOf(marker)
+	if position < 0
+		return ""
+	let tail = SubString(players, position + StringLength(marker), StringLength(players))
+	let finish = tail.indexOf(",")
+	if finish < 0
+		return tail
+	return SubString(tail, 0, finish)
+
+function withoutCountryAuthority(string document) returns string
+	let cut = document.indexOf(";diplomacy=")
+	if cut < 0
+		return document
+	return SubString(document, 0, cut)
+
 /**
  * The compact runtime authority uses stable IDs only. Domain payloads are supplied by the
  * gameplay systems (quests, settlements, inventory, fleets, orders and discovery); Warcraft
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort
-	string authority = "v1;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
+	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
 	string staged = ""
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
 	CampaignRuntimeExtension extension = null
+	PlayableCountryInteractionRuntime countries = null
+	WarcraftRpgRuntime rpg = null
+	MilitarySettlementRuntime militarySettlements = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
 		authority = value
 	function setExtension(CampaignRuntimeExtension value)
 		extension = value
+	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
+		countries = runtime
+	function setRpgRuntime(WarcraftRpgRuntime runtime)
+		rpg = runtime
+	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
+		militarySettlements = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -74,16 +105,30 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function isSaveSafe() returns boolean
 		return not transitionOpen
 	override function captureAuthoritativeState() returns string
+		var result = authority
+		if countries != null
+			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
+		if rpg != null
+			result += ";rpg=" + rpg.captureState()
+		if militarySettlements != null
+			result += ";militarySettlements=" + militarySettlements.snapshot()
 		if extension != null
-			// Append a fresh domain projection to the save candidate without
-			// mutating the live authority document on every autosave.
-			return authority + ";trade=" + extension.capture()
-		return authority
+			result += ";trade=" + extension.capture()
+		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
-		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0
+		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
-		// Campaign schema 1 saves from before playable trade remain loadable.
+		if rpg != null and not rpg.validateState(lastAuthorityValue(candidate,"rpg"))
+			lastDiagnostic=rpg.diagnostic()
+			return false
+		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
+			lastDiagnostic = "missing military/settlement authority"
+			return false
+		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement authority is invalid"
+			return false
+		// Saves produced before playable trade remain compatible.
 		staged = candidate
 		if staged.indexOf(";trade=") < 0
 			staged += ";trade="
@@ -92,13 +137,24 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function reconstructRuntime(string candidate) returns boolean
 		// Stable representation definitions already contain the authoritative coordinates.
 		// Missing Warcraft objects are recreated; unrelated regions remain abstract.
+		if rpg != null and not rpg.restoreState(lastAuthorityValue(candidate,"rpg"))
+			lastDiagnostic=rpg.diagnostic()
+			return false
+		if countries != null and not countries.restoreState(lastAuthorityValue(candidate, "diplomacy"))
+			lastDiagnostic = countries.diagnostic()
+			return false
 		regional.recoverActiveRegion()
+		if rpg != null
+			rpg.reconstruct(Player(0),0.,0.,"player")
+		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
 		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade runtime reconstruction failed"
 			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
-		authority = staged
+		authority = withoutCountryAuthority(staged)
 		staged = ""
 	override function diagnostic() returns string
 		return lastDiagnostic
@@ -113,7 +169,7 @@ function runtimeChecksum(string value) returns int
 public class PlayableCampaignCodec implements CampaignSaveCodec
 	string lastDiagnostic = ""
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
-		let body = "schema=1|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
+		let body = "schema=2|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
 		return "integrity=" + runtimeChecksum(body).toString() + "|" + body
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
 		let marker = "|schema="
@@ -126,9 +182,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		if runtimeChecksum(body) != expected
 			lastDiagnostic = "save integrity check failed"
 			return ""
-		let currentPrefix = "schema=1|slot=" + expectedSlotId + "|"
+		let currentPrefix = "schema=2|slot=" + expectedSlotId + "|"
+		let priorPrefix = "schema=1|slot=" + expectedSlotId + "|"
 		let legacyPrefix = "schema=0|slot=" + expectedSlotId + "|"
-		if body.indexOf(currentPrefix) != 0 and body.indexOf(legacyPrefix) != 0
+		if body.indexOf(currentPrefix) != 0 and body.indexOf(priorPrefix) != 0 and body.indexOf(legacyPrefix) != 0
 			lastDiagnostic = "save schema or slot is incompatible"
 			return ""
 		let stateMarker = "|state="
@@ -147,6 +204,19 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 				decoded += ";orders="
 			if decoded.indexOf(";trade=") < 0
 				decoded += ";trade="
+		// Saves produced before country integration remain release-schema compatible.
+		if decoded.indexOf(";diplomacy=") < 0
+			decoded += ";diplomacy=v1"
+		if decoded.indexOf(";rewards=") < 0
+			decoded += ";rewards=v1"
+		if decoded.startsWith("v0;") or decoded.startsWith("v1;")
+			decoded = "v2;" + SubString(decoded,3,StringLength(decoded))
+		if body.indexOf(currentPrefix) != 0 and decoded.indexOf(";rpg=") < 0
+			decoded += ";rpg=v1"
+		// Schema 2 adds stable Warcraft military/settlement authority. Older saves
+		// migrate transactionally from the scenario-configured initial authority.
+		if decoded.indexOf(";militarySettlements=") < 0
+			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -351,6 +421,7 @@ public function registerCampaignMapCommand(CommandRegistry commands, MapDiscover
 	commands.register("map", "worldmap", "map <world|region-id|close>", "Open a discovered campaign map.", "Show legitimately known geography, locations, search areas, and route breadcrumbs without moving the physical character.", 1, 1, COMMAND_RELEASE, new CampaignMapCommand(maps))
 
 public class PlayableCampaignServices implements OriginSelectionObserver, CampaignLoadObserver
+	PlayerCampaignIdentity identity
 	PlayableCampaignState state
 	CampaignSaveManager saves
 	CampaignAutosaveScheduler autosaves
@@ -360,8 +431,14 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	MapDiscoveryScreenController maps
 	WarcraftMapPresentation mapPresentation
 	CampaignRuntimeExtension extension = null
+	PlayableCountryInteractionRuntime countries
+	CountryDiplomacyController countryScreen
 	construct(WarcraftRegionalAdapter regional, string physicalMapId)
+		identity = new PlayerCampaignIdentity()
 		state = new PlayableCampaignState(regional)
+		countries = new PlayableCountryInteractionRuntime(identity)
+		countryScreen = new CountryDiplomacyController(countries, new WarcraftCountryDiplomacyPresentation())
+		state.setCountryRuntime(countries)
 		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
 		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
@@ -397,7 +474,8 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
 		if extension != null
 			extension.newCampaign(settlementId)
-		state.replaceAuthority("v1;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=;trade=")
+		countries.discover(polityId)
+		state.replaceAuthority("v2;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",allegiance:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=;trade=")
 		travel.startAt(physicalMapId, logicalRegion)
 		regionAccess.revealAndAuthorize(logicalRegion)
 		regionSelector.setPhysicalRegionId(logicalRegion)
@@ -409,6 +487,12 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		let loadedMap = lastAuthorityValue(state.authorityDocument(), "map")
 		let loadedRegion = lastAuthorityValue(state.authorityDocument(), "region")
 		if loadedMap != "" and loadedRegion != ""
+			let loadedOrigin = playerAuthorityValue(state.authorityDocument(), "origin")
+			var loadedAllegiance = playerAuthorityValue(state.authorityDocument(), "allegiance")
+			let loadedSettlement = playerAuthorityValue(state.authorityDocument(), "settlement")
+			if loadedAllegiance == ""
+				loadedAllegiance = loadedOrigin
+			identity.restore(loadedOrigin, loadedAllegiance, loadedMap, loadedRegion, loadedSettlement)
 			travel.startAt(loadedMap, loadedRegion)
 			regionAccess.revealAndAuthorize(loadedRegion)
 			regionSelector.setPhysicalRegionId(loadedRegion)
@@ -427,6 +511,7 @@ public function initializePlayableCampaignRuntime(CommandRegistry commands, stri
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
 	registerCampaignMapCommand(commands, campaignServices.maps)
+	registerGovernmentRewards(commands, campaignServices.countryScreen)
 	campaignAutosaveTimer = CreateTimer()
 	TimerStart(campaignAutosaveTimer, CAMPAIGN_AUTOSAVE_SECONDS, true, function campaignAutosaveTick)
 	return campaignServices

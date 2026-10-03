@@ -1,6 +1,8 @@
 package CountryDiplomacyScreenTests
 
 import CountryDiplomacyScreen
+import CommandRouter
+import PlayableCountryInteractions
 import Wurstunit
 
 class RecordingDiplomacyPresentation implements CountryDiplomacyPresentation
@@ -33,6 +35,10 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 			changed = true
 			return "Peace concluded; Kent returned."
 		return "Confirmation required."
+	override function requestGovernmentReward(string polityId, string rewardId) returns string
+		if polityId == "france" and rewardId == "commission" and changed
+			return "Reward granted: commission."
+		return "Reward rejected: requirements are not met."
 
 @test function playerCanOpenOfferRespondAndObserveWorldChange()
 	let authority = new FakeDiplomacyAuthority()
@@ -45,6 +51,8 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	controller.respond("player_offer_1", true, true).assertTrue()
 	authority.changed.assertTrue()
 	presentation.last.assertEquals("Peace concluded; Kent returned.")
+	controller.requestReward("france", "commission").assertTrue()
+	presentation.last.assertEquals("Reward granted: commission.")
 
 @test function undiscoveredAndInvalidOffersStayClosed()
 	let authority = new FakeDiplomacyAuthority()
@@ -53,3 +61,48 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	controller.openFromRuler("castile").assertFalse()
 	controller.propose("france", "impossible").assertFalse()
 	presentation.last.assertEquals("Those terms are impossible.")
+	controller.requestReward("castile", "commission").assertFalse()
+	presentation.last.assertEquals("You cannot request a reward from an undiscovered government.")
+
+@test function governmentRewardsValidateAndPersistWithoutDuplicateMutation()
+	let identity = new PlayerCampaignIdentity()
+	identity.startCampaign("england", "europe_west", "europe", "london").assertTrue()
+	let runtime = new PlayableCountryInteractionRuntime(identity)
+	runtime.registerPolity("england", 100)
+	runtime.registerPolity("france", 10)
+	runtime.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 20, 5, 30, false))
+	runtime.registerRewardProfile(new GovernmentRewardProfile("france", "pension", "money", 10, 0, 20, true))
+	runtime.discover("england").assertTrue()
+	runtime.setStanding("england", 5, 5)
+	runtime.recordContribution("england", 10).assertTrue()
+	runtime.requestGovernmentReward("england", "commission").assertEquals("Reward granted: commission (office).")
+	let grantedState = runtime.captureState()
+	runtime.requestGovernmentReward("england", "commission").assertEquals("Reward rejected: reward was already granted.")
+	runtime.captureState().assertEquals(grantedState)
+	runtime.discover("france").assertTrue()
+	runtime.setStanding("france", 10, 0)
+	let beforeRejected = runtime.captureState()
+	runtime.requestGovernmentReward("france", "pension").assertEquals("Reward rejected: government resources are insufficient.")
+	runtime.captureState().assertEquals(beforeRejected)
+
+@test function pendingOffersAndRewardHistorySurviveReconstruction()
+	let identity = new PlayerCampaignIdentity()
+	identity.startCampaign("england", "europe_west", "europe", "london")
+	let runtime = new PlayableCountryInteractionRuntime(identity)
+	runtime.registerPolity("england", 100)
+	runtime.registerPolity("france", 100)
+	runtime.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 1, 0, 0, false))
+	runtime.discover("england")
+	runtime.discover("france")
+	runtime.setActiveConflict("france", "channel_war")
+	runtime.createOffer("channel_war", "france", "ceasefire").assertEquals("player_offer_1")
+	runtime.recordContribution("england", 1)
+	runtime.requestGovernmentReward("england", "commission")
+	let saved = runtime.captureState()
+	let restored = new PlayableCountryInteractionRuntime(identity)
+	restored.registerPolity("england", 100)
+	restored.registerPolity("france", 100)
+	restored.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 1, 0, 0, false))
+	restored.restoreState(saved).assertTrue()
+	restored.isKnown("france").assertTrue()
+	restored.requestGovernmentReward("england", "commission").assertEquals("Reward rejected: reward was already granted.")

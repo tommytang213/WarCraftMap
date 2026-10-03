@@ -3,29 +3,1343 @@
   "formatVersion": 1,
   "policy": "A release-required feature is complete only when authority, headless simulation, Warcraft adapter/bootstrap registration, player entry point, persistence, source runtime verification, and compiled-artifact markers all pass.",
   "systems": [
-    {"id":"campaign_launch","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"scenario/world/world.json","contains":["schemaVersion","polities"]}],"headlessVerification":[{"path":"tests/test_new_campaign_origins.py","contains":["NewCampaign"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["initializePlayableCampaignRuntime","installCommandRegistry"]}],"playerEntry":[{"path":"wurst/CommandRouter.wurst","contains":["NewCampaignOriginController","origin [page N"]}],"persistence":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["PlayableCampaignState","CampaignSaveManager"]}],"runtimeVerification":[{"path":"wurst/PlayableCampaignRuntimeTests.wurst","contains":["@test"]}],"artifactMarkers":["initializePlayableCampaignRuntime","installCommandRegistry"]},
-    {"id":"origin_selection","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"scenario/world/world.json","contains":["polities"]}],"headlessVerification":[{"path":"tests/test_new_campaign_origins.py","contains":["origin"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["registerOriginSelection","configureGeneratedOrigins"]}],"playerEntry":[{"path":"wurst/CommandRouter.wurst","contains":["commands.register(\"origin\""]}],"persistence":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["campaignStarted"]}],"runtimeVerification":[{"path":"wurst/NewCampaignOriginSelectionTests.wurst","contains":["@test"]}],"artifactMarkers":["registerOriginSelection","configureGeneratedOrigins"]},
-    {"id":"country_diplomacy","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/diplomacy.py","contains":["DIPLOMACY_WORLD_STATE_KEY"]}],"headlessVerification":[{"path":"tests/test_player_diplomacy.py","contains":["government"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["import CountryDiplomacyScreen","registerCountryDiplomacyCommands"]}],"playerEntry":[{"path":"wurst/CountryDiplomacyScreen.wurst","contains":["commands.register(\"country\"","commands.register(\"peace\""]}],"persistence":[{"path":"../_shared/engine/player_diplomacy.py","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/CountryDiplomacyScreenTests.wurst","contains":["@test"]}],"artifactMarkers":["registerCountryDiplomacyCommands","country POLITY"]},
-    {"id":"trade","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/trade.py","contains":["TradeResult","execute","transfer_cargo"]}],"headlessVerification":[{"path":"tests/test_playable_trade.py","contains":["test_long_distance_buy_carry_sell_profit_and_unlock","test_knowledge_trends_warehouse_transfer_and_save_resume_equivalence"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["import PlayableTrade","registerPlayableTrade(commands, campaign)"]}],"playerEntry":[{"path":"wurst/PlayableTrade.wurst","contains":["commands.register(\"trade\"","inspectMarket","buyCargo","sellCargo"]}],"persistence":[{"path":"wurst/PlayableTrade.wurst","contains":["CampaignRuntimeExtension","capture()","reconstruct(string document)"]}],"runtimeVerification":[{"path":"wurst/PlayableTradeTests.wurst","contains":["playerCanInspectBuyCarryMoveAndSellCargo","tradeAuthoritySurvivesRuntimeReconstruction"]}],"artifactMarkers":["registerPlayableTrade","TradeCommand","Open the current settlement commodity market."]},
-    {"id":"army_fleet_control","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/military.py","contains":["Military"]}],"headlessVerification":[{"path":"tests/test_military.py","contains":["fleet"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["initializeMilitarySettlementRuntime"]}],"playerEntry":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["commands.register(\"army\"","fleet"]}],"persistence":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/MilitarySettlementRuntimeTests.wurst","contains":["@test"]}],"artifactMarkers":["initializeMilitarySettlementRuntime","army ID"]},
-    {"id":"city_capture","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/city_capture.py","contains":["CityCapture"]}],"headlessVerification":[{"path":"tests/test_city_capture.py","contains":["capture"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["initializeMilitarySettlementRuntime"]}],"playerEntry":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["capture","SettlementRuntimeState"]}],"persistence":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/MilitarySettlementRuntimeTests.wurst","contains":["capture"]}],"artifactMarkers":["initializeMilitarySettlementRuntime","MilitarySettlementRuntime"]},
-    {"id":"garrisons","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/settlement_defense.py","contains":["Garrison"]}],"headlessVerification":[{"path":"tests/test_settlement_defense.py","contains":["garrison"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["initializeMilitarySettlementRuntime"]}],"playerEntry":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["garrison","commands.register(\"army\""]}],"persistence":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/MilitarySettlementRuntimeTests.wurst","contains":["garrison"]}],"artifactMarkers":["initializeMilitarySettlementRuntime","garrison"]},
-    {"id":"administration","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/administration.py","contains":["Administration"]}],"headlessVerification":[{"path":"tests/test_administration.py","contains":["administrator"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["initializeMilitarySettlementRuntime"]}],"playerEntry":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["administration","appoint"]}],"persistence":[{"path":"wurst/MilitarySettlementRuntime.wurst","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/MilitarySettlementRuntimeTests.wurst","contains":["administration"]}],"artifactMarkers":["initializeMilitarySettlementRuntime","administration"]},
-    {"id":"heroes","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/hero_progression.py","contains":["level"]}],"headlessVerification":[{"path":"tests/test_hero_progression.py","contains":["Hero"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["registerRpgRuntimeCommands"]}],"playerEntry":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["commands.register(\"roster\"","commands.register(\"recruit\""]}],"persistence":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["captureState","restoreState"]}],"runtimeVerification":[{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["@test"]}],"artifactMarkers":["registerRpgRuntimeCommands","WarcraftRpgRuntime"]},
-    {"id":"inventory_equipment","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/inventory.py","contains":["equipment"]}],"headlessVerification":[{"path":"tests/test_inventory.py","contains":["inventory"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["registerRpgRuntimeCommands"]}],"playerEntry":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["commands.register(\"inventory\"","equip"]}],"persistence":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["captureState","restoreState"]}],"runtimeVerification":[{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["inventory"]}],"artifactMarkers":["registerRpgRuntimeCommands","WarcraftRpgRuntime"]},
-    {"id":"technology_institutions","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/technology_institutions.py","contains":["Technology"]}],"headlessVerification":[{"path":"tests/test_technology_institutions.py","contains":["institution"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["configureGeneratedRpg","WarcraftTechnologyEffects"]}],"playerEntry":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["commands.register(\"technology\""]}],"persistence":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["captureState","restoreState"]}],"runtimeVerification":[{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["technology"]}],"artifactMarkers":["configureGeneratedRpg","WarcraftTechnologyEffects"]},
-    {"id":"quests_journal","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/quest_journal.py","contains":["Quest"]}],"headlessVerification":[{"path":"tests/test_quest_journal.py","contains":["journal"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["registerRpgRuntimeCommands"]}],"playerEntry":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["commands.register(\"journal\"","commands.register(\"track\""]}],"persistence":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["captureState","restoreState"]}],"runtimeVerification":[{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["quest"]}],"artifactMarkers":["registerRpgRuntimeCommands","WarcraftRpgRuntime"]},
-    {"id":"treasures_discovery","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/treasures.py","contains":["Treasure"]}],"headlessVerification":[{"path":"tests/test_treasures.py","contains":["treasure"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["registerRpgRuntimeCommands"]}],"playerEntry":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["Treasure","track"]}],"persistence":[{"path":"wurst/WarcraftRpgRuntime.wurst","contains":["captureState","restoreState"]}],"runtimeVerification":[{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["treasure"]}],"artifactMarkers":["registerRpgRuntimeCommands","WarcraftRpgRuntime"]},
-    {"id":"save_autosave_load","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/campaign_save.py","contains":["CURRENT_SCHEMA_VERSION"]}],"headlessVerification":[{"path":"tests/test_campaign_save.py","contains":["load_save"]}],"runtime":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["registerCampaignSaveCommands","campaignAutosaveTick"]}],"playerEntry":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["commands.register(\"save\"","commands.register(\"load\""]}],"persistence":[{"path":"wurst/CampaignSaveManager.wurst","contains":["decodeMigrateAndValidate","writeTransactional"]}],"runtimeVerification":[{"path":"wurst/CampaignSaveManagerTests.wurst","contains":["@test"]}],"artifactMarkers":["initializePlayableCampaignRuntime","CampaignSaveManager"]},
-    {"id":"cross_map_travel","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"physical-maps.json","contains":["physicalMaps"]}],"headlessVerification":[{"path":"tests/test_cross_map_persistence.py","contains":["transition"]}],"runtime":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["CampaignTravelRuntime","compatLoadPhysicalMap"]}],"playerEntry":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["transition","BoundaryCorrespondence"]}],"persistence":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["SAVE_SLOT_MAJOR_MILESTONE"]}],"runtimeVerification":[{"path":"wurst/PlayableCampaignRuntimeTests.wurst","contains":["transition"]}],"artifactMarkers":["initializePlayableCampaignRuntime","WarcraftPhysicalMapLoader"]},
-    {"id":"world_map","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"scenario/maps/world-map.json","contains":["regionLayouts"]}],"headlessVerification":[{"path":"tests/test_map_discovery.py","contains":["world"]}],"runtime":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["registerCampaignMapCommand"]}],"playerEntry":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["commands.register(\"map\""]}],"persistence":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":[";discovery="]}],"runtimeVerification":[{"path":"wurst/MapDiscoveryScreenTests.wurst","contains":["@test"]}],"artifactMarkers":["initializePlayableCampaignRuntime","registerCampaignMapCommand"]},
-    {"id":"remote_management","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/remote_region_management.py","contains":["RegionManagement"]}],"headlessVerification":[{"path":"tests/test_remote_region_management.py","contains":["region"]}],"runtime":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":["registerRegionCommand"]}],"playerEntry":[{"path":"wurst/RemoteRegionManagement.wurst","contains":["registry.register","region"]}],"persistence":[{"path":"wurst/PlayableCampaignRuntime.wurst","contains":[";orders="]}],"runtimeVerification":[{"path":"wurst/PlayableCampaignRuntimeTests.wurst","contains":["region"]}],"artifactMarkers":["initializePlayableCampaignRuntime","registerRegionCommand"]},
-    {"id":"government_rewards","releaseRequired":true,"simulationOnly":false,"authority":[{"path":"../_shared/engine/contribution_rewards.py","contains":["ContributionReward"]}],"headlessVerification":[{"path":"tests/test_contribution_rewards.py","contains":["reward"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["ContributionReward","registerGovernmentRewards"]}],"playerEntry":[{"path":"wurst/CountryDiplomacyScreen.wurst","contains":["request_reward"]}],"persistence":[{"path":"../_shared/engine/contribution_rewards.py","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"wurst/CountryDiplomacyScreenTests.wurst","contains":["rewards"]}],"artifactMarkers":["registerGovernmentRewards","request_reward"]},
-    {"id":"religion","releaseRequired":false,"simulationOnly":true,"authority":[{"path":"../_shared/engine/religion.py","contains":["WORLD_STATE_KEY"]}],"headlessVerification":[{"path":"tests/test_religion.py","contains":["Religion"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["ReligionRuntime"]}],"playerEntry":[{"path":"wurst/Bootstrap.wurst","contains":["registerReligion"]}],"persistence":[{"path":"../_shared/engine/religion.py","contains":["snapshot","restore"]}],"runtimeVerification":[{"path":"tests/test_religion.py","contains":["reconstruct"]}],"artifactMarkers":[]},
-    {"id":"piracy","releaseRequired":false,"simulationOnly":true,"authority":[{"path":"../_shared/engine/military.py","contains":["fleet"]}],"headlessVerification":[{"path":"tests/test_military.py","contains":["fleet"]}],"runtime":[{"path":"wurst/Bootstrap.wurst","contains":["PiracyRuntime"]}],"playerEntry":[{"path":"wurst/Bootstrap.wurst","contains":["registerPiracy"]}],"persistence":[{"path":"../_shared/engine/campaign_save.py","contains":["world"]}],"runtimeVerification":[{"path":"tests/test_military.py","contains":["fleet"]}],"artifactMarkers":[]}
+    {
+      "id": "campaign_launch",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "scenario/world/world.json",
+          "contains": [
+            "schemaVersion",
+            "polities"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_new_campaign_origins.py",
+          "contains": [
+            "NewCampaign"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "initializePlayableCampaignRuntime",
+            "installCommandRegistry"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/CommandRouter.wurst",
+          "contains": [
+            "NewCampaignOriginController",
+            "origin [page N"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "PlayableCampaignState",
+            "CampaignSaveManager"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/PlayableCampaignRuntimeTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializePlayableCampaignRuntime",
+        "installCommandRegistry"
+      ]
+    },
+    {
+      "id": "origin_selection",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "scenario/world/world.json",
+          "contains": [
+            "polities"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_new_campaign_origins.py",
+          "contains": [
+            "origin"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerOriginSelection",
+            "configureGeneratedOrigins"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/CommandRouter.wurst",
+          "contains": [
+            "commands.register(\"origin\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "campaignStarted"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/NewCampaignOriginSelectionTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerOriginSelection",
+        "configureGeneratedOrigins"
+      ]
+    },
+    {
+      "id": "country_diplomacy",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/diplomacy.py",
+          "contains": [
+            "DIPLOMACY_WORLD_STATE_KEY"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_player_diplomacy.py",
+          "contains": [
+            "government"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "registerGovernmentRewards",
+            "countryScreen",
+            "setCountryRuntime"
+          ]
+        },
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "configureGeneratedCountryInteractions"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/CountryDiplomacyScreen.wurst",
+          "contains": [
+            "commands.register(\"country\"",
+            "commands.register(\"peace\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCountryInteractions.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            ";diplomacy=",
+            "countries.restoreState"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/CountryDiplomacyScreenTests.wurst",
+          "contains": [
+            "playerCanOpenOfferRespondAndObserveWorldChange",
+            "pendingOffersAndRewardHistorySurviveReconstruction"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "configureGeneratedCountryInteractions",
+        "registerGovernmentRewards",
+        "CountryDiplomacyController"
+      ]
+    },
+    {
+      "id": "trade",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/trade.py",
+          "contains": [
+            "TradeResult",
+            "execute",
+            "transfer_cargo"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_playable_trade.py",
+          "contains": [
+            "test_long_distance_buy_carry_sell_profit_and_unlock",
+            "test_capacity_replay_and_stale_quote_exploits_fail",
+            "test_saturation_anti_farming_and_uncosted_rewards",
+            "test_knowledge_trends_warehouse_transfer_and_save_resume_equivalence"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "import PlayableTrade",
+            "registerPlayableTrade(commands, campaign)"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/PlayableTrade.wurst",
+          "contains": [
+            "commands.register(\"trade\"",
+            "inspectMarket",
+            "buyCargo",
+            "sellCargo"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableTrade.wurst",
+          "contains": [
+            "CampaignRuntimeExtension",
+            "capture()",
+            "reconstruct(string document)"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/PlayableTradeTests.wurst",
+          "contains": [
+            "playerCanInspectBuyCarryMoveAndSellCargo",
+            "staleDisplayRestrictionsAndFailuresRollbackAtomically",
+            "tradeAuthoritySurvivesRuntimeReconstruction"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerPlayableTrade",
+        "TradeCommand",
+        "Open the current settlement commodity market."
+      ]
+    },
+    {
+      "id": "army_fleet_control",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/military.py",
+          "contains": [
+            "Military"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_military.py",
+          "contains": [
+            "test_fleet_control_order_survives_representation_loss_and_restore"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "initializeMilitarySettlementRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "commands.register(\"army\"",
+            "fleet"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "snapshot",
+            "restore"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/MilitarySettlementRuntimeTests.wurst",
+          "contains": [
+            "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializeMilitarySettlementRuntime",
+        "army ID"
+      ]
+    },
+    {
+      "id": "city_capture",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/city_capture.py",
+          "contains": [
+            "CityCapture"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_city_capture.py",
+          "contains": [
+            "capture"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "initializeMilitarySettlementRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "capture",
+            "SettlementRuntimeState"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "snapshot",
+            "restore"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/MilitarySettlementRuntimeTests.wurst",
+          "contains": [
+            "changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializeMilitarySettlementRuntime",
+        "MilitarySettlementRuntime"
+      ]
+    },
+    {
+      "id": "garrisons",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/settlement_defense.py",
+          "contains": [
+            "Garrison"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_settlement_defense.py",
+          "contains": [
+            "test_garrison_reinforcement_timing_and_depletion_survive_restore"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "initializeMilitarySettlementRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "garrison",
+            "commands.register(\"army\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "snapshot",
+            "restore"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/MilitarySettlementRuntimeTests.wurst",
+          "contains": [
+            "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializeMilitarySettlementRuntime",
+        "garrison"
+      ]
+    },
+    {
+      "id": "administration",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/administration.py",
+          "contains": [
+            "Administration"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_administration.py",
+          "contains": [
+            "administrator"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "initializeMilitarySettlementRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "administration",
+            "appoint"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "snapshot",
+            "restore"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/MilitarySettlementRuntimeTests.wurst",
+          "contains": [
+            "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializeMilitarySettlementRuntime",
+        "administration"
+      ]
+    },
+    {
+      "id": "heroes",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/hero_progression.py",
+          "contains": [
+            "level"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_hero_progression.py",
+          "contains": [
+            "Hero"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerRpgRuntimeCommands"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"roster\"",
+            "commands.register(\"recruit\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "setRpgRuntime",
+            ";rpg=",
+            "rpg.reconstruct"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerRpgRuntimeCommands",
+        "WarcraftRpgRuntime",
+        "setRpgRuntime",
+        "RPG_STATE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "inventory_equipment",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/inventory.py",
+          "contains": [
+            "equipment"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_inventory.py",
+          "contains": [
+            "inventory"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerRpgRuntimeCommands"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"inventory\"",
+            "equip"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "setRpgRuntime",
+            ";rpg=",
+            "rpg.reconstruct"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "inventory"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerRpgRuntimeCommands",
+        "WarcraftRpgRuntime",
+        "setRpgRuntime",
+        "RPG_STATE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "technology_institutions",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/technology_institutions.py",
+          "contains": [
+            "Technology"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_technology_institutions.py",
+          "contains": [
+            "institution"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "configureGeneratedRpg",
+            "WarcraftTechnologyEffects"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"technology\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "setRpgRuntime",
+            ";rpg=",
+            "rpg.reconstruct"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "technology"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "configureGeneratedRpg",
+        "WarcraftTechnologyEffects",
+        "setRpgRuntime",
+        "RPG_STATE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "quests_journal",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/quest_journal.py",
+          "contains": [
+            "Quest"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_quest_journal.py",
+          "contains": [
+            "journal"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerRpgRuntimeCommands"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"journal\"",
+            "commands.register(\"track\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "setRpgRuntime",
+            ";rpg=",
+            "rpg.reconstruct"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "quest"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerRpgRuntimeCommands",
+        "WarcraftRpgRuntime",
+        "setRpgRuntime",
+        "RPG_STATE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "treasures_discovery",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/treasures.py",
+          "contains": [
+            "Treasure"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_treasures.py",
+          "contains": [
+            "treasure"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerRpgRuntimeCommands"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "Treasure",
+            "track"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "captureState",
+            "restoreState"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "setRpgRuntime",
+            ";rpg=",
+            "rpg.reconstruct"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "treasure"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "registerRpgRuntimeCommands",
+        "WarcraftRpgRuntime",
+        "setRpgRuntime",
+        "RPG_STATE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "save_autosave_load",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/campaign_save.py",
+          "contains": [
+            "CURRENT_SCHEMA_VERSION"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_campaign_save.py",
+          "contains": [
+            "load_save"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "registerCampaignSaveCommands",
+            "campaignAutosaveTick"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"save\"",
+            "commands.register(\"load\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/CampaignSaveManager.wurst",
+          "contains": [
+            "decodeMigrateAndValidate",
+            "writeTransactional"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/CampaignSaveManagerTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializePlayableCampaignRuntime",
+        "CampaignSaveManager"
+      ]
+    },
+    {
+      "id": "cross_map_travel",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "physical-maps.json",
+          "contains": [
+            "physicalMaps"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_cross_map_persistence.py",
+          "contains": [
+            "transition"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "CampaignTravelRuntime",
+            "compatLoadPhysicalMap"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "transition",
+            "BoundaryCorrespondence"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "SAVE_SLOT_MAJOR_MILESTONE"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/PlayableCampaignRuntimeTests.wurst",
+          "contains": [
+            "transition"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializePlayableCampaignRuntime",
+        "WarcraftPhysicalMapLoader"
+      ]
+    },
+    {
+      "id": "world_map",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "scenario/maps/world-map.json",
+          "contains": [
+            "regionLayouts"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_map_discovery.py",
+          "contains": [
+            "world"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "registerCampaignMapCommand"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"map\""
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            ";discovery="
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/MapDiscoveryScreenTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializePlayableCampaignRuntime",
+        "registerCampaignMapCommand"
+      ]
+    },
+    {
+      "id": "remote_management",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/remote_region_management.py",
+          "contains": [
+            "RegionManagement"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_remote_region_management.py",
+          "contains": [
+            "region"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "registerRegionCommand"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/RemoteRegionManagement.wurst",
+          "contains": [
+            "registry.register",
+            "region"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            ";orders="
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/PlayableCampaignRuntimeTests.wurst",
+          "contains": [
+            "region"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "initializePlayableCampaignRuntime",
+        "registerRegionCommand"
+      ]
+    },
+    {
+      "id": "government_rewards",
+      "releaseRequired": true,
+      "simulationOnly": false,
+      "authority": [
+        {
+          "path": "../_shared/engine/contribution_rewards.py",
+          "contains": [
+            "ContributionReward"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_contribution_rewards.py",
+          "contains": [
+            "reward"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "registerGovernmentRewards",
+            "PlayableCountryInteractionRuntime"
+          ]
+        },
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "configureGeneratedCountryInteractions"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/CountryDiplomacyScreen.wurst",
+          "contains": [
+            "commands.register(\"reward\"",
+            "requestGovernmentReward"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "wurst/PlayableCountryInteractions.wurst",
+          "contains": [
+            "captureState",
+            "restoreState",
+            "granted"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            ";rewards=",
+            "countries.restoreState"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "wurst/CountryDiplomacyScreenTests.wurst",
+          "contains": [
+            "governmentRewardsValidateAndPersistWithoutDuplicateMutation",
+            "pendingOffersAndRewardHistorySurviveReconstruction"
+          ]
+        }
+      ],
+      "artifactMarkers": [
+        "configureGeneratedCountryInteractions",
+        "registerGovernmentRewards",
+        "requestGovernmentReward"
+      ]
+    },
+    {
+      "id": "religion",
+      "releaseRequired": false,
+      "simulationOnly": true,
+      "authority": [
+        {
+          "path": "../_shared/engine/religion.py",
+          "contains": [
+            "WORLD_STATE_KEY"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_religion.py",
+          "contains": [
+            "Religion"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "ReligionRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerReligion"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "../_shared/engine/religion.py",
+          "contains": [
+            "snapshot",
+            "restore"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "tests/test_religion.py",
+          "contains": [
+            "reconstruct"
+          ]
+        }
+      ],
+      "artifactMarkers": []
+    },
+    {
+      "id": "piracy",
+      "releaseRequired": false,
+      "simulationOnly": true,
+      "authority": [
+        {
+          "path": "../_shared/engine/military.py",
+          "contains": [
+            "fleet"
+          ]
+        }
+      ],
+      "headlessVerification": [
+        {
+          "path": "tests/test_military.py",
+          "contains": [
+            "fleet"
+          ]
+        }
+      ],
+      "runtime": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "PiracyRuntime"
+          ]
+        }
+      ],
+      "playerEntry": [
+        {
+          "path": "wurst/Bootstrap.wurst",
+          "contains": [
+            "registerPiracy"
+          ]
+        }
+      ],
+      "persistence": [
+        {
+          "path": "../_shared/engine/campaign_save.py",
+          "contains": [
+            "world"
+          ]
+        }
+      ],
+      "runtimeVerification": [
+        {
+          "path": "tests/test_military.py",
+          "contains": [
+            "fleet"
+          ]
+        }
+      ],
+      "artifactMarkers": []
+    }
   ],
   "smokeJourneys": [
-    {"id":"new-campaign-core-loops","systems":["campaign_launch","origin_selection","country_diplomacy","trade","army_fleet_control","city_capture","garrisons","administration","heroes","inventory_equipment","technology_institutions","quests_journal","treasures_discovery","save_autosave_load"],"verification":[{"path":"wurst/PlayableCampaignRuntimeTests.wurst","contains":["@test"]},{"path":"wurst/PlayableTradeTests.wurst","contains":["playerCanInspectBuyCarryMoveAndSellCargo","tradeAuthoritySurvivesRuntimeReconstruction"]},{"path":"wurst/MilitarySettlementRuntimeTests.wurst","contains":["@test"]},{"path":"wurst/WarcraftRpgRuntimeTests.wurst","contains":["@test"]}]},
-    {"id":"save-travel-remote-return","systems":["cross_map_travel","world_map","remote_management","government_rewards"],"verification":[{"path":"wurst/PlayableCampaignRuntimeTests.wurst","contains":["transition","save"]},{"path":"wurst/CountryDiplomacyScreenTests.wurst","contains":["@test"]}]}
+    {
+      "id": "new-campaign-core-loops",
+      "systems": [
+        "campaign_launch",
+        "origin_selection",
+        "country_diplomacy",
+        "trade",
+        "army_fleet_control",
+        "city_capture",
+        "garrisons",
+        "administration",
+        "heroes",
+        "inventory_equipment",
+        "technology_institutions",
+        "quests_journal",
+        "treasures_discovery",
+        "save_autosave_load"
+      ],
+      "verification": [
+        {
+          "path": "wurst/PlayableCampaignRuntimeTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        },
+        {
+          "path": "wurst/PlayableTradeTests.wurst",
+          "contains": [
+            "playerCanInspectBuyCarryMoveAndSellCargo",
+            "tradeAuthoritySurvivesRuntimeReconstruction"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntimeTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        },
+        {
+          "path": "wurst/WarcraftRpgRuntimeTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "save-travel-remote-return",
+      "systems": [
+        "cross_map_travel",
+        "world_map",
+        "remote_management",
+        "government_rewards"
+      ],
+      "verification": [
+        {
+          "path": "wurst/PlayableCampaignRuntimeTests.wurst",
+          "contains": [
+            "transition",
+            "save"
+          ]
+        },
+        {
+          "path": "wurst/CountryDiplomacyScreenTests.wurst",
+          "contains": [
+            "@test"
+          ]
+        }
+      ]
+    }
   ]
 }

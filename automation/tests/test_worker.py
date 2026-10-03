@@ -289,6 +289,14 @@ class WorkerTests(unittest.TestCase):
         self.assertIn('do NOT return "blocked" solely because', prompt)
         self.assertIn("Grill is unavailable", prompt)
 
+    def test_codex_prompt_forbids_mutating_container_bind_mounts(self):
+        issue = {"number": 321, "title": "[agent-ready] trade", "body": "Implement it."}
+        prompt = codex_prompt(issue, "")
+        self.assertIn("Never bind-mount this worktree read/write", prompt)
+        self.assertIn("never run chown or chmod against this worktree", prompt)
+        self.assertIn("mount the worktree read-only", prompt)
+        self.assertIn("container-private temporary storage", prompt)
+
     def test_codex_command_uses_json_and_no_conflicting_sandbox_flag(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
