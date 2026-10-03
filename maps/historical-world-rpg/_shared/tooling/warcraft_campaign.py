@@ -119,8 +119,9 @@ def _cstring(value: str) -> bytes:
     return value.encode("utf-8") + b"\0"
 
 
-def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]]) -> bytes:
+def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]], chapters: list[tuple[str, str]] | None = None) -> bytes:
     """Create Warcraft III 3.0 war3campaign.w3f v3 metadata."""
+    chapters = maps if chapters is None else chapters
     out = bytearray(struct.pack("<III", 3, 1, 7000))
     out += _cstring(name) + _cstring("Normal") + _cstring("WarcraftMap contributors") + _cstring(description)
     # Fixed difficulty + expansion maps.  All packaged chapters are W3X.
@@ -129,8 +130,8 @@ def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]]) 
     out += struct.pack("<ifffBBBBi", 0, 0.0, 10000.0, 0.0, 0, 0, 0, 0, 0)
     # v3 fog-height extension, then the v2+ background model version.
     out += struct.pack("<fffffi", 0.0, 0.0, 0.0, 0.0, 0.0, 0)
-    out += struct.pack("<ii", 0, len(maps))
-    for title, path in maps:
+    out += struct.pack("<ii", 0, len(chapters))
+    for title, path in chapters:
         out += struct.pack("<i", 1) + _cstring(title) + _cstring(title) + _cstring(path)
     out += struct.pack("<i", len(maps))
     for _, path in maps:
