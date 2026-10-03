@@ -118,6 +118,18 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	travel.transition(west, .4, "day-5").assertTrue()
 	(state.authorityDocument().indexOf("delivery_complete") >= 0).assertTrue()
 	(state.authorityDocument().indexOf("city_lisbon_owner=castile") >= 0).assertTrue()
+	(state.authorityDocument().indexOf(";map=east") < 0).assertTrue()
+
+@test function invalidPhysicalBoundaryNeverLoadsMap()
+	let storage = new MemoryStorage()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let loader = new FakeLoader()
+	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
+	let wrongSource = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
+	travel.transition(wrongSource, .5, "day-6").assertFalse()
+	loader.loaded.assertEquals("")
+	storage.contains("major_milestone").assertFalse()
 
 @test function remoteAccessDoesNotRevealUnknownOrMovePhysicalRegion()
 	let access = new PlayableRegionAccess()

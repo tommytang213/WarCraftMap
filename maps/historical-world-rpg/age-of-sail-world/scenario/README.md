@@ -146,6 +146,11 @@ source folder maps/manifests, package paths, per-map budgets, and bootstrap mark
 are scenario data. A logical region may occur in more than one physical-map entry,
 but every required regional instance is assigned exactly once so authoritative
 entities are never duplicated between map-local runtime payloads.
+Reachable cross-map seams are authored in `maps/physical-boundaries.json`, referenced
+by that manifest. Each directed record owns a non-overlapping physical edge segment,
+its reverse route where travel is reciprocal, the destination package and logical
+region, normalized arrival transform, and any discovery gate. Packaging validates
+the graph and generates only the active map's Warcraft entry triggers.
 
 `geography/europe.json` is the editable authority for the 1450 Europe spatial slice. It defines regional instances, real-world control points, local affine transforms, paired seams, declared gameplay distortions, and complexity budgets. Run `python3 tooling/europe_geography.py` to validate it. Terrain/map inputs containing calculated local control points are deterministic derived artifacts and must not become an alternate source of truth.
 

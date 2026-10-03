@@ -227,6 +227,44 @@ class CampaignPackagingTests(unittest.TestCase):
         load = runtime.index("travel.loader.load(packagePath)")
         self.assertLess(commit, load)
 
+    def test_authoritative_boundaries_are_bidirectional_connected_and_codegen_reachable(self):
+        campaign = load_campaign_config(self.manifest)
+        content_maps = {item.id for item in campaign.maps if item.regional_instance_ids}
+        directed = {(item.source_map_id, item.destination_map_id) for item in campaign.boundaries}
+        self.assertTrue(directed)
+        self.assertTrue(all((destination, source) in directed for source, destination in directed))
+        reached = {next(iter(content_maps))}
+        while True:
+            expanded = reached | {destination for source, destination in directed if source in reached}
+            if expanded == reached:
+                break
+            reached = expanded
+        self.assertEqual(content_maps, reached & content_maps)
+
+        world = validate_campaign(campaign)
+        base = load_config(campaign.map_config_path)
+        package_paths = {item.id: item.package_path for item in campaign.maps}
+        for physical in campaign.maps:
+            generated = self.project / "_build/boundaries" / physical.id
+            generate(base, generated)
+            _localize_runtime(campaign, world, physical, generated)
+            local = [item for item in campaign.boundaries if item.source_map_id == physical.id]
+            scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+            runtime = json.loads((generated / "scenario-runtime.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(local), scenario.count("\tregistry.add("))
+            self.assertEqual(len(local), len(runtime["physicalBoundaries"]))
+            for boundary in local:
+                self.assertIn(boundary.id, scenario)
+                self.assertIn(json.dumps(package_paths[boundary.destination_map_id]), scenario)
+
+        bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text(encoding="utf-8")
+        runtime_source = (self.project / "wurst/PlayableCampaignRuntime.wurst").read_text(encoding="utf-8")
+        self.assertIn("configureGeneratedPhysicalBoundaries(physicalBoundaries)", bootstrap)
+        self.assertIn("TriggerRegisterEnterRectSimple", runtime_source)
+        self.assertIn("travel.transition(boundaries[i]", runtime_source)
+        self.assertLess(runtime_source.index("saves.save(SAVE_SLOT_MAJOR_MILESTONE"),
+                        runtime_source.index("loader.load(boundary.destinationPath)"))
+
     def test_generated_wurst_omits_unused_giant_runtime_literal(self):
         base = load_config(load_campaign_config(self.manifest).map_config_path)
         generated = self.project / "_build/no-runtime-literal"
