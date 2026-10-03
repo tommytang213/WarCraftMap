@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **12**
+Unresolved campaign blockers: **10**
 
 ## Severity taxonomy
 
@@ -26,7 +26,7 @@ Unresolved campaign blockers: **12**
 |---|---:|---:|---:|---:|---:|
 | `campaign_launch` | yes | yes | yes | yes | yes |
 | `origin_selection` | yes | yes | yes | yes | yes |
-| `country_diplomacy` | yes | yes | no | no | no |
+| `country_diplomacy` | yes | yes | yes | yes | yes |
 | `trade` | yes | no | no | no | no |
 | `army_fleet_control` | yes | no | no | no | no |
 | `city_capture` | yes | yes | no | no | no |
@@ -41,7 +41,7 @@ Unresolved campaign blockers: **12**
 | `cross_map_travel` | yes | yes | yes | yes | yes |
 | `world_map` | yes | yes | yes | yes | yes |
 | `remote_management` | yes | yes | yes | yes | yes |
-| `government_rewards` | yes | yes | no | no | no |
+| `government_rewards` | yes | yes | yes | yes | yes |
 | `religion` | yes | yes | no | no | no |
 | `piracy` | yes | no | no | no | no |
 
@@ -52,9 +52,7 @@ Unresolved campaign blockers: **12**
 | `RUNTIME-MISSING-ADMINISTRATION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-ARMY-FLEET-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-CITY-CAPTURE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-COUNTRY-DIPLOMACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-GARRISONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-GOVERNMENT-REWARDS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-HEROES` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |

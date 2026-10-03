@@ -1,0 +1,276 @@
+package PlayableCountryInteractions
+
+import CommandRouter
+import CountryDiplomacyScreen
+
+/**
+ * Stable, handle-free authority behind the country interaction screen.  Scenario
+ * generation supplies polity-specific profiles; this object owns only campaign
+ * facts and can therefore be captured and reconstructed on every physical map.
+ */
+public class GovernmentRewardProfile
+	string polityId
+	string rewardId
+	string kind
+	int contributionRequired
+	int reputationRequired
+	int treasuryCost
+	boolean foreignService
+	construct(string polityId, string rewardId, string kind, int contributionRequired, int reputationRequired, int treasuryCost, boolean foreignService)
+		this.polityId = polityId
+		this.rewardId = rewardId
+		this.kind = kind
+		this.contributionRequired = contributionRequired
+		this.reputationRequired = reputationRequired
+		this.treasuryCost = treasuryCost
+		this.foreignService = foreignService
+
+public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthority
+	PlayerCampaignIdentity identity
+	string array[512] polityIds
+	boolean array[512] known
+	int array[512] reputation
+	int array[512] favor
+	int array[512] contribution
+	int array[512] treasury
+	int polityCount = 0
+	GovernmentRewardProfile array[1024] profiles
+	boolean array[1024] granted
+	int profileCount = 0
+	string array[128] conflictPolities
+	string array[128] conflictIds
+	int conflictCount = 0
+	string array[128] offerIds
+	string array[128] offerPolities
+	string array[128] offerTerms
+	int array[128] offerStatus
+	int offerCount = 0
+	int nextOffer = 1
+	string lastDiagnostic = ""
+	construct(PlayerCampaignIdentity identity)
+		this.identity = identity
+	function polityIndex(string polityId) returns int
+		for i = 0 to polityCount - 1
+			if polityIds[i] == polityId
+				return i
+		return -1
+	function profileIndex(string polityId, string rewardId) returns int
+		for i = 0 to profileCount - 1
+			if profiles[i].polityId == polityId and profiles[i].rewardId == rewardId
+				return i
+		return -1
+	function offerIndex(string offerId) returns int
+		for i = 0 to offerCount - 1
+			if offerIds[i] == offerId
+				return i
+		return -1
+	function registerPolity(string polityId, int availableTreasury)
+		if polityId != "" and polityIndex(polityId) < 0
+			polityIds[polityCount] = polityId
+			treasury[polityCount] = availableTreasury
+			polityCount++
+	function registerRewardProfile(GovernmentRewardProfile profile)
+		if profile != null and polityIndex(profile.polityId) >= 0 and profileIndex(profile.polityId, profile.rewardId) < 0
+			profiles[profileCount] = profile
+			profileCount++
+	function discover(string polityId) returns boolean
+		let i = polityIndex(polityId)
+		if i < 0
+			return false
+		known[i] = true
+		return true
+	function setStanding(string polityId, int newReputation, int newFavor)
+		let i = polityIndex(polityId)
+		if i >= 0
+			reputation[i] = newReputation
+			favor[i] = newFavor
+	function recordContribution(string polityId, int magnitude) returns boolean
+		let i = polityIndex(polityId)
+		if i < 0 or magnitude <= 0
+			return false
+		contribution[i] += magnitude
+		return true
+	function setActiveConflict(string polityId, string conflictId)
+		for i = 0 to conflictCount - 1
+			if conflictPolities[i] == polityId
+				conflictIds[i] = conflictId
+				return
+		conflictPolities[conflictCount] = polityId
+		conflictIds[conflictCount] = conflictId
+		conflictCount++
+	override function isKnown(string polityId) returns boolean
+		let i = polityIndex(polityId)
+		return i >= 0 and known[i]
+	override function countrySummary(string polityId) returns string
+		let i = polityIndex(polityId)
+		if i < 0 or not known[i]
+			return ""
+		return "Allegiance: " + identity.allegianceId() + "; reputation " + reputation[i].toString() + "; favor " + favor[i].toString() + "; contribution " + contribution[i].toString()
+	override function availableInteractions(string polityId) returns string
+		if not isKnown(polityId)
+			return ""
+		return "serve, request_reward, request_access, negotiate"
+	override function activeConflictWith(string polityId) returns string
+		if not isKnown(polityId)
+			return ""
+		for i = 0 to conflictCount - 1
+			if conflictPolities[i] == polityId
+				return conflictIds[i]
+		return ""
+	override function validateOffer(string conflictId, string recipientPolityId, string terms) returns string
+		if not isKnown(recipientPolityId)
+			return "You cannot negotiate with an undiscovered government."
+		if conflictId == "" or activeConflictWith(recipientPolityId) != conflictId
+			return "There is no active war to settle."
+		if terms == "" or terms.indexOf("impossible") >= 0
+			return "Those terms are impossible."
+		return ""
+	override function createOffer(string conflictId, string recipientPolityId, string terms) returns string
+		if validateOffer(conflictId, recipientPolityId, terms) != ""
+			return ""
+		let id = "player_offer_" + nextOffer.toString()
+		nextOffer++
+		offerIds[offerCount] = id
+		offerPolities[offerCount] = recipientPolityId
+		offerTerms[offerCount] = terms
+		offerStatus[offerCount] = 0
+		offerCount++
+		return id
+	override function respondToOffer(string offerId, boolean accept, boolean confirmed) returns string
+		let i = offerIndex(offerId)
+		if i < 0 or offerStatus[i] != 0
+			return "Offer is not pending."
+		if accept and not confirmed
+			return "Confirmation required."
+		if accept and activeConflictWith(offerPolities[i]) == ""
+			return "The conflict state no longer permits this treaty."
+		// Commit only after every current-state check has passed.
+		offerStatus[i] = 1
+		if accept
+			for c = 0 to conflictCount - 1
+				if conflictPolities[c] == offerPolities[i]
+					conflictIds[c] = ""
+			return "Peace concluded under the negotiated terms."
+		return "Peace offer rejected."
+	override function requestGovernmentReward(string polityId, string rewardId) returns string
+		let p = polityIndex(polityId)
+		let r = profileIndex(polityId, rewardId)
+		if p < 0 or not known[p]
+			return "Reward rejected: country is not discovered."
+		if r < 0
+			return "Reward rejected: that government has no such reward profile."
+		let profile = profiles[r]
+		if granted[r]
+			return "Reward rejected: reward was already granted."
+		if identity.originId() == ""
+			return "Reward rejected: immutable origin is unavailable."
+		if identity.allegianceId() != polityId and not profile.foreignService
+			return "Reward rejected: current allegiance is ineligible."
+		if contribution[p] + reputation[p] + favor[p] < profile.contributionRequired or reputation[p] < profile.reputationRequired
+			return "Reward rejected: contribution or standing is insufficient."
+		if treasury[p] < profile.treasuryCost
+			return "Reward rejected: government resources are insufficient."
+		// Resource debit and history marker form the single authoritative commit.
+		treasury[p] -= profile.treasuryCost
+		granted[r] = true
+		return "Reward granted: " + rewardId + " (" + profile.kind + ")."
+	function captureState() returns string
+		var result = "v1"
+		for i = 0 to polityCount - 1
+			var knownValue = "0"
+			if known[i]
+				knownValue = "1"
+			result += "|p," + polityIds[i] + "," + knownValue + "," + reputation[i].toString() + "," + favor[i].toString() + "," + contribution[i].toString() + "," + treasury[i].toString()
+		for i = 0 to profileCount - 1
+			if granted[i]
+				result += "|g," + profiles[i].polityId + "," + profiles[i].rewardId
+		for i = 0 to offerCount - 1
+			result += "|o," + offerIds[i] + "," + offerPolities[i] + "," + offerStatus[i].toString() + "," + offerTerms[i]
+		return result
+	function recordField(string record, int wanted) returns string
+		var start = 0
+		var field = 0
+		for i = 0 to StringLength(record)
+			if i == StringLength(record) or SubString(record, i, i + 1) == ","
+				if field == wanted
+					return SubString(record, start, i)
+				field++
+				start = i + 1
+		return ""
+	function restoreRecord(string record) returns boolean
+		let kind = recordField(record, 0)
+		if kind == "p"
+			let p = polityIndex(recordField(record, 1))
+			if p < 0
+				return false
+			known[p] = recordField(record, 2) == "1"
+			reputation[p] = S2I(recordField(record, 3))
+			favor[p] = S2I(recordField(record, 4))
+			contribution[p] = S2I(recordField(record, 5))
+			treasury[p] = S2I(recordField(record, 6))
+			return true
+		if kind == "g"
+			let r = profileIndex(recordField(record, 1), recordField(record, 2))
+			if r < 0
+				return false
+			granted[r] = true
+			return true
+		if kind == "o"
+			if offerCount >= 128 or offerIndex(recordField(record, 1)) >= 0
+				return false
+			offerIds[offerCount] = recordField(record, 1)
+			offerPolities[offerCount] = recordField(record, 2)
+			offerStatus[offerCount] = S2I(recordField(record, 3))
+			offerTerms[offerCount] = recordField(record, 4)
+			offerCount++
+			return true
+		return false
+	function validateRecord(string record) returns boolean
+		let kind = recordField(record, 0)
+		if kind == "p"
+			return polityIndex(recordField(record, 1)) >= 0
+		if kind == "g"
+			return profileIndex(recordField(record, 1), recordField(record, 2)) >= 0
+		if kind == "o"
+			return recordField(record, 1) != "" and polityIndex(recordField(record, 2)) >= 0
+		return false
+	/** Restore scalar authority only; Warcraft/UI projections are deliberately rebuilt elsewhere. */
+	function restoreState(string candidate) returns boolean
+		if not candidate.startsWith("v1")
+			lastDiagnostic = "country interaction state schema is invalid"
+			return false
+		// Validate the complete candidate before touching live authority.
+		var validationStart = 3
+		while validationStart < StringLength(candidate)
+			var validationFinish = SubString(candidate, validationStart, StringLength(candidate)).indexOf("|")
+			if validationFinish < 0
+				validationFinish = StringLength(candidate) - validationStart
+			if not validateRecord(SubString(candidate, validationStart, validationStart + validationFinish))
+				lastDiagnostic = "country interaction state contains an invalid reference"
+				return false
+			validationStart += validationFinish + 1
+		for i = 0 to polityCount - 1
+			known[i] = false
+			reputation[i] = 0
+			favor[i] = 0
+			contribution[i] = 0
+		for i = 0 to profileCount - 1
+			granted[i] = false
+		offerCount = 0
+		var start = 3
+		while start < StringLength(candidate)
+			var finish = SubString(candidate, start, StringLength(candidate)).indexOf("|")
+			if finish < 0
+				finish = StringLength(candidate) - start
+			if not restoreRecord(SubString(candidate, start, start + finish))
+				lastDiagnostic = "country interaction state contains an invalid reference"
+				return false
+			start += finish + 1
+		lastDiagnostic = ""
+		return true
+	function diagnostic() returns string
+		return lastDiagnostic
+
+public function registerGovernmentRewards(CommandRegistry commands, CountryDiplomacyController controller)
+	// Rewards share the country interaction boundary and registration transaction.
+	registerCountryDiplomacyCommands(commands, controller)

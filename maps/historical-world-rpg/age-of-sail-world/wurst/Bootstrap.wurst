@@ -11,6 +11,8 @@ import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import PlayableCampaignRuntime
+import CountryDiplomacyScreen
+import PlayableCountryInteractions
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -41,10 +43,10 @@ init
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
-	let playerIdentity = new PlayerCampaignIdentity()
-	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), playerIdentity)
+	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 	originSelection.setObserver(campaign)
 	configureGeneratedOrigins(originSelection)
 	configureGeneratedRpg(rpgRuntime)
