@@ -15,6 +15,7 @@ import PlayableTrade
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import PlayablePiracy
+import ReligionRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 2
@@ -52,6 +53,20 @@ class WarcraftRpgProjections implements RpgProjectionPort
 
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 public PiracyRuntime piracyRuntime
+
+/** Replaceable projection only; authoritative totals remain in ReligionRuntime. */
+class WarcraftReligionEffects implements ReligionModifierPort
+	string array[64] keys
+	int array[64] amounts
+	int count=0
+	override function clearReligionModifiers(string characterId)
+		count=0
+	override function applyReligionModifier(string characterId,string attributeId,int basisPoints)
+		keys[count]=characterId+":"+attributeId
+		amounts[count]=basisPoints
+		count++
+
+public ReligionRuntime religionRuntime = new ReligionRuntime(new WarcraftReligionEffects())
 
 /** Founding bridge into the same campaign authorities used by normal states.
  * Captured settlement/force records remain the military and territorial source
@@ -105,7 +120,8 @@ init
 	piracyRuntime = createGeneratedPiracyRuntime()
 	configureGeneratedPiracy(piracyRuntime)
 	registerPiracy(commands,piracyRuntime)
-	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	configureGeneratedReligion(religionRuntime)
+	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID, religionRuntime)
 	registerPlayableTrade(commands, campaign)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
@@ -122,6 +138,7 @@ init
 	registerOriginSelection(commands, originSelection)
 	registerUnstuckCommand(commands, recoveryService)
 	registerRpgRuntimeCommands(commands,rpgRuntime)
+	registerReligion(commands,religionRuntime)
 	installPlayerGodMode(commands, campaign.saves)
 	installCommandRegistry(commands)
 	if MAP_INTERNAL_ID == "bootstrap_runtime_validation"
