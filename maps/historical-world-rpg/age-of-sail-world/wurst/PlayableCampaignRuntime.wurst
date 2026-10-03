@@ -10,6 +10,7 @@ import WarcraftRegionalRuntime
 import WC3Compatibility
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
+import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
@@ -65,12 +66,13 @@ function withoutCountryAuthority(string document) returns string
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort
-	string authority = "v1;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders="
+	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders="
 	string staged = ""
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
 	PlayableCountryInteractionRuntime countries = null
+	WarcraftRpgRuntime rpg = null
 	MilitarySettlementRuntime militarySettlements = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
@@ -78,6 +80,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		authority = value
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
+	function setRpgRuntime(WarcraftRpgRuntime runtime)
+		rpg = runtime
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
 	function authorityDocument() returns string
@@ -94,12 +98,17 @@ public class PlayableCampaignState implements CampaignStatePort
 		var result = authority
 		if countries != null
 			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
+		if rpg != null
+			result += ";rpg=" + rpg.captureState()
 		if militarySettlements != null
 			result += ";militarySettlements=" + militarySettlements.snapshot()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
-		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0
+		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
+			return false
+		if rpg != null and not rpg.validateState(lastAuthorityValue(candidate,"rpg"))
+			lastDiagnostic=rpg.diagnostic()
 			return false
 		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
 			lastDiagnostic = "missing military/settlement authority"
@@ -113,10 +122,15 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function reconstructRuntime(string candidate) returns boolean
 		// Stable representation definitions already contain the authoritative coordinates.
 		// Missing Warcraft objects are recreated; unrelated regions remain abstract.
+		if rpg != null and not rpg.restoreState(lastAuthorityValue(candidate,"rpg"))
+			lastDiagnostic=rpg.diagnostic()
+			return false
 		if countries != null and not countries.restoreState(lastAuthorityValue(candidate, "diplomacy"))
 			lastDiagnostic = countries.diagnostic()
 			return false
 		regional.recoverActiveRegion()
+		if rpg != null
+			rpg.reconstruct(Player(0),0.,0.,"player")
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
 			return false
@@ -175,6 +189,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			decoded += ";diplomacy=v1"
 		if decoded.indexOf(";rewards=") < 0
 			decoded += ";rewards=v1"
+		if decoded.startsWith("v0;") or decoded.startsWith("v1;")
+			decoded = "v2;" + SubString(decoded,3,StringLength(decoded))
+		if body.indexOf(currentPrefix) != 0 and decoded.indexOf(";rpg=") < 0
+			decoded += ";rpg=v1"
 		// Schema 2 adds stable Warcraft military/settlement authority. Older saves
 		// migrate transactionally from the scenario-configured initial authority.
 		if decoded.indexOf(";militarySettlements=") < 0
