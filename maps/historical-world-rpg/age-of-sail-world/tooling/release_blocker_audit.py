@@ -12,9 +12,11 @@ from pathlib import Path
 PROJECT = Path(__file__).resolve().parents[1]
 ENGINE = PROJECT.parent / "_shared" / "engine"
 sys.path.insert(0, str(ENGINE))
+sys.path.insert(0, str(PROJECT / "tooling"))
 import campaign_save
 import full_world_soak
 import release_save_compatibility
+import runtime_acceptance
 
 CONFIG = PROJECT / "scenario/release-blocker-gate.json"
 REPORT_JSON = PROJECT / "reports/release-blocker-audit.json"
@@ -187,7 +189,16 @@ def build_report(*, injected_findings=()):
     inputs, input_findings = _audit_inputs(config)
     save_compatibility = _audit_release_save_compatibility(config)
     journeys, soak = _run_journeys(config)
-    findings = sorted([*report_findings, *input_findings, *injected_findings], key=lambda x: x["id"])
+    runtime = runtime_acceptance.audit_sources()
+    runtime_findings = []
+    for row in runtime["systems"]:
+        if row["releaseRequired"] and not row["stages"]["releaseValidated"]:
+            token = row["id"].upper().replace("_", "-")
+            runtime_findings.append(_finding(f"RUNTIME-MISSING-{token}", "missing_runtime_integration",
+                                             "scenario/runtime-integration.json",
+                                             f"{row['id']} is not player-facing and release-validated"))
+    findings = sorted([*report_findings, *input_findings, *runtime_findings,
+                       *injected_findings], key=lambda x: x["id"])
     for finding in findings:
         if finding.get("severity") not in taxonomy:
             finding["severity"] = "critical_unclassified"
@@ -205,6 +216,7 @@ def build_report(*, injected_findings=()):
             "gate": "No known campaign-blocking defects", "taxonomy": config["taxonomy"],
             "blockerClasses": config["blockerClasses"], "releaseInputs": inputs,
             "auditedReports": audited, "journeys": journeys,
+            "runtimeAcceptance": runtime,
             "releaseSaveCompatibility": save_compatibility,
             "soak": {"format": soak["format"], "passed": soak["passed"], "runs": soak["runs"]},
             "knownLimitations": limitations, "findings": findings,
@@ -222,6 +234,13 @@ def render_markdown(report):
               "|---|---|---:|---:|---:|---|"]
     for row in report["journeys"]:
         lines.append(f"| `{row['id']}` | {row['branch']} | {row['seed']} | {len(row['regions'])} | {len(row['physicalMaps'])} | {row['status']} |")
+    lines += ["", "## Player-facing runtime acceptance", "",
+              "| System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |",
+              "|---|---:|---:|---:|---:|---:|"]
+    for row in report["runtimeAcceptance"]["systems"]:
+        stage = row["stages"]
+        mark = lambda key: "yes" if stage[key] else "no"
+        lines.append(f"| `{row['id']}` | {mark('dataComplete')} | {mark('headlessSimulationComplete')} | {mark('runtimeIntegrated')} | {mark('playerFacingComplete')} | {mark('releaseValidated')} |")
     lines += ["", "## Findings", ""]
     if not report["findings"]:
         lines.append("No unresolved or accepted defects were found.")

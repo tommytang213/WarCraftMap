@@ -43,10 +43,108 @@
     "invalid_reference",
     "corrupt_package",
     "blocking_content_stub",
-    "suppressed_blocker"
+    "suppressed_blocker",
+    "missing_runtime_integration"
   ],
-  "disposition": "gate_closed",
-  "findings": [],
+  "disposition": "release_blocked",
+  "findings": [
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-ADMINISTRATION",
+      "message": "administration is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-ARMY-FLEET-CONTROL",
+      "message": "army_fleet_control is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-CITY-CAPTURE",
+      "message": "city_capture is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-COUNTRY-DIPLOMACY",
+      "message": "country_diplomacy is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-GARRISONS",
+      "message": "garrisons is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-GOVERNMENT-REWARDS",
+      "message": "government_rewards is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-HEROES",
+      "message": "heroes is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-INVENTORY-EQUIPMENT",
+      "message": "inventory_equipment is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-QUESTS-JOURNAL",
+      "message": "quests_journal is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS",
+      "message": "technology_institutions is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TRADE",
+      "message": "trade is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TREASURES-DISCOVERY",
+      "message": "treasures_discovery is not player-facing and release-validated",
+      "severity": "campaign_blocker"
+    }
+  ],
   "format": "age_of_sail_release_blocker_report_v1",
   "gate": "No known campaign-blocking defects",
   "journeys": [
@@ -162,6 +260,7 @@
     "physical-maps.json": "c171504a60adffa0c463294b4a410e00f8754a0f9330f3b2a80c8da37b6384f6",
     "scenario/compatibility/release-save-v1.json": "73116bd02bbfef89a984a0d9ea97ae9c778d0d30a6479d062c26002b0ef02dc2",
     "scenario/maps/world-map.json": "7336faae8315c4a703320b5d563d4656fc5d0ff995d70458c6a4091d7c80065c",
+    "scenario/runtime-integration.json": "3d76547d651c56dc188f9d18bb1356ee169516a93cd3ce15570bc48b1fdc9ee3",
     "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
   },
   "releaseSaveCompatibility": {
@@ -183,6 +282,346 @@
       "migrated",
       "migrated",
       "compatible"
+    ]
+  },
+  "runtimeAcceptance": {
+    "failures": [
+      "country_diplomacy: backend/data exists without a usable Warcraft entry point",
+      "country_diplomacy: player-facing runtime is not release-validated",
+      "trade: backend/data exists without a usable Warcraft entry point",
+      "trade: player-facing runtime is not release-validated",
+      "army_fleet_control: backend/data exists without a usable Warcraft entry point",
+      "army_fleet_control: player-facing runtime is not release-validated",
+      "city_capture: backend/data exists without a usable Warcraft entry point",
+      "city_capture: player-facing runtime is not release-validated",
+      "garrisons: backend/data exists without a usable Warcraft entry point",
+      "garrisons: player-facing runtime is not release-validated",
+      "administration: backend/data exists without a usable Warcraft entry point",
+      "administration: player-facing runtime is not release-validated",
+      "heroes: backend/data exists without a usable Warcraft entry point",
+      "heroes: player-facing runtime is not release-validated",
+      "inventory_equipment: backend/data exists without a usable Warcraft entry point",
+      "inventory_equipment: player-facing runtime is not release-validated",
+      "technology_institutions: backend/data exists without a usable Warcraft entry point",
+      "technology_institutions: player-facing runtime is not release-validated",
+      "quests_journal: backend/data exists without a usable Warcraft entry point",
+      "quests_journal: player-facing runtime is not release-validated",
+      "treasures_discovery: backend/data exists without a usable Warcraft entry point",
+      "treasures_discovery: player-facing runtime is not release-validated",
+      "government_rewards: backend/data exists without a usable Warcraft entry point",
+      "government_rewards: player-facing runtime is not release-validated"
+    ],
+    "format": "age_of_sail_runtime_acceptance_report_v1",
+    "smokeJourneys": [
+      "new-campaign-core-loops",
+      "save-travel-remote-return"
+    ],
+    "stages": [
+      "dataComplete",
+      "headlessSimulationComplete",
+      "runtimeIntegrated",
+      "playerFacingComplete",
+      "releaseValidated"
+    ],
+    "status": "fail",
+    "systems": [
+      {
+        "diagnostics": [],
+        "id": "campaign_launch",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [],
+        "id": "origin_selection",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/Bootstrap.wurst lacks import CountryDiplomacyScreen, registerCountryDiplomacyCommands"
+        ],
+        "id": "country_diplomacy",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "missing integration evidence: tests/test_trade.py",
+          "wurst/Bootstrap.wurst lacks import PlayableTrade, registerPlayableTrade"
+        ],
+        "id": "trade",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "tests/test_military.py lacks fleet",
+          "wurst/MilitarySettlementRuntime.wurst lacks snapshot, restore"
+        ],
+        "id": "army_fleet_control",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/MilitarySettlementRuntime.wurst lacks snapshot, restore"
+        ],
+        "id": "city_capture",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "tests/test_settlement_defense.py lacks garrison",
+          "wurst/MilitarySettlementRuntime.wurst lacks snapshot, restore"
+        ],
+        "id": "garrisons",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/MilitarySettlementRuntimeTests.wurst lacks administration",
+          "wurst/MilitarySettlementRuntime.wurst lacks snapshot, restore"
+        ],
+        "id": "administration",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/WarcraftRpgRuntime.wurst lacks captureState, restoreState"
+        ],
+        "id": "heroes",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/WarcraftRpgRuntime.wurst lacks captureState, restoreState"
+        ],
+        "id": "inventory_equipment",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/WarcraftRpgRuntime.wurst lacks captureState, restoreState"
+        ],
+        "id": "technology_institutions",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/WarcraftRpgRuntime.wurst lacks captureState, restoreState"
+        ],
+        "id": "quests_journal",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/WarcraftRpgRuntime.wurst lacks captureState, restoreState"
+        ],
+        "id": "treasures_discovery",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [],
+        "id": "save_autosave_load",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [],
+        "id": "cross_map_travel",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [],
+        "id": "world_map",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [],
+        "id": "remote_management",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/Bootstrap.wurst lacks ContributionReward, registerGovernmentRewards",
+          "wurst/CountryDiplomacyScreen.wurst lacks request_reward"
+        ],
+        "id": "government_rewards",
+        "releaseRequired": true,
+        "simulationOnly": false,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "wurst/Bootstrap.wurst lacks ReligionRuntime",
+          "wurst/Bootstrap.wurst lacks registerReligion"
+        ],
+        "id": "religion",
+        "releaseRequired": false,
+        "simulationOnly": true,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      },
+      {
+        "diagnostics": [
+          "tests/test_military.py lacks fleet",
+          "wurst/Bootstrap.wurst lacks PiracyRuntime",
+          "wurst/Bootstrap.wurst lacks registerPiracy",
+          "tests/test_military.py lacks fleet"
+        ],
+        "id": "piracy",
+        "releaseRequired": false,
+        "simulationOnly": true,
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
+        }
+      }
     ]
   },
   "soak": {
@@ -235,7 +674,7 @@
       }
     ]
   },
-  "status": "pass",
+  "status": "fail",
   "taxonomy": [
     {
       "definition": "A reproducible failure that prevents starting, progressing, saving, loading, travelling, recovering, or completing otherwise reachable campaign content.",
@@ -262,5 +701,5 @@
       "releaseBlocking": false
     }
   ],
-  "unresolvedCampaignBlockers": 0
+  "unresolvedCampaignBlockers": 12
 }
