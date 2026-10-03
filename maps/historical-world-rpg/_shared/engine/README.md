@@ -84,3 +84,8 @@ set of polity-owned profiles and current authoritative campaign inputs. It keeps
 immutable origin distinct from current allegiance, validates land/control and
 material affordability, blocks duplicate contribution/grant keys, and persists
 reward tracks and grant history through save and cross-map state.
+`piracy.py` owns authoritative privateering commissions, piracy crime/notoriety,
+idempotent prize outcomes, pirate-haven access, bounded regional counterplay,
+and the durable transition from outlaw captain to a recognized independent
+polity. Scenario catalogs supply government forms, titles, havens and balance;
+the engine never hardcodes an Age of Sail ideology.
