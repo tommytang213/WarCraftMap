@@ -63,7 +63,11 @@ public class RuntimeMarket
 		// are recomputed at commit time, so cached UI text cannot be exploited.
 		previousUnitPrice=buyUnitPrice
 		let disruption=shortagePermille+eventPermille+(consumptionPermille-productionPermille) div 2
-		let access=(1000+(500 if blockaded else 0)+(400 if occupiedByHostile else 0))
+		var access=1000
+		if blockaded
+			access+=500
+		if occupiedByHostile
+			access+=400
 		let stockPressure=targetStock*1000 div IMaxBJ(targetStock div 4,stock)
 		buyUnitPrice=IMaxBJ(1,baseUnitPrice*stockPressure*(1000+disruption) div 1000000)
 		buyUnitPrice=IMaxBJ(1,buyUnitPrice*access*(1000-technologyPermille) div 1000000)
@@ -291,7 +295,13 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		for i=0 to marketCount-1
 			if i>0
 				marketState+="~"
-			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+("1" if markets[i].blockaded else "0")+","+("1" if markets[i].occupiedByHostile else "0")
+			var blockade="0"
+			var occupation="0"
+			if markets[i].blockaded
+				blockade="1"
+			if markets[i].occupiedByHostile
+				occupation="1"
+			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation
 		var storeState=""
 		for i=0 to storeCount-1
 			if i>0
