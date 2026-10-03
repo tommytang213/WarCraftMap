@@ -1,0 +1,84 @@
+package WarcraftRpgRuntimeTests
+import WarcraftRpgRuntime
+
+class Effects implements TechnologyEffectPort
+	int applied=0
+	int cleared=0
+	override function applyTechnology(string controllerId,string effectId,int magnitude)
+		applied+=magnitude
+	override function clearTechnologyLayer(string controllerId)
+		cleared++
+
+@test function recruitmentProgressionRecoveryAndReconstruction()
+	let runtime=new WarcraftRpgRuntime(new Effects())
+	let hero=new RpgHero("nelson","Horatio Nelson",'Hpal')
+	runtime.heroes.register(hero)
+	runtime.heroes.recruit("nelson").assertEquals(true)
+	hero.awardExperience(100)
+	hero.level.assertEquals(2)
+	hero.commandExperience=400
+	hero.changeLoyalty(50)
+	hero.becomeOathbound()
+	hero.changeLoyalty(-100)
+	hero.loyalty.assertEquals(100)
+	hero.wound(10,5)
+	hero.advanceRecovery(14)
+	hero.incapacitated.assertEquals(true)
+	hero.advanceRecovery(15)
+	hero.incapacitated.assertEquals(false)
+	runtime.heroes.strategicRosterSize().assertEquals(1)
+
+@test function equipmentRequirementsComparisonUniquenessAndSets()
+	let runtime=new WarcraftRpgRuntime(new Effects())
+	let hero=new RpgHero("hero","Hero",'Hpal')
+	hero.level=20
+	let coat=new RpgItem("coat","Coat","chest","rare",10,5)
+	coat.setId="set"
+	coat.unique=true
+	let hat=new RpgItem("hat","Hat","head","rare",10,4)
+	hat.setId="set"
+	runtime.inventory.registerItem(coat)
+	runtime.inventory.registerItem(hat)
+	runtime.inventory.registerSet(new EquipmentSet("set",2,3,2,7))
+	runtime.inventory.grant("coat").assertEquals(true)
+	runtime.inventory.grant("coat").assertEquals(false)
+	runtime.inventory.grant("hat")
+	runtime.inventory.equip("hero","coat",hero,1600,"","").assertEquals(true)
+	runtime.inventory.equip("hero","hat",hero,1600,"","").assertEquals(true)
+	runtime.inventory.setBonusPower().assertEquals(10)
+
+@test function questTreasureTechnologyAndReconstruction()
+	let effects=new Effects()
+	let runtime=new WarcraftRpgRuntime(effects)
+	let hero=new RpgHero("hero","Hero",'Hpal')
+	let questDefinition=new RuntimeQuest("quest","A Quest","regional")
+	questDefinition.objectiveTarget=2
+	questDefinition.rewardExperience=100
+	questDefinition.rewardCurrency=20
+	questDefinition.precision="approximate"
+	questDefinition.regionId="europe"
+	questDefinition.destinationId="search_area"
+	runtime.journal.register(questDefinition)
+	runtime.journal.accept("quest").assertEquals(true)
+	runtime.journal.progress("quest",2).assertEquals(true)
+	runtime.journal.turnIn("quest",hero,5,10).assertEquals(true)
+	hero.level.assertEquals(2)
+	runtime.journal.currency.assertEquals(20)
+	let relic=new RpgItem("relic","Relic","artifact","legendary",100,50)
+	runtime.inventory.registerItem(relic)
+	let treasure=new RuntimeTreasure("secret","europe","cave")
+	treasure.clueCount=1
+	treasure.rewardItemId="relic"
+	runtime.treasures.register(treasure)
+	runtime.treasures.advanceClue("secret")
+	runtime.treasures.discover("secret","cave",runtime.inventory).assertEquals(true)
+	runtime.inventory.owns("relic").assertEquals(true)
+	let technology=new RuntimeTechnology("printing","Printing",1450,100)
+	technology.effectId="merchant_stock"
+	technology.effectMagnitude=2
+	runtime.technologies.register(technology)
+	runtime.technologies.unlock("england","printing",1450,100,0,0).assertEquals(true)
+	effects.applied.assertEquals(2)
+	runtime.technologies.reconstruct("england")
+	effects.cleared.assertEquals(1)
+	effects.applied.assertEquals(4)
