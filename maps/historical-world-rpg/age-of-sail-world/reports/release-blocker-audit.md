@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **6**
+Unresolved campaign blockers: **1**
 
 ## Severity taxonomy
 
@@ -32,11 +32,11 @@ Unresolved campaign blockers: **6**
 | `city_capture` | yes | yes | yes | yes | yes |
 | `garrisons` | yes | yes | yes | yes | yes |
 | `administration` | yes | yes | yes | yes | yes |
-| `heroes` | yes | yes | no | no | no |
-| `inventory_equipment` | yes | yes | no | no | no |
-| `technology_institutions` | yes | yes | no | no | no |
-| `quests_journal` | yes | yes | no | no | no |
-| `treasures_discovery` | yes | yes | no | no | no |
+| `heroes` | yes | yes | yes | yes | yes |
+| `inventory_equipment` | yes | yes | yes | yes | yes |
+| `technology_institutions` | yes | yes | yes | yes | yes |
+| `quests_journal` | yes | yes | yes | yes | yes |
+| `treasures_discovery` | yes | yes | yes | yes | yes |
 | `save_autosave_load` | yes | yes | yes | yes | yes |
 | `cross_map_travel` | yes | yes | yes | yes | yes |
 | `world_map` | yes | yes | yes | yes | yes |
@@ -49,12 +49,7 @@ Unresolved campaign blockers: **6**
 
 | Stable ID | Severity | Class | Context | Disposition |
 |---|---|---|---|---|
-| `RUNTIME-MISSING-HEROES` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TREASURES-DISCOVERY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence
 
