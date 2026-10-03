@@ -166,6 +166,7 @@ public class ReligionRuntime
 		if currencyUnits<rule.costUnits
 			lastDiagnostic="The faith change is unaffordable."
 			return false
+		// Validate every input before the atomic authority mutation.
 		let previous=primaryFaithId
 		currencyUnits-=rule.costUnits
 		primaryFaithId=toFaithId

@@ -23,6 +23,7 @@ public interface CampaignRuntimeExtension
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
+ReligionRuntime religionMigrationRuntime = null
 
 function logicalRegionForPhysicalMap(string mapId) returns string
 	if mapId == "europe_west" or mapId == "europe_central_east"
@@ -229,6 +230,8 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// migrate transactionally from the scenario-configured initial authority.
 		if decoded.indexOf(";militarySettlements=") < 0
 			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
+		if decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
+			decoded += ";religion=" + religionMigrationRuntime.captureState()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -520,6 +523,7 @@ function campaignAutosaveTick()
 		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
 public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion) returns PlayableCampaignServices
+	religionMigrationRuntime = religion
 	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion)
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
