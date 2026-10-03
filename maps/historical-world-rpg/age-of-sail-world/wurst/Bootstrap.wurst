@@ -15,7 +15,7 @@ import CountryDiplomacyScreen
 import PlayableCountryInteractions
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
-constant int SAVE_SCHEMA_VERSION = 1
+constant int SAVE_SCHEMA_VERSION = 2
 
 /** Applies the replaceable technology layer to live Warcraft dependants.  The
  * strategic technology state remains authoritative and rebuilds this layer. */
@@ -45,6 +45,7 @@ init
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
+	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 	originSelection.setObserver(campaign)

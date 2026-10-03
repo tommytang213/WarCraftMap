@@ -56,6 +56,14 @@ class DefenseTests(unittest.TestCase):
         save.activate({"settlementDefenseState":snapshot},copy.deepcopy(snapshot))
         self.assertEqual(17,sum(x.strength for x in restored.units("port"))); self.assertEqual(3,restored.management_status("port")["casualties"])
         restored.on_capture("port","france",3); self.assertFalse(restored.units("port")); self.assertEqual(0,restored.management_status("port")["availableStrength"])
+    def test_garrison_reinforcement_timing_and_depletion_survive_restore(self):
+        self.runtime.start_attack("port",attacker_polity_id="france",conflict_id="war_one",now_seconds=0,conflict_validated=True)
+        self.runtime.advance(10); saved=self.runtime.snapshot()
+        restored=SettlementDefenseRuntime(DEFS,Settlements(),RecordingDefenseAdapter()); restored.restore(saved)
+        self.assertEqual(10,restored.management_status("port")["reserves"])
+        restored.advance(20)
+        self.assertEqual(0,restored.management_status("port")["reserves"])
+        self.assertEqual(40,sum(x.strength for x in restored.units("port")))
     def test_map_unload_reload_reprojects_without_free_resources(self):
         self.runtime.start_attack("port",attacker_polity_id="france",conflict_id="war_one",now_seconds=0,conflict_validated=True)
         before=self.runtime.management_status("port"); self.runtime.retire_region(["port"])
