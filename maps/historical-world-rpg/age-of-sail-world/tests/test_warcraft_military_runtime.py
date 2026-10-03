@@ -38,6 +38,8 @@ class WarcraftMilitaryRuntimeGenerationTests(unittest.TestCase):
             "governorReplacementWarnsAndNeverImpliesPhysicalClone",
             "inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority",
             "captureStateSurvivesMapRetirementAndReconstruction",
+            "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration",
+            "changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority",
         ):
             self.assertIn(marker, source)
 

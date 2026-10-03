@@ -60,6 +60,7 @@ init
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
+	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 	originSelection.setObserver(campaign)

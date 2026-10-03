@@ -11,6 +11,7 @@ import WC3Compatibility
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import WarcraftRpgRuntime
+import MilitarySettlementRuntime
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
@@ -72,6 +73,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	WarcraftRegionalAdapter regional
 	PlayableCountryInteractionRuntime countries = null
 	WarcraftRpgRuntime rpg = null
+	MilitarySettlementRuntime militarySettlements = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
@@ -80,6 +82,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		countries = runtime
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
+	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
+		militarySettlements = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -91,11 +95,13 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function isSaveSafe() returns boolean
 		return not transitionOpen
 	override function captureAuthoritativeState() returns string
-		if countries == null
-			return authority
-		var result=withoutCountryAuthority(authority) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
+		var result = authority
+		if countries != null
+			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
 		if rpg != null
 			result += ";rpg=" + rpg.captureState()
+		if militarySettlements != null
+			result += ";militarySettlements=" + militarySettlements.snapshot()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
@@ -103,6 +109,12 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		if rpg != null and not rpg.validateState(lastAuthorityValue(candidate,"rpg"))
 			lastDiagnostic=rpg.diagnostic()
+			return false
+		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
+			lastDiagnostic = "missing military/settlement authority"
+			return false
+		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement authority is invalid"
 			return false
 		staged = candidate
 		lastDiagnostic = ""
@@ -119,6 +131,9 @@ public class PlayableCampaignState implements CampaignStatePort
 		regional.recoverActiveRegion()
 		if rpg != null
 			rpg.reconstruct(Player(0),0.,0.,"player")
+		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
 		authority = withoutCountryAuthority(staged)
@@ -178,6 +193,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			decoded = "v2;" + SubString(decoded,3,StringLength(decoded))
 		if body.indexOf(currentPrefix) != 0 and decoded.indexOf(";rpg=") < 0
 			decoded += ";rpg=v1"
+		// Schema 2 adds stable Warcraft military/settlement authority. Older saves
+		// migrate transactionally from the scenario-configured initial authority.
+		if decoded.indexOf(";militarySettlements=") < 0
+			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string

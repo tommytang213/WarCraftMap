@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **5**
+Unresolved campaign blockers: **1**
 
 ## Severity taxonomy
 
@@ -28,10 +28,10 @@ Unresolved campaign blockers: **5**
 | `origin_selection` | yes | yes | yes | yes | yes |
 | `country_diplomacy` | yes | yes | yes | yes | yes |
 | `trade` | yes | no | no | no | no |
-| `army_fleet_control` | yes | no | no | no | no |
-| `city_capture` | yes | yes | no | no | no |
-| `garrisons` | yes | no | no | no | no |
-| `administration` | yes | yes | no | no | no |
+| `army_fleet_control` | yes | yes | yes | yes | yes |
+| `city_capture` | yes | yes | yes | yes | yes |
+| `garrisons` | yes | yes | yes | yes | yes |
+| `administration` | yes | yes | yes | yes | yes |
 | `heroes` | yes | yes | yes | yes | yes |
 | `inventory_equipment` | yes | yes | yes | yes | yes |
 | `technology_institutions` | yes | yes | yes | yes | yes |
@@ -43,16 +43,12 @@ Unresolved campaign blockers: **5**
 | `remote_management` | yes | yes | yes | yes | yes |
 | `government_rewards` | yes | yes | yes | yes | yes |
 | `religion` | yes | yes | no | no | no |
-| `piracy` | yes | no | no | no | no |
+| `piracy` | yes | yes | no | no | no |
 
 ## Findings
 
 | Stable ID | Severity | Class | Context | Disposition |
 |---|---|---|---|---|
-| `RUNTIME-MISSING-ADMINISTRATION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-ARMY-FLEET-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-CITY-CAPTURE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-GARRISONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence
