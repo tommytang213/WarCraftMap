@@ -5,12 +5,14 @@ from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[4]
 WORKFLOW = REPOSITORY / ".github" / "workflows" / "map-build.yml"
+TYPECHECK_WORKFLOW = REPOSITORY / ".github" / "workflows" / "wurst-typecheck.yml"
 
 
 class MapArtifactWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+        cls.typecheck_workflow = TYPECHECK_WORKFLOW.read_text(encoding="utf-8")
 
     def test_validation_and_typecheck_precede_upload(self):
         source_validation = self.workflow.index("validate_map_source.py")
@@ -26,6 +28,14 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertIn("name: age-of-sail-world-campaign", self.workflow)
         self.assertRegex(self.workflow, r"retention-days:\s+14\b")
         self.assertIn("if-no-files-found: error", self.workflow)
+
+    def test_container_builds_do_not_mutate_repository_bind_mounts(self):
+        for workflow in (self.workflow, self.typecheck_workflow):
+            self.assertIn('-v "$PWD:/source:ro"', workflow)
+            self.assertNotIn('-v "$PWD:/workspace"', workflow)
+            self.assertNotIn("chown -R wurstuser:wurstuser /source", workflow)
+            self.assertNotIn("chown -R wurstuser:wurstuser /workspace", workflow)
+            self.assertIn("cp -a /source /tmp/workspace", workflow)
 
     def test_actions_and_wurst_image_are_immutable(self):
         actions = re.findall(r"uses:\s+[^\s@]+@([^\s#]+)", self.workflow)
