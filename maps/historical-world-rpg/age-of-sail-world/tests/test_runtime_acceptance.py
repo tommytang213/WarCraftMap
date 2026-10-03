@@ -19,7 +19,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                          "heroes", "inventory_equipment", "technology_institutions",
                          "quests_journal", "treasures_discovery", "save_autosave_load",
                          "cross_map_travel", "world_map", "remote_management",
-                         "government_rewards"} <= ids)
+                         "government_rewards", "religion", "piracy"} <= ids)
         self.assertEqual(list(runtime.STAGES), report["stages"])
         self.assertEqual("pass", report["status"])
 

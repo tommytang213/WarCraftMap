@@ -1,6 +1,6 @@
 # Phase 8 release candidate
 
-Release candidate: **phase8-rc1**  
+Release candidate: **phase8-rc2**
 Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
 ## Install and launch
@@ -11,7 +11,7 @@ Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
 ## Save compatibility
 
-This candidate writes campaign save schema 4. It supports schema 1, 2, 3, and 4 saves through the documented migration chain. Keep a copy of an older save until it has loaded and been saved successfully. Saves from a newer or modified build are not supported; a rejected save is never rewritten.
+This candidate writes campaign save schema 5. It supports schema 1, 2, 3, 4, and 5 saves through the documented migration chain. Keep a copy of an older save until it has loaded and been saved successfully. Saves from a newer or modified build are not supported; a rejected save is never rewritten.
 
 ## Recovery
 
@@ -19,6 +19,6 @@ Use an ordinary manual or autosave first. `/unstuck` recovers the selected eligi
 
 ## Known non-blocking limitations
 
-- This is a near-final player-test candidate, not the final release.
+- This is an automated release-gate candidate; no incremental player QA is required.
 - Campaign containers built by different StormLib/JVM versions can differ in container metadata. The release verifier compares normalized archive structure and content hashes and permits no gameplay-content difference.
 - Warcraft stock presentation assets can render differently between Classic and Reforged graphics; the supported gameplay target remains Warcraft III 3.0.
