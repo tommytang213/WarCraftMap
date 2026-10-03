@@ -15,7 +15,7 @@ import CountryDiplomacyScreen
 import PlayableCountryInteractions
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
-constant int SAVE_SCHEMA_VERSION = 1
+constant int SAVE_SCHEMA_VERSION = 2
 
 /** Applies the replaceable technology layer to live Warcraft dependants.  The
  * strategic technology state remains authoritative and rebuilds this layer. */
@@ -32,6 +32,20 @@ class WarcraftTechnologyEffects implements TechnologyEffectPort
 			if SubString(keys[i],0,StringLength(controllerId)+1) == controllerId+":"
 				keys[i]=""
 
+class WarcraftRpgProjections implements RpgProjectionPort
+	override function clearEquipmentLayer()
+		skip
+	override function applyEquipment(string heroId,string itemId,int power)
+		skip
+	override function applyEquipmentSet(string setId,int power)
+		skip
+	override function clearGuidanceLayer()
+		skip
+	override function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
+		skip
+	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+		skip
+
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 
 init
@@ -43,6 +57,7 @@ init
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
@@ -50,6 +65,7 @@ init
 	originSelection.setObserver(campaign)
 	configureGeneratedOrigins(originSelection)
 	configureGeneratedRpg(rpgRuntime)
+	rpgRuntime.setProjectionPort(new WarcraftRpgProjections())
 	registerOriginSelection(commands, originSelection)
 	registerUnstuckCommand(commands, recoveryService)
 	registerRpgRuntimeCommands(commands,rpgRuntime)

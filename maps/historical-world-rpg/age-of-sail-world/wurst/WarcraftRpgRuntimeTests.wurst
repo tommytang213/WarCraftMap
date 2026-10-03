@@ -9,6 +9,25 @@ class Effects implements TechnologyEffectPort
 	override function clearTechnologyLayer(string controllerId)
 		cleared++
 
+class Projections implements RpgProjectionPort
+	int clears=0
+	int equipmentPower=0
+	int setPower=0
+	int guidance=0
+	int knowledge=0
+	override function clearEquipmentLayer()
+		clears++
+	override function applyEquipment(string heroId,string itemId,int power)
+		equipmentPower+=power
+	override function applyEquipmentSet(string setId,int power)
+		setPower+=power
+	override function clearGuidanceLayer()
+		guidance=0
+	override function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
+		guidance++
+	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+		knowledge+=clueStage
+
 @test function recruitmentProgressionRecoveryAndReconstruction()
 	let runtime=new WarcraftRpgRuntime(new Effects())
 	let hero=new RpgHero("nelson","Horatio Nelson",'Hpal')
@@ -82,3 +101,26 @@ class Effects implements TechnologyEffectPort
 	runtime.technologies.reconstruct("england")
 	effects.cleared.assertEquals(1)
 	effects.applied.assertEquals(4)
+
+@test function authoritativeStateRoundTripsAndReconcilesExactlyOnce()
+	let effects=new Effects()
+	let source=new WarcraftRpgRuntime(effects)
+	let hero=new RpgHero("hero","Hero",'Hpal')
+	source.heroes.register(hero); source.heroes.recruit("hero"); hero.level=20; hero.masteryPoints=4; hero.choosePerk("navigation",1); hero.wound(10,5)
+	let coat=new RpgItem("coat","Coat","chest","rare",10,5); coat.setId="set"; coat.unique=true
+	source.inventory.registerItem(coat); source.inventory.registerSet(new EquipmentSet("set",1,3,2,7)); source.inventory.grant("coat"); source.inventory.equip("hero","coat",hero,1600,"","")
+	let technology=new RuntimeTechnology("printing","Printing",1450,100); technology.effectId="stock"; technology.effectMagnitude=2; source.technologies.register(technology); source.technologies.unlock("player","printing",1450,100,0,0)
+	let questDefinition=new RuntimeQuest("quest","Quest","regional"); questDefinition.precision="approximate"; questDefinition.regionId="europe"; questDefinition.destinationId="harbor"; source.journal.register(questDefinition); source.journal.accept("quest"); source.journal.progress("quest",1); source.journal.track("quest")
+	let treasure=new RuntimeTreasure("treasure","europe","cave"); treasure.clueCount=2; source.treasures.register(treasure); source.treasures.advanceClue("treasure")
+	let saved=source.captureState()
+	let restored=new WarcraftRpgRuntime(effects)
+	let restoredHero=new RpgHero("hero","Hero",'Hpal'); restored.heroes.register(restoredHero)
+	let restoredCoat=new RpgItem("coat","Coat","chest","rare",10,5); restoredCoat.setId="set"; restoredCoat.unique=true; restored.inventory.registerItem(restoredCoat); restored.inventory.registerSet(new EquipmentSet("set",1,3,2,7))
+	let restoredTechnology=new RuntimeTechnology("printing","Printing",1450,100); restoredTechnology.effectId="stock"; restoredTechnology.effectMagnitude=2; restored.technologies.register(restoredTechnology)
+	let restoredQuest=new RuntimeQuest("quest","Quest","regional"); restoredQuest.precision="approximate"; restoredQuest.regionId="europe"; restoredQuest.destinationId="harbor"; restored.journal.register(restoredQuest)
+	let restoredTreasure=new RuntimeTreasure("treasure","europe","cave"); restoredTreasure.clueCount=2; restored.treasures.register(restoredTreasure)
+	let projections=new Projections(); restored.setProjectionPort(projections)
+	restored.restoreState(saved).assertTrue(); restored.captureState().assertEquals(saved)
+	restored.reconcile("player")
+	projections.clears.assertEquals(1); projections.equipmentPower.assertEquals(5); projections.setPower.assertEquals(3); projections.guidance.assertEquals(1); projections.knowledge.assertEquals(1)
+	let before=restored.captureState(); restored.restoreState("v99|broken").assertFalse(); restored.captureState().assertEquals(before)
