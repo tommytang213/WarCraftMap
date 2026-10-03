@@ -449,6 +449,7 @@ public interface RpgProjectionPort
 	function applyEquipmentSet(string setId,int power)
 	function clearGuidanceLayer()
 	function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
+	function clearTreasureKnowledgeLayer()
 	function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
 
 public class RuntimeTechnology
@@ -567,7 +568,7 @@ public class WarcraftRpgRuntime
 		let kind=rpgField(record,0)
 		let id=rpgField(record,1)
 		if kind == "h"
-			return rpgFieldCount(record) == 19 and heroes.get(id) != null and not duplicateRecord(candidate,kind,id) and rpgValidBool(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and S2I(rpgField(record,3)) >= 1 and S2I(rpgField(record,3)) <= RPG_LEVEL_CAP and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5)) and rpgValidInt(rpgField(record,6)) and rpgValidInt(rpgField(record,7)) and rpgValidInt(rpgField(record,8)) and S2I(rpgField(record,8)) >= 0 and S2I(rpgField(record,8)) <= 100 and rpgValidBool(rpgField(record,9)) and rpgValidBool(rpgField(record,10)) and rpgValidInt(rpgField(record,11)) and rpgStableText(rpgField(record,12)) and rpgStableText(rpgField(record,13)) and rpgStableText(rpgField(record,14)) and rpgStableText(rpgField(record,15)) and rpgStableText(rpgField(record,16)) and rpgStableText(rpgField(record,17)) and rpgStableText(rpgField(record,18))
+			return rpgFieldCount(record) == 18 and heroes.get(id) != null and not duplicateRecord(candidate,kind,id) and rpgValidBool(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and S2I(rpgField(record,3)) >= 1 and S2I(rpgField(record,3)) <= RPG_LEVEL_CAP and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5)) and rpgValidInt(rpgField(record,6)) and rpgValidInt(rpgField(record,7)) and rpgValidInt(rpgField(record,8)) and S2I(rpgField(record,8)) >= 0 and S2I(rpgField(record,8)) <= 100 and rpgValidBool(rpgField(record,9)) and rpgValidBool(rpgField(record,10)) and rpgValidInt(rpgField(record,11)) and rpgStableText(rpgField(record,12)) and rpgStableText(rpgField(record,13)) and rpgStableText(rpgField(record,14)) and rpgStableText(rpgField(record,15)) and rpgStableText(rpgField(record,16)) and rpgStableText(rpgField(record,17))
 		if kind == "i"
 			return rpgFieldCount(record) == 2 and inventory.getItem(id) != null and not duplicateRecord(candidate,kind,id)
 		if kind == "e"
@@ -607,33 +608,79 @@ public class WarcraftRpgRuntime
 		let id=rpgField(record,1)
 		if kind == "h"
 			let h=heroes.get(id)
-			h.recruited=rpgBool(rpgField(record,2)); h.level=S2I(rpgField(record,3)); h.experience=S2I(rpgField(record,4)); h.skillPoints=S2I(rpgField(record,5)); h.masteryPoints=S2I(rpgField(record,6)); h.commandExperience=S2I(rpgField(record,7)); h.loyalty=S2I(rpgField(record,8)); h.oathbound=rpgBool(rpgField(record,9)); h.incapacitated=rpgBool(rpgField(record,10)); h.recoveryDay=S2I(rpgField(record,11)); h.assignment=rpgField(record,12); h.regionId=rpgField(record,13); h.professionId=rpgField(record,14); h.personalQuestId=rpgField(record,15); h.signatureProgressionId=rpgField(record,16); h.chosenPerks=rpgField(record,17)
+			h.recruited=rpgBool(rpgField(record,2))
+			h.level=S2I(rpgField(record,3))
+			h.experience=S2I(rpgField(record,4))
+			h.skillPoints=S2I(rpgField(record,5))
+			h.masteryPoints=S2I(rpgField(record,6))
+			h.commandExperience=S2I(rpgField(record,7))
+			h.loyalty=S2I(rpgField(record,8))
+			h.oathbound=rpgBool(rpgField(record,9))
+			h.incapacitated=rpgBool(rpgField(record,10))
+			h.recoveryDay=S2I(rpgField(record,11))
+			h.assignment=rpgField(record,12)
+			h.regionId=rpgField(record,13)
+			h.professionId=rpgField(record,14)
+			h.personalQuestId=rpgField(record,15)
+			h.signatureProgressionId=rpgField(record,16)
+			h.chosenPerks=rpgField(record,17)
 		else if kind == "i"
-			inventory.owned[inventory.ownedCount]=id; inventory.ownedCount++
+			inventory.owned[inventory.ownedCount]=id
+			inventory.ownedCount++
 		else if kind == "e"
-			inventory.equippedSlots[inventory.equippedCount]=id; inventory.equippedItems[inventory.equippedCount]=rpgField(record,2); inventory.equippedHeroes[inventory.equippedCount]=rpgField(record,3); inventory.equippedCount++
+			inventory.equippedSlots[inventory.equippedCount]=id
+			inventory.equippedItems[inventory.equippedCount]=rpgField(record,2)
+			inventory.equippedHeroes[inventory.equippedCount]=rpgField(record,3)
+			inventory.equippedCount++
 		else if kind == "u"
-			technologies.unlockedKeys[technologies.unlockedCount]=id+":"+rpgField(record,2); technologies.unlockedCount++
+			technologies.unlockedKeys[technologies.unlockedCount]=id+":"+rpgField(record,2)
+			technologies.unlockedCount++
 		else if kind == "q"
-			let q=journal.get(id); q.state=rpgField(record,2); q.objective=S2I(rpgField(record,3)); q.cooldownUntil=S2I(rpgField(record,4)); q.completions=S2I(rpgField(record,5))
+			let q=journal.get(id)
+			q.state=rpgField(record,2)
+			q.objective=S2I(rpgField(record,3))
+			q.cooldownUntil=S2I(rpgField(record,4))
+			q.completions=S2I(rpgField(record,5))
 		else if kind == "j"
-			journal.trackedId=id; journal.currency=S2I(rpgField(record,2))
+			journal.trackedId=id
+			journal.currency=S2I(rpgField(record,2))
 		else if kind == "t"
-			let t=treasures.get(id); t.clueStage=S2I(rpgField(record,2)); t.discovered=rpgBool(rpgField(record,3))
+			let t=treasures.get(id)
+			t.clueStage=S2I(rpgField(record,2))
+			t.discovered=rpgBool(rpgField(record,3))
 	function restoreState(string candidate) returns boolean
 		if not validateState(candidate)
 			return false
-		inventory.ownedCount=0; inventory.equippedCount=0; technologies.unlockedCount=0
+		inventory.ownedCount=0
+		inventory.equippedCount=0
+		technologies.unlockedCount=0
 		if candidate == "v1"
 			for i=0 to heroes.count-1
 				let h=heroes.heroes[i]
-				h.level=1; h.experience=0; h.skillPoints=0; h.masteryPoints=0; h.commandExperience=0; h.loyalty=50; h.oathbound=false; h.recruited=false; h.incapacitated=false; h.recoveryDay=0; h.assignment="unrecruited"; h.regionId=""; h.chosenPerks=""
+				h.level=1
+				h.experience=0
+				h.skillPoints=0
+				h.masteryPoints=0
+				h.commandExperience=0
+				h.loyalty=50
+				h.oathbound=false
+				h.recruited=false
+				h.incapacitated=false
+				h.recoveryDay=0
+				h.assignment="unrecruited"
+				h.regionId=""
+				h.chosenPerks=""
 			for i=0 to journal.count-1
 				let q=journal.quests[i]
-				q.state=QUEST_OFFERED; q.objective=0; q.cooldownUntil=0; q.completions=0
-			journal.trackedId=""; journal.currency=0
+				q.state=QUEST_OFFERED
+				q.objective=0
+				q.cooldownUntil=0
+				q.completions=0
+			journal.trackedId=""
+			journal.currency=0
 			for i=0 to treasures.count-1
-				treasures.treasures[i].clueStage=0; treasures.treasures[i].discovered=false
+				treasures.treasures[i].clueStage=0
+				treasures.treasures[i].discovered=false
 			lastDiagnostic=""
 			return true
 		var start=3
@@ -708,6 +755,7 @@ public class WarcraftRpgRuntime
 		if journal.trackedId != ""
 			let q=journal.get(journal.trackedId)
 			projections.applyQuestGuidance(q.id,q.precision,q.regionId,q.destinationId)
+		projections.clearTreasureKnowledgeLayer()
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
 			projections.applyTreasureKnowledge(t.id,t.clueStage,t.discovered)
