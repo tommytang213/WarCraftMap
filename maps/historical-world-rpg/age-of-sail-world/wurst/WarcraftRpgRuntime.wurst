@@ -58,9 +58,9 @@ public class RpgHero
 				masteryPoints++
 	function applyLaterEraStart(int campaignYear,int careerStartYear)
 		if campaignYear > careerStartYear
-			level=IMinBJ(RPG_LEVEL_CAP,1+(campaignYear-careerStartYear)/2)
+			level=IMinBJ(RPG_LEVEL_CAP,1+(campaignYear-careerStartYear) div 2)
 			skillPoints=level-1
-			masteryPoints=level/5
+			masteryPoints=level div 5
 	function choosePerk(string perkId,int requiredLevel) returns boolean
 		if perkId == "" or level < requiredLevel or textContains(chosenPerks,"|"+perkId+"|")
 			return false
@@ -192,13 +192,13 @@ public class PlayerInventory
 	int equippedCount = 0
 	EquipmentSet array[256] sets
 	int setCount = 0
-	function registerItem(RpgItem item)
-		definitions[definitionCount] = item
+	function registerItem(RpgItem itemDefinition)
+		definitions[definitionCount] = itemDefinition
 		definitionCount++
 	function registerSet(EquipmentSet setDefinition)
 		sets[setCount] = setDefinition
 		setCount++
-	function item(string id) returns RpgItem
+	function getItem(string id) returns RpgItem
 		for i = 0 to definitionCount - 1
 			if definitions[i].id == id
 				return definitions[i]
@@ -209,7 +209,7 @@ public class PlayerInventory
 				return true
 		return false
 	function grant(string id) returns boolean
-		let value = item(id)
+		let value = getItem(id)
 		if value == null or value.unique and owns(id)
 			return false
 		owned[ownedCount] = id
@@ -223,10 +223,10 @@ public class PlayerInventory
 	function available(RpgItem value, RpgHero hero, int year, string technologies, string institutions) returns boolean
 		return value != null and hero != null and hero.level >= value.requiredLevel and (value.startYear == 0 or year >= value.startYear) and (value.endYear == 0 or year <= value.endYear) and (value.technologyId == "" or textContains(technologies,value.technologyId)) and (value.institutionId == "" or textContains(institutions,value.institutionId))
 	function equip(string heroId, string itemId, RpgHero hero, int year, string technologies, string institutions) returns boolean
-		let value = item(itemId)
+		let value = getItem(itemId)
 		if not owns(itemId) or not available(value, hero, year, technologies, institutions)
 			return false
-		let slot = slotIndex(value.slotId)
+		var slot = slotIndex(value.slotId)
 		if slot < 0
 			slot = equippedCount
 			equippedSlots[slot] = value.slotId
@@ -234,13 +234,13 @@ public class PlayerInventory
 		equippedItems[slot] = itemId
 		return true
 	function comparison(string itemId) returns string
-		let value = item(itemId)
+		let value = getItem(itemId)
 		if value == null
 			return "Unknown item"
 		let slot = slotIndex(value.slotId)
 		var delta = value.power
-		if slot >= 0 and item(equippedItems[slot]) != null
-			delta -= item(equippedItems[slot]).power
+		if slot >= 0 and getItem(equippedItems[slot]) != null
+			delta -= getItem(equippedItems[slot]).power
 		var color = "|cffaaaaaa"
 		if delta > 0
 			color = "|cff00ff00+"
@@ -250,7 +250,7 @@ public class PlayerInventory
 	function setPieceCount(string setId) returns int
 		var result = 0
 		for i = 0 to equippedCount - 1
-			let value = item(equippedItems[i])
+			let value = getItem(equippedItems[i])
 			if value != null and value.setId == setId
 				result++
 		return result
@@ -291,8 +291,8 @@ public class QuestJournalRuntime
 	int count = 0
 	string trackedId = ""
 	int currency = 0
-	function register(RuntimeQuest quest)
-		quests[count]=quest
+	function register(RuntimeQuest questDefinition)
+		quests[count]=questDefinition
 		count++
 	function get(string id) returns RuntimeQuest
 		for i = 0 to count - 1
@@ -309,36 +309,36 @@ public class QuestJournalRuntime
 				return candidate
 		return null
 	function accept(string id) returns boolean
-		let quest=get(id)
-		if quest == null or quest.state != QUEST_OFFERED
+		let questDefinition=get(id)
+		if questDefinition == null or questDefinition.state != QUEST_OFFERED
 			return false
-		quest.state=QUEST_ACTIVE
+		questDefinition.state=QUEST_ACTIVE
 		return true
 	function progress(string id, int amount) returns boolean
-		let quest=get(id)
-		if quest == null or quest.state != QUEST_ACTIVE or amount <= 0
+		let questDefinition=get(id)
+		if questDefinition == null or questDefinition.state != QUEST_ACTIVE or amount <= 0
 			return false
-		quest.objective=IMinBJ(quest.objectiveTarget,quest.objective+amount)
-		if quest.objective >= quest.objectiveTarget
-			quest.state=QUEST_READY
+		questDefinition.objective=IMinBJ(questDefinition.objectiveTarget,questDefinition.objective+amount)
+		if questDefinition.objective >= questDefinition.objectiveTarget
+			questDefinition.state=QUEST_READY
 		return true
 	function fail(string id, int day, int cooldownDays) returns boolean
-		let quest=get(id)
-		if quest == null or quest.state != QUEST_ACTIVE
+		let questDefinition=get(id)
+		if questDefinition == null or questDefinition.state != QUEST_ACTIVE
 			return false
-		quest.state=QUEST_FAILED
-		quest.cooldownUntil=day+cooldownDays
+		questDefinition.state=QUEST_FAILED
+		questDefinition.cooldownUntil=day+cooldownDays
 		return true
 	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
-		let quest=get(id)
-		if quest == null or quest.state != QUEST_READY
+		let questDefinition=get(id)
+		if questDefinition == null or questDefinition.state != QUEST_READY
 			return false
-		quest.state=QUEST_COMPLETE
-		quest.completions++
-		quest.cooldownUntil=day+cooldownDays
-		currency+=quest.rewardCurrency
+		questDefinition.state=QUEST_COMPLETE
+		questDefinition.completions++
+		questDefinition.cooldownUntil=day+cooldownDays
+		currency+=questDefinition.rewardCurrency
 		if hero != null
-			hero.awardExperience(quest.rewardExperience)
+			hero.awardExperience(questDefinition.rewardExperience)
 		return true
 	function refill(int day)
 		for i = 0 to count - 1
@@ -346,13 +346,13 @@ public class QuestJournalRuntime
 				quests[i].state=QUEST_OFFERED
 				quests[i].objective=0
 	function track(string id) returns string
-		let quest=get(id)
-		if quest == null
+		let questDefinition=get(id)
+		if questDefinition == null
 			return "Quest is unknown."
 		trackedId=id
-		if quest.precision == "hidden"
+		if questDefinition.precision == "hidden"
 			return "No destination is revealed yet."
-		return quest.precision + ":" + quest.regionId + ":" + quest.destinationId
+		return questDefinition.precision + ":" + questDefinition.regionId + ":" + questDefinition.destinationId
 
 public class RuntimeTreasure
 	string id
@@ -438,7 +438,7 @@ public class TechnologyRuntime
 		if technology == null
 			return 0
 		var ahead=IMaxBJ(0,technology.historicalYear-year)
-		return IMaxBJ(1,technology.baseCost+ahead*technology.baseCost/20-provincialAdoption-institutionalSupport)
+		return IMaxBJ(1,technology.baseCost+ahead*technology.baseCost div 20-provincialAdoption-institutionalSupport)
 	function unlock(string controllerId,string id,int year,int paid,int provincialAdoption,int institutionalSupport) returns boolean
 		let technology=get(id)
 		if technology == null or isUnlocked(controllerId,id) or paid < cost(id,year,provincialAdoption,institutionalSupport) or technology.prerequisiteId != "" and not isUnlocked(controllerId,technology.prerequisiteId)
@@ -491,9 +491,9 @@ public function showInventory(player viewer, WarcraftRpgRuntime runtime)
 public function showJournal(player viewer, WarcraftRpgRuntime runtime)
 	var rows="Quest Journal"
 	for i=0 to runtime.journal.count-1
-		let quest=runtime.journal.quests[i]
-		if quest.state != QUEST_OFFERED
-			rows += "\n"+quest.title+" - "+quest.state+" ["+quest.precision+"]"
+		let questDefinition=runtime.journal.quests[i]
+		if questDefinition.state != QUEST_OFFERED
+			rows += "\n"+questDefinition.title+" - "+questDefinition.state+" ["+questDefinition.precision+"]"
 	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
 
 public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
