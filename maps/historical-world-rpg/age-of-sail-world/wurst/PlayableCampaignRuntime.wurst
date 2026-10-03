@@ -13,6 +13,13 @@ import PlayableCountryInteractions
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 
+/** Stable-domain extensions participate in every campaign lifecycle without
+ * making their Warcraft projections part of the save authority. */
+public interface CampaignRuntimeExtension
+	function newCampaign(string settlementId)
+	function reconstruct(string authorityDocument) returns boolean
+	function capture() returns string
+
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 
@@ -66,11 +73,12 @@ function withoutCountryAuthority(string document) returns string
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort
-	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders="
+	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
 	string staged = ""
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
+	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries = null
 	WarcraftRpgRuntime rpg = null
 	MilitarySettlementRuntime militarySettlements = null
@@ -78,6 +86,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		this.regional = regional
 	function replaceAuthority(string value)
 		authority = value
+	function setExtension(CampaignRuntimeExtension value)
+		extension = value
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
@@ -102,6 +112,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";rpg=" + rpg.captureState()
 		if militarySettlements != null
 			result += ";militarySettlements=" + militarySettlements.snapshot()
+		if extension != null
+			result += ";trade=" + extension.capture()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
@@ -116,7 +128,10 @@ public class PlayableCampaignState implements CampaignStatePort
 		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement authority is invalid"
 			return false
+		// Saves produced before playable trade remain compatible.
 		staged = candidate
+		if staged.indexOf(";trade=") < 0
+			staged += ";trade="
 		lastDiagnostic = ""
 		return true
 	override function reconstructRuntime(string candidate) returns boolean
@@ -133,6 +148,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			rpg.reconstruct(Player(0),0.,0.,"player")
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
+		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
+			lastDiagnostic = "trade runtime reconstruction failed"
 			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
@@ -184,6 +202,8 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 				decoded += ";discovery="
 			if decoded.indexOf(";orders=") < 0
 				decoded += ";orders="
+			if decoded.indexOf(";trade=") < 0
+				decoded += ";trade="
 		// Saves produced before country integration remain release-schema compatible.
 		if decoded.indexOf(";diplomacy=") < 0
 			decoded += ";diplomacy=v1"
@@ -410,6 +430,7 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	RegionSelector regionSelector
 	MapDiscoveryScreenController maps
 	WarcraftMapPresentation mapPresentation
+	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries
 	CountryDiplomacyController countryScreen
 	construct(WarcraftRegionalAdapter regional, string physicalMapId)
@@ -439,14 +460,22 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		// Destination maps resume the last commit. Rejection is intentionally non-destructive.
 		if physicalMapId != "bootstrap_runtime_validation"
 			saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
+	function registerExtension(CampaignRuntimeExtension value)
+		extension = value
+		state.setExtension(value)
+		// Registration follows service construction, so reconstruct the commit
+		// already loaded by a destination map before exposing any commands.
+		value.reconstruct(lastAuthorityValue(state.authorityDocument(), "trade"))
 	function sessionStart(string createdAt)
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
 		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
 	override function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
+		if extension != null
+			extension.newCampaign(settlementId)
 		countries.discover(polityId)
-		state.replaceAuthority("v1;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",allegiance:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=")
+		state.replaceAuthority("v2;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",allegiance:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=;trade=")
 		travel.startAt(physicalMapId, logicalRegion)
 		regionAccess.revealAndAuthorize(logicalRegion)
 		regionSelector.setPhysicalRegionId(logicalRegion)

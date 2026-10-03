@@ -32,10 +32,20 @@ public class PrizeProposal
 	string prisonerOutcome
 	int tick
 	boolean authorityValidated
-	construct(string action, string target, string kind, string victim, string region, string commission, string vessel, string good, int units, int money, int prisonerCount, string prisonerDisposition, int atTick, boolean validated)
-		actionId=action; targetId=target; targetKind=kind; victimPolityId=victim; regionId=region
-		commissionId=commission; vesselOutcome=vessel; cargoGoodId=good; cargoUnits=units
-		moneyMinor=money; prisoners=prisonerCount; prisonerOutcome=prisonerDisposition; tick=atTick
+	construct(string action, string target, string kind, string victim, string regionalId, string commission, string vessel, string good, int units, int money, int prisonerCount, string prisonerDisposition, int atTick, boolean validated)
+		actionId=action
+		targetId=target
+		targetKind=kind
+		victimPolityId=victim
+		regionId=regionalId
+		commissionId=commission
+		vesselOutcome=vessel
+		cargoGoodId=good
+		cargoUnits=units
+		moneyMinor=money
+		prisoners=prisonerCount
+		prisonerOutcome=prisonerDisposition
+		tick=atTick
 		authorityValidated=validated
 
 public class PiracyPlayerState
@@ -64,13 +74,17 @@ public class PiracyPlayerState
 			if targetIds[i]==target
 				targetTicks[i]=tick
 				return
-		targetIds[targetCount]=target; targetTicks[targetCount]=tick; targetCount++
+		targetIds[targetCount]=target
+		targetTicks[targetCount]=tick
+		targetCount++
 	function addHavenStanding(string haven)
 		for i=0 to havenCount-1
 			if havenIds[i]==haven
 				havenStanding[i]++
 				return
-		havenIds[havenCount]=haven; havenStanding[havenCount]=1; havenCount++
+		havenIds[havenCount]=haven
+		havenStanding[havenCount]=1
+		havenCount++
 
 public class PiracyCommission
 	string id
@@ -80,7 +94,11 @@ public class PiracyCommission
 	int rewardPermille
 	boolean active=true
 	construct(string ident,string issuer,string target,int expiry,int reward)
-		id=ident; issuerPolityId=issuer; targetPolityId=target; expiresTick=expiry; rewardPermille=reward
+		id=ident
+		issuerPolityId=issuer
+		targetPolityId=target
+		expiresTick=expiry
+		rewardPermille=reward
 
 public class PiratePolityState
 	string id
@@ -91,8 +109,13 @@ public class PiratePolityState
 	string territoryIds
 	string recognition
 	construct(string ident,string government,string displayName,string title,string capital,string territories)
-		id=ident; governmentFormId=government; name=displayName; rulerTitle=title
-		capitalSettlementId=capital; territoryIds=territories; recognition=""
+		id=ident
+		governmentFormId=government
+		name=displayName
+		rulerTitle=title
+		capitalSettlementId=capital
+		territoryIds=territories
+		recognition=""
 
 /** Port into the normal territory, sovereignty, government, economy,
  * diplomacy, war/peace, military, technology, taxation and AI authorities. */
@@ -135,18 +158,24 @@ public class PiracyRuntime
 	function setActionAuthority(PiracyActionAuthority authority)
 		actionAuthority=authority
 	function registerHaven(string id,int minimumNotoriety,string services)
-		havenIds[havenCount]=id; havenMinimumNotoriety[havenCount]=minimumNotoriety; havenServices[havenCount]=services; havenCount++
+		havenIds[havenCount]=id
+		havenMinimumNotoriety[havenCount]=minimumNotoriety
+		havenServices[havenCount]=services
+		havenCount++
 	function registerGovernmentForm(string id,string rulerTitle)
-		governmentFormIds[governmentFormCount]=id; governmentTitles[governmentFormCount]=rulerTitle; governmentFormCount++
+		state.governmentFormIds[state.governmentFormCount]=id
+		state.governmentTitles[state.governmentFormCount]=rulerTitle
+		state.governmentFormCount++
 	function governmentTitle(string id) returns string
-		for i=0 to governmentFormCount-1
-			if governmentFormIds[i]==id
-				return governmentTitles[i]
+		for i=0 to state.governmentFormCount-1
+			if state.governmentFormIds[i]==id
+				return state.governmentTitles[i]
 		return ""
 	function issueCommission(string id,string issuer,string target,int expiresTick,int rewardPermille) returns boolean
 		if findCommission(id)!=null or issuer==target or expiresTick<=0
 			return false
-		commissions[commissionCount]=new PiracyCommission(id,issuer,target,expiresTick,rewardPermille); commissionCount++
+		commissions[commissionCount]=new PiracyCommission(id,issuer,target,expiresTick,rewardPermille)
+		commissionCount++
 		return true
 	function revokeCommission(string id) returns boolean
 		let commission=findCommission(id)
@@ -209,10 +238,11 @@ public class PiracyRuntime
 		var reward=proposal.moneyMinor
 		if lawful
 			reward+=proposal.moneyMinor*findCommission(proposal.commissionId).rewardPermille div 1000
-		let notorietyImpact=impact
+		var notorietyImpact=impact
 		var bountyImpact=impact*rules.bountyPerNotorietyMinor
 		if lawful
-			notorietyImpact=IMaxBJ(1,impact div 3); bountyImpact=0
+			notorietyImpact=IMaxBJ(1,impact div 3)
+			bountyImpact=0
 		return classification(proposal)+": cargo "+proposal.cargoUnits.toString()+", reward "+reward.toString()+", vessel "+proposal.vesselOutcome+", prisoners "+proposal.prisonerOutcome+"; known consequences: notoriety +"+notorietyImpact.toString()+", bounty +"+bountyImpact.toString()+", regional pressure +"+impact.toString()+". Confirm to commit."
 	function commitPrize(PrizeProposal proposal) returns string
 		let preview=previewPrize(proposal)
@@ -227,18 +257,24 @@ public class PiracyRuntime
 			reward+=proposal.moneyMinor*findCommission(proposal.commissionId).rewardPermille div 1000
 			notorietyImpact=IMaxBJ(1,impact div 3)
 		else
-			state.outlaw=true; state.bountyMinor+=impact*rules.bountyPerNotorietyMinor
-		state.notoriety+=notorietyImpact; state.piracyWealthMinor+=reward; state.prizesTaken++
+			state.outlaw=true
+			state.bountyMinor+=impact*rules.bountyPerNotorietyMinor
+		state.notoriety+=notorietyImpact
+		state.piracyWealthMinor+=reward
+		state.prizesTaken++
 		state.recordTarget(proposal.targetId,proposal.tick)
 		addPressure(proposal.regionId,impact)
-		processedActionIds[processedCount]=proposal.actionId; processedCount++
+		processedActionIds[processedCount]=proposal.actionId
+		processedCount++
 		return preview+" Committed: cargo seized and vessel "+proposal.vesselOutcome+"."
-	function addPressure(string region,int amount)
+	function addPressure(string regionalId,int amount)
 		for i=0 to regionCount-1
-			if regionIds[i]==region
+			if regionIds[i]==regionalId
 				regionalPressure[i]+=amount
 				return
-		regionIds[regionCount]=region; regionalPressure[regionCount]=amount; regionCount++
+		regionIds[regionCount]=regionalId
+		regionalPressure[regionCount]=amount
+		regionCount++
 	function useHaven(string haven,string service,int tick) returns string
 		for i=0 to havenCount-1
 			if havenIds[i]==haven and state.notoriety>=havenMinimumNotoriety[i] and servicesContain(havenServices[i],service)
@@ -256,7 +292,9 @@ public class PiracyRuntime
 		let candidate=new PiratePolityState(id,governmentForm,name,title,capital,territories)
 		if polityAuthority==null or not polityAuthority.foundIndependentPolity(candidate)
 			return "Ordinary polity systems rejected founding; no state changed."
-		polity=candidate; state.polityId=id; state.outlaw=false
+		polity=candidate
+		state.polityId=id
+		state.outlaw=false
 		return "Independent polity founded and handed to ordinary campaign systems."
 	function setRecognition(string country,string status) returns boolean
 		if polity==null or polityAuthority==null
@@ -286,27 +324,38 @@ public class PiracySnapshot
 	int savedRegionCount
 	PiratePolityState savedPolity
 	construct(PiracyRuntime runtime)
-		playerState=runtime.state; savedCommissionCount=runtime.commissionCount; savedActionCount=runtime.processedCount; savedRegionCount=runtime.regionCount; savedPolity=runtime.polity
+		playerState=runtime.state
+		savedCommissionCount=runtime.commissionCount
+		savedActionCount=runtime.processedCount
+		savedRegionCount=runtime.regionCount
+		savedPolity=runtime.polity
 		for i=0 to savedCommissionCount-1
 			savedCommissions[i]=runtime.commissions[i]
 		for i=0 to savedActionCount-1
 			savedActions[i]=runtime.processedActionIds[i]
 		for i=0 to savedRegionCount-1
-			savedRegions[i]=runtime.regionIds[i]; savedPressure[i]=runtime.regionalPressure[i]
+			savedRegions[i]=runtime.regionIds[i]
+			savedPressure[i]=runtime.regionalPressure[i]
 	function applyTo(PiracyRuntime runtime)
-		runtime.state=playerState; runtime.commissionCount=savedCommissionCount; runtime.processedCount=savedActionCount; runtime.regionCount=savedRegionCount; runtime.polity=savedPolity
+		runtime.state=playerState
+		runtime.commissionCount=savedCommissionCount
+		runtime.processedCount=savedActionCount
+		runtime.regionCount=savedRegionCount
+		runtime.polity=savedPolity
 		for i=0 to savedCommissionCount-1
 			runtime.commissions[i]=savedCommissions[i]
 		for i=0 to savedActionCount-1
 			runtime.processedActionIds[i]=savedActions[i]
 		for i=0 to savedRegionCount-1
-			runtime.regionIds[i]=savedRegions[i]; runtime.regionalPressure[i]=savedPressure[i]
+			runtime.regionIds[i]=savedRegions[i]
+			runtime.regionalPressure[i]=savedPressure[i]
 
 class PiracyStatusCommand implements CommandHandler
 	PiracyRuntime runtime
 	PiracyPresentation presentation
 	construct(PiracyRuntime r,PiracyPresentation p)
-		runtime=r; presentation=p
+		runtime=r
+		presentation=p
 	override function execute(player sender,string arguments)
 		presentation.showPiracy(sender,"Piracy: notoriety "+runtime.state.notoriety.toString()+", "+runtime.bountyResponse()+" Use validated boarding, raid, haven, commission, prize and found-polity interactions at ships and settlements.")
 
@@ -330,7 +379,8 @@ class PrizePreviewCommand implements CommandHandler
 	PiracyRuntime runtime
 	PiracyPresentation presentation
 	construct(PiracyRuntime r,PiracyPresentation p)
-		runtime=r; presentation=p
+		runtime=r
+		presentation=p
 	override function execute(player sender,string a)
 		runtime.pendingPrize=new PrizeProposal(piracyArgument(a,0),piracyArgument(a,1),piracyArgument(a,2),piracyArgument(a,3),piracyArgument(a,4),piracyOptionalId(piracyArgument(a,5)),piracyArgument(a,6),piracyArgument(a,7),S2I(piracyArgument(a,8)),S2I(piracyArgument(a,9)),S2I(piracyArgument(a,10)),piracyArgument(a,11),S2I(piracyArgument(a,12)),false)
 		if runtime.actionAuthority!=null
@@ -341,7 +391,8 @@ class PrizeConfirmCommand implements CommandHandler
 	PiracyRuntime runtime
 	PiracyPresentation presentation
 	construct(PiracyRuntime r,PiracyPresentation p)
-		runtime=r; presentation=p
+		runtime=r
+		presentation=p
 	override function execute(player sender,string a)
 		if runtime.pendingPrize==null
 			presentation.showPiracy(sender,"No validated prize action is awaiting confirmation.")
@@ -353,7 +404,8 @@ class HavenCommand implements CommandHandler
 	PiracyRuntime runtime
 	PiracyPresentation presentation
 	construct(PiracyRuntime r,PiracyPresentation p)
-		runtime=r; presentation=p
+		runtime=r
+		presentation=p
 	override function execute(player sender,string a)
 		presentation.showPiracy(sender,runtime.useHaven(piracyArgument(a,0),piracyArgument(a,1),S2I(piracyArgument(a,2))))
 
@@ -361,7 +413,8 @@ class FoundPiratePolityCommand implements CommandHandler
 	PiracyRuntime runtime
 	PiracyPresentation presentation
 	construct(PiracyRuntime r,PiracyPresentation p)
-		runtime=r; presentation=p
+		runtime=r
+		presentation=p
 	override function execute(player sender,string a)
 		let government=piracyArgument(a,1)
 		presentation.showPiracy(sender,runtime.foundPolity(piracyArgument(a,0),government,piracyArgument(a,2),runtime.governmentTitle(government),piracyArgument(a,3),piracyArgument(a,4)))

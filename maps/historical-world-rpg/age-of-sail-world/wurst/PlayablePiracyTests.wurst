@@ -59,7 +59,9 @@ function prize(string id,string target,string kind,string commission,string outc
 	runtime.registerHaven("caribbean_free_haven",2,"fence,repair,refit,recruit,contract")
 	runtime.registerGovernmentForm("free_republic","First Captain")
 	(runtime.useHaven("caribbean_free_haven","repair",1).indexOf("unavailable")>=0).assertTrue()
-	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=6000; runtime.state.prizesTaken=3
+	runtime.state.notoriety=20
+	runtime.state.piracyWealthMinor=6000
+	runtime.state.prizesTaken=3
 	runtime.useHaven("caribbean_free_haven","repair",2).assertEquals("Haven service used: repair.")
 	runtime.state.havenStanding[0].assertEquals(1)
 	let ordinary=new OrdinarySystems()
@@ -74,8 +76,12 @@ function prize(string id,string target,string kind,string commission,string outc
 	let runtime=new PiracyRuntime(rules())
 	runtime.registerGovernmentForm("free_republic","Captain")
 	runtime.foundPolity("free_port","free_republic","Free Port","Captain","port","port").assertEquals("Pirate polity founding conditions are not met.")
-	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=5000; runtime.state.prizesTaken=3
-	let ordinary=new OrdinarySystems(); ordinary.accept=false; runtime.setPolityAuthority(ordinary)
+	runtime.state.notoriety=20
+	runtime.state.piracyWealthMinor=5000
+	runtime.state.prizesTaken=3
+	let ordinary=new OrdinarySystems()
+	ordinary.accept=false
+	runtime.setPolityAuthority(ordinary)
 	(runtime.foundPolity("free_port","free_republic","Free Port","Captain","port","port").indexOf("no state changed")>=0).assertTrue()
 	runtime.state.polityId.assertEquals("")
 
@@ -83,12 +89,16 @@ function prize(string id,string target,string kind,string commission,string outc
 	let runtime=new PiracyRuntime(rules())
 	runtime.registerGovernmentForm("pirate_confederacy","Admiral")
 	runtime.commitPrize(prize("captured_vessel_1","ship_9","military_ship","","capture",50,true))
-	runtime.state.notoriety=20; runtime.state.piracyWealthMinor=6000; runtime.state.prizesTaken=3
-	let ordinary=new OrdinarySystems(); runtime.setPolityAuthority(ordinary)
+	runtime.state.notoriety=20
+	runtime.state.piracyWealthMinor=6000
+	runtime.state.prizesTaken=3
+	let ordinary=new OrdinarySystems()
+	runtime.setPolityAuthority(ordinary)
 	runtime.foundPolity("free_nassau","pirate_confederacy","Nassau","Admiral","nassau","nassau")
 	runtime.setRecognition("england","tolerated")
 	let saved=runtime.snapshot()
-	let resumed=new PiracyRuntime(rules()); resumed.restore(saved)
+	let resumed=new PiracyRuntime(rules())
+	resumed.restore(saved)
 	resumed.actionSeen("captured_vessel_1").assertTrue()
 	resumed.regionalPressure[0].assertEquals(4)
 	resumed.polity.capitalSettlementId.assertEquals("nassau")

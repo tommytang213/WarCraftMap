@@ -1,8 +1,8 @@
 # Phase 8 release-blocker audit
 
-Result: **FAIL**
+Result: **PASS**
 
-Unresolved campaign blockers: **1**
+Unresolved campaign blockers: **0**
 
 ## Severity taxonomy
 
@@ -27,7 +27,7 @@ Unresolved campaign blockers: **1**
 | `campaign_launch` | yes | yes | yes | yes | yes |
 | `origin_selection` | yes | yes | yes | yes | yes |
 | `country_diplomacy` | yes | yes | yes | yes | yes |
-| `trade` | yes | no | no | no | no |
+| `trade` | yes | yes | yes | yes | yes |
 | `army_fleet_control` | yes | yes | yes | yes | yes |
 | `city_capture` | yes | yes | yes | yes | yes |
 | `garrisons` | yes | yes | yes | yes | yes |
@@ -47,9 +47,7 @@ Unresolved campaign blockers: **1**
 
 ## Findings
 
-| Stable ID | Severity | Class | Context | Disposition |
-|---|---|---|---|---|
-| `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+No unresolved or accepted defects were found.
 
 ## Audited release evidence
 

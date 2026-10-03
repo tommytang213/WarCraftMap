@@ -11,6 +11,7 @@ import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import PlayableCampaignRuntime
+import PlayableTrade
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import PlayablePiracy
@@ -60,7 +61,9 @@ class CampaignPiratePolityAuthority implements PiratePolityAuthority
 	PlayerCampaignIdentity identity
 	MilitarySettlementRuntime military
 	construct(PlayableCountryInteractionRuntime c,PlayerCampaignIdentity i,MilitarySettlementRuntime m)
-		countries=c; identity=i; military=m
+		countries=c
+		identity=i
+		military=m
 	override function foundIndependentPolity(PiratePolityState polity) returns boolean
 		var capitalFound=false
 		for i=0 to military.settlementCount-1
@@ -103,6 +106,7 @@ init
 	configureGeneratedPiracy(piracyRuntime)
 	registerPiracy(commands,piracyRuntime)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	registerPlayableTrade(commands, campaign)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
