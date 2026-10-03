@@ -17,8 +17,17 @@ import PlayableCountryInteractions
 import ReligionRuntime
 import PlayablePiracy
 
-constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 2
+
+// ScenarioData is localized by the campaign packager. PHYSICAL_MAP_ID is the
+// sole runtime identity of this particular packaged map.
+NewCampaignOriginController bootstrapOriginSelection = null
+
+function openBootstrapOriginSelection()
+	DestroyTimer(GetExpiredTimer())
+	if bootstrapOriginSelection != null
+		PauseGame(true)
+		bootstrapOriginSelection.showPage(1)
 
 /** Applies the replaceable technology layer to live Warcraft dependants.  The
  * strategic technology state remains authoritative and rebuilds this layer. */
@@ -121,7 +130,7 @@ init
 	piracyRuntime = createGeneratedPiracyRuntime()
 	configureGeneratedPiracy(piracyRuntime)
 	registerPiracy(commands,piracyRuntime)
-	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID, religionRuntime)
+	let campaign = initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID, religionRuntime)
 	registerPlayableTrade(commands, campaign)
 	campaign.state.setRpgRuntime(rpgRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
@@ -130,20 +139,22 @@ init
 	piracyRuntime.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries,campaign.identity,militarySettlementRuntime))
 	piracyRuntime.setActionAuthority(new CampaignPiracyActionAuthority(militarySettlementRuntime))
 	initializeMilitarySettlementRuntime(commands)
-	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
-	originSelection.setObserver(campaign)
-	configureGeneratedOrigins(originSelection)
 	configureGeneratedRpg(rpgRuntime)
 	rpgRuntime.setProjectionPort(new WarcraftRpgProjections())
-	registerOriginSelection(commands, originSelection)
+	if PHYSICAL_MAP_ID == "bootstrap_runtime_validation"
+		bootstrapOriginSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
+		bootstrapOriginSelection.setObserver(campaign)
+		configureGeneratedOrigins(bootstrapOriginSelection)
+		registerOriginSelection(commands, bootstrapOriginSelection)
 	registerUnstuckCommand(commands, recoveryService)
 	registerRpgRuntimeCommands(commands,rpgRuntime)
 	registerReligion(commands,religionRuntime)
 	installPlayerGodMode(commands, campaign.saves)
 	installCommandRegistry(commands)
-	if MAP_INTERNAL_ID == "bootstrap_runtime_validation"
-		PauseGame(true)
-		originSelection.showPage(1)
+	if PHYSICAL_MAP_ID == "bootstrap_runtime_validation"
+		// Frame/UI and PauseGame calls are unsafe during module initialization on
+		// some Warcraft builds. A zero-delay timer runs after map initialization.
+		TimerStart(CreateTimer(), 0., false, function openBootstrapOriginSelection)
 	if SCENARIO_SCHEMA_VERSION <= 0
 		print("Scenario data failed to load.")
 	if getScenarioRuntimeData() == ""
