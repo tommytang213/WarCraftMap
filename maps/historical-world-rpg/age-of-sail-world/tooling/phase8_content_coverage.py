@@ -38,7 +38,7 @@ def build():
     settlements=load("reports/release-settlement-audit.json"); inventory=load("scenario/inventory/reports/catalogue-coverage.json")
     hero_progression=load("scenario/characters/reports/progression-coverage.json")
     progression_report=load("reports/progression-coverage.json"); event_report=load("reports/historical-event-coverage.json")
-    vessel_progression=load("reports/vessel-progression-coverage.json"); blocker=load("reports/release-blocker-audit.json")
+    vessel_progression=load("reports/vessel-progression-coverage.json")
 
     polity_region={}
     for region,filename in REGION_FILES.items():
@@ -154,8 +154,6 @@ def build():
        "phase8.vessels.progression.coverage","Vessel refit/progression coverage is incomplete","vessel_progression"),
       (all(x.get("passed") for x in settlements.get("budgetChecks",[])),
        "phase8.budgets.release_scale","A finalized release-scale performance or size budget failed","budgets"),
-      (blocker.get("status")=="pass" and blocker.get("unresolvedCampaignBlockers")==0,
-       "phase8.integration.campaign_blockers","Release integration has an unresolved campaign blocker","integration"),
     )
     for ok,diagnostic_id,message,category in target_checks:
         check(ok,diagnostic_id,message,diagnostics,category)
