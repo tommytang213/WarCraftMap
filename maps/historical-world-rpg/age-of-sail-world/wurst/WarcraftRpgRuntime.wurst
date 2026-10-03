@@ -742,8 +742,8 @@ public class WarcraftRpgRuntime
 			return
 		projections.clearEquipmentLayer()
 		for i=0 to inventory.equippedCount-1
-			let item=inventory.getItem(inventory.equippedItems[i])
-			projections.applyEquipment(inventory.equippedHeroes[i],item.id,item.power)
+			let equippedItem=inventory.getItem(inventory.equippedItems[i])
+			projections.applyEquipment(inventory.equippedHeroes[i],equippedItem.id,equippedItem.power)
 		for i=0 to inventory.setCount-1
 			let setDefinition=inventory.sets[i]
 			let pieces=inventory.setPieceCount(setDefinition.id)
