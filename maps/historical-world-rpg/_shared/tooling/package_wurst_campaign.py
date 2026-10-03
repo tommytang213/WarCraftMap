@@ -362,7 +362,9 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
     expected_chapters = [(item.chapter_title, item.package_path) for item in config.maps]
     if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
         raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
-    if metadata["version"] != 1 or metadata["maps"] != expected_chapters or [(x[1], x[2]) for x in metadata["buttons"]] != expected_chapters:
+    expected_order = [("", path) for _, path in expected_chapters]
+    expected_buttons = [(1, title, title, path) for title, path in expected_chapters]
+    if metadata["version"] != 3 or metadata["flags"] != 2 or metadata["backgroundVersion"] != 0 or metadata["maps"] != expected_order or metadata["buttons"] != expected_buttons:
         raise PackagingError("campaign inspection stage failed: chapter metadata or ordering is invalid")
     if not expected_chapters or expected_chapters[0][1] != next(x.package_path for x in config.maps if x.id == config.bootstrap_map_id):
         raise PackagingError("campaign inspection stage failed: first chapter is not the bootstrap map")
