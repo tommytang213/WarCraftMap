@@ -7,12 +7,17 @@ format understood by every supported Warcraft III version and is reproducible.
 from __future__ import annotations
 
 import struct
+import bz2
+import zlib
 from pathlib import Path
 
 MPQ_MAGIC = b"MPQ\x1a"
 HASH_EMPTY = 0xFFFFFFFF
 FILE_EXISTS = 0x80000000
 FILE_SINGLE_UNIT = 0x01000000
+FILE_COMPRESS = 0x00000200
+FILE_IMPLODE = 0x00000100
+FILE_ENCRYPTED = 0x00010000
 
 
 def _crypt_table() -> tuple[int, ...]:
@@ -89,17 +94,67 @@ def write_mpq(path: Path, files: dict[str, bytes]) -> None:
 class MpqReader:
     def __init__(self, path: Path):
         self.data = path.read_bytes()
-        if self.data[:4] != MPQ_MAGIC or len(self.data) < 32:
+        # A .w3x produced by Warcraft tooling commonly has an HM3W map header
+        # before its MPQ.  MPQ block offsets are relative to the MPQ header,
+        # so retain that base rather than requiring the archive at byte zero.
+        self.base = self.data.find(MPQ_MAGIC)
+        if self.base < 0 or len(self.data) < self.base + 32:
             raise ValueError("not an MPQ archive")
-        _, header_size, archive_size, version, _, hash_at, block_at, hash_count, block_count = struct.unpack_from("<4sIIHHIIII", self.data)
-        if header_size != 32 or version != 0 or archive_size > len(self.data) or not hash_count or not block_count:
+        (_, header_size, archive_size, version, self.block_shift, hash_at, block_at,
+         hash_count, block_count) = struct.unpack_from("<4sIIHHIIII", self.data, self.base)
+        if header_size != 32 or version != 0 or self.base + archive_size > len(self.data) or not hash_count or not block_count:
             raise ValueError("malformed MPQ header")
-        raw_hash = self.data[hash_at:hash_at + hash_count * 16]
-        raw_block = self.data[block_at:block_at + block_count * 16]
+        raw_hash = self.data[self.base + hash_at:self.base + hash_at + hash_count * 16]
+        raw_block = self.data[self.base + block_at:self.base + block_at + block_count * 16]
         if len(raw_hash) != hash_count * 16 or len(raw_block) != block_count * 16:
             raise ValueError("truncated MPQ tables")
         self.hashes = list(struct.iter_unpack("<IIHHI", _crypt_words(raw_hash, _hash("(hash table)", 3), True)))
         self.blocks = list(struct.iter_unpack("<IIII", _crypt_words(raw_block, _hash("(block table)", 3), True)))
+
+    @staticmethod
+    def _decompress(value: bytes, expected: int) -> bytes:
+        if len(value) == expected:
+            return value
+        if not value:
+            raise ValueError("empty compressed MPQ sector")
+        mask, payload = value[0], value[1:]
+        # JMpq/Grill uses zlib for generated maps.  BZip2 is inexpensive to
+        # support too and makes inspection robust for maps saved by the editor.
+        if mask & 0x02:
+            payload = zlib.decompress(payload)
+            mask &= ~0x02
+        if mask & 0x10:
+            payload = bz2.decompress(payload)
+            mask &= ~0x10
+        if mask or len(payload) != expected:
+            raise ValueError("unsupported or malformed MPQ compression")
+        return payload
+
+    def _payload(self, offset: int, packed: int, size: int, flags: int, name: str) -> bytes:
+        if flags & FILE_ENCRYPTED or flags & FILE_IMPLODE:
+            raise ValueError(f"unsupported encrypted/imploded MPQ member: {name}")
+        value = self.data[self.base + offset:self.base + offset + packed]
+        if len(value) != packed:
+            raise ValueError(f"truncated MPQ member: {name}")
+        if not flags & FILE_COMPRESS:
+            if packed != size:
+                raise ValueError(f"malformed MPQ member: {name}")
+            return value
+        if flags & FILE_SINGLE_UNIT:
+            return self._decompress(value, size)
+        sector_size = 512 << self.block_shift
+        sector_count = (size + sector_size - 1) // sector_size
+        table_size = (sector_count + 1) * 4
+        if len(value) < table_size:
+            raise ValueError(f"truncated MPQ sector table: {name}")
+        offsets = struct.unpack_from(f"<{sector_count + 1}I", value)
+        if offsets[0] < table_size or any(a > b for a, b in zip(offsets, offsets[1:])) or offsets[-1] > len(value):
+            raise ValueError(f"malformed MPQ sector table: {name}")
+        result = bytearray()
+        for index in range(sector_count):
+            expected = min(sector_size, size - len(result))
+            result += self._decompress(value[offsets[index]:offsets[index + 1]], expected)
+        return bytes(result)
 
     def read(self, name: str) -> bytes:
         start = _hash(name, 0) & (len(self.hashes) - 1)
@@ -109,9 +164,9 @@ class MpqReader:
                 break
             if one == _hash(name, 1) and two == _hash(name, 2):
                 offset, packed, size, flags = self.blocks[block]
-                if flags != FILE_EXISTS | FILE_SINGLE_UNIT or packed != size or offset + size > len(self.data):
-                    raise ValueError(f"unsupported or malformed MPQ member: {name}")
-                return self.data[offset:offset + size]
+                if not flags & FILE_EXISTS:
+                    raise ValueError(f"missing MPQ member: {name}")
+                return self._payload(offset, packed, size, flags, name)
         raise KeyError(name)
 
 

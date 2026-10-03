@@ -6,8 +6,10 @@ import hashlib
 import json
 import re
 import shutil
+import struct
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 
@@ -28,6 +30,7 @@ from package_wurst_map import (
     verify_generated,
 )
 from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq
+from materialize_physical_map import MaterializationError, materialize
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
 from treasures import validate_catalog as validate_treasure_catalog  # noqa: E402
@@ -316,6 +319,8 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     provenance["inputs"][str(config.audio_manifest_path.relative_to(config.project.parent))] = _sha(config.audio_manifest_path)
     provenance["inputs"][str(config.audio_profiles_path.relative_to(config.project.parent))] = _sha(config.audio_profiles_path)
     provenance["inputs"][str(config.audio_validator_path.relative_to(config.project.parent))] = _sha(config.audio_validator_path)
+    provenance["inputs"]["@generator/package_wurst_campaign.py"] = _sha(Path(__file__))
+    provenance["inputs"]["@generator/materialize_physical_map.py"] = _sha(Path(__file__).with_name("materialize_physical_map.py"))
     provenance["outputs"][GENERATED_DATA] = _sha(runtime_path)
     provenance["outputs"][GENERATED_WURST] = _sha(wurst_path)
     provenance_path.write_text(json.dumps(provenance, sort_keys=True, indent=2) + "\n", encoding="utf-8")
@@ -400,6 +405,49 @@ def _inspect_audio_runtime(physical: PhysicalMap, generated: Path) -> None:
         raise PackagingError(f"campaign inspection stage failed [{physical.id}]: missing audio manifest or profiles")
 
 
+def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
+    """Parse the built W3X and prove binaries match its localized manifest."""
+    reader = None
+    zipped = None
+    try:
+        if zipfile.is_zipfile(archive):
+            zipped = zipfile.ZipFile(archive)
+            read = zipped.read
+        else:
+            reader = MpqReader(archive)
+            read = reader.read
+        w3e, wpm, units = read("war3map.w3e"), read("war3map.wpm"), read("war3mapUnits.doo")
+        runtime = json.loads(read(f"runtime/{GENERATED_DATA}"))
+        if physical.bootstrap:
+            return
+        manifest = json.loads(read("runtime/physical-map.json"))
+        offset = 13
+        ground = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + ground * 4
+        cliffs = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + cliffs * 4
+        terrain_width, terrain_height = struct.unpack_from("<II", w3e, offset)
+        width, height = terrain_width - 1, terrain_height - 1
+        path_width, path_height = struct.unpack_from("<II", wpm, 8)
+        object_count = struct.unpack_from("<I", units, 12)[0]
+        expected_settlements = {x["id"] for x in runtime.get("settlementDefinitions", [])}
+        represented = {x["id"] for x in manifest.get("objects", {}).get("settlements", [])}
+        if w3e[:4] != b"W3E!" or len(w3e) != offset + 16 + terrain_width * terrain_height * 7:
+            raise ValueError("malformed materialized terrain")
+        if wpm[:4] != b"MP3W" or (path_width, path_height) != (width * 4, height * 4) or len(wpm) != 16 + path_width * path_height:
+            raise ValueError("materialized pathing does not match terrain")
+        if manifest.get("physicalMapId") != physical.id or manifest.get("terrain", {}).get("width") != width or manifest.get("terrain", {}).get("height") != height:
+            raise ValueError("physical manifest does not match terrain")
+        expected_objects = len(represented) + manifest.get("objects", {}).get("worldMarkerCount", 0) + 1
+        if expected_settlements != represented or object_count != expected_objects or manifest["objects"].get("spawnCount") != 1:
+            raise ValueError("settlement/port/spawn objects do not match localized runtime")
+        if width * height > 256 * 256 or object_count > 8192:
+            raise ValueError("Warcraft physical-map budget exceeded")
+    except (KeyError, OSError, ValueError, json.JSONDecodeError, struct.error) as error:
+        raise PackagingError(f"campaign inspection stage failed [{physical.id}]: {error}") from error
+    finally:
+        if zipped is not None:
+            zipped.close()
+
+
 def _sha_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -434,11 +482,18 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         verify_generated(map_config, generated)
         _validate_budget(map_config, physical, generated)
         compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids)
+        runtime = json.loads((generated / GENERATED_DATA).read_text(encoding="utf-8"))
+        try:
+            materialize(config.project, compile_root / "map" / map_config.source_map.name,
+                        generated, physical, runtime)
+        except (OSError, KeyError, ValueError, MaterializationError) as error:
+            raise PackagingError(f"physical map materialization stage failed [{physical.id}]: {error}") from error
         _run(f"Wurst dependency installation [{physical.id}]", [executable, "install"], compile_root)
         _run(f"Wurst compilation [{physical.id}]", [executable, "typecheck"], compile_root)
         _run(f"map assembly [{physical.id}]", [executable, "build", str(Path("map") / map_config.source_map.name)], compile_root)
         archive = _find_archive(compile_root / "_build")
         _inspect(map_config, archive, compile_root, physical.terrain_ids)
+        _inspect_physical_map(physical, archive)
         destination = map_root / f"{physical.id}.w3x"
         shutil.copyfile(archive, destination)
         built.append((physical, destination))

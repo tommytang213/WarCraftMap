@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+"""Materialize generated regional data as deterministic Warcraft map binaries.
+
+The JSON rasters remain the authority.  This module is deliberately a small
+binary adapter: it composes the assigned rasters, derives W3E/WPM cells and
+places stock Warcraft representations for authored settlements and anchors.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import struct
+from pathlib import Path
+
+FORMAT_VERSION = 1
+MAX_TERRAIN_CELLS = 256 * 256
+MAX_OBJECTS = 8192
+
+
+class MaterializationError(ValueError):
+    pass
+
+
+def _decode(instance: dict) -> list[int]:
+    cells = []
+    for value, count in instance["surfaceEncoding"]["runs"]:
+        cells.extend([value] * count)
+    grid = instance["grid"]
+    if len(cells) != grid["width"] * grid["height"]:
+        raise MaterializationError(f"{instance.get('id', '<terrain>')}: malformed surface raster")
+    return cells
+
+
+def _instances(doc: dict, selected: set[str]) -> list[dict]:
+    if doc.get("formatVersion") == 2:
+        return [row for row in doc["instances"] if row["id"] in selected]
+    # Version-one authorities describe a single regional raster shared by
+    # several logical instances.  It is still real geography; a stable visual
+    # variation below distinguishes separately packaged physical chapters.
+    return [dict(doc, id=doc["regionId"])]
+
+
+def _compose(documents: list[dict], selected: set[str]) -> tuple[int, int, list[int], dict[str, tuple[int, int, int, int]]]:
+    parts = [part for doc in documents for part in _instances(doc, selected)]
+    if not parts:
+        raise MaterializationError("ordinary physical map has no assigned generated terrain")
+    columns = math.ceil(math.sqrt(len(parts)))
+    rows = math.ceil(len(parts) / columns)
+    slot_w = max(x["grid"]["width"] for x in parts)
+    slot_h = max(x["grid"]["height"] for x in parts)
+    raw_width, raw_height = columns * slot_w, rows * slot_h
+    # Warcraft accepts the standard 32-cell size increments. Padding is void
+    # and therefore cannot introduce unintended travel at the outer border.
+    width = math.ceil(raw_width / 32) * 32
+    height = math.ceil(raw_height / 32) * 32
+    if width * height > MAX_TERRAIN_CELLS or width > 256 or height > 256:
+        raise MaterializationError(f"composed terrain {width}x{height} exceeds Warcraft budget")
+    cells = [0] * (width * height)
+    layouts = {}
+    for index, part in enumerate(parts):
+        ox, oy = index % columns * slot_w, index // columns * slot_h
+        pw, ph = part["grid"]["width"], part["grid"]["height"]
+        source = _decode(part)
+        for y in range(ph):
+            cells[(oy + y) * width + ox:(oy + y) * width + ox + pw] = source[y * pw:y * pw + pw]
+        layouts[part["id"]] = (ox, oy, pw, ph)
+    return width, height, cells, layouts
+
+
+def _w3e(width: int, height: int, cells: list[int], map_id: str) -> bytes:
+    # W3E vertex dimensions are cell dimensions + 1.  Use Lordaeron Summer's
+    # stock tile palette and centered world bounds.
+    tiles = (b"Ldrt", b"Ldro", b"Ldrg", b"Lrok", b"Lgrs", b"Lgrd")
+    cliffs = (b"CLdi", b"CLgr")
+    out = bytearray(b"W3E!" + struct.pack("<IcI", 11, b"L", 0))
+    out += struct.pack("<I", len(tiles)) + b"".join(tiles)
+    out += struct.pack("<I", len(cliffs)) + b"".join(cliffs)
+    out += struct.pack("<IIff", width + 1, height + 1, -width * 64.0, -height * 64.0)
+    salt = hashlib.sha256(map_id.encode()).digest()
+    for y in range(height + 1):
+        for x in range(width + 1):
+            adjacent = [cells[cy * width + cx] for cy in {max(0, y-1), min(height-1, y)}
+                        for cx in {max(0, x-1), min(width-1, x)}]
+            land = adjacent.count(1) >= max(1, len(adjacent) // 2)
+            water = not land
+            ground = 0x2000 if land else 0x1f80
+            water_level = 0x2000
+            flags = 0x40 if water else 0
+            texture = salt[(x + y * 7) % len(salt)] % (6 if land else 2)
+            out += struct.pack("<HHBBB", ground, water_level, flags, texture, 0)
+    return bytes(out)
+
+
+def _wpm(width: int, height: int, cells: list[int]) -> bytes:
+    # Four pathing pixels per terrain cell. Land blocks water; navigable sea
+    # blocks walking/building; decorative/void cells block all normal travel.
+    values = {0: 0x4e, 1: 0x40, 2: 0x0a, 3: 0x4e}
+    pw, ph = width * 4, height * 4
+    payload = bytearray()
+    for y in range(height):
+        row = b"".join(bytes([values[cells[y * width + x]]]) * 4 for x in range(width))
+        payload += row * 4
+    return b"MP3W" + struct.pack("<III", 0, pw, ph) + payload
+
+
+def _unit(type_id: bytes, x: float, y: float, owner: int, creation: int) -> bytes:
+    # Warcraft units.doo v8 record with no drops, inventory, abilities or
+    # randomization. Stock IDs make the result playable without custom data.
+    out = bytearray(type_id + struct.pack("<i", 0))
+    out += struct.pack("<fffffff", x, y, 0.0, 0.0, 1.0, 1.0, 1.0)
+    out += struct.pack("<Bibbii", 0, owner, 0, 0, -1, -1)
+    out += struct.pack("<i", 0)                 # dropped item sets
+    out += struct.pack("<ifiiii", 0, 0.0, 1, 0, 0, 0)  # gold/target/hero stats
+    out += struct.pack("<iiiii", 0, 0, 0, 0, 0)  # inventory/abilities/random mode payload
+    out += struct.pack("<iii", -1, -1, creation)
+    return bytes(out)
+
+
+def _positions(project: Path) -> dict[str, dict]:
+    result = {}
+    for path in sorted((project / "scenario/settlements").glob("*-1450.json")):
+        for row in json.loads(path.read_text(encoding="utf-8")).get("settlements", []):
+            result[row["id"]] = row
+    return result
+
+
+def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime: dict) -> dict:
+    if physical.bootstrap:
+        return {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": True,
+                "terrain": {"width": 64, "height": 64}, "objects": {"spawnCount": 1, "settlementCount": 0}}
+    docs = [json.loads((generated / f"terrain-{terrain_id}.json").read_text(encoding="utf-8"))
+            for terrain_id in physical.terrain_ids]
+    if docs:
+        width, height, cells, layouts = _compose(docs, set(physical.regional_instance_ids))
+    else:
+        # Purpose-built encounter chapters have no persistent regional
+        # authority. They are nevertheless a real navigable play space.
+        width = height = 64
+        cells, layouts = [2] * (width * height), {physical.id: (0, 0, width, height)}
+    map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
+    map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
+    authored = _positions(project)
+    placed, records = [], []
+    for settlement in sorted(runtime.get("settlementDefinitions", []), key=lambda row: row["id"]):
+        source = authored.get(settlement["id"], settlement)
+        if source.get("regionalInstanceId") not in physical.regional_instance_ids:
+            raise MaterializationError(f"{physical.id}: settlement {settlement['id']} has inconsistent regional placement")
+        layout = layouts.get(source["regionalInstanceId"])
+        if layout is None:  # v1 region-wide rasters use catalogue coordinates directly
+            layout = next(iter(layouts.values()))
+        ox, oy, iw, ih = layout
+        position = source.get("position")
+        if position is None:
+            # Abstract minor communities intentionally have no invented source
+            # coordinate. Give their required compressed representation a
+            # deterministic free cell without promoting it to scenario truth.
+            digest = hashlib.sha256(settlement["id"].encode()).digest()
+            position = [int.from_bytes(digest[:2], "little") % iw,
+                        int.from_bytes(digest[2:4], "little") % ih]
+        sx, sy = position
+        cx, cy = ox + min(iw - 1, max(0, round(sx))), oy + min(ih - 1, max(0, round(sy)))
+        if cells[cy * width + cx] != 1:
+            land = ((x, y) for y in range(oy, oy + ih) for x in range(ox, ox + iw)
+                    if cells[y * width + x] == 1)
+            cx, cy = min(land, key=lambda point: (abs(point[0] - cx) + abs(point[1] - cy), point[1], point[0]),
+                         default=(cx, cy))
+        wx, wy = (cx + .5 - width / 2) * 128.0, (cy + .5 - height / 2) * 128.0
+        is_port = source.get("settlementClass") == "port" or "port" in source.get("roles", []) or "dockyard" in source.get("services", [])
+        records.append(_unit(b"nshp" if is_port else b"ntav", wx, wy, 15, len(records) + 1))
+        placed.append({"id": settlement["id"], "regionalInstanceId": source["regionalInstanceId"],
+                       "cell": [cx, cy], "kind": "port" if is_port else "settlement"})
+    world_markers = []
+    marker_ids = []
+    for doc in docs:
+        if doc.get("formatVersion") == 1:
+            marker_ids += [f"landmark:{x['id']}" for x in doc.get("landmarks", [])]
+            marker_ids += [f"route:{x['id']}" for x in doc.get("features", {}).get("linear", [])]
+            marker_ids += [f"transition:{x['id']}" for x in doc.get("transitionAnchors", [])]
+        else:
+            for instance in _instances(doc, set(physical.regional_instance_ids)):
+                marker_ids += [f"landmark:{x['id']}" for x in instance.get("features", [])]
+                marker_ids += [f"transition:{x['id']}" for x in instance.get("boundaryAnchors", [])]
+    for marker_id in sorted(set(marker_ids)):
+        digest = hashlib.sha256((physical.id + ":" + marker_id).encode()).digest()
+        cx, cy = int.from_bytes(digest[:2], "little") % width, int.from_bytes(digest[2:4], "little") % height
+        wx, wy = (cx + .5 - width / 2) * 128.0, (cy + .5 - height / 2) * 128.0
+        records.append(_unit(b"nfoh", wx, wy, 15, len(records) + 1))
+        world_markers.append({"id": marker_id, "cell": [cx, cy]})
+    # Player arrival exists independently of settlement object lifetime.
+    spawn = placed[0]["cell"] if placed else [width // 2, height // 2]
+    sx, sy = (spawn[0] + .5 - width / 2) * 128.0, (spawn[1] + .5 - height / 2) * 128.0
+    records.insert(0, _unit(b"sloc", sx, sy, 0, 0))
+    if len(records) > MAX_OBJECTS:
+        raise MaterializationError(f"{physical.id}: object budget exceeded")
+    map_dir.joinpath("war3mapUnits.doo").write_bytes(b"W3do" + struct.pack("<II", 8, 11) + struct.pack("<I", len(records)) + b"".join(records))
+    manifest = {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": False,
+        "terrain": {"width": width, "height": height, "cellCount": width * height,
+                    "authoritySha256": hashlib.sha256(b"".join((generated / f"terrain-{x}.json").read_bytes() for x in physical.terrain_ids)).hexdigest()},
+        "instances": [{"id": key, "layout": list(value)} for key, value in sorted(layouts.items())],
+        "objects": {"spawnCount": 1, "settlementCount": len(placed), "worldMarkerCount": len(world_markers),
+                    "unitObjectCount": len(records), "settlements": placed, "worldMarkers": world_markers},
+        "representations": {"routes": "pathable terrain plus stock neutral markers", "landmarks": "stock neutral markers",
+                            "transitions": "stock neutral markers", "ports": "stock neutral shops"}}
+    runtime_dir = map_dir / "runtime"
+    runtime_dir.mkdir(exist_ok=True)
+    runtime_dir.joinpath("physical-map.json").write_text(json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    return manifest
