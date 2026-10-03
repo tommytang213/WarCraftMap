@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **12**
+Unresolved campaign blockers: **11**
 
 ## Severity taxonomy
 
@@ -27,7 +27,7 @@ Unresolved campaign blockers: **12**
 | `campaign_launch` | yes | yes | yes | yes | yes |
 | `origin_selection` | yes | yes | yes | yes | yes |
 | `country_diplomacy` | yes | yes | no | no | no |
-| `trade` | yes | no | no | no | no |
+| `trade` | yes | yes | yes | yes | yes |
 | `army_fleet_control` | yes | no | no | no | no |
 | `city_capture` | yes | yes | no | no | no |
 | `garrisons` | yes | no | no | no | no |
@@ -59,7 +59,6 @@ Unresolved campaign blockers: **12**
 | `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 | `RUNTIME-MISSING-TREASURES-DISCOVERY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence

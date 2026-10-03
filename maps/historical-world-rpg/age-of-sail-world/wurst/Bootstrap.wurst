@@ -11,6 +11,7 @@ import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import PlayableCampaignRuntime
+import PlayableTrade
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -41,6 +42,7 @@ init
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	registerPlayableTrade(commands, campaign)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let playerIdentity = new PlayerCampaignIdentity()

@@ -132,14 +132,6 @@
       "class": "missing_runtime_integration",
       "context": "scenario/runtime-integration.json",
       "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-TRADE",
-      "message": "trade is not player-facing and release-validated",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
       "id": "RUNTIME-MISSING-TREASURES-DISCOVERY",
       "message": "treasures_discovery is not player-facing and release-validated",
       "severity": "campaign_blocker"
@@ -260,7 +252,7 @@
     "physical-maps.json": "c171504a60adffa0c463294b4a410e00f8754a0f9330f3b2a80c8da37b6384f6",
     "scenario/compatibility/release-save-v1.json": "73116bd02bbfef89a984a0d9ea97ae9c778d0d30a6479d062c26002b0ef02dc2",
     "scenario/maps/world-map.json": "7336faae8315c4a703320b5d563d4656fc5d0ff995d70458c6a4091d7c80065c",
-    "scenario/runtime-integration.json": "3d76547d651c56dc188f9d18bb1356ee169516a93cd3ce15570bc48b1fdc9ee3",
+    "scenario/runtime-integration.json": "172286b368e569a7c3e4e28b534f1c4d1511468d15860450d9a65b0f0db9b9ea",
     "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
   },
   "releaseSaveCompatibility": {
@@ -288,8 +280,6 @@
     "failures": [
       "country_diplomacy: backend/data exists without a usable Warcraft entry point",
       "country_diplomacy: player-facing runtime is not release-validated",
-      "trade: backend/data exists without a usable Warcraft entry point",
-      "trade: player-facing runtime is not release-validated",
       "army_fleet_control: backend/data exists without a usable Warcraft entry point",
       "army_fleet_control: player-facing runtime is not release-validated",
       "city_capture: backend/data exists without a usable Warcraft entry point",
@@ -367,19 +357,16 @@
         }
       },
       {
-        "diagnostics": [
-          "missing integration evidence: tests/test_trade.py",
-          "wurst/Bootstrap.wurst lacks import PlayableTrade, registerPlayableTrade"
-        ],
+        "diagnostics": [],
         "id": "trade",
         "releaseRequired": true,
         "simulationOnly": false,
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
@@ -701,5 +688,5 @@
       "releaseBlocking": false
     }
   ],
-  "unresolvedCampaignBlockers": 12
+  "unresolvedCampaignBlockers": 11
 }

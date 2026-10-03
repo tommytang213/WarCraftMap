@@ -9,6 +9,13 @@ import RemoteRegionManagement
 import WarcraftRegionalRuntime
 import WC3Compatibility
 
+/** Stable-domain extensions participate in every campaign lifecycle without
+ * making their Warcraft projections part of the save authority. */
+public interface CampaignRuntimeExtension
+	function newCampaign(string settlementId)
+	function reconstruct(string authorityDocument) returns boolean
+	function capture() returns string
+
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 
@@ -44,15 +51,18 @@ function lastAuthorityValue(string document, string key) returns string
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort
-	string authority = "v1;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders="
+	string authority = "v1;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
 	string staged = ""
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
+	CampaignRuntimeExtension extension = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
 		authority = value
+	function setExtension(CampaignRuntimeExtension value)
+		extension = value
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -64,18 +74,28 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function isSaveSafe() returns boolean
 		return not transitionOpen
 	override function captureAuthoritativeState() returns string
+		if extension != null
+			// Append a fresh domain projection to the save candidate without
+			// mutating the live authority document on every autosave.
+			return authority + ";trade=" + extension.capture()
 		return authority
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
+		// Campaign schema 1 saves from before playable trade remain loadable.
 		staged = candidate
+		if staged.indexOf(";trade=") < 0
+			staged += ";trade="
 		lastDiagnostic = ""
 		return true
 	override function reconstructRuntime(string candidate) returns boolean
 		// Stable representation definitions already contain the authoritative coordinates.
 		// Missing Warcraft objects are recreated; unrelated regions remain abstract.
 		regional.recoverActiveRegion()
+		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
+			lastDiagnostic = "trade runtime reconstruction failed"
+			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
 		authority = staged
@@ -125,6 +145,8 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 				decoded += ";discovery="
 			if decoded.indexOf(";orders=") < 0
 				decoded += ";orders="
+			if decoded.indexOf(";trade=") < 0
+				decoded += ";trade="
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -337,6 +359,7 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	RegionSelector regionSelector
 	MapDiscoveryScreenController maps
 	WarcraftMapPresentation mapPresentation
+	CampaignRuntimeExtension extension = null
 	construct(WarcraftRegionalAdapter regional, string physicalMapId)
 		state = new PlayableCampaignState(regional)
 		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
@@ -360,13 +383,21 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		// Destination maps resume the last commit. Rejection is intentionally non-destructive.
 		if physicalMapId != "bootstrap_runtime_validation"
 			saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
+	function registerExtension(CampaignRuntimeExtension value)
+		extension = value
+		state.setExtension(value)
+		// Registration follows service construction, so reconstruct the commit
+		// already loaded by a destination map before exposing any commands.
+		value.reconstruct(lastAuthorityValue(state.authorityDocument(), "trade"))
 	function sessionStart(string createdAt)
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
 		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
 	override function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
-		state.replaceAuthority("v1;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=")
+		if extension != null
+			extension.newCampaign(settlementId)
+		state.replaceAuthority("v1;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=;trade=")
 		travel.startAt(physicalMapId, logicalRegion)
 		regionAccess.revealAndAuthorize(logicalRegion)
 		regionSelector.setPhysicalRegionId(logicalRegion)
