@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "rules": {
+    "repeatTargetCooldownTicks": 30,
+    "foundingNotoriety": 20,
+    "foundingWealthMinor": 5000,
+    "foundingPrizes": 3,
+    "bountyPerNotorietyMinor": 150
+  },
+  "havens": [
+    {"id": "caribbean_free_haven", "minimumNotoriety": 2, "serviceIds": ["fence", "black_market", "smuggler", "repair", "refit", "recruit", "contract", "treasure_intelligence"]},
+    {"id": "indian_ocean_free_haven", "minimumNotoriety": 2, "serviceIds": ["fence", "black_market", "smuggler", "repair", "refit", "recruit", "contract", "treasure_intelligence"]}
+  ],
+  "contractTypes": [
+    {"id": "prize_contract", "name": "Prize Contract"},
+    {"id": "smuggling_contract", "name": "Smuggling Contract"},
+    {"id": "treasure_intelligence", "name": "Treasure Intelligence"}
+  ],
+  "governmentForms": [
+    {"id": "free_republic", "nameTemplate": "Free Republic of {name}", "rulerTitle": "First Captain"},
+    {"id": "pirate_confederacy", "nameTemplate": "Confederacy of {name}", "rulerTitle": "Admiral of the Confederacy"},
+    {"id": "corsair_kingdom", "nameTemplate": "Kingdom of {name}", "rulerTitle": "Sea Sovereign"}
+  ]
+}
