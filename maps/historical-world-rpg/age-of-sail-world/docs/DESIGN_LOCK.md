@@ -490,6 +490,43 @@ This file records requirements already agreed with the player. They are defaults
   diplomatic history use stable IDs and persist across save/load and map
   transitions. Warcraft screens and handles are projections and are never saved.
 
+## Piracy, privateering, and independent free polities
+
+- Boarding, plunder, cargo seizure, ransom/prisoner disposition, vessel capture,
+  scuttling, and coastal raids commit through one authoritative prize action.
+  Physical Warcraft units are representations only; stable action/target IDs,
+  cargo, proceeds, vessel disposition, victims, and consequences persist.
+- A target must be eligible and the war/crime authority must validate the act.
+  Replayed action IDs return the original result, while per-target exhaustion
+  prevents repeat farming. Rewards, bounties, cooldowns, risk, and pressure are
+  scenario data and use integer authoritative values.
+- Pirate notoriety/outlaw status is separate from country standing and merchant
+  reputation. A currently valid letter of marque makes attacks on its named
+  targets lawful privateering, changes issuer/victim relations and rewards, and
+  creates less notoriety. Commissions have explicit issue/expiry/revocation
+  state; attacks outside them are piracy and may turn the captain outlaw.
+- Havens expose data-defined fences, black markets, smugglers, repairs, refits,
+  recruitment, contracts, treasure, and intelligence subject to notoriety and
+  access rules. They do not mint duplicate cargo or bypass the economy.
+- Sustained piracy raises bounded regional shipping risk, prices, convoying,
+  escorts, patrols, port restrictions, bounties, diplomatic pressure,
+  anti-piracy expeditions, and quest/event pressure. Pressure decays rather than
+  permanently ratcheting, so suppression or collapse restores trade conditions.
+- A qualified outlaw captain with sufficient notoriety, accumulated prize
+  wealth, prize history, and a durable controlled capital may explicitly found
+  an independent polity. Government form, state name, and ruler/collective title
+  are scenario data; republic, confederacy, kingdom, and future forms share the
+  same transition and no ideology is hardcoded in the reusable engine.
+- The founded polity is substantive, not a label: its stable polity and
+  territory records are handed to the ordinary sovereignty, settlement,
+  government/office, economy, diplomacy, war/peace, military, technology,
+  taxation/upkeep, AI, and reconstruction systems. Other countries persist
+  hostility, non-recognition, tolerance, recognition, trade/embargo, alliance,
+  or vassal status according to campaign state.
+- Commissions, notoriety, bounties, haven standing, exhausted targets, regional
+  pressure, prize history, polity territory, government form, and recognition
+  are versioned campaign state and must reconstruct without Warcraft handles.
+
 ## Performance and simulation scale
 
 - Performance is a design constraint throughout content production, not a cleanup task deferred until final integration.
