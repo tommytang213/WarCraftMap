@@ -1162,8 +1162,8 @@
     },
     {
       "id": "religion",
-      "releaseRequired": false,
-      "simulationOnly": true,
+      "releaseRequired": true,
+      "simulationOnly": false,
       "authority": [
         {
           "path": "../_shared/engine/religion.py",
@@ -1182,38 +1182,46 @@
       ],
       "runtime": [
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst/ReligionRuntime.wurst",
           "contains": [
-            "ReligionRuntime"
+            "class ReligionRuntime",
+            "reconcile"
           ]
         }
       ],
       "playerEntry": [
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst/ReligionRuntime.wurst",
           "contains": [
-            "registerReligion"
+            "registerReligion",
+            "overview"
           ]
         }
       ],
       "persistence": [
         {
-          "path": "../_shared/engine/religion.py",
+          "path": "wurst/ReligionRuntime.wurst",
           "contains": [
-            "snapshot",
-            "restore"
+            "captureState",
+            "restoreState"
           ]
         }
       ],
       "runtimeVerification": [
         {
-          "path": "tests/test_religion.py",
+          "path": "wurst/ReligionRuntimeTests.wurst",
           "contains": [
-            "reconstruct"
+            "bootstrapRegistrationOpeningOverviewAndBenefitExplanation",
+            "saveLoadCrossMapReconstructionAndRepeatedLoadDoNotDuplicateEffects",
+            "conversionAcceptanceRejectionCooldownHistoryAndAtomicRollback"
           ]
         }
       ],
-      "artifactMarkers": []
+      "artifactMarkers": [
+        "registerReligion",
+        "configureGeneratedReligion",
+        "captureState"
+      ]
     },
     {
       "id": "piracy",
@@ -1291,6 +1299,7 @@
         "origin_selection",
         "country_diplomacy",
         "piracy",
+        "religion",
         "trade",
         "army_fleet_control",
         "city_capture",

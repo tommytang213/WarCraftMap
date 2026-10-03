@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 import json
+import argparse
 import zipfile
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[1]
 MANIFEST = PROJECT / "scenario/runtime-integration.json"
+REPORT_JSON = PROJECT / "reports/runtime-acceptance.json"
+REPORT_MD = PROJECT / "reports/runtime-acceptance.md"
 FORMAT = "age_of_sail_runtime_integration_v1"
 STAGES = ("dataComplete", "headlessSimulationComplete", "runtimeIntegrated",
           "playerFacingComplete", "releaseValidated")
+MANDATORY_SYSTEMS = frozenset({"campaign_launch", "origin_selection", "country_diplomacy",
+    "government_rewards", "trade", "army_fleet_control", "city_capture", "garrisons",
+    "administration", "heroes", "inventory_equipment", "technology_institutions",
+    "quests_journal", "treasures_discovery", "religion", "piracy", "save_autosave_load",
+    "cross_map_travel", "world_map", "remote_management"})
 
 
 class RuntimeAcceptanceError(ValueError):
@@ -89,6 +97,9 @@ def audit_sources(path: Path = MANIFEST) -> dict:
                      "simulationOnly": simulation_only, "stages": checks,
                      "diagnostics": diagnostics})
     required_ids = {row["id"] for row in manifest["systems"] if row.get("releaseRequired") is True}
+    omitted = sorted(MANDATORY_SYSTEMS - required_ids)
+    if omitted:
+        failures.append(f"release-required systems are omitted or exempted: {omitted}")
     journey_ids = set()
     for journey in manifest.get("smokeJourneys", []):
         journey_ids.update(journey.get("systems", []))
@@ -105,6 +116,40 @@ def audit_sources(path: Path = MANIFEST) -> dict:
             "status": "pass" if not failures else "fail", "stages": list(STAGES),
             "systems": rows, "failures": failures,
             "smokeJourneys": [x["id"] for x in manifest.get("smokeJourneys", [])]}
+
+
+def render_markdown(report: dict) -> str:
+    lines = ["# Playable runtime acceptance", "", f"Result: **{report['status'].upper()}**", "",
+             "| System | Data | Headless | Runtime | Player-facing | Release validated |",
+             "|---|---:|---:|---:|---:|---:|"]
+    for row in report["systems"]:
+        stage = row["stages"]
+        mark = lambda key: "yes" if stage[key] else "no"
+        lines.append(f"| `{row['id']}` | {mark('dataComplete')} | {mark('headlessSimulationComplete')} | {mark('runtimeIntegrated')} | {mark('playerFacingComplete')} | {mark('releaseValidated')} |")
+    lines += ["", "## Compiled-runtime smoke journeys", ""]
+    lines += [f"- `{journey}`" for journey in report["smokeJourneys"]]
+    lines += ["", "## Failures", ""]
+    lines += ([f"- {failure}" for failure in report["failures"]] if report["failures"] else
+              ["No unresolved runtime-acceptance failures."])
+    return "\n".join(lines) + "\n"
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--write", action="store_true")
+    args = parser.parse_args(argv)
+    report = audit_sources()
+    encoded = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    human = render_markdown(report)
+    if args.write:
+        REPORT_JSON.parent.mkdir(parents=True, exist_ok=True)
+        REPORT_JSON.write_text(encoded, encoding="utf-8")
+        REPORT_MD.write_text(human, encoding="utf-8")
+    elif (not REPORT_JSON.is_file() or REPORT_JSON.read_text(encoding="utf-8") != encoded or
+          not REPORT_MD.is_file() or REPORT_MD.read_text(encoding="utf-8") != human):
+        raise RuntimeAcceptanceError("runtime-acceptance reports are missing or stale; run with --write")
+    print(json.dumps({"status": report["status"], "failures": len(report["failures"])}, sort_keys=True))
+    return 0 if report["status"] == "pass" else 1
 
 
 def verify_compiled_script(script: str, path: Path = MANIFEST) -> dict:
@@ -132,3 +177,7 @@ def verify_built_map(path: Path) -> dict:
     if result["failures"]:
         raise RuntimeAcceptanceError("; ".join(result["failures"]))
     return result
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

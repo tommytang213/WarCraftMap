@@ -1,0 +1,92 @@
+package ReligionRuntimeTests
+import ReligionRuntime
+import CommandRouter
+
+class TestReligionEffects implements ReligionModifierPort
+	int clears=0
+	int applications=0
+	int lastAmount=0
+	override function clearReligionModifiers(string characterId)
+		clears++
+		applications=0
+	override function applyReligionModifier(string characterId,string attributeId,int basisPoints)
+		applications++
+		lastAmount=basisPoints
+
+class ReligionOutput implements CommandOutput
+	string message=""
+	override function show(player recipient,string message)
+		this.message=message
+
+function configured(TestReligionEffects effects) returns ReligionRuntime
+	let runtime=new ReligionRuntime(effects)
+	let oldFaith=new RuntimeFaith("old_faith","Old Faith",50,500)
+	oldFaith.addBenefit(new ReligionBenefit("reputation",800,"Community ties support reputation."))
+	runtime.registerFaith(oldFaith)
+	let newFaith=new RuntimeFaith("new_faith","New Faith",50,500)
+	newFaith.addBenefit(new ReligionBenefit("learning",600,"Schools support learning."))
+	runtime.registerFaith(newFaith)
+	runtime.setCharacterFaith("old_faith",50)
+	runtime.setContext("polity","pluralism","old_faith,new_faith","mixed_council","mixed_region")
+	runtime.setInfluence("old_faith",500,100,50,25,0)
+	runtime.setInfluence("new_faith",200,50,50,0,0)
+	runtime.registerConversion(new ReligionConversionRule("old_faith","new_faith",40,100,10,"old allies disapprove; new community approves"))
+	runtime.currencyUnits=100
+	runtime.campaignTick=500
+	return runtime
+
+@test function bootstrapRegistrationOpeningOverviewAndBenefitExplanation()
+	let effects=new TestReligionEffects()
+	let runtime=configured(effects)
+	let output=new ReligionOutput()
+	let registry=new CommandRegistry(false,6,new CommandText(),output)
+	registerReligion(registry,runtime)
+	(registry.find("faith")!=null).assertTrue()
+	registry.dispatch(Player(0),"faith")
+	(output.message.indexOf("Personal investment")>=0).assertTrue()
+	(output.message.indexOf("bounded diminishing returns")>=0).assertTrue()
+	(output.message.indexOf("Policy: pluralism")>=0).assertTrue()
+
+@test function mixedRegionsRiseDeclineAlternateHistoryAndBoundedScalingReconcile()
+	let effects=new TestReligionEffects()
+	let runtime=configured(effects)
+	let initial=effects.lastAmount
+	runtime.setInfluence("old_faith",5000,1000,500,250,1000)
+	(effects.lastAmount>initial).assertTrue()
+	(effects.lastAmount<=800).assertTrue()
+	runtime.setInfluence("old_faith",10,0,0,0,0)
+	(effects.lastAmount<initial).assertTrue()
+	(effects.clears>2).assertTrue()
+
+@test function conversionAcceptanceRejectionCooldownHistoryAndAtomicRollback()
+	let effects=new TestReligionEffects()
+	let runtime=configured(effects)
+	runtime.currencyUnits=20
+	let before=runtime.captureState()
+	runtime.convert("new_faith").assertFalse()
+	runtime.captureState().assertEquals(before)
+	runtime.currencyUnits=100
+	runtime.convert("new_faith").assertTrue()
+	runtime.primaryFaithId.assertEquals("new_faith")
+	runtime.currencyUnits.assertEquals(60)
+	(runtime.conversionHistory.indexOf("old allies disapprove")>=0).assertTrue()
+	runtime.convert("old_faith").assertFalse()
+
+@test function saveLoadCrossMapReconstructionAndRepeatedLoadDoNotDuplicateEffects()
+	let effects=new TestReligionEffects()
+	let runtime=configured(effects)
+	runtime.convert("new_faith")
+	let saved=runtime.captureState()
+	let restoredEffects=new TestReligionEffects()
+	let restored=configured(restoredEffects)
+	restored.restoreState(saved).assertTrue()
+	let first=restoredEffects.applications
+	restored.restoreState(saved).assertTrue()
+	restoredEffects.applications.assertEquals(first)
+	restored.captureState().assertEquals(saved)
+
+@test function hiddenInformationFilteringAndPolicyChange()
+	let runtime=configured(new TestReligionEffects())
+	runtime.overview(false).indexOf("mixed_council").assertEquals(-1)
+	runtime.setContext("polity","persecution","old_faith","state_church","mixed_region")
+	(runtime.overview(true).indexOf("Policy: persecution")>=0).assertTrue()

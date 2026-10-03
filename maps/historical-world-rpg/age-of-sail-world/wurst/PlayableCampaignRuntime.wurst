@@ -12,6 +12,7 @@ import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
+import ReligionRuntime
 
 /** Stable-domain extensions participate in every campaign lifecycle without
  * making their Warcraft projections part of the save authority. */
@@ -82,6 +83,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	PlayableCountryInteractionRuntime countries = null
 	WarcraftRpgRuntime rpg = null
 	MilitarySettlementRuntime militarySettlements = null
+	ReligionRuntime religion = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
@@ -94,6 +96,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		rpg = runtime
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
+	function setReligionRuntime(ReligionRuntime runtime)
+		religion = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -112,6 +116,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";rpg=" + rpg.captureState()
 		if militarySettlements != null
 			result += ";militarySettlements=" + militarySettlements.snapshot()
+		if religion != null
+			result += ";religion=" + religion.captureState()
 		if extension != null
 			result += ";trade=" + extension.capture()
 		return result
@@ -124,6 +130,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
 			lastDiagnostic = "missing military/settlement authority"
+			return false
+		if religion != null and candidate.indexOf(";religion=") < 0
+			lastDiagnostic = "missing religion authority"
 			return false
 		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement authority is invalid"
@@ -148,6 +157,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			rpg.reconstruct(Player(0),0.,0.,"player")
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
+		if religion != null and not religion.restoreState(lastAuthorityValue(candidate, "religion"))
+			lastDiagnostic = religion.lastDiagnostic
 			return false
 		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade runtime reconstruction failed"
@@ -433,12 +445,13 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries
 	CountryDiplomacyController countryScreen
-	construct(WarcraftRegionalAdapter regional, string physicalMapId)
+	construct(WarcraftRegionalAdapter regional, string physicalMapId, ReligionRuntime religion)
 		identity = new PlayerCampaignIdentity()
 		state = new PlayableCampaignState(regional)
 		countries = new PlayableCountryInteractionRuntime(identity)
 		countryScreen = new CountryDiplomacyController(countries, new WarcraftCountryDiplomacyPresentation())
 		state.setCountryRuntime(countries)
+		state.setReligionRuntime(religion)
 		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
 		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
@@ -506,8 +519,8 @@ function campaignAutosaveTick()
 	if campaignServices != null
 		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
-public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId) returns PlayableCampaignServices
-	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId)
+public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion) returns PlayableCampaignServices
+	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion)
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
 	registerCampaignMapCommand(commands, campaignServices.maps)

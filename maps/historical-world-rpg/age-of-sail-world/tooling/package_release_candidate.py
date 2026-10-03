@@ -32,7 +32,7 @@ import runtime_acceptance  # noqa: E402
 FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
 PROVENANCE_FORMAT = "warcraftmap_rc_build_provenance_v1"
-CONFIG = PROJECT / "scenario/release/phase8-rc1.json"
+CONFIG = PROJECT / "scenario/release/phase8-rc2.json"
 
 
 def sha_bytes(value: bytes) -> str:
@@ -143,6 +143,9 @@ def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
     coverage = json.loads(_source_path(gates["phase8Content"], "phase8Content").read_text())
     if coverage.get("status") != "pass" or coverage.get("failures"):
         raise PackagingError("gate stage failed: Phase 8 content coverage does not pass")
+    runtime_report = json.loads(_source_path(gates["runtimeAcceptance"], "runtimeAcceptance").read_text())
+    if runtime_report != runtime:
+        raise PackagingError("gate stage failed: runtime-acceptance report is stale")
     compatibility = json.loads(_source_path(gates["releaseSaveCompatibility"], "releaseSaveCompatibility").read_text())
     recovery = json.loads(_source_path(gates["recoveryDocumentation"], "recoveryDocumentation").read_text())
     current = compatibility.get("matrix", {}).get("campaign", {}).get("current")
@@ -321,7 +324,7 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "contentReportSha256": sha(PROJECT / config["requiredGates"]["phase8Content"]),
             "normalizedCampaignContentSha256": sha_bytes(canonical(first_normalized)),
             "normalizedEquivalence": {"builds": 2, "equal": True, "ignoredDifference": "ZIP/MPQ entry order, timestamps, compression, and container metadata only"},
-            "gates": {"phase8Content": coverage["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass"},
+            "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass"},
         }
         payloads = {config["archive"]["campaignPath"]: campaign_bytes}
         for relative in config["releaseDocuments"]:
@@ -334,7 +337,7 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "runtimeTarget": target,
             "schemaCompatibility": {"scenarioVersion": config["scenarioVersion"], "currentSaveSchema": save["campaign"]["current"], "supportedSaveSchemas": save["campaign"]["supportedSources"]},
             "artifacts": rows,
-            "smokeJourneys": {"newCampaignStart": "pass", "supportedSaveLoadMigration": "pass", "regionalTravel": "pass", "saveResume": "pass", "recoveryEntryPoints": "pass"},
+            "smokeJourneys": {"uninterrupted": "pass", "saveResume": "pass", "crossMap": "pass", "remoteCommand": "pass", "representationLoss": "pass", "recovery": "pass", "supportedSaveLoadMigration": "pass"},
             "saveMigrationFixtures": fixture_results,
         }
         payloads[config["archive"]["manifestPath"]] = canonical(artifact_manifest)
