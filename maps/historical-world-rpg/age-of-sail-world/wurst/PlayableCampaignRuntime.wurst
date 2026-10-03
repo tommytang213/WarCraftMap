@@ -10,6 +10,7 @@ import WarcraftRegionalRuntime
 import WC3Compatibility
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
+import MilitarySettlementRuntime
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
@@ -70,12 +71,15 @@ public class PlayableCampaignState implements CampaignStatePort
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
 	PlayableCountryInteractionRuntime countries = null
+	MilitarySettlementRuntime militarySettlements = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
 		authority = value
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
+	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
+		militarySettlements = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -87,12 +91,21 @@ public class PlayableCampaignState implements CampaignStatePort
 	override function isSaveSafe() returns boolean
 		return not transitionOpen
 	override function captureAuthoritativeState() returns string
-		if countries == null
-			return authority
-		return withoutCountryAuthority(authority) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
+		var result = authority
+		if countries != null
+			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
+		if militarySettlements != null
+			result += ";militarySettlements=" + militarySettlements.snapshot()
+		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
+			return false
+		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
+			lastDiagnostic = "missing military/settlement authority"
+			return false
+		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement authority is invalid"
 			return false
 		staged = candidate
 		lastDiagnostic = ""
@@ -104,6 +117,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			lastDiagnostic = countries.diagnostic()
 			return false
 		regional.recoverActiveRegion()
+		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
+			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
 		authority = withoutCountryAuthority(staged)
@@ -121,7 +137,7 @@ function runtimeChecksum(string value) returns int
 public class PlayableCampaignCodec implements CampaignSaveCodec
 	string lastDiagnostic = ""
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
-		let body = "schema=1|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
+		let body = "schema=2|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
 		return "integrity=" + runtimeChecksum(body).toString() + "|" + body
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
 		let marker = "|schema="
@@ -134,9 +150,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		if runtimeChecksum(body) != expected
 			lastDiagnostic = "save integrity check failed"
 			return ""
-		let currentPrefix = "schema=1|slot=" + expectedSlotId + "|"
+		let currentPrefix = "schema=2|slot=" + expectedSlotId + "|"
+		let priorPrefix = "schema=1|slot=" + expectedSlotId + "|"
 		let legacyPrefix = "schema=0|slot=" + expectedSlotId + "|"
-		if body.indexOf(currentPrefix) != 0 and body.indexOf(legacyPrefix) != 0
+		if body.indexOf(currentPrefix) != 0 and body.indexOf(priorPrefix) != 0 and body.indexOf(legacyPrefix) != 0
 			lastDiagnostic = "save schema or slot is incompatible"
 			return ""
 		let stateMarker = "|state="
@@ -158,6 +175,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			decoded += ";diplomacy=v1"
 		if decoded.indexOf(";rewards=") < 0
 			decoded += ";rewards=v1"
+		// Schema 2 adds stable Warcraft military/settlement authority. Older saves
+		// migrate transactionally from the scenario-configured initial authority.
+		if decoded.indexOf(";militarySettlements=") < 0
+			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string

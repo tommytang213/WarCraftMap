@@ -142,6 +142,19 @@ class MilitaryRuntimeTests(unittest.TestCase):
         self.assertEqual(saved, self.runtime.snapshot())
         self.assertEqual(1, self.runtime.unit("english_patrol_ship").represented_object_count)
 
+    def test_fleet_control_order_survives_representation_loss_and_restore(self):
+        # Focused fleet evidence: command authority is the stable ship/group record,
+        # never the replaceable local Warcraft object.
+        self.runtime.move("english_patrol_ship", "north_sea_atlantic", supply_cost=4)
+        saved = self.runtime.snapshot()
+        self.runtime.reconstruct_representations()
+        handle = next(op[3] for op in self.objects.operations if op[0] == "create")
+        self.objects.destroy_unexpectedly(handle)
+        self.runtime.restore(saved)
+        self.assertEqual("north_sea_atlantic", self.runtime.unit("english_patrol_ship").location_id)
+        self.assertEqual(66, self.runtime.unit("english_patrol_ship").supply)
+        self.assertEqual(1, self.runtime.unit("english_patrol_ship").represented_object_count)
+
     def test_legacy_world_migration_is_explicit_and_non_mutating(self):
         adapter = MilitarySaveAdapter(self.runtime, {})
         legacy = {"calendar": {"day": 3}}
