@@ -350,6 +350,7 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
     data = archive.read_bytes()
     if len(data) < 4 or data[:4] not in (b"MPQ\x1a", b"HM3W", b"PK\x03\x04"): raise _fail("archive inspection", f"unrecognized Warcraft archive: {archive}")
     lua = ""
+    packaged_source_sha = None
     if zipfile.is_zipfile(archive):
         with zipfile.ZipFile(archive) as zipped:
             selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
@@ -361,12 +362,22 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
             if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
             if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
             lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")
+            try:
+                packaged_source_sha = json.loads(zipped.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
+            except (KeyError, json.JSONDecodeError, UnicodeDecodeError) as error:
+                raise _fail("archive inspection", f"invalid generated runtime provenance: {error}") from error
     else:
         candidates = list(compile_root.rglob("war3map.lua")) + list(compile_root.rglob("*_compiled.lua")) + list(compile_root.rglob("output.lua"))
         if candidates: lua = max(candidates, key=lambda p: p.stat().st_mtime_ns).read_text(encoding="utf-8", errors="replace")
     if not lua: raise _fail("archive inspection", "generated Lua runtime code is missing")
-    absent = [marker for marker in (*config.bootstrap_markers, _sha(config.scenario_file)) if marker not in lua]
+    absent = [marker for marker in config.bootstrap_markers if marker not in lua]
     if absent: raise _fail("archive inspection", "Lua is missing marker(s): " + ", ".join(absent))
+    # ScenarioData used to retain a megabyte-scale JSON string solely because
+    # this source digest happened to occur inside it.  The runtime payload is
+    # now an archive resource, so validate its authoritative-source identity at
+    # that boundary instead of requiring an otherwise-unused Lua literal.
+    if packaged_source_sha is not None and packaged_source_sha != _sha(config.scenario_file):
+        raise _fail("archive inspection", "generated runtime source digest does not match the authoritative scenario")
 
 def clean(config: BuildConfig) -> None:
     root = config.project / "_build"
