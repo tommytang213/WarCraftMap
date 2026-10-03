@@ -42,7 +42,7 @@ Unresolved campaign blockers: **6**
 | `world_map` | yes | yes | yes | yes | yes |
 | `remote_management` | yes | yes | yes | yes | yes |
 | `government_rewards` | yes | yes | yes | yes | yes |
-| `religion` | yes | yes | no | no | no |
+| `religion` | yes | yes | yes | yes | yes |
 | `piracy` | yes | yes | no | no | no |
 
 ## Findings

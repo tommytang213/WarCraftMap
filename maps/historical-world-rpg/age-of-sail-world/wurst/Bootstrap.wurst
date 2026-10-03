@@ -13,6 +13,7 @@ import MilitarySettlementRuntime
 import PlayableCampaignRuntime
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
+import ReligionRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 2
@@ -34,6 +35,20 @@ class WarcraftTechnologyEffects implements TechnologyEffectPort
 
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 
+/** Replaceable projection only; authoritative totals remain in ReligionRuntime. */
+class WarcraftReligionEffects implements ReligionModifierPort
+	string array[64] keys
+	int array[64] amounts
+	int count=0
+	override function clearReligionModifiers(string characterId)
+		count=0
+	override function applyReligionModifier(string characterId,string attributeId,int basisPoints)
+		keys[count]=characterId+":"+attributeId
+		amounts[count]=basisPoints
+		count++
+
+public ReligionRuntime religionRuntime = new ReligionRuntime(new WarcraftReligionEffects())
+
 init
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
@@ -42,7 +57,8 @@ init
 	clock.attachTimer(new WarcraftCampaignTimerAdapter(), 1.)
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
-	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
+	configureGeneratedReligion(religionRuntime)
+	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID, religionRuntime)
 	configureGeneratedCountryInteractions(campaign.countries)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	campaign.state.setMilitarySettlementRuntime(militarySettlementRuntime)
@@ -54,6 +70,7 @@ init
 	registerOriginSelection(commands, originSelection)
 	registerUnstuckCommand(commands, recoveryService)
 	registerRpgRuntimeCommands(commands,rpgRuntime)
+	registerReligion(commands,religionRuntime)
 	installPlayerGodMode(commands, campaign.saves)
 	installCommandRegistry(commands)
 	if MAP_INTERNAL_ID == "bootstrap_runtime_validation"

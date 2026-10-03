@@ -11,9 +11,11 @@ import WC3Compatibility
 import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import MilitarySettlementRuntime
+import ReligionRuntime
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
+ReligionRuntime religionMigrationRuntime = null
 
 function logicalRegionForPhysicalMap(string mapId) returns string
 	if mapId == "europe_west" or mapId == "europe_central_east"
@@ -72,6 +74,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	WarcraftRegionalAdapter regional
 	PlayableCountryInteractionRuntime countries = null
 	MilitarySettlementRuntime militarySettlements = null
+	ReligionRuntime religion = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
@@ -80,6 +83,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		countries = runtime
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
+	function setReligionRuntime(ReligionRuntime runtime)
+		religion = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -96,6 +101,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
 		if militarySettlements != null
 			result += ";militarySettlements=" + militarySettlements.snapshot()
+		if religion != null
+			result += ";religion=" + religion.captureState()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0
@@ -103,6 +110,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
 			lastDiagnostic = "missing military/settlement authority"
+			return false
+		if religion != null and candidate.indexOf(";religion=") < 0
+			lastDiagnostic = "missing religion authority"
 			return false
 		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement authority is invalid"
@@ -119,6 +129,9 @@ public class PlayableCampaignState implements CampaignStatePort
 		regional.recoverActiveRegion()
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
+			return false
+		if religion != null and not religion.restoreState(lastAuthorityValue(candidate, "religion"))
+			lastDiagnostic = religion.lastDiagnostic
 			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
@@ -179,6 +192,8 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// migrate transactionally from the scenario-configured initial authority.
 		if decoded.indexOf(";militarySettlements=") < 0
 			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
+		if decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
+			decoded += ";religion=" + religionMigrationRuntime.captureState()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -394,12 +409,13 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	WarcraftMapPresentation mapPresentation
 	PlayableCountryInteractionRuntime countries
 	CountryDiplomacyController countryScreen
-	construct(WarcraftRegionalAdapter regional, string physicalMapId)
+	construct(WarcraftRegionalAdapter regional, string physicalMapId, ReligionRuntime religion)
 		identity = new PlayerCampaignIdentity()
 		state = new PlayableCampaignState(regional)
 		countries = new PlayableCountryInteractionRuntime(identity)
 		countryScreen = new CountryDiplomacyController(countries, new WarcraftCountryDiplomacyPresentation())
 		state.setCountryRuntime(countries)
+		state.setReligionRuntime(religion)
 		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
 		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
@@ -459,8 +475,9 @@ function campaignAutosaveTick()
 	if campaignServices != null
 		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
-public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId) returns PlayableCampaignServices
-	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId)
+public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion) returns PlayableCampaignServices
+	religionMigrationRuntime = religion
+	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion)
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
 	registerCampaignMapCommand(commands, campaignServices.maps)

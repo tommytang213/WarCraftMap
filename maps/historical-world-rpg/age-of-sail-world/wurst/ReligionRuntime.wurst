@@ -1,0 +1,269 @@
+package ReligionRuntime
+
+import CommandRouter
+
+public constant int RELIGION_SCALE = 10000
+
+public interface ReligionModifierPort
+	function clearReligionModifiers(string characterId)
+	function applyReligionModifier(string characterId, string attributeId, int basisPoints)
+
+public class ReligionBenefit
+	string attributeId
+	string description
+	int capBasisPoints
+	construct(string attributeId, int capBasisPoints, string description)
+		this.attributeId = attributeId
+		this.capBasisPoints = capBasisPoints
+		this.description = description
+
+public class RuntimeFaith
+	string id
+	string name
+	int personalHalfSaturation
+	int influenceHalfSaturation
+	ReligionBenefit array[16] benefits
+	int benefitCount = 0
+	construct(string id, string name, int personalHalfSaturation, int influenceHalfSaturation)
+		this.id=id
+		this.name=name
+		this.personalHalfSaturation=personalHalfSaturation
+		this.influenceHalfSaturation=influenceHalfSaturation
+	function addBenefit(ReligionBenefit benefit)
+		benefits[benefitCount]=benefit
+		benefitCount++
+
+public class ReligionConversionRule
+	string fromFaithId
+	string toFaithId
+	int costUnits
+	int cooldownTicks
+	int newInvestment
+	string reputationConsequences
+	construct(string fromFaithId, string toFaithId, int costUnits, int cooldownTicks, int newInvestment, string reputationConsequences)
+		this.fromFaithId=fromFaithId
+		this.toFaithId=toFaithId
+		this.costUnits=costUnits
+		this.cooldownTicks=cooldownTicks
+		this.newInvestment=newInvestment
+		this.reputationConsequences=reputationConsequences
+
+/** Stable campaign authority. All members are IDs and integers; no Warcraft handles. */
+public class ReligionRuntime
+	ReligionModifierPort modifiers
+	RuntimeFaith array[64] faiths
+	int faithCount=0
+	ReligionConversionRule array[128] conversionRules
+	int conversionRuleCount=0
+	string characterId="player_captain"
+	string primaryFaithId=""
+	int personalInvestment=0
+	int currencyUnits=0
+	int campaignTick=0
+	string polityId=""
+	string policyId=""
+	string supportedFaithIds=""
+	string institutionalState=""
+	string regionId=""
+	string array[64] influenceFaithIds
+	int array[64] populationInfluence
+	int array[64] institutionInfluence
+	int array[64] governmentInfluence
+	int array[64] prestigeInfluence
+	int array[64] eventInfluence
+	int influenceCount=0
+	int nextConversionSequence=1
+	int lastConversionTick=-1000000000
+	string conversionHistory=""
+	string lastDiagnostic=""
+	construct(ReligionModifierPort modifiers)
+		this.modifiers=modifiers
+	function registerFaith(RuntimeFaith faith)
+		faiths[faithCount]=faith
+		faithCount++
+		influenceFaithIds[influenceCount]=faith.id
+		influenceCount++
+	function registerConversion(ReligionConversionRule rule)
+		conversionRules[conversionRuleCount]=rule
+		conversionRuleCount++
+	function faith(string id) returns RuntimeFaith
+		for i=0 to faithCount-1
+			if faiths[i].id==id
+				return faiths[i]
+		return null
+	function influenceIndex(string id) returns int
+		for i=0 to influenceCount-1
+			if influenceFaithIds[i]==id
+				return i
+		return -1
+	function setCharacterFaith(string faithId, int investment)
+		primaryFaithId=faithId
+		personalInvestment=IMaxBJ(0,investment)
+		reconcile()
+	function setContext(string polityId, string policyId, string supportedFaithIds, string institutionalState, string regionId)
+		this.polityId=polityId
+		this.policyId=policyId
+		this.supportedFaithIds=supportedFaithIds
+		this.institutionalState=institutionalState
+		this.regionId=regionId
+		reconcile()
+	function setInfluence(string faithId, int population, int institutions, int government, int prestige, int events) returns boolean
+		let i=influenceIndex(faithId)
+		if i<0 or population<0 or institutions<0 or government<0 or prestige<0
+			return false
+		populationInfluence[i]=population
+		institutionInfluence[i]=institutions
+		governmentInfluence[i]=government
+		prestigeInfluence[i]=prestige
+		eventInfluence[i]=events
+		reconcile()
+		return true
+	function influenceUnits(string faithId) returns int
+		let i=influenceIndex(faithId)
+		if i<0
+			return 0
+		return IMaxBJ(0,populationInfluence[i]+institutionInfluence[i]+governmentInfluence[i]+prestigeInfluence[i]+eventInfluence[i])
+	function benefitAmount(RuntimeFaith f, ReligionBenefit benefit) returns int
+		if f==null or personalInvestment<=0
+			return 0
+		let influence=influenceUnits(f.id)
+		let personalFactor=RELIGION_SCALE*personalInvestment div (personalInvestment+f.personalHalfSaturation)
+		let influenceFactor=RELIGION_SCALE*influence div (influence+f.influenceHalfSaturation)
+		return IMinBJ(benefit.capBasisPoints,benefit.capBasisPoints*personalFactor div RELIGION_SCALE*influenceFactor div RELIGION_SCALE)
+	function reconcile()
+		modifiers.clearReligionModifiers(characterId)
+		let f=faith(primaryFaithId)
+		if f!=null
+			for i=0 to f.benefitCount-1
+				modifiers.applyReligionModifier(characterId,f.benefits[i].attributeId,benefitAmount(f,f.benefits[i]))
+	function overview(boolean revealContext) returns string
+		let f=faith(primaryFaithId)
+		if f==null
+			return "Faith: Non-aligned\nNo personal faith is currently professed."
+		var result="Faith: "+f.name+"\nPersonal investment: "+personalInvestment.toString()+" | Current influence: "+influenceUnits(f.id).toString()
+		result+="\nBenefits use bounded diminishing returns:"
+		for i=0 to f.benefitCount-1
+			let benefit=f.benefits[i]
+			result+="\n- "+benefit.attributeId+": "+benefitAmount(f,benefit).toString()+" / "+benefit.capBasisPoints.toString()+" bp — "+benefit.description
+		if revealContext
+			result+="\nPolicy: "+policyId+" | Institutions: "+institutionalState+" | Supported faiths: "+supportedFaithIds
+		result+="\nConversion changes reputation, costs campaign resources, is recorded permanently, and is subject to cooldown."
+		return result
+	function conversionRule(string toFaithId) returns ReligionConversionRule
+		for i=0 to conversionRuleCount-1
+			let rule=conversionRules[i]
+			if rule.toFaithId==toFaithId and (rule.fromFaithId=="" or rule.fromFaithId==primaryFaithId)
+				return rule
+		return null
+	function convert(string toFaithId) returns boolean
+		let rule=conversionRule(toFaithId)
+		if rule==null or toFaithId==primaryFaithId
+			lastDiagnostic="That faith change is not available."
+			return false
+		if campaignTick-lastConversionTick<rule.cooldownTicks
+			lastDiagnostic="A prior faith change is still on cooldown."
+			return false
+		if currencyUnits<rule.costUnits
+			lastDiagnostic="The faith change is unaffordable."
+			return false
+		// Validate every input before the atomic authority mutation.
+		let previous=primaryFaithId
+		currencyUnits-=rule.costUnits
+		primaryFaithId=toFaithId
+		personalInvestment=rule.newInvestment
+		lastConversionTick=campaignTick
+		conversionHistory+=nextConversionSequence.toString()+","+previous+","+toFaithId+","+campaignTick.toString()+","+rule.costUnits.toString()+","+rule.reputationConsequences+"~"
+		nextConversionSequence++
+		reconcile()
+		lastDiagnostic=""
+		return true
+	function captureState() returns string
+		var influence=""
+		for i=0 to influenceCount-1
+			influence+=influenceFaithIds[i]+","+populationInfluence[i].toString()+","+institutionInfluence[i].toString()+","+governmentInfluence[i].toString()+","+prestigeInfluence[i].toString()+","+eventInfluence[i].toString()+"~"
+		return "v1|faith="+primaryFaithId+"|investment="+personalInvestment.toString()+"|currency="+currencyUnits.toString()+"|tick="+campaignTick.toString()+"|polity="+polityId+"|policy="+policyId+"|supported="+supportedFaithIds+"|institution="+institutionalState+"|region="+regionId+"|sequence="+nextConversionSequence.toString()+"|last="+lastConversionTick.toString()+"|history="+conversionHistory+"|influence="+influence
+	function field(string document,string key) returns string
+		let marker="|"+key+"="
+		let start=document.indexOf(marker)
+		if start<0
+			return ""
+		let tail=SubString(document,start+StringLength(marker),StringLength(document))
+		let finish=tail.indexOf("|")
+		if finish<0
+			return tail
+		return SubString(tail,0,finish)
+	function restoreState(string candidate) returns boolean
+		if not candidate.startsWith("v1|") or candidate.indexOf("|faith=")<0 or candidate.indexOf("|influence=")<0
+			lastDiagnostic="Religion authority is malformed."
+			return false
+		let candidateFaith=field(candidate,"faith")
+		if candidateFaith!="" and faith(candidateFaith)==null
+			lastDiagnostic="Religion authority names an unknown faith."
+			return false
+		let candidateInvestment=S2I(field(candidate,"investment"))
+		let candidateCurrency=S2I(field(candidate,"currency"))
+		let candidateSequence=S2I(field(candidate,"sequence"))
+		if candidateInvestment<0 or candidateCurrency<0 or candidateSequence<1
+			lastDiagnostic="Religion authority contains invalid values."
+			return false
+		primaryFaithId=candidateFaith
+		personalInvestment=candidateInvestment
+		currencyUnits=candidateCurrency
+		campaignTick=S2I(field(candidate,"tick"))
+		polityId=field(candidate,"polity")
+		policyId=field(candidate,"policy")
+		supportedFaithIds=field(candidate,"supported")
+		institutionalState=field(candidate,"institution")
+		regionId=field(candidate,"region")
+		nextConversionSequence=candidateSequence
+		lastConversionTick=S2I(field(candidate,"last"))
+		conversionHistory=field(candidate,"history")
+		let encoded=field(candidate,"influence")
+		var start=0
+		while start<StringLength(encoded)
+			let finishRelative=SubString(encoded,start,StringLength(encoded)).indexOf("~")
+			if finishRelative<0
+				start=StringLength(encoded)
+			else
+				let row=SubString(encoded,start,start+finishRelative)
+				var cursor=0
+				string array[6] columns
+				for column=0 to 5
+					let remainder=SubString(row,cursor,StringLength(row))
+					let comma=remainder.indexOf(",")
+					if comma<0
+						columns[column]=remainder
+						cursor=StringLength(row)
+					else
+						columns[column]=SubString(remainder,0,comma)
+						cursor+=comma+1
+				setInfluence(columns[0],S2I(columns[1]),S2I(columns[2]),S2I(columns[3]),S2I(columns[4]),S2I(columns[5]))
+				start+=finishRelative+1
+		reconcile()
+		lastDiagnostic=""
+		return true
+
+public class ReligionOverviewCommand implements CommandHandler
+	ReligionRuntime runtime
+	CommandOutput output
+	construct(ReligionRuntime runtime,CommandOutput output)
+		this.runtime=runtime
+		this.output=output
+	override function execute(player sender,string arguments)
+		output.show(sender,runtime.overview(true))
+
+public class ReligionConversionCommand implements CommandHandler
+	ReligionRuntime runtime
+	CommandOutput output
+	construct(ReligionRuntime runtime,CommandOutput output)
+		this.runtime=runtime
+		this.output=output
+	override function execute(player sender,string arguments)
+		if runtime.convert(arguments)
+			output.show(sender,"Faith changed. "+runtime.overview(true))
+		else
+			output.show(sender,runtime.lastDiagnostic)
+
+public function registerReligion(CommandRegistry commands, ReligionRuntime runtime)
+	commands.register("faith","religion","faith","Open the religion overview.","Show personal faith, influence contributors, benefits, polity policy, and conversion consequences.",0,0,COMMAND_RELEASE,new ReligionOverviewCommand(runtime,new WarcraftOutput()))
+	commands.register("convert","","convert <faith-id>","Change personal faith where permitted.","Validate cost, reputation consequences, cooldown, and permanent conversion history atomically.",1,1,COMMAND_RELEASE,new ReligionConversionCommand(runtime,new WarcraftOutput()))
