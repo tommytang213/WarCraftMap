@@ -394,7 +394,7 @@ public class PhysicalBoundaryRegistry
 					print(travel.diagnostic())
 				return
 	function install()
-		installedPhysicalBoundaries = this
+		installPhysicalBoundaryRegistry(this)
 		let world = GetPlayableMapRect()
 		let minX = GetRectMinX(world)
 		let maxX = GetRectMaxX(world)
@@ -415,6 +415,9 @@ public class PhysicalBoundaryRegistry
 			TriggerAddAction(listeners[i], function physicalBoundaryEntered)
 
 PhysicalBoundaryRegistry installedPhysicalBoundaries = null
+
+function installPhysicalBoundaryRegistry(PhysicalBoundaryRegistry registry)
+	installedPhysicalBoundaries = registry
 
 function physicalBoundaryEntered()
 	if installedPhysicalBoundaries != null
