@@ -120,18 +120,21 @@ def _cstring(value: str) -> bytes:
 
 
 def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]]) -> bytes:
-    """Create war3campaign.w3f v1 metadata; maps order is the chapter order."""
-    out = bytearray(struct.pack("<III", 1, 1, 0))
+    """Create Warcraft III 3.0 war3campaign.w3f v3 metadata."""
+    out = bytearray(struct.pack("<III", 3, 1, 7000))
     out += _cstring(name) + _cstring("Normal") + _cstring("WarcraftMap contributors") + _cstring(description)
-    out += struct.pack("<ii", 1, -1) + _cstring("") + _cstring("")
+    # Fixed difficulty + expansion maps.  All packaged chapters are W3X.
+    out += struct.pack("<ii", 2, -1) + _cstring("") + _cstring("")
     out += struct.pack("<i", -1) + _cstring("")
     out += struct.pack("<ifffBBBBi", 0, 0.0, 10000.0, 0.0, 0, 0, 0, 0, 0)
-    out += struct.pack("<ii", 1, len(maps))
+    # v3 fog-height extension, then the v2+ background model version.
+    out += struct.pack("<fffffi", 0.0, 0.0, 0.0, 0.0, 0.0, 0)
+    out += struct.pack("<ii", 0, len(maps))
     for title, path in maps:
-        out += _cstring(title) + _cstring(path)
+        out += struct.pack("<i", 1) + _cstring(title) + _cstring(title) + _cstring(path)
     out += struct.pack("<i", len(maps))
-    for title, path in maps:
-        out += struct.pack("<i", 1) + _cstring(title) + _cstring(path)
+    for _, path in maps:
+        out += _cstring("") + _cstring(path)
     return bytes(out)
 
 
@@ -144,19 +147,25 @@ def parse_campaign_metadata(data: bytes) -> dict:
         nonlocal position
         end = data.index(0, position); value = data[position:end].decode("utf-8"); position = end + 1; return value
     try:
-        version, campaign_version, editor = integer(), integer(), integer()
+        version = integer()
+        if version not in (1, 2, 3):
+            raise ValueError(f"unsupported war3campaign.w3f version: {version}")
+        campaign_version, editor = integer(), integer()
         name, difficulty, author, description = string(), string(), string(), string()
         flags, background = integer(), integer(); background_path, minimap = string(), string()
         ambient = integer(); ambient_path = string()
         position += 4 + 12 + 4 + 4  # fog style, three floats, BGRA, cursor race
-        map_version, count = integer(), integer()
-        maps = [(string(), string()) for _ in range(count)]
+        if version >= 3:
+            position += 20 + 4  # five extended fog floats and draw-over-sky
+        background_version = integer() if version >= 2 else None
         button_count = integer()
-        buttons = [(integer(), string(), string()) for _ in range(button_count)]
+        buttons = [(integer(), string(), string(), string()) for _ in range(button_count)]
+        map_count = integer()
+        maps = [(string(), string()) for _ in range(map_count)]
     except (IndexError, UnicodeDecodeError, struct.error, ValueError) as error:
         raise ValueError("malformed war3campaign.w3f") from error
     if position != len(data):
         raise ValueError("trailing campaign metadata")
     return {"version": version, "campaignVersion": campaign_version, "editorVersion": editor,
             "name": name, "difficulty": difficulty, "author": author, "description": description,
-            "flags": flags, "mapVersion": map_version, "maps": maps, "buttons": buttons}
+            "flags": flags, "backgroundVersion": background_version, "maps": maps, "buttons": buttons}

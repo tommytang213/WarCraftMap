@@ -2,6 +2,7 @@ import hashlib
 import json
 import shutil
 import stat
+import struct
 import sys
 import tempfile
 import unittest
@@ -19,7 +20,7 @@ from package_wurst_campaign import (  # noqa: E402
     validate_campaign,
 )
 from package_wurst_map import generate, load_config, verify_generated  # noqa: E402
-from warcraft_campaign import MpqReader, parse_campaign_metadata  # noqa: E402
+from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata  # noqa: E402
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
 import pathlib, sys, zipfile
@@ -85,6 +86,48 @@ class CampaignPackagingTests(unittest.TestCase):
             archive.writestr("war3campaign.w3f", b"not campaign metadata")
         with self.assertRaisesRegex(PackagingError, "invalid Warcraft MPQ campaign"):
             inspect_campaign(load_campaign_config(self.manifest), fake_campaign)
+
+    def test_warcraft_3_campaign_metadata_matches_independent_war3net_layout(self):
+        """Independent cursor mirrors War3Net, not the production parser."""
+        chapters = [("Begin the Campaign", "Maps/AgeOfSailWorld.w3x"), ("Africa", "Maps/Africa.w3x")]
+        data = campaign_metadata("Age of Sail: The World", "description", chapters)
+        at = 0
+        def i32():
+            nonlocal at
+            value = struct.unpack_from("<i", data, at)[0]; at += 4; return value
+        def f32():
+            nonlocal at
+            value = struct.unpack_from("<f", data, at)[0]; at += 4; return value
+        def text():
+            nonlocal at
+            end = data.index(0, at); value = data[at:end].decode(); at = end + 1; return value
+        self.assertEqual((3, 1, 7000), (i32(), i32(), i32()))
+        self.assertEqual(("Age of Sail: The World", "Normal", "WarcraftMap contributors", "description"), tuple(text() for _ in range(4)))
+        self.assertEqual((2, -1, "", "", -1, ""), (i32(), i32(), text(), text(), i32(), text()))
+        self.assertEqual(0, i32()); self.assertEqual((0.0, 10000.0, 0.0), tuple(f32() for _ in range(3)))
+        self.assertEqual(b"\0\0\0\0", data[at:at + 4]); at += 4
+        self.assertEqual(0, i32())
+        self.assertEqual((0.0,) * 5, tuple(f32() for _ in range(5)))
+        self.assertEqual((0, 0), (i32(), i32()))  # draw-over-sky, background version
+        self.assertEqual(2, i32())
+        buttons = [(i32(), text(), text(), text()) for _ in range(2)]
+        self.assertEqual([(1, t, t, p) for t, p in chapters], buttons)
+        self.assertEqual(2, i32())
+        self.assertEqual([("", p) for _, p in chapters], [(text(), text()) for _ in range(2)])
+        self.assertEqual(len(data), at)
+
+    def test_old_rc2_malformed_metadata_fixture_is_rejected(self):
+        fixture = Path(__file__).parent / "fixtures/malformed-rc2-war3campaign.w3f.hex"
+        with self.assertRaises(ValueError):
+            parse_campaign_metadata(bytes.fromhex(fixture.read_text().strip()))
+
+    def test_known_war3net_3_0_fixture_is_accepted(self):
+        fixture = Path(__file__).parent / "fixtures/war3net-campaign-3.0.0-war3campaign.w3f.hex"
+        metadata = parse_campaign_metadata(bytes.fromhex(fixture.read_text().strip()))
+        self.assertEqual((3, 7000, 1),
+                         (metadata["version"], metadata["editorVersion"], metadata["backgroundVersion"]))
+        self.assertEqual([("", "patch_3.0.0_1.w3x")], metadata["maps"])
+        self.assertEqual("patch_3.0.0_1.w3x", metadata["buttons"][0][3])
 
     def test_missing_source_invalid_assignment_and_unassigned_content_are_rejected(self):
         self.assert_invalid(lambda d: d["physicalMaps"][1].update(sourceMap="map/missing.w3x"), "missing source input")
@@ -183,6 +226,8 @@ class CampaignPackagingTests(unittest.TestCase):
         first = build_campaign(self.manifest, grill=str(self.fake)); first_structure = self.structure(first)
         # Embedded headless-test maps are ZIPs, so zipfile may find their EOCD;
         # the outer campaign itself must nevertheless begin with an MPQ header.
+        # War3Net's known campaign_3.0.0.w3n fixture is likewise raw MPQ at
+        # byte zero (no HM3W map wrapper or appended signature footer).
         self.assertEqual(b"MPQ\x1a", first.read_bytes()[:4])
         campaign = MpqReader(first)
         campaign_manifest = json.loads(campaign.read("campaign-manifest.json"))
@@ -190,7 +235,9 @@ class CampaignPackagingTests(unittest.TestCase):
         configured_maps = json.loads(self.manifest.read_text(encoding="utf-8"))["physicalMaps"]
         self.assertEqual("Age of Sail: The World", metadata["name"])
         self.assertTrue(metadata["description"])
-        self.assertEqual(configured_maps[0]["packagePath"], metadata["buttons"][0][2])
+        self.assertEqual(3, metadata["version"])
+        self.assertEqual(2, metadata["flags"])
+        self.assertEqual(configured_maps[0]["packagePath"], metadata["buttons"][0][3])
         self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
         west_bytes = campaign.read("Maps/EuropeWest.w3x")
         southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")

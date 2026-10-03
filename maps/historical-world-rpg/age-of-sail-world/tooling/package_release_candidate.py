@@ -324,7 +324,9 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "contentReportSha256": sha(PROJECT / config["requiredGates"]["phase8Content"]),
             "normalizedCampaignContentSha256": sha_bytes(canonical(first_normalized)),
             "normalizedEquivalence": {"builds": 2, "equal": True, "ignoredDifference": "ZIP/MPQ entry order, timestamps, compression, and container metadata only"},
-            "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass"},
+            "releaseStatus": config.get("releaseStatus", "blocked_pending_human_launch_smoke_test"),
+            "requiredHumanValidation": config.get("requiredHumanValidation"),
+            "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "blocked_pending_execution"},
         }
         payloads = {config["archive"]["campaignPath"]: campaign_bytes}
         for relative in config["releaseDocuments"]:
