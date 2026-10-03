@@ -95,3 +95,7 @@ public function setCampaignManuallyPaused(boolean paused)
 
 public function isCampaignPaused() returns boolean
 	return campaignManagementPause.isCampaignPaused()
+
+/** Shared owner-aware controller for playable modal services. */
+public function getManagementScreenPauseController() returns ManagementScreenPauseController
+	return campaignManagementPause

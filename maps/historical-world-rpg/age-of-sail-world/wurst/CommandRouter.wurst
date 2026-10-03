@@ -256,10 +256,31 @@ public class PlayerCampaignIdentity
 		currentAllegiancePolityId = polityId
 		return true
 
+	function physicalMapId() returns string
+		return startingPhysicalMapId
+	function regionalInstanceId() returns string
+		return startingRegionalInstanceId
+	function settlementId() returns string
+		return startingSettlementId
+	function originId() returns string
+		return originPolityId
+	function allegianceId() returns string
+		return currentAllegiancePolityId
+	/** Save reconstruction hook. Validation is deliberately performed by the state port first. */
+	function restore(string origin, string allegiance, string mapId, string regionId, string settlement)
+		originPolityId = origin
+		currentAllegiancePolityId = allegiance
+		startingPhysicalMapId = mapId
+		startingRegionalInstanceId = regionId
+		startingSettlementId = settlement
+
 public interface OriginSelectionPresentation
 	function show(string heading, string rows, int page, int pages)
 	function showError(string message)
 	function close()
+
+public interface OriginSelectionObserver
+	function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
 
 public class WarcraftOriginPresentation implements OriginSelectionPresentation
 	override function show(string heading, string rows, int page, int pages)
@@ -291,6 +312,7 @@ public class NewCampaignOriginController
 	string query = ""
 	OriginSelectionPresentation presentation
 	PlayerCampaignIdentity identity
+	OriginSelectionObserver observer = null
 
 	construct(int pageSize, OriginSelectionPresentation presentation, PlayerCampaignIdentity identity)
 		this.pageSize = pageSize
@@ -298,6 +320,9 @@ public class NewCampaignOriginController
 			this.pageSize = 8
 		this.presentation = presentation
 		this.identity = identity
+
+	function setObserver(OriginSelectionObserver observer)
+		this.observer = observer
 
 	function add(string polityId, string name, string physicalMapId, string regionalInstanceId, string settlementId)
 		if polityId == "" or name == "" or physicalMapId == "" or regionalInstanceId == "" or settlementId == ""
@@ -355,6 +380,8 @@ public class NewCampaignOriginController
 			let row = definitions[i]
 			if row.polityId == polityId
 				if identity.startCampaign(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
+					if observer != null
+						observer.campaignStarted(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
 					presentation.close()
 					return true
 		presentation.showError("That polity is not active in the authoritative 1450 world.")
