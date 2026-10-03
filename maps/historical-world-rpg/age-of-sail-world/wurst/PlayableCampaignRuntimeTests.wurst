@@ -1,0 +1,138 @@
+package PlayableCampaignRuntimeTests
+
+import CampaignSaveManager
+import CampaignAutosaveScheduler
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import RemoteRegionManagement
+
+class MemoryStorage implements CampaignSaveStorage
+	string array[64] keys
+	string array[64] values
+	int count = 0
+	boolean failNext = false
+	string lastDiagnostic = ""
+	function find(string key) returns int
+		for i = 0 to count - 1
+			if keys[i] == key
+				return i
+		return -1
+	override function contains(string key) returns boolean
+		return find(key) >= 0
+	override function read(string key) returns string
+		let i = find(key)
+		if i >= 0
+			return values[i]
+		return ""
+	override function writeTransactional(string key, string payload) returns boolean
+		if failNext
+			failNext = false
+			lastDiagnostic = "interrupted fixture commit"
+			return false
+		let i = find(key)
+		if i >= 0
+			values[i] = payload
+		else
+			keys[count] = key
+			values[count] = payload
+			count++
+		return true
+	override function diagnostic() returns string
+		return lastDiagnostic
+
+class FakeLoader implements PhysicalMapLoader
+	string loaded = ""
+	override function load(string packagePath)
+		loaded = packagePath
+
+class FakeRegionRuntime implements RegionCommandRuntime
+	string active = "europe"
+	string snapshot = ""
+	override function snapshotRuntime() returns string
+		return active
+	override function restoreRuntime(string value)
+		active = value
+	override function retireCommandRegion(string regionId)
+		snapshot = regionId
+	override function reconstructCommandRegion(player whichPlayer, string regionId) returns boolean
+		active = regionId
+		return true
+	override function focusCommandRegion(player whichPlayer, string regionId)
+		active = regionId
+	override function diagnostic() returns string
+		return ""
+
+@test function playableAutosaveLoadAndIntegrityAreRuntimeWired()
+	let storage = new MemoryStorage()
+	let regional = new WarcraftRegionalAdapter()
+	let state = new PlayableCampaignState(regional)
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let scheduler = new CampaignAutosaveScheduler(manager, 10.)
+	state.replaceAuthority("v1;map=west;region=europe;quests=q1_open;discovery=lisbon;orders=fleet_sail")
+	scheduler.advance(10., "day-1").assertTrue()
+	state.replaceAuthority("v1;map=east;region=europe;quests=q1_done;discovery=lisbon;orders=fleet_hold")
+	manager.load(SAVE_SLOT_AUTOSAVE, 1).assertTrue()
+	(state.authorityDocument().indexOf("q1_open") >= 0).assertTrue()
+	let before = state.authorityDocument()
+	storage.values[storage.find("autosave_01")] = storage.read("autosave_01") + "tampered"
+	manager.load(SAVE_SLOT_AUTOSAVE, 1).assertFalse()
+	state.authorityDocument().assertEquals(before)
+
+@test function transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition()
+	let storage = new MemoryStorage()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let loader = new FakeLoader()
+	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
+	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", true, 1., 0.)
+	travel.transition(edge, .25, "day-2").assertTrue()
+	travel.physicalMapId().assertEquals("east")
+	loader.loaded.assertEquals("Maps/East.w3x")
+	(state.authorityDocument().indexOf("arrival=") >= 0).assertTrue()
+	storage.contains("major_milestone").assertTrue()
+
+@test function interruptedTransitionKeepsPhysicalRuntimeAndAuthority()
+	let storage = new MemoryStorage()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let loader = new FakeLoader()
+	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
+	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
+	let before = state.authorityDocument()
+	storage.failNext = true
+	travel.transition(edge, .4, "day-3").assertFalse()
+	state.authorityDocument().assertEquals(before)
+	travel.physicalMapId().assertEquals("west")
+	loader.loaded.assertEquals("")
+
+@test function changedCityAndQuestSurviveMapRevisit()
+	let storage = new MemoryStorage()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), new FakeLoader(), "west", "europe")
+	let east = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
+	let west = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
+	state.replaceAuthority("v1;map=west;region=europe;quests=delivery_started;discovery=lisbon;orders=;city_lisbon_owner=portugal")
+	travel.transition(east, .4, "day-4").assertTrue()
+	state.replaceAuthority(state.authorityDocument() + ";quests=delivery_complete;city_lisbon_owner=castile")
+	travel.transition(west, .4, "day-5").assertTrue()
+	(state.authorityDocument().indexOf("delivery_complete") >= 0).assertTrue()
+	(state.authorityDocument().indexOf("city_lisbon_owner=castile") >= 0).assertTrue()
+
+@test function remoteAccessDoesNotRevealUnknownOrMovePhysicalRegion()
+	let access = new PlayableRegionAccess()
+	access.add("europe", true, true)
+	access.add("africa", true, true)
+	access.add("pacific", false, true)
+	access.regionExists("africa").assertTrue()
+	access.regionIsKnown(Player(0), "africa").assertTrue()
+	access.mayCommandRegion(Player(0), "africa").assertTrue()
+	access.regionIsKnown(Player(0), "pacific").assertFalse()
+	let runtime = new FakeRegionRuntime()
+	let selector = new RegionSelector(access, runtime, "europe")
+	selector.select(Player(0), "africa").assertTrue()
+	selector.getPhysicalRegionId().assertEquals("europe")
+	selector.getCommandRegionId().assertEquals("africa")
+	selector.returnToPhysicalRegion(Player(0)).assertTrue()
+	selector.getPhysicalRegionId().assertEquals("europe")
+	runtime.active.assertEquals("europe")

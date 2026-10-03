@@ -1,0 +1,401 @@
+package PlayableCampaignRuntime
+
+import CampaignSaveManager
+import CampaignAutosaveScheduler
+import CommandRouter
+import MapDiscoveryScreen
+import ManagementScreenPauseController
+import RemoteRegionManagement
+import WarcraftRegionalRuntime
+import WC3Compatibility
+
+public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
+public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
+
+function logicalRegionForPhysicalMap(string mapId) returns string
+	if mapId == "europe_west" or mapId == "europe_central_east"
+		return "europe"
+	if mapId == "africa" or mapId == "middle_east_india" or mapId == "southeast_asia" or mapId == "east_asia" or mapId == "americas_caribbean" or mapId == "pacific"
+		return mapId
+	return "europe"
+
+function lastAuthorityValue(string document, string key) returns string
+	let marker = ";" + key + "="
+	var found = -1
+	var search = 0
+	while search < StringLength(document)
+		let relative = SubString(document, search, StringLength(document)).indexOf(marker)
+		if relative < 0
+			search = StringLength(document)
+		else
+			found = search + relative + StringLength(marker)
+			search = found
+	if found < 0
+		return ""
+	let tail = SubString(document, found, StringLength(document))
+	let finish = tail.indexOf(";")
+	if finish < 0
+		return tail
+	return SubString(tail, 0, finish)
+
+/**
+ * The compact runtime authority uses stable IDs only. Domain payloads are supplied by the
+ * gameplay systems (quests, settlements, inventory, fleets, orders and discovery); Warcraft
+ * handles and UI state never enter this document.
+ */
+public class PlayableCampaignState implements CampaignStatePort
+	string authority = "v1;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders="
+	string staged = ""
+	boolean transitionOpen = false
+	string lastDiagnostic = ""
+	WarcraftRegionalAdapter regional
+	construct(WarcraftRegionalAdapter regional)
+		this.regional = regional
+	function replaceAuthority(string value)
+		authority = value
+	function authorityDocument() returns string
+		return authority
+	function beginTransition()
+		transitionOpen = true
+	function finishTransition()
+		transitionOpen = false
+	function cancelTransition()
+		transitionOpen = false
+	override function isSaveSafe() returns boolean
+		return not transitionOpen
+	override function captureAuthoritativeState() returns string
+		return authority
+	override function validateAuthoritativeState(string candidate) returns boolean
+		if not candidate.startsWith("v1;") or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0
+			lastDiagnostic = "missing or incompatible authoritative campaign domains"
+			return false
+		staged = candidate
+		lastDiagnostic = ""
+		return true
+	override function reconstructRuntime(string candidate) returns boolean
+		// Stable representation definitions already contain the authoritative coordinates.
+		// Missing Warcraft objects are recreated; unrelated regions remain abstract.
+		regional.recoverActiveRegion()
+		return true
+	override function activateAuthoritativeState(string candidate)
+		authority = staged
+		staged = ""
+	override function diagnostic() returns string
+		return lastDiagnostic
+
+function runtimeChecksum(string value) returns int
+	var result = 5381
+	for i = 0 to StringLength(value) - 1
+		result = ModuloInteger(result * 33 + StringHash(SubString(value, i, i + 1)), 2147483000)
+	return result
+
+/** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
+public class PlayableCampaignCodec implements CampaignSaveCodec
+	string lastDiagnostic = ""
+	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+		let body = "schema=1|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
+		return "integrity=" + runtimeChecksum(body).toString() + "|" + body
+	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
+		let marker = "|schema="
+		let cut = payload.indexOf(marker)
+		if not payload.startsWith("integrity=") or cut < 0
+			lastDiagnostic = "save envelope is malformed"
+			return ""
+		let expected = S2I(SubString(payload, 10, cut))
+		let body = SubString(payload, cut + 1, StringLength(payload))
+		if runtimeChecksum(body) != expected
+			lastDiagnostic = "save integrity check failed"
+			return ""
+		let currentPrefix = "schema=1|slot=" + expectedSlotId + "|"
+		let legacyPrefix = "schema=0|slot=" + expectedSlotId + "|"
+		if body.indexOf(currentPrefix) != 0 and body.indexOf(legacyPrefix) != 0
+			lastDiagnostic = "save schema or slot is incompatible"
+			return ""
+		let stateMarker = "|state="
+		let stateCut = body.indexOf(stateMarker)
+		if stateCut < 0
+			lastDiagnostic = "save has no authoritative state"
+			return ""
+		var decoded = SubString(body, stateCut + StringLength(stateMarker), StringLength(body))
+		if body.indexOf(legacyPrefix) == 0
+			// Schema 0 predates explicit remote-order and discovery domains.
+			if decoded.startsWith("v0;")
+				decoded = "v1;" + SubString(decoded, 3, StringLength(decoded))
+			if decoded.indexOf(";discovery=") < 0
+				decoded += ";discovery="
+			if decoded.indexOf(";orders=") < 0
+				decoded += ";orders="
+		lastDiagnostic = ""
+		return decoded
+	override function diagnostic() returns string
+		return lastDiagnostic
+
+public class BoundaryCorrespondence
+	string id
+	string sourceMapId
+	string destinationMapId
+	string destinationPath
+	string destinationRegionId
+	boolean reverse
+	real scale
+	real offset
+	construct(string id, string sourceMapId, string destinationMapId, string destinationPath, string destinationRegionId, boolean reverse, real scale, real offset)
+		this.id = id
+		this.sourceMapId = sourceMapId
+		this.destinationMapId = destinationMapId
+		this.destinationPath = destinationPath
+		this.destinationRegionId = destinationRegionId
+		this.reverse = reverse
+		this.scale = scale
+		this.offset = offset
+	function destinationPosition(real normalized) returns real
+		var value = normalized
+		if reverse
+			value = 1. - value
+		value = value * scale + offset
+		if value < 0.
+			return 0.
+		if value > 1.
+			return 1.
+		return value
+
+public interface PhysicalMapLoader
+	function load(string packagePath)
+
+public class WarcraftPhysicalMapLoader implements PhysicalMapLoader
+	override function load(string packagePath)
+		compatLoadPhysicalMap(packagePath)
+
+/** Commit-first transition coordinator. Loading is the sole irreversible step. */
+public class CampaignTravelRuntime
+	PlayableCampaignState state
+	CampaignSaveManager saves
+	CampaignAutosaveScheduler autosaves
+	PhysicalMapLoader loader
+	string currentMapId
+	string currentRegionId
+	string lastDiagnostic = ""
+	construct(PlayableCampaignState state, CampaignSaveManager saves, CampaignAutosaveScheduler autosaves, PhysicalMapLoader loader, string mapId, string regionId)
+		this.state = state
+		this.saves = saves
+		this.autosaves = autosaves
+		this.loader = loader
+		currentMapId = mapId
+		currentRegionId = regionId
+	function physicalMapId() returns string
+		return currentMapId
+	function physicalRegionId() returns string
+		return currentRegionId
+	function startAt(string mapId, string regionId)
+		currentMapId = mapId
+		currentRegionId = regionId
+	function transition(BoundaryCorrespondence boundary, real normalized, string createdAt) returns boolean
+		if boundary == null or boundary.sourceMapId != currentMapId or normalized < 0. or normalized > 1.
+			lastDiagnostic = "transition is not adjacent to the active physical map"
+			return false
+		let previous = state.authorityDocument()
+		let arrival = boundary.destinationPosition(normalized)
+		state.beginTransition()
+		state.replaceAuthority(previous + ";transition=" + boundary.id + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";arrival=" + arrival.toString())
+		state.finishTransition()
+		if not saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
+			state.replaceAuthority(previous)
+			state.cancelTransition()
+			lastDiagnostic = saves.diagnostic()
+			return false
+		currentMapId = boundary.destinationMapId
+		currentRegionId = boundary.destinationRegionId
+		if saves.hasDeferredSave()
+			saves.retryDeferred()
+		loader.load(boundary.destinationPath)
+		lastDiagnostic = ""
+		return true
+	function diagnostic() returns string
+		return lastDiagnostic
+
+public class SaveCommand implements CommandHandler
+	CampaignSaveManager saves
+	CommandOutput output
+	boolean loading
+	construct(CampaignSaveManager saves, CommandOutput output, boolean loading)
+		this.saves = saves
+		this.output = output
+		this.loading = loading
+	override function execute(player sender, string arguments)
+		var ok = false
+		if loading
+			ok = saves.load(SAVE_SLOT_MANUAL, S2I(arguments))
+		else
+			ok = saves.save(SAVE_SLOT_MANUAL, S2I(arguments), I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+		if ok
+			output.show(sender, "Campaign save operation completed.")
+		else
+			output.show(sender, saves.diagnostic())
+
+public function registerCampaignSaveCommands(CommandRegistry commands, CampaignSaveManager saves)
+	commands.register("save", "", "save <slot>", "Save the campaign.", "Write authoritative campaign state to a manual slot.", 1, 1, COMMAND_RELEASE, new SaveCommand(saves, new WarcraftOutput(), false))
+	commands.register("load", "", "load <slot>", "Load the campaign.", "Validate, migrate, reconstruct, then activate a manual save without damaging the active campaign on rejection.", 1, 1, COMMAND_RELEASE, new SaveCommand(saves, new WarcraftOutput(), true))
+
+/** Knowledge and command rights are explicit runtime facts, never inferred from object presence. */
+public class PlayableRegionAccess implements RegionAccessPolicy
+	string array[64] ids
+	boolean array[64] known
+	boolean array[64] authorized
+	int count = 0
+	function add(string id, boolean isKnown, boolean mayCommand)
+		ids[count] = id
+		known[count] = isKnown
+		authorized[count] = mayCommand
+		count++
+	function find(string id) returns int
+		for i = 0 to count - 1
+			if ids[i] == id
+				return i
+		return -1
+	function revealAndAuthorize(string id)
+		let i = find(id)
+		if i >= 0
+			known[i] = true
+			authorized[i] = true
+	override function regionExists(string regionId) returns boolean
+		return find(regionId) >= 0
+	override function regionIsKnown(player whichPlayer, string regionId) returns boolean
+		let i = find(regionId)
+		return i >= 0 and known[i]
+	override function mayCommandRegion(player whichPlayer, string regionId) returns boolean
+		let i = find(regionId)
+		return i >= 0 and authorized[i]
+
+public class PlayableRegionCommandRuntime implements RegionCommandRuntime
+	WarcraftRegionalAdapter regional
+	string previousRegion = ""
+	string lastDiagnostic = ""
+	construct(WarcraftRegionalAdapter regional)
+		this.regional = regional
+	override function snapshotRuntime() returns string
+		return previousRegion
+	override function restoreRuntime(string snapshot)
+		if snapshot != ""
+			regional.activateRegion(snapshot)
+	override function retireCommandRegion(string regionId)
+		previousRegion = regionId
+		regional.retireRegion(regionId)
+	override function reconstructCommandRegion(player whichPlayer, string regionId) returns boolean
+		regional.reconstructRegion(regionId)
+		return true
+	override function focusCommandRegion(player whichPlayer, string regionId)
+		// Each representation retains authoritative coordinates; activating it cannot move the party.
+		regional.activateRegion(regionId)
+	override function diagnostic() returns string
+		return lastDiagnostic
+
+public class WarcraftMapPresentation implements MapPresentationRuntime
+	CommandOutput output
+	string knownRegions = "europe"
+	string knownLocations = ""
+	string knownSearchAreas = ""
+	string knownBreadcrumbs = ""
+	construct(CommandOutput output)
+		this.output = output
+	function setKnowledge(string regions, string locations, string searchAreas, string breadcrumbs)
+		knownRegions = regions
+		knownLocations = locations
+		knownSearchAreas = searchAreas
+		knownBreadcrumbs = breadcrumbs
+	override function showWorldMap(string physicalRegionId, string commandRegionId)
+		output.show(Player(0), "World map\nKnown regions: " + knownRegions + "\nKnown routes: " + knownBreadcrumbs + "\nPhysical: " + physicalRegionId + "  Command: " + commandRegionId)
+	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
+		output.show(Player(0), "Regional map: " + regionId + "\nKnown locations: " + knownLocations + "\nKnown search areas: " + knownSearchAreas + "\nRoute: " + knownBreadcrumbs)
+	override function focusExact(string locationId)
+		output.show(Player(0), "Exact known location: " + locationId)
+	override function focusSearchArea(string searchAreaId)
+		output.show(Player(0), "Known search area: " + searchAreaId)
+	override function hideMap()
+		skip
+
+public class CampaignMapCommand implements CommandHandler
+	MapDiscoveryScreenController maps
+	construct(MapDiscoveryScreenController maps)
+		this.maps = maps
+	override function execute(player sender, string arguments)
+		if arguments == "close"
+			maps.close()
+		else if arguments == "world"
+			maps.openWorldMap()
+		else
+			maps.openRegionalMap(arguments)
+
+public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps)
+	commands.register("map", "worldmap", "map <world|region-id|close>", "Open a discovered campaign map.", "Show legitimately known geography, locations, search areas, and route breadcrumbs without moving the physical character.", 1, 1, COMMAND_RELEASE, new CampaignMapCommand(maps))
+
+public class PlayableCampaignServices implements OriginSelectionObserver, CampaignLoadObserver
+	PlayableCampaignState state
+	CampaignSaveManager saves
+	CampaignAutosaveScheduler autosaves
+	CampaignTravelRuntime travel
+	PlayableRegionAccess regionAccess
+	RegionSelector regionSelector
+	MapDiscoveryScreenController maps
+	WarcraftMapPresentation mapPresentation
+	construct(WarcraftRegionalAdapter regional, string physicalMapId)
+		state = new PlayableCampaignState(regional)
+		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
+		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
+		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
+		travel = new CampaignTravelRuntime(state, saves, autosaves, new WarcraftPhysicalMapLoader(), physicalMapId, logicalRegion)
+		regionAccess = new PlayableRegionAccess()
+		regionAccess.add("europe", true, true)
+		regionAccess.add("africa", false, false)
+		regionAccess.add("middle_east_india", false, false)
+		regionAccess.add("southeast_asia", false, false)
+		regionAccess.add("east_asia", false, false)
+		regionAccess.add("americas_caribbean", false, false)
+		regionAccess.add("pacific", false, false)
+		regionAccess.revealAndAuthorize(logicalRegion)
+		regionSelector = new RegionSelector(regionAccess, new PlayableRegionCommandRuntime(regional), logicalRegion)
+		mapPresentation = new WarcraftMapPresentation(new WarcraftOutput())
+		mapPresentation.setKnowledge(logicalRegion, "", "", "")
+		maps = new MapDiscoveryScreenController(getManagementScreenPauseController(), mapPresentation, logicalRegion, logicalRegion)
+		saves.setLoadObserver(this)
+		// Destination maps resume the last commit. Rejection is intentionally non-destructive.
+		if physicalMapId != "bootstrap_runtime_validation"
+			saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
+	function sessionStart(string createdAt)
+		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
+	function majorMilestone(string createdAt)
+		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
+	override function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
+		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
+		state.replaceAuthority("v1;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=")
+		travel.startAt(physicalMapId, logicalRegion)
+		regionAccess.revealAndAuthorize(logicalRegion)
+		regionSelector.setPhysicalRegionId(logicalRegion)
+		mapPresentation.setKnowledge(logicalRegion, settlementId, "", "")
+		maps.setPhysicalRegion(logicalRegion)
+		maps.setCommandRegion(logicalRegion)
+		sessionStart("campaign-start")
+	override function afterCampaignLoad()
+		let loadedMap = lastAuthorityValue(state.authorityDocument(), "map")
+		let loadedRegion = lastAuthorityValue(state.authorityDocument(), "region")
+		if loadedMap != "" and loadedRegion != ""
+			travel.startAt(loadedMap, loadedRegion)
+			regionAccess.revealAndAuthorize(loadedRegion)
+			regionSelector.setPhysicalRegionId(loadedRegion)
+			maps.setPhysicalRegion(loadedRegion)
+			maps.setCommandRegion(loadedRegion)
+
+public PlayableCampaignServices campaignServices = null
+timer campaignAutosaveTimer = null
+
+function campaignAutosaveTick()
+	if campaignServices != null
+		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+
+public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId) returns PlayableCampaignServices
+	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId)
+	registerCampaignSaveCommands(commands, campaignServices.saves)
+	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
+	registerCampaignMapCommand(commands, campaignServices.maps)
+	campaignAutosaveTimer = CreateTimer()
+	TimerStart(campaignAutosaveTimer, CAMPAIGN_AUTOSAVE_SECONDS, true, function campaignAutosaveTick)
+	return campaignServices

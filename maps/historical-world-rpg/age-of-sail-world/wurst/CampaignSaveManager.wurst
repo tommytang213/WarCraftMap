@@ -53,7 +53,8 @@ public class CampaignSaveManager
 	int deferredIndex = -1
 	string deferredCreatedAt = ""
 	string lastDiagnostic = ""
-	CampaignLoadObserver loadObserver = null
+	CampaignLoadObserver array[16] loadObservers
+	int loadObserverCount = 0
 
 	construct(CampaignSaveStorage saveStorage, CampaignSaveCodec saveCodec, CampaignStatePort statePort)
 		storage = saveStorage
@@ -70,7 +71,9 @@ public class CampaignSaveManager
 		return lastDiagnostic
 
 	function setLoadObserver(CampaignLoadObserver observer)
-		loadObserver = observer
+		if observer != null and loadObserverCount < 16
+			loadObservers[loadObserverCount] = observer
+			loadObserverCount++
 
 	function save(int kind, int index, string createdAt) returns boolean
 		let slotId = campaignSlotId(kind, index)
@@ -117,8 +120,8 @@ public class CampaignSaveManager
 			lastDiagnostic = "runtime reconstruction failed: " + state.diagnostic()
 			return false
 		state.activateAuthoritativeState(candidate)
-		if loadObserver != null
-			loadObserver.afterCampaignLoad()
+		for i = 0 to loadObserverCount - 1
+			loadObservers[i].afterCampaignLoad()
 		lastDiagnostic = ""
 		return true
 
@@ -159,4 +162,3 @@ public class WarcraftCampaignSaveStorage implements CampaignSaveStorage
 
 	override function diagnostic() returns string
 		return lastDiagnostic
-

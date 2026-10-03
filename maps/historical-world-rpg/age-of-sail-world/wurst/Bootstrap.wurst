@@ -10,6 +10,7 @@ import CampaignTimeline
 import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
+import PlayableCampaignRuntime
 
 constant string MAP_INTERNAL_ID = "age-of-sail-world"
 constant int SAVE_SCHEMA_VERSION = 1
@@ -39,19 +40,22 @@ init
 	clock.attachTimer(new WarcraftCampaignTimerAdapter(), 1.)
 	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
+	let campaign = initializePlayableCampaignRuntime(commands, MAP_INTERNAL_ID)
 	configureMilitarySettlementScenario(militarySettlementRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let playerIdentity = new PlayerCampaignIdentity()
 	let originSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), playerIdentity)
+	originSelection.setObserver(campaign)
 	configureGeneratedOrigins(originSelection)
 	configureGeneratedRpg(rpgRuntime)
 	registerOriginSelection(commands, originSelection)
 	registerUnstuckCommand(commands, recoveryService)
 	registerRpgRuntimeCommands(commands,rpgRuntime)
-	installPlayerGodMode(commands, null)
+	installPlayerGodMode(commands, campaign.saves)
 	installCommandRegistry(commands)
-	PauseGame(true)
-	originSelection.showPage(1)
+	if MAP_INTERNAL_ID == "bootstrap_runtime_validation"
+		PauseGame(true)
+		originSelection.showPage(1)
 	if SCENARIO_SCHEMA_VERSION <= 0
 		print("Scenario data failed to load.")
 	if getScenarioRuntimeData() == ""

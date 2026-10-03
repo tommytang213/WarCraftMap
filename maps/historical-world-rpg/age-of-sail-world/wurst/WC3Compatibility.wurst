@@ -81,6 +81,10 @@ public function compatRemoveSaveDirectory(string name) returns boolean
 	return RemoveSaveDirectory(name)
 public function compatSaveCheckpoint(string name, boolean showWindow)
 	SaveGameCheckpoint(name, showWindow)
+/** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
+public function compatLoadPhysicalMap(string mapPath)
+	SetNextLevelBJ(mapPath)
+	EndGame(true)
 
 // Native-save regression lifecycle. These adapters are intentionally generic;
 // the fixture and developer runner own the test protocol.
