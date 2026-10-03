@@ -35,7 +35,7 @@ from treasures import validate_catalog as validate_treasure_catalog  # noqa: E40
 STABLE_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 CAMPAIGN_FORMAT = "warcraftmap_physical_maps_v1"
 CAMPAIGN_ARCHIVE_FORMAT = "warcraftmap_campaign_v1"
-LOCAL_PROVENANCE_VERSION = 1
+LOCAL_PROVENANCE_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -287,12 +287,11 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     runtime_path.write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     wurst_path = generated / GENERATED_WURST
     text = wurst_path.read_text(encoding="utf-8")
-    encoded = json.dumps(runtime, ensure_ascii=False, sort_keys=True, separators=(",", ":")).replace("\\", "\\\\").replace('"', '\\"')
-    text = re.sub(r'public constant string SCENARIO_RUNTIME_JSON = ".*"', f'public constant string SCENARIO_RUNTIME_JSON = "{encoded}"', text)
     origin_configuration = "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
     for origin in origins:
         start = origin["startingLocation"]
-        values = [origin["polityId"], origin["name"], start["physicalMapId"],
+        package_path = next(item.package_path for item in config.maps if item.id == start["physicalMapId"])
+        values = [origin["polityId"], origin["name"], start["physicalMapId"], package_path,
                   start["regionalInstanceId"], start["settlementId"]]
         args = ", ".join(json.dumps(value, ensure_ascii=False) for value in values)
         origin_configuration += f"\tcontroller.add({args})\n"
@@ -300,7 +299,12 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
         "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n\tskip\n",
         origin_configuration,
     )
-    text += f'\npublic constant string PHYSICAL_MAP_ID = "{physical.id}"\n'
+    identity_pattern = r'public constant string PHYSICAL_MAP_ID = "[^"]*"'
+    if len(re.findall(identity_pattern, text)) != 1:
+        raise PackagingError(
+            f"runtime localization stage failed [{physical.id}]: generated ScenarioData must declare exactly one PHYSICAL_MAP_ID"
+        )
+    text = re.sub(identity_pattern, f'public constant string PHYSICAL_MAP_ID = "{physical.id}"', text)
     wurst_path.write_text(text, encoding="utf-8")
     provenance_path = generated / PROVENANCE
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
@@ -340,11 +344,13 @@ def _write_campaign(output: Path, config: CampaignConfig, built: list[tuple[Phys
         "name": config.name, "bootstrapMapId": config.bootstrap_map_id,
         "maps": [{"id": item.id, "packagePath": item.package_path, "sha256": _sha(archive), "bootstrap": item.bootstrap} for item, archive in built],
     }
-    # The configured order is the authored chapter order.  In particular the
-    # bootstrap is first, rather than relying on an archive member sort order.
-    chapters = [(item.chapter_title, item.package_path) for item, _ in built]
+    # Regional maps remain campaign members so SetNextLevel can reach them, but
+    # only the bootstrap is player-selectable. This prevents bypassing origin
+    # selection from the Custom Campaign chapter list.
+    maps = [(item.chapter_title, item.package_path) for item, _ in built]
+    chapters = [(item.chapter_title, item.package_path) for item, _ in built if item.bootstrap]
     files = {
-        "war3campaign.w3f": campaign_metadata(config.name, config.description, chapters),
+        "war3campaign.w3f": campaign_metadata(config.name, config.description, maps, chapters),
         "campaign-manifest.json": (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode(),
         "(listfile)": ("\r\n".join(["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x, _ in built)]) + "\r\n").encode(),
     }
@@ -363,7 +369,7 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
     if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
         raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
     expected_order = [("", path) for _, path in expected_chapters]
-    expected_buttons = [(1, title, title, path) for title, path in expected_chapters]
+    expected_buttons = [(1, item.chapter_title, item.chapter_title, item.package_path) for item in config.maps if item.bootstrap]
     if metadata["version"] != 3 or metadata["flags"] != 2 or metadata["backgroundVersion"] != 0 or metadata["maps"] != expected_order or metadata["buttons"] != expected_buttons:
         raise PackagingError("campaign inspection stage failed: chapter metadata or ordering is invalid")
     if not expected_chapters or expected_chapters[0][1] != next(x.package_path for x in config.maps if x.id == config.bootstrap_map_id):

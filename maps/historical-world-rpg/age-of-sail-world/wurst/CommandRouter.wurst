@@ -280,7 +280,7 @@ public interface OriginSelectionPresentation
 	function close()
 
 public interface OriginSelectionObserver
-	function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
+	function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 
 public class WarcraftOriginPresentation implements OriginSelectionPresentation
 	override function show(string heading, string rows, int page, int pages)
@@ -295,12 +295,14 @@ class OriginDefinition
 	string polityId
 	string name
 	string physicalMapId
+	string packagePath
 	string regionalInstanceId
 	string settlementId
-	construct(string polityId, string name, string physicalMapId, string regionalInstanceId, string settlementId)
+	construct(string polityId, string name, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 		this.polityId = polityId
 		this.name = name
 		this.physicalMapId = physicalMapId
+		this.packagePath = packagePath
 		this.regionalInstanceId = regionalInstanceId
 		this.settlementId = settlementId
 
@@ -324,13 +326,13 @@ public class NewCampaignOriginController
 	function setObserver(OriginSelectionObserver observer)
 		this.observer = observer
 
-	function add(string polityId, string name, string physicalMapId, string regionalInstanceId, string settlementId)
-		if polityId == "" or name == "" or physicalMapId == "" or regionalInstanceId == "" or settlementId == ""
+	function add(string polityId, string name, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
+		if polityId == "" or name == "" or physicalMapId == "" or packagePath == "" or regionalInstanceId == "" or settlementId == ""
 			return
 		for i = 0 to count - 1
 			if definitions[i].polityId == polityId
 				return
-		definitions[count] = new OriginDefinition(polityId, name, physicalMapId, regionalInstanceId, settlementId)
+		definitions[count] = new OriginDefinition(polityId, name, physicalMapId, packagePath, regionalInstanceId, settlementId)
 		count++
 
 	function matches(OriginDefinition row) returns boolean
@@ -381,7 +383,7 @@ public class NewCampaignOriginController
 			if row.polityId == polityId
 				if identity.startCampaign(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
 					if observer != null
-						observer.campaignStarted(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
+						observer.campaignStarted(row.polityId, row.physicalMapId, row.packagePath, row.regionalInstanceId, row.settlementId)
 					presentation.close()
 					return true
 		presentation.showError("That polity is not active in the authoritative 1450 world.")

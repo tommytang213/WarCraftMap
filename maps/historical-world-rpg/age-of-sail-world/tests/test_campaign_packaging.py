@@ -171,6 +171,63 @@ class CampaignPackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data.*physical-maps.json"):
             verify_generated(base, generated)
 
+    def test_every_packaged_map_has_one_authoritative_runtime_identity(self):
+        campaign = load_campaign_config(self.manifest)
+        world = validate_campaign(campaign)
+        base = load_config(campaign.map_config_path)
+        bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text(encoding="utf-8")
+        self.assertNotIn("MAP_INTERNAL_ID", bootstrap)
+        self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", bootstrap)
+        for physical in campaign.maps:
+            generated = self.project / "_build/identity" / physical.id
+            generate(base, generated)
+            _localize_runtime(campaign, world, physical, generated)
+            scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+            declaration = f'public constant string PHYSICAL_MAP_ID = "{physical.id}"'
+            self.assertEqual(1, scenario.count("public constant string PHYSICAL_MAP_ID"))
+            self.assertIn(declaration, scenario)
+            runtime = json.loads((generated / "scenario-runtime.json").read_text(encoding="utf-8"))
+            self.assertEqual(physical.id, runtime["physicalMap"]["id"])
+
+    def test_bootstrap_alone_registers_and_defers_origin_selection(self):
+        bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text(encoding="utf-8")
+        gate = 'if PHYSICAL_MAP_ID == "bootstrap_runtime_validation"'
+        self.assertEqual(2, bootstrap.count(gate))
+        registration = bootstrap.index("registerOriginSelection(commands, bootstrapOriginSelection)")
+        self.assertLess(bootstrap.rfind(gate, 0, registration), registration)
+        self.assertIn("TimerStart(CreateTimer(), 0., false, function openBootstrapOriginSelection)", bootstrap)
+        callback = bootstrap[bootstrap.index("function openBootstrapOriginSelection"):bootstrap.index("/** Applies")]
+        self.assertIn("PauseGame(true)", callback)
+        self.assertIn("bootstrapOriginSelection.showPage(1)", callback)
+        self.assertNotIn("PauseGame(true)", bootstrap[bootstrap.index("init\n"):bootstrap.index("if SCENARIO_SCHEMA_VERSION")])
+
+    def test_origin_handoff_and_every_physical_map_region_are_explicit(self):
+        campaign = load_campaign_config(self.manifest)
+        world = validate_campaign(campaign)
+        base = load_config(campaign.map_config_path)
+        generated = self.project / "_build/origin-handoff"
+        generate(base, generated)
+        _localize_runtime(campaign, world, campaign.maps[0], generated)
+        scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+        for origin in json.loads((generated / "scenario-runtime.json").read_text())["newCampaignOrigins"]:
+            destination = origin["startingLocation"]["physicalMapId"]
+            package_path = next(item.package_path for item in campaign.maps if item.id == destination)
+            self.assertIn(json.dumps(package_path), scenario)
+        runtime = (self.project / "wurst/PlayableCampaignRuntime.wurst").read_text(encoding="utf-8")
+        for physical in campaign.maps:
+            self.assertIn(f'mapId == "{physical.id}"', runtime)
+        commit = runtime.index('saves.save(SAVE_SLOT_SESSION_START, 0, "campaign-start")')
+        load = runtime.index("travel.loader.load(packagePath)")
+        self.assertLess(commit, load)
+
+    def test_generated_wurst_omits_unused_giant_runtime_literal(self):
+        base = load_config(load_campaign_config(self.manifest).map_config_path)
+        generated = self.project / "_build/no-runtime-literal"
+        generate(base, generated)
+        scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+        self.assertNotIn("SCENARIO_RUNTIME_JSON", scenario)
+        self.assertLess(max(map(len, scenario.splitlines())), 65536)
+
     def test_generated_output_detects_stale_southeast_asia_authority(self):
         base = load_config(load_campaign_config(self.manifest).map_config_path)
         generated = self.project / "_build/generated"
@@ -238,7 +295,18 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual(3, metadata["version"])
         self.assertEqual(2, metadata["flags"])
         self.assertEqual(configured_maps[0]["packagePath"], metadata["buttons"][0][3])
+        self.assertEqual(1, len(metadata["buttons"]))
+        self.assertEqual(len(configured_maps), len(metadata["maps"]))
         self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
+        for configured in configured_maps:
+            packaged = self.project / (configured["id"] + "-identity.w3x")
+            packaged.write_bytes(campaign.read(configured["packagePath"]))
+            with zipfile.ZipFile(packaged) as map_archive:
+                lua = map_archive.read("war3map.lua").decode("utf-8")
+            identity = f'public constant string PHYSICAL_MAP_ID = "{configured["id"]}"'
+            self.assertEqual(1, lua.count("public constant string PHYSICAL_MAP_ID"))
+            self.assertIn(identity, lua)
+            self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
         west_bytes = campaign.read("Maps/EuropeWest.w3x")
         southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
         east_asia_bytes = campaign.read("Maps/EastAsia.w3x")

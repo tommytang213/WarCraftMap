@@ -26,11 +26,17 @@ public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 ReligionRuntime religionMigrationRuntime = null
 
 function logicalRegionForPhysicalMap(string mapId) returns string
+	if mapId == "bootstrap_runtime_validation"
+		return "bootstrap"
 	if mapId == "europe_west" or mapId == "europe_central_east"
 		return "europe"
-	if mapId == "africa" or mapId == "middle_east_india" or mapId == "southeast_asia" or mapId == "east_asia" or mapId == "americas_caribbean" or mapId == "pacific"
+	if mapId == "africa" or mapId == "middle_east_india" or mapId == "southeast_asia" or mapId == "east_asia"
 		return mapId
-	return "europe"
+	if mapId == "americas_north_central" or mapId == "americas_caribbean" or mapId == "americas_south" or mapId == "americas_pacific_transition"
+		return "americas_caribbean"
+	if mapId == "pacific_north" or mapId == "pacific_west" or mapId == "pacific_melanesia" or mapId == "pacific_polynesia" or mapId == "pacific_new_zealand" or mapId == "pacific_open_ocean_encounter"
+		return "pacific"
+	return ""
 
 function lastAuthorityValue(string document, string key) returns string
 	let marker = ";" + key + "="
@@ -486,7 +492,7 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
 		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
-	override function campaignStarted(string polityId, string physicalMapId, string regionalInstanceId, string settlementId)
+	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
 		if extension != null
 			extension.newCampaign(settlementId)
@@ -498,7 +504,9 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		mapPresentation.setKnowledge(logicalRegion, settlementId, "", "")
 		maps.setPhysicalRegion(logicalRegion)
 		maps.setCommandRegion(logicalRegion)
-		sessionStart("campaign-start")
+		// The cache commit must precede the irreversible cross-map handoff.
+		if saves.save(SAVE_SLOT_SESSION_START, 0, "campaign-start")
+			travel.loader.load(packagePath)
 	override function afterCampaignLoad()
 		let loadedMap = lastAuthorityValue(state.authorityDocument(), "map")
 		let loadedRegion = lastAuthorityValue(state.authorityDocument(), "region")
