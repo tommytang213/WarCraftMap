@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 10
+GENERATOR_VERSION = 11
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -108,6 +108,69 @@ def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict
         raise PackagingError("generation: scenario contains settlements but generated Wurst would register zero settlements")
     return sorted(result, key=lambda row: row["id"])
 
+def _load_country_interaction_runtime_data(config: BuildConfig, world: dict) -> dict:
+    """Join the campaign authorities used by the headless polity systems.
+
+    This is deliberately a join, not a second set of gameplay defaults.  Money
+    and stock come from economy stores, wars from regional politics, and the
+    shape/capacity of government rewards from current territory and research.
+    """
+    polity_ids = {row["id"] for row in world.get("polities", [])}
+    settlements = {row["id"]: row["controllerPolityId"] for row in world.get("settlements", [])}
+    economy_path = config.project / "scenario/economy/economy.json"
+    economy = json.loads(economy_path.read_text(encoding="utf-8")) if economy_path.is_file() else {"catalog": {"stores": []}, "state": {"storeBalances": []}}
+    store_owners = {}
+    for store in economy.get("catalog", {}).get("stores", []):
+        owner = store.get("owner", {})
+        if owner.get("kind") == "settlement" and owner.get("id") in settlements:
+            store_owners[store["id"]] = settlements[owner["id"]]
+    treasury = {polity_id: 0 for polity_id in polity_ids}
+    stock = {polity_id: 0 for polity_id in polity_ids}
+    for balance in economy.get("state", {}).get("storeBalances", []):
+        polity_id = store_owners.get(balance.get("storeId"))
+        if polity_id:
+            treasury[polity_id] += sum(int(row.get("amountMinor", 0)) for row in balance.get("currencies", []))
+            stock[polity_id] += sum(int(row.get("quantityUnits", 0)) for row in balance.get("goods", []))
+    holdings = world.get("territorialHoldings", [])
+    territory_count = {polity_id: 0 for polity_id in polity_ids}
+    for holding in holdings:
+        owner = holding.get("legalOwner", {})
+        if owner.get("kind") == "polity" and owner.get("id") in territory_count:
+            territory_count[owner["id"]] += 1
+    research = {row["polityId"]: row for row in world.get("polityResearchStates", [])}
+    conflicts = []
+    politics_paths = sorted((config.project / "scenario/politics").glob("*-1450.json"))
+    for path in politics_paths:
+        source = json.loads(path.read_text(encoding="utf-8"))
+        for conflict in source.get("activeConflicts", []):
+            parties = list(conflict.get("attackerPolityIds", [])) + list(conflict.get("defenderPolityIds", []))
+            if all(party in polity_ids for party in parties):
+                conflicts.append({"id": conflict["id"], "parties": parties})
+    polities = []
+    for polity in world.get("polities", []):
+        polity_id = polity["id"]
+        state = research.get(polity_id, {})
+        # This contract is derived exclusively from live authorities.  It gives
+        # every government a service reward whose cost scales with its actual
+        # liquid economy, while institutional governments can also commission
+        # offices.  Values are materialised so Warcraft and headless runs share
+        # deterministic inputs rather than UI-only zeroes.
+        rewards = [{"id": "service_stipend", "kind": "money", "threshold": 20,
+                    "reputation": 0, "treasuryCost": max(1, min(240, treasury[polity_id] // 20)),
+                    "foreignService": True}]
+        if state.get("establishedInstitutionIds") or polity.get("sovereignTier") not in (None, "none"):
+            rewards.append({"id": "government_commission", "kind": "office", "threshold": 60,
+                            "reputation": 10, "treasuryCost": max(0, min(120, treasury[polity_id] // 50)),
+                            "foreignService": False})
+        polities.append({"id": polity_id, "treasury": treasury[polity_id], "stock": stock[polity_id],
+                         "territoryCount": territory_count[polity_id], "rewards": rewards,
+                         "technologies": state.get("completedTechnologyIds", []),
+                         "institutions": state.get("establishedInstitutionIds", [])})
+    if polity_ids and not any(row["rewards"] for row in polities):
+        raise PackagingError("generation: authoritative country rewards produced zero runtime profiles")
+    return {"polities": polities, "conflicts": conflicts,
+            "sources": [economy_path, *politics_paths]}
+
 def validate_inputs(config: BuildConfig, grill: str | None = None) -> str:
     required = {"source map folder": config.source_map, "source manifest": config.manifest, "Wurst source folder": config.wurst_source, "scenario data": config.scenario_file, "scenario validator": config.scenario_validator, "wurst.build": config.project / "wurst.build"}
     missing = [f"{label} ({path})" for label, path in required.items() if not path.exists()]
@@ -155,7 +218,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         terrain_outputs[terrain_id] = output_name
     domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
     settlement_runtime = _load_settlement_runtime_data(config, world)
-    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", []), "settlementRuntimeStates": settlement_runtime}
+    country_runtime = _load_country_interaction_runtime_data(config, world)
+    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", []), "settlementRuntimeStates": settlement_runtime, "countryInteractionState": {key: value for key, value in country_runtime.items() if key != "sources"}}
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -295,8 +359,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
     if len(military_lines) == 1:
         military_lines.append("\tskip")
     countries = ["\npublic function configureGeneratedCountryInteractions(PlayableCountryInteractionRuntime runtime)"]
-    for row in world.get("polities", ()):
-        countries.append(f'\truntime.registerPolity("{ws(row["id"])}", 0)')
+    for row in country_runtime["polities"]:
+        countries.append(f'\truntime.registerPolityResources("{ws(row["id"])}", {row["treasury"]}, {row["stock"]})')
+        for reward in row["rewards"]:
+            countries.append(f'\truntime.registerRewardProfile(new GovernmentRewardProfile("{ws(row["id"])}", "{ws(reward["id"])}", "{ws(reward["kind"])}", {reward["threshold"]}, {reward["reputation"]}, {reward["treasuryCost"]}, {str(reward["foreignService"]).lower()}))')
+    for conflict in country_runtime["conflicts"]:
+        for party in conflict["parties"]:
+            countries.append(f'\truntime.setActiveConflict("{ws(party)}", "{ws(conflict["id"])}")')
     if len(countries) == 1:
         countries.append("\tskip")
     religion_lines = ["\npublic function configureGeneratedReligion(ReligionRuntime runtime)"]
@@ -348,6 +417,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *terrain_authorities,
         *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
         *(path for path in catalogue_paths.values() if path.is_file()),
+        *(path for path in country_runtime["sources"] if path.is_file()),
         *(config.project / "scenario/settlements").glob("*-1450.json"),
         *(config.project / "scenario/geography").glob("*.json"),
         *(path for path in (

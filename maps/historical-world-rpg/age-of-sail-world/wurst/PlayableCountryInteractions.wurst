@@ -3,6 +3,11 @@ package PlayableCountryInteractions
 import CommandRouter
 import CountryDiplomacyScreen
 
+/** Campaign-owned conflict/territory commit port.  UI records never apply a
+ * treaty directly to Warcraft objects. */
+public interface CountryPeaceAuthority
+	function commitPeace(string conflictId, string terms) returns boolean
+
 /**
  * Stable, handle-free authority behind the country interaction screen.  Scenario
  * generation supplies polity-specific profiles; this object owns only campaign
@@ -27,12 +32,14 @@ public class GovernmentRewardProfile
 
 public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthority
 	PlayerCampaignIdentity identity
+	CountryPeaceAuthority peaceAuthority = null
 	string array[512] polityIds
 	boolean array[512] known
 	int array[512] reputation
 	int array[512] favor
 	int array[512] contribution
 	int array[512] treasury
+	int array[512] materialStock
 	int polityCount = 0
 	GovernmentRewardProfile array[1024] profiles
 	boolean array[1024] granted
@@ -49,6 +56,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	string lastDiagnostic = ""
 	construct(PlayerCampaignIdentity identity)
 		this.identity = identity
+	function setPeaceAuthority(CountryPeaceAuthority authority)
+		peaceAuthority = authority
 	function polityIndex(string polityId) returns int
 		for i = 0 to polityCount - 1
 			if polityIds[i] == polityId
@@ -65,10 +74,19 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 				return i
 		return -1
 	function registerPolity(string polityId, int availableTreasury)
+		registerPolityResources(polityId, availableTreasury, 0)
+	function registerPolityResources(string polityId, int availableTreasury, int availableMaterialStock)
 		if polityId != "" and polityIndex(polityId) < 0
 			polityIds[polityCount] = polityId
 			treasury[polityCount] = availableTreasury
+			materialStock[polityCount] = availableMaterialStock
 			polityCount++
+	/** Reconciliation entry point for economy/event projections. */
+	function reconcileResources(string polityId, int availableTreasury, int availableMaterialStock)
+		let i = polityIndex(polityId)
+		if i >= 0
+			treasury[i] = availableTreasury
+			materialStock[i] = availableMaterialStock
 	function registerRewardProfile(GovernmentRewardProfile profile)
 		if profile != null and polityIndex(profile.polityId) >= 0 and profileIndex(profile.polityId, profile.rewardId) < 0
 			profiles[profileCount] = profile
@@ -144,11 +162,16 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return "Confirmation required."
 		if accept and activeConflictWith(offerPolities[i]) == ""
 			return "The conflict state no longer permits this treaty."
+		if accept and peaceAuthority != null and not peaceAuthority.commitPeace(activeConflictWith(offerPolities[i]), offerTerms[i])
+			return "The conflict or territorial authority rejected these terms."
 		// Commit only after every current-state check has passed.
 		offerStatus[i] = 1
 		if accept
+			let settledConflict = activeConflictWith(offerPolities[i])
 			for c = 0 to conflictCount - 1
-				if conflictPolities[c] == offerPolities[i]
+				// Every party projects the same authoritative conflict ID.  Ending
+				// it for all parties prevents a UI-only one-sided peace record.
+				if conflictIds[c] == settledConflict
 					conflictIds[c] = ""
 			return "Peace concluded under the negotiated terms."
 		return "Peace offer rejected."
@@ -180,7 +203,9 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			var knownValue = "0"
 			if known[i]
 				knownValue = "1"
-			result += "|p," + polityIds[i] + "," + knownValue + "," + reputation[i].toString() + "," + favor[i].toString() + "," + contribution[i].toString() + "," + treasury[i].toString()
+			result += "|p," + polityIds[i] + "," + knownValue + "," + reputation[i].toString() + "," + favor[i].toString() + "," + contribution[i].toString() + "," + treasury[i].toString() + "," + materialStock[i].toString()
+		for i = 0 to conflictCount - 1
+			result += "|c," + conflictPolities[i] + "," + conflictIds[i]
 		for i = 0 to profileCount - 1
 			if granted[i]
 				result += "|g," + profiles[i].polityId + "," + profiles[i].rewardId
@@ -208,7 +233,17 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			favor[p] = S2I(recordField(record, 4))
 			contribution[p] = S2I(recordField(record, 5))
 			treasury[p] = S2I(recordField(record, 6))
+			// v1 records from before live resources omit material stock.
+			if recordField(record, 7) != ""
+				materialStock[p] = S2I(recordField(record, 7))
 			return true
+		if kind == "c"
+			let p = recordField(record, 1)
+			for i = 0 to conflictCount - 1
+				if conflictPolities[i] == p
+					conflictIds[i] = recordField(record, 2)
+					return true
+			return false
 		if kind == "g"
 			let r = profileIndex(recordField(record, 1), recordField(record, 2))
 			if r < 0
@@ -231,6 +266,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return polityIndex(recordField(record, 1)) >= 0
 		if kind == "g"
 			return profileIndex(recordField(record, 1), recordField(record, 2)) >= 0
+		if kind == "c"
+			return polityIndex(recordField(record, 1)) >= 0
 		if kind == "o"
 			return recordField(record, 1) != "" and polityIndex(recordField(record, 2)) >= 0
 		return false
