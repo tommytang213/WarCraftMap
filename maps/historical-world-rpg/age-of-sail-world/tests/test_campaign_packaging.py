@@ -20,7 +20,7 @@ from package_wurst_campaign import (  # noqa: E402
     validate_campaign,
 )
 from package_wurst_map import generate, load_config, verify_generated  # noqa: E402
-from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata  # noqa: E402
+from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq  # noqa: E402
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
 import pathlib, sys, zipfile
@@ -40,6 +40,13 @@ if sys.argv[1] == "build":
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_mpq_reader_accepts_warcraft_hm3w_wrapper(self):
+        archive = Path(self.temp.name) / "raw.mpq"
+        wrapped = Path(self.temp.name) / "wrapped.w3x"
+        write_mpq(archive, {"war3map.w3e": b"regional-terrain"})
+        wrapped.write_bytes(b"HM3W" + struct.pack("<I", 0) + b"Map name\0" + struct.pack("<II", 0, 1) + archive.read_bytes())
+        self.assertEqual(b"regional-terrain", MpqReader(wrapped).read("war3map.w3e"))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
         category = Path(self.temp.name) / "historical-world-rpg"
