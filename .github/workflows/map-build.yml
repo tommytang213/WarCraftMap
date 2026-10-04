@@ -31,7 +31,7 @@ jobs:
             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 
-      - name: Typecheck and package with pinned Wurst image
+      - name: Execute complete Wurst suite and package with pinned compiler
         run: |
           artifact_dir="$RUNNER_TEMP/age-of-sail-release"
           mkdir -p "$artifact_dir"
@@ -40,6 +40,7 @@ jobs:
             --user root \
             -e MAP_PROJECT \
             -e RELEASE_ARTIFACT \
+            -e WURST_IMAGE \
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \

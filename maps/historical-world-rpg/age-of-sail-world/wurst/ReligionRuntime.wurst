@@ -265,5 +265,5 @@ public class ReligionConversionCommand implements CommandHandler
 			output.show(sender,runtime.lastDiagnostic)
 
 public function registerReligion(CommandRegistry commands, ReligionRuntime runtime)
-	commands.register("faith","religion","faith","Open the religion overview.","Show personal faith, influence contributors, benefits, polity policy, and conversion consequences.",0,0,COMMAND_RELEASE,new ReligionOverviewCommand(runtime,new WarcraftOutput()))
-	commands.register("convert","","convert <faith-id>","Change personal faith where permitted.","Validate cost, reputation consequences, cooldown, and permanent conversion history atomically.",1,1,COMMAND_RELEASE,new ReligionConversionCommand(runtime,new WarcraftOutput()))
+	commands.register("faith","religion","faith","Open the religion overview.","Show personal faith, influence contributors, benefits, polity policy, and conversion consequences.",0,0,COMMAND_RELEASE,new ReligionOverviewCommand(runtime,commands.output))
+	commands.register("convert","","convert <faith-id>","Change personal faith where permitted.","Validate cost, reputation consequences, cooldown, and permanent conversion history atomically.",1,1,COMMAND_RELEASE,new ReligionConversionCommand(runtime,commands.output))

@@ -22,6 +22,7 @@ from package_wurst_campaign import (  # noqa: E402
     validate_campaign,
 )
 from package_wurst_map import generate, load_config, verify_generated  # noqa: E402
+from wurst_execution_fixture import FAKE_EXECUTION, allow_synthetic_compiler
 from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq  # noqa: E402
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
@@ -39,6 +40,7 @@ if sys.argv[1] == "build":
             if path.is_file(): archive.write(path, path.relative_to(source).as_posix())
         archive.writestr("war3map.lua", lua)
 '''
+FAKE_GRILL = FAKE_GRILL.replace('if sys.argv[1] == "build":', FAKE_EXECUTION + '\nif sys.argv[1] == "build":')
 
 
 class CampaignPackagingTests(unittest.TestCase):
@@ -117,6 +119,7 @@ class CampaignPackagingTests(unittest.TestCase):
         self.fake = self.project / "fake-grill"
         self.fake.write_text(FAKE_GRILL, encoding="utf-8")
         self.fake.chmod(self.fake.stat().st_mode | stat.S_IXUSR)
+        allow_synthetic_compiler(self, self.fake)
 
     def rewrite(self, mutate):
         data = json.loads(self.manifest.read_text(encoding="utf-8")); mutate(data)

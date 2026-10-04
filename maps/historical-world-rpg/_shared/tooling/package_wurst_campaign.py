@@ -612,7 +612,7 @@ def clean(config: CampaignConfig) -> None:
         shutil.rmtree(root)
 
 
-def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: bool = True) -> Path:
+def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: bool = True, revision: str | None = None) -> Path:
     config = load_campaign_config(manifest_path)
     base = load_config(config.map_config_path)
     executable = validate_inputs(base, grill)
@@ -620,6 +620,10 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         clean(config)
     validate_scenario(base)
     world = validate_campaign(config)
+    # The selector intentionally has a reduced graph. Execute the complete
+    # generated scenario suite before producing any physical-map artifacts.
+    from package_wurst_map import run_execution_tests
+    run_execution_tests(base, executable, revision)
     built = []
     for physical in config.maps:
         # A physical-map entry owns its source folder and source manifest.  The
@@ -635,7 +639,9 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         _inspect_audio_runtime(physical, generated)
         verify_generated(map_config, generated)
         _validate_budget(map_config, physical, generated)
-        compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids)
+        # Tests already executed against the full scenario above. Keep test-only
+        # imports of generated RPG records out of the minimal selector graph.
+        compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids, include_tests=False)
         if physical.bootstrap:
             # Compile a separate, bounded dependency graph for the campaign
             # chapter. Regional Bootstrap and ScenarioData packages are not

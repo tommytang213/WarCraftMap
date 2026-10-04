@@ -14,17 +14,21 @@ python3 -m unittest discover -s automation/tests -p 'test_*.py'
 
 case "${WARCRAFTMAP_WURST_CHECK:-required}" in
   skip)
-    echo "WARNING: Wurst typecheck skipped by explicit WARCRAFTMAP_WURST_CHECK=skip"
+    echo "WARNING: Wurst typecheck and execution skipped by explicit WARCRAFTMAP_WURST_CHECK=skip"
     ;;
   required)
+    export SOURCE_REVISION
+    SOURCE_REVISION=$(git rev-parse HEAD)
     if command -v grill >/dev/null 2>&1; then
       (cd maps/historical-world-rpg/age-of-sail-world && ./tooling/package_release.sh)
     elif command -v docker >/dev/null 2>&1; then
       docker run --rm \
         --user root \
         --entrypoint /bin/sh \
+        -e SOURCE_REVISION \
+        -e WURST_IMAGE=frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a \
         -v "$repo_root:/source:ro" \
-        frotty/wurstscript:latest \
+        frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a \
         -lc '
           set -eu
           apt-get update
@@ -35,9 +39,8 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
           tar --exclude=./_build -cf - . | tar -C /tmp/historical-world-rpg/age-of-sail-world -xf -
           cd /source/maps/historical-world-rpg/_shared
           tar -cf - . | tar -C /tmp/historical-world-rpg/_shared -xf -
-          cd /tmp/historical-world-rpg/age-of-sail-world
-          grill install wurstscript
-          ./tooling/package_release.sh
+          chown -R wurstuser:wurstuser /tmp/historical-world-rpg
+          su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
         '
     else
       echo "ERROR: Wurst validation requires grill or Docker." >&2

@@ -63,6 +63,21 @@ function rpgValidInt(string value) returns boolean
 function rpgStableText(string value) returns boolean
 	return value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0
 
+/** Per-load duplicate index. Cache record keys once instead of reparsing the
+ * whole snapshot for every hero, quest and treasure in a generated campaign. */
+class RpgSnapshotKeys
+	string array[10785] keys
+	int count = 0
+	function claim(string key) returns boolean
+		if count >= 10785
+			return false
+		for i = 0 to count - 1
+			if keys[i] == key
+				return false
+		keys[count] = key
+		count++
+		return true
+
 /** Authoritative character state.  The Warcraft handle is deliberately kept by
  * the projection, not here, so a dead/unloaded object can never erase a hero. */
 public class RpgHero
@@ -196,15 +211,15 @@ public class RpgItem
 	string name
 	string slotId
 	string rarity
-	string setId
+	string setId = ""
 	int itemLevel
 	int power
 	int requiredLevel
 	int startYear
 	int endYear
-	string technologyId
-	string institutionId
-	string source
+	string technologyId = ""
+	string institutionId = ""
+	string source = ""
 	boolean unique
 	construct(string id, string name, string slotId, string rarity, int itemLevel, int power)
 		this.id=id
@@ -315,11 +330,11 @@ public class RuntimeQuest
 	string id
 	string title
 	string kind
-	string regionId
-	string giverId
-	string turnInId
-	string precision
-	string destinationId
+	string regionId = ""
+	string giverId = ""
+	string turnInId = ""
+	string precision = "hidden"
+	string destinationId = ""
 	string state = QUEST_OFFERED
 	int objective = 0
 	int objectiveTarget = 1
@@ -459,8 +474,8 @@ public class RuntimeTechnology
 	string kind = "technology"
 	int historicalYear
 	int baseCost
-	string prerequisiteId
-	string effectId
+	string prerequisiteId = ""
+	string effectId = ""
 	int effectMagnitude
 	construct(string id,string name,int historicalYear,int baseCost)
 		this.id=id
@@ -609,30 +624,6 @@ public class WarcraftRpgRuntime
 		return lastDiagnostic
 	function validQuestState(string value) returns boolean
 		return value == QUEST_OFFERED or value == QUEST_ACTIVE or value == QUEST_READY or value == QUEST_COMPLETE or value == QUEST_FAILED
-	function duplicateRecord(string candidate,string kind,string id) returns boolean
-		var found=0
-		var start=3
-		while start < StringLength(candidate)
-			var finish=SubString(candidate,start,StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish=StringLength(candidate)-start
-			let record=SubString(candidate,start,start+finish)
-			if rpgField(record,0) == kind and rpgField(record,1) == id
-				found++
-			start+=finish+1
-		return found > 1
-	function duplicateUnlock(string candidate,string controllerId,string technologyId) returns boolean
-		var found=0
-		var start=3
-		while start < StringLength(candidate)
-			var finish=SubString(candidate,start,StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish=StringLength(candidate)-start
-			let record=SubString(candidate,start,start+finish)
-			if rpgField(record,0) == "u" and rpgField(record,1) == controllerId and rpgField(record,2) == technologyId
-				found++
-			start+=finish+1
-		return found > 1
 	function hasRecord(string candidate,string kind,string id) returns boolean
 		var start=3
 		while start < StringLength(candidate)
@@ -648,19 +639,19 @@ public class WarcraftRpgRuntime
 		let kind=rpgField(record,0)
 		let id=rpgField(record,1)
 		if kind == "h"
-			return rpgFieldCount(record) == 18 and heroes.get(id) != null and not duplicateRecord(candidate,kind,id) and rpgValidBool(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and S2I(rpgField(record,3)) >= 1 and S2I(rpgField(record,3)) <= RPG_LEVEL_CAP and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5)) and rpgValidInt(rpgField(record,6)) and rpgValidInt(rpgField(record,7)) and rpgValidInt(rpgField(record,8)) and S2I(rpgField(record,8)) >= 0 and S2I(rpgField(record,8)) <= 100 and rpgValidBool(rpgField(record,9)) and rpgValidBool(rpgField(record,10)) and rpgValidInt(rpgField(record,11)) and rpgStableText(rpgField(record,12)) and rpgStableText(rpgField(record,13)) and rpgStableText(rpgField(record,14)) and rpgStableText(rpgField(record,15)) and rpgStableText(rpgField(record,16)) and rpgStableText(rpgField(record,17))
+			return rpgFieldCount(record) == 18 and heroes.get(id) != null and rpgValidBool(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and S2I(rpgField(record,3)) >= 1 and S2I(rpgField(record,3)) <= RPG_LEVEL_CAP and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5)) and rpgValidInt(rpgField(record,6)) and rpgValidInt(rpgField(record,7)) and rpgValidInt(rpgField(record,8)) and S2I(rpgField(record,8)) >= 0 and S2I(rpgField(record,8)) <= 100 and rpgValidBool(rpgField(record,9)) and rpgValidBool(rpgField(record,10)) and rpgValidInt(rpgField(record,11)) and rpgStableText(rpgField(record,12)) and rpgStableText(rpgField(record,13)) and rpgStableText(rpgField(record,14)) and rpgStableText(rpgField(record,15)) and rpgStableText(rpgField(record,16)) and rpgStableText(rpgField(record,17))
 		if kind == "i"
-			return rpgFieldCount(record) == 2 and inventory.getItem(id) != null and not duplicateRecord(candidate,kind,id)
+			return rpgFieldCount(record) == 2 and inventory.getItem(id) != null
 		if kind == "e"
-			return rpgFieldCount(record) == 4 and inventory.getItem(rpgField(record,2)) != null and id == inventory.getItem(rpgField(record,2)).slotId and hasRecord(candidate,"i",rpgField(record,2)) and heroes.get(rpgField(record,3)) != null and not duplicateRecord(candidate,kind,id)
+			return rpgFieldCount(record) == 4 and inventory.getItem(rpgField(record,2)) != null and id == inventory.getItem(rpgField(record,2)).slotId and hasRecord(candidate,"i",rpgField(record,2)) and heroes.get(rpgField(record,3)) != null
 		if kind == "u"
-			return rpgFieldCount(record) == 3 and id != "" and technologies.get(rpgField(record,2)) != null and not duplicateUnlock(candidate,id,rpgField(record,2))
+			return rpgFieldCount(record) == 3 and id != "" and technologies.get(rpgField(record,2)) != null
 		if kind == "q"
-			return rpgFieldCount(record) == 6 and journal.get(id) != null and not duplicateRecord(candidate,kind,id) and validQuestState(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5))
+			return rpgFieldCount(record) == 6 and journal.get(id) != null and validQuestState(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5))
 		if kind == "j"
 			return rpgFieldCount(record) == 3 and (id == "" or journal.get(id) != null) and rpgValidInt(rpgField(record,2))
 		if kind == "t"
-			return rpgFieldCount(record) == 4 and treasures.get(id) != null and not duplicateRecord(candidate,kind,id) and rpgValidInt(rpgField(record,2)) and S2I(rpgField(record,2)) >= 0 and S2I(rpgField(record,2)) <= treasures.get(id).clueCount and rpgValidBool(rpgField(record,3))
+			return rpgFieldCount(record) == 4 and treasures.get(id) != null and rpgValidInt(rpgField(record,2)) and S2I(rpgField(record,2)) >= 0 and S2I(rpgField(record,2)) <= treasures.get(id).clueCount and rpgValidBool(rpgField(record,3))
 		return false
 	function captureState() returns string
 		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()
@@ -779,6 +770,7 @@ public class WarcraftRpgRuntime
 		if not candidate.startsWith("v2|")
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
+		let keys = new RpgSnapshotKeys()
 		var start=3
 		var heroRecords=0
 		var itemRecords=0
@@ -793,9 +785,20 @@ public class WarcraftRpgRuntime
 				finish=StringLength(candidate)-start
 			let record=SubString(candidate,start,start+finish)
 			if not validateRecord(candidate,record)
+				destroy keys
 				lastDiagnostic="RPG state contains malformed or unknown authority"
 				return false
 			let kind=rpgField(record,0)
+			let id=rpgField(record,1)
+			var key=kind+","+id
+			if kind == "u"
+				key+=","+rpgField(record,2)
+			// Multiple copies of ordinary items are valid inventory authority.
+			// Unique items, equipment slots, and all other records stay unique.
+			if not (kind == "i" and not inventory.getItem(id).unique) and not keys.claim(key)
+				destroy keys
+				lastDiagnostic="RPG state contains duplicate authority"
+				return false
 			if kind == "h"
 				heroRecords++
 			else if kind == "i"
@@ -811,6 +814,7 @@ public class WarcraftRpgRuntime
 			else if kind == "t"
 				treasureRecords++
 			start+=finish+1
+		destroy keys
 		if heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > 4096 or equipmentRecords > 32 or unlockRecords > 2048
 			lastDiagnostic="RPG state is incomplete or exceeds runtime budgets"
 			return false

@@ -1,4 +1,4 @@
-name: Wurst typecheck
+name: Wurst typecheck and execution
 
 on:
   push:
@@ -23,10 +23,12 @@ jobs:
       - name: Validate canonical map source
         run: python maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 
-      - name: Typecheck and build Age of Sail
+      - name: Typecheck, execute complete suite and build Age of Sail
         run: |
           docker run --rm \
             --user root \
+            -e WURST_IMAGE \
+            -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             "$WURST_IMAGE" \
             /bin/sh -lc '

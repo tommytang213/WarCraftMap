@@ -1,0 +1,94 @@
+{
+  "checks": [
+    {
+      "automationPythonSeconds": 0.477,
+      "automationPythonTests": 67,
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "exitCode": 0,
+      "scenarioPythonSeconds": 887.527,
+      "scenarioPythonTests": 790,
+      "worldAndSourceValidation": "pass"
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_release_upload_verification.py",
+      "exitCode": 0,
+      "note": "Also included in the final complete scenario discovery.",
+      "tests": 10
+    },
+    {
+      "buildStorage": "container_private",
+      "campaignBuilds": 2,
+      "command": "tooling/package_release_candidate.sh --source-revision 7ba80ff629279e1ab2f9b7fcec21e57931f20e3b",
+      "containerSourceMount": "read_only",
+      "evidenceKind": "retained complete two-build release run; execution inputs verified against current worktree",
+      "exitCode": 0,
+      "finalZipInspection": "pass",
+      "normalizedCampaignEquivalence": "pass",
+      "physicalMapsPerBuild": 17,
+      "wurstTestsPerBuild": 78
+    },
+    {
+      "command": "tooling/run_native_save_regression.py",
+      "exitCode": 0,
+      "missingEnvironmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+      "nativeRuntime": "runtime_unavailable",
+      "oracle": "pass"
+    },
+    {
+      "buildStorage": "container_private",
+      "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json --source-revision 7ba80ff629279e1ab2f9b7fcec21e57931f20e3b",
+      "compilerUser": "wurstuser",
+      "containerSourceMount": "read_only",
+      "executionJsonIdenticalToRetained": true,
+      "executionLogIdenticalToRetained": true,
+      "exitCode": 0,
+      "wurstTests": 78
+    },
+    {
+      "buildStorage": "container_private",
+      "command": "Docker branch extracted verbatim from automation/run_checks.sh; Python checks executed separately",
+      "compilerUser": "wurstuser",
+      "containerSourceMount": "read_only",
+      "exitCode": 0,
+      "log": "repository-validation.log.gz",
+      "logEncoding": "gzip; logSha256 identifies decompressed bytes",
+      "logSha256": "a608a39213bb40631633e589763ef055d75b78c45fc8cf189270fd031d35c17d",
+      "mapPackaging": "pass",
+      "scriptSha256": "3a46db9559e869a66fb83c3eac6ee319b16c00d67fc38f73a37619de004122f0",
+      "typecheck": "pass",
+      "wurstTests": 78
+    },
+    {
+      "command": "python3 -m unittest discover -s automation/tests -p test_checks.py",
+      "exitCode": 0,
+      "tests": 3
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_ci_artifact.py",
+      "exitCode": 0,
+      "tests": 6
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_wurst_execution.py",
+      "exitCode": 0,
+      "tests": 8
+    }
+  ],
+  "compiler": {
+    "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "format": "warcraftmap_issue363_validation_v1",
+  "githubUpload": "not_performed",
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "releaseValidationLog": "release-validation.log.gz",
+  "releaseValidationLogEncoding": "gzip; releaseValidationLogSha256 identifies decompressed bytes",
+  "releaseValidationLogSha256": "88bfa3666cb07cb19ebe8769404b869f93afb956dc5e40e4b34ba5f2a153ce72",
+  "sourceRevision": "7ba80ff629279e1ab2f9b7fcec21e57931f20e3b",
+  "warcraftLaunch": "not_run",
+  "worktree": "uncommitted implementation; execution inputs identify tested source contents",
+  "wurstInputSetSha256": "3499ab09197cbef167153d7014dd8bf109865a74e9500d273396d4bbb4cf1244"
+}

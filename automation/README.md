@@ -100,11 +100,20 @@ the player to perform incremental testing.
 
 ## Validation
 
-`automation/run_checks.sh` runs world-data validation, Python tests, and the
-Wurst typecheck. It uses local `grill` when present and
-otherwise the repository's existing Docker-based Wurst workflow. Developers
+`automation/run_checks.sh` runs world-data validation, Python tests, Wurst
+typechecking, the complete Wurst execution suite, and map packaging. It uses
+local `grill` with the pinned compiler digest when present and otherwise the
+pinned Docker image with a read-only source mount and private build copy. Container
+compilation runs as `wurstuser`, whose home contains the pinned compiler; root
+only prepares the private copy and Python dependency. Developers
 may explicitly set `WARCRAFTMAP_WURST_CHECK=skip` only for focused Python tests;
 the worker's default remains required.
+
+Execution writes per-test results, compiler identity, revision, input hashes and
+the raw transcript under the scenario's `_build/wurst-tests/`. Both map and
+campaign release paths require complete passing execution. The RC ZIP retains
+the evidence under `Metadata/wurst-execution.{json,log}` and the upload verifier
+checks it again. Interpreter success does not close the real-client launch gate.
 
 ## Safe removal
 

@@ -27,6 +27,7 @@ sys.path.insert(0, str(PROJECT / "tooling"))
 from package_wurst_campaign import build_campaign, inspect_campaign, load_campaign_config  # noqa: E402
 from warcraft_campaign import MpqReader  # noqa: E402
 from package_wurst_map import GENERATOR_VERSION, PackagingError  # noqa: E402
+from wurst_execution import WurstExecutionError, verify_evidence  # noqa: E402
 import release_save_compatibility  # noqa: E402
 import runtime_acceptance  # noqa: E402
 
@@ -381,6 +382,13 @@ def verify_release_archive(path: Path, config: dict) -> None:
         recorded_maps = [item for item in manifest["artifacts"] if item["kind"] == "physical-map"]
         if sorted(recorded_maps, key=lambda row: row["mapId"]) != sorted(actual_maps, key=lambda row: row["mapId"]):
             raise PackagingError("release inspection stage failed: physical-map metadata/checksums differ from the uploaded campaign")
+        try:
+            execution = json.loads(archive.read("Metadata/wurst-execution.json"))
+            verify_evidence(execution, archive.read("Metadata/wurst-execution.log"), provenance["sourceRevision"])
+            if provenance.get("gates", {}).get("wurstExecution") != "pass":
+                raise WurstExecutionError("release provenance omits required execution gate")
+        except (KeyError, ValueError, WurstExecutionError) as error:
+            raise PackagingError(f"release inspection stage failed: Wurst execution evidence: {error}") from error
 
 
 def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None, revision: str | None = None) -> Path:
@@ -393,9 +401,9 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
 
     with tempfile.TemporaryDirectory(prefix="aos-rc-") as temporary:
         first_path = Path(temporary) / "first.w3n"
-        shutil.copyfile(build_campaign(campaign_manifest, grill=grill, clean_first=True), first_path)
+        shutil.copyfile(build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision), first_path)
         first_normalized = normalized_campaign(first_path, campaign_config)
-        second = build_campaign(campaign_manifest, grill=grill, clean_first=True)
+        second = build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision)
         second_normalized = normalized_campaign(second, campaign_config)
         artifact_validation = verify_campaign_runtime(second, campaign_config)
         if first_normalized != second_normalized:
@@ -404,6 +412,13 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
 
         campaign_bytes = second.read_bytes()
+        execution_dir = PROJECT / "_build/wurst-tests"
+        try:
+            execution_bytes = (execution_dir / "results.json").read_bytes()
+            execution_log = (execution_dir / "execution.log").read_bytes()
+            verify_evidence(json.loads(execution_bytes), execution_log, revision)
+        except (OSError, ValueError, WurstExecutionError) as error:
+            raise PackagingError(f"Wurst execution stage failed: {error}") from error
         target = config["runtimeTarget"]
         save = compatibility["matrix"]
         provenance = {
@@ -425,7 +440,10 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "requiredHumanValidation": config.get("requiredHumanValidation"),
             "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime_report["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "not_run_separate_manual_smoke"},
         }
-        payloads = {config["archive"]["campaignPath"]: campaign_bytes}
+        provenance["gates"]["wurstExecution"] = "pass"
+        payloads = {config["archive"]["campaignPath"]: campaign_bytes,
+                    "Metadata/wurst-execution.json": execution_bytes,
+                    "Metadata/wurst-execution.log": execution_log}
         for relative in config["releaseDocuments"]:
             payloads[f"Documentation/{Path(relative).name}"] = (PROJECT / relative).read_bytes()
         rows = [{"filename": PurePosixPath(name).name, "archivePath": name, "kind": "campaign" if name.endswith(".w3n") else "documentation", "bytes": len(value), "sha256": sha_bytes(value)} for name, value in sorted(payloads.items())]

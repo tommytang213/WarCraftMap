@@ -18,6 +18,20 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+Execute the complete Wurst suite with the pinned toolchain from the scenario
+directory:
+
+```sh
+python3 ../_shared/tooling/run_wurst_tests.py package.json
+```
+
+The same gate is required by `automation/run_checks.sh`, the Wurst workflow,
+map/campaign packaging, and the RC upload verifier. See
+`reports/issue-363-execution.md` for the failure classification and retained
+execution evidence. Passing interpreter tests does not establish native-client
+launch or gameplay success; release status remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
 The Phase 8 integrated release-blocker gate is repository controlled by
 `scenario/release-blocker-gate.json`. It classifies campaign-blocking and
 unclassified critical failures, runs the headless soak and production
