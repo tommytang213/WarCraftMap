@@ -13,6 +13,18 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 
 
 class RuntimeAcceptanceTests(unittest.TestCase):
+    def test_locked_current_client_w3i_and_exact_rc1_regression(self):
+        current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
+        info = runtime.validate_current_w3i(current)
+        self.assertEqual((33, 6116, (3, 0, 0, 24268)),
+                         (info["format"], info["editorVersion"], info["gameVersion"]))
+        fixture = Path(__file__).parent / "fixtures/phase9-rc1-failing-map-metadata.json"
+        failing = json.loads(fixture.read_text())
+        malformed = bytearray(current)
+        struct.pack_into("<i", malformed, 0, failing["w3i"]["format"])
+        with self.assertRaisesRegex(runtime.MapInfoError, "not current format"):
+            runtime.validate_current_w3i(bytes(malformed))
+
     def executable_script(self):
         calls = sorted({call for required, _ in runtime.EXECUTABLE_PROOFS.values()
                         for call in required})
@@ -75,6 +87,20 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                                                 "x" * (runtime.MAX_LUA_LINE_BYTES + 1) + " end")
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("line exceeds" in x for x in result["failures"]))
+
+    def test_bootstrap_compiled_semantics_require_native_transition_before_end(self):
+        good = "function main() TimerStart() showPage() SetNextLevel(path) EndGame(true) end"
+        self.assertEqual("pass", runtime.verify_compiled_bootstrap(good)["status"])
+        lost_native = "-- source said SetNextLevelBJ\nfunction main() TimerStart() showPage() EndGame(true) end"
+        self.assertEqual("fail", runtime.verify_compiled_bootstrap(lost_native)["status"])
+        reversed_calls = "function main() TimerStart() showPage() EndGame(true) SetNextLevel(path) end"
+        self.assertEqual("fail", runtime.verify_compiled_bootstrap(reversed_calls)["status"])
+
+    def test_bootstrap_compiled_semantics_reject_global_scenario_registrations(self):
+        script = "function main() TimerStart() showPage() registerSettlement(x) SetNextLevel(path) EndGame(true) end"
+        result = runtime.verify_compiled_bootstrap(script)
+        self.assertEqual("fail", result["status"])
+        self.assertTrue(any("regional registration" in x for x in result["failures"]))
 
     def test_valid_metadata_with_blank_placeholder_terrain_fails(self):
         source = PROJECT / "map/AgeOfSailWorld.w3x"

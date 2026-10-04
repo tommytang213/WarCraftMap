@@ -83,6 +83,9 @@ public function compatSaveCheckpoint(string name, boolean showWindow)
 	SaveGameCheckpoint(name, showWindow)
 /** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
 public function compatLoadPhysicalMap(string mapPath)
+	// The pinned Wurst standard library exposes the campaign transition through
+	// this wrapper. Release acceptance inspects the compiled Lua and requires the
+	// wrapper's SetNextLevel side effect to survive optimization before EndGame.
 	SetNextLevelBJ(mapPath)
 	EndGame(true)
 

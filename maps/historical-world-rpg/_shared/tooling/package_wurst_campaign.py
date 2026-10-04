@@ -409,6 +409,20 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
             f"runtime localization stage failed [{physical.id}]: generated ScenarioData must declare exactly one PHYSICAL_MAP_ID"
         )
     text = re.sub(identity_pattern, f'public constant string PHYSICAL_MAP_ID = "{physical.id}"', text)
+    if physical.bootstrap:
+        # The selector must not carry ScenarioData's world-wide registration
+        # graph.  Localizing the JSON resource alone did not help RC1 because
+        # the generated Wurst still compiled every settlement, market, hero,
+        # quest, item, technology and reward into war3map.lua.
+        text = (
+            "// Generated minimal campaign selector; do not edit.\n"
+            "package ScenarioData\n\n"
+            "import CommandRouter\n\n"
+            f"public constant int SCENARIO_SCHEMA_VERSION = {runtime.get('schemaVersion', 0)}\n"
+            f"public constant string PHYSICAL_MAP_ID = {json.dumps(physical.id)}\n"
+            f"public constant string SCENARIO_SOURCE_SHA256 = {json.dumps(runtime.get('sourceSha256', ''))}\n\n"
+            + origin_configuration
+        )
     wurst_path.write_text(text, encoding="utf-8")
     provenance_path = generated / PROVENANCE
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
@@ -554,6 +568,30 @@ def _sha_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def _write_browser_safe_w3x(source: Path, destination: Path) -> None:
+    """Remove the optional HM3W cache header from compiled maps.
+
+    The supported client accepts a standard MPQ at byte zero.  RC1's crashing
+    standalone map instead exposed a 512-byte HM3W browser header, so release
+    artifacts deliberately avoid that extra parser surface.  ZIP is retained
+    only for the deterministic fake compiler used by headless tests.
+    """
+    data = source.read_bytes()
+    if zipfile.is_zipfile(source):
+        shutil.copyfile(source, destination)
+        return
+    mpq_at = data.find(b"MPQ\x1a")
+    if mpq_at not in (0, 512):
+        raise PackagingError(f"map assembly produced unsupported W3X container offset {mpq_at}")
+    if mpq_at == 512:
+        if data[:4] != b"HM3W" or any(data[data.index(0, 8) + 9:512]):
+            raise PackagingError("map assembly produced malformed HM3W browser header")
+    archive_size = struct.unpack_from("<I", data, mpq_at + 8)[0]
+    if archive_size < 32 or mpq_at + archive_size > len(data):
+        raise PackagingError("map assembly produced malformed MPQ archive size")
+    destination.write_bytes(data[mpq_at:mpq_at + archive_size])
+
+
 def clean(config: CampaignConfig) -> None:
     root = config.project / "_build"
     if root.exists():
@@ -584,6 +622,15 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         verify_generated(map_config, generated)
         _validate_budget(map_config, physical, generated)
         compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids)
+        if physical.bootstrap:
+            # Compile a separate, bounded dependency graph for the campaign
+            # chapter. Regional Bootstrap and ScenarioData packages are not
+            # merely hidden behind a runtime branch; they are absent.
+            source = config.project / "wurst-bootstrap/Bootstrap.wurst"
+            target = compile_root / "wurst/Bootstrap.wurst"
+            if not source.is_file():
+                raise PackagingError("bootstrap assembly stage failed: missing minimal Bootstrap.wurst")
+            shutil.copy2(source, target)
         runtime = json.loads((generated / GENERATED_DATA).read_text(encoding="utf-8"))
         try:
             materialize(config.project, compile_root / "map" / map_config.source_map.name,
@@ -597,7 +644,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         _inspect(map_config, archive, compile_root, physical.terrain_ids)
         _inspect_physical_map(physical, archive)
         destination = map_root / f"{physical.id}.w3x"
-        shutil.copyfile(archive, destination)
+        _write_browser_safe_w3x(archive, destination)
         built.append((physical, destination))
     _write_campaign(config.output, config, built)
     inspect_campaign(config, config.output)

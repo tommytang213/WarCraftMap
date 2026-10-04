@@ -14,6 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_campaign import (  # noqa: E402
     PackagingError,
     _localize_runtime,
+    _write_browser_safe_w3x,
     build_campaign,
     inspect_campaign,
     load_campaign_config,
@@ -40,6 +41,20 @@ if sys.argv[1] == "build":
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_browser_safe_w3x_strips_hm3w_enumeration_wrapper(self):
+        raw = Path(self.temp.name) / "raw.mpq"
+        wrapped = Path(self.temp.name) / "wrapped.w3x"
+        safe = Path(self.temp.name) / "safe.w3x"
+        write_mpq(raw, {"war3map.w3i": b"current"})
+        header = bytearray(512)
+        header[:8] = b"HM3W\0\0\0\0"
+        name = b"Age of Sail: The World\0"
+        header[8:8 + len(name)] = name
+        wrapped.write_bytes(header + raw.read_bytes())
+        _write_browser_safe_w3x(wrapped, safe)
+        self.assertEqual(b"MPQ\x1a", safe.read_bytes()[:4])
+        self.assertEqual(b"current", MpqReader(safe).read("war3map.w3i"))
+
     def test_mpq_reader_accepts_warcraft_hm3w_wrapper(self):
         archive = Path(self.temp.name) / "raw.mpq"
         wrapped = Path(self.temp.name) / "wrapped.w3x"
@@ -197,16 +212,27 @@ class CampaignPackagingTests(unittest.TestCase):
             self.assertEqual(physical.id, runtime["physicalMap"]["id"])
 
     def test_bootstrap_alone_registers_and_defers_origin_selection(self):
-        bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text(encoding="utf-8")
-        gate = 'if PHYSICAL_MAP_ID == "bootstrap_runtime_validation"'
-        self.assertEqual(2, bootstrap.count(gate))
-        registration = bootstrap.index("registerOriginSelection(commands, bootstrapOriginSelection)")
-        self.assertLess(bootstrap.rfind(gate, 0, registration), registration)
+        bootstrap = (self.project / "wurst-bootstrap/Bootstrap.wurst").read_text(encoding="utf-8")
+        self.assertNotIn("initializePlayableCampaignRuntime", bootstrap)
+        self.assertNotIn("configureGeneratedTrade", bootstrap)
+        self.assertIn("registerOriginSelection(commands, bootstrapOriginSelection)", bootstrap)
         self.assertIn("TimerStart(CreateTimer(), 0., false, function openBootstrapOriginSelection)", bootstrap)
-        callback = bootstrap[bootstrap.index("function openBootstrapOriginSelection"):bootstrap.index("/** Applies")]
+        callback = bootstrap[bootstrap.index("function openBootstrapOriginSelection"):bootstrap.index("init\n")]
         self.assertIn("PauseGame(true)", callback)
         self.assertIn("bootstrapOriginSelection.showPage(1)", callback)
-        self.assertNotIn("PauseGame(true)", bootstrap[bootstrap.index("init\n"):bootstrap.index("if SCENARIO_SCHEMA_VERSION")])
+
+    def test_bootstrap_scenario_data_has_only_origin_records(self):
+        campaign = load_campaign_config(self.manifest)
+        world = validate_campaign(campaign)
+        base = load_config(campaign.map_config_path)
+        generated = self.project / "_build/minimal-bootstrap"
+        generate(base, generated)
+        _localize_runtime(campaign, world, campaign.maps[0], generated)
+        scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+        self.assertIn("configureGeneratedOrigins", scenario)
+        for token in ("registerSettlement", "registerMarket", "registerForce", "registerReward",
+                      "registerHero", "registerQuest", "registerItem", "registerTechnology"):
+            self.assertNotIn(token, scenario)
 
     def test_origin_handoff_and_every_physical_map_region_are_explicit(self):
         campaign = load_campaign_config(self.manifest)
@@ -360,7 +386,11 @@ class CampaignPackagingTests(unittest.TestCase):
             identity = f'public constant string PHYSICAL_MAP_ID = "{configured["id"]}"'
             self.assertEqual(1, lua.count("public constant string PHYSICAL_MAP_ID"))
             self.assertIn(identity, lua)
-            self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
+            if configured.get("bootstrap", False):
+                self.assertNotIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
+                self.assertIn("configureGeneratedOrigins(bootstrapOriginSelection)", lua)
+            else:
+                self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
         self.assertGreater(len(physical_hashes), 1, "regional maps reused placeholder terrain/pathing")
         west_bytes = campaign.read("Maps/EuropeWest.w3x")
         southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")

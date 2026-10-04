@@ -11,6 +11,8 @@ import struct
 import sys
 from pathlib import Path
 
+from forsaken_kingdom_map import MapInfoError, validate_current_w3i
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = PROJECT_ROOT / "map" / "map-source.json"
@@ -234,8 +236,10 @@ def validate(manifest_path: Path) -> Path:
     _validate_wts(map_dir / "war3map.wts", EXPECTED_METADATA["name"])
 
     w3i = _read(map_dir / "war3map.w3i")
-    if len(w3i) < 32 or _u32(w3i, 0, "war3map.w3i") not in (25, 28, 31, 33):
-        raise ValidationError("war3map.w3i has an invalid or unsupported header")
+    try:
+        validate_current_w3i(w3i)
+    except MapInfoError as error:
+        raise ValidationError(str(error)) from error
     if b"TRIGSTR_008\0" not in w3i:
         raise ValidationError("war3map.w3i does not reference the canonical map-name string")
 
