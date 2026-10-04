@@ -33,6 +33,7 @@ class Config:
     repo_root: Path
     state_dir: Path
     model: str = "gpt-5.6-sol"
+    reasoning_effort: str = ""
     max_daily_tokens: int = 100_000_000
     max_weekly_tokens: int = 500_000_000
     max_daily_runs: int = 10
@@ -85,11 +86,23 @@ def positive_int(values: dict[str, str], key: str, default: int) -> int:
 
 def make_config(repo_root: Path, env_path: Path) -> Config:
     values = load_env(env_path)
+    reasoning_effort = values.get(
+    "WARCRAFTMAP_AGENT_REASONING_EFFORT", ""
+    ).lower()
+
+    if reasoning_effort and reasoning_effort not in {
+        "low", "medium", "high", "xhigh", "max"
+    }:
+    raise ValueError(
+        "WARCRAFTMAP_AGENT_REASONING_EFFORT must be "
+        "low, medium, high, xhigh, or max"
+    )
     state = Path(values.get("WARCRAFTMAP_AGENT_STATE_DIR", "~/.local/state/warcraftmap-agent")).expanduser()
     return Config(
         repo_root=repo_root.resolve(),
         state_dir=state.resolve(),
         model=values.get("WARCRAFTMAP_AGENT_MODEL", "gpt-5.6-sol"),
+        reasoning_effort=reasoning _effort,
         max_daily_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_TOKENS", 100_000_000),
         max_weekly_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_TOKENS", 500_000_000),
         max_daily_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_RUNS", 10),
@@ -639,18 +652,29 @@ def build_codex_command(config: Config, worktree: Path, schema: Path, output: Pa
     """Build the non-interactive Codex command for the installed CLI contract."""
     # In Codex CLI 0.153.x, --approve-for-me already routes approvals through
     # the workspace-write sandbox and is mutually exclusive with --sandbox.
-    return [
+    command = [
         "codex", "exec",
         "--ignore-user-config",
         "--ephemeral",
         "--approve-for-me",
         "--json",
         "--model", config.model,
+    ]
+
+    if config.reasoning_effort:
+        command += [
+            "-c",
+            f'model_reasoning_effort="{config.reasoning_effort}"',
+        ]
+
+    command += [
         "--cd", str(worktree),
         "--output-schema", str(schema),
         "--output-last-message", str(output),
         "-",
     ]
+
+    return command
 
 
 def parse_codex_token_usage(output: str) -> int | None:
