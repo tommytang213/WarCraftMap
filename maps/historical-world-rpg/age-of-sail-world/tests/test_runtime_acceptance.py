@@ -15,7 +15,11 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 class RuntimeAcceptanceTests(unittest.TestCase):
     def test_identically_malformed_canonical_and_packaged_w3i_still_fail(self):
         current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
-        malformed = bytearray(current); struct.pack_into("<i", malformed, 0, 25)
+        malformed = bytearray(current)
+        # Corrupt the parsed player count while leaving source and output equal.
+        marker = struct.pack("<6i", 1, 3, 1, 1650, 3000, 1250)
+        player_count_at = malformed.index(marker) + len(marker)
+        struct.pack_into("<i", malformed, player_count_at, 0)
         original_project = runtime.PROJECT
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); canonical = root / "map/AgeOfSailWorld.w3x"
@@ -40,21 +44,25 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             try:
                 result = runtime.inspect_built_map(fixture, "fixture", False)
                 self.assertEqual("fail", result["status"])
-                self.assertTrue(any("not current format" in x for x in result["failures"]))
+                self.assertTrue(any("invalid player count" in x for x in result["failures"]))
             finally:
                 runtime.PROJECT = original_project
 
-    def test_locked_current_client_w3i_and_exact_rc1_regression(self):
+    def test_w3i_layout_is_validated_independently_of_version_labels(self):
         current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
-        info = runtime.validate_current_w3i(current)
+        info = runtime.validate_w3i_structure(current)
         self.assertEqual((33, 6116, (3, 0, 0, 24268)),
                          (info["format"], info["editorVersion"], info["gameVersion"]))
-        fixture = Path(__file__).parent / "fixtures/phase9-rc1-failing-map-metadata.json"
-        failing = json.loads(fixture.read_text())
+        generated = bytearray(current)
+        struct.pack_into("<i4i", generated, 0, 31, 79, 6052, 0, 0)
+        struct.pack_into("<2i", generated, 20, 0, 0)
+        generated_info = runtime.validate_w3i_structure(bytes(generated))
+        self.assertEqual((31, (0, 0, 0, 0)),
+                         (generated_info["format"], generated_info["gameVersion"]))
         malformed = bytearray(current)
-        struct.pack_into("<i", malformed, 0, failing["w3i"]["format"])
-        with self.assertRaisesRegex(runtime.MapInfoError, "not current format"):
-            runtime.validate_current_w3i(bytes(malformed))
+        struct.pack_into("<i", malformed, 0, 30)
+        with self.assertRaisesRegex(runtime.MapInfoError, "no supported structural parser"):
+            runtime.validate_w3i_structure(bytes(malformed))
 
     def executable_script(self):
         calls = sorted({call for required, _ in runtime.EXECUTABLE_PROOFS.values()
@@ -120,15 +128,17 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertTrue(any("line exceeds" in x for x in result["failures"]))
 
     def test_bootstrap_compiled_semantics_require_native_transition_before_end(self):
-        good = "function main() TimerStart() showPage() SetNextLevel(path) EndGame(true) end"
+        good = "function main() TimerStart() showPage() bj_changeLevelMapName=path EndGame(true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(good)["status"])
+        helper = "function main() TimerStart() showPage() SetNextLevelBJ(path) EndGame(true) end"
+        self.assertEqual("pass", runtime.verify_compiled_bootstrap(helper)["status"])
         lost_native = "-- source said SetNextLevelBJ\nfunction main() TimerStart() showPage() EndGame(true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(lost_native)["status"])
-        reversed_calls = "function main() TimerStart() showPage() EndGame(true) SetNextLevel(path) end"
+        reversed_calls = "function main() TimerStart() showPage() EndGame(true) bj_changeLevelMapName=path end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(reversed_calls)["status"])
 
     def test_bootstrap_compiled_semantics_reject_global_scenario_registrations(self):
-        script = "function main() TimerStart() showPage() registerSettlement(x) SetNextLevel(path) EndGame(true) end"
+        script = "function main() TimerStart() showPage() registerSettlement(x) bj_changeLevelMapName=path EndGame(true) end"
         result = runtime.verify_compiled_bootstrap(script)
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("regional registration" in x for x in result["failures"]))

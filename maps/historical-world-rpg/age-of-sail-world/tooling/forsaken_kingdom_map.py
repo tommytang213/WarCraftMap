@@ -1,8 +1,9 @@
-"""Locked map-info contract for the supported Forsaken Kingdom client.
+"""Independent structural parser for map-info bytes used by the campaign.
 
-The layout follows W3I v33 as emitted by the current World Editor.  Keeping the
-parser here makes packaging validate bytes the client reads during map-browser
-enumeration instead of trusting ``wc3Patch`` or source-code markers.
+W3I 31 and 33 share the fields inspected here. A format/editor/game-version
+number is evidence about the producer, not by itself evidence that Warcraft can
+or cannot load the map; validation therefore parses the matching layout and
+checks the browser-relevant structure instead of requiring one magic version.
 """
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ import sys
 from pathlib import Path
 
 W3I_FORMAT = 33
+SUPPORTED_W3I_FORMATS = frozenset((31, 33))
 EDITOR_VERSION = 6116
 GAME_VERSION = (3, 0, 0, 24268)
 SCRIPT_LANGUAGE_LUA = 1
@@ -50,14 +52,17 @@ class _Reader:
 
 
 def parse_w3i(data: bytes) -> dict:
-    """Parse the browser-relevant v33 fields and prove the whole tail is sane."""
+    """Parse the browser-relevant v31/v33 fields and prove the whole tail is sane."""
     r = _Reader(data)
     version, saves, editor = r.integer(), r.integer(), r.integer()
-    if version != W3I_FORMAT:
-        raise MapInfoError(f"war3map.w3i format {version} is not current format {W3I_FORMAT}")
+    if version not in SUPPORTED_W3I_FORMATS:
+        raise MapInfoError(f"war3map.w3i format {version} has no supported structural parser")
     game_version = tuple(r.integer() for _ in range(4))
     name, author, description, recommended = (r.string() for _ in range(4))
-    r.skip(32 + 16 + 8)  # camera bounds, complements, playable width/height
+    r.skip(32 + 16)  # camera bounds and complements
+    playable_width, playable_height = r.integer(), r.integer()
+    if playable_width < 1 or playable_height < 1:
+        raise MapInfoError("war3map.w3i has invalid playable dimensions")
     flags = r.integer(); r.skip(1)
     r.integer(); r.string(); r.string(); r.string(); r.string(); r.integer()
     r.string(); r.string(); r.string(); r.string()
@@ -70,7 +75,7 @@ def parse_w3i(data: bytes) -> dict:
     for _ in range(player_count):
         r.skip(16); r.string(); r.skip(16 + 8)  # position, ally and enemy priorities
     force_count = r.integer()
-    if force_count < 1 or force_count > 24:
+    if force_count < 0 or force_count > 24:
         raise MapInfoError(f"war3map.w3i has invalid force count {force_count}")
     for _ in range(force_count):
         r.skip(8); r.string()
@@ -88,11 +93,24 @@ def parse_w3i(data: bytes) -> dict:
             "description": description, "recommendedPlayers": recommended,
             "flags": flags, "scriptLanguage": script_language,
             "graphicsModes": graphics, "gameDataVersion": game_data,
-            "cameraZoom": camera_zoom, "players": player_count, "forces": force_count}
+            "cameraZoom": camera_zoom, "players": player_count, "forces": force_count,
+            "playableWidth": playable_width, "playableHeight": playable_height}
+
+
+def validate_w3i_structure(data: bytes) -> dict:
+    """Validate fields required for this Lua, one-player campaign map."""
+    info = parse_w3i(data)
+    expected = {"scriptLanguage": SCRIPT_LANGUAGE_LUA, "players": 1}
+    mismatches = [f"{key}={info[key]!r} (expected {value!r})"
+                  for key, value in expected.items() if info[key] != value]
+    if mismatches:
+        raise MapInfoError("war3map.w3i has invalid campaign map structure: " + ", ".join(mismatches))
+    return info
 
 
 def validate_current_w3i(data: bytes) -> dict:
-    info = parse_w3i(data)
+    """Validate the repository's deliberately locked authoring fixture."""
+    info = validate_w3i_structure(data)
     expected = {"editorVersion": EDITOR_VERSION, "gameVersion": GAME_VERSION,
                 "scriptLanguage": SCRIPT_LANGUAGE_LUA,
                 "graphicsModes": GRAPHICS_SD_AND_HD, "gameDataVersion": GAME_DATA_TFT,

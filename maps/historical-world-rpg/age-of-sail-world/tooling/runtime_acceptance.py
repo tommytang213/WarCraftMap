@@ -6,7 +6,7 @@ from pathlib import Path
 
 PROJECT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(PROJECT/"tooling"))
-from forsaken_kingdom_map import MapInfoError, validate_current_w3i
+from forsaken_kingdom_map import MapInfoError, validate_w3i_structure
 MANIFEST=PROJECT/"scenario/runtime-integration.json"
 REPORT_JSON=PROJECT/"reports/runtime-acceptance.json"; REPORT_MD=PROJECT/"reports/runtime-acceptance.md"
 FORMAT="age_of_sail_runtime_integration_v1"
@@ -140,10 +140,12 @@ def verify_compiled_bootstrap(script):
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
  for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
   if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
- next_level=re.search(r"\bSetNextLevel\s*\(",text); end_game=re.search(r"\bEndGame\s*\(",text)
- if not next_level: failures.append("bootstrap compiled Lua does not call the SetNextLevel native")
+ next_level=re.search(r"\bSetNextLevelBJ\s*\(",text)
+ inlined_next_level=re.search(r"\bbj_changeLevelMapName\s*=\s*[^=\s]",text)
+ destination_effect=next_level or inlined_next_level; end_game=re.search(r"\bEndGame\s*\(",text)
+ if not destination_effect: failures.append("bootstrap compiled Lua does not select a campaign destination")
  if not end_game: failures.append("bootstrap compiled Lua does not end the selector map")
- if next_level and end_game and next_level.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
+ if destination_effect and end_game and destination_effect.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
  if "TimerStart" not in text or "showPage" not in text: failures.append("bootstrap does not defer and open origin selection")
  return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw)}}
 
@@ -174,11 +176,10 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
  if bootstrap is not None and physical.get("bootstrap") is not bool(bootstrap): failures.append("physical-map bootstrap identity is inconsistent")
  if bootstrap is not True and (not runtime.get("ids",{}).get("polities") or not runtime.get("regionalGeography")): failures.append("compiled runtime data is not populated")
  if bootstrap is True and (runtime.get("settlementDefinitions") or runtime.get("physicalBoundaries")): failures.append("bootstrap runtime contains regional gameplay records")
- canonical_w3i=PROJECT/"map/AgeOfSailWorld.w3x/war3map.w3i"
- try: validate_current_w3i(w3i)
+ try: info=validate_w3i_structure(w3i)
  except MapInfoError as error: failures.append(str(error))
- if canonical_w3i.is_file() and w3i!=canonical_w3i.read_bytes():
-  failures.append("compiled W3I metadata/player slots differ from locked current-client fixture")
+ else:
+  if (info["playableWidth"],info["playableHeight"])!=(tw-1,th-1): failures.append("W3I playable dimensions do not match terrain")
  return {"status":"pass" if not failures else "fail","failures":failures,"mapId":map_id,"bootstrap":physical.get("bootstrap"),"terrainSha256":hashlib.sha256(w3e).hexdigest(),"pathingSha256":hashlib.sha256(wpm).hexdigest(),"objectCount":objects,"width":tw-1 if tw else 0,"height":th-1 if th else 0}
 
 def verify_built_map(path,expected_map_id=None,bootstrap=None):

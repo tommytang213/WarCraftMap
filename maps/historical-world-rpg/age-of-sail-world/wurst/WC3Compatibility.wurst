@@ -1,6 +1,7 @@
 package WC3Compatibility
 
 import ErrorHandling
+import Annotations
 
 // Stable reusable boundary for Warcraft III patch-specific natives.
 public constant string WC3_COMPAT_PATCH_FAMILY = "v3.0"
@@ -82,10 +83,11 @@ public function compatRemoveSaveDirectory(string name) returns boolean
 public function compatSaveCheckpoint(string name, boolean showWindow)
 	SaveGameCheckpoint(name, showWindow)
 /** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
+@noinline
 public function compatLoadPhysicalMap(string mapPath)
-	// The pinned Wurst standard library exposes the campaign transition through
-	// this wrapper. Release acceptance inspects the compiled Lua and requires the
-	// wrapper's SetNextLevel side effect to survive optimization before EndGame.
+	// SetNextLevelBJ records the destination in bj_changeLevelMapName. The pinned
+	// optimizer may inline that assignment, so release acceptance traces the
+	// compiled assignment/effect rather than requiring this helper name.
 	SetNextLevelBJ(mapPath)
 	EndGame(true)
 
