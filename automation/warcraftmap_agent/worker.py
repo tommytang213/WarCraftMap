@@ -87,22 +87,28 @@ def positive_int(values: dict[str, str], key: str, default: int) -> int:
 def make_config(repo_root: Path, env_path: Path) -> Config:
     values = load_env(env_path)
     reasoning_effort = values.get(
-    "WARCRAFTMAP_AGENT_REASONING_EFFORT", ""
+        "WARCRAFTMAP_AGENT_REASONING_EFFORT", ""
     ).lower()
 
     if reasoning_effort and reasoning_effort not in {
         "low", "medium", "high", "xhigh", "max"
     }:
-    raise ValueError(
-        "WARCRAFTMAP_AGENT_REASONING_EFFORT must be "
-        "low, medium, high, xhigh, or max"
-    )
-    state = Path(values.get("WARCRAFTMAP_AGENT_STATE_DIR", "~/.local/state/warcraftmap-agent")).expanduser()
+        raise ValueError(
+            "WARCRAFTMAP_AGENT_REASONING_EFFORT must be "
+            "low, medium, high, xhigh, or max"
+        )
+
+    state = Path(
+        values.get(
+            "WARCRAFTMAP_AGENT_STATE_DIR",
+            "~/.local/state/warcraftmap-agent",
+        )
+    ).expanduser()
     return Config(
         repo_root=repo_root.resolve(),
         state_dir=state.resolve(),
         model=values.get("WARCRAFTMAP_AGENT_MODEL", "gpt-5.6-sol"),
-        reasoning_effort=reasoning _effort,
+        reasoning_effort=reasoning_effort,
         max_daily_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_TOKENS", 100_000_000),
         max_weekly_tokens=positive_int(values, "WARCRAFTMAP_AGENT_MAX_WEEKLY_TOKENS", 500_000_000),
         max_daily_runs=positive_int(values, "WARCRAFTMAP_AGENT_MAX_DAILY_RUNS", 10),
