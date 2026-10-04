@@ -39,7 +39,10 @@ outer validator and separately tracked real-client evidence respectively.
 
 PR #362 CI follow-up: run `37186061238` reached the built-map gate and demonstrated
 that the pinned compiler emits W3I 31 metadata and optimized away the
-`SetNextLevelBJ` helper name. The repair accepts W3I 31/33 only through their parsed
-layout (including player/force records and terrain-dimension agreement), and traces
-the helper's actual compiled `bj_changeLevelMapName` assignment rather than mistaking
-an inlined helper for a lost handoff.
+`SetNextLevelBJ` helper name. Follow-up run `37191000507` showed the remaining exact
+forms: W3I 31 omits the forced-camera-zoom fields introduced in v32, and the compiler
+can preserve the destination effect as the `SetNextLevel` native. The repair accepts
+W3I 31/33 only through their version-specific parsed layouts (including player/force
+records and terrain-dimension agreement), and traces `SetNextLevel`, `SetNextLevelBJ`,
+or the actual compiled `bj_changeLevelMapName` assignment rather than mistaking a
+renamed or inlined helper for a lost handoff.

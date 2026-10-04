@@ -1,6 +1,7 @@
 """Independent structural parser for map-info bytes used by the campaign.
 
-W3I 31 and 33 share the fields inspected here. A format/editor/game-version
+W3I 31 and 33 share most fields inspected here; the three forced-camera-zoom
+values were added in v32. A format/editor/game-version
 number is evidence about the producer, not by itself evidence that Warcraft can
 or cannot load the map; validation therefore parses the matching layout and
 checks the browser-relevant structure instead of requiring one magic version.
@@ -68,7 +69,7 @@ def parse_w3i(data: bytes) -> dict:
     r.string(); r.string(); r.string(); r.string()
     r.skip(4 + 12 + 4 + 4); r.string(); r.skip(1 + 4)
     script_language, graphics, game_data = r.integer(), r.integer(), r.integer()
-    camera_zoom = (r.integer(), r.integer(), r.integer())
+    camera_zoom = (r.integer(), r.integer(), r.integer()) if version >= 32 else None
     player_count = r.integer()
     if player_count < 1 or player_count > 24:
         raise MapInfoError(f"war3map.w3i has invalid player count {player_count}")

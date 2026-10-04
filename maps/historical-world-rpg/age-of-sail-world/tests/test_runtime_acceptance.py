@@ -56,6 +56,11 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         generated = bytearray(current)
         struct.pack_into("<i4i", generated, 0, 31, 79, 6052, 0, 0)
         struct.pack_into("<2i", generated, 20, 0, 0)
+        # v31 ends its common header at gameDataVersion; forced camera zoom was
+        # introduced in v32 and therefore must not be parsed from player data.
+        camera_marker = struct.pack("<6i", 1, 3, 1, 1650, 3000, 1250)
+        camera_at = generated.index(camera_marker) + 12
+        del generated[camera_at:camera_at + 12]
         generated_info = runtime.validate_w3i_structure(bytes(generated))
         self.assertEqual((31, (0, 0, 0, 0)),
                          (generated_info["format"], generated_info["gameVersion"]))
@@ -132,6 +137,8 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(good)["status"])
         helper = "function main() TimerStart() showPage() SetNextLevelBJ(path) EndGame(true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(helper)["status"])
+        native = "function main() TimerStart() showPage() SetNextLevel(path) EndGame(true) end"
+        self.assertEqual("pass", runtime.verify_compiled_bootstrap(native)["status"])
         lost_native = "-- source said SetNextLevelBJ\nfunction main() TimerStart() showPage() EndGame(true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(lost_native)["status"])
         reversed_calls = "function main() TimerStart() showPage() EndGame(true) bj_changeLevelMapName=path end"

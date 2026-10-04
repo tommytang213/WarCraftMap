@@ -140,7 +140,7 @@ def verify_compiled_bootstrap(script):
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
  for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
   if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
- next_level=re.search(r"\bSetNextLevelBJ\s*\(",text)
+ next_level=re.search(r"\b(?:SetNextLevel|SetNextLevelBJ)\s*\(",text)
  inlined_next_level=re.search(r"\bbj_changeLevelMapName\s*=\s*[^=\s]",text)
  destination_effect=next_level or inlined_next_level; end_game=re.search(r"\bEndGame\s*\(",text)
  if not destination_effect: failures.append("bootstrap compiled Lua does not select a campaign destination")
