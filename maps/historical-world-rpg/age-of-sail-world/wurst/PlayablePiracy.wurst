@@ -345,7 +345,10 @@ public class PiracyRuntime
 		var commissionsEncoded=""
 		for i=0 to commissionCount-1
 			let c=commissions[i]
-			commissionsEncoded+=c.id+","+c.issuerPolityId+","+c.targetPolityId+","+c.expiresTick.toString()+","+c.rewardPermille.toString()+","+(if c.active then "1" else "0")+"~"
+			var active="0"
+			if c.active
+				active="1"
+			commissionsEncoded+=c.id+","+c.issuerPolityId+","+c.targetPolityId+","+c.expiresTick.toString()+","+c.rewardPermille.toString()+","+active+"~"
 		var targets=""
 		for i=0 to state.targetCount-1
 			targets+=state.targetIds[i]+","+state.targetTicks[i].toString()+"~"
@@ -361,7 +364,10 @@ public class PiracyRuntime
 		var polityFields="|polity=|government=|name=|title=|capital=|territories=|recognition="
 		if polity!=null
 			polityFields="|polity="+polity.id+"|government="+polity.governmentFormId+"|name="+polity.name+"|title="+polity.rulerTitle+"|capital="+polity.capitalSettlementId+"|territories="+polity.territoryIds+"|recognition="+polity.recognition
-		return "v1|notoriety="+state.notoriety.toString()+"|bounty="+state.bountyMinor.toString()+"|wealth="+state.piracyWealthMinor.toString()+"|prizes="+state.prizesTaken.toString()+"|outlaw="+(if state.outlaw then "1" else "0")+"|commissions="+commissionsEncoded+"|targets="+targets+"|havens="+havens+"|regions="+regions+"|actions="+actions+polityFields
+		var outlaw="0"
+		if state.outlaw
+			outlaw="1"
+		return "v1|notoriety="+state.notoriety.toString()+"|bounty="+state.bountyMinor.toString()+"|wealth="+state.piracyWealthMinor.toString()+"|prizes="+state.prizesTaken.toString()+"|outlaw="+outlaw+"|commissions="+commissionsEncoded+"|targets="+targets+"|havens="+havens+"|regions="+regions+"|actions="+actions+polityFields
 	function migrationAuthority() returns string
 		let empty=new PiracyRuntime(rules)
 		return empty.captureAuthority()
@@ -389,11 +395,11 @@ public class PiracyRuntime
 		var encoded=field(candidate,"commissions")
 		var cursor=0
 		while cursor<StringLength(encoded)
-			let end=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
-			if end<0 or staged.commissionCount>=32
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or staged.commissionCount>=32
 				lastDiagnostic="Piracy commission records are malformed or excessive."
 				return false
-			let row=SubString(encoded,cursor,cursor+end)
+			let row=SubString(encoded,cursor,cursor+finish)
 			let id=column(row,0)
 			let active=column(row,5)
 			if not validAtom(id) or not validAtom(column(row,1)) or not validAtom(column(row,2)) or not validInteger(column(row,3)) or not validInteger(column(row,4)) or (active!="0" and active!="1") or S2I(column(row,3))<=0 or S2I(column(row,4))<0 or staged.findCommission(id)!=null
@@ -401,29 +407,29 @@ public class PiracyRuntime
 				return false
 			staged.issueCommission(id,column(row,1),column(row,2),S2I(column(row,3)),S2I(column(row,4)))
 			staged.commissions[staged.commissionCount-1].active=active=="1"
-			cursor+=end+1
+			cursor+=finish+1
 		encoded=field(candidate,"targets")
 		cursor=0
 		while cursor<StringLength(encoded)
-			let end=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
-			if end<0 or staged.state.targetCount>=64
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or staged.state.targetCount>=64
 				lastDiagnostic="Piracy repeat-target records are malformed or excessive."
 				return false
-			let row=SubString(encoded,cursor,cursor+end)
+			let row=SubString(encoded,cursor,cursor+finish)
 			let id=column(row,0)
 			if not validAtom(id) or not validInteger(column(row,1)) or staged.state.lastTargetTick(id)>-1000000
 				lastDiagnostic="Piracy repeat-target record is invalid or duplicated."
 				return false
 			staged.state.recordTarget(id,S2I(column(row,1)))
-			cursor+=end+1
+			cursor+=finish+1
 		encoded=field(candidate,"havens")
 		cursor=0
 		while cursor<StringLength(encoded)
-			let end=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
-			if end<0 or staged.state.havenCount>=16
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or staged.state.havenCount>=16
 				lastDiagnostic="Piracy haven records are malformed or excessive."
 				return false
-			let row=SubString(encoded,cursor,cursor+end)
+			let row=SubString(encoded,cursor,cursor+finish)
 			let id=column(row,0)
 			if not validAtom(id) or not validInteger(column(row,1)) or S2I(column(row,1))<0
 				lastDiagnostic="Piracy haven record is invalid."
@@ -435,15 +441,15 @@ public class PiracyRuntime
 			staged.state.havenIds[staged.state.havenCount]=id
 			staged.state.havenStanding[staged.state.havenCount]=S2I(column(row,1))
 			staged.state.havenCount++
-			cursor+=end+1
+			cursor+=finish+1
 		encoded=field(candidate,"regions")
 		cursor=0
 		while cursor<StringLength(encoded)
-			let end=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
-			if end<0 or staged.regionCount>=32
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or staged.regionCount>=32
 				lastDiagnostic="Piracy regional-pressure records are malformed or excessive."
 				return false
-			let row=SubString(encoded,cursor,cursor+end)
+			let row=SubString(encoded,cursor,cursor+finish)
 			let id=column(row,0)
 			if not validAtom(id) or not validInteger(column(row,1)) or S2I(column(row,1))<0
 				lastDiagnostic="Piracy regional-pressure record is invalid."
@@ -455,15 +461,15 @@ public class PiracyRuntime
 			staged.regionIds[staged.regionCount]=id
 			staged.regionalPressure[staged.regionCount]=S2I(column(row,1))
 			staged.regionCount++
-			cursor+=end+1
+			cursor+=finish+1
 		encoded=field(candidate,"actions")
 		cursor=0
 		while cursor<StringLength(encoded)
-			let end=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
-			if end<0 or staged.processedCount>=128
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or staged.processedCount>=128
 				lastDiagnostic="Piracy prize records are malformed or excessive."
 				return false
-			let row=SubString(encoded,cursor,cursor+end)
+			let row=SubString(encoded,cursor,cursor+finish)
 			let id=column(row,0)
 			if not validAtom(id) or staged.actionSeen(id) or not validAtom(column(row,1)) or not validInteger(column(row,8)) or not validInteger(column(row,9)) or not validInteger(column(row,10)) or not validInteger(column(row,12)) or staged.state.lastTargetTick(column(row,1))<S2I(column(row,12)) or (column(row,6)!="release" and column(row,6)!="capture" and column(row,6)!="scuttle") or S2I(column(row,8))<0 or S2I(column(row,9))<0 or S2I(column(row,10))<0
 				lastDiagnostic="Piracy prize record is invalid, duplicated, or stale."
@@ -471,7 +477,7 @@ public class PiracyRuntime
 			staged.processedActionIds[staged.processedCount]=id
 			staged.processedPrizeRecords[staged.processedCount]=row
 			staged.processedCount++
-			cursor+=end+1
+			cursor+=finish+1
 		if staged.state.prizesTaken<staged.processedCount
 			lastDiagnostic="Piracy prize history is stale relative to its totals."
 			return false
@@ -484,11 +490,11 @@ public class PiracyRuntime
 			let recognition=field(candidate,"recognition")
 			cursor=0
 			while cursor<StringLength(recognition)
-				let end=SubString(recognition,cursor,StringLength(recognition)).indexOf("~")
-				if end<0
+				let finish=SubString(recognition,cursor,StringLength(recognition)).indexOf("~")
+				if finish<0
 					lastDiagnostic="Pirate-polity recognition authority is malformed."
 					return false
-				let row=SubString(recognition,cursor,cursor+end)
+				let row=SubString(recognition,cursor,cursor+finish)
 				if not validAtom(column(row,0)) or not validAtom(column(row,1))
 					lastDiagnostic="Pirate-polity recognition authority is invalid."
 					return false
@@ -496,7 +502,7 @@ public class PiracyRuntime
 				if prior.indexOf(column(row,0)+",")>=0
 					lastDiagnostic="Pirate-polity recognition authority is duplicated."
 					return false
-				cursor+=end+1
+				cursor+=finish+1
 			staged.polity.recognition=recognition
 			staged.state.polityId=polityId
 		else if field(candidate,"government")!="" or field(candidate,"capital")!="" or field(candidate,"territories")!="" or field(candidate,"recognition")!=""
@@ -516,10 +522,10 @@ public class PiracyRuntime
 			let recognition=stagedRestore.polity.recognition
 			var cursor=0
 			while cursor<StringLength(recognition)
-				let end=SubString(recognition,cursor,StringLength(recognition)).indexOf("~")
-				let row=SubString(recognition,cursor,cursor+end)
+				let finish=SubString(recognition,cursor,StringLength(recognition)).indexOf("~")
+				let row=SubString(recognition,cursor,cursor+finish)
 				polityAuthority.setRecognition(stagedRestore.polity.id,column(row,0),column(row,1))
-				cursor+=end+1
+				cursor+=finish+1
 		new PiracySnapshot(stagedRestore).applyTo(this)
 		stagedRestore=null
 		lastDiagnostic=""
