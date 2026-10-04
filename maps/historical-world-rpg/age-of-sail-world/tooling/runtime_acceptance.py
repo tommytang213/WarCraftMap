@@ -5,6 +5,8 @@ import argparse, hashlib, json, re, struct, sys, zipfile
 from pathlib import Path
 
 PROJECT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(PROJECT/"tooling"))
+from forsaken_kingdom_map import MapInfoError, validate_current_w3i
 MANIFEST=PROJECT/"scenario/runtime-integration.json"
 REPORT_JSON=PROJECT/"reports/runtime-acceptance.json"; REPORT_MD=PROJECT/"reports/runtime-acceptance.md"
 FORMAT="age_of_sail_runtime_integration_v1"
@@ -31,6 +33,8 @@ EXECUTABLE_PROOFS={
  "world_map":({"initializePlayableCampaignRuntime"},{"map"}),
  "remote_management":({"initializeMilitarySettlementRuntime"},{"army"})}
 MAX_COMPILED_LUA_BYTES=16*1024*1024; MAX_LUA_LINE_BYTES=256*1024; MAX_LUA_STRING_BYTES=1024*1024
+MAX_BOOTSTRAP_LUA_BYTES=512*1024
+BOOTSTRAP_FORBIDDEN_REGISTRATIONS=("registerSettlement", "registerMarket", "registerForce", "registerReward", "registerHero", "registerQuest", "registerItem", "registerTechnology")
 
 class RuntimeAcceptanceError(ValueError): pass
 
@@ -130,6 +134,19 @@ def verify_compiled_script(script,path=MANIFEST):
  if not re.search(r"\bfunction\s+(?:main|config)\s*\(",code): failures.append("compiled Lua has no Warcraft main/config entry point")
  return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw),"longestLineBytes":longest,"executableCalls":len(calls),"commandRegistrations":len(registrations)}}
 
+def verify_compiled_bootstrap(script):
+ raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace")
+ failures=[]
+ if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
+ for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
+  if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
+ next_level=re.search(r"\bSetNextLevel\s*\(",text); end_game=re.search(r"\bEndGame\s*\(",text)
+ if not next_level: failures.append("bootstrap compiled Lua does not call the SetNextLevel native")
+ if not end_game: failures.append("bootstrap compiled Lua does not end the selector map")
+ if next_level and end_game and next_level.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
+ if "TimerStart" not in text or "showPage" not in text: failures.append("bootstrap does not defer and open origin selection")
+ return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw)}}
+
 def _archive_read(path,name):
  if zipfile.is_zipfile(path):
   with zipfile.ZipFile(path) as archive: return archive.read(name)
@@ -141,7 +158,7 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
   script=_archive_read(path,"war3map.lua"); w3e=_archive_read(path,"war3map.w3e"); wpm=_archive_read(path,"war3map.wpm"); units=_archive_read(path,"war3mapUnits.doo")
   runtime=json.loads(_archive_read(path,"runtime/scenario-runtime.json")); physical=json.loads(_archive_read(path,"runtime/physical-map.json")); w3i=_archive_read(path,"war3map.w3i")
  except (KeyError,OSError,ValueError,json.JSONDecodeError) as error: raise RuntimeAcceptanceError(f"built map is missing or has invalid required content: {error}") from error
- failures=list(verify_compiled_script(script)["failures"]); tw=th=objects=0
+ failures=list((verify_compiled_bootstrap(script) if bootstrap is True else verify_compiled_script(script))["failures"]); tw=th=objects=0
  try:
   offset=13; ground=struct.unpack_from("<I",w3e,offset)[0]; offset+=4+ground*4; cliffs=struct.unpack_from("<I",w3e,offset)[0]; offset+=4+cliffs*4
   tw,th=struct.unpack_from("<II",w3e,offset); pw,ph=struct.unpack_from("<II",wpm,8); objects=struct.unpack_from("<I",units,12)[0]
@@ -155,11 +172,13 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
  map_id=physical.get("physicalMapId")
  if expected_map_id is not None and map_id!=expected_map_id: failures.append(f"physical-map identity {map_id!r} does not match {expected_map_id!r}")
  if bootstrap is not None and physical.get("bootstrap") is not bool(bootstrap): failures.append("physical-map bootstrap identity is inconsistent")
- if not runtime.get("ids",{}).get("polities") or not runtime.get("regionalGeography"): failures.append("compiled runtime data is not populated")
+ if bootstrap is not True and (not runtime.get("ids",{}).get("polities") or not runtime.get("regionalGeography")): failures.append("compiled runtime data is not populated")
+ if bootstrap is True and (runtime.get("settlementDefinitions") or runtime.get("physicalBoundaries")): failures.append("bootstrap runtime contains regional gameplay records")
  canonical_w3i=PROJECT/"map/AgeOfSailWorld.w3x/war3map.w3i"
- if len(w3i)<32: failures.append("map metadata/player-slot data is truncated")
- elif canonical_w3i.is_file() and w3i!=canonical_w3i.read_bytes():
-  failures.append("map metadata/player slots differ from the authoritative Warcraft 3.0 source")
+ try: validate_current_w3i(w3i)
+ except MapInfoError as error: failures.append(str(error))
+ if canonical_w3i.is_file() and w3i!=canonical_w3i.read_bytes():
+  failures.append("compiled W3I metadata/player slots differ from locked current-client fixture")
  return {"status":"pass" if not failures else "fail","failures":failures,"mapId":map_id,"bootstrap":physical.get("bootstrap"),"terrainSha256":hashlib.sha256(w3e).hexdigest(),"pathingSha256":hashlib.sha256(wpm).hexdigest(),"objectCount":objects,"width":tw-1 if tw else 0,"height":th-1 if th else 0}
 
 def verify_built_map(path,expected_map_id=None,bootstrap=None):

@@ -83,7 +83,9 @@ public function compatSaveCheckpoint(string name, boolean showWindow)
 	SaveGameCheckpoint(name, showWindow)
 /** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
 public function compatLoadPhysicalMap(string mapPath)
-	SetNextLevelBJ(mapPath)
+	// Call the native directly.  SetNextLevelBJ was optimized out by the v3 Lua
+	// backend in the Phase 9 RC1 build, leaving only EndGame in the artifact.
+	SetNextLevel(mapPath)
 	EndGame(true)
 
 // Native-save regression lifecycle. These adapters are intentionally generic;

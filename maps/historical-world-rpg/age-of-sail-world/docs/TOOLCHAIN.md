@@ -7,6 +7,9 @@
 - Lua as the generated Warcraft scripting backend.
 - Wurst project patch target: `v3.0`.
 - Current bootstrap/source-controlled folder-map input at `map/AgeOfSailWorld.w3x/`; the final world target is a multi-map single-player custom-campaign package so each regional/subregional physical map receives its own terrain budget.
+- Browser-parsed map metadata is locked to W3I v33 with embedded game version
+  `3.0.0.24268`; source and packaged maps are parsed by
+  `tooling/forsaken_kingdom_map.py`, not accepted from the patch label alone.
 
 ## Why Wurst + Lua
 

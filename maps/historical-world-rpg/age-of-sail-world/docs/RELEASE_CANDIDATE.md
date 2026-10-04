@@ -1,9 +1,9 @@
 # Phase 9 release candidate
 
-Release candidate: **phase9-rc1**
+Release candidate: **phase9-rc2 (launch-crash remediation; not promoted)**
 Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
-Status: **automated packaged-artifact validation complete; real-client launch smoke not run.**
+Status: **blocked_pending_real_forsaken_kingdom_launch_smoke**
 The release pipeline builds every physical W3X twice, packages the W3N, and inspects
 the packaged campaign rather than trusting source markers. The gate verifies campaign
 metadata, bootstrap/origin flow, physical-map identities, localized terrain and pathing,
@@ -25,9 +25,10 @@ not supported; a rejected save is never rewritten.
 
 ## Real-client smoke status
 
-The Warcraft III 3.0 launch smoke is explicitly **not run** for this candidate. It remains
-a separate, optional final promotion signal and does not change the completed automated
-implementation/artifact result.
+Phase 9 RC1 crashed live Forsaken Kingdom 3.0.0.24268 before origin selection. The
+replacement bootstrap is selector-only and is guarded by compiled-artifact budgets and
+transition checks, but release remains blocked until that exact client passes Begin the
+Campaign, origin selection, and destination handoff smoke coverage.
 
 ## Historical diagnostic
 
