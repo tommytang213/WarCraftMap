@@ -218,19 +218,28 @@ def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
 
 def verify_campaign_runtime(campaign_path: Path, campaign_config) -> None:
     campaign = MpqReader(campaign_path)
+    inspected = []
     for physical in campaign_config.maps:
         payload = campaign.read(physical.package_path)
         with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
             nested_file.write(payload); nested_file.flush()
-            nested = MpqReader(Path(nested_file.name))
             try:
-                script = nested.read("war3map.lua").decode("utf-8", errors="replace")
+                result = runtime_acceptance.inspect_built_map(
+                    Path(nested_file.name), physical.id, physical.bootstrap)
             except Exception as error:
-                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: missing compiled script") from error
-            result = runtime_acceptance.verify_compiled_script(script)
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: cannot inspect built map: {error}") from error
             if result["status"] != "pass":
                 raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: " +
                                      "; ".join(result["failures"]))
+            inspected.append(result)
+    ids = [row["mapId"] for row in inspected]
+    if len(ids) != len(set(ids)) or sum(bool(row["bootstrap"]) for row in inspected) != 1:
+        raise PackagingError("runtime acceptance stage failed: physical identities/bootstrap are invalid")
+    regional = [row for row in inspected if not row["bootstrap"]]
+    if not regional:
+        raise PackagingError("runtime acceptance stage failed: bootstrap has no packaged destination")
+    if len(regional) > 1 and len({(row["terrainSha256"], row["pathingSha256"]) for row in regional}) == 1:
+        raise PackagingError("runtime acceptance stage failed: regional maps are identical placeholders")
 
 
 def audit_payloads(payloads: dict[str, bytes], config: dict) -> None:

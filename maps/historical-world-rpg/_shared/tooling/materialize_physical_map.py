@@ -127,8 +127,14 @@ def _positions(project: Path) -> dict[str, dict]:
 
 def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime: dict) -> dict:
     if physical.bootstrap:
-        return {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": True,
-                "terrain": {"width": 64, "height": 64}, "objects": {"spawnCount": 1, "settlementCount": 0}}
+        manifest = {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": True,
+                    "terrain": {"width": 64, "height": 64},
+                    "objects": {"spawnCount": 1, "settlementCount": 0}}
+        runtime_dir = map_dir / "runtime"
+        runtime_dir.mkdir(exist_ok=True)
+        runtime_dir.joinpath("physical-map.json").write_text(
+            json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+        return manifest
     docs = [json.loads((generated / f"terrain-{terrain_id}.json").read_text(encoding="utf-8"))
             for terrain_id in physical.terrain_ids]
     if docs:
