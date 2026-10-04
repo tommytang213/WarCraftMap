@@ -4,6 +4,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_map import (PackagingError, build, generate, load_config, verify_generated)  # noqa: E402
+from wurst_execution_fixture import FAKE_EXECUTION, allow_synthetic_compiler
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
 import pathlib, sys, zipfile
@@ -22,6 +23,7 @@ if sys.argv[1] == "build":
             if path.is_file(): archive.write(path, path.relative_to(source).as_posix())
         archive.writestr("war3map.lua", lua)
 '''
+FAKE_GRILL = FAKE_GRILL.replace('if sys.argv[1] == "build":', FAKE_EXECUTION + '\nif sys.argv[1] == "build":')
 
 class PackagingTests(unittest.TestCase):
     def setUp(self):
@@ -30,6 +32,7 @@ class PackagingTests(unittest.TestCase):
         shutil.copytree(PROJECT_ROOT.parent / "_shared", category / "_shared")
         shutil.copytree(PROJECT_ROOT, self.project, ignore=shutil.ignore_patterns("_build", ".wurst"))
         self.fake = self.project / "fake-grill"; self.fake.write_text(FAKE_GRILL, encoding="utf-8"); self.fake.chmod(self.fake.stat().st_mode | stat.S_IXUSR)
+        allow_synthetic_compiler(self, self.fake)
 
     def test_paths_and_output_name_are_resolved_from_scenario_config(self):
         config = load_config(self.project / "package.json")
@@ -47,7 +50,7 @@ class PackagingTests(unittest.TestCase):
 
     def test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures(self):
         output = build(self.project / "package.json", grill=str(self.fake))
-        self.assertEqual(["install", "typecheck", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
+        self.assertEqual(["install", "typecheck", "test", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
             names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)

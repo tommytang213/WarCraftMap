@@ -106,3 +106,63 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	restored.restoreState(saved).assertTrue()
 	restored.isKnown("france").assertTrue()
 	restored.requestGovernmentReward("england", "commission").assertEquals("Reward rejected: reward was already granted.")
+	restored.activeConflictWith("france").assertEquals("channel_war")
+	restored.captureState().assertEquals(saved)
+	restored.restoreState(saved).assertTrue()
+	restored.captureState().assertEquals(saved)
+	restored.createOffer("channel_war", "france", "ceasefire").assertEquals("player_offer_2")
+	restored.respondToOffer("player_offer_1", false, false).assertEquals("Peace offer rejected.")
+	restored.respondToOffer("player_offer_2", true, true).assertEquals("Peace concluded under the negotiated terms.")
+	restored.activeConflictWith("france").assertEquals("")
+	// Existing registries must replace their post-save conflicts and offers too.
+	restored.setActiveConflict("england", "later_war")
+	restored.restoreState(saved).assertTrue()
+	restored.captureState().assertEquals(saved)
+	restored.activeConflictWith("england").assertEquals("")
+	restored.createOffer("channel_war", "france", "ceasefire").assertEquals("player_offer_2")
+
+function rejectsCountryState(PlayableCountryInteractionRuntime runtime, string candidate)
+	let before = runtime.captureState()
+	let sequence = runtime.nextOffer
+	runtime.restoreState(candidate).assertFalse()
+	runtime.captureState().assertEquals(before)
+	runtime.nextOffer.assertEquals(sequence)
+
+@test function lateInvalidCountryRecordsPreserveActiveAuthority()
+	let identity = new PlayerCampaignIdentity()
+	identity.startCampaign("england", "europe_west", "europe", "london")
+	let runtime = new PlayableCountryInteractionRuntime(identity)
+	runtime.registerPolityResources("england", 80, 9)
+	runtime.registerPolity("france", 100)
+	runtime.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 1, 0, 5, false))
+	runtime.discover("england")
+	runtime.discover("france")
+	runtime.recordContribution("england", 1)
+	runtime.requestGovernmentReward("england", "commission")
+	runtime.setActiveConflict("france", "war")
+	runtime.createOffer("war", "france", "ceasefire")
+	let candidate = "v1|p,england,0,0,0,0,1,0|p,france,1,0,0,0,2,0|c,france,other_war|o,player_offer_12,france,0,ceasefire"
+	rejectsCountryState(runtime, candidate + "|c,unknown,war")
+	rejectsCountryState(runtime, candidate + "|o,player_offer_12,france,0,ceasefire")
+	rejectsCountryState(runtime, candidate + "|g,england,missing")
+	rejectsCountryState(runtime, candidate + "|c,france,duplicate")
+	rejectsCountryState(runtime, candidate + "|o,player_offer_13,france,9,ceasefire")
+	rejectsCountryState(runtime, "v1|p,england,1,0,0,0,invalid,0")
+	rejectsCountryState(runtime, "v10|p,england,1,0,0,0,1,0")
+	rejectsCountryState(runtime, candidate + "|")
+	var tooMany = "v1|p,france,1,0,0,0,2,0"
+	for i = 1 to 129
+		tooMany += "|o,player_offer_" + i.toString() + ",france,0,ceasefire"
+	rejectsCountryState(runtime, tooMany)
+	runtime.createOffer("war", "france", "ceasefire").assertEquals("player_offer_2")
+
+@test function legacyCountryResourcesAndSparseOfferSequenceRemainCompatible()
+	let runtime = new PlayableCountryInteractionRuntime(new PlayerCampaignIdentity())
+	runtime.registerPolityResources("france", 100, 9)
+	// Before live resources, v1 polity rows had no material-stock column.
+	let legacy = "v1|p,france,1,-2,3,4,50|c,france,war|o,player_offer_12,france,1,ceasefire|o,player_offer_2,france,0,ceasefire"
+	runtime.restoreState(legacy).assertTrue()
+	runtime.restoreState(legacy).assertTrue()
+	runtime.materialStock[0].assertEquals(9)
+	runtime.treasury[0].assertEquals(50)
+	runtime.createOffer("war", "france", "ceasefire").assertEquals("player_offer_13")

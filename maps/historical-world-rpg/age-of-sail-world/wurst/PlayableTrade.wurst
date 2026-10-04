@@ -58,10 +58,9 @@ public class RuntimeMarket
 		if blockaded or occupiedByHostile
 			return "Market access is restricted."
 		return goodName+": "+stock.toString()+" available; buy "+buyUnitPrice.toString()+"; sell "+sellUnitPrice.toString()+"; "+trend()
-	function reprice()
+	function currentBuyUnitPrice() returns int
 		// Integer-only version of the authoritative headless pressure model. Quotes
 		// are recomputed at commit time, so cached UI text cannot be exploited.
-		previousUnitPrice=buyUnitPrice
 		let disruption=shortagePermille+eventPermille+(consumptionPermille-productionPermille) div 2
 		var access=1000
 		if blockaded
@@ -69,9 +68,14 @@ public class RuntimeMarket
 		if occupiedByHostile
 			access+=400
 		let stockPressure=targetStock*1000 div IMaxBJ(targetStock div 4,stock)
-		buyUnitPrice=IMaxBJ(1,baseUnitPrice*stockPressure*(1000+disruption) div 1000000)
-		buyUnitPrice=IMaxBJ(1,buyUnitPrice*access*(1000-technologyPermille) div 1000000)
-		sellUnitPrice=IMaxBJ(1,buyUnitPrice*920 div 1000)
+		let price=IMaxBJ(1,baseUnitPrice*stockPressure*(1000+disruption) div 1000000)
+		return IMaxBJ(1,price*access*(1000-technologyPermille) div 1000000)
+	function currentSellUnitPrice() returns int
+		return IMaxBJ(1,currentBuyUnitPrice()*920 div 1000)
+	function reprice()
+		previousUnitPrice=buyUnitPrice
+		buyUnitPrice=currentBuyUnitPrice()
+		sellUnitPrice=currentSellUnitPrice()
 
 public class MerchantProgress
 	int standing=0
@@ -108,8 +112,7 @@ public class PlayableTradeController
 			return "Commodity is not discovered."
 		if market.blockaded or market.occupiedByHostile
 			return "Market access is restricted."
-		market.reprice()
-		let charge=market.buyUnitPrice*quantity
+		let charge=market.currentBuyUnitPrice()*quantity
 		if market.stock<quantity
 			return "Market stock is insufficient."
 		if destination.money<charge
@@ -118,6 +121,7 @@ public class PlayableTradeController
 			return "Cargo capacity is insufficient."
 		if destination.cargo>0 and destination.goodId!=market.goodName
 			return "Cargo store contains another commodity."
+		market.reprice()
 		market.stock-=quantity
 		market.money+=charge
 		destination.cargo+=quantity
@@ -139,10 +143,10 @@ public class PlayableTradeController
 			return "Commodity is not discovered."
 		if market.blockaded or market.occupiedByHostile
 			return "Market access is restricted."
-		market.reprice()
-		let proceeds=market.sellUnitPrice*quantity
+		let proceeds=market.currentSellUnitPrice()*quantity
 		if market.money<proceeds
 			return "Market funds are insufficient."
+		market.reprice()
 		var cost=0
 		if carriedQuantity>=quantity
 			cost=carriedCost*quantity div carriedQuantity
@@ -333,6 +337,16 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		let restoredSettlement=tradeField(document,0)
 		if restoredSettlement==""
 			return false
+		// Resolve stable projections before applying legacy summary fields. The
+		// current view may point at a different market/store after reconstruction.
+		for i=0 to marketCount-1
+			if markets[i].id==restoredSettlement
+				market=markets[i]
+		let savedHoldId=tradeField(document,17)
+		if savedHoldId!=""
+			for i=0 to storeCount-1
+				if tradeSafeId(stores[i].id)==savedHoldId
+					hold=stores[i]
 		settlementId=restoredSettlement
 		market.id=restoredSettlement
 		market.stock=S2I(tradeField(document,1))
@@ -383,11 +397,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						if compactField(record,13)!=""
 							markets[j].previousUnitPrice=S2I(compactField(record,13))
 				recordStart=i+1
-		let savedHoldId=tradeField(document,17)
 		if savedHoldId!=""
-			for i=0 to storeCount-1
-				if tradeSafeId(stores[i].id)==savedHoldId
-					hold=stores[i]
 			hold.capacity=S2I(tradeField(document,18))
 		let savedStores=tradeField(document,19)
 		recordStart=0

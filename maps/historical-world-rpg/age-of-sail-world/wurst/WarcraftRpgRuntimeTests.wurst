@@ -1,5 +1,6 @@
 package WarcraftRpgRuntimeTests
 import WarcraftRpgRuntime
+import ScenarioData
 
 class Effects implements TechnologyEffectPort
 	int applied=0
@@ -223,3 +224,108 @@ class Projections implements RpgProjectionPort
 	let saved=runtime.captureState()
 	runtime.restoreState(saved).assertTrue()
 	runtime.captureState().assertEquals(saved)
+
+@test function minimalOptionalRecordsHaveValidDefaultsAndReconstruct()
+	let effects=new Effects()
+	let runtime=new WarcraftRpgRuntime(effects)
+	let projections=new Projections()
+	runtime.setProjectionPort(projections)
+	let hero=new RpgHero("hero","Hero",'Hpal')
+	runtime.heroes.register(hero)
+	runtime.heroes.recruit("hero").assertTrue()
+	let itemDefinition=new RpgItem("plain","Plain","hand","common",1,1)
+	itemDefinition.setId.assertEquals("")
+	itemDefinition.source.assertEquals("")
+	runtime.inventory.registerItem(itemDefinition)
+	runtime.inventory.grant("plain").assertTrue()
+	runtime.equipItem("hero","plain",1450).assertTrue()
+	(runtime.inventory.comparison("plain").indexOf("Plain")>=0).assertTrue()
+	let technology=new RuntimeTechnology("basic","Basic",1450,1)
+	technology.effectId.assertEquals("")
+	runtime.technologies.register(technology)
+	runtime.research("player","basic",1450,1).assertTrue()
+	let q=new RuntimeQuest("hidden","Hidden","regional")
+	runtime.journal.register(q)
+	runtime.acceptQuest("hidden").assertTrue()
+	runtime.journal.track("hidden").assertEquals("No destination is revealed yet.")
+	runtime.worldEvent("location","unrelated",1).assertFalse()
+	runtime.journal.progress("hidden",1).assertTrue()
+	runtime.turnInQuest("hidden","hero",1,30).assertTrue()
+	let treasure=new RuntimeTreasure("empty_reward","region","cave")
+	runtime.treasures.register(treasure)
+	runtime.worldEvent("location","region",1).assertTrue()
+	runtime.worldEvent("location","cave",1).assertTrue()
+	let saved=runtime.captureState()
+	for i=1 to 2
+		runtime.restoreState(saved).assertTrue()
+		runtime.reconcile("player")
+		runtime.captureState().assertEquals(saved)
+		projections.equipmentPower.assertEquals(1)
+		projections.knowledge.assertEquals(1)
+	// Ordinary duplicates are inventory copies, while unique items and hero
+	// authority still reject duplicate records without changing active state.
+	runtime.inventory.grant("plain").assertTrue()
+	let uniqueItem=new RpgItem("unique","Unique","artifact","rare",1,1)
+	uniqueItem.unique=true
+	runtime.inventory.registerItem(uniqueItem)
+	runtime.inventory.grant("unique").assertTrue()
+	let withCopies=runtime.captureState()
+	runtime.restoreState(withCopies).assertTrue()
+	runtime.inventory.ownedCount.assertEquals(3)
+	runtime.restoreState(withCopies+"|i,unique").assertFalse()
+	runtime.captureState().assertEquals(withCopies)
+	runtime.restoreState(withCopies+"|h,hero").assertFalse()
+	runtime.captureState().assertEquals(withCopies)
+
+@test function generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration()
+	let runtime=new WarcraftRpgRuntime(new Effects())
+	configureGeneratedRpg(runtime)
+	(runtime.heroes.count>0).assertTrue()
+	(runtime.inventory.definitionCount>0).assertTrue()
+	(runtime.technologies.count>0).assertTrue()
+	(runtime.journal.count>0).assertTrue()
+	(runtime.treasures.count>0).assertTrue()
+	let hero=runtime.heroes.heroes[0]
+	runtime.heroes.recruit(hero.id).assertTrue()
+	var equipped=false
+	for i=0 to runtime.inventory.definitionCount-1
+		let itemDefinition=runtime.inventory.definitions[i]
+		// Exercise generated optional fields on every itemDefinition and equip an eligible one.
+		runtime.inventory.comparison(itemDefinition.id)
+		if not equipped and runtime.inventory.available(itemDefinition,hero,1450,"","")
+			runtime.inventory.grant(itemDefinition.id).assertTrue()
+			runtime.equipItem(hero.id,itemDefinition.id,1450).assertTrue()
+			equipped=true
+	equipped.assertTrue()
+	var researched=false
+	for i=0 to runtime.technologies.count-1
+		let technology=runtime.technologies.definitions[i]
+		if not researched and technology.prerequisiteId == ""
+			runtime.research("player",technology.id,1450,runtime.technologies.cost(technology.id,1450,0,0)).assertTrue()
+			researched=true
+	researched.assertTrue()
+	let q=runtime.journal.quests[0]
+	runtime.acceptQuest(q.id).assertTrue()
+	if q.destinationId != ""
+		runtime.worldEvent("location",q.destinationId,1)
+	else
+		runtime.journal.progress(q.id,1).assertTrue()
+	if q.state == QUEST_READY
+		runtime.turnInQuest(q.id,hero.id,1,30).assertTrue()
+	q.state.assertEquals(QUEST_COMPLETE)
+	let treasure=runtime.treasures.treasures[0]
+	for i=1 to treasure.clueCount
+		runtime.worldEvent("location",treasure.regionId,1).assertTrue()
+	runtime.worldEvent("location",treasure.resolvedLocationId,1).assertTrue()
+	treasure.discovered.assertTrue()
+	let saved=runtime.captureState()
+	let restored=new WarcraftRpgRuntime(new Effects())
+	configureGeneratedRpg(restored)
+	let projections=new Projections()
+	restored.setProjectionPort(projections)
+	for i=1 to 2
+		restored.restoreState(saved).assertTrue()
+		restored.reconcile("player")
+		restored.captureState().assertEquals(saved)
+	projections.clears.assertEquals(2)
+	projections.guidance.assertEquals(1)

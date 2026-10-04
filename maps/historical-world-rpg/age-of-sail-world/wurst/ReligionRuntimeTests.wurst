@@ -46,6 +46,17 @@ function configured(TestReligionEffects effects) returns ReligionRuntime
 	(output.message.indexOf("Personal investment")>=0).assertTrue()
 	(output.message.indexOf("bounded diminishing returns")>=0).assertTrue()
 	(output.message.indexOf("Policy: pluralism")>=0).assertTrue()
+	output.message=""
+	registry.dispatch(Player(0),"religion").assertTrue()
+	(output.message.indexOf("Personal investment")>=0).assertTrue()
+	registry.dispatch(Player(0),"convert new_faith").assertTrue()
+	(output.message.indexOf("Faith changed.")>=0).assertTrue()
+	runtime.primaryFaithId.assertEquals("new_faith")
+	runtime.currencyUnits.assertEquals(60)
+	let saved=runtime.captureState()
+	registry.dispatch(Player(0),"convert old_faith").assertTrue()
+	output.message.assertEquals(runtime.lastDiagnostic)
+	runtime.captureState().assertEquals(saved)
 
 @test function mixedRegionsRiseDeclineAlternateHistoryAndBoundedScalingReconcile()
 	let effects=new TestReligionEffects()

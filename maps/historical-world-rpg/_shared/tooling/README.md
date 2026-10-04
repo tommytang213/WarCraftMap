@@ -9,6 +9,17 @@ deterministic map build orchestrator and runtime-data generator. Map projects
 supply paths and release metadata through their `package.json`; no Age of Sail
 IDs or paths are embedded in the shared generator.
 
+`run_wurst_tests.py CONFIG` generates and assembles a complete scenario and runs
+`grill test` through `wurst_execution.py`. Run it with the pinned compiler from
+the Wurst workflow; `SOURCE_REVISION` (or `--source-revision`) supplies the full
+revision when the private container copy has no Git metadata. The gate checks
+the compiler JAR digest, discovers source tests independently, requires one
+passing result for every test plus matching summary/completion, and retains the
+raw transcript and input hashes in `_build/wurst-tests/`. Missing tools,
+assertions, interpreter errors, empty discovery and incomplete output fail.
+Map and campaign packaging call the same gate before producing artifacts;
+campaign tests use full generated data before physical-map localization.
+
 `generate_regional_terrain.py` deterministically rasterizes scenario-owned regional geography. Registered terrain sources are hashed into build provenance, stale outputs are rejected, and normalized terrain inputs are packaged under `runtime/`.
 
 Planned and implemented tooling:

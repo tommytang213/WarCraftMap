@@ -20,6 +20,7 @@ public interface RegionCommandRuntime
 public class RegionSelector
 	RegionAccessPolicy access
 	RegionCommandRuntime runtime
+	ManagementScreenPauseController pauseController
 	string physicalRegionId
 	string commandRegionId
 	ModalManagementScreen modal = null
@@ -29,6 +30,13 @@ public class RegionSelector
 		this.runtime = runtime
 		this.physicalRegionId = physicalRegionId
 		commandRegionId = physicalRegionId
+		pauseController = getManagementScreenPauseController()
+	construct(RegionAccessPolicy access, RegionCommandRuntime runtime, string physicalRegionId, ManagementScreenPauseController pauseController)
+		this.access = access
+		this.runtime = runtime
+		this.physicalRegionId = physicalRegionId
+		commandRegionId = physicalRegionId
+		this.pauseController = pauseController
 	function getPhysicalRegionId() returns string
 		return physicalRegionId
 	function getCommandRegionId() returns string
@@ -60,7 +68,7 @@ public class RegionSelector
 		let previousRegion = commandRegionId
 		var acquired = false
 		if modal == null and regionId != physicalRegionId
-			modal = openModalManagementScreen()
+			modal = pauseController.openModalManagementScreen()
 			acquired = true
 		runtime.retireCommandRegion(previousRegion)
 		if not runtime.reconstructCommandRegion(whichPlayer, regionId)

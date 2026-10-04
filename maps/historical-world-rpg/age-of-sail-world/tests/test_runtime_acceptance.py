@@ -117,11 +117,21 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                              + release._campaign_rows(archive, campaign),
             }
             candidate = root / "candidate.zip"
+            from wurst_execution_fixture import passing_evidence
+            wurst_report, wurst_log = passing_evidence(revision)
+            execution_payloads = {"Metadata/wurst-execution.json": release.canonical(wurst_report),
+                                  "Metadata/wurst-execution.log": wurst_log}
+            manifest["artifacts"] += [
+                {"kind": "execution-evidence", "archivePath": name,
+                 "bytes": len(value), "sha256": release.sha_bytes(value)}
+                for name, value in execution_payloads.items()]
             release._write_zip(candidate, {
+                **execution_payloads,
                 config["archive"]["campaignPath"]: payload,
                 config["archive"]["manifestPath"]: release.canonical(manifest),
                 config["archive"]["provenancePath"]: release.canonical({
-                    "format": release.PROVENANCE_FORMAT, "sourceRevision": revision}),
+                    "format": release.PROVENANCE_FORMAT, "sourceRevision": revision,
+                    "gates": {"wurstExecution": "pass"}}),
             })
             evidence = root / "artifact-evidence.json"
             with patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,

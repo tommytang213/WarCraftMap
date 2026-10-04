@@ -6,6 +6,14 @@ import PlayableCampaignRuntime
 import WarcraftRegionalRuntime
 import RemoteRegionManagement
 import PlayablePiracy
+import ManagementScreenPauseController
+
+class RecordingRegionPause implements CampaignPauseRuntime
+	boolean paused = false
+	int changes = 0
+	override function setCampaignPaused(boolean paused)
+		this.paused = paused
+		changes++
 
 class PersistencePolityAuthority implements PiratePolityAuthority
 	int reconciliations=0
@@ -251,10 +259,19 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	access.mayCommandRegion(Player(0), "africa").assertTrue()
 	access.regionIsKnown(Player(0), "pacific").assertFalse()
 	let runtime = new FakeRegionRuntime()
-	let selector = new RegionSelector(access, runtime, "europe")
+	let pause = new RecordingRegionPause()
+	let pauses = new ManagementScreenPauseController(pause, false)
+	let selector = new RegionSelector(access, runtime, "europe", pauses)
+	selector.select(Player(0), "pacific").assertFalse()
+	pause.changes.assertEquals(0)
 	selector.select(Player(0), "africa").assertTrue()
+	pause.paused.assertTrue()
+	pauses.getModalOwnerCount().assertEquals(1)
 	selector.getPhysicalRegionId().assertEquals("europe")
 	selector.getCommandRegionId().assertEquals("africa")
 	selector.returnToPhysicalRegion(Player(0)).assertTrue()
 	selector.getPhysicalRegionId().assertEquals("europe")
 	runtime.active.assertEquals("europe")
+	pause.paused.assertFalse()
+	pause.changes.assertEquals(2)
+	pauses.getModalOwnerCount().assertEquals(0)

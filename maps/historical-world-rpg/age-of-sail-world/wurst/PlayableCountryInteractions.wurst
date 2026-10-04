@@ -35,6 +35,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	CountryPeaceAuthority peaceAuthority = null
 	string array[512] polityIds
 	boolean array[512] known
+	// Used only by an isolated restoration candidate, never persisted.
+	boolean array[512] restoredPolities
 	int array[512] reputation
 	int array[512] favor
 	int array[512] contribution
@@ -113,6 +115,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			if conflictPolities[i] == polityId
 				conflictIds[i] = conflictId
 				return
+		if polityIndex(polityId) < 0 or conflictCount >= 128
+			return
 		conflictPolities[conflictCount] = polityId
 		conflictIds[conflictCount] = conflictId
 		conflictCount++
@@ -144,7 +148,7 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return "Those terms are impossible."
 		return ""
 	override function createOffer(string conflictId, string recipientPolityId, string terms) returns string
-		if validateOffer(conflictId, recipientPolityId, terms) != ""
+		if offerCount >= 128 or nextOffer >= 2147483647 or validateOffer(conflictId, recipientPolityId, terms) != ""
 			return ""
 		let id = "player_offer_" + nextOffer.toString()
 		nextOffer++
@@ -222,12 +226,26 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 				field++
 				start = i + 1
 		return ""
+	function recordFieldCount(string record) returns int
+		var count = 1
+		for i = 0 to StringLength(record) - 1
+			if SubString(record, i, i + 1) == ","
+				count++
+		return count
+	function validInteger(string value) returns boolean
+		return value != "" and S2I(value).toString() == value
+	/** Applies only to the disposable candidate, including duplicate/capacity checks. */
 	function restoreRecord(string record) returns boolean
 		let kind = recordField(record, 0)
+		let fields = recordFieldCount(record)
 		if kind == "p"
 			let p = polityIndex(recordField(record, 1))
-			if p < 0
+			if p < 0 or restoredPolities[p] or (fields != 7 and fields != 8) or (recordField(record, 2) != "0" and recordField(record, 2) != "1")
 				return false
+			for column = 3 to fields - 1
+				if not validInteger(recordField(record, column))
+					return false
+			restoredPolities[p] = true
 			known[p] = recordField(record, 2) == "1"
 			reputation[p] = S2I(recordField(record, 3))
 			favor[p] = S2I(recordField(record, 4))
@@ -239,70 +257,81 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return true
 		if kind == "c"
 			let p = recordField(record, 1)
+			if fields != 3 or polityIndex(p) < 0 or conflictCount >= 128
+				return false
 			for i = 0 to conflictCount - 1
 				if conflictPolities[i] == p
-					conflictIds[i] = recordField(record, 2)
-					return true
-			return false
+					return false
+			setActiveConflict(p, recordField(record, 2))
+			return true
 		if kind == "g"
 			let r = profileIndex(recordField(record, 1), recordField(record, 2))
-			if r < 0
+			if fields != 3 or r < 0 or granted[r]
 				return false
 			granted[r] = true
 			return true
 		if kind == "o"
-			if offerCount >= 128 or offerIndex(recordField(record, 1)) >= 0
+			let id = recordField(record, 1)
+			let status = recordField(record, 3)
+			if fields != 5 or offerCount >= 128 or id == "" or offerIndex(id) >= 0 or polityIndex(recordField(record, 2)) < 0 or (status != "0" and status != "1") or recordField(record, 4) == ""
 				return false
-			offerIds[offerCount] = recordField(record, 1)
+			// v1 retains every offer. Recover its next sequence without changing
+			// the save format; unrelated stable IDs do not consume player IDs.
+			if id.startsWith("player_offer_")
+				let suffix = SubString(id, 13, StringLength(id))
+				if not validInteger(suffix) or S2I(suffix) < 1 or S2I(suffix) >= 2147483647
+					return false
+				nextOffer = IMaxBJ(nextOffer, S2I(suffix) + 1)
+			offerIds[offerCount] = id
 			offerPolities[offerCount] = recordField(record, 2)
 			offerStatus[offerCount] = S2I(recordField(record, 3))
 			offerTerms[offerCount] = recordField(record, 4)
 			offerCount++
 			return true
 		return false
-	function validateRecord(string record) returns boolean
-		let kind = recordField(record, 0)
-		if kind == "p"
-			return polityIndex(recordField(record, 1)) >= 0
-		if kind == "g"
-			return profileIndex(recordField(record, 1), recordField(record, 2)) >= 0
-		if kind == "c"
-			return polityIndex(recordField(record, 1)) >= 0
-		if kind == "o"
-			return recordField(record, 1) != "" and polityIndex(recordField(record, 2)) >= 0
-		return false
 	/** Restore scalar authority only; Warcraft/UI projections are deliberately rebuilt elsewhere. */
 	function restoreState(string candidate) returns boolean
-		if not candidate.startsWith("v1")
+		if (candidate != "v1" and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			lastDiagnostic = "country interaction state schema is invalid"
 			return false
-		// Validate the complete candidate before touching live authority.
-		var validationStart = 3
-		while validationStart < StringLength(candidate)
-			var validationFinish = SubString(candidate, validationStart, StringLength(candidate)).indexOf("|")
-			if validationFinish < 0
-				validationFinish = StringLength(candidate) - validationStart
-			if not validateRecord(SubString(candidate, validationStart, validationStart + validationFinish))
-				lastDiagnostic = "country interaction state contains an invalid reference"
-				return false
-			validationStart += validationFinish + 1
+		// Parse into separate authority. No partial record, duplicate, overflow or
+		// late reference failure can mutate the active campaign.
+		let staged = new PlayableCountryInteractionRuntime(identity)
 		for i = 0 to polityCount - 1
-			known[i] = false
-			reputation[i] = 0
-			favor[i] = 0
-			contribution[i] = 0
+			staged.registerPolityResources(polityIds[i], treasury[i], materialStock[i])
 		for i = 0 to profileCount - 1
-			granted[i] = false
-		offerCount = 0
+			staged.registerRewardProfile(profiles[i])
 		var start = 3
 		while start < StringLength(candidate)
 			var finish = SubString(candidate, start, StringLength(candidate)).indexOf("|")
 			if finish < 0
 				finish = StringLength(candidate) - start
-			if not restoreRecord(SubString(candidate, start, start + finish))
-				lastDiagnostic = "country interaction state contains an invalid reference"
+			if not staged.restoreRecord(SubString(candidate, start, start + finish))
+				destroy staged
+				lastDiagnostic = "country interaction state contains an invalid record"
 				return false
 			start += finish + 1
+		for i = 0 to polityCount - 1
+			known[i] = staged.known[i]
+			reputation[i] = staged.reputation[i]
+			favor[i] = staged.favor[i]
+			contribution[i] = staged.contribution[i]
+			treasury[i] = staged.treasury[i]
+			materialStock[i] = staged.materialStock[i]
+		for i = 0 to profileCount - 1
+			granted[i] = staged.granted[i]
+		conflictCount = staged.conflictCount
+		for i = 0 to conflictCount - 1
+			conflictPolities[i] = staged.conflictPolities[i]
+			conflictIds[i] = staged.conflictIds[i]
+		offerCount = staged.offerCount
+		for i = 0 to offerCount - 1
+			offerIds[i] = staged.offerIds[i]
+			offerPolities[i] = staged.offerPolities[i]
+			offerTerms[i] = staged.offerTerms[i]
+			offerStatus[i] = staged.offerStatus[i]
+		nextOffer = staged.nextOffer
+		destroy staged
 		lastDiagnostic = ""
 		return true
 	function diagnostic() returns string

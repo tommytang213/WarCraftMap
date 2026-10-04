@@ -132,6 +132,60 @@ class ReleaseNormalizationTests(unittest.TestCase):
 
 
 class ReleaseUploadTests(unittest.TestCase):
+    def test_execution_failures_block_upload_even_with_checksum_valid_packaging(self):
+        from wurst_execution_fixture import passing_evidence
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path, config, campaign = self.fixture(root)
+            evidence = root / 'upload-evidence.json'
+            with zipfile.ZipFile(path) as archive:
+                initial_manifest = json.loads(archive.read(config['archive']['manifestPath']))
+            for mode in ('pass', 'assertion', 'exception', 'absent-tool', 'missing-execution', 'incomplete', 'zero'):
+                with self.subTest(mode=mode):
+                    report, log = passing_evidence()
+                    if mode == 'assertion':
+                        log = log.replace(b'OK!', b'FAILED assertion: Expected true')
+                    elif mode == 'exception':
+                        log = log.replace(b'OK!', b'NullPointerException in interpreter')
+                    elif mode == 'absent-tool':
+                        report['returnCode'] = 127
+                    elif mode == 'incomplete':
+                        log = log.replace(b'Finished running tests', b'')
+                    elif mode == 'zero':
+                        report.update(expected=[], tests=[], discovered=0, succeeded=0)
+                        log = b'Running tests\nTests succeeded: 0/0\nFinished running tests\n'
+                    report['logSha256'] = hashlib.sha256(log).hexdigest()
+                    payloads = {config['archive']['campaignPath']: campaign}
+                    if mode != 'missing-execution':
+                        payloads['Metadata/wurst-execution.json'] = release.canonical(report)
+                        payloads['Metadata/wurst-execution.log'] = log
+                    manifest = dict(initial_manifest)
+                    manifest['artifacts'] = [
+                        {'kind': 'campaign' if name.endswith('.w3n') else 'execution-evidence',
+                         'archivePath': name, 'bytes': len(value), 'sha256': release.sha_bytes(value)}
+                        for name, value in payloads.items()]
+                    payloads[config['archive']['manifestPath']] = release.canonical(manifest)
+                    payloads[config['archive']['provenancePath']] = release.canonical({
+                        'format': release.PROVENANCE_FORMAT, 'sourceRevision': 'a' * 40,
+                        'gates': {'wurstExecution': 'pass'}})
+                    release._write_zip(path, payloads)
+                    arguments = ['verify', str(path), '--source-revision', 'a' * 40, '--evidence', str(evidence)]
+                    # Structural gates intentionally succeed; exercise the real
+                    # copied-payload verifier and execution gate before upload.
+                    with patch.object(release, 'load_campaign_config', return_value=SimpleNamespace(maps=[])), \
+                         patch.object(release, 'inspect_campaign'), \
+                         patch.object(release, 'verify_campaign_runtime'), \
+                         patch.object(release, '_campaign_rows', return_value=[]), \
+                         patch.object(sys, 'argv', arguments):
+                        if mode == 'pass':
+                            self.assertEqual(0, upload.main())
+                            self.assertTrue(evidence.exists())
+                            evidence.unlink()
+                        else:
+                            with self.assertRaisesRegex(release.PackagingError, 'Wurst execution evidence'):
+                                upload.main()
+                            self.assertFalse(evidence.exists())
+
     def test_current_headless_failure_blocks_packaging_despite_passing_saved_report(self):
         config = release.load_release_config()
         saved = json.loads((release.PROJECT / config['requiredGates']['releaseBlocker']).read_text())

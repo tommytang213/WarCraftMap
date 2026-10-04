@@ -25,9 +25,13 @@ class Presentation implements TradePresentation
 	controller.moveCargo("unload",ship,warehouse,4).assertEquals("Cargo moved.")
 	controller.moveCargo("reload",warehouse,ship,4).assertEquals("Cargo moved.")
 	sellCargo(null,"sell_1",london,ship,10,2000,controller,ui)
-	ui.result.assertEquals("Sold 10 Pepper; realized P/L 150.")
+	// Commit quote: 30 base * 1000 stock pressure / 1000 = 30;
+	// sell spread floors 30 * 920 / 1000 to 27. Cost 100, proceeds 270.
+	ui.result.assertEquals("Sold 10 Pepper; realized P/L 170.")
 	ship.cargo.assertEquals(0)
-	progress.standing.assertEquals(300)
+	ship.money.assertEquals(1170)
+	progress.realizedProfit.assertEquals(170)
+	progress.standing.assertEquals(340)
 	progress.warehouseAccess().assertEquals(true)
 
 @test function runtimeRejectsCapacityAndDuplicateTransactions()
@@ -58,14 +62,21 @@ class Presentation implements TradePresentation
 	let market=new RuntimeMarket("port","Grain",5,100,10,8)
 	let ship=new TradeStore("ship",2,15)
 	let displayed=market.buyUnitPrice
-	market.buyUnitPrice=12
+	// Change authority after displaying 10; editing a cached quote is not a
+	// price change. Shortage 200 permille produces a commit price of 12.
+	market.shortagePermille=200
 	controller.buy("repriced",market,ship,1).assertEquals("Bought 1 Grain.")
 	(displayed<market.buyUnitPrice).assertEquals(true)
+	market.buyUnitPrice.assertEquals(12)
+	ship.money.assertEquals(3)
 	let stock=market.stock
 	let money=ship.money
 	controller.buy("no-money",market,ship,1).assertEquals("Funds are insufficient.")
 	market.stock.assertEquals(stock)
 	ship.money.assertEquals(money)
+	market.buyUnitPrice.assertEquals(12)
+	market.previousUnitPrice.assertEquals(displayed)
+	controller.seen("no-money").assertFalse()
 	market.blockaded=true
 	controller.sell("blocked",market,ship,1,1000).assertEquals("Market access is restricted.")
 	ship.cargo.assertEquals(1)
@@ -104,3 +115,45 @@ class Presentation implements TradePresentation
 	resumed.market.shortagePermille.assertEquals(300)
 	resumed.market.productionPermille.assertEquals(775)
 	resumed.market.consumptionPermille.assertEquals(1425)
+	// Source cost: 3 * 8 = 24. London disruption: 300 + (1425-775)/2
+	// = 625; buy floors 18*1625/1000 to 29; sell floors 29*.92 to 26.
+	resumed.progress.realizedProfit.assertEquals(18)
+	resumed.progress.standing.assertEquals(36)
+	resumed.hold.money.assertEquals(1002)
+	resumed.controller.carriedCost.assertEquals(16)
+	// An additional configured warehouse stays empty; selecting the saved hold
+	// must not apply its summary cargo to whichever store was selected before.
+	resumed.stores[0].cargo.assertEquals(0)
+	resumed.stores[0].money.assertEquals(0)
+	let resumedState=resumed.capture()
+	resumed.reconstruct(saved).assertTrue()
+	resumed.capture().assertEquals(resumedState)
+
+@test function rejectionPreservesPricesHistoryCostBasisAndRetryIdentity()
+	let runtime=new PlayableTradeRuntime()
+	runtime.registerMarket(new RuntimeMarket("port","grain",10,100,10,9))
+	runtime.registerStore(new TradeStore("cargo:ship",3,50))
+	runtime.newCampaign("port")
+	runtime.controller.buy("buy",runtime.market,runtime.hold,2).assertEquals("Bought 2 grain.")
+	// Cached buy 10; current stock pressure 10/8 and shortage 200 => buy 15.
+	runtime.market.shortagePermille=200
+	let before=runtime.capture()
+	runtime.controller.buy("retry",runtime.market,runtime.hold,2).assertEquals("Cargo capacity is insufficient.")
+	runtime.capture().assertEquals(before)
+	runtime.controller.buy("retry",runtime.market,runtime.hold,1).assertEquals("Bought 1 grain.")
+	runtime.hold.money.assertEquals(15)
+	runtime.market.money=0
+	let poorMarket=runtime.capture()
+	runtime.controller.sell("sale",runtime.market,runtime.hold,1,1000).assertEquals("Market funds are insufficient.")
+	runtime.capture().assertEquals(poorMarket)
+	runtime.controller.seen("sale").assertFalse()
+	runtime.market.money=100
+	runtime.controller.sell("sale",runtime.market,runtime.hold,1,1000)
+	let sold=runtime.capture()
+	runtime.controller.sell("sale",runtime.market,runtime.hold,1,1000).assertEquals("Transaction already processed.")
+	runtime.capture().assertEquals(sold)
+	// A same-market resale and uncosted cargo cannot grant ordinary standing.
+	runtime.progress.standing.assertEquals(0)
+	let uncosted=new PlayableTradeController(new MerchantProgress())
+	uncosted.sell("uncosted",runtime.market,runtime.hold,1,1000)
+	uncosted.progress.standing.assertEquals(0)

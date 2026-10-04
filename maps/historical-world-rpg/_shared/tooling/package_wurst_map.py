@@ -5,6 +5,7 @@ import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
 from datetime import date
 from dataclasses import dataclass
 from pathlib import Path
+from wurst_execution import WurstExecutionError, execute_tests, source_revision
 
 class PackagingError(RuntimeError): pass
 GENERATOR_VERSION = 13
@@ -518,10 +519,11 @@ def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
 
-def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None) -> Path:
+def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
     compile_root = root / "compile"
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
-    shutil.copytree(config.wurst_source, compile_root / "wurst")
+    shutil.copytree(config.wurst_source, compile_root / "wurst",
+                    ignore=None if include_tests else shutil.ignore_patterns("*Tests.wurst"))
     shutil.copy2(config.project / "wurst.build", compile_root / "wurst.build")
     if (config.project / "wurst_run.args").is_file():
         shutil.copy2(config.project / "wurst_run.args", compile_root / "wurst_run.args")
@@ -584,6 +586,19 @@ def clean(config: BuildConfig) -> None:
     root = config.project / "_build"
     if root.exists(): shutil.rmtree(root)
 
+def run_execution_tests(config: BuildConfig, executable: str, revision: str | None = None) -> dict:
+    """Run the full unlocalized suite once, including generated scenario records."""
+    root = config.project / "_build/wurst-tests"
+    if root.exists(): shutil.rmtree(root)
+    generated = root / "generated"
+    generate(config, generated); verify_generated(config, generated)
+    compile_root = _assemble(config, root, generated)
+    _run("Wurst test dependency installation", [executable, "install"], compile_root)
+    try:
+        return execute_tests(compile_root, executable, root, source_revision(config.project, revision))
+    except WurstExecutionError as error:
+        raise _fail("Wurst execution", error) from error
+
 def build(config_path: Path, grill: str | None = None, clean_first: bool = True) -> Path:
     config = load_config(config_path); executable = validate_inputs(config, grill)
     if clean_first: clean(config)
@@ -591,6 +606,10 @@ def build(config_path: Path, grill: str | None = None, clean_first: bool = True)
     generate(config, generated); verify_generated(config, generated); compile_root = _assemble(config, root, generated)
     _run("Wurst dependency installation", [executable, "install"], compile_root)
     _run("Wurst compilation", [executable, "typecheck"], compile_root)
+    try:
+        execute_tests(compile_root, executable, root / "wurst-tests", source_revision(config.project))
+    except WurstExecutionError as error:
+        raise _fail("Wurst execution", error) from error
     _run("map assembly", [executable, "build", str(Path("map") / config.source_map.name)], compile_root)
     archive = _find_archive(compile_root / "_build"); _inspect(config, archive, compile_root)
     config.output.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(archive, config.output)
