@@ -19,7 +19,7 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def setUpClass(cls):
         cls.report = audit.build_report()
 
-    def test_gate_passes_when_all_player_runtime_paths_are_release_validated(self):
+    def test_gate_passes_when_sources_are_ready_for_built_artifact_validation(self):
         self.assertEqual(cls_json(self.report), cls_json(audit.build_report()))
         self.assertEqual("pass", self.report["status"])
         self.assertEqual(0, self.report["unresolvedCampaignBlockers"])
@@ -27,7 +27,11 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         runtime = self.report["runtimeAcceptance"]
         self.assertEqual("pass", runtime["status"])
         by_id = {row["id"]: row for row in runtime["systems"]}
-        self.assertTrue(all(by_id["trade"]["stages"].values()))
+        self.assertTrue(all(by_id["trade"]["stages"][stage]
+                            for stage in audit.runtime_acceptance.STAGES[:-1]))
+        self.assertFalse(by_id["trade"]["stages"]["releaseValidated"])
+        self.assertEqual("built W3N/W3X artifact gate",
+                         runtime["releaseValidationAuthority"])
 
     def test_taxonomy_explicitly_blocks_campaign_failures_and_unclassified_critical_failures(self):
         taxonomy = {row["id"]: row for row in self.report["taxonomy"]}
