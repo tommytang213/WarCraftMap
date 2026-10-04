@@ -1,7 +1,8 @@
 # Issue 363: Wurst execution repairs and release gate
 
 Base revision: `7ba80ff629279e1ab2f9b7fcec21e57931f20e3b`. The implementation
-is an uncommitted worktree change. The retained execution JSON hashes every
+was committed as `2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642`. The original
+evidence below was captured before that commit. The execution JSON hashes every
 compiled Wurst source, generated scenario, compiler options, core JASS and
 installed Wurst dependency source. Its input-set digest identifies the tested
 worktree contents independently of the base revision. Every current authored
@@ -17,7 +18,7 @@ source/build copies. No player testing or World Editor work was required.
 ## Retained evidence
 
 - [Baseline per-test results](issue-363/baseline.json) and
-  [raw transcript](issue-363/baseline.log). These are archived historical
+  [gzip raw transcript](issue-363/baseline.log.gz). These are archived historical
   failures, not a current release validation result.
 - [Implementation per-test results](issue-363/execution.json) and
   [raw transcript](issue-363/execution.log), produced by the same execution gate
@@ -29,6 +30,12 @@ source/build copies. No player testing or World Editor work was required.
   compiler JAR SHA-256
   `1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145`.
   The runner verifies this compiler digest, including for local Grill usage.
+
+Historical transcripts containing compiler-emitted trailing spaces or terminal
+carriage returns are stored as deterministic gzip archives (`mtime=0`). Decode
+them with `gzip -dc <path>`. The recorded log SHA-256 values identify the
+decompressed bytes; they remain identical to the original transcripts. The
+passing `execution.log` remains available as plain text.
 
 A fresh verification run through `run_wurst_tests.py` reproduced the retained
 78/78 results. Its JSON and raw transcript are byte-for-byte identical to the
@@ -124,15 +131,61 @@ failures even with otherwise successful typechecking or checksummed packaging.
   container-private storage, not a GitHub upload or native launch.
 - The repaired Docker branch from `automation/run_checks.sh` ran separately
   against the current worktree and exited **0**: **78/78 Wurst tests**, typecheck
-  and map packaging passed. Its [output](issue-363/repository-validation.log)
+  and map packaging passed. Its [gzip output](issue-363/repository-validation.log.gz)
   is retained. The three new shell regressions, six workflow checks and eight
   runner/packager regressions also passed individually.
 - [Validation summary](issue-363/validation.json) retains command outcomes;
-  [release validation output](issue-363/release-validation.log) retains the
+  [gzip release validation output](issue-363/release-validation.log.gz) retains the
   container output (the duplicate inline execution envelope is stored separately
   in the execution JSON/transcript above).
 - Changed Python sources parse, shell syntax checks pass, and `git diff --check`
   passes.
+
+## PR 364 CI repair
+
+Both automation runs at `2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642`
+([push](https://github.com/tommytang213/WarCraftMap/actions/runs/37228740706)
+and [pull request](https://github.com/tommytang213/WarCraftMap/actions/runs/37228746680))
+passed world validation, Python tests and shell syntax, then failed
+`git diff --check HEAD^ HEAD`. The failures were trailing spaces and terminal
+carriage returns in `baseline.log`, `release-validation.log` and
+`repository-validation.log`. The Wurst workflow passed in both runs.
+
+Both campaign artifact jobs subsequently completed successfully at the same
+implementation revision ([push](https://github.com/tommytang213/WarCraftMap/actions/runs/37228740627)
+and [pull request](https://github.com/tommytang213/WarCraftMap/actions/runs/37228746706)).
+Their complete Wurst/package, verified-payload confirmation and upload steps
+all passed. These are observed CI outcomes for the implementation commit;
+the archive-only repair remains an uncommitted local change.
+
+This follow-up stores those three logs as lossless gzip archives and updates
+their links and encoding metadata. Each decompressed archive was compared
+byte-for-byte with its original Git blob and against its existing SHA-256.
+No transcript bytes, checks, execution gates, gameplay sources, scenario data
+or save formats were changed. `git diff --check HEAD^` now passes across the
+complete implementation and this repair.
+
+A fresh read-only-mounted run of `tooling/package_release.sh` in the pinned
+compiler image passed typechecking, **78/78 Wurst tests**, map compilation and
+archive inspection. [Per-test results](issue-363/ci-repair-execution.json),
+[gzip transcript](issue-363/ci-repair-execution.log.gz) and
+[gzip build output](issue-363/ci-repair-pinned-validation.log.gz) are retained.
+The new evidence names the implementation revision above; every compiler input
+and individual result matches the original passing execution manifest. The
+input-set SHA-256 remains
+`3499ab09197cbef167153d7014dd8bf109865a74e9500d273396d4bbb4cf1244`.
+All compilation and ownership changes occurred in container-private `/tmp`.
+
+The complete local `WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh`
+run passed **790 scenario tests** and **67 automation tests**, plus world,
+geography and canonical-source validation. This includes the execution-runner,
+packaging, upload-blocking and save-compatibility regressions. Wurst execution
+was performed separately in the pinned container as described above. Shell
+syntax checks passed, and the native-save oracle passed again with native
+execution reporting `runtime_unavailable`. The [CI repair validation summary](issue-363/ci-repair-validation.json)
+and [gzip Python output](issue-363/ci-repair-python-validation.log.gz) retain the
+outcomes and transcript hashes. The two-build, 17-map campaign result above
+remains retained evidence from the implementation run.
 
 ## Native-client boundary
 

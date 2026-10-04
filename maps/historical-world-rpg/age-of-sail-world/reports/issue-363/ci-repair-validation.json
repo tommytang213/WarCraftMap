@@ -1,0 +1,123 @@
+{
+  "archivedLogs": [
+    {
+      "encoding": "gzip",
+      "identicalToOriginalBytes": true,
+      "logSha256": "65f7462b884e9476adcd22769fb5d6c0b7a2568d6f80efab1be06853a2a63f1e",
+      "originalGitPath": "maps/historical-world-rpg/age-of-sail-world/reports/issue-363/baseline.log",
+      "originalGitRevision": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+      "path": "baseline.log.gz"
+    },
+    {
+      "encoding": "gzip",
+      "identicalToOriginalBytes": true,
+      "logSha256": "88bfa3666cb07cb19ebe8769404b869f93afb956dc5e40e4b34ba5f2a153ce72",
+      "originalGitPath": "maps/historical-world-rpg/age-of-sail-world/reports/issue-363/release-validation.log",
+      "originalGitRevision": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+      "path": "release-validation.log.gz"
+    },
+    {
+      "encoding": "gzip",
+      "identicalToOriginalBytes": true,
+      "logSha256": "a608a39213bb40631633e589763ef055d75b78c45fc8cf189270fd031d35c17d",
+      "originalGitPath": "maps/historical-world-rpg/age-of-sail-world/reports/issue-363/repository-validation.log",
+      "originalGitRevision": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+      "path": "repository-validation.log.gz"
+    }
+  ],
+  "ciFailure": {
+    "cause": "raw tool transcripts contain trailing spaces and terminal carriage returns",
+    "command": "git diff --check HEAD^ HEAD",
+    "runs": [
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37228740706",
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37228746680"
+    ],
+    "step": "Diff whitespace"
+  },
+  "diffWhitespace": {
+    "baseRevision": "7ba80ff629279e1ab2f9b7fcec21e57931f20e3b",
+    "command": "git diff --check HEAD^",
+    "status": "pass"
+  },
+  "format": "warcraftmap_issue363_ci_repair_v1",
+  "fullTwoBuildCampaignValidation": "retained implementation evidence; not rerun for archive-format repair",
+  "githubUpload": "not_performed_by_this_run",
+  "nativeSave": {
+    "command": "python3 tooling/run_native_save_regression.py",
+    "missingEnvironmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+    "nativeRuntime": "runtime_unavailable",
+    "oracle": "pass"
+  },
+  "observedArtifactCi": [
+    {
+      "completedAt": "2026-10-04T20:06:08Z",
+      "conclusion": "success",
+      "headSha": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+      "run": "https://github.com/tommytang213/WarCraftMap/actions/runs/37228740627",
+      "upload": "success",
+      "verifiedPayloadConfirmation": "success",
+      "wurstAndPackaging": "success"
+    },
+    {
+      "completedAt": "2026-10-04T20:07:05Z",
+      "conclusion": "success",
+      "headSha": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+      "run": "https://github.com/tommytang213/WarCraftMap/actions/runs/37228746706",
+      "upload": "success",
+      "verifiedPayloadConfirmation": "success",
+      "wurstAndPackaging": "success"
+    }
+  ],
+  "pinnedValidation": {
+    "archiveBytes": 1441943,
+    "archiveSha256": "a06bf970fe9267734c82ae083bc8a3d38a9024bc21834324b9493cea2189e876",
+    "buildStorage": "container_private",
+    "command": "tooling/package_release.sh",
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "compilerUser": "wurstuser",
+    "containerSourceMount": "read_only",
+    "executionEvidence": "ci-repair-execution.json",
+    "executionLog": "ci-repair-execution.log.gz",
+    "exitCode": 0,
+    "log": "ci-repair-pinned-validation.log.gz",
+    "logEncoding": "gzip",
+    "logSha256": "5353235732f26437fec7907f778855955391c7c542e2e786db52fd0783254551",
+    "mapPackaging": "pass",
+    "sourceRevision": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+    "typecheck": "pass",
+    "wurstDiscovered": 78,
+    "wurstSucceeded": 78
+  },
+  "pythonValidation": {
+    "automationSeconds": 0.48,
+    "automationTests": 67,
+    "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+    "exitCode": 0,
+    "log": "ci-repair-python-validation.log.gz",
+    "logEncoding": "gzip",
+    "logSha256": "1a08c425a08010ea9866578ac081d7da2b8e2de713f05a961697ec21e25d46c4",
+    "scenarioSeconds": 885.892,
+    "scenarioTests": 790,
+    "worldAndSourceValidation": "pass"
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "retainedEvidenceValidation": {
+    "archiveRoundTripAgainstOriginalGitBlobs": "pass",
+    "freshCompilerInputsMatchOriginal": true,
+    "freshIndividualResultsMatchOriginal": true,
+    "freshPassingEvidenceVerifier": "pass",
+    "originalPassingEvidenceVerifier": "pass",
+    "reportLinks": "pass",
+    "transcriptHashes": "pass"
+  },
+  "shellSyntax": "pass",
+  "sourceRevision": "2b5bf5fe03ac6a08b5debe9bcfbdaa6ac5694642",
+  "warcraftLaunch": "not_run",
+  "worktree": "evidence archival and documentation changes only; executable and scenario sources unchanged"
+}
