@@ -85,6 +85,18 @@ class PackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data"):
             verify_generated(config, generated)
 
+    def test_generated_trade_uses_authoritative_settlement_profiles(self):
+        config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
+        generate(config, generated)
+        source = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
+        self.assertIn("public function configureGeneratedTrade", source)
+        reachable = source.count("runtime.registerSettlement(")
+        self.assertGreater(source.count("runtime.registerMarketProfile("), reachable)
+        self.assertEqual(reachable, source.count('runtime.registerStore(new TradeStore("warehouse:'))
+        self.assertGreater(source.count("function configureGeneratedTrade"), 2)
+        self.assertNotIn('new RuntimeMarket("starting_settlement","Grain",100,10000,10,8)', source)
+        self.assertIn('runtime.registerMarketProfile("london","grain"', source)
+
     def test_changed_authoritative_input_is_rejected(self):
         config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
         generate(config, generated)
