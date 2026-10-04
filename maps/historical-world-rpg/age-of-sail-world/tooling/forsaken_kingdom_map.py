@@ -60,7 +60,10 @@ def parse_w3i(data: bytes) -> dict:
         raise MapInfoError(f"war3map.w3i format {version} has no supported structural parser")
     game_version = tuple(r.integer() for _ in range(4))
     name, author, description, recommended = (r.string() for _ in range(4))
-    r.skip(32 + 16)  # camera bounds and complements
+    r.skip(32)  # camera bounds
+    camera_complements = tuple(r.integer() for _ in range(4))
+    if any(value < 0 for value in camera_complements):
+        raise MapInfoError("war3map.w3i has invalid camera-bound complements")
     playable_width, playable_height = r.integer(), r.integer()
     if playable_width < 1 or playable_height < 1:
         raise MapInfoError("war3map.w3i has invalid playable dimensions")
@@ -95,7 +98,8 @@ def parse_w3i(data: bytes) -> dict:
             "flags": flags, "scriptLanguage": script_language,
             "graphicsModes": graphics, "gameDataVersion": game_data,
             "cameraZoom": camera_zoom, "players": player_count, "forces": force_count,
-            "playableWidth": playable_width, "playableHeight": playable_height}
+            "playableWidth": playable_width, "playableHeight": playable_height,
+            "cameraComplements": camera_complements}
 
 
 def validate_w3i_structure(data: bytes) -> dict:

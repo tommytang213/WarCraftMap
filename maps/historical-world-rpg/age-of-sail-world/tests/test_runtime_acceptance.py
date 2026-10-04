@@ -69,6 +69,12 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         with self.assertRaisesRegex(runtime.MapInfoError, "no supported structural parser"):
             runtime.validate_w3i_structure(bytes(malformed))
 
+    def test_w3i_playable_dimensions_account_for_camera_bound_margins(self):
+        source = PROJECT / "map/AgeOfSailWorld.w3x"
+        info = runtime.validate_w3i_structure((source / "war3map.w3i").read_bytes())
+        self.assertEqual((6, 6, 4, 8), info["cameraComplements"])
+        self.assertEqual((52, 52), (info["playableWidth"], info["playableHeight"]))
+
     def executable_script(self):
         calls = sorted({call for required, _ in runtime.EXECUTABLE_PROOFS.values()
                         for call in required})

@@ -85,9 +85,9 @@ public function compatSaveCheckpoint(string name, boolean showWindow)
 /** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
 @noinline
 public function compatLoadPhysicalMap(string mapPath)
-	// SetNextLevelBJ records the destination in bj_changeLevelMapName. The pinned
-	// optimizer may inline that assignment, so release acceptance traces the
-	// compiled assignment/effect rather than requiring this helper name.
+	// The pinned Wurst standard library exposes this effect through its BJ
+	// wrapper. The optimizer may retain the call or inline its assignment to
+	// bj_changeLevelMapName; release acceptance recognizes both forms.
 	SetNextLevelBJ(mapPath)
 	EndGame(true)
 

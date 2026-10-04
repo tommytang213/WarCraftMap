@@ -179,7 +179,9 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
  try: info=validate_w3i_structure(w3i)
  except MapInfoError as error: failures.append(str(error))
  else:
-  if (info["playableWidth"],info["playableHeight"])!=(tw-1,th-1): failures.append("W3I playable dimensions do not match terrain")
+  left,right,bottom,top=info["cameraComplements"]
+  expected=(tw-1-left-right,th-1-bottom-top)
+  if (info["playableWidth"],info["playableHeight"])!=expected: failures.append("W3I playable dimensions and camera bounds do not match terrain")
  return {"status":"pass" if not failures else "fail","failures":failures,"mapId":map_id,"bootstrap":physical.get("bootstrap"),"terrainSha256":hashlib.sha256(w3e).hexdigest(),"pathingSha256":hashlib.sha256(wpm).hexdigest(),"objectCount":objects,"width":tw-1 if tw else 0,"height":th-1 if th else 0}
 
 def verify_built_map(path,expected_map_id=None,bootstrap=None):

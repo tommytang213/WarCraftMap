@@ -31,7 +31,7 @@ claimed. No Windows dump/export was available here. Status remains
 3.0.0.24268 installation with Traditional Chinese UI; no substitute client or language
 change is treated as proof.
 
-Local validation on 2026-10-04: 39 CI-artifact, runtime-acceptance, and campaign-
+Local validation on 2026-10-04: 40 CI-artifact, runtime-acceptance, and campaign-
 packaging tests passed; 18 release-blocker, map-source, and release-save tests passed;
 Python compilation and `git diff --check` passed. A native pinned-Wurst/Grill release
 build and Windows client smoke were not available in this environment and remain for the
@@ -46,3 +46,15 @@ W3I 31/33 only through their version-specific parsed layouts (including player/f
 records and terrain-dimension agreement), and traces `SetNextLevel`, `SetNextLevelBJ`,
 or the actual compiled `bj_changeLevelMapName` assignment rather than mistaking a
 renamed or inlined helper for a lost handoff.
+
+Runs `37193984729` and `37193987235` then exposed two final gate issues. The BJ
+wrapper disappeared from the compiled selector because the optimizer can inline its
+destination assignment; the source retains the pinned standard library's supported
+`SetNextLevelBJ` call and the compiled-effect checks accept either representation.
+Also, W3I playable dimensions are not raw terrain dimensions: the canonical map is
+52 by 52 inside 64 by 64 terrain after its `(6, 6, 4, 8)` camera-bound complements.
+The cross-file check now parses and validates those nonnegative complements and proves
+`playable = terrain - margins`; it no longer rejects the valid canonical layout.
+The corrected targeted suite passed locally. The prior pinned-Wurst failure from a
+direct `SetNextLevel` call was repaired by restoring the supported wrapper; a complete
+pinned-Wurst rerun remains for the outer validator.
