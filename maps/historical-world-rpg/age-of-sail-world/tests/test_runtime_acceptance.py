@@ -150,6 +150,14 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         reversed_calls = "function main() TimerStart() showPage() EndGame(true) bj_changeLevelMapName=path end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(reversed_calls)["status"])
 
+    def test_bootstrap_handoff_comments_and_strings_are_not_effects(self):
+        for fake in ('-- SetNextLevel(path)\n', 'local note = "SetNextLevel(path)"\n'):
+            script = fake + "function main() TimerStart() showPage() EndGame(true) end"
+            result = runtime.verify_compiled_bootstrap(script)
+            self.assertEqual("fail", result["status"])
+            self.assertEqual("compiled_text_static_heuristic", result["evidenceLevel"])
+            self.assertTrue(any("does not select" in x for x in result["failures"]))
+
     def test_bootstrap_compiled_semantics_reject_global_scenario_registrations(self):
         script = "function main() TimerStart() showPage() registerSettlement(x) bj_changeLevelMapName=path EndGame(true) end"
         result = runtime.verify_compiled_bootstrap(script)

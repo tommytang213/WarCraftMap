@@ -132,11 +132,12 @@ def verify_compiled_script(script,path=MANIFEST):
   if missing: failures.append(f"{sid}: production calls absent: {', '.join(missing)}")
   if commands: failures.append(f"{sid}: production command registrations absent: {', '.join(commands)}")
  if not re.search(r"\bfunction\s+(?:main|config)\s*\(",code): failures.append("compiled Lua has no Warcraft main/config entry point")
- return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw),"longestLineBytes":longest,"executableCalls":len(calls),"commandRegistrations":len(registrations)}}
+ return {"status":"pass" if not failures else "fail","failures":failures,"evidenceLevel":"compiled_text_static_heuristic","metrics":{"compiledLuaBytes":len(raw),"longestLineBytes":longest,"callNameMatches":len(calls),"commandRegistrations":len(registrations)}}
 
 def verify_compiled_bootstrap(script):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace")
  failures=[]
+ text,_=_lua_code_and_strings(text)
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
  for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
   if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
@@ -147,7 +148,7 @@ def verify_compiled_bootstrap(script):
  if not end_game: failures.append("bootstrap compiled Lua does not end the selector map")
  if destination_effect and end_game and destination_effect.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
  if "TimerStart" not in text or "showPage" not in text: failures.append("bootstrap does not defer and open origin selection")
- return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw)}}
+ return {"status":"pass" if not failures else "fail","failures":failures,"evidenceLevel":"compiled_text_static_heuristic","metrics":{"compiledLuaBytes":len(raw)}}
 
 def _archive_read(path,name):
  if zipfile.is_zipfile(path):

@@ -58,3 +58,41 @@ The cross-file check now parses and validates those nonnegative complements and 
 The corrected targeted suite passed locally. The prior pinned-Wurst failure from a
 direct `SetNextLevel` call was repaired by restoring the supported wrapper; a complete
 pinned-Wurst rerun remains for the outer validator.
+
+Final worktree reconciliation (2026-10-04) also examined #359 checkpoint `539089c`
+and the existing #360 implementation/repairs `ba173cc`, `46c38e5`, `aceaa94`, and
+`239de71`. Existing fixes were retained. The remaining upload-boundary omission
+was that `verify_release_archive()` checked campaign checksums but did not rerun
+`verify_campaign_runtime()` on the extracted final ZIP payload. It now does so;
+consistent checksums alone cannot bypass the nested-map checks. The upload verifier
+then records the digest of that checked ZIP and requires both embedded revisions
+to match CI's checked-out revision.
+
+| Late requirement | Implementation and regression evidence |
+| --- | --- |
+| 1. Actual upload path | `.github/workflows/map-build.yml` runs `package_release_candidate.sh` and `verify_ci_release_artifact.py` before upload. `test_ci_artifact.py` checks ordering; `test_release_upload_verification.py` exercises extracted-payload rejection, exact digest/size, and revision mismatch rejection. |
+| 2. Independent W3I validation | `runtime_acceptance.inspect_built_map()` calls `forsaken_kingdom_map.validate_w3i_structure()` and compares playable dimensions plus margins to terrain. `test_runtime_acceptance.py` rejects identical malformed source/output metadata. |
+| 3. Bootstrap structure | `_shared/tooling/package_wurst_campaign._inspect_physical_map()` no longer returns early; final release runtime inspection also parses bootstrap W3I and cross-file dimensions. `test_campaign_packaging.py` covers the bypass regression. |
+| 4. Evidence levels | Compiled-script results now explicitly say `compiled_text_static_heuristic`; call counts are named `callNameMatches`. Bootstrap inspection ignores comments and quoted strings, with regression coverage. These checks do not execute Lua or prove control-flow reachability. Headless save/packaging tests are separate evidence. |
+| 5. Corrected diagnosis | Version-specific W3I 31/33 layout tests retain acceptance of a zero game-version tuple. Bootstrap tests accept the BJ helper, native, or inlined destination assignment and reject missing effects. Textual ordering remains a heuristic, not execution tracing. |
+| 6. Localization and budgets | `verify_campaign_runtime()` inspects each actual nested map through `inspect_built_map()`; bootstrap Lua size/global-registration checks are independent of localized JSON. Existing generated-localization and deterministic campaign-packaging tests are retained. No scenario/gameplay/save schema changes were made. |
+
+No uploaded GitHub artifact was downloaded or live-client smoke result obtained in
+this pass. Historical CI observations above are retained from the earlier checked-in
+report, not newly reproduced results. Docker socket access was denied and native
+Grill is absent, so pinned Wurst compilation and a full real release build remain
+unexecuted here. The outer repository validator must supply that evidence. The
+release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+Validation performed for this final pass: 56 targeted unittest cases passed
+(`test_runtime_acceptance`: 14; `test_campaign_packaging`: 23;
+`test_ci_artifact`: 4; `test_release_upload_verification`: 2;
+`test_release_save_compatibility`: 6; `test_release_blocker_audit`: 7).
+`validate_world.py`, `validate_map_source.py`, `runtime_acceptance.py`, Python
+compilation of changed modules, and `git diff --check` passed. Packaging tests use
+the fixture compiler and are not a Wurst compilation claim. The native-save
+reconstruction oracle passed; actual native execution explicitly returned
+`runtime_unavailable` because `WC3_NATIVE_SAVE_RUNNER` is unset. Broad unittest
+discovery was interrupted after targeted validation completed; no full-suite pass
+is claimed. No new artifact digest is reported because no actual release was
+built/uploaded in this environment.

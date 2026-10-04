@@ -339,7 +339,10 @@ def verify_release_archive(path: Path, config: dict) -> None:
         campaign_bytes = archive.read(config["archive"]["campaignPath"])
         with tempfile.NamedTemporaryFile(suffix=".w3n") as campaign_file:
             campaign_file.write(campaign_bytes); campaign_file.flush()
-            inspect_campaign(load_campaign_config(PROJECT / config["campaignManifest"]), Path(campaign_file.name))
+            campaign_config = load_campaign_config(PROJECT / config["campaignManifest"])
+            inspect_campaign(campaign_config, Path(campaign_file.name))
+            # Recheck the extracted upload payload, not only the pre-ZIP build.
+            verify_campaign_runtime(Path(campaign_file.name), campaign_config)
         expected_maps = {x.id for x in load_campaign_config(PROJECT / config["campaignManifest"]).maps}
         if {x["mapId"] for x in manifest["artifacts"] if x["kind"] == "physical-map"} != expected_maps:
             raise PackagingError("release inspection stage failed: physical-map assignment set mismatch")
