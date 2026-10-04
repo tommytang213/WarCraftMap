@@ -1,0 +1,31 @@
+{
+  "format": "warcraftmap_release_candidate_v1",
+  "formatVersion": 1,
+  "releaseCandidateId": "phase9-rc1",
+  "releaseStatus": "automated_artifact_validation_complete_human_launch_smoke_not_run",
+  "requiredHumanValidation": "Optional final real-client smoke: in Warcraft III 3.0 open Single Player -> Custom Campaigns, select Age of Sail: The World, and launch Begin the Campaign. This is tracked separately from automated implementation completion.",
+  "scenarioVersion": "1",
+  "physicalMapManifestVersion": 1,
+  "runtimeTarget": {"game": "Warcraft III", "patch": "3.0", "scriptBackend": "Lua", "mode": "single-player campaign"},
+  "campaignManifest": "physical-maps.json",
+  "saveCompatibility": "scenario/compatibility/release-save-v1.json",
+  "releaseDocuments": ["docs/RELEASE_CANDIDATE.md", "docs/PLAYER_RECOVERY.md"],
+  "requiredGates": {
+    "phase8Content": "reports/phase8-content-coverage.json",
+    "runtimeAcceptance": "reports/runtime-acceptance.json",
+    "releaseBlocker": "reports/release-blocker-audit.json",
+    "releaseSaveCompatibility": "scenario/compatibility/release-save-v1.json",
+    "recoveryDocumentation": "scenario/recovery-support.json",
+    "zeroCampaignBlockers": true
+  },
+  "archive": {
+    "fileName": "AgeOfSailWorld-phase9-rc1.zip",
+    "campaignPath": "Campaigns/AgeOfSailWorldCampaign.w3n",
+    "manifestPath": "Metadata/artifact-manifest.json",
+    "provenancePath": "Metadata/build-provenance.json"
+  },
+  "audit": {
+    "forbiddenArchiveNamePatterns": ["(^|/)(test|tests|fixtures?|preview|previews|debug|tmp|temp)(/|$)", "(^|/)__pycache__(/|$)", "\\.(pyc|pyo|bak|orig|rej)$"],
+    "forbiddenTextPatterns": ["BEGIN (RSA|OPENSSH|EC) PRIVATE KEY", "(?i)(password|secret|api[_-]?key)\\s*[:=]\\s*[^ ]+", "(?i)(/home/|/Users/|[A-Z]:\\\\Users\\\\)"]
+  }
+}

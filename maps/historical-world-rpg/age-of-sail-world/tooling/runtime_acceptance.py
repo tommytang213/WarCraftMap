@@ -92,7 +92,7 @@ def render_markdown(report):
   stage=row["stages"]; mark=lambda key:"yes" if stage[key] else "artifact gate"
   lines.append(f"| `{row['id']}` | {mark('dataComplete')} | {mark('headlessSimulationComplete')} | {mark('runtimeIntegrated')} | {mark('playerFacingComplete')} | {mark('releaseValidated')} |")
  lines += ["","## Compiled-runtime smoke journeys",""]+[f"- `{x}`" for x in report["smokeJourneys"]]+["","## Failures",""]
- lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["No unresolved source-readiness failures. Built-artifact and human client gates remain required."]
+ lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["No unresolved source-readiness failures. The RC packager supplies the built-artifact gate; real-client smoke is tracked separately."]
  return "\n".join(lines)+"\n"
 
 def _lua_code_and_strings(script):

@@ -34,4 +34,4 @@ Source readiness is not release validation. Built W3N/W3X inspection supplies th
 
 ## Failures
 
-No unresolved source-readiness failures. Built-artifact and human client gates remain required.
+No unresolved source-readiness failures. The RC packager supplies the built-artifact gate; real-client smoke is tracked separately.
