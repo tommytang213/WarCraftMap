@@ -5,6 +5,8 @@ import tempfile
 import unittest
 import zipfile
 import struct
+import shutil
+import sys
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -13,6 +15,132 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 
 
 class RuntimeAcceptanceTests(unittest.TestCase):
+    def test_all_materialized_maps_pass_structure_including_bounded_encounters(self):
+        # Exercise production generation/localization/materialization for every
+        # configured map. Lua is a fixture: this is binary integration coverage,
+        # not compilation, execution, or real-client playability evidence.
+        sys.path.insert(0, str(PROJECT.parent / "_shared/tooling"))
+        from package_wurst_campaign import load_campaign_config, validate_campaign, _localize_runtime, _write_campaign
+        from package_wurst_map import load_config, generate
+        from materialize_physical_map import materialize, _wpm
+        from warcraft_campaign import write_mpq
+        import package_release_candidate as release
+        import verify_ci_release_artifact as upload
+        from unittest.mock import patch
+        campaign = load_campaign_config(PROJECT / "physical-maps.json")
+        world = validate_campaign(campaign)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            authority = root / "authority"
+            generate(load_config(campaign.map_config_path), authority)
+            encounters = 0
+            built = []
+            for physical in campaign.maps:
+                with self.subTest(map_id=physical.id):
+                    generated = root / physical.id / "generated"
+                    shutil.copytree(authority, generated)
+                    _localize_runtime(campaign, world, physical, generated)
+                    data = json.loads((generated / "scenario-runtime.json").read_text())
+                    source = root / physical.id / "source"
+                    shutil.copytree(physical.source_map, source)
+                    materialize(PROJECT, source, generated, physical, data)
+                    (source / "runtime/scenario-runtime.json").write_text(json.dumps(data))
+                    script = ("function main() TimerStart() showPage() ChangeLevel(path, true) end"
+                              if physical.bootstrap else self.executable_script())
+                    (source / "war3map.lua").write_text(script)
+                    fixture = root / (physical.id + ".w3x")
+
+                    def package():
+                        files = {path.relative_to(source).as_posix(): path.read_bytes()
+                                 for path in sorted(source.rglob("*")) if path.is_file()}
+                        files["(listfile)"] = ("\r\n".join(sorted(files)) + "\r\n").encode()
+                        write_mpq(fixture, files)
+
+                    package()
+                    result = runtime.inspect_built_map(fixture, physical.id, physical.bootstrap)
+                    self.assertEqual([], result["failures"])
+                    built.append((physical, fixture))
+                    if physical.bootstrap:
+                        self.assertFalse(data["settlementDefinitions"])
+                        self.assertFalse(data["physicalBoundaries"])
+                        # Localized JSON cannot hide global initialization in
+                        # the compiled bootstrap, even under a renamed helper.
+                        unrelated = ('function initGlobal(x, trace) end\n' + script.replace(
+                            'showPage()', 'showPage() initGlobal(globalData, '
+                            '"when calling registerSettlement in ScenarioData, line 12")'))
+                        (source / "war3map.lua").write_text(unrelated)
+                        package()
+                        broken = runtime.inspect_built_map(fixture, physical.id, True)
+                        self.assertIn("bootstrap contains regional registration: registerSettlement", broken["failures"])
+                        (source / "war3map.lua").write_text(script)
+                        package()
+                    if not physical.bootstrap and not physical.terrain_ids:
+                        encounters += 1
+                        paths = (source / "war3map.wpm").read_bytes()[16:]
+                        # The center admits ships; every outer pixel blocks them.
+                        self.assertEqual(0x0a, paths[128 * 256 + 128])
+                        for edge in (paths[:256], paths[-256:], paths[::256], paths[255::256]):
+                            self.assertEqual({0x4e}, set(edge))
+                        # Reproduce the CI failure with the old uniform arena.
+                        pathing = source / "war3map.wpm"
+                        valid_pathing = pathing.read_bytes()
+                        pathing.write_bytes(_wpm(64, 64, [2] * 4096))
+                        package()
+                        broken = runtime.inspect_built_map(fixture, physical.id, False)
+                        self.assertIn("physical terrain/pathing is blank or placeholder-only", broken["failures"])
+                        pathing.write_bytes(valid_pathing)
+                        package()
+            self.assertGreater(encounters, 0)
+            # Reopen every nested map through the production RC gate, including
+            # origin destinations, assignments and the full transition set.
+            archive = root / "campaign.w3n"
+            _write_campaign(archive, campaign, built)
+            result = release.verify_campaign_runtime(archive, campaign)
+            self.assertEqual("pass", result["status"])
+            self.assertEqual("not_run", result["executionStatus"])
+            self.assertIn("compiled_text_static_heuristic", result["evidenceLevels"])
+            self.assertEqual(len(campaign.maps), len(result["maps"]))
+            self.assertEqual(len(campaign.boundaries), result["transitions"])
+            self.assertEqual(len(campaign.maps) + 2, len(release.normalized_campaign(archive, campaign)))
+            # Run the real ZIP/upload verifiers on this binary integration
+            # fixture, without claiming that its synthetic Lua was executed.
+            config = release.load_release_config()
+            payload = archive.read_bytes()
+            revision = "a" * 40
+            manifest = {
+                "format": release.MANIFEST_FORMAT,
+                "releaseCandidateId": config["releaseCandidateId"],
+                "sourceRevision": revision,
+                "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5]},
+                "artifacts": [{"kind": "campaign", "archivePath": config["archive"]["campaignPath"],
+                               "bytes": len(payload), "sha256": release.sha_bytes(payload)}]
+                             + release._campaign_rows(archive, campaign),
+            }
+            candidate = root / "candidate.zip"
+            release._write_zip(candidate, {
+                config["archive"]["campaignPath"]: payload,
+                config["archive"]["manifestPath"]: release.canonical(manifest),
+                config["archive"]["provenancePath"]: release.canonical({
+                    "format": release.PROVENANCE_FORMAT, "sourceRevision": revision}),
+            })
+            evidence = root / "artifact-evidence.json"
+            with patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,
+                                           "--evidence", str(evidence)]):
+                self.assertEqual(0, upload.main())
+            recorded = json.loads(evidence.read_text())
+            self.assertEqual(release.sha(candidate), recorded["sha256"])
+            self.assertEqual(candidate.stat().st_size, recorded["bytes"])
+            self.assertEqual(revision, recorded["sourceRevision"])
+            # An intact campaign does not excuse a false nested-map checksum
+            # in the surrounding release manifest.
+            manifest["artifacts"][1]["sha256"] = "0" * 64
+            with zipfile.ZipFile(candidate) as reader:
+                payloads = {name: reader.read(name) for name in reader.namelist()}
+            payloads[config["archive"]["manifestPath"]] = release.canonical(manifest)
+            release._write_zip(candidate, payloads)
+            with self.assertRaisesRegex(release.PackagingError, "physical-map metadata/checksums"):
+                release.verify_release_archive(candidate, config)
+
     def test_identically_malformed_canonical_and_packaged_w3i_still_fail(self):
         current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
         malformed = bytearray(current)
@@ -75,10 +203,26 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertEqual((6, 6, 4, 8), info["cameraComplements"])
         self.assertEqual((52, 52), (info["playableWidth"], info["playableHeight"]))
 
+    def test_w3i_checks_player_slot_records_and_complete_metadata_layout(self):
+        current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
+        marker = struct.pack("<6i", 1, 3, 1, 1650, 3000, 1250)
+        player_at = current.index(marker) + len(marker) + 4
+        for offset, value in ((player_at, -1), (player_at, 24),
+                              (player_at + 4, 2), (player_at + 12, 2)):
+            with self.subTest(offset=offset, value=value):
+                malformed = bytearray(current)
+                struct.pack_into("<i", malformed, offset, value)
+                with self.assertRaisesRegex(runtime.MapInfoError, "player"):
+                    runtime.validate_w3i_structure(malformed)
+        for value in (current[:-1], current + b'\0', current[:28] + b'\xff' + current[29:]):
+            with self.subTest(value=value[-12:]):
+                with self.assertRaises(runtime.MapInfoError):
+                    runtime.validate_w3i_structure(value)
+
     def executable_script(self):
-        calls = sorted({call for required, _ in runtime.EXECUTABLE_PROOFS.values()
+        calls = sorted({call for required, _ in runtime.COMPILED_TEXT_REQUIREMENTS.values()
                         for call in required})
-        commands = sorted({command for _, required in runtime.EXECUTABLE_PROOFS.values()
+        commands = sorted({command for _, required in runtime.COMPILED_TEXT_REQUIREMENTS.values()
                            for command in required})
         return ("function main()\n" + "\n".join(f"  {call}()" for call in calls) +
                 "\n" + "\n".join(f'  registry:register("{command}", handler)'
@@ -95,6 +239,8 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                          "government_rewards", "religion", "piracy"} <= ids)
         self.assertEqual(list(runtime.STAGES), report["stages"])
         self.assertEqual("pass", report["status"])
+        self.assertEqual("source_text_static_heuristic", report["evidenceLevel"])
+        self.assertEqual("not_run", report["executionStatus"])
 
     def test_trade_has_real_runtime_entry_and_release_evidence(self):
         report = runtime.audit_sources()

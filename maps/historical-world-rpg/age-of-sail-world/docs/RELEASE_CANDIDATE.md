@@ -1,14 +1,15 @@
 # Phase 9 release candidate
 
-Release candidate: **phase9-rc2 (launch-crash remediation; not promoted)**
+Release candidate: **phase9-rc1 (launch-crash remediation; not promoted)**
 Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
 Status: **blocked_pending_real_forsaken_kingdom_launch_smoke**
-The release pipeline builds every physical W3X twice, packages the W3N, and inspects
-the packaged campaign rather than trusting source markers. The gate verifies campaign
-metadata, bootstrap/origin flow, physical-map identities, localized terrain and pathing,
-settlement and spawn representations, production registrations, transitions and arrival
-transforms, and save schemas 1–5. Player QA is not required to produce this candidate.
+The release pipeline builds every physical W3X twice and inspects the packaged W3N.
+Automated checks cover binary structure, physical-map identities, localized terrain
+and pathing, settlement and spawn representations, destination data and arrival
+transforms, and save schemas 1–5. Compiled script checks identify handoff calls and
+registrations but do not execute them or prove control-flow reachability. Player QA
+is not required to produce this candidate.
 
 ## Install and launch
 

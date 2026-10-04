@@ -18,6 +18,7 @@ FILE_SINGLE_UNIT = 0x01000000
 FILE_COMPRESS = 0x00000200
 FILE_IMPLODE = 0x00000100
 FILE_ENCRYPTED = 0x00010000
+FILE_FIX_KEY = 0x00020000
 
 
 def _crypt_table() -> tuple[int, ...]:
@@ -63,6 +64,12 @@ def _encrypt(data: bytes, key: int) -> bytes:
         key = (((~key << 21) + 0x11111111) | (key >> 11)) & 0xFFFFFFFF
         seed = (plain + seed + ((seed << 5) & 0xFFFFFFFF) + 3) & 0xFFFFFFFF
     return struct.pack(f"<{len(result)}I", *result)
+
+
+def _decrypt(data: bytes, key: int) -> bytes:
+    # MPQ encrypts complete DWORDs only; a sector's trailing bytes are literal.
+    aligned = len(data) & ~3
+    return _crypt_words(data[:aligned], key & 0xFFFFFFFF, True) + data[aligned:]
 
 
 def write_mpq(path: Path, files: dict[str, bytes]) -> None:
@@ -131,29 +138,47 @@ class MpqReader:
         return payload
 
     def _payload(self, offset: int, packed: int, size: int, flags: int, name: str) -> bytes:
-        if flags & FILE_ENCRYPTED or flags & FILE_IMPLODE:
-            raise ValueError(f"unsupported encrypted/imploded MPQ member: {name}")
+        if flags & FILE_IMPLODE:
+            raise ValueError(f"unsupported imploded MPQ member: {name}")
         value = self.data[self.base + offset:self.base + offset + packed]
         if len(value) != packed:
             raise ValueError(f"truncated MPQ member: {name}")
-        if not flags & FILE_COMPRESS:
+        key = None
+        if flags & FILE_ENCRYPTED:
+            key = _hash(name.replace("\\", "/").rsplit("/", 1)[-1], 3)
+            if flags & FILE_FIX_KEY:
+                key = ((key + offset) ^ size) & 0xFFFFFFFF
+        sector_size = 512 << self.block_shift
+        if flags & FILE_SINGLE_UNIT:
+            if key is not None:
+                value = _decrypt(value, key)
+            if flags & FILE_COMPRESS:
+                return self._decompress(value, size)
             if packed != size:
                 raise ValueError(f"malformed MPQ member: {name}")
             return value
-        if flags & FILE_SINGLE_UNIT:
-            return self._decompress(value, size)
-        sector_size = 512 << self.block_shift
+        if not flags & FILE_COMPRESS:
+            if packed != size:
+                raise ValueError(f"malformed MPQ member: {name}")
+            if key is not None:
+                return b"".join(_decrypt(value[start:start + sector_size], key + index)
+                                for index, start in enumerate(range(0, size, sector_size)))
+            return value
         sector_count = (size + sector_size - 1) // sector_size
         table_size = (sector_count + 1) * 4
         if len(value) < table_size:
             raise ValueError(f"truncated MPQ sector table: {name}")
-        offsets = struct.unpack_from(f"<{sector_count + 1}I", value)
+        table = _decrypt(value[:table_size], key - 1) if key is not None else value[:table_size]
+        offsets = struct.unpack(f"<{sector_count + 1}I", table)
         if offsets[0] < table_size or any(a > b for a, b in zip(offsets, offsets[1:])) or offsets[-1] > len(value):
             raise ValueError(f"malformed MPQ sector table: {name}")
         result = bytearray()
         for index in range(sector_count):
             expected = min(sector_size, size - len(result))
-            result += self._decompress(value[offsets[index]:offsets[index + 1]], expected)
+            sector = value[offsets[index]:offsets[index + 1]]
+            if key is not None:
+                sector = _decrypt(sector, key + index)
+            result += self._decompress(sector, expected)
         return bytes(result)
 
     def read(self, name: str) -> bytes:
@@ -168,6 +193,43 @@ class MpqReader:
                     raise ValueError(f"missing MPQ member: {name}")
                 return self._payload(offset, packed, size, flags, name)
         raise KeyError(name)
+
+    def members(self) -> dict[str, bytes]:
+        """Read all named members, rejecting incomplete enumeration.
+
+        MPQ hash tables do not retain file names. A generated map must supply
+        a complete listfile before its decoded contents can be compared. Check
+        coverage so an unlisted gameplay file cannot escape that comparison.
+        """
+        try:
+            listed = self.read("(listfile)").decode("utf-8").splitlines()
+        except (KeyError, UnicodeError) as error:
+            raise ValueError("MPQ content comparison requires a UTF-8 listfile") from error
+        names = {name.replace("\\", "/").lower() for name in listed if name}
+        # Internal entries need not list themselves.
+        for name in ("(listfile)", "(attributes)", "(signature)"):
+            try:
+                self.read(name)
+            except KeyError:
+                continue
+            names.add(name)
+        live = {index for index, row in enumerate(self.hashes)
+                if row[4] not in (HASH_EMPTY, HASH_EMPTY - 1)}
+        covered, result = set(), {}
+        for name in sorted(names):
+            matches = {index for index in live
+                       if self.hashes[index][:2] == (_hash(name, 1), _hash(name, 2))}
+            if len(matches) != 1:
+                raise ValueError(f"MPQ listfile has missing or ambiguous member: {name}")
+            index = next(iter(matches))
+            _, _, locale, platform, block = self.hashes[index]
+            if locale or platform or block >= len(self.blocks):
+                raise ValueError(f"unsupported MPQ member variant: {name}")
+            covered.add(index)
+            result[name] = self.read(name)
+        if covered != live:
+            raise ValueError("MPQ listfile does not cover every archived member")
+        return result
 
 
 def _cstring(value: str) -> bytes:

@@ -468,6 +468,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         config.scenario_file,
         config.scenario_validator,
         config.project / "wurst.build",
+        *(path for path in (config.project / "wurst_run.args",) if path.is_file()),
         Path(__file__).resolve(),
         Path(__file__).resolve().with_name("generate_regional_terrain.py"),
         *(path for _, path in config.regional_terrain),
@@ -522,6 +523,8 @@ def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tup
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
     shutil.copytree(config.wurst_source, compile_root / "wurst")
     shutil.copy2(config.project / "wurst.build", compile_root / "wurst.build")
+    if (config.project / "wurst_run.args").is_file():
+        shutil.copy2(config.project / "wurst_run.args", compile_root / "wurst_run.args")
     shutil.copy2(generated / GENERATED_WURST, compile_root / "wurst" / GENERATED_WURST)
     runtime_dir = compile_root / "map" / config.source_map.name / "runtime"; runtime_dir.mkdir()
     shutil.copy2(generated / GENERATED_DATA, runtime_dir / GENERATED_DATA); shutil.copy2(generated / PROVENANCE, runtime_dir / PROVENANCE)

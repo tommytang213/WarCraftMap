@@ -30,6 +30,7 @@ from package_wurst_map import (
     verify_generated,
 )
 from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq
+from warcraft_map_info import validate_w3i_structure
 from materialize_physical_map import MaterializationError, materialize
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
@@ -543,14 +544,21 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         width, height = terrain_width - 1, terrain_height - 1
         path_width, path_height = struct.unpack_from("<II", wpm, 8)
         object_count = struct.unpack_from("<I", units, 12)[0]
-        if len(w3i) < 32 or struct.unpack_from("<i", w3i)[0] <= 0:
-            raise ValueError("malformed map metadata/player-slot data")
+        info = validate_w3i_structure(w3i)
+        left, right, bottom, top = info["cameraComplements"]
+        if (info["playableWidth"], info["playableHeight"]) != (width - left - right, height - bottom - top):
+            raise ValueError("W3I playable dimensions and camera bounds do not match terrain")
         expected_settlements = {x["id"] for x in runtime.get("settlementDefinitions", [])}
         represented = {x["id"] for x in manifest.get("objects", {}).get("settlements", [])}
-        if w3e[:4] != b"W3E!" or len(w3e) != offset + 16 + terrain_width * terrain_height * 7:
+        if (w3e[:8] != b"W3E!" + struct.pack("<I", 11) or
+                not 1 <= ground <= 16 or not 0 <= cliffs <= 16 or
+                terrain_width < 3 or terrain_height < 3 or
+                len(w3e) != offset + 16 + terrain_width * terrain_height * 7):
             raise ValueError("malformed materialized terrain")
-        if wpm[:4] != b"MP3W" or (path_width, path_height) != (width * 4, height * 4) or len(wpm) != 16 + path_width * path_height:
+        if wpm[:8] != b"MP3W\0\0\0\0" or (path_width, path_height) != (width * 4, height * 4) or len(wpm) != 16 + path_width * path_height:
             raise ValueError("materialized pathing does not match terrain")
+        if units[:12] != b"W3do" + struct.pack("<II", 8, 11):
+            raise ValueError("malformed materialized player objects")
         if manifest.get("physicalMapId") != physical.id or manifest.get("terrain", {}).get("width") != width or manifest.get("terrain", {}).get("height") != height:
             raise ValueError("physical manifest does not match terrain")
         expected_objects = len(represented) + manifest.get("objects", {}).get("worldMarkerCount", 0) + 1

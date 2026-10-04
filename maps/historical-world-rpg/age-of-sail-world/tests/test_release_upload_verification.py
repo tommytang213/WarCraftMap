@@ -2,19 +2,160 @@
 import hashlib
 import json
 from pathlib import Path
+import struct
 import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zipfile
+import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tooling'))
 import package_release_candidate as release
 import verify_ci_release_artifact as upload
+from warcraft_campaign import write_mpq
+import warcraft_campaign as mpq
+
+
+class ReleaseNormalizationTests(unittest.TestCase):
+    def test_encrypted_members_support_compression_sectors_fixed_keys_and_partial_words(self):
+        files = {'(listfile)': b'nested/data.bin\r\n',
+                 'nested/data.bin': bytes(range(256)) * 33 + b'xyz'}
+
+        def encrypt(value, key):
+            aligned = len(value) & ~3
+            return mpq._encrypt(value[:aligned], key & 0xffffffff) + value[aligned:]
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'encrypted.w3x'
+            for single in (False, True):
+                for compressed in (False, True):
+                    for fixed in (False, True):
+                        with self.subTest(single=single, compressed=compressed, fixed=fixed):
+                            write_mpq(path, files)
+                            template = path.read_bytes()
+                            block_at = struct.unpack_from('<I', template, 20)[0]
+                            data_at = block_at + len(files) * 16
+                            blocks, data = [], bytearray()
+                            for name, value in sorted(files.items()):
+                                offset = data_at + len(data)
+                                key = mpq._hash(name.rsplit('/', 1)[-1], 3)
+                                if fixed:
+                                    key = ((key + offset) ^ len(value)) & 0xffffffff
+                                chunks = ([value] if single else
+                                          [value[start:start + 4096] for start in range(0, len(value), 4096)])
+                                encoded = []
+                                for index, chunk in enumerate(chunks):
+                                    candidate = b'\x02' + zlib.compress(chunk)
+                                    packed = candidate if compressed and len(candidate) < len(chunk) else chunk
+                                    encoded.append(encrypt(packed, key + index))
+                                if compressed and not single:
+                                    offsets = [(len(encoded) + 1) * 4]
+                                    for chunk in encoded:
+                                        offsets.append(offsets[-1] + len(chunk))
+                                    table = encrypt(struct.pack(f'<{len(offsets)}I', *offsets), key - 1)
+                                else:
+                                    table = b''
+                                packed = table + b''.join(encoded)
+                                flags = mpq.FILE_EXISTS | mpq.FILE_ENCRYPTED
+                                flags |= mpq.FILE_SINGLE_UNIT if single else 0
+                                flags |= mpq.FILE_COMPRESS if compressed else 0
+                                flags |= mpq.FILE_FIX_KEY if fixed else 0
+                                blocks.append(struct.pack('<IIII', offset, len(packed), len(value), flags))
+                                data.extend(packed)
+                            header = bytearray(template[:block_at])
+                            struct.pack_into('<I', header, 8, data_at + len(data))
+                            path.write_bytes(header + mpq._encrypt(b''.join(blocks), mpq._hash('(block table)', 3)) + data)
+                            self.assertEqual(files, mpq.MpqReader(path).members())
+                            self.assertEqual({'nested/data.bin': release.sha_bytes(files['nested/data.bin'])},
+                                             release.normalized_map(path))
+
+    def campaign(self, root, name, *, timestamp=0, reverse=False, changed=None,
+                 unlisted=False, attributes_flags=2):
+        files = {'war3map.lua': b'function main() end', 'war3map.w3e': b'terrain',
+                 'runtime/scenario-runtime.json': b'{"mapId":"africa"}'}
+        if changed:
+            files[changed] += b'changed gameplay content'
+        names = sorted(files, reverse=reverse)
+        files['(listfile)'] = ('\r\n'.join(names) + '\r\n').encode()
+        if unlisted:
+            files['hidden.lua'] = b'unlisted gameplay code'
+        files['(attributes)'] = struct.pack('<II', 100, attributes_flags) + struct.pack(
+            '<Q', timestamp) * (len(files) + 1)
+        nested = root / (name + '.w3x')
+        write_mpq(nested, files)
+        payload = bytearray(nested.read_bytes())
+        # All members are uncompressed single-unit files: either sector size
+        # is valid and changes only MPQ container metadata.
+        if reverse:
+            struct.pack_into('<H', payload, 14, 4)
+        outer = root / (name + '.w3n')
+        write_mpq(outer, {
+            'Maps/Africa.w3x': bytes(payload), 'war3campaign.w3f': b'campaign metadata',
+            'campaign-manifest.json': json.dumps({'maps': [
+                {'id': 'africa', 'sha256': hashlib.sha256(payload).hexdigest()}
+            ]}).encode(),
+        })
+        return outer, SimpleNamespace(maps=[SimpleNamespace(package_path='Maps/Africa.w3x')])
+
+    def test_real_mpq_contents_ignore_container_order_timestamps_and_sector_size(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first, config = self.campaign(root, 'first')
+            second, _ = self.campaign(root, 'second', timestamp=42, reverse=True)
+            self.assertNotEqual(first.read_bytes(), second.read_bytes())
+            self.assertEqual(release.normalized_campaign(first, config),
+                             release.normalized_campaign(second, config))
+
+    def test_real_mpq_gameplay_changes_are_never_normalized_away(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first, config = self.campaign(root, 'first')
+            for member in ('war3map.lua', 'war3map.w3e', 'runtime/scenario-runtime.json'):
+                with self.subTest(member=member):
+                    second, _ = self.campaign(root, 'second', changed=member)
+                    self.assertNotEqual(release.normalized_campaign(first, config),
+                                        release.normalized_campaign(second, config))
+
+    def test_incomplete_listfile_cannot_hide_archived_gameplay_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, config = self.campaign(Path(directory), 'unlisted', unlisted=True)
+            with self.assertRaisesRegex(release.PackagingError, 'does not cover every archived member'):
+                release.normalized_campaign(path, config)
+
+    def test_unknown_attributes_cannot_be_discarded_as_timestamps(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, config = self.campaign(Path(directory), 'patch-flags', attributes_flags=8)
+            with self.assertRaisesRegex(release.PackagingError, 'unsupported MPQ attributes layout'):
+                release.normalized_campaign(path, config)
 
 
 class ReleaseUploadTests(unittest.TestCase):
+    def test_current_headless_failure_blocks_packaging_despite_passing_saved_report(self):
+        config = release.load_release_config()
+        saved = json.loads((release.PROJECT / config['requiredGates']['releaseBlocker']).read_text())
+        self.assertEqual('pass', saved['status'])
+
+        def reject_journey(*arguments):
+            if arguments == ('tooling/release_blocker_audit.py',):
+                raise release.PackagingError('headless campaign journey failed')
+
+        with patch.object(release, '_run_gate', side_effect=reject_journey), \
+             patch.object(release, 'build_campaign') as build, \
+             patch.object(release, '_write_zip') as publish:
+            with self.assertRaisesRegex(release.PackagingError, 'headless campaign journey failed'):
+                release.build_release_candidate(revision='a' * 40)
+            build.assert_not_called()
+            publish.assert_not_called()
+
+    def test_provenance_includes_selector_compiler_options_and_shared_tooling(self):
+        inputs = release.authoritative_hashes()
+        for relative in ("wurst-bootstrap/Bootstrap.wurst", "wurst_run.args",
+                         "../_shared/tooling/warcraft_map_info.py",
+                         "../_shared/tooling/package_wurst_map.py"):
+            self.assertEqual(release.sha(release.PROJECT / relative), inputs[relative])
+
     def fixture(self, root):
         config = release.load_release_config()
         campaign = b'checksum-consistent but structurally invalid campaign'

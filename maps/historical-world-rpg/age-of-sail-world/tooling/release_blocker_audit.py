@@ -157,7 +157,8 @@ def _run_journeys(config):
             raise GateError(f"{journey['id']}: unclassified systems {sorted(unknown)}")
         state = full_world_soak.build_fixture(soak_config, sources, journey["seed"])
         save_hash, schema = _migration_round_trip(state)
-        # Repeated first/last maps deliberately prove return transitions rather than a one-way tour.
+        # Check the declared itinerary. This does not execute map transitions;
+        # the executable evidence here is the save fixture round trip above.
         if journey["physicalMaps"][0] != journey["physicalMaps"][-1]:
             raise GateError(f"{journey['id']}: journey does not include a repeated physical-map transition")
         if date_year(state["endDate"]) < 1820:
@@ -166,7 +167,12 @@ def _run_journeys(config):
         results.append({"id": journey["id"], "seed": journey["seed"], "branch": journey["branch"],
                         "regions": journey["regions"], "physicalMaps": journey["physicalMaps"],
                         "systems": sorted(systems), "endDate": state["endDate"],
-                        "saveSchema": schema, "saveHash": save_hash, "status": "pass"})
+                        "saveSchema": schema, "saveHash": save_hash, "status": "pass",
+                        "evidenceLevel": "headless_save_fixture_execution",
+                        "executedChecks": ["save_round_trip", "schema_3_migration"],
+                        "coverageEvidenceLevel": "declared_journey_metadata",
+                        "routeExecutionStatus": "not_run",
+                        "nativeSaveExecutionStatus": "not_run"})
     missing = sorted(required - covered)
     if missing:
         raise GateError(f"journey coverage misses required systems: {missing}")
@@ -220,7 +226,8 @@ def build_report(*, injected_findings=()):
             "auditedReports": audited, "journeys": journeys,
             "runtimeAcceptance": runtime,
             "releaseSaveCompatibility": save_compatibility,
-            "soak": {"format": soak["format"], "passed": soak["passed"], "runs": soak["runs"]},
+            "soak": {"format": soak["format"], "passed": soak["passed"], "runs": soak["runs"],
+                     "evidenceLevel": "headless_fixture_execution"},
             "knownLimitations": limitations, "findings": findings,
             "unresolvedCampaignBlockers": len(unresolved),
             "disposition": "gate_closed" if not unresolved else "release_blocked"}
@@ -232,11 +239,14 @@ def render_markdown(report):
              "## Severity taxonomy", "", "| ID | Release blocking | Definition |", "|---|---:|---|"]
     for row in report["taxonomy"]:
         lines.append(f"| `{row['id']}` | {'yes' if row['releaseBlocking'] else 'no'} | {row['definition']} |")
-    lines += ["", "## Deterministic campaign journeys", "", "| Stable ID | Branch | Seed | Regions | Maps | Result |",
+    lines += ["", "## Declared campaign journeys and executed save fixtures", "",
+              "Each row executes save serialization/loading and schema-3 migration. Regions, maps, systems and end dates describe the declared itinerary; they are not evidence of executing that itinerary or native Warcraft saves. The soak below separately executes the headless simulation fixture.", "",
+              "| Stable ID | Declared branch | Seed | Declared regions | Declared maps | Save fixture result |",
               "|---|---|---:|---:|---:|---|"]
     for row in report["journeys"]:
         lines.append(f"| `{row['id']}` | {row['branch']} | {row['seed']} | {len(row['regions'])} | {len(row['physicalMaps'])} | {row['status']} |")
     lines += ["", "## Player-facing runtime acceptance", "",
+              "These stages record source evidence, including test references; they do not establish Lua execution or control-flow reachability.", "",
               "| System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |",
               "|---|---:|---:|---:|---:|---:|"]
     for row in report["runtimeAcceptance"]["systems"]:
@@ -254,7 +264,8 @@ def render_markdown(report):
               f"- {len(report['releaseInputs'])} hashed release inputs",
               f"- {len(report['releaseSaveCompatibility']['schemas'])} supported release-save schemas migrated and authority-checked",
               f"- {len(report['soak']['runs'])} deterministic 1450–1820 soak runs",
-              "- Fresh start, supported-save migration, manual save, rolling autosave, checkpoints, native save/load, interrupted transition recovery, and representation reconstruction are journey-gated.", ""]
+              "- Journey rows execute campaign-save round trips and migration; their route/system coverage is declared metadata.",
+              "- Native Warcraft save/load, physical-map launches and real-client journeys are not executed by this audit.", ""]
     return "\n".join(lines)
 
 

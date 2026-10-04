@@ -172,9 +172,13 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
         width, height, cells, layouts = _compose(docs, set(physical.regional_instance_ids))
     else:
         # Purpose-built encounter chapters have no persistent regional
-        # authority. They are nevertheless a real navigable play space.
+        # authority. Bound their navigable water with the same blocked void
+        # used around composed regional rasters. The perimeter is not land:
+        # vessels can use the interior but cannot leave the encounter arena.
         width = height = 64
-        cells, layouts = [2] * (width * height), {physical.id: (0, 0, width, height)}
+        cells = [2 if 0 < x < width - 1 and 0 < y < height - 1 else 0
+                 for y in range(height) for x in range(width)]
+        layouts = {physical.id: (0, 0, width, height)}
     map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
     map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
     info_path = map_dir / "war3map.w3i"

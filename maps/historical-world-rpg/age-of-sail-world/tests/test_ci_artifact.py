@@ -33,6 +33,20 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertRegex(self.workflow, r"retention-days:\s+14\b")
         self.assertIn("if-no-files-found: error", self.workflow)
 
+    def test_upload_uses_the_copied_verified_payload_and_checkout_revision(self):
+        # Together with the executable upload-verifier integration test, bind
+        # the workflow's copy, digest input and upload directory to one payload.
+        self.assertIn('-e SOURCE_REVISION="$GITHUB_SHA"', self.workflow)
+        self.assertIn('artifact_dir="$RUNNER_TEMP/age-of-sail-release"', self.workflow)
+        self.assertIn('-v "$artifact_dir:/out"', self.workflow)
+        self.assertIn('cp "/tmp/workspace/$RELEASE_ARTIFACT" /out/AgeOfSailWorld-phase9-rc1.zip', self.workflow)
+        self.assertRegex(self.workflow, r'verify_ci_release_artifact\.py\s+\\\s+"/out/AgeOfSailWorld-phase9-rc1\.zip"')
+        self.assertIn('--evidence "/out/artifact-evidence.json"', self.workflow)
+        self.assertIn('path: ${{ runner.temp }}/age-of-sail-release', self.workflow)
+        self.assertIn('set -eu', self.workflow)
+        self.assertNotIn('continue-on-error:', self.workflow)
+        self.assertNotIn('always()', self.workflow)
+
     def test_container_builds_do_not_mutate_repository_bind_mounts(self):
         for workflow in (self.workflow, self.typecheck_workflow):
             self.assertIn('-v "$PWD:/source:ro"', workflow)
