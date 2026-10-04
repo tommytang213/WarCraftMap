@@ -192,11 +192,13 @@ def build_report(*, injected_findings=()):
     runtime = runtime_acceptance.audit_sources()
     runtime_findings = []
     for row in runtime["systems"]:
-        if row["releaseRequired"] and not row["stages"]["releaseValidated"]:
+        # Source audit establishes readiness only. The RC packager separately
+        # inspects compiled Lua and every built W3X before promotion.
+        if row["releaseRequired"] and not row["stages"]["playerFacingComplete"]:
             token = row["id"].upper().replace("_", "-")
             runtime_findings.append(_finding(f"RUNTIME-MISSING-{token}", "missing_runtime_integration",
                                              "scenario/runtime-integration.json",
-                                             f"{row['id']} is not player-facing and release-validated"))
+                                             f"{row['id']} is not player-facing in production sources"))
     findings = sorted([*report_findings, *input_findings, *runtime_findings,
                        *injected_findings], key=lambda x: x["id"])
     for finding in findings:

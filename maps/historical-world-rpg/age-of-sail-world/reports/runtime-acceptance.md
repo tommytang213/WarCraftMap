@@ -2,28 +2,30 @@
 
 Result: **PASS**
 
+Source readiness is not release validation. Built W3N/W3X inspection supplies the final gate.
+
 | System | Data | Headless | Runtime | Player-facing | Release validated |
 |---|---:|---:|---:|---:|---:|
-| `campaign_launch` | yes | yes | yes | yes | yes |
-| `origin_selection` | yes | yes | yes | yes | yes |
-| `country_diplomacy` | yes | yes | yes | yes | yes |
-| `trade` | yes | yes | yes | yes | yes |
-| `army_fleet_control` | yes | yes | yes | yes | yes |
-| `city_capture` | yes | yes | yes | yes | yes |
-| `garrisons` | yes | yes | yes | yes | yes |
-| `administration` | yes | yes | yes | yes | yes |
-| `heroes` | yes | yes | yes | yes | yes |
-| `inventory_equipment` | yes | yes | yes | yes | yes |
-| `technology_institutions` | yes | yes | yes | yes | yes |
-| `quests_journal` | yes | yes | yes | yes | yes |
-| `treasures_discovery` | yes | yes | yes | yes | yes |
-| `save_autosave_load` | yes | yes | yes | yes | yes |
-| `cross_map_travel` | yes | yes | yes | yes | yes |
-| `world_map` | yes | yes | yes | yes | yes |
-| `remote_management` | yes | yes | yes | yes | yes |
-| `government_rewards` | yes | yes | yes | yes | yes |
-| `religion` | yes | yes | yes | yes | yes |
-| `piracy` | yes | yes | yes | yes | yes |
+| `campaign_launch` | yes | yes | yes | yes | artifact gate |
+| `origin_selection` | yes | yes | yes | yes | artifact gate |
+| `country_diplomacy` | yes | yes | yes | yes | artifact gate |
+| `trade` | yes | yes | yes | yes | artifact gate |
+| `army_fleet_control` | yes | yes | yes | yes | artifact gate |
+| `city_capture` | yes | yes | yes | yes | artifact gate |
+| `garrisons` | yes | yes | yes | yes | artifact gate |
+| `administration` | yes | yes | yes | yes | artifact gate |
+| `heroes` | yes | yes | yes | yes | artifact gate |
+| `inventory_equipment` | yes | yes | yes | yes | artifact gate |
+| `technology_institutions` | yes | yes | yes | yes | artifact gate |
+| `quests_journal` | yes | yes | yes | yes | artifact gate |
+| `treasures_discovery` | yes | yes | yes | yes | artifact gate |
+| `save_autosave_load` | yes | yes | yes | yes | artifact gate |
+| `cross_map_travel` | yes | yes | yes | yes | artifact gate |
+| `world_map` | yes | yes | yes | yes | artifact gate |
+| `remote_management` | yes | yes | yes | yes | artifact gate |
+| `government_rewards` | yes | yes | yes | yes | artifact gate |
+| `religion` | yes | yes | yes | yes | artifact gate |
+| `piracy` | yes | yes | yes | yes | artifact gate |
 
 ## Compiled-runtime smoke journeys
 
@@ -32,4 +34,4 @@ Result: **PASS**
 
 ## Failures
 
-No unresolved runtime-acceptance failures.
+No unresolved source-readiness failures. Built-artifact and human client gates remain required.
