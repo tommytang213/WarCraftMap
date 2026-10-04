@@ -138,16 +138,50 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("line exceeds" in x for x in result["failures"]))
 
+    def test_renamed_compiler_calls_and_registry_aliases_are_static_evidence(self):
+        script = '''function renamed(a, trace) end
+function CommandRegistry_TO(self, command, trace) end
+CommandRegistry.CommandRegistry_register = CommandRegistry_TO
+renamed(value, "when calling configureGeneratedTrade in Bootstrap, line 237")
+CommandRegistry_TO(registry, "trade", "when calling register in PlayableTrade, line 442")
+'''
+        calls, commands = runtime._compiled_call_evidence(script)
+        self.assertIn("configureGeneratedTrade", calls)
+        self.assertEqual({"trade"}, commands)
+        for fake in (
+            '-- renamed(value, "when calling configureGeneratedTrade in Bootstrap, line 237")',
+            'local note = "when calling configureGeneratedTrade in Bootstrap, line 237"',
+            'missing(value, "when calling configureGeneratedTrade in Bootstrap, line 237")',
+        ):
+            calls, commands = runtime._compiled_call_evidence('function renamed(a, trace) end\n' + fake)
+            self.assertNotIn("configureGeneratedTrade", calls)
+            self.assertEqual(set(), commands)
+        _, commands = runtime._compiled_call_evidence(script.replace('CommandRegistry.CommandRegistry_register = CommandRegistry_TO', ''))
+        self.assertEqual(set(), commands)
+
+    def test_generated_regional_map_info_tracks_terrain_and_preserves_layout(self):
+        import sys
+        sys.path.insert(0, str(PROJECT.parent / "_shared/tooling"))
+        from materialize_physical_map import _resize_map_info, MaterializationError
+        original = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
+        resized = _resize_map_info(original, 128, 192)
+        info = runtime.validate_w3i_structure(resized)
+        self.assertEqual((116, 180), (info["playableWidth"], info["playableHeight"]))
+        self.assertEqual((6, 6, 4, 8), info["cameraComplements"])
+        self.assertEqual(original, _resize_map_info(resized, 64, 64))
+        with self.assertRaises(MaterializationError):
+            _resize_map_info(original[:40], 128, 128)
+
     def test_bootstrap_compiled_semantics_require_native_transition_before_end(self):
-        good = "function main() TimerStart() showPage() bj_changeLevelMapName=path EndGame(true) end"
+        good = "function main() TimerStart() showPage() bj_changeLevelMapName=path ChangeLevel(bj_changeLevelMapName, true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(good)["status"])
         helper = "function main() TimerStart() showPage() SetNextLevelBJ(path) EndGame(true) end"
-        self.assertEqual("pass", runtime.verify_compiled_bootstrap(helper)["status"])
-        native = "function main() TimerStart() showPage() SetNextLevel(path) EndGame(true) end"
+        self.assertEqual("fail", runtime.verify_compiled_bootstrap(helper)["status"])
+        native = "function main() TimerStart() showPage() ChangeLevel(path, true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(native)["status"])
         lost_native = "-- source said SetNextLevelBJ\nfunction main() TimerStart() showPage() EndGame(true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(lost_native)["status"])
-        reversed_calls = "function main() TimerStart() showPage() EndGame(true) bj_changeLevelMapName=path end"
+        reversed_calls = "function main() TimerStart() showPage() EndGame(true) ChangeLevel(path, true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(reversed_calls)["status"])
 
     def test_bootstrap_handoff_comments_and_strings_are_not_effects(self):
@@ -158,10 +192,26 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             self.assertEqual("compiled_text_static_heuristic", result["evidenceLevel"])
             self.assertTrue(any("does not select" in x for x in result["failures"]))
 
+    def test_bootstrap_direct_change_level_survives_renamed_adapter(self):
+        script = ('function BO(CO, VO) ChangeLevel(CO, true) end\n'
+                  'function main() TimerStart() showPage() BO(path, note) end')
+        self.assertEqual("pass", runtime.verify_compiled_bootstrap(script)["status"])
+        # Exact failure shape emitted by the pinned compiler before the repair:
+        # the unused BJ destination assignment disappeared, leaving only EndGame.
+        broken = script.replace('ChangeLevel(CO, true)', 'EndGame(true)')
+        self.assertEqual("fail", runtime.verify_compiled_bootstrap(broken)["status"])
+        for fake in ('-- ChangeLevel(path, true)\n',
+                     'local note = "ChangeLevel(path, true)"\n'):
+            self.assertEqual("fail", runtime.verify_compiled_bootstrap(fake + broken)["status"])
+
     def test_bootstrap_compiled_semantics_reject_global_scenario_registrations(self):
-        script = "function main() TimerStart() showPage() registerSettlement(x) bj_changeLevelMapName=path EndGame(true) end"
+        script = "function main() TimerStart() showPage() registerSettlement(x) ChangeLevel(path, true) end"
         result = runtime.verify_compiled_bootstrap(script)
         self.assertEqual("fail", result["status"])
+        self.assertTrue(any("regional registration" in x for x in result["failures"]))
+        renamed = script.replace('registerSettlement(x)',
+            'renamed(x, "when calling registerSettlement in ScenarioData, line 12")')
+        result = runtime.verify_compiled_bootstrap('function renamed(x, trace) end\n' + renamed)
         self.assertTrue(any("regional registration" in x for x in result["failures"]))
 
     def test_valid_metadata_with_blank_placeholder_terrain_fails(self):

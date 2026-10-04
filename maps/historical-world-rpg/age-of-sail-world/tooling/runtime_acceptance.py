@@ -99,7 +99,7 @@ def render_markdown(report):
  lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["No unresolved source-readiness failures. The RC packager supplies the built-artifact gate; real-client smoke is tracked separately."]
  return "\n".join(lines)+"\n"
 
-def _lua_code_and_strings(script):
+def _lua_code_and_strings(script, string_tokens=False):
  strings=[]; out=[]; i=0
  while i<len(script):
   if script.startswith("--[[",i):
@@ -111,9 +111,35 @@ def _lua_code_and_strings(script):
    while j<len(script) and script[j]!=quote:
     if script[j]=="\\" and j+1<len(script): value.extend(script[j:j+2]); j+=2
     else: value.append(script[j]); j+=1
-   strings.append("".join(value)); out.append(" "); i=min(len(script),j+1); continue
+   out.append(f"__literal_{len(strings)}__" if string_tokens else " "); strings.append("".join(value)); i=min(len(script),j+1); continue
   out.append(script[i]); i+=1
  return "".join(out),strings
+
+def _compiled_call_evidence(text):
+ # The pinned compiler renames functions, but supplies source-call locations as
+ # the final argument of actual calls. Associate those with defined callees;
+ # a diagnostic string on its own must never count as a production call.
+ code,strings=_lua_code_and_strings(text, string_tokens=True)
+ definitions=set(re.findall(r"\bfunction\s+(\w+)\s*\(",code))
+ code=re.sub(r"\bfunction\s+[A-Za-z_]\w*\s*\(","function (",code)
+ calls=set(re.findall(r"(?<![\w.])([A-Za-z_]\w*)\s*\(",code))
+ registrations=set()
+ registry_aliases=set(re.findall(r"\bCommandRegistry\.CommandRegistry_register\s*=\s*(\w+)",code)) & definitions
+ def literal(token):
+  match=re.fullmatch(r"__literal_(\d+)__",token.strip())
+  return strings[int(match[1])] if match else None
+ for match in re.finditer(r"\b(\w+)\s*\(([^()\n]*)\)",code):
+  callee,args=match[1],match[2].split(',')
+  trace=literal(args[-1])
+  if callee in definitions and trace:
+   origin=re.fullmatch(r"when calling (\w+) in [\w]+, line \d+",trace)
+   if origin: calls.add(origin[1])
+  if callee in registry_aliases and len(args)>1:
+   command=literal(args[1])
+   if command: registrations.add(command)
+ for match in re.finditer(r"(?:\.|:)register\s*\(\s*(__literal_\d+__)",code):
+  registrations.add(literal(match[1]))
+ return calls,registrations
 
 def verify_compiled_script(script,path=MANIFEST):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace"); failures=[]
@@ -122,9 +148,7 @@ def verify_compiled_script(script,path=MANIFEST):
  if longest>MAX_LUA_LINE_BYTES: failures.append(f"compiled Lua line exceeds {MAX_LUA_LINE_BYTES} byte budget")
  code,strings=_lua_code_and_strings(text)
  if max((len(x.encode()) for x in strings),default=0)>MAX_LUA_STRING_BYTES: failures.append(f"compiled Lua string exceeds {MAX_LUA_STRING_BYTES} byte budget")
- call_code=re.sub(r"\bfunction\s+[A-Za-z_]\w*\s*\(","function (",code)
- calls=set(re.findall(r"(?<![\w.])([A-Za-z_]\w*)\s*\(",call_code))-{"if","for","while","function"}
- registrations=set(re.findall(r"(?:\.|:)register\s*\(\s*['\"]([^'\"]+)['\"]",text))
+ calls,registrations=_compiled_call_evidence(text)
  for sid in sorted(x["id"] for x in load_manifest(path)["systems"] if x.get("releaseRequired")):
   required_calls,required_commands=EXECUTABLE_PROOFS.get(sid,(set(),set()))
   if not required_calls: failures.append(f"{sid}: no executable artifact proof is defined"); continue
@@ -137,13 +161,16 @@ def verify_compiled_script(script,path=MANIFEST):
 def verify_compiled_bootstrap(script):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace")
  failures=[]
+ calls,_=_compiled_call_evidence(text)
  text,_=_lua_code_and_strings(text)
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
  for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
-  if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
- next_level=re.search(r"\b(?:SetNextLevel|SetNextLevelBJ)\s*\(",text)
- inlined_next_level=re.search(r"\bbj_changeLevelMapName\s*=\s*[^=\s]",text)
- destination_effect=next_level or inlined_next_level; end_game=re.search(r"\bEndGame\s*\(",text)
+  if token in calls: failures.append(f"bootstrap contains regional registration: {token}")
+ # A BJ assignment alone is not a handoff: EndGame does not consume it.
+ # Require the destination-consuming native, whether inside a renamed helper
+ # or inlined at its call site. This is still textual, not reachability proof.
+ change_level=re.search(r"\bChangeLevel\s*\(",text)
+ destination_effect=change_level; end_game=re.search(r"\b(?:ChangeLevel|EndGame)\s*\(",text)
  if not destination_effect: failures.append("bootstrap compiled Lua does not select a campaign destination")
  if not end_game: failures.append("bootstrap compiled Lua does not end the selector map")
  if destination_effect and end_game and destination_effect.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")

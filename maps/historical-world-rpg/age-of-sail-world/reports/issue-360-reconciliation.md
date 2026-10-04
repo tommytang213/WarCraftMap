@@ -1,98 +1,72 @@
 # Issue 360 late-audit reconciliation
 
-Examined baseline `69563f79d9104b36ff7d5634bc82ad808fe51818`, #359 implementation
-`65b662c`, and merge `0a5626a`. The #359 change is preserved: it isolates the selector
-dependency graph, strips the optional HM3W wrapper, validates supported W3I layouts
-independently, budgets compiled Lua, and checks the compiled destination-selection
-effect before `EndGame`, including the inlined `bj_changeLevelMapName` assignment.
-Format/editor/game-version labels are recorded but are not
-treated as compatibility proof. The static source/runtime coverage report remains
-named as heuristic evidence; compiled-map inspection and release-archive inspection are
-separate evidence levels.
+Examined failing baseline `69563f79d9104b36ff7d5634bc82ad808fe51818`, #359
+implementation `65b662c` and merge `0a5626a`, and the existing #360 changes through
+`48b2475` (`ba173cc`, `46c38e5`, `aceaa94`, `239de71`). The merged selector isolation,
+HM3W handling, version-specific W3I parsing, archive checks, and budgets are retained.
+No scenario content or campaign-save schema changed.
 
-This reconciliation removes the bootstrap early return from physical-map inspection, so
-metadata, terrain dimensions, pathing dimensions, object structure, localized identity,
-and budgets apply to the selector too. Bootstrap-specific expectations remain minimal.
-It also changes the downloadable workflow to build the release candidate twice through
-the dedicated verifier, inspect the finished ZIP, and upload that exact ZIP together with
-an evidence record containing its byte count, SHA-256, and the checked-out source revision.
-The revision is also checked against both embedded release metadata files before upload.
+## Requirement mapping
 
-Regression coverage includes identical malformed canonical/packaged W3I rejection,
-bootstrap structural-bypass rejection, compiled inlined native handoff checks, bootstrap
-localization independent of global registrations, and workflow ordering/digest/revision
-binding. Existing generated terrain, settlement, diplomacy, trade, RPG, religion, piracy,
-and save inputs were not changed.
-
-Automated checks provide structural and headless evidence, not a successful live-client
-launch. The supplied log has no exception or stack trace and no removal-control result is
-claimed. No Windows dump/export was available here. Status remains
-`blocked_pending_real_forsaken_kingdom_launch_smoke` for the user's live Forsaken Kingdom
-3.0.0.24268 installation with Traditional Chinese UI; no substitute client or language
-change is treated as proof.
-
-Local validation on 2026-10-04: 40 CI-artifact, runtime-acceptance, and campaign-
-packaging tests passed; 18 release-blocker, map-source, and release-save tests passed;
-Python compilation and `git diff --check` passed. A native pinned-Wurst/Grill release
-build and Windows client smoke were not available in this environment and remain for the
-outer validator and separately tracked real-client evidence respectively.
-
-PR #362 CI follow-up: run `37186061238` reached the built-map gate and demonstrated
-that the pinned compiler emits W3I 31 metadata and optimized away the
-`SetNextLevelBJ` helper name. Follow-up run `37191000507` showed the remaining exact
-forms: W3I 31 omits the forced-camera-zoom fields introduced in v32, and the compiler
-can preserve the destination effect as the `SetNextLevel` native. The repair accepts
-W3I 31/33 only through their version-specific parsed layouts (including player/force
-records and terrain-dimension agreement), and traces `SetNextLevel`, `SetNextLevelBJ`,
-or the actual compiled `bj_changeLevelMapName` assignment rather than mistaking a
-renamed or inlined helper for a lost handoff.
-
-Runs `37193984729` and `37193987235` then exposed two final gate issues. The BJ
-wrapper disappeared from the compiled selector because the optimizer can inline its
-destination assignment; the source retains the pinned standard library's supported
-`SetNextLevelBJ` call and the compiled-effect checks accept either representation.
-Also, W3I playable dimensions are not raw terrain dimensions: the canonical map is
-52 by 52 inside 64 by 64 terrain after its `(6, 6, 4, 8)` camera-bound complements.
-The cross-file check now parses and validates those nonnegative complements and proves
-`playable = terrain - margins`; it no longer rejects the valid canonical layout.
-The corrected targeted suite passed locally. The prior pinned-Wurst failure from a
-direct `SetNextLevel` call was repaired by restoring the supported wrapper; a complete
-pinned-Wurst rerun remains for the outer validator.
-
-Final worktree reconciliation (2026-10-04) also examined #359 checkpoint `539089c`
-and the existing #360 implementation/repairs `ba173cc`, `46c38e5`, `aceaa94`, and
-`239de71`. Existing fixes were retained. The remaining upload-boundary omission
-was that `verify_release_archive()` checked campaign checksums but did not rerun
-`verify_campaign_runtime()` on the extracted final ZIP payload. It now does so;
-consistent checksums alone cannot bypass the nested-map checks. The upload verifier
-then records the digest of that checked ZIP and requires both embedded revisions
-to match CI's checked-out revision.
-
-| Late requirement | Implementation and regression evidence |
+| Late requirement | Code, regression, and artifact evidence |
 | --- | --- |
-| 1. Actual upload path | `.github/workflows/map-build.yml` runs `package_release_candidate.sh` and `verify_ci_release_artifact.py` before upload. `test_ci_artifact.py` checks ordering; `test_release_upload_verification.py` exercises extracted-payload rejection, exact digest/size, and revision mismatch rejection. |
-| 2. Independent W3I validation | `runtime_acceptance.inspect_built_map()` calls `forsaken_kingdom_map.validate_w3i_structure()` and compares playable dimensions plus margins to terrain. `test_runtime_acceptance.py` rejects identical malformed source/output metadata. |
-| 3. Bootstrap structure | `_shared/tooling/package_wurst_campaign._inspect_physical_map()` no longer returns early; final release runtime inspection also parses bootstrap W3I and cross-file dimensions. `test_campaign_packaging.py` covers the bypass regression. |
-| 4. Evidence levels | Compiled-script results now explicitly say `compiled_text_static_heuristic`; call counts are named `callNameMatches`. Bootstrap inspection ignores comments and quoted strings, with regression coverage. These checks do not execute Lua or prove control-flow reachability. Headless save/packaging tests are separate evidence. |
-| 5. Corrected diagnosis | Version-specific W3I 31/33 layout tests retain acceptance of a zero game-version tuple. Bootstrap tests accept the BJ helper, native, or inlined destination assignment and reject missing effects. Textual ordering remains a heuristic, not execution tracing. |
-| 6. Localization and budgets | `verify_campaign_runtime()` inspects each actual nested map through `inspect_built_map()`; bootstrap Lua size/global-registration checks are independent of localized JSON. Existing generated-localization and deterministic campaign-packaging tests are retained. No scenario/gameplay/save schema changes were made. |
+| 1. Actual upload path | `.github/workflows/map-build.yml` invokes `package_release_candidate.sh`, then `verify_ci_release_artifact.py` on the copied ZIP before upload. The release verifier reopens the ZIP and runs `verify_campaign_runtime()` on the extracted W3N. The upload verifier records the exact ZIP SHA-256/size and requires both embedded revisions to equal the checked-out CI revision. `test_ci_artifact.py` and `test_release_upload_verification.py` cover ordering, extracted-payload rejection, digest/size and revision mismatch. No successful uploaded artifact from this repair has been observed. |
+| 2. Independent W3I validation | `runtime_acceptance.inspect_built_map()` invokes `forsaken_kingdom_map.validate_w3i_structure()` and checks playable dimensions plus camera margins against W3E. `test_runtime_acceptance.py` rejects identically malformed canonical and packaged metadata. Source equality is not a substitute for parsing. |
+| 3. Bootstrap structure | The shared packager's `_inspect_physical_map()` no longer returns early for bootstrap. The final release verifier also parses bootstrap W3I/player data and checks terrain/pathing. `test_campaign_packaging.py` covers malformed bootstrap rejection; the real compiled bootstrap passed `inspect_built_map()` locally. |
+| 4. Evidence levels | Compiled checks return `compiled_text_static_heuristic`. The pinned compiler renames calls: the checker now associates source-call annotations only with actual calls to defined functions, and resolves command-registration aliases from emitted class exports. Comments and standalone diagnostic strings do not satisfy those checks. Negative regression tests cover these distinctions. This does not execute Lua or prove control-flow reachability. |
+| 5. Corrected diagnosis/handoff | W3I 31/33 are parsed according to their layouts; zero game-version tuples remain allowed. Actual compilation revealed a missing destination effect, not merely a missing helper name: the handoff contained only `EndGame(true)`. `compatLoadPhysicalMap()` now uses `ChangeLevel(mapPath, true)`, which survives compilation. The gate requires the destination-consuming native, including inside renamed helpers or using an inlined destination variable; unused BJ state plus EndGame is rejected. |
+| 6. Compiled localization/budgets | Final release inspection checks every nested map. Bootstrap global-registration checks recognize renamed calls independently of localized JSON. The real selector and Europe West output passed compiled budgets and structural checks. The shared materializer now resizes W3I playable dimensions and camera bounds with generated terrain, preserving margins and the remaining version-specific layout. Regression tests cover resize/reversal and malformed input. Terrain, settlement, diplomacy, trade, RPG, religion, piracy and save content are preserved. |
 
-No uploaded GitHub artifact was downloaded or live-client smoke result obtained in
-this pass. Historical CI observations above are retained from the earlier checked-in
-report, not newly reproduced results. Docker socket access was denied and native
-Grill is absent, so pinned Wurst compilation and a full real release build remain
-unexecuted here. The outer repository validator must supply that evidence. The
-release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+## PR 362 failure and repair evidence
 
-Validation performed for this final pass: 56 targeted unittest cases passed
-(`test_runtime_acceptance`: 14; `test_campaign_packaging`: 23;
-`test_ci_artifact`: 4; `test_release_upload_verification`: 2;
-`test_release_save_compatibility`: 6; `test_release_blocker_audit`: 7).
-`validate_world.py`, `validate_map_source.py`, `runtime_acceptance.py`, Python
-compilation of changed modules, and `git diff --check` passed. Packaging tests use
-the fixture compiler and are not a Wurst compilation claim. The native-save
-reconstruction oracle passed; actual native execution explicitly returned
-`runtime_unavailable` because `WC3_NATIVE_SAVE_RUNNER` is unset. Broad unittest
-discovery was interrupted after targeted validation completed; no full-suite pass
-is claimed. No new artifact digest is reported because no actual release was
-built/uploaded in this environment.
+On 2026-10-04, `gh pr checks 362` identified failed artifact runs
+`37201964341` and `37201966451`; repository-validation jobs passed. Both artifact
+logs ended with `bootstrap compiled Lua does not select a campaign destination`
+after producing two campaigns. No release upload succeeded in those runs.
+
+Reproducing the bootstrap with the workflow's pinned Wurst image showed that the
+renamed handoff function only called `EndGame(true)`. The emitted Blizzard library
+shows `SetNextLevelBJ` assigning `bj_changeLevelMapName`; its consumers invoke
+`ChangeLevel`. The old adapter never called such a consumer and the compiler
+removed its unused assignment. This supersedes the earlier report's assumption
+that accepting an inlined BJ assignment would resolve the handoff. It establishes
+a code defect, not the cause of the player's reported crash.
+
+A real regional compile then exposed two additional omissions hidden behind the
+bootstrap gate: source-name-only heuristics rejected renamed production calls,
+and generated 128-by-128 terrain still had the 64-by-64 source map's W3I dimensions.
+Both are repaired as described above; the regenerated regional output passes.
+
+## Validation performed
+
+- 69 targeted Python unittest cases passed: runtime acceptance (17), campaign
+  packaging (23), CI artifact (4), upload verification (2), release-save
+  compatibility (6), release-blocker audit (7), map source (5), native-save
+  regression (5). Packaging fixtures are not Wurst execution evidence.
+- `validate_world.py`, `validate_map_source.py`, `runtime_acceptance.py`, Python
+  compilation of changed modules, and `git diff --check` passed.
+- Pinned image `frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a`:
+  Grill install, typecheck and build succeeded for the repaired bootstrap and
+  Europe West map. Worktree mounts were read-only; all compiler writes occurred
+  in container-private temporary copies. Temporary containers were removed.
+- Independent `inspect_built_map()` passed on both resulting MPQ maps, including
+  metadata, terrain/pathing, localization and compiled-script checks. Diagnostic
+  W3X SHA-256 values (uncommitted worktree based on `48b2475`, not release uploads):
+  bootstrap `092b0a7295649c05167a13ee749fbad00177386b239a58d250f76040d4a02792`;
+  Europe West `509f6bf537492197fa240fe519cc8f4e56e197c1188959ca83bb9c8ad71669f5`.
+
+## Limits and release status
+
+No full all-map, two-build RC ZIP or uploaded payload was produced in this repair
+pass. The outer repository validator and artifact CI must run the complete gates;
+no new release digest/revision/upload agreement is claimed. Other regional maps,
+full-suite discovery, native Warcraft save execution and a live-client launch were
+not run here. Source annotations and registration matches remain static evidence.
+
+The supplied player log has no exception/stack trace; the event export was empty
+and no dump was supplied. No crash cause is inferred from its last line and no
+removal-control result is claimed. The target remains the user's live Forsaken
+Kingdom 3.0.0.24268 Windows installation with Traditional Chinese UI; no legacy/PTR
+substitute or language change is treated as a fix. Release status remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke`, separate from implementation
+completion. No repeated incremental player QA is needed for these repairs.

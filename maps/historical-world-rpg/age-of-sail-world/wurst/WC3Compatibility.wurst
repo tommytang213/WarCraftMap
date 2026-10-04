@@ -85,11 +85,10 @@ public function compatSaveCheckpoint(string name, boolean showWindow)
 /** Physical-map handoff. Campaign authority is committed to game cache before this is called. */
 @noinline
 public function compatLoadPhysicalMap(string mapPath)
-	// The pinned Wurst standard library exposes this effect through its BJ
-	// wrapper. The optimizer may retain the call or inline its assignment to
-	// bj_changeLevelMapName; release acceptance recognizes both forms.
-	SetNextLevelBJ(mapPath)
-	EndGame(true)
+	// SetNextLevelBJ only assigns BJ state; EndGame does not consume it.
+	// The optimizer drops that unused assignment. Pass the committed campaign
+	// destination directly to the native that both selects and loads the map.
+	ChangeLevel(mapPath, true)
 
 // Native-save regression lifecycle. These adapters are intentionally generic;
 // the fixture and developer runner own the test protocol.
