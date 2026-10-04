@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic Phase 8 integrated-campaign release-blocker gate."""
+"""Deterministic integrated-campaign release-blocker gate."""
 from __future__ import annotations
 
 import argparse
@@ -227,7 +227,7 @@ def build_report(*, injected_findings=()):
 
 
 def render_markdown(report):
-    lines = ["# Phase 8 release-blocker audit", "", f"Result: **{report['status'].upper()}**",
+    lines = ["# Phase 9 release-blocker audit", "", f"Result: **{report['status'].upper()}**",
              "", f"Unresolved campaign blockers: **{report['unresolvedCampaignBlockers']}**", "",
              "## Severity taxonomy", "", "| ID | Release blocking | Definition |", "|---|---:|---|"]
     for row in report["taxonomy"]:

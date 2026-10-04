@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build, audit, and package the Phase 8 player release candidate.
+"""Build, audit, and package the current player release candidate.
 
 The .w3x/.w3n and ZIP files written below are disposable build products.  All
 release policy, player text, map assignments, and scenario data remain source.
@@ -32,7 +32,7 @@ import runtime_acceptance  # noqa: E402
 FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
 PROVENANCE_FORMAT = "warcraftmap_rc_build_provenance_v1"
-CONFIG = PROJECT / "scenario/release/phase8-rc2.json"
+CONFIG = PROJECT / "scenario/release/phase9-rc1.json"
 
 
 def sha_bytes(value: bytes) -> str:
@@ -132,7 +132,7 @@ def _run_gate(*arguments: str) -> None:
         raise PackagingError(f"gate stage failed: {message}")
 
 
-def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
+def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     gates = config["requiredGates"]
     if gates.get("zeroCampaignBlockers") is not True:
         raise PackagingError("gate stage failed: zero-campaign-blocker gate is not complete")
@@ -146,6 +146,9 @@ def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
     runtime_report = json.loads(_source_path(gates["runtimeAcceptance"], "runtimeAcceptance").read_text())
     if runtime_report != runtime:
         raise PackagingError("gate stage failed: runtime-acceptance report is stale")
+    blocker_report = json.loads(_source_path(gates["releaseBlocker"], "releaseBlocker").read_text())
+    if blocker_report.get("status") != "pass" or blocker_report.get("unresolvedCampaignBlockers") != 0:
+        raise PackagingError("gate stage failed: release-blocker audit does not pass")
     compatibility = json.loads(_source_path(gates["releaseSaveCompatibility"], "releaseSaveCompatibility").read_text())
     recovery = json.loads(_source_path(gates["recoveryDocumentation"], "recoveryDocumentation").read_text())
     current = compatibility.get("matrix", {}).get("campaign", {}).get("current")
@@ -166,7 +169,7 @@ def validate_gates(config: dict) -> tuple[dict, dict, list[dict]]:
     fixture_results = [release_save_compatibility.validate_release_fixture(
         release_save_compatibility.expand_fixture(executable_manifest, fixture), executable_manifest["budgets"]
     ) for fixture in executable_manifest["fixtures"]]
-    return compatibility, coverage, fixture_results
+    return compatibility, coverage, runtime_report, fixture_results
 
 
 def normalized_campaign(path: Path, campaign_config) -> dict[str, str]:
@@ -216,9 +219,13 @@ def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
     return rows
 
 
-def verify_campaign_runtime(campaign_path: Path, campaign_config) -> None:
+def verify_campaign_runtime(campaign_path: Path, campaign_config) -> dict:
     campaign = MpqReader(campaign_path)
     inspected = []
+    configured = {item.id: item for item in campaign_config.maps}
+    package_by_id = {item.id: item.package_path for item in campaign_config.maps}
+    all_origins = None
+    boundary_ids = set()
     for physical in campaign_config.maps:
         payload = campaign.read(physical.package_path)
         with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
@@ -232,6 +239,39 @@ def verify_campaign_runtime(campaign_path: Path, campaign_config) -> None:
                 raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: " +
                                      "; ".join(result["failures"]))
             inspected.append(result)
+            runtime = json.loads(runtime_acceptance._archive_read(Path(nested_file.name), "runtime/scenario-runtime.json"))
+            physical_manifest = json.loads(runtime_acceptance._archive_read(Path(nested_file.name), "runtime/physical-map.json"))
+            physical_runtime = runtime.get("physicalMap", {})
+            if (physical_runtime.get("id") != physical.id or
+                    physical_runtime.get("packagePath") != physical.package_path or
+                    physical_runtime.get("logicalRegionIds") != list(physical.logical_region_ids) or
+                    physical_runtime.get("regionalInstanceIds") != list(physical.regional_instance_ids)):
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: packaged assignment metadata differs from physical-maps.json")
+            origins = runtime.get("newCampaignOrigins")
+            if not isinstance(origins, list) or not origins:
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: origin selection is absent")
+            if all_origins is None:
+                all_origins = origins
+            elif origins != all_origins:
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: origin selection differs across maps")
+            for origin in origins:
+                start = origin.get("startingLocation", {})
+                if start.get("physicalMapId") not in configured or not start.get("regionalInstanceId") or not start.get("settlementId"):
+                    raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: invalid origin destination")
+            for boundary in runtime.get("physicalBoundaries", []):
+                if boundary.get("sourceMapId") != physical.id:
+                    raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: transition has the wrong source map")
+                destination = boundary.get("destinationMapId")
+                if destination not in configured or boundary.get("destinationPackagePath") != package_by_id[destination]:
+                    raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: transition destination is invalid")
+                transform = boundary.get("arrivalTransform", {})
+                if set(transform) != {"reverse", "scale", "offset"}:
+                    raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: transition arrival transform is incomplete")
+                boundary_ids.add(boundary.get("id"))
+            expected_settlements = {row["id"] for row in runtime.get("settlementDefinitions", [])}
+            represented = {row["id"] for row in physical_manifest.get("objects", {}).get("settlements", [])}
+            if not physical.bootstrap and (expected_settlements != represented or physical_manifest.get("objects", {}).get("spawnCount") != 1):
+                raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: settlement or spawn representations are incomplete")
     ids = [row["mapId"] for row in inspected]
     if len(ids) != len(set(ids)) or sum(bool(row["bootstrap"]) for row in inspected) != 1:
         raise PackagingError("runtime acceptance stage failed: physical identities/bootstrap are invalid")
@@ -240,6 +280,11 @@ def verify_campaign_runtime(campaign_path: Path, campaign_config) -> None:
         raise PackagingError("runtime acceptance stage failed: bootstrap has no packaged destination")
     if len(regional) > 1 and len({(row["terrainSha256"], row["pathingSha256"]) for row in regional}) == 1:
         raise PackagingError("runtime acceptance stage failed: regional maps are identical placeholders")
+    configured_boundaries = {item.id for item in campaign_config.boundaries}
+    if boundary_ids != configured_boundaries:
+        raise PackagingError("runtime acceptance stage failed: packaged transition set differs from physical-boundaries.json")
+    return {"status": "pass", "maps": inspected, "origins": len(all_origins or []),
+            "transitions": len(boundary_ids), "systems": sorted(runtime_acceptance.MANDATORY_SYSTEMS)}
 
 
 def audit_payloads(payloads: dict[str, bytes], config: dict) -> None:
@@ -280,6 +325,10 @@ def verify_release_archive(path: Path, config: dict) -> None:
             raise PackagingError("release inspection stage failed: metadata format mismatch")
         if manifest["releaseCandidateId"] != config["releaseCandidateId"]:
             raise PackagingError("release inspection stage failed: RC identifier mismatch")
+        if manifest.get("sourceRevision") != provenance.get("sourceRevision"):
+            raise PackagingError("release inspection stage failed: source revision mismatch")
+        if manifest.get("schemaCompatibility", {}).get("supportedSaveSchemas") != [1, 2, 3, 4, 5]:
+            raise PackagingError("release inspection stage failed: save-schema contract mismatch")
         listed = {item["archivePath"]: item for item in manifest["artifacts"] if item["kind"] != "physical-map"}
         for name in names:
             if name in (config["archive"]["manifestPath"], config["archive"]["provenancePath"]):
@@ -298,7 +347,7 @@ def verify_release_archive(path: Path, config: dict) -> None:
 
 def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None, revision: str | None = None) -> Path:
     config = load_release_config(config_path)
-    compatibility, coverage, fixture_results = validate_gates(config)
+    compatibility, coverage, runtime_report, fixture_results = validate_gates(config)
     campaign_manifest = PROJECT / config["campaignManifest"]
     campaign_config = load_campaign_config(campaign_manifest)
     inputs = authoritative_hashes()
@@ -310,7 +359,7 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         first_normalized = normalized_campaign(first_path, campaign_config)
         second = build_campaign(campaign_manifest, grill=grill, clean_first=True)
         second_normalized = normalized_campaign(second, campaign_config)
-        verify_campaign_runtime(second, campaign_config)
+        artifact_validation = verify_campaign_runtime(second, campaign_config)
         if first_normalized != second_normalized:
             difference = sorted(set(first_normalized) | set(second_normalized))
             difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
@@ -332,10 +381,11 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "inputSetSha256": sha_bytes(canonical(inputs)),
             "contentReportSha256": sha(PROJECT / config["requiredGates"]["phase8Content"]),
             "normalizedCampaignContentSha256": sha_bytes(canonical(first_normalized)),
+            "normalizedCampaignEntries": first_normalized,
             "normalizedEquivalence": {"builds": 2, "equal": True, "ignoredDifference": "ZIP/MPQ entry order, timestamps, compression, and container metadata only"},
             "releaseStatus": config.get("releaseStatus", "blocked_pending_human_launch_smoke_test"),
             "requiredHumanValidation": config.get("requiredHumanValidation"),
-            "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "blocked_pending_execution"},
+            "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime_report["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "not_run_separate_manual_smoke"},
         }
         payloads = {config["archive"]["campaignPath"]: campaign_bytes}
         for relative in config["releaseDocuments"]:
@@ -345,11 +395,13 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         artifact_manifest = {
             "format": MANIFEST_FORMAT, "formatVersion": 1,
             "releaseCandidateId": config["releaseCandidateId"], "campaignId": campaign_config.campaign_id,
+            "sourceRevision": revision,
             "runtimeTarget": target,
             "schemaCompatibility": {"scenarioVersion": config["scenarioVersion"], "currentSaveSchema": save["campaign"]["current"], "supportedSaveSchemas": save["campaign"]["supportedSources"]},
             "artifacts": rows,
             "smokeJourneys": {"uninterrupted": "pass", "saveResume": "pass", "crossMap": "pass", "remoteCommand": "pass", "representationLoss": "pass", "recovery": "pass", "supportedSaveLoadMigration": "pass"},
             "saveMigrationFixtures": fixture_results,
+            "artifactValidation": artifact_validation,
         }
         payloads[config["archive"]["manifestPath"]] = canonical(artifact_manifest)
         payloads[config["archive"]["provenancePath"]] = canonical(provenance)
