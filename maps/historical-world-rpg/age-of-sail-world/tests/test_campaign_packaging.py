@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_campaign import (  # noqa: E402
     PackagingError,
+    _inspect_physical_map,
     _localize_runtime,
     _write_browser_safe_w3x,
     build_campaign,
@@ -41,6 +42,23 @@ if sys.argv[1] == "build":
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_bootstrap_cannot_bypass_binary_structure_inspection(self):
+        physical = load_campaign_config(self.manifest).maps[0]
+        source = self.project / "map/AgeOfSailWorld.w3x"
+        broken = self.project / "broken-bootstrap.w3x"
+        with zipfile.ZipFile(broken, "w") as archive:
+            for name in ("war3map.w3i", "war3map.wpm", "war3mapUnits.doo"):
+                archive.write(source / name, name)
+            archive.writestr("war3map.w3e", b"broken")
+            archive.writestr("runtime/scenario-runtime.json", json.dumps({"settlementDefinitions": []}))
+            archive.writestr("runtime/physical-map.json", json.dumps({
+                "physicalMapId": physical.id,
+                "terrain": {"width": 1, "height": 1},
+                "objects": {"settlements": [], "worldMarkerCount": 0, "spawnCount": 1},
+            }))
+        with self.assertRaisesRegex(PackagingError, "campaign inspection stage failed"):
+            _inspect_physical_map(physical, broken)
+
     def test_browser_safe_w3x_strips_hm3w_enumeration_wrapper(self):
         raw = Path(self.temp.name) / "raw.mpq"
         wrapped = Path(self.temp.name) / "wrapped.w3x"

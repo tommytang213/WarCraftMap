@@ -16,16 +16,20 @@ class MapArtifactWorkflowTests(unittest.TestCase):
 
     def test_validation_and_typecheck_precede_upload(self):
         source_validation = self.workflow.index("validate_map_source.py")
-        package = self.workflow.index("./tooling/package_campaign.sh")
+        package = self.workflow.index("./tooling/package_release_candidate.sh")
+        verify = self.workflow.index("verify_ci_release_artifact.py")
         upload = self.workflow.index("actions/upload-artifact@")
         self.assertLess(source_validation, package)
-        self.assertLess(package, upload)
+        self.assertLess(package, verify)
+        self.assertLess(verify, upload)
         packager = REPOSITORY / "maps/historical-world-rpg/_shared/tooling/package_wurst_campaign.py"
         self.assertIn('[executable, "typecheck"]', packager.read_text())
 
     def test_expected_artifact_path_name_and_retention_are_fixed(self):
-        self.assertIn("_build/release/AgeOfSailWorldCampaign.w3n", self.workflow)
-        self.assertIn("name: age-of-sail-world-campaign", self.workflow)
+        self.assertIn("_build/release/AgeOfSailWorld-phase9-rc1.zip", self.workflow)
+        self.assertIn("name: age-of-sail-world-release-candidate", self.workflow)
+        self.assertIn("--source-revision \"$SOURCE_REVISION\"", self.workflow)
+        self.assertIn("artifact-evidence.json", self.workflow)
         self.assertRegex(self.workflow, r"retention-days:\s+14\b")
         self.assertIn("if-no-files-found: error", self.workflow)
 

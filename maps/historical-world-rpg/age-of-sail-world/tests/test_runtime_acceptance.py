@@ -13,6 +13,37 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 
 
 class RuntimeAcceptanceTests(unittest.TestCase):
+    def test_identically_malformed_canonical_and_packaged_w3i_still_fail(self):
+        current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
+        malformed = bytearray(current); struct.pack_into("<i", malformed, 0, 25)
+        original_project = runtime.PROJECT
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); canonical = root / "map/AgeOfSailWorld.w3x"
+            canonical.mkdir(parents=True); (canonical / "war3map.w3i").write_bytes(malformed)
+            source = PROJECT / "map/AgeOfSailWorld.w3x"
+            fixture = root / "same-malformed.w3x"
+            w3e = (source / "war3map.w3e").read_bytes(); offset = 13
+            ground = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + ground * 4
+            cliffs = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + cliffs * 4
+            width, height = struct.unpack_from("<II", w3e, offset)
+            with zipfile.ZipFile(fixture, "w") as archive:
+                for name in ("war3map.w3e", "war3map.wpm", "war3mapUnits.doo"):
+                    archive.write(source / name, name)
+                archive.writestr("war3map.w3i", malformed)
+                archive.writestr("war3map.lua", self.executable_script())
+                archive.writestr("runtime/scenario-runtime.json", json.dumps({
+                    "ids": {"polities": ["fixture"]}, "regionalGeography": ["fixture"]}))
+                archive.writestr("runtime/physical-map.json", json.dumps({
+                    "physicalMapId": "fixture", "bootstrap": False,
+                    "terrain": {"width": width - 1, "height": height - 1}}))
+            runtime.PROJECT = root
+            try:
+                result = runtime.inspect_built_map(fixture, "fixture", False)
+                self.assertEqual("fail", result["status"])
+                self.assertTrue(any("not current format" in x for x in result["failures"]))
+            finally:
+                runtime.PROJECT = original_project
+
     def test_locked_current_client_w3i_and_exact_rc1_regression(self):
         current = (PROJECT / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
         info = runtime.validate_current_w3i(current)

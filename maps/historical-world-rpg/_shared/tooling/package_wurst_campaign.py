@@ -532,10 +532,9 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         else:
             reader = MpqReader(archive)
             read = reader.read
+        w3i = read("war3map.w3i")
         w3e, wpm, units = read("war3map.w3e"), read("war3map.wpm"), read("war3mapUnits.doo")
         runtime = json.loads(read(f"runtime/{GENERATED_DATA}"))
-        if physical.bootstrap:
-            return
         manifest = json.loads(read("runtime/physical-map.json"))
         offset = 13
         ground = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + ground * 4
@@ -544,6 +543,8 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         width, height = terrain_width - 1, terrain_height - 1
         path_width, path_height = struct.unpack_from("<II", wpm, 8)
         object_count = struct.unpack_from("<I", units, 12)[0]
+        if len(w3i) < 32 or struct.unpack_from("<i", w3i)[0] <= 0:
+            raise ValueError("malformed map metadata/player-slot data")
         expected_settlements = {x["id"] for x in runtime.get("settlementDefinitions", [])}
         represented = {x["id"] for x in manifest.get("objects", {}).get("settlements", [])}
         if w3e[:4] != b"W3E!" or len(w3e) != offset + 16 + terrain_width * terrain_height * 7:
@@ -553,7 +554,12 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         if manifest.get("physicalMapId") != physical.id or manifest.get("terrain", {}).get("width") != width or manifest.get("terrain", {}).get("height") != height:
             raise ValueError("physical manifest does not match terrain")
         expected_objects = len(represented) + manifest.get("objects", {}).get("worldMarkerCount", 0) + 1
-        if expected_settlements != represented or object_count != expected_objects or manifest["objects"].get("spawnCount") != 1:
+        if physical.bootstrap:
+            if expected_settlements or represented or manifest.get("objects", {}).get("worldMarkerCount", 0):
+                raise ValueError("bootstrap contains regional settlement/marker data")
+            if object_count != 1 or manifest["objects"].get("spawnCount") != 1:
+                raise ValueError("bootstrap spawn objects do not match localized runtime")
+        elif expected_settlements != represented or object_count != expected_objects or manifest["objects"].get("spawnCount") != 1:
             raise ValueError("settlement/port/spawn objects do not match localized runtime")
         if width * height > 256 * 256 or object_count > 8192:
             raise ValueError("Warcraft physical-map budget exceeded")
