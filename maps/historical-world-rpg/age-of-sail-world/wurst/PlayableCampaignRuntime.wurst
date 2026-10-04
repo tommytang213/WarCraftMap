@@ -589,6 +589,20 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
 		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
+	function reconstructPartyAt(string settlementId,boolean newCampaign)
+		if state.rpg == null
+			return
+		var x=0.
+		var y=0.
+		if state.militarySettlements != null
+			let found=state.militarySettlements.settlementIndex(settlementId)
+			if found >= 0
+				x=state.militarySettlements.settlements[found].x
+				y=state.militarySettlements.settlements[found].y
+		if newCampaign
+			state.rpg.startNewCampaign(Player(0),x,y)
+		else
+			state.rpg.reconstruct(Player(0),x,y,"player")
 	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
 		if extension != null
@@ -601,6 +615,7 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		mapPresentation.setKnowledge(logicalRegion, settlementId, "", "")
 		maps.setPhysicalRegion(logicalRegion)
 		maps.setCommandRegion(logicalRegion)
+		reconstructPartyAt(settlementId,true)
 		// The cache commit must precede the irreversible cross-map handoff.
 		if saves.save(SAVE_SLOT_SESSION_START, 0, "campaign-start")
 			travel.loader.load(packagePath)
@@ -619,6 +634,7 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 			regionSelector.setPhysicalRegionId(loadedRegion)
 			maps.setPhysicalRegion(loadedRegion)
 			maps.setCommandRegion(loadedRegion)
+			reconstructPartyAt(loadedSettlement,false)
 
 public PlayableCampaignServices campaignServices = null
 timer campaignAutosaveTimer = null

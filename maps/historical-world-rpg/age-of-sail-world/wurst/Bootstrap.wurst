@@ -35,30 +35,72 @@ class WarcraftTechnologyEffects implements TechnologyEffectPort
 	string array[4096] keys
 	int array[4096] magnitudes
 	int count=0
+	int appliedFood=0
 	override function applyTechnology(string controllerId,string effectId,int magnitude)
 		keys[count]=controllerId+":"+effectId
 		magnitudes[count]=magnitude
 		count++
+		if controllerId == "player"
+			SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)+magnitude)
+			appliedFood+=magnitude
 	override function clearTechnologyLayer(string controllerId)
+		if controllerId == "player" and appliedFood > 0
+			SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,IMaxBJ(0,GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)-appliedFood))
+			appliedFood=0
 		for i=0 to count-1
 			if SubString(keys[i],0,StringLength(controllerId)+1) == controllerId+":"
 				keys[i]=""
 
 class WarcraftRpgProjections implements RpgProjectionPort
+	HeroRoster heroes
+	int array[2048] baseLife
+	quest array[1024] guidance
+	int guidanceCount=0
+	quest array[512] knowledge
+	int knowledgeCount=0
+	construct(HeroRoster heroes)
+		this.heroes=heroes
 	override function clearEquipmentLayer()
-		skip
+		for i=0 to heroes.count-1
+			if heroes.projected[i] != null and GetUnitTypeId(heroes.projected[i]) != 0 and baseLife[i] > 0
+				compatSetUnitMaxLife(heroes.projected[i],baseLife[i])
 	override function applyEquipment(string heroId,string itemId,int power)
-		skip
+		let found=heroes.indexOf(heroId)
+		if found >= 0 and heroes.projected[found] != null and GetUnitTypeId(heroes.projected[found]) != 0
+			if baseLife[found] == 0
+				baseLife[found]=compatGetUnitMaxLife(heroes.projected[found])
+			compatSetUnitMaxLife(heroes.projected[found],compatGetUnitMaxLife(heroes.projected[found])+IMaxBJ(0,power))
 	override function applyEquipmentSet(string setId,int power)
-		skip
+		for i=0 to heroes.count-1
+			if heroes.projected[i] != null and GetUnitTypeId(heroes.projected[i]) != 0
+				if baseLife[i] == 0
+					baseLife[i]=compatGetUnitMaxLife(heroes.projected[i])
+				compatSetUnitMaxLife(heroes.projected[i],compatGetUnitMaxLife(heroes.projected[i])+IMaxBJ(0,power))
 	override function clearGuidanceLayer()
-		skip
+		for i=0 to guidanceCount-1
+			DestroyQuest(guidance[i])
+		guidanceCount=0
 	override function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
-		skip
+		let marker=CreateQuest()
+		QuestSetTitle(marker,"Tracked: "+questId)
+		QuestSetDescription(marker,precision+" guidance: "+regionId+" / "+destinationId)
+		QuestSetRequired(marker,true)
+		QuestSetEnabled(marker,true)
+		guidance[guidanceCount]=marker
+		guidanceCount++
 	override function clearTreasureKnowledgeLayer()
-		skip
+		for i=0 to knowledgeCount-1
+			DestroyQuest(knowledge[i])
+		knowledgeCount=0
 	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
-		skip
+		if clueStage > 0 or discovered
+			let marker=CreateQuest()
+			QuestSetTitle(marker,"Treasure: "+treasureId)
+			QuestSetDescription(marker,"Clue stage "+clueStage.toString())
+			QuestSetCompleted(marker,discovered)
+			QuestSetEnabled(marker,true)
+			knowledge[knowledgeCount]=marker
+			knowledgeCount++
 
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 public PiracyRuntime piracyRuntime
@@ -175,7 +217,8 @@ init
 	piracyRuntime.setActionAuthority(new CampaignPiracyActionAuthority(militarySettlementRuntime))
 	initializeMilitarySettlementRuntime(commands)
 	configureGeneratedRpg(rpgRuntime)
-	rpgRuntime.setProjectionPort(new WarcraftRpgProjections())
+	rpgRuntime.setProjectionPort(new WarcraftRpgProjections(rpgRuntime.heroes))
+	militarySettlementRuntime.setRpgRuntime(rpgRuntime)
 	if PHYSICAL_MAP_ID == "bootstrap_runtime_validation"
 		bootstrapOriginSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 		bootstrapOriginSelection.setObserver(campaign)

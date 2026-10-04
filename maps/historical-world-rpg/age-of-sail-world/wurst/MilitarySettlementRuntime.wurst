@@ -3,6 +3,8 @@ package MilitarySettlementRuntime
 import WC3Compatibility
 import CommandRouter
 import ManagementScreenPauseController
+import WarcraftRpgRuntime
+import CampaignTimeline
 
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
@@ -188,6 +190,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 
 public class MilitarySettlementRuntime
 	MilitarySettlementAdapter adapter
+	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
 	SettlementRuntimeState array[1024] settlements
@@ -203,6 +206,8 @@ public class MilitarySettlementRuntime
 	string activeRegionId = ""
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
+	function setRpgRuntime(WarcraftRpgRuntime runtime)
+		rpg=runtime
 	function forceIndex(string id) returns int
 		for i = 0 to forceCount - 1
 			if forces[i].id == id
@@ -381,6 +386,8 @@ public class MilitarySettlementRuntime
 		settlements[found].lastCombatAt = now
 		settlements[found].garrisonStrength = IMaxBJ(0, settlements[found].garrisonStrength - loss)
 		recordLoss(forceId, loss)
+		if rpg != null and loss > 0
+			rpg.worldEventAt("combat",settlementId,loss,getCampaignDay())
 	function replenishGarrison(string settlementId, int amount, int manpowerCost, int supplyCost) returns boolean
 		let found = settlementIndex(settlementId)
 		if found < 0 or settlements[found].underAttack or amount <= 0 or settlements[found].manpower < manpowerCost or settlements[found].supply < supplyCost
@@ -420,6 +427,8 @@ public class MilitarySettlementRuntime
 				forces[i].active = true
 				instantiate(forces[i])
 				adapter.protectRepresentation(forces[i].id, true)
+		if rpg != null
+			rpg.worldEventAt("settlement",settlementId,1,getCampaignDay())
 		return true
 	function releaseCaptureProtection(real now)
 		for i = 0 to settlementCount - 1
