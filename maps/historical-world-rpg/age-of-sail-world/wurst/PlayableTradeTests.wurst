@@ -85,6 +85,8 @@ class Presentation implements TradePresentation
 	original.controller.buy("persist-buy",original.market,original.hold,3)
 	original.selectMarket("london","grain")
 	original.market.shortagePermille=300
+	original.market.productionPermille=775
+	original.market.consumptionPermille=1425
 	original.controller.sell("persist-sell",original.market,original.hold,1,2000)
 	let saved=original.capture()
 	let resumed=new PlayableTradeRuntime()
@@ -100,3 +102,5 @@ class Presentation implements TradePresentation
 	resumed.progress.standing.assertEquals(original.progress.standing)
 	resumed.controller.sell("persist-sell",resumed.market,resumed.hold,1,2000).assertEquals("Transaction already processed.")
 	resumed.market.shortagePermille.assertEquals(300)
+	resumed.market.productionPermille.assertEquals(775)
+	resumed.market.consumptionPermille.assertEquals(1425)

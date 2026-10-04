@@ -249,6 +249,12 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		marketCount++
 		if value.id==settlementId and market.id==settlementId
 			market=value
+	function registerMarketProfile(string marketId,string goodId,int stock,int liquidity,int basePrice,int production,int consumption,int shortage)
+		let value=new RuntimeMarket(marketId,goodId,stock,liquidity,basePrice,IMaxBJ(1,basePrice*920 div 1000))
+		value.productionPermille=production
+		value.consumptionPermille=consumption
+		value.shortagePermille=shortage
+		registerMarket(value)
 	function registerStore(TradeStore value)
 		stores[storeCount]=value
 		storeCount++
@@ -314,7 +320,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				blockade="1"
 			if markets[i].occupiedByHostile
 				occupation="1"
-			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation
+			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation+","+markets[i].productionPermille.toString()+","+markets[i].consumptionPermille.toString()+","+markets[i].previousUnitPrice.toString()
 		var storeState=""
 		for i=0 to storeCount-1
 			if i>0
@@ -368,6 +374,14 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						markets[j].technologyPermille=S2I(compactField(record,8))
 						markets[j].blockaded=compactField(record,9)=="1"
 						markets[j].occupiedByHostile=compactField(record,10)=="1"
+						// Fields 11-13 were added after the first live-trade save
+						// format. Empty values retain generated defaults.
+						if compactField(record,11)!=""
+							markets[j].productionPermille=S2I(compactField(record,11))
+						if compactField(record,12)!=""
+							markets[j].consumptionPermille=S2I(compactField(record,12))
+						if compactField(record,13)!=""
+							markets[j].previousUnitPrice=S2I(compactField(record,13))
 				recordStart=i+1
 		let savedHoldId=tradeField(document,17)
 		if savedHoldId!=""
