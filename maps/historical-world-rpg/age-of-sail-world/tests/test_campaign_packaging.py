@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_campaign import (  # noqa: E402
     PackagingError,
+    _inspect_physical_map,
     _localize_runtime,
     _write_browser_safe_w3x,
     build_campaign,
@@ -41,6 +42,50 @@ if sys.argv[1] == "build":
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_bootstrap_cannot_bypass_binary_structure_inspection(self):
+        physical = load_campaign_config(self.manifest).maps[0]
+        source = self.project / "map/AgeOfSailWorld.w3x"
+        broken = self.project / "broken-bootstrap.w3x"
+        files = {name: (source / name).read_bytes()
+                 for name in ("war3map.w3i", "war3map.w3e", "war3map.wpm", "war3mapUnits.doo")}
+        files["runtime/scenario-runtime.json"] = json.dumps({"settlementDefinitions": []})
+        files["runtime/physical-map.json"] = json.dumps({
+                "physicalMapId": physical.id,
+                "terrain": {"width": 64, "height": 64},
+                "objects": {"settlements": [], "worldMarkerCount": 0, "spawnCount": 1},
+            })
+
+        def package(overrides):
+            with zipfile.ZipFile(broken, "w") as archive:
+                for name, value in (files | overrides).items():
+                    archive.writestr(name, value)
+
+        package({})
+        _inspect_physical_map(physical, broken)
+        marker = struct.pack("<6i", 1, 3, 1, 1650, 3000, 1250)
+        player_at = files["war3map.w3i"].index(marker) + len(marker)
+        for label, name, value in (
+            ("terrain", "war3map.w3e", b"broken"),
+            ("terrain layout", "war3map.w3e", files["war3map.w3e"][:4] + b"\xff" * 4 + files["war3map.w3e"][8:]),
+            ("pathing", "war3map.wpm", files["war3map.wpm"][:-1]),
+            ("pathing layout", "war3map.wpm", files["war3map.wpm"][:4] + b"\xff" * 4 + files["war3map.wpm"][8:]),
+            ("object layout", "war3mapUnits.doo", b"bad!" + files["war3mapUnits.doo"][4:]),
+            ("metadata tail", "war3map.w3i", files["war3map.w3i"][:-1]),
+        ):
+            with self.subTest(label=label):
+                package({name: value})
+                with self.assertRaisesRegex(PackagingError, "campaign inspection stage failed"):
+                    _inspect_physical_map(physical, broken)
+        for label, offset, value in (("player count", player_at, 0),
+                                     ("player slot", player_at + 4, 24),
+                                     ("human controller", player_at + 8, 2)):
+            with self.subTest(label=label):
+                metadata = bytearray(files["war3map.w3i"])
+                struct.pack_into("<i", metadata, offset, value)
+                package({"war3map.w3i": metadata})
+                with self.assertRaisesRegex(PackagingError, "player"):
+                    _inspect_physical_map(physical, broken)
+
     def test_browser_safe_w3x_strips_hm3w_enumeration_wrapper(self):
         raw = Path(self.temp.name) / "raw.mpq"
         wrapped = Path(self.temp.name) / "wrapped.w3x"

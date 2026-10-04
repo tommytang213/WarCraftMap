@@ -20,7 +20,7 @@ jobs:
     env:
       WURST_IMAGE: frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a
       MAP_PROJECT: maps/historical-world-rpg/age-of-sail-world
-      MAP_ARTIFACT: maps/historical-world-rpg/age-of-sail-world/_build/release/AgeOfSailWorldCampaign.w3n
+      RELEASE_ARTIFACT: maps/historical-world-rpg/age-of-sail-world/_build/release/AgeOfSailWorld-phase9-rc1.zip
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -33,13 +33,14 @@ jobs:
 
       - name: Typecheck and package with pinned Wurst image
         run: |
-          artifact_dir="$RUNNER_TEMP/age-of-sail-campaign"
+          artifact_dir="$RUNNER_TEMP/age-of-sail-release"
           mkdir -p "$artifact_dir"
 
           docker run --rm \
             --user root \
             -e MAP_PROJECT \
-            -e MAP_ARTIFACT \
+            -e RELEASE_ARTIFACT \
+            -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \
             "$WURST_IMAGE" \
@@ -49,21 +50,25 @@ jobs:
               apt-get install -y --no-install-recommends python3
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
-              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
-              cp "/tmp/workspace/$MAP_ARTIFACT" /out/AgeOfSailWorldCampaign.w3n
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release_candidate.sh --source-revision $SOURCE_REVISION"
+              cp "/tmp/workspace/$RELEASE_ARTIFACT" /out/AgeOfSailWorld-phase9-rc1.zip
+              cd "/tmp/workspace/$MAP_PROJECT"
+              python3 tooling/verify_ci_release_artifact.py \
+                "/out/AgeOfSailWorld-phase9-rc1.zip" \
+                --source-revision "$SOURCE_REVISION" \
+                --evidence "/out/artifact-evidence.json"
             '
 
-          mkdir -p "$(dirname "$MAP_ARTIFACT")"
-          cp "$artifact_dir/AgeOfSailWorldCampaign.w3n" "$MAP_ARTIFACT"
-
-      - name: Confirm packaged campaign
-        run: test -s "$MAP_ARTIFACT"
+      - name: Confirm verified release payload and evidence
+        run: |
+          test -s "$RUNNER_TEMP/age-of-sail-release/AgeOfSailWorld-phase9-rc1.zip"
+          test -s "$RUNNER_TEMP/age-of-sail-release/artifact-evidence.json"
 
       - name: Upload Age of Sail campaign
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: age-of-sail-world-campaign
-          path: ${{ env.MAP_ARTIFACT }}
+          name: age-of-sail-world-release-candidate
+          path: ${{ runner.temp }}/age-of-sail-release
           if-no-files-found: error
           retention-days: 14
           compression-level: 0

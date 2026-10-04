@@ -13,14 +13,18 @@ Unresolved campaign blockers: **0**
 | `major` | no | A bounded loss of optional content or degraded behavior with a deterministic workaround; no mandatory route or persisted authority is lost. |
 | `minor` | no | Cosmetic, informational, or low-impact behavior that does not impede campaign play. |
 
-## Deterministic campaign journeys
+## Declared campaign journeys and executed save fixtures
 
-| Stable ID | Branch | Seed | Regions | Maps | Result |
+Each row executes save serialization/loading and schema-3 migration. Regions, maps, systems and end dates describe the declared itinerary; they are not evidence of executing that itinerary or native Warcraft saves. The soak below separately executes the headless simulation fixture.
+
+| Stable ID | Declared branch | Seed | Declared regions | Declared maps | Save fixture result |
 |---|---|---:|---:|---:|---|
 | `JOURNEY-ATLANTIC-TO-PACIFIC` | maritime_expansion | 1450 | 7 | 8 | pass |
 | `JOURNEY-ALTERNATE-HISTORY` | alternate_history | 1701 | 7 | 8 | pass |
 
 ## Player-facing runtime acceptance
+
+These stages record source evidence, including test references; they do not establish Lua execution or control-flow reachability.
 
 | System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |
 |---|---:|---:|---:|---:|---:|
@@ -55,4 +59,5 @@ No unresolved or accepted defects were found.
 - 7 hashed release inputs
 - 5 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
-- Fresh start, supported-save migration, manual save, rolling autosave, checkpoints, native save/load, interrupted transition recovery, and representation reconstruction are journey-gated.
+- Journey rows execute campaign-save round trips and migration; their route/system coverage is declared metadata.
+- Native Warcraft save/load, physical-map launches and real-client journeys are not executed by this audit.

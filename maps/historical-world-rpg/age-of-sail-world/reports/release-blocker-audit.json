@@ -54,8 +54,15 @@
   "journeys": [
     {
       "branch": "maritime_expansion",
+      "coverageEvidenceLevel": "declared_journey_metadata",
       "endDate": "1820-12-31",
+      "evidenceLevel": "headless_save_fixture_execution",
+      "executedChecks": [
+        "save_round_trip",
+        "schema_3_migration"
+      ],
       "id": "JOURNEY-ATLANTIC-TO-PACIFIC",
+      "nativeSaveExecutionStatus": "not_run",
       "physicalMaps": [
         "europe_west",
         "africa",
@@ -75,6 +82,7 @@
         "americas_caribbean",
         "pacific"
       ],
+      "routeExecutionStatus": "not_run",
       "saveHash": "2717099903fbe1ca235119f42800e03f73f9fbd460b037374021049ab2225aec",
       "saveSchema": 5,
       "seed": 1450,
@@ -106,8 +114,15 @@
     },
     {
       "branch": "alternate_history",
+      "coverageEvidenceLevel": "declared_journey_metadata",
       "endDate": "1820-12-31",
+      "evidenceLevel": "headless_save_fixture_execution",
+      "executedChecks": [
+        "save_round_trip",
+        "schema_3_migration"
+      ],
       "id": "JOURNEY-ALTERNATE-HISTORY",
+      "nativeSaveExecutionStatus": "not_run",
       "physicalMaps": [
         "americas_south",
         "europe_central_east",
@@ -127,6 +142,7 @@
         "east_asia",
         "pacific"
       ],
+      "routeExecutionStatus": "not_run",
       "saveHash": "45fe90debf0e9e2f45cc3d372c12534d44284916328cd01baf495903688a46fa",
       "saveSchema": 5,
       "seed": 1701,
@@ -189,6 +205,8 @@
     ]
   },
   "runtimeAcceptance": {
+    "evidenceLevel": "source_text_static_heuristic",
+    "executionStatus": "not_run",
     "failures": [],
     "format": "age_of_sail_runtime_acceptance_report_v2",
     "releaseValidationAuthority": "built W3N/W3X artifact gate",
@@ -468,6 +486,7 @@
     ]
   },
   "soak": {
+    "evidenceLevel": "headless_fixture_execution",
     "format": "warcraftmap_full_world_soak_summary_v1",
     "passed": true,
     "runs": [

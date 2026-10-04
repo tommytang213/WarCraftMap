@@ -13,6 +13,7 @@ import os
 import platform
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -101,12 +102,16 @@ def source_revision(explicit: str | None = None) -> str:
 
 
 def authoritative_hashes() -> dict[str, str]:
-    roots = [PROJECT / name for name in ("map", "scenario", "wurst", "docs", "reports", "tooling")]
-    files = [PROJECT / name for name in ("package.json", "physical-maps.json", "wurst.build")]
+    roots = [PROJECT / name for name in ("map", "scenario", "wurst", "wurst-bootstrap", "docs", "reports", "tooling")]
+    files = [PROJECT / name for name in ("package.json", "physical-maps.json", "wurst.build", "wurst_run.args")]
     files += [p for root in roots for p in root.rglob("*") if p.is_file()]
     # Python caches and generated output are never authoritative.
     files = [p for p in files if "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}]
-    return {p.relative_to(PROJECT).as_posix(): sha(p) for p in sorted(set(files))}
+    result = {p.relative_to(PROJECT).as_posix(): sha(p) for p in sorted(set(files))}
+    for root in (PROJECT.parent / "_shared/engine", PROJECT.parent / "_shared/tooling"):
+        for path in sorted(root.rglob("*.py")):
+            result["../" + path.relative_to(PROJECT.parent).as_posix()] = sha(path)
+    return result
 
 
 def tool_versions() -> dict[str, str]:
@@ -165,11 +170,38 @@ def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     _run_gate("tooling/validate_recovery_documentation.py")
     _run_gate("tooling/check_final_performance_budgets.py", "--profile", "development")
     _run_gate("tooling/check_final_performance_budgets.py", "--profile", "minimum_target")
+    # Re-execute the headless soak and production save-fixture paths, and check
+    # report freshness. Declared itineraries do not establish route execution.
+    _run_gate("tooling/release_blocker_audit.py")
     executable_manifest = release_save_compatibility.load_manifest(PROJECT / config["saveCompatibility"])
     fixture_results = [release_save_compatibility.validate_release_fixture(
         release_save_compatibility.expand_fixture(executable_manifest, fixture), executable_manifest["budgets"]
     ) for fixture in executable_manifest["fixtures"]]
     return compatibility, coverage, runtime_report, fixture_results
+
+
+def normalized_map(path: Path) -> dict[str, str]:
+    """Hash decoded file contents, not ZIP/MPQ container representation."""
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as archive:
+            return {name: sha_bytes(archive.read(name)) for name in sorted(archive.namelist())}
+    try:
+        archive = MpqReader(path)
+        members = archive.members()
+        members.pop("(listfile)")  # Enumeration/order is represented by the keys.
+        attributes = members.pop("(attributes)", None)
+        if attributes is not None:
+            # StormLib attributes v100 contains derived CRC/MD5 and file times.
+            # Hash every actual member ourselves; ignore only these container
+            # attributes, never patch flags or an unrecognized metadata layout.
+            version, flags = struct.unpack_from("<II", attributes)
+            row_size = (4 if flags & 1 else 0) + (8 if flags & 2 else 0) + (16 if flags & 4 else 0)
+            sizes = {8 + count * row_size for count in (len(archive.blocks), len(archive.blocks) - 1)}
+            if version != 100 or flags & ~7 or len(attributes) not in sizes:
+                raise ValueError("unsupported MPQ attributes layout")
+        return {name: sha_bytes(value) for name, value in sorted(members.items())}
+    except (KeyError, ValueError, struct.error) as error:
+        raise PackagingError(f"determinism stage failed: cannot enumerate map content: {error}") from error
 
 
 def normalized_campaign(path: Path, campaign_config) -> dict[str, str]:
@@ -185,14 +217,9 @@ def normalized_campaign(path: Path, campaign_config) -> dict[str, str]:
                     row.pop("sha256", None)
             payload = canonical(document)
         elif name.lower().endswith(".w3x"):
-            # Fake/headless builders emit ZIP maps. Real MPQ maps are already
-            # structurally inspected by the campaign builder and use the
-            # deterministic content digest recorded in its manifest.
             with tempfile.NamedTemporaryFile(suffix=".w3x") as nested_file:
                 nested_file.write(payload); nested_file.flush()
-                if zipfile.is_zipfile(nested_file.name):
-                    with zipfile.ZipFile(nested_file.name) as nested:
-                        payload = canonical({n: sha_bytes(nested.read(n)) for n in sorted(nested.namelist())})
+                payload = canonical(normalized_map(Path(nested_file.name)))
         result[name] = sha_bytes(payload)
     return result
 
@@ -284,6 +311,8 @@ def verify_campaign_runtime(campaign_path: Path, campaign_config) -> dict:
     if boundary_ids != configured_boundaries:
         raise PackagingError("runtime acceptance stage failed: packaged transition set differs from physical-boundaries.json")
     return {"status": "pass", "maps": inspected, "origins": len(all_origins or []),
+            "evidenceLevels": ["binary_structure", "packaged_data_consistency", "compiled_text_static_heuristic"],
+            "executionStatus": "not_run",
             "transitions": len(boundary_ids), "systems": sorted(runtime_acceptance.MANDATORY_SYSTEMS)}
 
 
@@ -329,7 +358,12 @@ def verify_release_archive(path: Path, config: dict) -> None:
             raise PackagingError("release inspection stage failed: source revision mismatch")
         if manifest.get("schemaCompatibility", {}).get("supportedSaveSchemas") != [1, 2, 3, 4, 5]:
             raise PackagingError("release inspection stage failed: save-schema contract mismatch")
-        listed = {item["archivePath"]: item for item in manifest["artifacts"] if item["kind"] != "physical-map"}
+        payload_rows = [item for item in manifest["artifacts"] if item["kind"] != "physical-map"]
+        listed = {item["archivePath"]: item for item in payload_rows}
+        metadata_names = {config["archive"]["manifestPath"], config["archive"]["provenancePath"]}
+        if (len(names) != len(set(names)) or len(payload_rows) != len(listed) or
+                set(names) != set(listed) | metadata_names):
+            raise PackagingError("release inspection stage failed: archive and manifest member sets differ or contain duplicates")
         for name in names:
             if name in (config["archive"]["manifestPath"], config["archive"]["provenancePath"]):
                 continue
@@ -339,10 +373,14 @@ def verify_release_archive(path: Path, config: dict) -> None:
         campaign_bytes = archive.read(config["archive"]["campaignPath"])
         with tempfile.NamedTemporaryFile(suffix=".w3n") as campaign_file:
             campaign_file.write(campaign_bytes); campaign_file.flush()
-            inspect_campaign(load_campaign_config(PROJECT / config["campaignManifest"]), Path(campaign_file.name))
-        expected_maps = {x.id for x in load_campaign_config(PROJECT / config["campaignManifest"]).maps}
-        if {x["mapId"] for x in manifest["artifacts"] if x["kind"] == "physical-map"} != expected_maps:
-            raise PackagingError("release inspection stage failed: physical-map assignment set mismatch")
+            campaign_config = load_campaign_config(PROJECT / config["campaignManifest"])
+            inspect_campaign(campaign_config, Path(campaign_file.name))
+            # Recheck the extracted upload payload, not only the pre-ZIP build.
+            verify_campaign_runtime(Path(campaign_file.name), campaign_config)
+            actual_maps = _campaign_rows(Path(campaign_file.name), campaign_config)
+        recorded_maps = [item for item in manifest["artifacts"] if item["kind"] == "physical-map"]
+        if sorted(recorded_maps, key=lambda row: row["mapId"]) != sorted(actual_maps, key=lambda row: row["mapId"]):
+            raise PackagingError("release inspection stage failed: physical-map metadata/checksums differ from the uploaded campaign")
 
 
 def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None, revision: str | None = None) -> Path:
@@ -399,7 +437,11 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "runtimeTarget": target,
             "schemaCompatibility": {"scenarioVersion": config["scenarioVersion"], "currentSaveSchema": save["campaign"]["current"], "supportedSaveSchemas": save["campaign"]["supportedSources"]},
             "artifacts": rows,
-            "smokeJourneys": {"uninterrupted": "pass", "saveResume": "pass", "crossMap": "pass", "remoteCommand": "pass", "representationLoss": "pass", "recovery": "pass", "supportedSaveLoadMigration": "pass"},
+            "smokeJourneys": {"evidenceLevel": "real_client_execution", "status": "not_run"},
+            "headlessCampaignJourneys": {"evidenceLevel": "headless_fixture_execution", "status": "pass",
+                                         "executedChecks": ["full_world_soak.smoke", "campaign_save_round_trip_and_migration"],
+                                         "routeExecutionStatus": "not_run", "nativeSaveExecutionStatus": "not_run",
+                                         "verification": "tooling/release_blocker_audit.py"},
             "saveMigrationFixtures": fixture_results,
             "artifactValidation": artifact_validation,
         }

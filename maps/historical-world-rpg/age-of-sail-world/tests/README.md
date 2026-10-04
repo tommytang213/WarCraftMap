@@ -20,9 +20,11 @@ Player testing is a late release gate, not the routine development loop.
 
 The Phase 8 integrated release-blocker gate is repository controlled by
 `scenario/release-blocker-gate.json`. It classifies campaign-blocking and
-unclassified critical failures, runs deterministic whole-campaign journeys,
-audits tracked reports and release inputs, and verifies that checked-in
-machine/human reports are current:
+unclassified critical failures, runs the headless soak and production
+campaign-save round-trip/migration fixtures, audits tracked reports and release
+inputs, and verifies that checked-in machine/human reports are current.
+Journey routes and system coverage are declared metadata; this command does
+not execute physical-map transitions or native Warcraft saves:
 
 ```sh
 python3 tooling/release_blocker_audit.py

@@ -105,6 +105,23 @@ class PackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(PackagingError, "stale generated data.*wurst.build"):
             verify_generated(config, generated)
 
+    def test_explicit_compiler_options_are_copied_and_provenance_checked(self):
+        from package_wurst_map import _assemble
+        config = load_config(self.project / "package.json")
+        generated = self.project / "_build/generated"
+        args = self.project / "wurst_run.args"
+        generate(config, generated)
+        compiled = _assemble(config, self.project / "_build/options", generated)
+        self.assertEqual(args.read_bytes(), (compiled / args.name).read_bytes())
+        flags = args.read_text().splitlines()
+        self.assertNotIn("+opt", flags)
+        self.assertNotIn("-opt", flags)
+        self.assertIn("+inline", flags)
+        self.assertIn("+localOptimizations", flags)
+        args.write_text(args.read_text() + "\n+opt\n")
+        with self.assertRaisesRegex(PackagingError, "stale generated data.*wurst_run.args"):
+            verify_generated(config, generated)
+
     def test_changed_terrain_source_is_rejected(self):
         config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
         generate(config, generated)

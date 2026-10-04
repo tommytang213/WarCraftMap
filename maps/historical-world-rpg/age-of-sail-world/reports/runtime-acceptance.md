@@ -2,7 +2,7 @@
 
 Result: **PASS**
 
-Source readiness is not release validation. Built W3N/W3X inspection supplies the final gate.
+Each stage below records source text found, including references to tests; this audit does not execute those tests or establish control-flow reachability. Built W3N/W3X structure and compiled-text checks are separate from real-client smoke.
 
 | System | Data | Headless | Runtime | Player-facing | Release validated |
 |---|---:|---:|---:|---:|---:|
@@ -27,7 +27,7 @@ Source readiness is not release validation. Built W3N/W3X inspection supplies th
 | `religion` | yes | yes | yes | yes | artifact gate |
 | `piracy` | yes | yes | yes | yes | artifact gate |
 
-## Compiled-runtime smoke journeys
+## Declared smoke journeys (source references only)
 
 - `new-campaign-core-loops`
 - `save-travel-remote-return`

@@ -73,6 +73,16 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         self.assertEqual(1, len(compatibility["authoritySha256"]))
         self.assertIn(compatibility["manifest"], self.report["releaseInputs"])
 
+    def test_declared_itineraries_do_not_claim_route_or_native_save_execution(self):
+        self.assertEqual("headless_fixture_execution", self.report["soak"]["evidenceLevel"])
+        for journey in self.report["journeys"]:
+            self.assertEqual("headless_save_fixture_execution", journey["evidenceLevel"])
+            self.assertEqual(["save_round_trip", "schema_3_migration"], journey["executedChecks"])
+            self.assertEqual("declared_journey_metadata", journey["coverageEvidenceLevel"])
+            self.assertEqual("not_run", journey["routeExecutionStatus"])
+            self.assertEqual("not_run", journey["nativeSaveExecutionStatus"])
+        self.assertIn("not executed by this audit", audit.render_markdown(self.report))
+
     def test_unknown_critical_class_cannot_escape_unclassified_gate(self):
         finding = audit._finding("INJECT-UNKNOWN-CRITICAL", "start_failure", "fixture/unknown",
                                  "unknown failure")

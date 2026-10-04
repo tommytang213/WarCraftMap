@@ -22,6 +22,37 @@ class MaterializationError(ValueError):
     pass
 
 
+def _resize_map_info(data: bytes, width: int, height: int) -> bytes:
+    """Resize the supported W3I header with terrain, preserving camera insets.
+
+    The rest of the version-specific layout (players, forces, etc.) is unchanged
+    and is independently validated by the artifact checker.
+    """
+    try:
+        version = struct.unpack_from("<i", data)[0]
+        if version not in (31, 33):
+            raise MaterializationError(f"unsupported W3I resize layout: {version}")
+        offset = 28  # version/save/editor/game-version tuple, then four strings
+        for _ in range(4):
+            offset = data.index(0, offset) + 1
+        bounds = list(struct.unpack_from("<8f", data, offset))
+        left, right, bottom, top, old_width, old_height = struct.unpack_from("<6i", data, offset + 32)
+        if min(left, right, bottom, top) < 0 or width <= left + right or height <= bottom + top:
+            raise MaterializationError("invalid W3I camera margins for generated terrain")
+        dx = (width - old_width - left - right) * 64.0
+        dy = (height - old_height - bottom - top) * 64.0
+        for i in (0, 4): bounds[i] -= dx
+        for i in (2, 6): bounds[i] += dx
+        for i in (1, 7): bounds[i] -= dy
+        for i in (3, 5): bounds[i] += dy
+        result = bytearray(data)
+        struct.pack_into("<8f", result, offset, *bounds)
+        struct.pack_into("<2i", result, offset + 48, width - left - right, height - bottom - top)
+        return bytes(result)
+    except (ValueError, struct.error) as error:
+        raise MaterializationError(f"cannot resize malformed W3I: {error}") from error
+
+
 def _decode(instance: dict) -> list[int]:
     cells = []
     for value, count in instance["surfaceEncoding"]["runs"]:
@@ -141,11 +172,17 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
         width, height, cells, layouts = _compose(docs, set(physical.regional_instance_ids))
     else:
         # Purpose-built encounter chapters have no persistent regional
-        # authority. They are nevertheless a real navigable play space.
+        # authority. Bound their navigable water with the same blocked void
+        # used around composed regional rasters. The perimeter is not land:
+        # vessels can use the interior but cannot leave the encounter arena.
         width = height = 64
-        cells, layouts = [2] * (width * height), {physical.id: (0, 0, width, height)}
+        cells = [2 if 0 < x < width - 1 and 0 < y < height - 1 else 0
+                 for y in range(height) for x in range(width)]
+        layouts = {physical.id: (0, 0, width, height)}
     map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
     map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
+    info_path = map_dir / "war3map.w3i"
+    info_path.write_bytes(_resize_map_info(info_path.read_bytes(), width, height))
     authored = _positions(project)
     placed, records = [], []
     for settlement in sorted(runtime.get("settlementDefinitions", []), key=lambda row: row["id"]):

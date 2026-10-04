@@ -73,15 +73,34 @@ GitHub CI performs Wurst typechecking using the official/community Wurst Docker 
 CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
 
 The `Age of Sail campaign artifact` workflow runs the repository-controlled
-`./tooling/package_campaign.sh` command with an immutable Wurst container image,
-after source and world validation. Successful workflow runs currently retain the packaged
-`AgeOfSailWorldCampaign.w3n` for 14 days as the `age-of-sail-world-campaign`
-artifact. It contains every map configured by `physical-maps.json` in one
-single-player campaign MPQ, with Warcraft `war3campaign.w3f` title, description,
-and ordered chapter metadata. `Maps/AgeOfSailWorld.w3x` is explicitly the
-bootstrap/runtime-validation map, not the final whole-world container. Cross-map
-state transfer and transitions remain separate runtime work. Maintainers can download CI artifacts from the **Artifacts**
-section of the run's GitHub Actions summary. CI output is never committed as a release.
+`./tooling/package_release_candidate.sh` command with an immutable Wurst container
+image, after source and world validation. It performs two clean campaign builds
+and the release gates described below. Before upload,
+`verify_ci_release_artifact.py` reopens the copied ZIP, checks the nested campaign
+and maps, requires both embedded source revisions to match `GITHUB_SHA`, and records
+that ZIP's SHA-256 and size in `artifact-evidence.json`.
+
+Successful runs retain `AgeOfSailWorld-phase9-rc1.zip` and its evidence for 14 days
+as the `age-of-sail-world-release-candidate` artifact. The ZIP contains the
+`AgeOfSailWorldCampaign.w3n` campaign, every map configured by `physical-maps.json`,
+English documentation, and build provenance. Maintainers can download it from
+the **Artifacts** section of the GitHub Actions run. Standalone W3X/W3N packaging
+is diagnostic build evidence; passing automated RC checks does not establish
+client playability. Status remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke` until the target-client smoke
+is confirmed. CI output is never committed as source.
+
+`wurst_run.args` pins the production compiler options and is copied into every
+isolated build with its hash in provenance. Inlining and local optimization stay
+enabled; identifier compression is disabled because the pinned compiler emitted
+different generated names across clean builds. Determinism checks still compare
+the exact decoded Lua and gameplay bytes. Only understood MPQ container metadata
+is excluded from that comparison; uploaded files retain their exact byte hashes.
+Source references and compiled call/registration matches are explicitly static
+evidence. The RC gate separately executes the headless soak and campaign-save
+fixtures. Declared journey itineraries are metadata, not evidence of executing
+physical-map transitions or native Warcraft saves. None of these checks
+establishes successful real-client execution.
 
 ## Runtime map pipeline
 
@@ -138,7 +157,7 @@ and bootstrap-marker checks before publishing the release path.
 
 Authoritative inputs, generated runtime data, compiler settings, build order,
 and the release filename are deterministic. Wurst/StormLib controls MPQ block
-ordering, compression, and archive metadata that the repository tooling cannot
-normalize, so byte-for-byte `.w3x` identity is not promised across different
-Grill, JVM, or StormLib versions. Use the pinned CI container when archive-byte
-comparison matters.
+ordering, compression, and archive metadata. The RC verifier compares decoded
+members while excluding only understood container metadata; byte-for-byte `.w3x`
+identity is not promised across different Grill, JVM, or StormLib versions.
+Use the pinned CI container when comparing builds.

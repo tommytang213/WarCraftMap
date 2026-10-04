@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Executable/structural release acceptance for Warcraft 3.0 campaigns."""
+"""Source/compiled-text heuristics and binary structure checks for campaigns."""
 from __future__ import annotations
 import argparse, hashlib, json, re, struct, sys, zipfile
 from pathlib import Path
 
 PROJECT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(PROJECT/"tooling"))
-from forsaken_kingdom_map import MapInfoError, validate_current_w3i
+from forsaken_kingdom_map import MapInfoError, validate_w3i_structure
 MANIFEST=PROJECT/"scenario/runtime-integration.json"
 REPORT_JSON=PROJECT/"reports/runtime-acceptance.json"; REPORT_MD=PROJECT/"reports/runtime-acceptance.md"
 FORMAT="age_of_sail_runtime_integration_v1"
 STAGES=("dataComplete","headlessSimulationComplete","runtimeIntegrated","playerFacingComplete","releaseValidated")
 MANDATORY_SYSTEMS=frozenset({"campaign_launch","origin_selection","country_diplomacy","government_rewards","trade","army_fleet_control","city_capture","garrisons","administration","heroes","inventory_equipment","technology_institutions","quests_journal","treasures_discovery","religion","piracy","save_autosave_load","cross_map_travel","world_map","remote_management"})
-EXECUTABLE_PROOFS={
+COMPILED_TEXT_REQUIREMENTS={
  "campaign_launch":({"initializePlayableCampaignRuntime","installCommandRegistry"},set()),
  "origin_selection":({"registerOriginSelection","configureGeneratedOrigins","compatLoadPhysicalMap"},{"origin"}),
  "country_diplomacy":({"configureGeneratedCountryInteractions"},{"country","peace"}),
@@ -88,18 +88,18 @@ def audit_sources(path=MANIFEST):
   if not ok: failures+=missing
  uncovered=sorted(required_ids-covered)
  if uncovered: failures.append(f"runtime smoke journeys omit required systems: {uncovered}")
- return {"format":"age_of_sail_runtime_acceptance_report_v2","status":"pass" if not failures else "fail","stages":list(STAGES),"systems":rows,"failures":failures,"releaseValidationAuthority":"built W3N/W3X artifact gate","smokeJourneys":[x["id"] for x in manifest.get("smokeJourneys",[])]}
+ return {"format":"age_of_sail_runtime_acceptance_report_v2","status":"pass" if not failures else "fail","stages":list(STAGES),"systems":rows,"failures":failures,"evidenceLevel":"source_text_static_heuristic","executionStatus":"not_run","releaseValidationAuthority":"built W3N/W3X artifact gate","smokeJourneys":[x["id"] for x in manifest.get("smokeJourneys",[])]}
 
 def render_markdown(report):
- lines=["# Playable runtime acceptance","",f"Result: **{report['status'].upper()}**","","Source readiness is not release validation. Built W3N/W3X inspection supplies the final gate.","","| System | Data | Headless | Runtime | Player-facing | Release validated |","|---|---:|---:|---:|---:|---:|"]
+ lines=["# Playable runtime acceptance","",f"Result: **{report['status'].upper()}**","","Each stage below records source text found, including references to tests; this audit does not execute those tests or establish control-flow reachability. Built W3N/W3X structure and compiled-text checks are separate from real-client smoke.","","| System | Data | Headless | Runtime | Player-facing | Release validated |","|---|---:|---:|---:|---:|---:|"]
  for row in report["systems"]:
   stage=row["stages"]; mark=lambda key:"yes" if stage[key] else "artifact gate"
   lines.append(f"| `{row['id']}` | {mark('dataComplete')} | {mark('headlessSimulationComplete')} | {mark('runtimeIntegrated')} | {mark('playerFacingComplete')} | {mark('releaseValidated')} |")
- lines += ["","## Compiled-runtime smoke journeys",""]+[f"- `{x}`" for x in report["smokeJourneys"]]+["","## Failures",""]
+ lines += ["","## Declared smoke journeys (source references only)",""]+[f"- `{x}`" for x in report["smokeJourneys"]]+["","## Failures",""]
  lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["No unresolved source-readiness failures. The RC packager supplies the built-artifact gate; real-client smoke is tracked separately."]
  return "\n".join(lines)+"\n"
 
-def _lua_code_and_strings(script):
+def _lua_code_and_strings(script, string_tokens=False):
  strings=[]; out=[]; i=0
  while i<len(script):
   if script.startswith("--[[",i):
@@ -111,9 +111,35 @@ def _lua_code_and_strings(script):
    while j<len(script) and script[j]!=quote:
     if script[j]=="\\" and j+1<len(script): value.extend(script[j:j+2]); j+=2
     else: value.append(script[j]); j+=1
-   strings.append("".join(value)); out.append(" "); i=min(len(script),j+1); continue
+   out.append(f"__literal_{len(strings)}__" if string_tokens else " "); strings.append("".join(value)); i=min(len(script),j+1); continue
   out.append(script[i]); i+=1
  return "".join(out),strings
+
+def _compiled_call_evidence(text):
+ # The pinned compiler renames functions, but supplies source-call locations as
+ # the final argument of actual calls. Associate those with defined callees;
+ # a diagnostic string on its own must never count as a production call.
+ code,strings=_lua_code_and_strings(text, string_tokens=True)
+ definitions=set(re.findall(r"\bfunction\s+(\w+)\s*\(",code))
+ code=re.sub(r"\bfunction\s+[A-Za-z_]\w*\s*\(","function (",code)
+ calls=set(re.findall(r"(?<![\w.])([A-Za-z_]\w*)\s*\(",code))
+ registrations=set()
+ registry_aliases=set(re.findall(r"\bCommandRegistry\.CommandRegistry_register\s*=\s*(\w+)",code)) & definitions
+ def literal(token):
+  match=re.fullmatch(r"__literal_(\d+)__",token.strip())
+  return strings[int(match[1])] if match else None
+ for match in re.finditer(r"\b(\w+)\s*\(([^()\n]*)\)",code):
+  callee,args=match[1],match[2].split(',')
+  trace=literal(args[-1])
+  if callee in definitions and trace:
+   origin=re.fullmatch(r"when calling (\w+) in [\w]+, line \d+",trace)
+   if origin: calls.add(origin[1])
+  if callee in registry_aliases and len(args)>1:
+   command=literal(args[1])
+   if command: registrations.add(command)
+ for match in re.finditer(r"(?:\.|:)register\s*\(\s*(__literal_\d+__)",code):
+  registrations.add(literal(match[1]))
+ return calls,registrations
 
 def verify_compiled_script(script,path=MANIFEST):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace"); failures=[]
@@ -122,30 +148,34 @@ def verify_compiled_script(script,path=MANIFEST):
  if longest>MAX_LUA_LINE_BYTES: failures.append(f"compiled Lua line exceeds {MAX_LUA_LINE_BYTES} byte budget")
  code,strings=_lua_code_and_strings(text)
  if max((len(x.encode()) for x in strings),default=0)>MAX_LUA_STRING_BYTES: failures.append(f"compiled Lua string exceeds {MAX_LUA_STRING_BYTES} byte budget")
- call_code=re.sub(r"\bfunction\s+[A-Za-z_]\w*\s*\(","function (",code)
- calls=set(re.findall(r"(?<![\w.])([A-Za-z_]\w*)\s*\(",call_code))-{"if","for","while","function"}
- registrations=set(re.findall(r"(?:\.|:)register\s*\(\s*['\"]([^'\"]+)['\"]",text))
+ calls,registrations=_compiled_call_evidence(text)
  for sid in sorted(x["id"] for x in load_manifest(path)["systems"] if x.get("releaseRequired")):
-  required_calls,required_commands=EXECUTABLE_PROOFS.get(sid,(set(),set()))
-  if not required_calls: failures.append(f"{sid}: no executable artifact proof is defined"); continue
+  required_calls,required_commands=COMPILED_TEXT_REQUIREMENTS.get(sid,(set(),set()))
+  if not required_calls: failures.append(f"{sid}: no compiled-text requirement is defined"); continue
   missing=sorted(required_calls-calls); commands=sorted(required_commands-registrations)
   if missing: failures.append(f"{sid}: production calls absent: {', '.join(missing)}")
   if commands: failures.append(f"{sid}: production command registrations absent: {', '.join(commands)}")
  if not re.search(r"\bfunction\s+(?:main|config)\s*\(",code): failures.append("compiled Lua has no Warcraft main/config entry point")
- return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw),"longestLineBytes":longest,"executableCalls":len(calls),"commandRegistrations":len(registrations)}}
+ return {"status":"pass" if not failures else "fail","failures":failures,"evidenceLevel":"compiled_text_static_heuristic","metrics":{"compiledLuaBytes":len(raw),"longestLineBytes":longest,"callNameMatches":len(calls),"commandRegistrations":len(registrations)}}
 
 def verify_compiled_bootstrap(script):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace")
  failures=[]
+ calls,_=_compiled_call_evidence(text)
+ text,_=_lua_code_and_strings(text)
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
  for token in BOOTSTRAP_FORBIDDEN_REGISTRATIONS:
-  if re.search(rf"\b{token}\s*\(",text): failures.append(f"bootstrap contains regional registration: {token}")
- next_level=re.search(r"\bSetNextLevel\s*\(",text); end_game=re.search(r"\bEndGame\s*\(",text)
- if not next_level: failures.append("bootstrap compiled Lua does not call the SetNextLevel native")
+  if token in calls: failures.append(f"bootstrap contains regional registration: {token}")
+ # A BJ assignment alone is not a handoff: EndGame does not consume it.
+ # Require the destination-consuming native, whether inside a renamed helper
+ # or inlined at its call site. This is still textual, not reachability proof.
+ change_level=re.search(r"\bChangeLevel\s*\(",text)
+ destination_effect=change_level; end_game=re.search(r"\b(?:ChangeLevel|EndGame)\s*\(",text)
+ if not destination_effect: failures.append("bootstrap compiled Lua does not select a campaign destination")
  if not end_game: failures.append("bootstrap compiled Lua does not end the selector map")
- if next_level and end_game and next_level.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
+ if destination_effect and end_game and destination_effect.start()>end_game.start(): failures.append("bootstrap ends before selecting the destination map")
  if "TimerStart" not in text or "showPage" not in text: failures.append("bootstrap does not defer and open origin selection")
- return {"status":"pass" if not failures else "fail","failures":failures,"metrics":{"compiledLuaBytes":len(raw)}}
+ return {"status":"pass" if not failures else "fail","failures":failures,"evidenceLevel":"compiled_text_static_heuristic","metrics":{"compiledLuaBytes":len(raw)}}
 
 def _archive_read(path,name):
  if zipfile.is_zipfile(path):
@@ -158,14 +188,15 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
   script=_archive_read(path,"war3map.lua"); w3e=_archive_read(path,"war3map.w3e"); wpm=_archive_read(path,"war3map.wpm"); units=_archive_read(path,"war3mapUnits.doo")
   runtime=json.loads(_archive_read(path,"runtime/scenario-runtime.json")); physical=json.loads(_archive_read(path,"runtime/physical-map.json")); w3i=_archive_read(path,"war3map.w3i")
  except (KeyError,OSError,ValueError,json.JSONDecodeError) as error: raise RuntimeAcceptanceError(f"built map is missing or has invalid required content: {error}") from error
- failures=list((verify_compiled_bootstrap(script) if bootstrap is True else verify_compiled_script(script))["failures"]); tw=th=objects=0
+ compiled=verify_compiled_bootstrap(script) if bootstrap is True else verify_compiled_script(script)
+ failures=list(compiled["failures"]); tw=th=objects=0
  try:
   offset=13; ground=struct.unpack_from("<I",w3e,offset)[0]; offset+=4+ground*4; cliffs=struct.unpack_from("<I",w3e,offset)[0]; offset+=4+cliffs*4
   tw,th=struct.unpack_from("<II",w3e,offset); pw,ph=struct.unpack_from("<II",wpm,8); objects=struct.unpack_from("<I",units,12)[0]
   cells=w3e[offset+16:]; paths=wpm[16:]
-  if w3e[:4]!=b"W3E!" or len(cells)!=tw*th*7 or tw<3 or th<3: failures.append("terrain binary is malformed")
-  if wpm[:4]!=b"MP3W" or (pw,ph)!=((tw-1)*4,(th-1)*4) or len(paths)!=pw*ph: failures.append("pathing binary does not match terrain")
-  if units[:4]!=b"W3do" or objects<1 or b"sloc" not in units: failures.append("map has no valid player spawn representation")
+  if w3e[:8]!=b"W3E!"+struct.pack("<I",11) or not 1<=ground<=16 or not 0<=cliffs<=16 or len(cells)!=tw*th*7 or tw<3 or th<3: failures.append("terrain binary is malformed")
+  if wpm[:8]!=b"MP3W\0\0\0\0" or (pw,ph)!=((tw-1)*4,(th-1)*4) or len(paths)!=pw*ph: failures.append("pathing binary does not match terrain")
+  if units[:12]!=b"W3do"+struct.pack("<II",8,11) or objects<1 or b"sloc" not in units: failures.append("map has no valid player spawn representation")
   vertices={cells[i:i+7] for i in range(0,len(cells),7)}
   if bootstrap is not True and (len(vertices)<2 or len(set(paths))<2): failures.append("physical terrain/pathing is blank or placeholder-only")
  except struct.error: failures.append("terrain/pathing/object binary is truncated")
@@ -174,12 +205,13 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
  if bootstrap is not None and physical.get("bootstrap") is not bool(bootstrap): failures.append("physical-map bootstrap identity is inconsistent")
  if bootstrap is not True and (not runtime.get("ids",{}).get("polities") or not runtime.get("regionalGeography")): failures.append("compiled runtime data is not populated")
  if bootstrap is True and (runtime.get("settlementDefinitions") or runtime.get("physicalBoundaries")): failures.append("bootstrap runtime contains regional gameplay records")
- canonical_w3i=PROJECT/"map/AgeOfSailWorld.w3x/war3map.w3i"
- try: validate_current_w3i(w3i)
+ try: info=validate_w3i_structure(w3i)
  except MapInfoError as error: failures.append(str(error))
- if canonical_w3i.is_file() and w3i!=canonical_w3i.read_bytes():
-  failures.append("compiled W3I metadata/player slots differ from locked current-client fixture")
- return {"status":"pass" if not failures else "fail","failures":failures,"mapId":map_id,"bootstrap":physical.get("bootstrap"),"terrainSha256":hashlib.sha256(w3e).hexdigest(),"pathingSha256":hashlib.sha256(wpm).hexdigest(),"objectCount":objects,"width":tw-1 if tw else 0,"height":th-1 if th else 0}
+ else:
+  left,right,bottom,top=info["cameraComplements"]
+  expected=(tw-1-left-right,th-1-bottom-top)
+  if (info["playableWidth"],info["playableHeight"])!=expected: failures.append("W3I playable dimensions and camera bounds do not match terrain")
+ return {"status":"pass" if not failures else "fail","failures":failures,"mapId":map_id,"bootstrap":physical.get("bootstrap"),"compiledScript":compiled,"executionStatus":"not_run","terrainSha256":hashlib.sha256(w3e).hexdigest(),"pathingSha256":hashlib.sha256(wpm).hexdigest(),"objectCount":objects,"width":tw-1 if tw else 0,"height":th-1 if th else 0}
 
 def verify_built_map(path,expected_map_id=None,bootstrap=None):
  result=inspect_built_map(path,expected_map_id,bootstrap)
