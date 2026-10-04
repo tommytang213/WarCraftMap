@@ -1,5 +1,6 @@
 import copy
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -10,6 +11,8 @@ import campaign_save as saves
 import release_save_compatibility as release
 
 MANIFEST = Path(__file__).resolve().parents[1] / "scenario/compatibility/release-save-v1.json"
+LIVE_CODEC = Path(__file__).resolve().parents[1] / "wurst/PlayableCampaignRuntime.wurst"
+LIVE_CODEC_TESTS = Path(__file__).resolve().parents[1] / "wurst/PlayableCampaignRuntimeTests.wurst"
 
 
 class ReleaseSaveCompatibilityTests(unittest.TestCase):
@@ -26,6 +29,26 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         partial.register(5, lambda d: dict(d, schemaVersion=6))
         self.assertEqual((5, 6), partial.supported_source_versions())
         with self.assertRaises(saves.IncompatibleSaveError): partial.migration_path(4)
+
+    def test_release_manifest_matches_compiled_live_codec_contract(self):
+        source = LIVE_CODEC.read_text(encoding="utf-8")
+        tests = LIVE_CODEC_TESTS.read_text(encoding="utf-8")
+        current = int(re.search(r"CAMPAIGN_SAVE_SCHEMA_CURRENT\s*=\s*(\d+)", source).group(1))
+        oldest = int(re.search(r"CAMPAIGN_SAVE_SCHEMA_OLDEST\s*=\s*(\d+)", source).group(1))
+        advertised = self.manifest["matrix"]["campaign"]
+        live = self.manifest["liveCodec"]
+        supported = list(range(oldest, current + 1))
+        self.assertEqual(advertised["current"], current)
+        self.assertEqual(advertised["supportedSources"], supported)
+        self.assertEqual(live["current"], current)
+        self.assertEqual(live["supportedSources"], supported)
+        self.assertIn("campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT", source)
+        self.assertIn("for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT", tests)
+        self.assertEqual(
+            {"identity", "travel", "diplomacy", "rewards", "rpg",
+             "militarySettlements", "trade", "religion", "piracy"},
+            set(live["authorityDomains"]),
+        )
 
     def test_every_immutable_fixture_migrates_and_resaves_deterministically(self):
         results = [release.validate_release_fixture(f, self.manifest["budgets"]) for f in self.fixtures]

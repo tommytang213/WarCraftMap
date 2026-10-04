@@ -24,6 +24,9 @@ public interface CampaignRuntimeExtension
 
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
+/** These values mirror the release-save manifest and are checked by the release gate. */
+public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 5
+public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
 
@@ -103,7 +106,7 @@ function withoutTravelAuthority(string document) returns string
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort
-	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
+	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
 	string staged = ""
 	string lastLoadedPiracyAuthority = ""
 	boolean transitionOpen = false
@@ -157,7 +160,7 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";trade=" + extension.capture()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
-		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
+		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";world=") < 0 or candidate.indexOf(";players=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or candidate.indexOf(";trade=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
 		if rpg != null and not rpg.validateState(lastAuthorityValue(candidate,"rpg"))
@@ -211,7 +214,10 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		return true
 	override function activateAuthoritativeState(string candidate)
-		authority = withoutCountryAuthority(staged)
+		if countries != null
+			authority = withoutCountryAuthority(staged)
+		else
+			authority = staged
 		staged = ""
 	override function diagnostic() returns string
 		return lastDiagnostic
@@ -222,12 +228,16 @@ function runtimeChecksum(string value) returns int
 		result = ModuloInteger(result * 33 + StringHash(SubString(value, i, i + 1)), 2147483000)
 	return result
 
+/** Test fixtures use the same envelope constructor as production encoding. */
+public function campaignSaveEnvelope(int schema, string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+	let body = "schema=" + schema.toString() + "|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
+	return "integrity=" + runtimeChecksum(body).toString() + "|" + body
+
 /** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
 public class PlayableCampaignCodec implements CampaignSaveCodec
 	string lastDiagnostic = ""
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
-		let body = "schema=2|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
-		return "integrity=" + runtimeChecksum(body).toString() + "|" + body
+		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, authoritativeState)
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
 		let marker = "|schema="
 		let cut = payload.indexOf(marker)
@@ -239,10 +249,13 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		if runtimeChecksum(body) != expected
 			lastDiagnostic = "save integrity check failed"
 			return ""
-		let currentPrefix = "schema=2|slot=" + expectedSlotId + "|"
-		let priorPrefix = "schema=1|slot=" + expectedSlotId + "|"
-		let legacyPrefix = "schema=0|slot=" + expectedSlotId + "|"
-		if body.indexOf(currentPrefix) != 0 and body.indexOf(priorPrefix) != 0 and body.indexOf(legacyPrefix) != 0
+		let schemaCut = body.indexOf("|slot=")
+		if not body.startsWith("schema=") or schemaCut < 0
+			lastDiagnostic = "save envelope is malformed"
+			return ""
+		let sourceSchema = S2I(SubString(body, 7, schemaCut))
+		let slotPrefix = "schema=" + sourceSchema.toString() + "|slot=" + expectedSlotId + "|"
+		if sourceSchema < CAMPAIGN_SAVE_SCHEMA_OLDEST or sourceSchema > CAMPAIGN_SAVE_SCHEMA_CURRENT or body.indexOf(slotPrefix) != 0
 			lastDiagnostic = "save schema or slot is incompatible"
 			return ""
 		let stateMarker = "|state="
@@ -251,35 +264,29 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			lastDiagnostic = "save has no authoritative state"
 			return ""
 		var decoded = SubString(body, stateCut + StringLength(stateMarker), StringLength(body))
-		if body.indexOf(legacyPrefix) == 0
-			// Schema 0 predates explicit remote-order and discovery domains.
-			if decoded.startsWith("v0;")
-				decoded = "v1;" + SubString(decoded, 3, StringLength(decoded))
-			if decoded.indexOf(";discovery=") < 0
-				decoded += ";discovery="
-			if decoded.indexOf(";orders=") < 0
-				decoded += ";orders="
-			if decoded.indexOf(";trade=") < 0
-				decoded += ";trade="
-		// Saves produced before country integration remain release-schema compatible.
-		if decoded.indexOf(";diplomacy=") < 0
+		// Each step is additive and guarded, making repeated in-memory migration idempotent.
+		// Schema 2 introduced diplomacy and contribution rewards.
+		if sourceSchema < 2 and decoded.indexOf(";diplomacy=") < 0
 			decoded += ";diplomacy=v1"
-		if decoded.indexOf(";rewards=") < 0
+		if sourceSchema < 2 and decoded.indexOf(";rewards=") < 0
 			decoded += ";rewards=v1"
 		if decoded.startsWith("v0;") or decoded.startsWith("v1;")
 			decoded = "v2;" + SubString(decoded,3,StringLength(decoded))
-		if body.indexOf(currentPrefix) != 0 and decoded.indexOf(";rpg=") < 0
+		// Schema 3 introduced RPG character and inventory authority.
+		if sourceSchema < 3 and decoded.indexOf(";rpg=") < 0
 			decoded += ";rpg=v1"
-		// Schema 2 adds stable Warcraft military/settlement authority. Older saves
-		// migrate transactionally from the scenario-configured initial authority.
-		if decoded.indexOf(";militarySettlements=") < 0
+		// Schema 4 introduced military/settlement and religion authority.
+		if sourceSchema < 4 and decoded.indexOf(";militarySettlements=") < 0
 			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
-		if decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
+		if sourceSchema < 4 and decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
 			decoded += ";religion=" + religionMigrationRuntime.captureState()
-		// Piracy was introduced after schema 2. Pre-domain saves migrate to the
-		// configured empty authority; current saves must carry their own domain.
-		if decoded.indexOf(";piracy=") < 0 and piracyMigrationRuntime != null
+		// Schema 5 introduced piracy. Migration uses a pristine configured authority.
+		if sourceSchema < 5 and decoded.indexOf(";piracy=") < 0 and piracyMigrationRuntime != null
 			decoded += ";piracy=" + piracyMigrationRuntime.migrationAuthority()
+		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
+		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
+			lastDiagnostic = "save is missing authority required by its schema"
+			return ""
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string

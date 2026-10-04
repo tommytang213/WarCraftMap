@@ -89,9 +89,9 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let state = new PlayableCampaignState(regional)
 	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
 	let scheduler = new CampaignAutosaveScheduler(manager, 10.)
-	state.replaceAuthority("v1;map=west;region=europe;quests=q1_open;discovery=lisbon;orders=fleet_sail")
+	state.replaceAuthority("v1;map=west;region=europe;world=w;players=p;quests=q1_open;discovery=lisbon;orders=fleet_sail;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1")
 	scheduler.advance(10., "day-1").assertTrue()
-	state.replaceAuthority("v1;map=east;region=europe;quests=q1_done;discovery=lisbon;orders=fleet_hold")
+	state.replaceAuthority("v1;map=east;region=europe;world=w;players=p;quests=q1_done;discovery=lisbon;orders=fleet_hold;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1")
 	manager.load(SAVE_SLOT_AUTOSAVE, 1).assertTrue()
 	(state.authorityDocument().indexOf("q1_open") >= 0).assertTrue()
 	let before = state.authorityDocument()
@@ -114,7 +114,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	original.setRecognition("england","recognized")
 	let source=new PlayableCampaignState(new WarcraftRegionalAdapter())
 	source.setPiracyRuntime(original)
-	source.replaceAuthority("v2;map=west;region=europe;quests=;discovery=;orders=;diplomacy=v1;rewards=v1")
+	source.replaceAuthority("v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1")
 	let writer=new CampaignSaveManager(storage,new PlayableCampaignCodec(),source)
 	writer.save(SAVE_SLOT_MAJOR_MILESTONE,0,"before-travel").assertTrue()
 	let resumed=persistencePiracy()
@@ -152,11 +152,41 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	migration.state.notoriety=99
 	piracyMigrationRuntime=migration
 	let codec=new PlayableCampaignCodec()
-	let legacyState="v2;map=west;region=europe;quests=;discovery=;orders=;diplomacy=v1;rewards=v1"
-	let payload=codec.encode("manual_01",SAVE_SLOT_MANUAL,1,"legacy",legacyState)
+	let legacyState="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1"
+	let payload=campaignSaveEnvelope(4,"manual_01",SAVE_SLOT_MANUAL,1,"legacy",legacyState)
 	let migrated=codec.decodeMigrateAndValidate(payload,"manual_01")
 	(migrated.indexOf(";piracy=v1|")>=0).assertTrue()
 	(migrated.indexOf("|notoriety=0|")>=0).assertTrue()
+
+@test function everyAdvertisedLiveSchemaDecodesAndResavesAsCurrent()
+	piracyMigrationRuntime=persistencePiracy()
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		var fixtureState="v2;map=west;region=europe;world=instance:i;players=origin:portugal,allegiance:portugal,settlement:lisbon;quests=q;discovery=lisbon;orders=o;trade=t;religion=v1"
+		if schema>=2
+			fixtureState+=";diplomacy=v1;rewards=v1"
+		if schema>=3
+			fixtureState+=";rpg=v1"
+		if schema>=4
+			fixtureState+=";militarySettlements=v1"
+		if schema>=5
+			fixtureState+=";piracy="+piracyMigrationRuntime.migrationAuthority()
+		let storage=new MemoryStorage()
+		let state=new PlayableCampaignState(new WarcraftRegionalAdapter())
+		let codec=new PlayableCampaignCodec()
+		let manager=new CampaignSaveManager(storage,codec,state)
+		let fixture=campaignSaveEnvelope(schema,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",fixtureState)
+		storage.writeTransactional("manual_01",fixture).assertTrue()
+		manager.load(SAVE_SLOT_MANUAL,1).assertTrue()
+		manager.save(SAVE_SLOT_MANUAL,1,"resaved").assertTrue()
+		(storage.read("manual_01").indexOf("|schema=5|slot=manual_01|")>=0).assertTrue()
+		(codec.decodeMigrateAndValidate(storage.read("manual_01"),"manual_01")!="").assertTrue()
+
+@test function currentLiveSchemaCannotSilentlyInventMissingDomains()
+	let codec=new PlayableCampaignCodec()
+	let incomplete="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade="
+	let fixture=campaignSaveEnvelope(5,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",incomplete)
+	codec.decodeMigrateAndValidate(fixture,"manual_01").assertEquals("")
+	codec.diagnostic().assertEquals("save is missing authority required by its schema")
 
 @test function transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition()
 	let storage = new MemoryStorage()
@@ -192,7 +222,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), new FakeLoader(), "west", "europe")
 	let east = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
 	let west = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
-	state.replaceAuthority("v1;map=west;region=europe;quests=delivery_started;discovery=lisbon;orders=;city_lisbon_owner=portugal")
+	state.replaceAuthority("v1;map=west;region=europe;world=w;players=p;quests=delivery_started;discovery=lisbon;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;city_lisbon_owner=portugal")
 	travel.transition(east, .4, "day-4").assertTrue()
 	state.replaceAuthority(state.authorityDocument() + ";quests=delivery_complete;city_lisbon_owner=castile")
 	travel.transition(west, .4, "day-5").assertTrue()
