@@ -180,3 +180,46 @@ class Projections implements RpgProjectionPort
 	let before=restored.captureState()
 	restored.restoreState("v99|broken").assertFalse()
 	restored.captureState().assertEquals(before)
+
+@test function playerReachableActionsWorldEventsAndRepeatLock()
+	let effects=new Effects()
+	let runtime=new WarcraftRpgRuntime(effects)
+	let projections=new Projections()
+	runtime.setProjectionPort(projections)
+	let hero=new RpgHero("hero","Hero",'Hpal')
+	hero.level=20
+	hero.recruited=true
+	runtime.heroes.register(hero)
+	let blade=new RpgItem("blade","Blade","hand","rare",10,6)
+	runtime.inventory.registerItem(blade)
+	runtime.inventory.grant("blade")
+	runtime.equipItem("hero","blade",1450).assertTrue()
+	projections.equipmentPower.assertEquals(6)
+	let technology=new RuntimeTechnology("navigation","Navigation",1450,10)
+	technology.effectId="range"
+	technology.effectMagnitude=2
+	runtime.technologies.register(technology)
+	runtime.research("player","navigation",1450,10).assertTrue()
+	effects.applied.assertEquals(2)
+	let questDefinition=new RuntimeQuest("harbor_task","Harbor task","regional")
+	questDefinition.destinationId="london"
+	questDefinition.turnInId="london"
+	questDefinition.objectiveTarget=1
+	questDefinition.completionCap=2
+	runtime.journal.register(questDefinition)
+	runtime.acceptQuest("harbor_task").assertTrue()
+	runtime.worldEvent("location","london",1).assertTrue()
+	questDefinition.state.assertEquals(QUEST_COMPLETE)
+	runtime.acceptQuest("harbor_task").assertFalse()
+	runtime.journal.refill(30)
+	runtime.acceptQuest("harbor_task").assertTrue()
+	let treasure=new RuntimeTreasure("charts","europe","london")
+	treasure.clueCount=1
+	treasure.rewardItemId="blade"
+	runtime.treasures.register(treasure)
+	runtime.worldEvent("location","europe",1).assertTrue()
+	runtime.worldEvent("location","london",1).assertTrue()
+	treasure.discovered.assertTrue()
+	let saved=runtime.captureState()
+	runtime.restoreState(saved).assertTrue()
+	runtime.captureState().assertEquals(saved)

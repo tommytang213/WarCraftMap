@@ -3,6 +3,7 @@ package WarcraftRpgRuntime
 import WC3Compatibility
 import ManagementScreenPauseController
 import CommandRouter
+import CampaignTimeline
 
 public constant int RPG_LEVEL_CAP = 300
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
@@ -488,6 +489,12 @@ public class TechnologyRuntime
 			if unlockedKeys[i] == controllerId+":"+id
 				return true
 		return false
+	function unlockedOfKind(string controllerId,string kind) returns string
+		var result="~"
+		for i=0 to count-1
+			if definitions[i].kind == kind and isUnlocked(controllerId,definitions[i].id)
+				result+=definitions[i].id+"~"
+		return result
 	function cost(string id,int year,int provincialAdoption,int institutionalSupport) returns int
 		let technology=get(id)
 		if technology == null
@@ -525,6 +532,79 @@ public class WarcraftRpgRuntime
 		technologies = new TechnologyRuntime(effects)
 	function setProjectionPort(RpgProjectionPort value)
 		projections=value
+	/** Establishes a deterministic playable party for a new campaign. Existing
+	 * recruited characters win; otherwise the first scenario character becomes
+	 * the main character. Authority is changed before the Warcraft unit exists. */
+	function startNewCampaign(player owner, real x, real y) returns boolean
+		if heroes.count == 0
+			return false
+		var main = 0
+		for i=0 to heroes.count-1
+			if heroes.heroes[i].recruited
+				main=i
+		heroes.heroes[main].recruited=true
+		heroes.heroes[main].assignment="field"
+		return heroes.deploy(heroes.heroes[main].id,owner,x,y)
+	function equipItem(string heroId,string itemId,int year) returns boolean
+		let hero=heroes.get(heroId)
+		if not inventory.equip(heroId,itemId,hero,year,technologies.unlockedOfKind("player","technology"),technologies.unlockedOfKind("player","institution"))
+			return false
+		reconcile("player")
+		return true
+	function research(string controllerId,string id,int year,int paid) returns boolean
+		return technologies.unlock(controllerId,id,year,paid,0,0)
+	function acceptQuest(string id) returns boolean
+		let accepted=journal.accept(id)
+		if accepted
+			journal.track(id)
+			reconcile("player")
+		return accepted
+	/** World bridge used by settlement/region/combat adapters. One event can
+	 * advance matching active objectives and treasure knowledge, but never
+	 * bypasses clue or exact-location requirements. */
+	function worldEvent(string eventKind,string locationId,int amount) returns boolean
+		return worldEventAt(eventKind,locationId,amount,0)
+	function worldEventAt(string eventKind,string locationId,int amount,int day) returns boolean
+		var changed=false
+		journal.refill(day)
+		for i=0 to journal.count-1
+			let q=journal.quests[i]
+			if q.state == QUEST_OFFERED and q.giverId != "" and q.giverId == locationId
+				if journal.accept(q.id)
+					journal.track(q.id)
+					changed=true
+			if q.state == QUEST_ACTIVE and (q.destinationId == locationId or q.giverId == locationId or eventKind == "combat" and q.kind == "combat")
+				if journal.progress(q.id,IMaxBJ(1,amount))
+					changed=true
+			if q.state == QUEST_READY and q.turnInId != "" and q.turnInId == locationId
+				RpgHero rewardHero=null
+				if inventory.equippedCount > 0
+					rewardHero=heroes.get(inventory.equippedHeroes[0])
+				if rewardHero == null
+					for heroIndex=0 to heroes.count-1
+						if rewardHero == null and heroes.heroes[heroIndex].recruited
+							rewardHero=heroes.heroes[heroIndex]
+				if journal.turnIn(q.id,rewardHero,day,30)
+					changed=true
+		for i=0 to treasures.count-1
+			let t=treasures.treasures[i]
+			if not t.discovered and t.regionId == locationId and eventKind != "combat"
+				if treasures.advanceClue(t.id)
+					changed=true
+			if not t.discovered and t.resolvedLocationId == locationId
+				if treasures.discover(t.id,locationId,inventory)
+					changed=true
+		if changed
+			reconcile("player")
+		return changed
+	function turnInQuest(string id,string heroId,int day,int cooldownDays) returns boolean
+		let q=journal.get(id)
+		if q == null
+			return false
+		let result=journal.turnIn(id,heroes.get(heroId),day,cooldownDays)
+		if result
+			reconcile("player")
+		return result
 	function diagnostic() returns string
 		return lastDiagnostic
 	function validQuestState(string value) returns boolean
@@ -831,6 +911,40 @@ class TrackQuestCommand implements CommandHandler
 		this.runtime=runtime
 	override function execute(player sender,string arguments)
 		DisplayTimedTextToPlayer(sender,0.,0.,20.,runtime.journal.track(arguments))
+		runtime.reconcile("player")
+
+class RpgActionCommand implements CommandHandler
+	WarcraftRpgRuntime runtime
+	string action
+	construct(WarcraftRpgRuntime runtime,string action)
+		this.runtime=runtime
+		this.action=action
+	override function execute(player sender,string arguments)
+		let cut=arguments.indexOf(" ")
+		var first=arguments
+		var second=""
+		if cut > 0
+			first=SubString(arguments,0,cut)
+			second=SubString(arguments,cut+1,StringLength(arguments))
+		var ok=false
+		if action == "equip"
+			ok=runtime.equipItem(first,second,getCampaignYear())
+		else if action == "research"
+			let cost=runtime.technologies.cost(first,getCampaignYear(),0,0)
+			if GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD) >= cost
+				ok=runtime.research("player",first,getCampaignYear(),cost)
+				if ok
+					SetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD,GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD)-cost)
+		else if action == "accept"
+			ok=runtime.acceptQuest(first)
+		else if action == "turnin"
+			ok=runtime.turnInQuest(first,second,getCampaignDay(),30)
+		else if action == "interact"
+			ok=runtime.worldEventAt("location",first,1,getCampaignDay())
+		if ok
+			DisplayTimedTextToPlayer(sender,0.,0.,15.,"Action completed.")
+		else
+			DisplayTimedTextToPlayer(sender,0.,0.,15.,"Requirements are not met here.")
 
 public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime)
 	commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster"))
@@ -839,3 +953,8 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	commands.register("technology","research,institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology"))
 	commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
 	commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))
+	commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip"))
+	commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the displayed gold cost and applies the unlocked Warcraft effect.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research"))
+	commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept"))
+	commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Awards its persistent rewards and applies repeat or completion-lock rules.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin"))
+	commands.register("interact","investigate,search","interact LOCATION","Interact with this world location.","Advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact"))
