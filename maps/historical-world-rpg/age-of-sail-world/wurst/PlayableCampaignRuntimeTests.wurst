@@ -5,6 +5,27 @@ import CampaignAutosaveScheduler
 import PlayableCampaignRuntime
 import WarcraftRegionalRuntime
 import RemoteRegionManagement
+import PlayablePiracy
+
+class PersistencePolityAuthority implements PiratePolityAuthority
+	int reconciliations=0
+	string recognition=""
+	override function foundIndependentPolity(PiratePolityState polity) returns boolean
+		return reconcileFoundedPolity(polity)
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		reconciliations++
+		return polity.capitalSettlementId!=""
+	override function setRecognition(string polityId,string countryId,string status)
+		recognition=polityId+":"+countryId+":"+status
+
+function persistencePiracy() returns PiracyRuntime
+	let result=new PiracyRuntime(new PiracyRules(30,20,5000,3,150))
+	result.registerHaven("nassau_haven",2,"repair,fence")
+	result.registerGovernmentForm("free_republic","First Captain")
+	return result
+
+function persistencePrize(string id,string target,int tick) returns PrizeProposal
+	return new PrizeProposal(id,target,"merchant_ship","spain","caribbean","marque_1","capture","sugar",4,2000,2,"ransom",tick,true)
 
 class MemoryStorage implements CampaignSaveStorage
 	string array[64] keys
@@ -77,6 +98,65 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	storage.values[storage.find("autosave_01")] = storage.read("autosave_01") + "tampered"
 	manager.load(SAVE_SLOT_AUTOSAVE, 1).assertFalse()
 	state.authorityDocument().assertEquals(before)
+
+@test function piracyCrossMapAuthorityUsesCampaignCodecAndStorageBoundary()
+	let storage=new MemoryStorage()
+	let original=persistencePiracy()
+	original.issueCommission("marque_1","england","spain",100,250).assertTrue()
+	original.commitPrize(persistencePrize("prize_1","ship_1",10))
+	original.state.notoriety=20
+	original.state.piracyWealthMinor=6000
+	original.state.prizesTaken=3
+	original.useHaven("nassau_haven","repair",11)
+	let ordinary=new PersistencePolityAuthority()
+	original.setPolityAuthority(ordinary)
+	original.foundPolity("free_nassau","free_republic","Free Nassau","First Captain","nassau","nassau")
+	original.setRecognition("england","recognized")
+	let source=new PlayableCampaignState(new WarcraftRegionalAdapter())
+	source.setPiracyRuntime(original)
+	source.replaceAuthority("v2;map=west;region=europe;quests=;discovery=;orders=;diplomacy=v1;rewards=v1")
+	let writer=new CampaignSaveManager(storage,new PlayableCampaignCodec(),source)
+	writer.save(SAVE_SLOT_MAJOR_MILESTONE,0,"before-travel").assertTrue()
+	let resumed=persistencePiracy()
+	let resumedOrdinary=new PersistencePolityAuthority()
+	resumed.setPolityAuthority(resumedOrdinary)
+	let destination=new PlayableCampaignState(new WarcraftRegionalAdapter())
+	destination.setPiracyRuntime(resumed)
+	let reader=new CampaignSaveManager(storage,new PlayableCampaignCodec(),destination)
+	reader.load(SAVE_SLOT_MAJOR_MILESTONE,0).assertTrue()
+	resumed.actionSeen("prize_1").assertTrue()
+	resumed.state.havenStanding[0].assertEquals(1)
+	resumed.regionalPressure[0].assertEquals(2)
+	resumed.polity.id.assertEquals("free_nassau")
+	resumedOrdinary.reconciliations.assertEquals(1)
+	// Loading the same commit reconciles projections but never reapplies prizes.
+	reader.load(SAVE_SLOT_MAJOR_MILESTONE,0).assertTrue()
+	resumed.processedCount.assertEquals(1)
+	resumed.state.bountyMinor.assertEquals(0)
+	resumed.state.prizesTaken.assertEquals(3)
+	resumedOrdinary.reconciliations.assertEquals(2)
+
+@test function malformedDuplicatePiracyRecordsRejectAtomically()
+	let runtime=persistencePiracy()
+	runtime.issueCommission("marque_1","england","spain",100,250)
+	runtime.commitPrize(persistencePrize("prize_1","ship_1",10))
+	let before=runtime.captureAuthority()
+	let actionMarker="|actions="
+	let actionStart=before.indexOf(actionMarker)+StringLength(actionMarker)
+	let duplicate=SubString(before,0,actionStart)+"prize_1,ship_1,merchant_ship,spain,caribbean,marque_1,capture,sugar,1,1,0,release,10~"+SubString(before,actionStart,StringLength(before))
+	runtime.validateAuthority(duplicate).assertFalse()
+	runtime.captureAuthority().assertEquals(before)
+
+@test function prePiracyCampaignSaveMigratesToConfiguredEmptyAuthority()
+	let migration=persistencePiracy()
+	migration.state.notoriety=99
+	piracyMigrationRuntime=migration
+	let codec=new PlayableCampaignCodec()
+	let legacyState="v2;map=west;region=europe;quests=;discovery=;orders=;diplomacy=v1;rewards=v1"
+	let payload=codec.encode("manual_01",SAVE_SLOT_MANUAL,1,"legacy",legacyState)
+	let migrated=codec.decodeMigrateAndValidate(payload,"manual_01")
+	(migrated.indexOf(";piracy=v1|")>=0).assertTrue()
+	(migrated.indexOf("|notoriety=0|")>=0).assertTrue()
 
 @test function transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition()
 	let storage = new MemoryStorage()

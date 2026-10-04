@@ -9,6 +9,8 @@ class OrdinarySystems implements PiratePolityAuthority
 		if accept
 			founded=polity.id+":"+polity.capitalSettlementId+":"+polity.governmentFormId
 		return accept
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		return foundIndependentPolity(polity)
 	override function setRecognition(string polityId,string countryId,string status)
 		recognized=polityId+":"+countryId+":"+status
 
@@ -103,5 +105,5 @@ function prize(string id,string target,string kind,string commission,string outc
 	resumed.regionalPressure[0].assertEquals(4)
 	resumed.polity.capitalSettlementId.assertEquals("nassau")
 	resumed.polity.governmentFormId.assertEquals("pirate_confederacy")
-	(resumed.polity.recognition.indexOf("england:tolerated")>=0).assertTrue()
+	(resumed.polity.recognition.indexOf("england,tolerated~")>=0).assertTrue()
 	resumed.state.polityId.assertEquals("free_nassau")

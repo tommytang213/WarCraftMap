@@ -13,6 +13,7 @@ import PlayableCountryInteractions
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import ReligionRuntime
+import PlayablePiracy
 
 /** Stable-domain extensions participate in every campaign lifecycle without
  * making their Warcraft projections part of the save authority. */
@@ -24,6 +25,7 @@ public interface CampaignRuntimeExtension
 public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 ReligionRuntime religionMigrationRuntime = null
+PiracyRuntime piracyMigrationRuntime = null
 
 function logicalRegionForPhysicalMap(string mapId) returns string
 	if mapId == "bootstrap_runtime_validation"
@@ -103,6 +105,7 @@ function withoutTravelAuthority(string document) returns string
 public class PlayableCampaignState implements CampaignStatePort
 	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade="
 	string staged = ""
+	string lastLoadedPiracyAuthority = ""
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
@@ -111,6 +114,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	WarcraftRpgRuntime rpg = null
 	MilitarySettlementRuntime militarySettlements = null
 	ReligionRuntime religion = null
+	PiracyRuntime piracy = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	function replaceAuthority(string value)
@@ -125,6 +129,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		militarySettlements = runtime
 	function setReligionRuntime(ReligionRuntime runtime)
 		religion = runtime
+	function setPiracyRuntime(PiracyRuntime runtime)
+		piracy = runtime
 	function authorityDocument() returns string
 		return authority
 	function beginTransition()
@@ -145,6 +151,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";militarySettlements=" + militarySettlements.snapshot()
 		if religion != null
 			result += ";religion=" + religion.captureState()
+		if piracy != null
+			result += ";piracy=" + piracy.captureAuthority()
 		if extension != null
 			result += ";trade=" + extension.capture()
 		return result
@@ -161,11 +169,18 @@ public class PlayableCampaignState implements CampaignStatePort
 		if religion != null and candidate.indexOf(";religion=") < 0
 			lastDiagnostic = "missing religion authority"
 			return false
+		if piracy != null and candidate.indexOf(";piracy=") < 0
+			lastDiagnostic = "missing piracy authority"
+			return false
 		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement authority is invalid"
 			return false
+		if piracy != null and not piracy.validateAuthority(lastAuthorityValue(candidate,"piracy"))
+			lastDiagnostic=piracy.lastDiagnostic
+			return false
 		// Saves produced before playable trade remain compatible.
 		staged = candidate
+		lastLoadedPiracyAuthority=lastAuthorityValue(candidate,"piracy")
 		if staged.indexOf(";trade=") < 0
 			staged += ";trade="
 		lastDiagnostic = ""
@@ -187,6 +202,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		if religion != null and not religion.restoreState(lastAuthorityValue(candidate, "religion"))
 			lastDiagnostic = religion.lastDiagnostic
+			return false
+		if piracy != null and not piracy.restoreAuthority(lastAuthorityValue(candidate,"piracy"))
+			lastDiagnostic=piracy.lastDiagnostic
 			return false
 		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade runtime reconstruction failed"
@@ -258,6 +276,10 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
 		if decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
 			decoded += ";religion=" + religionMigrationRuntime.captureState()
+		// Piracy was introduced after schema 2. Pre-domain saves migrate to the
+		// configured empty authority; current saves must carry their own domain.
+		if decoded.indexOf(";piracy=") < 0 and piracyMigrationRuntime != null
+			decoded += ";piracy=" + piracyMigrationRuntime.migrationAuthority()
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -585,6 +607,18 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		// Registration follows service construction, so reconstruct the commit
 		// already loaded by a destination map before exposing any commands.
 		value.reconstruct(lastAuthorityValue(state.authorityDocument(), "trade"))
+	/** Piracy registers after its ordinary polity/territory bridges exist. This
+	 * also reconstructs a destination map whose cache load preceded Bootstrap's
+	 * scenario wiring. */
+	function registerPiracyRuntime(PiracyRuntime value)
+		state.setPiracyRuntime(value)
+		var authority=state.lastLoadedPiracyAuthority
+		if authority==""
+			authority=lastAuthorityValue(state.authorityDocument(),"piracy")
+		if authority==""
+			authority=value.captureAuthority()
+		if value.validateAuthority(authority)
+			value.restoreAuthority(authority)
 	function sessionStart(string createdAt)
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
@@ -643,8 +677,9 @@ function campaignAutosaveTick()
 	if campaignServices != null
 		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
-public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion) returns PlayableCampaignServices
+public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion, PiracyRuntime piracy) returns PlayableCampaignServices
 	religionMigrationRuntime = religion
+	piracyMigrationRuntime = piracy
 	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion)
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
