@@ -127,9 +127,10 @@ order, regional consumer and campaign codec through recording cache, loader and
 projection ports. It covers generated European, Asian and African origins,
 including a starting settlement without a military city record; interrupted
 commits/acknowledgements; invalid and consumed requests; unrelated older milestones;
-and populated/legacy transfers. Physical arrival points share the map
-materialization calculation, and transfers from abstract starting settlements
-reconstruct without a military city object. Fixtures execute every generated
+and populated/legacy transfers. Authored origin positions share the settlement
+materialization calculation. Transfers resolve the saved correspondence against
+the generated destination edge and connected pathing, without a military city
+object. Fixtures execute every generated
 registration, then bound the authority population before exercising the lifecycle to stay within
 the pinned interpreter's 20-second limit per test. No authority domain, codec step,
 registration phase or lifecycle callback is replaced. Catalogue-wide and scale
@@ -148,3 +149,15 @@ and timer activation. `PlayableCampaignRuntimeTests` migrates and repeatedly res
 every supported live schema (1–6). These are interpreter lifecycle checks, not native
 client launch evidence; release status remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+Boundary correspondence regressions execute production registration, travel,
+codec and destination startup at 0.25, 0.37 and 0.5 on the same generated route.
+They cover reversed travel, partial intervals, unequal dimensions, scale/offset,
+return journeys, all supported transfer schemas, malformed location tuples,
+unavailable arrivals and failed saves. Origin startup also checks incomplete
+registration and a configured empty boundary catalogue. `BoundaryArrivalTests.wurst` tests
+movement-specific connectivity and bounded native-pathing rejection through a
+recording port. Numerical coordinate comparisons allow 0.01 world units for
+Warcraft float rounding, separate from the declared navigation snap tolerance.
+`test_boundary_arrival.py` checks generated arrivals against materialized MPQ
+terrain/pathing on every physical map and rejects tampered packaged pathing.

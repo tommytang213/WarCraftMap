@@ -3,6 +3,7 @@ package PlayableCampaignRuntime
 import CampaignSaveManager
 import CampaignTimeline
 import CampaignHandoff
+import BoundaryArrival
 import CampaignAutosaveScheduler
 import CommandRouter
 import MapDiscoveryScreen
@@ -44,7 +45,7 @@ function logicalRegionForPhysicalMap(string mapId) returns string
 		return "pacific"
 	return ""
 
-function lastAuthorityValue(string document, string key) returns string
+public function lastAuthorityValue(string document, string key) returns string
 	let marker = ";" + key + "="
 	var found = -1
 	var search = 0
@@ -115,7 +116,7 @@ function withoutTravelAuthority(string document) returns string
 	return result
 
 /** Replace one field without leaving stale authority behind. */
-function replaceCampaignField(string document, string key, string value) returns string
+public function replaceCampaignField(string document, string key, string value) returns string
 	let marker = ";" + key + "="
 	let fieldStart = document.indexOf(marker)
 	if fieldStart < 0
@@ -129,6 +130,16 @@ function replaceCampaignField(string document, string key, string value) returns
 public interface CampaignPartyProjection
 	function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
 	function clear(WarcraftRpgRuntime rpg)
+
+public class WarcraftBoundaryPathing implements BoundaryPathing
+	override function pathable(real x, real y, int movement) returns boolean
+		let walkable = not compatIsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY)
+		let floatable = not compatIsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY)
+		if movement == 0
+			return walkable
+		if movement == 1
+			return floatable
+		return movement == 3 or (movement == 2 and (walkable or floatable))
 
 public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
 	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
@@ -150,10 +161,10 @@ public class PlayableCampaignState implements CampaignStatePort
 	PlayerCampaignIdentity identity = null
 	string loadedPhysicalMap = ""
 	OriginCatalog origins = null
-	string array[32] arrivalMaps
-	real array[32] arrivalX
-	real array[32] arrivalY
-	int arrivalCount = 0
+	BoundaryCorrespondence array[64] boundaries
+	int boundaryCount = 0
+	boolean boundaryConfigurationComplete = false
+	BoundaryPathing arrivalPathing = new WarcraftBoundaryPathing()
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
@@ -167,16 +178,33 @@ public class PlayableCampaignState implements CampaignStatePort
 	construct(WarcraftRegionalAdapter regional, CampaignClock clock)
 		this.regional = regional
 		this.clock = clock
-	function addArrival(string mapId, real x, real y)
-		arrivalMaps[arrivalCount] = mapId
-		arrivalX[arrivalCount] = x
-		arrivalY[arrivalCount] = y
-		arrivalCount++
-	function arrivalIndex(string mapId) returns int
-		for i = 0 to arrivalCount - 1
-			if arrivalMaps[i] == mapId
-				return i
-		return -1
+	function addBoundary(BoundaryCorrespondence value)
+		boundaries[boundaryCount] = value
+		boundaryCount++
+	function boundary(string id) returns BoundaryCorrespondence
+		for i = 0 to boundaryCount - 1
+			if boundaries[i].id == id
+				return boundaries[i]
+		return null
+	function resolveTransfer(string candidate) returns BoundaryCorrespondence
+		let route = boundary(lastAuthorityValue(candidate, "boundary"))
+		let position = parseBoundaryPosition(lastAuthorityValue(candidate, "position"))
+		if route == null or not route.valid() or route.destinationMapId != lastAuthorityValue(candidate, "map") or route.destinationRegionId != lastAuthorityValue(candidate, "region") or (loadedPhysicalMap != "" and route.destinationMapId != loadedPhysicalMap) or not validBoundaryPosition(position)
+			lastDiagnostic = "invalid saved boundary, destination map or correspondence"
+			return null
+		// Older supported saves need only boundary/position. Where redundant
+		// travel fields exist, they must agree. Position is ALREADY transformed.
+		let transition = lastAuthorityValue(candidate, "transition")
+		let arrival = lastAuthorityValue(candidate, "arrival")
+		if (transition != "" and transition != route.id) or (arrival != "" and parseBoundaryPosition(arrival) != position)
+			lastDiagnostic = "inconsistent saved boundary correspondence"
+			return null
+		// The current party projection reconstructs land heroes. A sea-only
+		// edge cannot silently disembark them at a distant settlement.
+		if arrivalPathing == null or not route.destination.resolve(position, 0, arrivalPathing)
+			lastDiagnostic = "no connected party arrival within boundary tolerance"
+			return null
+		return route
 	function replaceAuthority(string value)
 		authority = value
 	function setExtension(CampaignRuntimeExtension value)
@@ -221,6 +249,11 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";trade=" + extension.capture()
 		return replaceCampaignField(result, "clock", clock.captureState())
 	override function validateAuthoritativeState(string candidate) returns boolean
+		if lastAuthorityValue(candidate, "boundary") == "" and (lastAuthorityValue(candidate, "transition") != "" or lastAuthorityValue(candidate, "arrival") != "")
+			lastDiagnostic = "saved transfer is missing its boundary"
+			return false
+		if lastAuthorityValue(candidate, "boundary") != "" and resolveTransfer(candidate) == null
+			return false
 		if not clock.validateState(lastAuthorityValue(candidate, "clock"))
 			lastDiagnostic = clock.diagnostic()
 			return false
@@ -289,7 +322,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			lastDiagnostic = "legacy player could not be reconstructed"
 			return false
 		if party != null and not projectParty(candidate)
-			lastDiagnostic = "local player representation could not be created"
+			if lastDiagnostic == ""
+				lastDiagnostic = "local player representation could not be created"
 			return false
 		regional.recoverActiveRegion()
 		clock.reconstructTimer()
@@ -297,12 +331,11 @@ public class PlayableCampaignState implements CampaignStatePort
 	function projectParty(string candidate) returns boolean
 		if rpg == null or militarySettlements == null or party == null
 			return false
-		// Travel retains the last visited settlement as campaign history. Its
-		// representation may be absent or belong to another physical map. Use
-		// this map's materialized player arrival, independent of city objects.
+		// Stable boundary records and saved correspondence, never city objects,
+		// determine transferred placement. Origin startup remains authored below.
 		if lastAuthorityValue(candidate, "boundary") != ""
-			let arrival = arrivalIndex(loadedPhysicalMap)
-			return arrival >= 0 and party.project(rpg, arrivalX[arrival], arrivalY[arrival])
+			let route = resolveTransfer(candidate)
+			return route != null and party.project(rpg, route.destination.x, route.destination.y)
 		if origins != null
 			let origin = origins.find(playerAuthorityValue(candidate, "origin"))
 			if origin != null and origin.physicalMapId == loadedPhysicalMap and origin.settlementId == playerAuthorityValue(candidate, "settlement")
@@ -384,7 +417,7 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			lastDiagnostic = "save has no authoritative state"
 			return ""
 		var decoded = SubString(body, stateCut + StringLength(stateMarker), StringLength(body))
-		// Each step is additive and guarded, making repeated in-memory migration idempotent.
+		// Each probe is additive and guarded, making repeated in-memory migration idempotent.
 		// Schema 2 introduced diplomacy and contribution rewards.
 		if sourceSchema < 2 and decoded.indexOf(";diplomacy=") < 0
 			decoded += ";diplomacy=v1"
@@ -437,6 +470,8 @@ public class BoundaryCorrespondence
 	boolean reverse
 	real scale
 	real offset
+	BoundaryEndpoint source = null
+	BoundaryEndpoint destination = null
 	construct(string id, string sourceMapId, string destinationMapId, string destinationPath, string destinationRegionId, boolean reverse, real scale, real offset)
 		this.id = id
 		this.sourceMapId = sourceMapId
@@ -446,15 +481,13 @@ public class BoundaryCorrespondence
 		this.reverse = reverse
 		this.scale = scale
 		this.offset = offset
+	function valid() returns boolean
+		return id != "" and source != null and destination != null and source.valid() and destination.valid() and source.mapId == sourceMapId and destination.mapId == destinationMapId and sourceMapId != destinationMapId and destinationPath != "" and scale > 0. and scale - scale == 0. and offset - offset == 0.
 	function destinationPosition(real normalized) returns real
 		var value = normalized
 		if reverse
 			value = 1. - value
 		value = value * scale + offset
-		if value < 0.
-			return 0.
-		if value > 1.
-			return 1.
 		return value
 
 /** Commit-first transition coordinator. Loading is the sole irreversible step. */
@@ -484,11 +517,16 @@ public class CampaignTravelRuntime
 		if not state.isSaveSafe()
 			lastDiagnostic = "travel deferred: authoritative state is transitional"
 			return false
-		if boundary == null or boundary.sourceMapId != currentMapId or normalized < 0. or normalized > 1.
+		if boundary == null or state.boundary(boundary.id) != boundary or not boundary.valid() or boundary.sourceMapId != currentMapId or not validBoundaryPosition(normalized)
 			lastDiagnostic = "transition is not adjacent to the active physical map"
 			return false
 		let previous = state.authorityDocument()
 		let arrival = boundary.destinationPosition(normalized)
+		// Preflight the generated destination before replacing authority or
+		// committing. Native pathing is rechecked after that map is loaded.
+		if not boundary.destination.resolve(arrival, 0, null)
+			lastDiagnostic = "no connected party arrival within boundary tolerance"
+			return false
 		state.beginTransition()
 		state.replaceAuthority(withoutTravelAuthority(previous) + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";boundary=" + boundary.id + ";position=" + arrival.toString() + ";transition=" + boundary.id + ";arrival=" + arrival.toString())
 		state.finishTransition()
@@ -514,27 +552,21 @@ public class PhysicalBoundaryRegistry
 	PlayableRegionAccess access
 	BoundaryCorrespondence array[64] boundaries
 	trigger array[64] listeners
-	string array[64] edges
-	real array[64] intervalStarts
-	real array[64] intervalEnds
 	boolean array[64] discoveryRequired
 	int count = 0
 	boolean transitioning = false
 	construct(CampaignTravelRuntime travel, PlayableRegionAccess access)
 		this.travel = travel
 		this.access = access
-	function add(string id, string sourceMapId, string destinationMapId, string destinationPath, string destinationRegionId, string sourceEdge, real intervalStart, real intervalEnd, boolean reverse, real scale, real offset, boolean requiresDiscovery)
-		boundaries[count] = new BoundaryCorrespondence(id, sourceMapId, destinationMapId, destinationPath, destinationRegionId, reverse, scale, offset)
-		edges[count] = sourceEdge
-		intervalStarts[count] = intervalStart
-		intervalEnds[count] = intervalEnd
+	function add(string id, boolean requiresDiscovery)
+		let route = travel.state.boundary(id)
+		if route == null or not route.valid() or route.sourceMapId != travel.physicalMapId()
+			return
+		boundaries[count] = route
 		discoveryRequired[count] = requiresDiscovery
 		count++
 	function normalizedPosition(int index, unit entering) returns real
-		let world = GetPlayableMapRect()
-		if edges[index] == "east" or edges[index] == "west"
-			return (GetUnitY(entering) - GetRectMinY(world)) / (GetRectMaxY(world) - GetRectMinY(world))
-		return (GetUnitX(entering) - GetRectMinX(world)) / (GetRectMaxX(world) - GetRectMinX(world))
+		return boundaries[index].source.localPosition(GetUnitX(entering), GetUnitY(entering))
 	function entered()
 		if transitioning
 			return
@@ -548,29 +580,26 @@ public class PhysicalBoundaryRegistry
 					print("This route has not been discovered.")
 					return
 				let position = normalizedPosition(i, entering)
-				let local = (position - intervalStarts[i]) / (intervalEnds[i] - intervalStarts[i])
 				transitioning = true
-				if not travel.transition(boundaries[i], local, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+				if not travel.transition(boundaries[i], position, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 					transitioning = false
 					print(travel.diagnostic())
 				return
 	function install()
 		installPhysicalBoundaryRegistry(this)
-		let world = GetPlayableMapRect()
-		let minX = GetRectMinX(world)
-		let maxX = GetRectMaxX(world)
-		let minY = GetRectMinY(world)
-		let maxY = GetRectMaxY(world)
 		for i = 0 to count - 1
-			var area = world
-			if edges[i] == "west"
-				area = Rect(minX, minY + (maxY-minY)*intervalStarts[i], minX+128., minY + (maxY-minY)*intervalEnds[i])
-			else if edges[i] == "east"
-				area = Rect(maxX-128., minY + (maxY-minY)*intervalStarts[i], maxX, minY + (maxY-minY)*intervalEnds[i])
-			else if edges[i] == "south"
-				area = Rect(minX + (maxX-minX)*intervalStarts[i], minY, minX + (maxX-minX)*intervalEnds[i], minY+128.)
+			let endpoint = boundaries[i].source
+			let start = endpoint.along(0.)
+			let finish = endpoint.along(1.)
+			var area = GetPlayableMapRect()
+			if endpoint.edge == "west"
+				area = Rect(endpoint.minX, start, endpoint.minX + BOUNDARY_TRIGGER_DEPTH, finish)
+			else if endpoint.edge == "east"
+				area = Rect(endpoint.maxX - BOUNDARY_TRIGGER_DEPTH, start, endpoint.maxX, finish)
+			else if endpoint.edge == "south"
+				area = Rect(start, endpoint.minY, finish, endpoint.minY + BOUNDARY_TRIGGER_DEPTH)
 			else
-				area = Rect(minX + (maxX-minX)*intervalStarts[i], maxY-128., minX + (maxX-minX)*intervalEnds[i], maxY)
+				area = Rect(start, endpoint.maxY - BOUNDARY_TRIGGER_DEPTH, finish, endpoint.maxY)
 			listeners[i] = CreateTrigger()
 			TriggerRegisterEnterRectSimple(listeners[i], area)
 			TriggerAddAction(listeners[i], function physicalBoundaryEntered)
@@ -759,7 +788,9 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		state.setPiracyRuntime(value)
 	function finishRegistration() returns boolean
 		registered = state.rpg != null and state.rpg.projections != null and state.militarySettlements != null and state.religion != null and state.piracy != null and extension != null and countries.peaceAuthority != null and state.piracy.polityAuthority != null and state.piracy.actionAuthority != null and origins.count > 0
-		registered = registered and state.arrivalCount > 0
+		// A generated single-map campaign legitimately has no transfer routes.
+		// Require completed configuration, not a nonempty boundary catalogue.
+		registered = registered and state.boundaryConfigurationComplete
 		if registered
 			(saves.codec castTo PlayableCampaignCodec).configureMigrationDefaults(state.militarySettlements, state.religion, state.piracy)
 		return registered

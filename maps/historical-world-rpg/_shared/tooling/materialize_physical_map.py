@@ -203,6 +203,10 @@ def physical_layout(generated: Path, physical):
 
 
 def player_arrival_world(width: int, height: int, placed: list[dict]) -> list[float]:
+    """Default editor player-slot marker; not a transferred party's arrival.
+
+    Runtime parties use their authored origin or generated boundary navigation.
+    """
     spawn = placed[0]["cell"] if placed else [width // 2, height // 2]
     return [(spawn[0] + .5 - width / 2) * 128.0, (spawn[1] + .5 - height / 2) * 128.0]
 
@@ -244,7 +248,7 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
         wx, wy = (cx + .5 - width / 2) * 128.0, (cy + .5 - height / 2) * 128.0
         records.append(_unit(b"nfoh", wx, wy, 15, len(records) + 1))
         world_markers.append({"id": marker_id, "cell": [cx, cy]})
-    # Player arrival exists independently of settlement object lifetime.
+    # Editor player-slot marker, independent of campaign party reconstruction.
     sx, sy = player_arrival_world(width, height, placed)
     records.insert(0, _unit(b"sloc", sx, sy, 0, 0))
     if len(records) > MAX_OBJECTS:

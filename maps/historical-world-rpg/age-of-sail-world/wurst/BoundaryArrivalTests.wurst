@@ -1,0 +1,53 @@
+package BoundaryArrivalTests
+
+import BoundaryArrival
+import PlayableCampaignRuntime
+
+class ArrivalPathingFixture implements BoundaryPathing
+	boolean unavailable = false
+	boolean blockCenter = false
+	override function pathable(real x, real y, int movement) returns boolean
+		return not unavailable and (not blockCenter or y >= 32.)
+
+@test function arrivalRejectsDisconnectedWaterAndUsesNearestBoundedPathablePoint()
+	let endpoint = new BoundaryEndpoint("water", "west", 0., 1., -4096., -4096., 4096., 4096.)
+	endpoint.addSpan(1, 7, 0., -4096., 4096.)
+	// Closer water exists, but is not connected to the entry component.
+	endpoint.addSpan(1, 9, 192., -3904., 3904.)
+	endpoint.addSpan(1, 7, 320., -3904., 3904.)
+	let pathing = new ArrivalPathingFixture()
+	endpoint.resolve(.5, 1, pathing).assertTrue()
+	endpoint.x.assertEquals(-3776.)
+	endpoint.y.assertEquals(0.)
+	pathing.blockCenter = true
+	endpoint.resolve(.5, 1, pathing).assertTrue()
+	endpoint.y.assertEquals(32.)
+	endpoint.resolve(.5, 0, pathing).assertFalse()
+	pathing.unavailable = true
+	endpoint.resolve(.5, 1, pathing).assertFalse()
+
+@test function arrivalNeverWidensToleranceAndCannotProjectInsideAnyTrigger()
+	let endpoint = new BoundaryEndpoint("land", "east", .2, .6, -8192., -4096., 8192., 4096.)
+	endpoint.addSpan(0, 1, 0., -4096., 4096.)
+	endpoint.addSpan(0, 1, 513., -3904., 3904.)
+	endpoint.resolve(.5, 0, null).assertFalse()
+	endpoint.addSpan(0, 1, 192., -3904., 3904.)
+	endpoint.resolve(.5, 0, null).assertTrue()
+	endpoint.x.assertEquals(8000.)
+	(RAbsBJ(endpoint.y + 819.2) < .01).assertTrue()
+	(RAbsBJ(endpoint.localPosition(endpoint.x, endpoint.y) - .5) < .00001).assertTrue()
+	endpoint.clearOfTriggers(endpoint.x, endpoint.y).assertTrue()
+	endpoint.resolve(-.1, 0, null).assertFalse()
+	endpoint.resolve(1.01, 0, null).assertFalse()
+
+@test function boundaryCoordinateParserRejectsNativePermissiveConversions()
+	parseBoundaryPosition("").assertEquals(-1.)
+	parseBoundaryPosition("garbage").assertEquals(-1.)
+	parseBoundaryPosition("nan").assertEquals(-1.)
+	parseBoundaryPosition("Infinity").assertEquals(-1.)
+	parseBoundaryPosition("0.37junk").assertEquals(-1.)
+	parseBoundaryPosition("0.3.7").assertEquals(-1.)
+	parseBoundaryPosition("-0.37").assertEquals(-1.)
+	parseBoundaryPosition("1.01").assertEquals(-1.)
+	parseBoundaryPosition("0.370").assertEquals(.37)
+	parseBoundaryPosition("1").assertEquals(1.)
