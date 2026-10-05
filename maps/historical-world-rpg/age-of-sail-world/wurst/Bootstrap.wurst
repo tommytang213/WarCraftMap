@@ -9,6 +9,7 @@ import PlayerGodMode
 import CampaignTimeline
 import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
+import WarcraftRpgProjections
 import MilitarySettlementRuntime
 import CampaignHandoff
 import CampaignSaveManager
@@ -54,56 +55,6 @@ class WarcraftTechnologyEffects implements TechnologyEffectPort
 			if SubString(keys[i],0,StringLength(controllerId)+1) == controllerId+":"
 				keys[i]=""
 
-class WarcraftRpgProjections implements RpgProjectionPort
-	HeroRoster heroes
-	int array[2048] baseLife
-	quest array[1024] guidance
-	int guidanceCount=0
-	quest array[512] knowledge
-	int knowledgeCount=0
-	construct(HeroRoster heroes)
-		this.heroes=heroes
-	override function clearEquipmentLayer()
-		for i=0 to heroes.count-1
-			if heroes.projected[i] != null and GetUnitTypeId(heroes.projected[i]) != 0 and baseLife[i] > 0
-				compatSetUnitMaxLife(heroes.projected[i],baseLife[i])
-	override function applyEquipment(string heroId,string itemId,int power)
-		let found=heroes.indexOf(heroId)
-		if found >= 0 and heroes.projected[found] != null and GetUnitTypeId(heroes.projected[found]) != 0
-			if baseLife[found] == 0
-				baseLife[found]=compatGetUnitMaxLife(heroes.projected[found])
-			compatSetUnitMaxLife(heroes.projected[found],compatGetUnitMaxLife(heroes.projected[found])+IMaxBJ(0,power))
-	override function applyEquipmentSet(string setId,int power)
-		for i=0 to heroes.count-1
-			if heroes.projected[i] != null and GetUnitTypeId(heroes.projected[i]) != 0
-				if baseLife[i] == 0
-					baseLife[i]=compatGetUnitMaxLife(heroes.projected[i])
-				compatSetUnitMaxLife(heroes.projected[i],compatGetUnitMaxLife(heroes.projected[i])+IMaxBJ(0,power))
-	override function clearGuidanceLayer()
-		for i=0 to guidanceCount-1
-			DestroyQuest(guidance[i])
-		guidanceCount=0
-	override function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
-		let marker=CreateQuest()
-		QuestSetTitle(marker,"Tracked: "+questId)
-		QuestSetDescription(marker,precision+" guidance: "+regionId+" / "+destinationId)
-		QuestSetRequired(marker,true)
-		QuestSetEnabled(marker,true)
-		guidance[guidanceCount]=marker
-		guidanceCount++
-	override function clearTreasureKnowledgeLayer()
-		for i=0 to knowledgeCount-1
-			DestroyQuest(knowledge[i])
-		knowledgeCount=0
-	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
-		if clueStage > 0 or discovered
-			let marker=CreateQuest()
-			QuestSetTitle(marker,"Treasure: "+treasureId)
-			QuestSetDescription(marker,"Clue stage "+clueStage.toString())
-			QuestSetCompleted(marker,discovered)
-			QuestSetEnabled(marker,true)
-			knowledge[knowledgeCount]=marker
-			knowledgeCount++
 
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
 public PiracyRuntime piracyRuntime

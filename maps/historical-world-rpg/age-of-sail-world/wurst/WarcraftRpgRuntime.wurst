@@ -8,6 +8,8 @@ import CampaignTimeline
 public constant int RPG_LEVEL_CAP = 300
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
 public constant int RPG_STATE_SCHEMA_VERSION = 2
+// Equipment assignments reserve owned copies, so they share the item budget.
+public constant int RPG_INVENTORY_CAPACITY = 4096
 public constant string QUEST_OFFERED = "offered"
 public constant string QUEST_ACTIVE = "active"
 public constant string QUEST_READY = "ready_to_turn_in"
@@ -66,10 +68,12 @@ function rpgStableText(string value) returns boolean
 /** Per-load duplicate index. Cache record keys once instead of reparsing the
  * whole snapshot for every hero, quest and treasure in a generated campaign. */
 class RpgSnapshotKeys
-	string array[10785] keys
+	string array[14849] keys
+	int array[4096] ownedCopies
+	int array[4096] equippedCopies
 	int count = 0
 	function claim(string key) returns boolean
-		if count >= 10785
+		if count >= 14849
 			return false
 		for i = 0 to count - 1
 			if keys[i] == key
@@ -247,9 +251,9 @@ public class PlayerInventory
 	int definitionCount = 0
 	string array[4096] owned
 	int ownedCount = 0
-	string array[32] equippedSlots
-	string array[32] equippedItems
-	string array[32] equippedHeroes
+	string array[4096] equippedSlots
+	string array[4096] equippedItems
+	string array[4096] equippedHeroes
 	int equippedCount = 0
 	EquipmentSet array[256] sets
 	int setCount = 0
@@ -259,35 +263,56 @@ public class PlayerInventory
 	function registerSet(EquipmentSet setDefinition)
 		sets[setCount] = setDefinition
 		setCount++
-	function getItem(string id) returns RpgItem
+	function itemIndex(string id) returns int
 		for i = 0 to definitionCount - 1
 			if definitions[i].id == id
-				return definitions[i]
+				return i
+		return -1
+	function getItem(string id) returns RpgItem
+		let i = itemIndex(id)
+		if i >= 0
+			return definitions[i]
 		return null
-	function owns(string id) returns boolean
+	function ownedQuantity(string id) returns int
+		var result = 0
 		for i = 0 to ownedCount - 1
 			if owned[i] == id
-				return true
-		return false
+				result++
+		return result
+	function owns(string id) returns boolean
+		return ownedQuantity(id) > 0
+	function equippedQuantity(string id) returns int
+		var result = 0
+		for i = 0 to equippedCount - 1
+			if equippedItems[i] == id
+				result++
+		return result
 	function grant(string id) returns boolean
 		let value = getItem(id)
-		if value == null or value.unique and owns(id)
+		if value == null or ownedCount >= RPG_INVENTORY_CAPACITY or value.unique and owns(id)
 			return false
 		owned[ownedCount] = id
 		ownedCount++
 		return true
-	function slotIndex(string slotId) returns int
+	function slotIndex(string heroId, string slotId) returns int
 		for i = 0 to equippedCount - 1
-			if equippedSlots[i] == slotId
+			if equippedHeroes[i] == heroId and equippedSlots[i] == slotId
 				return i
 		return -1
 	function available(RpgItem value, RpgHero hero, int year, string technologies, string institutions) returns boolean
 		return value != null and hero != null and hero.level >= value.requiredLevel and (value.startYear == 0 or year >= value.startYear) and (value.endYear == 0 or year <= value.endYear) and (value.technologyId == "" or textContains(technologies,value.technologyId)) and (value.institutionId == "" or textContains(institutions,value.institutionId))
 	function equip(string heroId, string itemId, RpgHero hero, int year, string technologies, string institutions) returns boolean
 		let value = getItem(itemId)
-		if not owns(itemId) or not available(value, hero, year, technologies, institutions)
+		if hero == null or hero.id != heroId or not hero.recruited or not owns(itemId) or not available(value, hero, year, technologies, institutions)
 			return false
-		var slot = slotIndex(value.slotId)
+		if value.slotId == ""
+			return false
+		var slot = slotIndex(heroId, value.slotId)
+		if slot >= 0 and equippedItems[slot] == itemId
+			return true
+		let assigned = equippedQuantity(itemId)
+		if assigned >= ownedQuantity(itemId) or value.unique and assigned > 0 or slot < 0 and equippedCount >= RPG_INVENTORY_CAPACITY
+			return false
 		if slot < 0
 			slot = equippedCount
 			equippedSlots[slot] = value.slotId
@@ -295,11 +320,24 @@ public class PlayerInventory
 		equippedItems[slot] = itemId
 		equippedHeroes[slot] = heroId
 		return true
-	function comparison(string itemId) returns string
+	function unequip(string heroId, string slotId) returns boolean
+		let slot = slotIndex(heroId, slotId)
+		if slot < 0
+			return false
+		for i = slot to equippedCount - 2
+			equippedSlots[i] = equippedSlots[i+1]
+			equippedItems[i] = equippedItems[i+1]
+			equippedHeroes[i] = equippedHeroes[i+1]
+		equippedCount--
+		equippedSlots[equippedCount] = ""
+		equippedItems[equippedCount] = ""
+		equippedHeroes[equippedCount] = ""
+		return true
+	function comparison(string heroId, string itemId) returns string
 		let value = getItem(itemId)
 		if value == null
 			return "Unknown item"
-		let slot = slotIndex(value.slotId)
+		let slot = slotIndex(heroId, value.slotId)
 		var delta = value.power
 		if slot >= 0 and getItem(equippedItems[slot]) != null
 			delta -= getItem(equippedItems[slot]).power
@@ -309,17 +347,25 @@ public class PlayerInventory
 		else if delta < 0
 			color = "|cffff4040"
 		return value.name + " | Item level " + value.itemLevel + " | " + value.rarity + " | " + color + delta + " power|r | Set: " + value.setId
-	function setPieceCount(string setId) returns int
+	function firstSetPieceIndex(string heroId, string setId) returns int
+		for i = 0 to equippedCount - 1
+			if equippedHeroes[i] == heroId and getItem(equippedItems[i]).setId == setId
+				return i
+		return -1
+	function setPieceCount(string heroId, string setId) returns int
 		var result = 0
 		for i = 0 to equippedCount - 1
-			let value = getItem(equippedItems[i])
-			if value != null and value.setId == setId
-				result++
+			if equippedHeroes[i] == heroId
+				let value = getItem(equippedItems[i])
+				// Each named piece has one slot; the character-slot key prevents
+				// duplicate copies of that identity counting on the same wearer.
+				if value != null and value.setId == setId
+					result++
 		return result
-	function setBonusPower() returns int
+	function setBonusPower(string heroId) returns int
 		var result = 0
 		for i = 0 to setCount - 1
-			let pieces = setPieceCount(sets[i].id)
+			let pieces = setPieceCount(heroId, sets[i].id)
 			if pieces >= sets[i].partialPieces
 				result += sets[i].partialPower
 			if pieces >= sets[i].fullPieces
@@ -462,7 +508,7 @@ public interface TechnologyEffectPort
 public interface RpgProjectionPort
 	function clearEquipmentLayer()
 	function applyEquipment(string heroId,string itemId,int power)
-	function applyEquipmentSet(string setId,int power)
+	function applyEquipmentSet(string heroId,string setId,int power)
 	function clearGuidanceLayer()
 	function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
 	function clearTreasureKnowledgeLayer()
@@ -571,6 +617,11 @@ public class WarcraftRpgRuntime
 			return false
 		reconcile("player")
 		return true
+	function unequipItem(string heroId,string slotId) returns boolean
+		if heroes.get(heroId) == null or not inventory.unequip(heroId,slotId)
+			return false
+		reconcile("player")
+		return true
 	function research(string controllerId,string id,int year,int paid) returns boolean
 		return technologies.unlock(controllerId,id,year,paid,0,0)
 	function acceptQuest(string id) returns boolean
@@ -629,18 +680,7 @@ public class WarcraftRpgRuntime
 		return lastDiagnostic
 	function validQuestState(string value) returns boolean
 		return value == QUEST_OFFERED or value == QUEST_ACTIVE or value == QUEST_READY or value == QUEST_COMPLETE or value == QUEST_FAILED
-	function hasRecord(string candidate,string kind,string id) returns boolean
-		var start=3
-		while start < StringLength(candidate)
-			var finish=SubString(candidate,start,StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish=StringLength(candidate)-start
-			let record=SubString(candidate,start,start+finish)
-			if rpgField(record,0) == kind and rpgField(record,1) == id
-				return true
-			start+=finish+1
-		return false
-	function validateRecord(string candidate,string record) returns boolean
+	function validateRecord(string record) returns boolean
 		let kind=rpgField(record,0)
 		let id=rpgField(record,1)
 		if kind == "h"
@@ -648,7 +688,7 @@ public class WarcraftRpgRuntime
 		if kind == "i"
 			return rpgFieldCount(record) == 2 and inventory.getItem(id) != null
 		if kind == "e"
-			return rpgFieldCount(record) == 4 and inventory.getItem(rpgField(record,2)) != null and id == inventory.getItem(rpgField(record,2)).slotId and hasRecord(candidate,"i",rpgField(record,2)) and heroes.get(rpgField(record,3)) != null
+			return rpgFieldCount(record) == 4 and id != "" and inventory.getItem(rpgField(record,2)) != null and id == inventory.getItem(rpgField(record,2)).slotId and heroes.get(rpgField(record,3)) != null
 		if kind == "u"
 			return rpgFieldCount(record) == 3 and id != "" and technologies.get(rpgField(record,2)) != null
 		if kind == "q"
@@ -789,7 +829,7 @@ public class WarcraftRpgRuntime
 			if finish < 0
 				finish=StringLength(candidate)-start
 			let record=SubString(candidate,start,start+finish)
-			if not validateRecord(candidate,record)
+			if not validateRecord(record)
 				destroy keys
 				lastDiagnostic="RPG state contains malformed or unknown authority"
 				return false
@@ -798,8 +838,10 @@ public class WarcraftRpgRuntime
 			var key=kind+","+id
 			if kind == "u"
 				key+=","+rpgField(record,2)
+			else if kind == "e"
+				key+=","+rpgField(record,3)
 			// Multiple copies of ordinary items are valid inventory authority.
-			// Unique items, equipment slots, and all other records stay unique.
+			// Unique items, character-slot pairs, and other records stay unique.
 			if not (kind == "i" and not inventory.getItem(id).unique) and not keys.claim(key)
 				destroy keys
 				lastDiagnostic="RPG state contains duplicate authority"
@@ -808,8 +850,10 @@ public class WarcraftRpgRuntime
 				heroRecords++
 			else if kind == "i"
 				itemRecords++
+				keys.ownedCopies[inventory.itemIndex(id)]++
 			else if kind == "e"
 				equipmentRecords++
+				keys.equippedCopies[inventory.itemIndex(rpgField(record,2))]++
 			else if kind == "u"
 				unlockRecords++
 			else if kind == "q"
@@ -819,8 +863,15 @@ public class WarcraftRpgRuntime
 			else if kind == "t"
 				treasureRecords++
 			start+=finish+1
+		// Check the entire candidate, independent of record order, before any
+		// authority is changed. Every equipped record reserves one owned copy.
+		for i=0 to inventory.definitionCount-1
+			if keys.equippedCopies[i] > keys.ownedCopies[i] or inventory.definitions[i].unique and keys.equippedCopies[i] > 1
+				destroy keys
+				lastDiagnostic="RPG equipment exceeds owned item quantities"
+				return false
 		destroy keys
-		if heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > 4096 or equipmentRecords > 32 or unlockRecords > 2048
+		if heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > RPG_INVENTORY_CAPACITY or equipmentRecords > RPG_INVENTORY_CAPACITY or unlockRecords > 2048
 			lastDiagnostic="RPG state is incomplete or exceeds runtime budgets"
 			return false
 		lastDiagnostic=""
@@ -832,14 +883,19 @@ public class WarcraftRpgRuntime
 		projections.clearEquipmentLayer()
 		for i=0 to inventory.equippedCount-1
 			let equippedItem=inventory.getItem(inventory.equippedItems[i])
-			projections.applyEquipment(inventory.equippedHeroes[i],equippedItem.id,equippedItem.power)
-		for i=0 to inventory.setCount-1
-			let setDefinition=inventory.sets[i]
-			let pieces=inventory.setPieceCount(setDefinition.id)
-			if pieces >= setDefinition.partialPieces
-				projections.applyEquipmentSet(setDefinition.id,setDefinition.partialPower)
-			if pieces >= setDefinition.fullPieces
-				projections.applyEquipmentSet(setDefinition.id,setDefinition.fullPower)
+			let heroId=inventory.equippedHeroes[i]
+			projections.applyEquipment(heroId,equippedItem.id,equippedItem.power)
+			// Resolve only equipped sets, once per wearer, including inactive
+			// characters. The projection decides whether a representation exists.
+			if equippedItem.setId != "" and inventory.firstSetPieceIndex(heroId,equippedItem.setId) == i
+				let pieces=inventory.setPieceCount(heroId,equippedItem.setId)
+				for j=0 to inventory.setCount-1
+					let setDefinition=inventory.sets[j]
+					if setDefinition.id == equippedItem.setId
+						if pieces >= setDefinition.partialPieces
+							projections.applyEquipmentSet(heroId,setDefinition.id,setDefinition.partialPower)
+						if pieces >= setDefinition.fullPieces
+							projections.applyEquipmentSet(heroId,setDefinition.id,setDefinition.fullPower)
 		projections.clearGuidanceLayer()
 		if journal.trackedId != ""
 			let q=journal.get(journal.trackedId)
@@ -852,6 +908,19 @@ public class WarcraftRpgRuntime
 		heroes.loseRuntimeObjects()
 		heroes.reconstructField(owner,x,y)
 		reconcile(controllerId)
+	function inventorySummary(string heroId) returns string
+		let hero=heroes.get(heroId)
+		if hero == null
+			return "Choose a character with -inventory HERO."
+		var rows="Inventory and Equipment - "+hero.name+" ("+hero.id+")"
+		for i=0 to inventory.ownedCount-1
+			rows+="\n"+inventory.comparison(heroId,inventory.owned[i])
+		for i=0 to inventory.setCount-1
+			let definition=inventory.sets[i]
+			let pieces=inventory.setPieceCount(heroId,definition.id)
+			if pieces > 0
+				rows+="\nSet "+definition.id+": "+pieces+" pieces | "+definition.partialPieces+" pieces: +"+definition.partialPower+" | "+definition.fullPieces+" pieces: +"+definition.fullPower
+		return rows+"\nActive set bonus for "+hero.name+": +"+inventory.setBonusPower(heroId)+" power"
 
 /** Player-facing fallback presentation. Frame screens can implement the same
  * controller calls; these commands ensure every system is usable in-game. */
@@ -863,12 +932,13 @@ public function showRoster(player viewer, WarcraftRpgRuntime runtime)
 			rows += "\n"+hero.name+" - level "+hero.level+", "+hero.assignment+", loyalty "+hero.loyalty
 	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
 
-public function showInventory(player viewer, WarcraftRpgRuntime runtime)
-	var rows="Inventory and Equipment"
-	for i=0 to runtime.inventory.ownedCount-1
-		rows += "\n"+runtime.inventory.comparison(runtime.inventory.owned[i])
-	rows += "\nActive set bonus: +"+runtime.inventory.setBonusPower()+" power"
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+public function showInventory(player viewer, WarcraftRpgRuntime runtime, string heroId)
+	var selected=heroId
+	if selected == ""
+		for i=0 to runtime.heroes.count-1
+			if selected == "" and runtime.heroes.heroes[i].recruited
+				selected=runtime.heroes.heroes[i].id
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,runtime.inventorySummary(selected))
 
 public function showJournal(player viewer, WarcraftRpgRuntime runtime)
 	var rows="Quest Journal"
@@ -897,7 +967,7 @@ class RpgScreenCommand implements CommandHandler
 		if screen == "roster"
 			showRoster(sender,runtime)
 		else if screen == "inventory"
-			showInventory(sender,runtime)
+			showInventory(sender,runtime,arguments)
 		else if screen == "journal"
 			showJournal(sender,runtime)
 		else
@@ -938,6 +1008,8 @@ class RpgActionCommand implements CommandHandler
 		var ok=false
 		if action == "equip"
 			ok=runtime.equipItem(first,second,getCampaignYear())
+		else if action == "unequip"
+			ok=runtime.unequipItem(first,second)
 		else if action == "research"
 			let cost=runtime.technologies.cost(first,getCampaignYear(),0,0)
 			if GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD) >= cost
@@ -957,12 +1029,13 @@ class RpgActionCommand implements CommandHandler
 
 public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime)
 	commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster"))
-	commands.register("inventory","equipment,items","inventory","Open inventory and equipment.","Shows item level, rarity, requirements, comparisons and set bonuses.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory"))
+	commands.register("inventory","equipment,items","inventory [HERO]","Open inventory and equipment for a character.","Shows comparisons and set thresholds for the named wearer, or the first recruited character.",0,1,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory"))
 	commands.register("journal","quests","journal","Open the custom quest journal.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal"))
 	commands.register("technology","research,institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology"))
 	commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
 	commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))
 	commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip"))
+	commands.register("unequip","","unequip HERO SLOT","Remove a character's equipment assignment.","Frees the owned copy and recalculates that wearer's equipment and set effects.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"unequip"))
 	commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the displayed gold cost and applies the unlocked Warcraft effect.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research"))
 	commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept"))
 	commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Awards its persistent rewards and applies repeat or completion-lock rules.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin"))
