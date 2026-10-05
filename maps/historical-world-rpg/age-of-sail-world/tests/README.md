@@ -139,6 +139,23 @@ origin's generated coordinates with its materialized settlement and check that t
 campaign chapter selects `wurst-bootstrap/Bootstrap.wurst` using the tested shared
 writer.
 
+`CampaignLoadTransactionTests.wurst` uses the production save manager, codec and
+populated campaign domains with recording native boundaries. Checksummed candidates
+change valid RPG/military records before an invalid religion, diplomacy, trade or
+pirate-territory record. Late ordinary-polity, extension and party failures verify
+complete authority and projection rollback, retained identity/command context,
+no success observers, byte-identical source slots and original subsequent saves.
+Reentrant saves are deferred through observer delivery. Successful retry and
+repeated reconstruction verify the same projections and resources. Startup tests
+also inject projection, session, milestone and acknowledgement failures while
+restoring a bound checkpoint, then retry the retained selector handoff.
+The equipment rollback regression executes the production Warcraft projector
+through recording object identities and life writes, including later equipment
+removal and reconciliation after failed loads and successful retries. Rejected loads
+and aborted staged loads also restore clock day, cursor, fraction and speed, retain
+the original timer, and restart it only on commit; startup failure/retry fixtures
+carry a changed clock through the recoverable handoff.
+
 `CampaignTimelineTests.wurst` executes the production clock and campaign codec with
 recording listeners/timers: exact real round trips, simultaneous occurrences,
 fractional ticks, large jumps, deferred saves, malformed records, inconsistent

@@ -1,0 +1,82 @@
+{
+  "environmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+  "kind": "runtime_unavailable",
+  "message": "native Warcraft runner unavailable; set WC3_NATIVE_SAVE_RUNNER",
+  "oracle": {
+    "authoritativeDigestAfter": "5958583cb1aae375957540ce5799daeb3815c71f2f038bc8881fa4344f917332",
+    "authoritativeDigestBefore": "5958583cb1aae375957540ce5799daeb3815c71f2f038bc8881fa4344f917332",
+    "authoritativeState": {
+      "autosave": {
+        "metadataVersion": 1,
+        "nextSlot": 8,
+        "remainingSeconds": 37.5
+      },
+      "campaign": {
+        "payloadDigest": "campaign-fixture-v1",
+        "slot": "autosave_07"
+      },
+      "clock": {
+        "campaignSeconds": 1450.0,
+        "tickSeconds": 1.0
+      },
+      "deliveredEvents": [
+        "event:fixture:before-save"
+      ],
+      "entities": {
+        "fleet:vasco": {
+          "kind": "fleet",
+          "owner": "portugal",
+          "represented": true
+        },
+        "official:governor": {
+          "kind": "character",
+          "owner": "portugal",
+          "represented": false
+        },
+        "settlement:lisbon": {
+          "kind": "settlement",
+          "owner": "portugal",
+          "represented": true
+        }
+      },
+      "modalPause": {
+        "ownerCount": 1,
+        "paused": true,
+        "pausedBeforeModal": false
+      },
+      "physicalMapId": "world-map",
+      "schemaVersion": 1
+    },
+    "failures": [],
+    "fixtureVersion": 1,
+    "loads": 2,
+    "passed": true,
+    "runtimeGenerations": [
+      2,
+      3
+    ],
+    "runtimeIndex": {
+      "eventSubscriptions": [
+        "campaign-tick",
+        "entity-representation-lost"
+      ],
+      "modalFrameCount": 1,
+      "representedIds": [
+        "fleet:vasco",
+        "settlement:lisbon"
+      ],
+      "timerIds": [
+        "autosave",
+        "campaign-clock"
+      ]
+    },
+    "transientHandlesRecreated": true
+  },
+  "saveDecisions": {
+    "campaign_commit": "deferred",
+    "city_capture": "deferred",
+    "map_transition": "deferred",
+    "safe_idle": "created"
+  },
+  "status": "skip"
+}

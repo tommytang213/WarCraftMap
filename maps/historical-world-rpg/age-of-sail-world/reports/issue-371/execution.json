@@ -1,0 +1,1076 @@
+{
+  "command": [
+    "grill",
+    "test"
+  ],
+  "compiler": {
+    "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "discovered": 111,
+  "errors": [],
+  "expected": [
+    {
+      "id": "wurst/CampaignAutosaveSchedulerTests.wurst:rollingSlotsDeferralAndRestore",
+      "line": 6
+    },
+    {
+      "id": "wurst/CampaignAutosaveSchedulerTests.wurst:failureDoesNotAdvanceRollingSlot",
+      "line": 29
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation",
+      "line": 311
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
+      "line": 321
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:lateExtensionFailureRestoresEveryAuthorityAndProjection",
+      "line": 332
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
+      "line": 345
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
+      "line": 368
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRestoresInactiveMilitaryProjectionTarget",
+      "line": 375
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:slotsAndDeferredSave",
+      "line": 50
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:rejectedLoadNeverActivates",
+      "line": 67
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:transactionalFailurePreservesStorage",
+      "line": 88
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToEuropeanRegionUsesGeneratedOriginAndCodec",
+      "line": 225
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToAsianRegionUsesPhysicalStartingCoordinates",
+      "line": 228
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToAfricanRegionUsesGeneratedOriginAndCodec",
+      "line": 231
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:abstractStartingSettlementStillHasAuthoredPhysicalProjection",
+      "line": 234
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorCommitFailureAllowsAnotherChoiceAndNeverLoads",
+      "line": 237
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:unrelatedMilestoneCannotReplaceNewCampaignAndConsumedStartupIsIdempotent",
+      "line": 249
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:startupRequiresRegistrationsAndRejectsEmptyCacheWithoutSaving",
+      "line": 272
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:malformedHandoffsAndWrongPhysicalMapPreserveRecoverySaves",
+      "line": 282
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:failedDestinationProjectionAndCheckpointCommitCanRetry",
+      "line": 302
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing",
+      "line": 327
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:legacySelectorFieldsMigrateWithoutChangingCampaignSaveSchema",
+      "line": 347
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain",
+      "line": 360
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject",
+      "line": 422
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite",
+      "line": 442
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:failedMilestonePublicationAndCorruptBoundCheckpointNeverActivate",
+      "line": 456
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:invalidTransferCheckpointStopsBeforeAutosavesOrRewrites",
+      "line": 476
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:legacyTransferMigrationUsesRegisteredDefaultsAndCreatesMissingRpgParty",
+      "line": 495
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupProjectionFailureRollsBackAllDomainsAndRetries",
+      "line": 555
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupSessionFailureRollsBackBeforePublication",
+      "line": 558
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupMilestoneFailureRollsBackBeforePublication",
+      "line": 561
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
+      "line": 564
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:parsingAliasesAndArgumentValidation",
+      "line": 17
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
+      "line": 28
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:conflictsAndBuildVisibility",
+      "line": 44
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:playerCanOpenOfferRespondAndObserveWorldChange",
+      "line": 43
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:undiscoveredAndInvalidOffersStayClosed",
+      "line": 57
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:governmentRewardsValidateAndPersistWithoutDuplicateMutation",
+      "line": 67
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:pendingOffersAndRewardHistorySurviveReconstruction",
+      "line": 88
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:lateInvalidCountryRecordsPreserveActiveAuthority",
+      "line": 131
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:legacyCountryResourcesAndSparseOfferSequenceRemainCompatible",
+      "line": 159
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:firstModalAcquiresFullCampaignPause",
+      "line": 13
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:nestedModalOwnershipHoldsUntilFinalClose",
+      "line": 23
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:closeIsIdempotentAndCannotReleaseAnotherOwner",
+      "line": 40
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:finalClosePreservesPreExistingManualPause",
+      "line": 51
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:passiveUiDoesNotAcquireOrChangePause",
+      "line": 62
+    },
+    {
+      "id": "wurst/MapDiscoveryScreenTests.wurst:worldAndRegionalViewsAreModalAndKeepPhysicalRegion",
+      "line": 25
+    },
+    {
+      "id": "wurst/MapDiscoveryScreenTests.wurst:focusApisOnlyUpdatePresentation",
+      "line": 40
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:recruitmentLossReinforcementAndTraditionReachRuntimeUnits",
+      "line": 48
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity",
+      "line": 62
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly",
+      "line": 77
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:governorReplacementWarnsAndNeverImpliesPhysicalClone",
+      "line": 95
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority",
+      "line": 107
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:captureStateSurvivesMapRetirementAndReconstruction",
+      "line": 120
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration",
+      "line": 131
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority",
+      "line": 165
+    },
+    {
+      "id": "wurst/NewCampaignOriginSelectionTests.wurst:searchablePagedOriginSelectionCreatesImmutableHistory",
+      "line": 18
+    },
+    {
+      "id": "wurst/NewCampaignOriginSelectionTests.wurst:invalidOriginNeverFallsBack",
+      "line": 39
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:playableAutosaveLoadAndIntegrityAreRuntimeWired",
+      "line": 97
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:piracyCrossMapAuthorityUsesCampaignCodecAndStorageBoundary",
+      "line": 113
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:malformedDuplicatePiracyRecordsRejectAtomically",
+      "line": 150
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:prePiracyCampaignSaveMigratesToConfiguredEmptyAuthority",
+      "line": 161
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:everyAdvertisedLiveSchemaDecodesAndResavesAsCurrent",
+      "line": 172
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:currentLiveSchemaCannotSilentlyInventMissingDomains",
+      "line": 195
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition",
+      "line": 202
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:interruptedTransitionKeepsPhysicalRuntimeAndAuthority",
+      "line": 215
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:changedCityAndQuestSurviveMapRevisit",
+      "line": 229
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:invalidPhysicalBoundaryNeverLoadsMap",
+      "line": 244
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:remoteAccessDoesNotRevealUnknownOrMovePhysicalRegion",
+      "line": 255
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:bootstrapContractSupportsCommissionedPrivateeringAndPrizeDisposition",
+      "line": 25
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:unlicensedPiracyCreatesNotorietyBountyPressureAndExhaustion",
+      "line": 36
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:rejectsExpiredRevokedIneligibleAndInvalidPrizeActionsAtomically",
+      "line": 48
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:havenAndIndependentPolityUseOrdinaryCampaignAuthorities",
+      "line": 61
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:insufficientFoundingAndRejectedOrdinaryHandoffRollBack",
+      "line": 79
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition",
+      "line": 92
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:playerCanInspectBuyCarryMoveAndSellCargo",
+      "line": 12
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:runtimeRejectsCapacityAndDuplicateTransactions",
+      "line": 37
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:repeatedRouteStandingDiminishes",
+      "line": 46
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:staleDisplayRestrictionsAndFailuresRollbackAtomically",
+      "line": 60
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:tradeAuthoritySurvivesRuntimeReconstruction",
+      "line": 90
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:rejectionPreservesPricesHistoryCostBasisAndRetryIdentity",
+      "line": 132
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:toggleExplicitFormsAndEntityCategories",
+      "line": 42
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:inheritanceTransfersAndOwnedProtection",
+      "line": 62
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:campaignLoadResetsSessionOnlyMode",
+      "line": 80
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:helpRegistrationAndFeedback",
+      "line": 89
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:bootstrapRegistrationOpeningOverviewAndBenefitExplanation",
+      "line": 38
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:mixedRegionsRiseDeclineAlternateHistoryAndBoundedScalingReconcile",
+      "line": 61
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:conversionAcceptanceRejectionCooldownHistoryAndAtomicRollback",
+      "line": 72
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:saveLoadCrossMapReconstructionAndRepeatedLoadDoNotDuplicateEffects",
+      "line": 86
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:hiddenInformationFilteringAndPolicyChange",
+      "line": 99
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable",
+      "line": 117
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionRpgRegistrationReportsNameAndAliasConflicts",
+      "line": 145
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit",
+      "line": 183
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites",
+      "line": 186
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired",
+      "line": 189
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility",
+      "line": 218
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:emptySelectionUsesMainCharacter",
+      "line": 81
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:eligibleMixedAndIneligibleSelectionsAreDeterministic",
+      "line": 88
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:allFiltersRegionOwnershipAndPhysicalEligibility",
+      "line": 104
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:recoveryPriorityAndFailureDoNotMove",
+      "line": 125
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:movementClassesPreserveConnectedComponents",
+      "line": 148
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:lastSafeRoundTripStaleAndInvalidation",
+      "line": 164
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:commandValidatesAllKeywordAndPublishesHelp",
+      "line": 178
+    },
+    {
+      "id": "wurst/WC3CompatibilityCompileFixture.wurst:compatibilityTargetAndCapabilitiesArePinned",
+      "line": 5
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:recruitmentProgressionRecoveryAndReconstruction",
+      "line": 36
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:equipmentRequirementsComparisonUniquenessAndSets",
+      "line": 55
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:questTreasureTechnologyAndReconstruction",
+      "line": 74
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:authoritativeStateRoundTripsAndReconcilesExactlyOnce",
+      "line": 110
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:playerReachableActionsWorldEventsAndRepeatLock",
+      "line": 185
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:minimalOptionalRecordsHaveValidDefaultsAndReconstruct",
+      "line": 228
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration",
+      "line": 280
+    }
+  ],
+  "format": "warcraftmap_wurst_execution_v1",
+  "inputSetSha256": "cd36a7a363ed06939f11f86e6f213ad25d9be55717a6ef9195c7b5bcfa4b5232",
+  "inputs": {
+    "_build/blizzard.j": "b6db172525d7b106781337252efcba4f56bceb16bb4832680ad07dea052e6e26",
+    "_build/common.j": "7561e8be53a01c7105aec9a09b707ac168495a412d059e68e39e24dcf92f8fbb",
+    "wurst.build": "4fdc3183fd16ab396762bfb7a7488c90ed005c1e066a2afef27d77911d5f5d81",
+    "wurst/Bootstrap.wurst": "c75b2b44d8123ccfea164952dd45688b3a9790a7e7c9a0142a75fe762c0bc94f",
+    "wurst/CampaignAutosaveScheduler.wurst": "8d55c2f2478eb05467506c494744acc9cb4082a083a75b4de565671b46978a8b",
+    "wurst/CampaignAutosaveSchedulerTests.wurst": "252890a9043704ee94d1bd85c1713a0fdc8ceec9df03e63889b25cb29037e112",
+    "wurst/CampaignHandoff.wurst": "193b93af5e9ff8e4a17ffab289499fc87ea3b6e92202f769294154db1761ad62",
+    "wurst/CampaignLoadTransactionTests.wurst": "5e8a92f3ed424be3690da08bb4a3016c9fb24553f2d797fe6c839511c86a1384",
+    "wurst/CampaignRegistration.wurst": "a6e48184584f001eba24ceb59382aab22ef1910e1a47217daf00e1f786d0c430",
+    "wurst/CampaignSaveManager.wurst": "07dab199a63fe5609ad5514e2518047aaf0c6ef6e8f4149ce8744db97ab2a38c",
+    "wurst/CampaignSaveManagerTests.wurst": "b0c6cae9d0018669527baeb78e3c842872e984b4090515b128ae78b601ce51ad",
+    "wurst/CampaignStartupTests.wurst": "a88d0abd4bb1ecec72704324586500259b90914737c22860ac9fed4ead4121e6",
+    "wurst/CampaignTimeline.wurst": "0332df4e83e6d30fe19c4db77872aaa7c288f6936fd7a23c86fd79b3985ada93",
+    "wurst/CommandRouter.wurst": "3092b50789bc8e812d00ca31d011a0fc6b63a79743cb3daa2a84511895d9d00f",
+    "wurst/CommandRouterTests.wurst": "485019b7dcd773828c4758dff908bcc563199709214e0fc572a216476aab1e13",
+    "wurst/CountryDiplomacyScreen.wurst": "b0a61823970fe4298d64b363fbe99febc77987115e41921ed2e4e8dbf922f9ff",
+    "wurst/CountryDiplomacyScreenTests.wurst": "bcf3636b4e55ac6a5283ebb48a6460d4d1157ef49e06eba18339ac59c00b4508",
+    "wurst/LocalBattleBenchmark.wurst": "00f5188b59662220ddc0ecad3bbd6f547cdc2a0686f4c61ae45714247ab0617d",
+    "wurst/ManagementScreenPauseController.wurst": "ad1668eb6bedf5b6bb92962ddf34e0041ffa66395de341b3144f4f3199660985",
+    "wurst/ManagementScreenPauseControllerTests.wurst": "6197a43e8bb688721d76d55ed077eced7616135a3167a93d89a94e5779d83476",
+    "wurst/MapDiscoveryScreen.wurst": "b116271c589eceb339edfec42328441dcbdc5b0d77f4c6902c7c2af873dd32a0",
+    "wurst/MapDiscoveryScreenTests.wurst": "a2f5cc88ea1cf1aa0353d87cae68d933e5143dc16587555b35613c69bab68ffb",
+    "wurst/MilitarySettlementRuntime.wurst": "36c4b3b0600a654ec36c7a5a11e208f4229a23fa47d78823d6acce391cd3044c",
+    "wurst/MilitarySettlementRuntimeTests.wurst": "76029e9b4639b1f0c9797677a5b66d13433e6a338410c726c9542d3de51ae442",
+    "wurst/NativeSaveRegressionFixture.wurst": "935927029ac4677909f8b7bc4ec4bb2d8aba138e0ce2f193a91183d1aca43390",
+    "wurst/NewCampaignOriginSelectionTests.wurst": "9e56c579c0bc7491d3a3357ef5a7bf023343a2c71ca49af72399714a71156eba",
+    "wurst/PlayableCampaignRuntime.wurst": "6210bca2633b4b8bfb2e24bede3faeac7d7814e5ab04ae3ac04747c4485856b9",
+    "wurst/PlayableCampaignRuntimeTests.wurst": "b7aaec1510d38bef177f64e0b63ed03d9ae9308eb741013ff8fb7dbb428d0c70",
+    "wurst/PlayableCountryInteractions.wurst": "8270da93f397628869016637bc3cafe5c17d640f2d65311ed18edadcb6ee6151",
+    "wurst/PlayablePiracy.wurst": "4222e0290b4feeaa1ff5c0a3c7acaf2cab8eeb5bcf2a21961c9d6a8878248e85",
+    "wurst/PlayablePiracyTests.wurst": "8ceb79daaab2f9ad083ee265d0da4d343e61022bbfdda0bbcbc938cc6283f21b",
+    "wurst/PlayableTrade.wurst": "c1f2acc9f954f0ca28abf9c2cc23f7b92a8a2c7e04e966fad568e5eb0f18921f",
+    "wurst/PlayableTradeTests.wurst": "8ff3e8850ce2fba4cda774627f97d680aa590605b45ea6a90ba5eaced860f83d",
+    "wurst/PlayerGodMode.wurst": "97e490799df52854acf0097ccd35c1e680e0beb92b8117f4c81dfbd22045f5e1",
+    "wurst/PlayerGodModeTests.wurst": "a785fc56c568d1b6c2d994e8d90efce8e625fb0d7d378d024fe3aa5549f7459b",
+    "wurst/ReligionRuntime.wurst": "f3b19255d35efa7834d596b9631ee53d55897d6a0215375a98efd6cd2e50f376",
+    "wurst/ReligionRuntimeTests.wurst": "ed382d5dc5444e39a3e8dcce7688cff73870748bf2daaac9c502d06f5a841dd7",
+    "wurst/RemoteRegionManagement.wurst": "f55794d11beaa97acb6f8033bd619d2f5a3014f2408e78fffc9ade78e5f31376",
+    "wurst/ResearchRuntimeTests.wurst": "44cd2a6f19e90f5e13c8d03dc6440f9c0feb088cdf490d85f5ca1697687a71df",
+    "wurst/ScenarioData.wurst": "51d4a7f6eac24dbba5798ed659442b206e64482bd8d21baac150914a4ea1ea87",
+    "wurst/UnstuckRecovery.wurst": "f9f5c84962edce487edb00e126272aca04b5749d1559164abc91e97c814fc6b9",
+    "wurst/UnstuckRecoveryTests.wurst": "b9aafd458d0526aeba419005ff2689a02d8ac358f490520bb0dbb8e59adc5204",
+    "wurst/WC3Compatibility.wurst": "074ced5a9376f5ec4dc3ba8ddc554462fd29e7530e2765d452dfa20fc99476dc",
+    "wurst/WC3CompatibilityCompileFixture.wurst": "ad91a9b4e5b08130773aa6311afe69dc44f0069ff1ce948b427e97236214f4bb",
+    "wurst/WarcraftRecoveryRuntime.wurst": "260f0e740ea3c6fb396cf52a5f84aa63eb261e0f489a232ee71eaa470b284937",
+    "wurst/WarcraftRegionalRuntime.wurst": "aff0c4162a22e3eb1c6df17ced874b16e48b4cd5eff5a537daedae77b9e23e56",
+    "wurst/WarcraftRpgRuntime.wurst": "69022e5885103dad471eb1a0d45c46479536255343daa07566de158927790cb2",
+    "wurst/WarcraftRpgRuntimeTests.wurst": "a1347a287a4a94f05a68ccfd3b4a5802887218b1546d192e903f9ed640242ec1",
+    "wurst_run.args": "d6efe3b56042652bbb7829d4b2574d69d1727e0bcc29521bef7d1f37647a5ff6"
+  },
+  "logSha256": "0efcf7dbcc04158a8d1e653c41a8403fe8145c37731211f6814cc2908ce5ea77",
+  "returnCode": 0,
+  "sourceRevision": "a6e09039bb96d17694a0ae3695ee15b688d7c042",
+  "status": "pass",
+  "succeeded": 111,
+  "tests": [
+    {
+      "id": "wurst/CampaignAutosaveSchedulerTests.wurst:rollingSlotsDeferralAndRestore",
+      "line": 6,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignAutosaveSchedulerTests.wurst:failureDoesNotAdvanceRollingSlot",
+      "line": 29,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation",
+      "line": 311,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
+      "line": 321,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:lateExtensionFailureRestoresEveryAuthorityAndProjection",
+      "line": 332,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
+      "line": 345,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
+      "line": 368,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRestoresInactiveMilitaryProjectionTarget",
+      "line": 375,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:slotsAndDeferredSave",
+      "line": 50,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:rejectedLoadNeverActivates",
+      "line": 67,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:transactionalFailurePreservesStorage",
+      "line": 88,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToEuropeanRegionUsesGeneratedOriginAndCodec",
+      "line": 225,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToAsianRegionUsesPhysicalStartingCoordinates",
+      "line": 228,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorToAfricanRegionUsesGeneratedOriginAndCodec",
+      "line": 231,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:abstractStartingSettlementStillHasAuthoredPhysicalProjection",
+      "line": 234,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:selectorCommitFailureAllowsAnotherChoiceAndNeverLoads",
+      "line": 237,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:unrelatedMilestoneCannotReplaceNewCampaignAndConsumedStartupIsIdempotent",
+      "line": 249,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:startupRequiresRegistrationsAndRejectsEmptyCacheWithoutSaving",
+      "line": 272,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:malformedHandoffsAndWrongPhysicalMapPreserveRecoverySaves",
+      "line": 282,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:failedDestinationProjectionAndCheckpointCommitCanRetry",
+      "line": 302,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing",
+      "line": 327,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:legacySelectorFieldsMigrateWithoutChangingCampaignSaveSchema",
+      "line": 347,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain",
+      "line": 360,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject",
+      "line": 422,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite",
+      "line": 442,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:failedMilestonePublicationAndCorruptBoundCheckpointNeverActivate",
+      "line": 456,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:invalidTransferCheckpointStopsBeforeAutosavesOrRewrites",
+      "line": 476,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:legacyTransferMigrationUsesRegisteredDefaultsAndCreatesMissingRpgParty",
+      "line": 495,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupProjectionFailureRollsBackAllDomainsAndRetries",
+      "line": 555,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupSessionFailureRollsBackBeforePublication",
+      "line": 558,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupMilestoneFailureRollsBackBeforePublication",
+      "line": 561,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
+      "line": 564,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:parsingAliasesAndArgumentValidation",
+      "line": 17,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
+      "line": 28,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CommandRouterTests.wurst:conflictsAndBuildVisibility",
+      "line": 44,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:playerCanOpenOfferRespondAndObserveWorldChange",
+      "line": 43,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:undiscoveredAndInvalidOffersStayClosed",
+      "line": 57,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:governmentRewardsValidateAndPersistWithoutDuplicateMutation",
+      "line": 67,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:pendingOffersAndRewardHistorySurviveReconstruction",
+      "line": 88,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:lateInvalidCountryRecordsPreserveActiveAuthority",
+      "line": 131,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CountryDiplomacyScreenTests.wurst:legacyCountryResourcesAndSparseOfferSequenceRemainCompatible",
+      "line": 159,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:firstModalAcquiresFullCampaignPause",
+      "line": 13,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:nestedModalOwnershipHoldsUntilFinalClose",
+      "line": 23,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:closeIsIdempotentAndCannotReleaseAnotherOwner",
+      "line": 40,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:finalClosePreservesPreExistingManualPause",
+      "line": 51,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ManagementScreenPauseControllerTests.wurst:passiveUiDoesNotAcquireOrChangePause",
+      "line": 62,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MapDiscoveryScreenTests.wurst:worldAndRegionalViewsAreModalAndKeepPhysicalRegion",
+      "line": 25,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MapDiscoveryScreenTests.wurst:focusApisOnlyUpdatePresentation",
+      "line": 40,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:recruitmentLossReinforcementAndTraditionReachRuntimeUnits",
+      "line": 48,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity",
+      "line": 62,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly",
+      "line": 77,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:governorReplacementWarnsAndNeverImpliesPhysicalClone",
+      "line": 95,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority",
+      "line": 107,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:captureStateSurvivesMapRetirementAndReconstruction",
+      "line": 120,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration",
+      "line": 131,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitarySettlementRuntimeTests.wurst:changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority",
+      "line": 165,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/NewCampaignOriginSelectionTests.wurst:searchablePagedOriginSelectionCreatesImmutableHistory",
+      "line": 18,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/NewCampaignOriginSelectionTests.wurst:invalidOriginNeverFallsBack",
+      "line": 39,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:playableAutosaveLoadAndIntegrityAreRuntimeWired",
+      "line": 97,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:piracyCrossMapAuthorityUsesCampaignCodecAndStorageBoundary",
+      "line": 113,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:malformedDuplicatePiracyRecordsRejectAtomically",
+      "line": 150,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:prePiracyCampaignSaveMigratesToConfiguredEmptyAuthority",
+      "line": 161,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:everyAdvertisedLiveSchemaDecodesAndResavesAsCurrent",
+      "line": 172,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:currentLiveSchemaCannotSilentlyInventMissingDomains",
+      "line": 195,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition",
+      "line": 202,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:interruptedTransitionKeepsPhysicalRuntimeAndAuthority",
+      "line": 215,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:changedCityAndQuestSurviveMapRevisit",
+      "line": 229,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:invalidPhysicalBoundaryNeverLoadsMap",
+      "line": 244,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableCampaignRuntimeTests.wurst:remoteAccessDoesNotRevealUnknownOrMovePhysicalRegion",
+      "line": 255,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:bootstrapContractSupportsCommissionedPrivateeringAndPrizeDisposition",
+      "line": 25,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:unlicensedPiracyCreatesNotorietyBountyPressureAndExhaustion",
+      "line": 36,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:rejectsExpiredRevokedIneligibleAndInvalidPrizeActionsAtomically",
+      "line": 48,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:havenAndIndependentPolityUseOrdinaryCampaignAuthorities",
+      "line": 61,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:insufficientFoundingAndRejectedOrdinaryHandoffRollBack",
+      "line": 79,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayablePiracyTests.wurst:saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition",
+      "line": 92,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:playerCanInspectBuyCarryMoveAndSellCargo",
+      "line": 12,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:runtimeRejectsCapacityAndDuplicateTransactions",
+      "line": 37,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:repeatedRouteStandingDiminishes",
+      "line": 46,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:staleDisplayRestrictionsAndFailuresRollbackAtomically",
+      "line": 60,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:tradeAuthoritySurvivesRuntimeReconstruction",
+      "line": 90,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:rejectionPreservesPricesHistoryCostBasisAndRetryIdentity",
+      "line": 132,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:toggleExplicitFormsAndEntityCategories",
+      "line": 42,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:inheritanceTransfersAndOwnedProtection",
+      "line": 62,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:campaignLoadResetsSessionOnlyMode",
+      "line": 80,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/PlayerGodModeTests.wurst:helpRegistrationAndFeedback",
+      "line": 89,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:bootstrapRegistrationOpeningOverviewAndBenefitExplanation",
+      "line": 38,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:mixedRegionsRiseDeclineAlternateHistoryAndBoundedScalingReconcile",
+      "line": 61,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:conversionAcceptanceRejectionCooldownHistoryAndAtomicRollback",
+      "line": 72,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:saveLoadCrossMapReconstructionAndRepeatedLoadDoNotDuplicateEffects",
+      "line": 86,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ReligionRuntimeTests.wurst:hiddenInformationFilteringAndPolicyChange",
+      "line": 99,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable",
+      "line": 117,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionRpgRegistrationReportsNameAndAliasConflicts",
+      "line": 145,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit",
+      "line": 183,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites",
+      "line": 186,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired",
+      "line": 189,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility",
+      "line": 218,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:emptySelectionUsesMainCharacter",
+      "line": 81,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:eligibleMixedAndIneligibleSelectionsAreDeterministic",
+      "line": 88,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:allFiltersRegionOwnershipAndPhysicalEligibility",
+      "line": 104,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:recoveryPriorityAndFailureDoNotMove",
+      "line": 125,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:movementClassesPreserveConnectedComponents",
+      "line": 148,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:lastSafeRoundTripStaleAndInvalidation",
+      "line": 164,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/UnstuckRecoveryTests.wurst:commandValidatesAllKeywordAndPublishesHelp",
+      "line": 178,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WC3CompatibilityCompileFixture.wurst:compatibilityTargetAndCapabilitiesArePinned",
+      "line": 5,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:recruitmentProgressionRecoveryAndReconstruction",
+      "line": 36,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:equipmentRequirementsComparisonUniquenessAndSets",
+      "line": 55,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:questTreasureTechnologyAndReconstruction",
+      "line": 74,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:authoritativeStateRoundTripsAndReconcilesExactlyOnce",
+      "line": 110,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:playerReachableActionsWorldEventsAndRepeatLock",
+      "line": 185,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:minimalOptionalRecordsHaveValidDefaultsAndReconstruct",
+      "line": 228,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftRpgRuntimeTests.wurst:generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration",
+      "line": 280,
+      "status": "pass"
+    }
+  ]
+}

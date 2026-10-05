@@ -39,6 +39,8 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 	RpgEquipmentNatives natives
 	int array[2048] appliedRepresentation
 	int array[2048] appliedLife
+	int array[2048] retainedLife
+	boolean partyLoading = false
 	quest array[1024] guidance
 	int guidanceCount = 0
 	quest array[512] knowledge
@@ -49,6 +51,26 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 	construct(HeroRoster heroes, RpgEquipmentNatives natives)
 		this.heroes = heroes
 		this.natives = natives
+	override function beginPartyLoad()
+		partyLoading = true
+		for i = 0 to heroes.count - 1
+			retainedLife[i] = 0
+			if appliedRepresentation[i] != 0 and appliedRepresentation[i] == natives.representationId(i)
+				retainedLife[i] = appliedLife[i]
+	override function rollbackPartyLoad()
+		if not partyLoading
+			return
+		for i = 0 to heroes.count - 1
+			// The retained units still have their old bonuses. Restore only the
+			// bookkeeping; native life writes here could clamp current health.
+			// Observing a reattached handle may assign a new projection identity.
+			appliedRepresentation[i] = natives.representationId(i)
+			appliedLife[i] = retainedLife[i]
+		commitPartyLoad()
+	override function commitPartyLoad()
+		for i = 0 to heroes.count - 1
+			retainedLife[i] = 0
+		partyLoading = false
 	override function clearEquipmentLayer()
 		for i = 0 to heroes.count - 1
 			// Remove only our contribution on the same surviving representation.

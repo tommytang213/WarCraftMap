@@ -97,6 +97,7 @@ def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict
             defense = authored.get("defenseClass", authoritative.get("kind", "town"))
             strength = {"capital": 40, "fortified": 32, "fort": 32, "port": 24}.get(defense, 20)
             result.append({"id": authored["id"], "controllerId": authoritative["controllerPolityId"],
+                "legalOwnerId": authoritative["legalOwnerPolityId"],
                 "regionId": authored.get("physicalMapId", authored["regionalInstanceId"]),
                 "x": round(float(position[0]) * 128.0, 3), "y": round(float(position[1]) * 128.0, 3),
                 "strength": strength, "reserves": strength * 2, "manpower": strength * 4, "supply": strength * 3,
@@ -140,13 +141,26 @@ def _load_country_interaction_runtime_data(config: BuildConfig, world: dict) -> 
             territory_count[owner["id"]] += 1
     research = {row["polityId"]: row for row in world.get("polityResearchStates", [])}
     conflicts = []
+    conflict_by_id = {}
     politics_paths = sorted((config.project / "scenario/politics").glob("*-1450.json"))
     for path in politics_paths:
         source = json.loads(path.read_text(encoding="utf-8"))
         for conflict in source.get("activeConflicts", []):
-            parties = list(conflict.get("attackerPolityIds", [])) + list(conflict.get("defenderPolityIds", []))
-            if all(party in polity_ids for party in parties):
-                conflicts.append({"id": conflict["id"], "parties": parties})
+            attackers = list(conflict.get("attackerPolityIds", []))
+            defenders = list(conflict.get("defenderPolityIds", []))
+            parties = attackers + defenders
+            if (not attackers or not defenders or len(parties) != len(set(parties))
+                    or not all(party in polity_ids for party in parties) or len(parties) > 64):
+                raise _fail("generation", f"invalid conflict membership: {conflict['id']}")
+            row = {"id": conflict["id"], "attackerPolityIds": attackers, "defenderPolityIds": defenders}
+            previous = conflict_by_id.get(row["id"])
+            if previous and previous != row:
+                raise _fail("generation", f"conflicting definitions for conflict: {row['id']}")
+            if not previous:
+                conflicts.append(row)
+                conflict_by_id[row["id"]] = row
+    if len(conflicts) > 256:
+        raise _fail("generation", "conflict runtime capacity exceeded")
     polities = []
     for polity in world.get("polities", []):
         polity_id = polity["id"]
@@ -339,7 +353,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
     military_lines = ["\npublic function configureMilitarySettlementScenario(MilitarySettlementRuntime runtime)"]
     for row in settlement_runtime:
-        military_lines.append(f'\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}))')
+        military_lines.append(f'\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}).withLegalOwner("{ws(row["legalOwnerId"])}"))')
         military_lines.append(f'\truntime.registerForce(new RuntimeForce("defense:{ws(row["id"])}:primary", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "siege", FORCE_DEFENSE, \'hgtw\', {row["strength"]}, {row["supply"]}, {row["x"] + 192.}, {row["y"]}))')
         official = row["official"]
         military_lines.append(f'\truntime.appoint("{ws(row["id"])}", new AdministratorState("{ws(official["characterId"])}", "{ws(official["displayName"])}", "Acting Administrator", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "{ws(row["id"])}", 50, 50, 40, 1))')
@@ -365,9 +379,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
         countries.append(f'\truntime.registerPolityResources("{ws(row["id"])}", {row["treasury"]}, {row["stock"]})')
         for reward in row["rewards"]:
             countries.append(f'\truntime.registerRewardProfile(new GovernmentRewardProfile("{ws(row["id"])}", "{ws(reward["id"])}", "{ws(reward["kind"])}", {reward["threshold"]}, {reward["reputation"]}, {reward["treasuryCost"]}, {str(reward["foreignService"]).lower()}))')
+    conflict_lines = ["\npublic function configureGeneratedConflicts(MilitarySettlementRuntime runtime)"]
     for conflict in country_runtime["conflicts"]:
-        for party in conflict["parties"]:
-            countries.append(f'\truntime.setActiveConflict("{ws(party)}", "{ws(conflict["id"])}")')
+        for side, key in ((1, "attackerPolityIds"), (2, "defenderPolityIds")):
+            for party in conflict[key]:
+                conflict_lines.append(f'\truntime.registerConflictMember("{ws(conflict["id"])}", "{ws(party)}", {side})')
+    conflict_lines.append("\truntime.rememberConflictDefaults()")
+    military_lines.insert(1, "\tconfigureGeneratedConflicts(runtime)")
     if len(countries) == 1:
         countries.append("\tskip")
     religion_lines = ["\npublic function configureGeneratedReligion(ReligionRuntime runtime)"]
@@ -475,7 +493,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         origin_configuration = campaign_origin_configuration(origins, campaign.maps)
         runtime['boundaryNavigation'] = campaign_boundary_navigation(campaign, generated)
         arrival_configuration = campaign_arrival_configuration(campaign, runtime['boundaryNavigation'])
-    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport MilitarySettlementRuntime\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
+    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport MilitarySettlementRuntime\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
     wurst = wurst.replace('import UnstuckRecovery\n', 'import UnstuckRecovery\nimport BoundaryArrival\n')
     wurst += arrival_configuration
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
