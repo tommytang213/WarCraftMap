@@ -221,10 +221,13 @@ public class PlayableCampaignState implements CampaignStatePort
 		extension = value
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
+		countries.setMilitaryAuthority(militarySettlements)
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
+		if countries != null
+			countries.setMilitaryAuthority(runtime)
 	function setReligionRuntime(ReligionRuntime runtime)
 		religion = runtime
 	function setPiracyRuntime(PiracyRuntime runtime)
@@ -301,14 +304,21 @@ public class PlayableCampaignState implements CampaignStatePort
 			lastDiagnostic = religion.lastDiagnostic
 			return false
 		var foundedPolity = ""
-		if piracy != null and piracy.stagedRestore.polity != null
+		if piracy != null and piracy.stagedRestore != null and piracy.stagedRestore.polity != null
 			foundedPolity = piracy.stagedRestore.polity.id
 			if piracy.polityAuthority == null or not piracy.polityAuthority.validateReconciliation(piracy.stagedRestore.polity, lastAuthorityValue(candidate, "militarySettlements"))
 				lastDiagnostic = "ordinary campaign authorities rejected staged pirate-polity reconciliation"
 				return false
-		if countries != null and (not countries.validateState(lastAuthorityValue(candidate, "diplomacy"), foundedPolity) or not countries.validateState(lastAuthorityValue(candidate, "rewards"), foundedPolity))
-			lastDiagnostic = countries.diagnostic()
-			return false
+		if countries != null
+			var warfare = militarySettlements
+			if warfare != null
+				warfare = militarySettlements.parseSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+			let valid = countries.validateState(lastAuthorityValue(candidate, "diplomacy"), warfare, foundedPolity) and countries.validateState(lastAuthorityValue(candidate, "rewards"), warfare, foundedPolity)
+			if warfare != null
+				warfare.dispose()
+			if not valid
+				lastDiagnostic = countries.diagnostic()
+				return false
 		if extension != null and not extension.validate(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade authority is invalid"
 			return false

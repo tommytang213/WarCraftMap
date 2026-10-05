@@ -54,6 +54,9 @@ class WurstExecutionTests(unittest.TestCase):
         discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
         self.assertTrue({
             "checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation",
+            "countryOfferBindingsValidateAgainstCandidateConflictsInBothDomains",
+            "failedLoadRetainsSettledConflictsBoundOffersAndActiveSieges",
+            "legacyMilitaryMigrationSupportsFoundedPolityReconciliation",
             "invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
             "lateExtensionFailureRestoresEveryAuthorityAndProjection",
             "latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",

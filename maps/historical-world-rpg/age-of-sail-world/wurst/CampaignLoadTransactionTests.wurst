@@ -348,6 +348,74 @@ class LoadFixture
 	f.polity.applications.assertEquals(0)
 	f.ports.partyCalls.assertEquals(1)
 
+@test function countryOfferBindingsValidateAgainstCandidateConflictsInBothDomains()
+	let f = new LoadFixture()
+	let other = new LoadFixture()
+	other.military.registerConflictMember("candidate_war", "england", 1).assertTrue()
+	other.military.registerConflictMember("candidate_war", "portugal", 2).assertTrue()
+	other.campaign.countries.discover("portugal").assertTrue()
+	(other.campaign.countries.createOffer("candidate_war", "portugal", "ceasefire") != "").assertTrue()
+	let before = f.campaign.state.captureAuthoritativeState()
+	let candidate = other.campaign.state.captureAuthoritativeState()
+	// Membership exists only in the candidate, so live-conflict validation
+	// would incorrectly reject this valid save.
+	f.campaign.state.validateAuthoritativeState(candidate).assertTrue()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	let unbound = "v2|o,player_offer_1,portugal,0,ceasefire,unrelated_war,england"
+	f.rejectAndVerify(candidate + ";diplomacy=" + unbound)
+	f.rejectAndVerify(candidate + ";rewards=" + unbound)
+	// A different candidate war cannot inherit an otherwise valid offer.
+	f.rejectAndVerify(candidate + ";militarySettlements=" + f.military.snapshot())
+	f.extension.applications.assertEquals(0)
+	f.polity.applications.assertEquals(0)
+	f.ports.partyCalls.assertEquals(1)
+
+@test function failedLoadRetainsSettledConflictsBoundOffersAndActiveSieges()
+	let f = new LoadFixture()
+	f.campaign.countries.discover("portugal").assertTrue()
+	f.campaign.countries.setPeaceAuthority(new CampaignCountryPeaceAuthority(f.military))
+	f.military.registerConflictMember("settled_war", "england", 1).assertTrue()
+	f.military.registerConflictMember("settled_war", "portugal", 2).assertTrue()
+	let settled = f.campaign.countries.createOffer("settled_war", "portugal", "ceasefire")
+	f.campaign.countries.respondToOffer(settled, true, true).assertEquals("Peace concluded under the negotiated terms.")
+	f.military.registerConflictMember("current_war", "england", 1).assertTrue()
+	f.military.registerConflictMember("current_war", "portugal", 2).assertTrue()
+	let pending = f.campaign.countries.createOffer("current_war", "portugal", "ceasefire")
+	f.military.beginSettlementAttack("port", "portugal", 10.).assertTrue()
+	f.military.tick(10.)
+	f.extension.fail = true
+	f.rejectAndVerify(f.candidate())
+	f.extension.applications.assertEquals(1)
+	f.military.activeOpponents("settled_war", "england", "portugal").assertFalse()
+	f.military.activeOpponents("current_war", "england", "portugal").assertTrue()
+	f.military.settlements[0].underAttack.assertTrue()
+	f.campaign.countries.respondToOffer(pending, true, true).assertEquals("Peace concluded under the negotiated terms.")
+	f.military.atWar("england", "portugal").assertFalse()
+	f.military.settlements[0].underAttack.assertFalse()
+	f.military.beginSettlementAttack("port", "portugal", 30.).assertFalse()
+	f.military.capture("port", "portugal", 30.).assertFalse()
+
+@test function legacyMilitaryMigrationSupportsFoundedPolityReconciliation()
+	let f = new LoadFixture()
+	let other = new LoadFixture()
+	other.piracy.polity = new PiratePolityState("free_port", "free_republic", "Free Port", "First Captain", "port", "port")
+	// Historical v1 records predate legal ownership, siege attribution and
+	// named conflict membership. The founding validator must migrate them too.
+	let legacyMilitary = "v1|a,europe_west|f,core:port,free_port,europe_west,siege,4," + I2S('htow') + ",100,100,50,12.000,34.000,1,hold,0.000,0.000|s,port,free_port,europe_west," + I2S('htow') + "," + I2S('hfoo') + ",30,30,20,50,50,10,10.000,20.000,0.000,0.000,0.000,12.000,34.000,0|w,england,portugal"
+	let legacyCountries = "v1|p,free_port,1,0,0,0,777,0"
+	let candidate = other.campaign.state.captureAuthoritativeState() + ";militarySettlements=" + legacyMilitary + ";diplomacy=" + legacyCountries + ";rewards=" + legacyCountries
+	f.store(candidate)
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.atWar("england", "portugal").assertTrue()
+	f.military.settlements[0].legalOwnerId.assertEquals("free_port")
+	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
+	f.military.snapshot().startsWith("v2|").assertTrue()
+	f.campaign.countries.captureState().startsWith("v2|").assertTrue()
+	let migrated = f.campaign.state.captureAuthoritativeState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	f.campaign.state.captureAuthoritativeState().assertEquals(migrated)
+
 @test function invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks()
 	let f = new LoadFixture()
 	let candidate = f.candidate()

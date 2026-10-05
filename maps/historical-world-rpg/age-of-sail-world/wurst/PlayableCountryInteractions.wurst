@@ -2,6 +2,7 @@ package PlayableCountryInteractions
 
 import CommandRouter
 import CountryDiplomacyScreen
+import MilitarySettlementRuntime
 
 /** Campaign-owned conflict/territory commit port.  UI records never apply a
  * treaty directly to Warcraft objects. */
@@ -33,6 +34,7 @@ public class GovernmentRewardProfile
 public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthority
 	PlayerCampaignIdentity identity
 	CountryPeaceAuthority peaceAuthority = null
+	MilitarySettlementRuntime military = null
 	string array[512] polityIds
 	boolean array[512] known
 	// Used only by an isolated restoration candidate, never persisted.
@@ -46,11 +48,15 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	GovernmentRewardProfile array[1024] profiles
 	boolean array[1024] granted
 	int profileCount = 0
+	// v1 migration input only. Active conflict authority lives in military.
+	boolean legacyState = false
 	string array[128] conflictPolities
 	string array[128] conflictIds
 	int conflictCount = 0
 	string array[128] offerIds
 	string array[128] offerPolities
+	string array[128] offerConflicts
+	string array[128] offerInitiators
 	string array[128] offerTerms
 	int array[128] offerStatus
 	int offerCount = 0
@@ -58,6 +64,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	string lastDiagnostic = ""
 	construct(PlayerCampaignIdentity identity)
 		this.identity = identity
+	function setMilitaryAuthority(MilitarySettlementRuntime authority)
+		military = authority
 	function setPeaceAuthority(CountryPeaceAuthority authority)
 		peaceAuthority = authority
 	function polityIndex(string polityId) returns int
@@ -116,16 +124,6 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return false
 		contribution[i] += magnitude
 		return true
-	function setActiveConflict(string polityId, string conflictId)
-		for i = 0 to conflictCount - 1
-			if conflictPolities[i] == polityId
-				conflictIds[i] = conflictId
-				return
-		if polityIndex(polityId) < 0 or conflictCount >= 128
-			return
-		conflictPolities[conflictCount] = polityId
-		conflictIds[conflictCount] = conflictId
-		conflictCount++
 	override function isKnown(string polityId) returns boolean
 		let i = polityIndex(polityId)
 		return i >= 0 and known[i]
@@ -141,16 +139,15 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	override function activeConflictWith(string polityId) returns string
 		if not isKnown(polityId)
 			return ""
-		for i = 0 to conflictCount - 1
-			if conflictPolities[i] == polityId
-				return conflictIds[i]
-		return ""
+		if military == null
+			return ""
+		return military.activeConflictBetween(identity.allegianceId(), polityId)
 	override function validateOffer(string conflictId, string recipientPolityId, string terms) returns string
 		if not isKnown(recipientPolityId)
 			return "You cannot negotiate with an undiscovered government."
-		if conflictId == "" or activeConflictWith(recipientPolityId) != conflictId
+		if military == null or not military.activeOpponents(conflictId, identity.allegianceId(), recipientPolityId)
 			return "There is no active war to settle."
-		if terms == "" or terms.indexOf("impossible") >= 0
+		if terms == "" or terms.indexOf("impossible") >= 0 or terms.indexOf("|") >= 0 or terms.indexOf(",") >= 0 or terms.indexOf(";") >= 0
 			return "Those terms are impossible."
 		return ""
 	override function createOffer(string conflictId, string recipientPolityId, string terms) returns string
@@ -160,6 +157,8 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 		nextOffer++
 		offerIds[offerCount] = id
 		offerPolities[offerCount] = recipientPolityId
+		offerConflicts[offerCount] = conflictId
+		offerInitiators[offerCount] = identity.allegianceId()
 		offerTerms[offerCount] = terms
 		offerStatus[offerCount] = 0
 		offerCount++
@@ -170,20 +169,15 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return "Offer is not pending."
 		if accept and not confirmed
 			return "Confirmation required."
-		if accept and activeConflictWith(offerPolities[i]) == ""
+		if accept and (identity.allegianceId() != offerInitiators[i] or validateOffer(offerConflicts[i], offerPolities[i], offerTerms[i]) != "")
 			return "The conflict state no longer permits this treaty."
-		if accept and peaceAuthority != null and not peaceAuthority.commitPeace(activeConflictWith(offerPolities[i]), offerTerms[i])
+		if accept and (peaceAuthority == null or not peaceAuthority.commitPeace(offerConflicts[i], offerTerms[i]))
 			return "The conflict or territorial authority rejected these terms."
-		// Commit only after every current-state check has passed.
-		offerStatus[i] = 1
+		// The adapter commits the shared conflict and territorial authority first.
 		if accept
-			let settledConflict = activeConflictWith(offerPolities[i])
-			for c = 0 to conflictCount - 1
-				// Every party projects the same authoritative conflict ID.  Ending
-				// it for all parties prevents a UI-only one-sided peace record.
-				if conflictIds[c] == settledConflict
-					conflictIds[c] = ""
+			offerStatus[i] = 1
 			return "Peace concluded under the negotiated terms."
+		offerStatus[i] = 2
 		return "Peace offer rejected."
 	override function requestGovernmentReward(string polityId, string rewardId) returns string
 		let p = polityIndex(polityId)
@@ -208,19 +202,17 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 		granted[r] = true
 		return "Reward granted: " + rewardId + " (" + profile.kind + ")."
 	function captureState() returns string
-		var result = "v1"
+		var result = "v2"
 		for i = 0 to polityCount - 1
 			var knownValue = "0"
 			if known[i]
 				knownValue = "1"
 			result += "|p," + polityIds[i] + "," + knownValue + "," + reputation[i].toString() + "," + favor[i].toString() + "," + contribution[i].toString() + "," + treasury[i].toString() + "," + materialStock[i].toString()
-		for i = 0 to conflictCount - 1
-			result += "|c," + conflictPolities[i] + "," + conflictIds[i]
 		for i = 0 to profileCount - 1
 			if granted[i]
 				result += "|g," + profiles[i].polityId + "," + profiles[i].rewardId
 		for i = 0 to offerCount - 1
-			result += "|o," + offerIds[i] + "," + offerPolities[i] + "," + offerStatus[i].toString() + "," + offerTerms[i]
+			result += "|o," + offerIds[i] + "," + offerPolities[i] + "," + offerStatus[i].toString() + "," + offerTerms[i] + "," + offerConflicts[i] + "," + offerInitiators[i]
 		return result
 	function recordField(string record, int wanted) returns string
 		var start = 0
@@ -263,12 +255,14 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			return true
 		if kind == "c"
 			let p = recordField(record, 1)
-			if fields != 3 or polityIndex(p) < 0 or conflictCount >= 128
+			if not legacyState or fields != 3 or polityIndex(p) < 0 or conflictCount >= 128
 				return false
 			for i = 0 to conflictCount - 1
 				if conflictPolities[i] == p
 					return false
-			setActiveConflict(p, recordField(record, 2))
+			conflictPolities[conflictCount] = p
+			conflictIds[conflictCount] = recordField(record, 2)
+			conflictCount++
 			return true
 		if kind == "g"
 			let r = profileIndex(recordField(record, 1), recordField(record, 2))
@@ -279,7 +273,7 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 		if kind == "o"
 			let id = recordField(record, 1)
 			let status = recordField(record, 3)
-			if fields != 5 or offerCount >= 128 or id == "" or offerIndex(id) >= 0 or polityIndex(recordField(record, 2)) < 0 or (status != "0" and status != "1") or recordField(record, 4) == ""
+			if (legacyState and fields != 5) or (not legacyState and fields != 7) or offerCount >= 128 or id == "" or offerIndex(id) >= 0 or polityIndex(recordField(record, 2)) < 0 or not validInteger(status) or S2I(status) < 0 or S2I(status) > 3 or recordField(record, 4) == ""
 				return false
 			// v1 retains every offer. Recover its next sequence without changing
 			// the save format; unrelated stable IDs do not consume player IDs.
@@ -292,39 +286,43 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			offerPolities[offerCount] = recordField(record, 2)
 			offerStatus[offerCount] = S2I(recordField(record, 3))
 			offerTerms[offerCount] = recordField(record, 4)
+			offerConflicts[offerCount] = recordField(record, 5)
+			offerInitiators[offerCount] = recordField(record, 6)
+			// The old format never stored an offer's original conflict/initiator.
+			// Retire those offers rather than guessing and settling a newer war.
+			if legacyState
+				offerStatus[offerCount] = 3
+			else if offerStatus[offerCount] != 3 and (offerConflicts[offerCount] == "" or polityIndex(offerInitiators[offerCount]) < 0 or offerInitiators[offerCount] == offerPolities[offerCount])
+				return false
 			offerCount++
 			return true
 		return false
-	/** Validate against a detached registry, including a polity introduced by
-	 * the candidate's piracy authority. No callbacks touch the live campaign. */
-	function validateState(string candidate,string foundedPolity) returns boolean
-		let detached=new PlayableCountryInteractionRuntime(identity)
-		for i=0 to polityCount-1
-			detached.registerPolityResources(polityIds[i],treasury[i],materialStock[i])
-		if foundedPolity!="" and detached.polityIndex(foundedPolity)<0
-			if detached.polityCount>=512
+	function copyDefinitions() returns PlayableCountryInteractionRuntime
+		let copy = new PlayableCountryInteractionRuntime(identity)
+		for i = 0 to polityCount - 1
+			copy.registerPolityResources(polityIds[i], treasury[i], materialStock[i])
+		for i = 0 to profileCount - 1
+			copy.registerRewardProfile(profiles[i])
+		return copy
+	/** Validate against detached country and conflict registries, including a
+	 * polity introduced by the candidate's piracy authority. No live callbacks. */
+	function validateState(string candidate, MilitarySettlementRuntime warfare, string foundedPolity) returns boolean
+		let detached = copyDefinitions()
+		if foundedPolity != "" and detached.polityIndex(foundedPolity) < 0
+			if detached.polityCount >= 512
 				destroy detached
-				lastDiagnostic="country registry is full"
+				lastDiagnostic = "country registry is full"
 				return false
-			detached.registerPolity(foundedPolity,0)
-		for i=0 to profileCount-1
-			detached.registerRewardProfile(profiles[i])
-		let valid=detached.restoreState(candidate)
-		lastDiagnostic=detached.diagnostic()
+			detached.registerPolity(foundedPolity, 0)
+		let valid = detached.validateState(candidate, warfare)
+		lastDiagnostic = detached.diagnostic()
 		destroy detached
 		return valid
-	/** Restore scalar authority only; Warcraft/UI projections are deliberately rebuilt elsewhere. */
-	function restoreState(string candidate) returns boolean
-		if (candidate != "v1" and not candidate.startsWith("v1|")) or candidate.endsWith("|")
-			lastDiagnostic = "country interaction state schema is invalid"
-			return false
-		// Parse into separate authority. No partial record, duplicate, overflow or
-		// late reference failure can mutate the active campaign.
-		let staged = new PlayableCountryInteractionRuntime(identity)
-		for i = 0 to polityCount - 1
-			staged.registerPolityResources(polityIds[i], treasury[i], materialStock[i])
-		for i = 0 to profileCount - 1
-			staged.registerRewardProfile(profiles[i])
+	function parseState(string candidate) returns PlayableCountryInteractionRuntime
+		if (candidate != "v1" and not candidate.startsWith("v1|") and candidate != "v2" and not candidate.startsWith("v2|")) or candidate.endsWith("|")
+			return null
+		let staged = copyDefinitions()
+		staged.legacyState = candidate == "v1" or candidate.startsWith("v1|")
 		var start = 3
 		while start < StringLength(candidate)
 			var finish = SubString(candidate, start, StringLength(candidate)).indexOf("|")
@@ -332,9 +330,52 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 				finish = StringLength(candidate) - start
 			if not staged.restoreRecord(SubString(candidate, start, start + finish))
 				destroy staged
-				lastDiagnostic = "country interaction state contains an invalid record"
-				return false
+				return null
 			start += finish + 1
+		return staged
+	function validateState(string candidate, MilitarySettlementRuntime warfare) returns boolean
+		let staged = parseState(candidate)
+		if staged == null
+			lastDiagnostic = "country interaction state contains an invalid record"
+			return false
+		var valid = true
+		for i = 0 to staged.offerCount - 1
+			if staged.offerStatus[i] != 3
+				if warfare == null
+					valid = false
+				else
+					let found = warfare.conflictIndex(staged.offerConflicts[i])
+					if found < 0 or not warfare.conflicts[found].opposes(staged.offerInitiators[i], staged.offerPolities[i])
+						valid = false
+		destroy staged
+		lastDiagnostic = ""
+		if not valid
+			lastDiagnostic = "country interaction state contains an invalid conflict binding"
+		return valid
+	function migrateLegacyConflicts(PlayableCountryInteractionRuntime staged)
+		if military == null or not staged.legacyState
+			return
+		// v1 stored one last conflict per country. Rebuild sides from authored
+		// definitions; an absent ID in a populated v1 ledger stays settled. Empty
+		// pre-diplomacy ledgers use defaults. Unattributed pair wars remain separate.
+		if staged.conflictCount > 0
+			for i = 0 to military.conflictCount - 1
+				let conflict = military.conflicts[i]
+				if not conflict.id.startsWith("legacy:")
+					var active = false
+					for j = 0 to staged.conflictCount - 1
+						if staged.conflictIds[j] == conflict.id
+							active = true
+					conflict.settled = not active
+		military.legacyConflicts = false
+		military.reconcileSieges()
+	/** Restore scalar authority only after detached validation. */
+	function restoreState(string candidate) returns boolean
+		if not validateState(candidate, military)
+			lastDiagnostic = "country interaction state contains an invalid record or conflict binding"
+			return false
+		let staged = parseState(candidate)
+		migrateLegacyConflicts(staged)
 		for i = 0 to polityCount - 1
 			known[i] = staged.known[i]
 			reputation[i] = staged.reputation[i]
@@ -344,14 +385,12 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			materialStock[i] = staged.materialStock[i]
 		for i = 0 to profileCount - 1
 			granted[i] = staged.granted[i]
-		conflictCount = staged.conflictCount
-		for i = 0 to conflictCount - 1
-			conflictPolities[i] = staged.conflictPolities[i]
-			conflictIds[i] = staged.conflictIds[i]
 		offerCount = staged.offerCount
 		for i = 0 to offerCount - 1
 			offerIds[i] = staged.offerIds[i]
 			offerPolities[i] = staged.offerPolities[i]
+			offerConflicts[i] = staged.offerConflicts[i]
+			offerInitiators[i] = staged.offerInitiators[i]
 			offerTerms[i] = staged.offerTerms[i]
 			offerStatus[i] = staged.offerStatus[i]
 		nextOffer = staged.nextOffer

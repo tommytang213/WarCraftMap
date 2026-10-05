@@ -4,6 +4,9 @@ import CountryDiplomacyScreen
 import CommandRouter
 import PlayableCountryInteractions
 import Wurstunit
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignRegistration
 
 class RecordingDiplomacyPresentation implements CountryDiplomacyPresentation
 	string last = ""
@@ -85,6 +88,14 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	runtime.requestGovernmentReward("france", "pension").assertEquals("Reward rejected: government resources are insufficient.")
 	runtime.captureState().assertEquals(beforeRejected)
 
+function attachCountryWar(PlayableCountryInteractionRuntime runtime, string conflictId) returns MilitarySettlementRuntime
+	let military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	military.registerConflictMember(conflictId, "england", 1)
+	military.registerConflictMember(conflictId, "france", 2)
+	runtime.setMilitaryAuthority(military)
+	runtime.setPeaceAuthority(new CampaignCountryPeaceAuthority(military))
+	return military
+
 @test function pendingOffersAndRewardHistorySurviveReconstruction()
 	let identity = new PlayerCampaignIdentity()
 	identity.startCampaign("england", "europe_west", "europe", "london")
@@ -94,15 +105,17 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	runtime.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 1, 0, 0, false))
 	runtime.discover("england")
 	runtime.discover("france")
-	runtime.setActiveConflict("france", "channel_war")
+	let military = attachCountryWar(runtime, "channel_war")
 	runtime.createOffer("channel_war", "france", "ceasefire").assertEquals("player_offer_1")
 	runtime.recordContribution("england", 1)
 	runtime.requestGovernmentReward("england", "commission")
 	let saved = runtime.captureState()
+	let savedWars = military.snapshot()
 	let restored = new PlayableCountryInteractionRuntime(identity)
 	restored.registerPolity("england", 100)
 	restored.registerPolity("france", 100)
 	restored.registerRewardProfile(new GovernmentRewardProfile("england", "commission", "office", 1, 0, 0, false))
+	let restoredMilitary = attachCountryWar(restored, "channel_war")
 	restored.restoreState(saved).assertTrue()
 	restored.isKnown("france").assertTrue()
 	restored.requestGovernmentReward("england", "commission").assertEquals("Reward rejected: reward was already granted.")
@@ -115,7 +128,9 @@ class FakeDiplomacyAuthority implements CountryDiplomacyAuthority
 	restored.respondToOffer("player_offer_2", true, true).assertEquals("Peace concluded under the negotiated terms.")
 	restored.activeConflictWith("france").assertEquals("")
 	// Existing registries must replace their post-save conflicts and offers too.
-	restored.setActiveConflict("england", "later_war")
+	restoredMilitary.registerConflictMember("later_war", "england", 1)
+	restoredMilitary.registerConflictMember("later_war", "france", 2)
+	restoredMilitary.restore(savedWars).assertTrue()
 	restored.restoreState(saved).assertTrue()
 	restored.captureState().assertEquals(saved)
 	restored.activeConflictWith("england").assertEquals("")
@@ -139,7 +154,7 @@ function rejectsCountryState(PlayableCountryInteractionRuntime runtime, string c
 	runtime.discover("france")
 	runtime.recordContribution("england", 1)
 	runtime.requestGovernmentReward("england", "commission")
-	runtime.setActiveConflict("france", "war")
+	attachCountryWar(runtime, "war")
 	runtime.createOffer("war", "france", "ceasefire")
 	let candidate = "v1|p,england,0,0,0,0,1,0|p,france,1,0,0,0,2,0|c,france,other_war|o,player_offer_12,france,0,ceasefire"
 	rejectsCountryState(runtime, candidate + "|c,unknown,war")
@@ -157,12 +172,17 @@ function rejectsCountryState(PlayableCountryInteractionRuntime runtime, string c
 	runtime.createOffer("war", "france", "ceasefire").assertEquals("player_offer_2")
 
 @test function legacyCountryResourcesAndSparseOfferSequenceRemainCompatible()
-	let runtime = new PlayableCountryInteractionRuntime(new PlayerCampaignIdentity())
+	let identity = new PlayerCampaignIdentity()
+	identity.startCampaign("england", "europe_west", "europe", "london")
+	let runtime = new PlayableCountryInteractionRuntime(identity)
+	runtime.registerPolity("england", 100)
+	attachCountryWar(runtime, "war")
 	runtime.registerPolityResources("france", 100, 9)
 	// Before live resources, v1 polity rows had no material-stock column.
 	let legacy = "v1|p,france,1,-2,3,4,50|c,france,war|o,player_offer_12,france,1,ceasefire|o,player_offer_2,france,0,ceasefire"
 	runtime.restoreState(legacy).assertTrue()
 	runtime.restoreState(legacy).assertTrue()
-	runtime.materialStock[0].assertEquals(9)
-	runtime.treasury[0].assertEquals(50)
+	runtime.materialStock[1].assertEquals(9)
+	runtime.treasury[1].assertEquals(50)
+	runtime.respondToOffer("player_offer_2", true, true).assertEquals("Offer is not pending.")
 	runtime.createOffer("war", "france", "ceasefire").assertEquals("player_offer_13")
