@@ -12,7 +12,7 @@ public interface CampaignTimerAdapter
 // R2S rounds to three decimal places. Encode non-negative finite reals as
 // binary significand digits and a power of two, preserving fractional ticks
 // exactly in both the interpreter and Lua without native formatting precision.
-function clockReal(real input) returns string
+public function clockReal(real input) returns string
 	var value = input
 	if value == 0.
 		return "0"
@@ -30,7 +30,7 @@ function clockReal(real input) returns string
 		value = (value - digit) * 2.
 	return exponent.toString() + ":" + digits
 
-function readClockReal(string encoded) returns real
+public function readClockReal(string encoded) returns real
 	if encoded == "0"
 		return 0.
 	let colon = encoded.indexOf(":")

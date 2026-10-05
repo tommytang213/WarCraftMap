@@ -15,7 +15,7 @@ import ReligionRuntime
 import PlayablePiracy
 import ScenarioData
 
-class StartupStorage implements CampaignSaveStorage
+public class StartupStorage implements CampaignSaveStorage
 	string array[32] keys
 	string array[32] values
 	int count = 0
@@ -134,6 +134,10 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 		return Player(0)
 	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
 		return null
+	override function forceIdForRepresentation(int representation) returns string
+		return ""
+	override function representationId(string stableId) returns int
+		return 0
 	override function removeRepresentation(string stableId)
 		skip
 	override function changeRepresentationOwner(string stableId, player owner)
@@ -151,7 +155,7 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 	override function close()
 		closed = true
 
-class StartupFixture
+public class StartupFixture
 	StartupStorage cache
 	StartupStorage saves
 	StartupPorts ports = new StartupPorts()

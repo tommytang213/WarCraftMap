@@ -148,6 +148,14 @@ public function compatRemoveUnitAbility(unit target, int abilityId)
 public function compatGetUnitCollisionSize(unit target) returns real
 	return BlzGetUnitCollisionSize(target)
 
+// Pre-damage validation must run before lethal damage and the death event.
+public function compatRegisterCombatEvents(trigger damage, trigger death)
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		TriggerRegisterPlayerUnitEvent(damage, Player(i), EVENT_PLAYER_UNIT_DAMAGING, null)
+		TriggerRegisterPlayerUnitEvent(death, Player(i), EVENT_PLAYER_UNIT_DEATH, null)
+public function compatCancelCombatDamage()
+	BlzSetEventDamage(0.)
+
 // Development benchmark operations. Keeping these natives here makes the
 // benchmark compile against the pinned patch without creating a second
 // version-specific boundary.

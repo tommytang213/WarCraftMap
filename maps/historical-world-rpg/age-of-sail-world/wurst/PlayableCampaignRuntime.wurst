@@ -334,6 +334,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		loading = true
 		checkpoint = new CampaignLoadCheckpoint(this)
+		if militarySettlements != null
+			militarySettlements.suspendCallbacks()
 		if party != null and rpg != null
 			if rpg.projections != null
 				rpg.projections.beginPartyLoad()
@@ -370,6 +372,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			lastDiagnostic += "; campaign rollback failed; saving remains locked"
 		destroy checkpoint
 		checkpoint = null
+		if restored and militarySettlements != null
+			militarySettlements.resumeCallbacks()
 	function applyRuntime(string candidate) returns boolean
 		// Date-sensitive reconstruction must see the checkpoint's time, including
 		// on manual loads after this map's clock has already advanced.
@@ -444,6 +448,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		staged = ""
 		clock.reconstructTimer()
 		loading = false
+		if militarySettlements != null
+			militarySettlements.resumeCallbacks()
 	override function diagnostic() returns string
 		return lastDiagnostic
 
@@ -964,6 +970,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			state.party.clear(state.rpg)
 		if state.militarySettlements != null
 			let military = state.militarySettlements
+			military.suspendCallbacks()
 			for i = 0 to military.forceCount - 1
 				if military.forces[i].regionId == military.activeRegionId
 					military.adapter.removeRepresentation(military.forces[i].id)

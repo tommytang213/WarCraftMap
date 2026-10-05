@@ -22,6 +22,10 @@ public class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
 		created += runtimeForce.id + "|"
 		return null
+	override function forceIdForRepresentation(int representation) returns string
+		return ""
+	override function representationId(string stableId) returns int
+		return 0
 	override function removeRepresentation(string stableId)
 		removed += stableId + "|"
 	override function changeRepresentationOwner(string stableId, player owner)

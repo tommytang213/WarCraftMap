@@ -1,0 +1,393 @@
+package MilitaryCombatEventsTests
+
+import MilitaryCombatEvents
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignStartupTests
+import CampaignSaveManager
+import CampaignTimeline
+import CampaignRegistration
+import ManagementScreenPauseController
+import Wurstunit
+
+/** Native representations are opaque, non-reusable tokens. The production
+ * adapter exposes current GetHandleId values at the same boundary. */
+class CombatRepresentations extends RecordingMilitaryAdapter
+	string array[128] ids
+	int array[128] tokens
+	int array[128] retained
+	boolean array[128] protection
+	int count = 0
+	int nextToken = 100
+	MilitaryCombatEvents cleanupEvents = null
+	int cleanupKiller = 0
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if ids[i] == id
+				return i
+		return -1
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		removeRepresentation(runtimeForce.id)
+		var found = index(runtimeForce.id)
+		if found < 0
+			found = count
+			ids[count] = runtimeForce.id
+			count++
+		nextToken++
+		tokens[found] = nextToken
+		protection[found] = false
+		return null
+	override function forceIdForRepresentation(int representation) returns string
+		if representation != 0
+			for i = 0 to count - 1
+				if tokens[i] == representation
+					return ids[i]
+		return ""
+	override function representationId(string id) returns int
+		let found = index(id)
+		if found < 0
+			return 0
+		return tokens[found]
+	override function removeRepresentation(string id)
+		let found = index(id)
+		if found >= 0
+			let obsolete = tokens[found]
+			tokens[found] = 0
+			if cleanupEvents != null and obsolete != 0
+				cleanupEvents.onDeath(cleanupEvents.generation, obsolete, cleanupKiller)
+	override function protectRepresentation(string id, boolean value)
+		let found = index(id)
+		if found >= 0
+			protection[found] = value
+	function isProtected(string id) returns boolean
+		return protection[index(id)]
+	override function beginLoad()
+		for i = 0 to count - 1
+			retained[i] = tokens[i]
+			tokens[i] = 0
+	override function rollbackLoad()
+		for i = 0 to count - 1
+			removeRepresentation(ids[i])
+			tokens[i] = retained[i]
+			retained[i] = 0
+	override function commitLoad()
+		for i = 0 to count - 1
+			if cleanupEvents != null and retained[i] != 0
+				cleanupEvents.onDeath(cleanupEvents.generation, retained[i], cleanupKiller)
+			retained[i] = 0
+
+class RecordingCombatNatives implements MilitaryCombatNatives
+	MilitaryCombatEvents events
+	int epoch = 0
+	int serial = 0
+	int installs = 0
+	int uninstalls = 0
+	int wakes = 0
+	boolean listening = false
+	boolean armed = false
+	real elapsed = 0.
+	real delay = 0.
+	int heroToken = 9000
+	override function install(MilitaryCombatEvents events, int generation)
+		this.events = events
+		epoch = generation
+		installs++
+		listening = true
+	override function uninstall()
+		listening = false
+		uninstalls++
+	override function armTimer(real seconds, int serial)
+		(seconds >= 0. and seconds <= 1.).assertTrue()
+		this.serial = serial
+		delay = seconds
+		elapsed = 0.
+		armed = true
+	override function stopTimer()
+		armed = false
+	override function timerElapsed() returns real
+		return elapsed
+	override function heroRepresentationId(int index) returns int
+		if index == 0
+			return heroToken
+		return 0
+	function damage(int target, int source) returns int
+		listening.assertTrue()
+		return events.onDamage(epoch, target, source, 25.)
+	function death(int target, int killer)
+		listening.assertTrue()
+		events.onDeath(epoch, target, killer)
+	function advance(real seconds)
+		var remaining = seconds
+		var callbacks = 0
+		while armed and elapsed + remaining >= delay
+			remaining -= delay - elapsed
+			elapsed = delay
+			wakes++
+			callbacks++
+			(callbacks < 1000).assertTrue()
+			events.onTimer(serial)
+		if armed
+			elapsed += remaining
+
+class RecordingCombatPause implements CampaignPauseRuntime
+	boolean paused = false
+	override function setCampaignPaused(boolean value)
+		paused = value
+
+class CombatFixture
+	ManagementScreenPauseController pause = new ManagementScreenPauseController(new RecordingCombatPause(), false)
+	StartupFixture startup = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	CombatRepresentations representations = new CombatRepresentations()
+	RecordingCombatNatives natives = new RecordingCombatNatives()
+	MilitarySettlementRuntime runtime
+	MilitaryCombatEvents events
+	string city
+	construct()
+		// Execute generated registration, selector handoff and successful regional
+		// startup before installing the exact production combat registration.
+		(installMilitaryCombatEvents(startup.campaign, natives, pause) == null).assertTrue()
+		startup.start("england")
+		runtime = startup.campaign.state.militarySettlements
+		installCampaignClock(startup.clock)
+		runtime.adapter = representations
+		city = startup.selector.find("england").settlementId
+		// Retain only the selected settlement's authority in this bounded journey.
+		let selected = runtime.settlements[runtime.settlementIndex(city)]
+		runtime.settlements[0] = selected
+		runtime.settlementCount = 1
+		let core = runtime.forces[runtime.forceIndex("core:" + city)]
+		runtime.forces[0] = core
+		runtime.forceCount = 1
+		runtime.administratorCount = 0
+		runtime.registerForce(new RuntimeForce("defense:" + city + ":gate", "england", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 100, 0, 64., 0.))
+		runtime.registerForce(new RuntimeForce("enemy", "france", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+		runtime.registerForce(new RuntimeForce("ally", "portugal", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+		runtime.registerForce(new RuntimeForce("player_army", "player", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+		runtime.registerConflictMember("combat_war", "england", 1).assertTrue()
+		runtime.registerConflictMember("combat_war", "portugal", 1).assertTrue()
+		runtime.registerConflictMember("combat_war", "france", 2).assertTrue()
+		selected.garrisonStrength = 30
+		selected.garrisonMaximum = 30
+		selected.reserves = 20
+		selected.manpower = 50
+		selected.supply = 50
+		runtime.activateRegion("europe_west")
+		events = installMilitaryCombatEvents(startup.campaign, natives, pause)
+		(events != null).assertTrue()
+		representations.cleanupEvents = events
+		representations.cleanupKiller = representations.representationId("enemy")
+	function token(string id) returns int
+		return representations.representationId(id)
+	function core() returns int
+		return token("core:" + city)
+	function captureViaNatives()
+		natives.damage(core(), token("enemy")).assertEquals(1)
+		natives.death(core(), token("enemy"))
+		runtime.settlements[0].controllerId.assertEquals("france")
+	function close()
+		events.stop()
+
+@test function productionCombatRegistrationCapturesOnceAndKeepsPeaceAuthority()
+	let f = new CombatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, new RecordingCombatNatives()) == f.events).assertTrue()
+	f.natives.installs.assertEquals(1)
+	let obsolete = f.core()
+	f.captureViaNatives()
+	let after = f.runtime.snapshot()
+	f.natives.death(obsolete, f.token("enemy"))
+	f.runtime.snapshot().assertEquals(after)
+	f.runtime.settlements[0].legalOwnerId.assertEquals("england")
+	f.runtime.settlements[0].occupationConflictId.assertEquals("combat_war")
+	f.runtime.forces[f.runtime.forceIndex("defense:" + f.city + ":gate")].controllerId.assertEquals("france")
+	f.representations.isProtected("core:" + f.city).assertTrue()
+	f.representations.isProtected("defense:" + f.city + ":gate").assertTrue()
+	let peace = new CampaignCountryPeaceAuthority(f.runtime)
+	peace.commitPeace("combat_war", "ceasefire").assertTrue()
+	f.runtime.settlements[0].controllerId.assertEquals("england")
+	f.natives.damage(f.core(), f.token("enemy")).assertEquals(-1)
+	f.natives.advance(6.)
+	f.runtime.settlements[0].underAttack.assertFalse()
+	f.close()
+
+@test function peacefulAlliedUnknownAndObsoleteCombatCannotChangeAuthority()
+	let f = new CombatFixture()
+	let reserves = f.runtime.settlements[0].reserves
+	f.natives.damage(f.core(), f.token("ally")).assertEquals(-1)
+	f.natives.damage(f.core(), 777).assertEquals(-1)
+	f.natives.death(f.core(), f.token("ally"))
+	f.runtime.settlements[0].controllerId.assertEquals("england")
+	f.runtime.settlements[0].reserves.assertEquals(reserves)
+	let oldCore = f.core()
+	let oldEnemy = f.token("enemy")
+	let oldEpoch = f.natives.epoch
+	let oldTimer = f.natives.serial
+	f.runtime.activateRegion("europe_west")
+	let state = f.runtime.snapshot()
+	f.events.onDeath(oldEpoch, f.core(), f.token("enemy"))
+	f.events.onTimer(oldTimer)
+	f.natives.death(oldCore, f.token("enemy"))
+	f.natives.damage(f.core(), oldEnemy).assertEquals(-1)
+	f.runtime.snapshot().assertEquals(state)
+	f.runtime.settleConflict("combat_war").assertTrue()
+	f.natives.damage(f.core(), f.token("enemy")).assertEquals(-1)
+	f.natives.death(f.core(), f.token("enemy"))
+	f.runtime.settlements[0].controllerId.assertEquals("england")
+	f.close()
+
+@test function attackerAllegianceUsesCampaignIdentityForForcesAndHeroes()
+	let f = new CombatFixture()
+	f.natives.damage(f.core(), f.token("player_army")).assertEquals(-1)
+	f.startup.campaign.identity.changeAllegiance("france")
+	f.natives.damage(f.core(), f.token("player_army")).assertEquals(1)
+	f.natives.damage(f.core(), f.natives.heroToken).assertEquals(1)
+	f.natives.death(f.core(), f.natives.heroToken)
+	f.runtime.settlements[0].controllerId.assertEquals("france")
+	f.close()
+
+@test function exactFractionalCaptureDeadlineSurvivesNestedPausesAndLiveSaveLoad()
+	let f = new CombatFixture()
+	// Capture between timer ticks, not on the housekeeping timer's phase.
+	f.natives.advance(0.125)
+	f.captureViaNatives()
+	f.runtime.settlements[0].captureImmuneUntil.assertEquals(5.125)
+	f.natives.advance(1.375)
+	let modal = f.pause.openModalManagementScreen()
+	let nested = f.pause.openModalManagementScreen()
+	f.natives.advance(100.)
+	f.runtime.gameplaySeconds.assertEquals(1.5)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "combat-deadline").assertTrue()
+	let oldCore = f.core()
+	let epoch = f.natives.epoch
+	let oldWake = f.natives.serial
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.events.onDeath(epoch, oldCore, f.token("enemy"))
+	f.events.onTimer(oldWake)
+	f.runtime.gameplaySeconds.assertEquals(1.5)
+	f.runtime.settlements[0].captureImmuneUntil.assertEquals(5.125)
+	f.representations.isProtected("core:" + f.city).assertTrue()
+	modal.close()
+	f.natives.advance(20.)
+	f.runtime.gameplaySeconds.assertEquals(1.5)
+	nested.close()
+	f.natives.advance(3.624)
+	f.representations.isProtected("core:" + f.city).assertTrue()
+	f.natives.advance(0.001)
+	f.runtime.gameplaySeconds.assertEquals(5.125)
+	f.representations.isProtected("core:" + f.city).assertFalse()
+	f.representations.isProtected("defense:" + f.city + ":gate").assertFalse()
+	f.runtime.settlements[0].captureImmuneUntil.assertEquals(0.)
+	f.close()
+
+@test function combatWavesRemainBoundedAndCasualtiesAndQuietDeadlinesSurviveResume()
+	let f = new CombatFixture()
+	f.natives.damage(f.core(), f.token("enemy")).assertEquals(1)
+	f.natives.advance(0.)
+	f.runtime.settlements[0].reserves.assertEquals(10)
+	let wave = "garrison:" + f.city + ":0"
+	let victim = f.token(wave)
+	f.natives.death(victim, f.token("enemy"))
+	f.natives.death(victim, f.token("enemy"))
+	f.runtime.settlements[0].garrisonStrength.assertEquals(20)
+	for i = 0 to 8
+		f.natives.advance(1.)
+		f.natives.damage(f.core(), f.token("enemy")).assertEquals(1)
+	f.runtime.settlements[0].reserves.assertEquals(10)
+	f.runtime.settlements[0].nextWaveAt.assertEquals(10.)
+	let saved = f.runtime.snapshot()
+	f.runtime.restore(saved).assertTrue()
+	f.natives.advance(0.999)
+	f.runtime.settlements[0].reserves.assertEquals(10)
+	f.natives.advance(0.001)
+	f.runtime.settlements[0].reserves.assertEquals(0)
+	f.runtime.settlements[0].supply.assertEquals(30)
+	f.natives.advance(18.999)
+	f.runtime.settlements[0].underAttack.assertTrue()
+	f.natives.advance(0.001)
+	f.runtime.settlements[0].underAttack.assertFalse()
+	f.runtime.settlements[0].garrisonStrength.assertEquals(20)
+	f.runtime.settlements[0].manpower.assertEquals(30)
+	f.token("garrison:" + f.city + ":10").assertEquals(0)
+	f.close()
+
+@test function militaryClockVersionMigrationAndMalformedSnapshotsAreAtomic()
+	let f = new CombatFixture()
+	f.natives.advance(0.125)
+	f.captureViaNatives()
+	f.natives.advance(0.0625)
+	let saved = f.runtime.snapshot()
+	saved.startsWith("v3|k,").assertTrue()
+	f.runtime.restore(saved).assertTrue()
+	f.runtime.snapshot().assertEquals(saved)
+	f.runtime.restore(saved + "|k,0").assertFalse()
+	f.runtime.restore("v3" + SubString(saved, saved.indexOf("|a,"), StringLength(saved))).assertFalse()
+	f.runtime.snapshot().assertEquals(saved)
+	// Legacy formats had no production timer. Migration anchors the old
+	// deadlines to their last recorded event and retains v2 conflict authority.
+	let legacy = "v2|a,europe_west|f,core:legacy,england,europe_west,siege,4," + I2S('htow') + ",100,100,50,0.000,0.000,1,hold,0.000,0.000|s,legacy,england,europe_west," + I2S('htow') + "," + I2S('hfoo') + ",30,30,20,50,50,10,10.000,20.000,40.000,32.000,35.000,0.000,0.000,1,england,,france|c,war,0|m,war,england,1|m,war,france,2"
+	f.runtime.restore(legacy).assertTrue()
+	f.runtime.gameplaySeconds.assertEquals(32.)
+	f.runtime.settlements[0].captureImmuneUntil.assertEquals(35.)
+	f.natives.advance(2.999)
+	f.representations.isProtected("core:legacy").assertTrue()
+	f.natives.advance(0.001)
+	f.representations.isProtected("core:legacy").assertFalse()
+	f.close()
+
+@test function failedCombatLoadRestoresRemainingTimeAndRetiresObsoleteCallbacks()
+	let f = new CombatFixture()
+	f.captureViaNatives()
+	f.natives.advance(1.25)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before-failure").assertTrue()
+	f.natives.advance(1.5)
+	let current = f.runtime.snapshot()
+	let oldCore = f.core()
+	let oldEpoch = f.natives.epoch
+	let oldTimer = f.natives.serial
+	f.startup.ports.failProjection = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failProjection = false
+	f.runtime.snapshot().assertEquals(current)
+	f.core().assertEquals(oldCore)
+	f.events.onDeath(oldEpoch, oldCore, f.token("enemy"))
+	f.events.onTimer(oldTimer)
+	f.runtime.snapshot().assertEquals(current)
+	f.natives.advance(2.249)
+	f.representations.isProtected("core:" + f.city).assertTrue()
+	f.natives.advance(0.001)
+	f.representations.isProtected("core:" + f.city).assertFalse()
+	f.close()
+
+@test function freshPhysicalRuntimeKeepsFractionalProtectionAndManualPause()
+	let first = new CombatFixture()
+	first.natives.advance(0.125)
+	first.captureViaNatives()
+	first.natives.advance(2.0625)
+	let saved = first.runtime.snapshot()
+	first.close()
+	let restored = new CombatFixture()
+	restored.runtime.restore(saved).assertTrue()
+	restored.runtime.gameplaySeconds.assertEquals(2.1875)
+	restored.pause.setManuallyPaused(true)
+	let modal = restored.pause.openModalManagementScreen()
+	modal.close()
+	restored.natives.advance(50.)
+	restored.runtime.gameplaySeconds.assertEquals(2.1875)
+	restored.pause.setManuallyPaused(false)
+	restored.natives.advance(2.937)
+	restored.representations.isProtected("core:" + restored.city).assertTrue()
+	restored.natives.advance(0.0005)
+	restored.runtime.gameplaySeconds.assertEquals(5.125)
+	restored.representations.isProtected("core:" + restored.city).assertFalse()
+	restored.close()
+
+@test function delayedTimerDoesNotCatchUpWavesOrSpendAtTheQuietDeadline()
+	let f = new CombatFixture()
+	f.natives.damage(f.core(), f.token("enemy")).assertEquals(1)
+	// A delayed callback must do bounded work, not replay elapsed wave slots.
+	f.natives.elapsed = 19.
+	f.events.onTimer(f.natives.serial)
+	f.runtime.settlements[0].reserves.assertEquals(10)
+	f.natives.advance(1.)
+	f.runtime.settlements[0].underAttack.assertFalse()
+	f.runtime.settlements[0].reserves.assertEquals(10)
+	f.close()
