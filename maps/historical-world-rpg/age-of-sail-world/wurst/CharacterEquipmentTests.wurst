@@ -5,6 +5,13 @@ import WarcraftRpgProjections
 import PlayableCampaignRuntime
 import WarcraftRegionalRuntime
 import CampaignSaveManager
+import CommandRouter
+import CampaignTimeline
+
+class EquipmentCommandOutput implements CommandOutput
+	string last = ""
+	override function show(player recipient, string message)
+		last = message
 
 /** Records native recipients, live values and representation replacement. The
  * production projector, resolver, inventory actions and codecs remain intact. */
@@ -105,6 +112,47 @@ class EquipmentFixture
 	inventory.ownedQuantity("coat").assertEquals(2)
 	inventory.ownedQuantity("relic").assertEquals(1)
 	inventory.ownedCount.assertEquals(owned)
+
+@test function equipmentCommandsPreserveWearerSelectionAndRecordedOutput()
+	let previousClock = getCampaignClock()
+	let day = 584023 // 1600-01-01, used by the production equip command.
+	let clock = new CampaignClock(day, day, day, 1.)
+	installCampaignClock(clock)
+	let f = new EquipmentFixture()
+	let output = new EquipmentCommandOutput()
+	let commands = new CommandRegistry(false, 6, new CommandText(), output)
+	registerRpgRuntimeCommands(commands, f.rpg).assertEquals("")
+	commands.dispatch(null, "/equip alpha coat").assertTrue()
+	output.last.assertEquals("Action completed.")
+	commands.dispatch(null, "/equip beta coat").assertTrue()
+	output.last.assertEquals("Action completed.")
+	f.itemAt("alpha", "chest").assertEquals("coat")
+	f.itemAt("beta", "chest").assertEquals("coat")
+	let before = f.rpg.captureState()
+	let writes = f.natives.totalWrites
+	commands.dispatch(null, "/equip gamma coat").assertTrue()
+	output.last.assertEquals("Requirements are not met here.")
+	commands.dispatch(null, "/inventory").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("alpha"))
+	commands.dispatch(null, "/items beta").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("beta"))
+	commands.dispatch(null, "/equipment gamma").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("gamma"))
+	commands.dispatch(null, "/inventory missing").assertTrue()
+	output.last.assertEquals("Choose a character with -inventory HERO.")
+	commands.dispatch(null, "/inventory alpha beta").assertFalse()
+	output.last.assertEquals("Invalid arguments. Usage: /inventory [HERO]")
+	f.rpg.captureState().assertEquals(before)
+	f.natives.totalWrites.assertEquals(writes)
+	commands.dispatch(null, "/unequip beta chest").assertTrue()
+	output.last.assertEquals("Action completed.")
+	f.itemAt("alpha", "chest").assertEquals("coat")
+	f.itemAt("beta", "chest").assertEquals("")
+	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
+	f.natives.life[0].assertEquals(105)
+	f.natives.life[1].assertEquals(200)
+	installCampaignClock(previousClock)
+	destroy clock
 
 @test function invalidWearersItemsAndRequirementsRejectAtomically()
 	let f = new EquipmentFixture()

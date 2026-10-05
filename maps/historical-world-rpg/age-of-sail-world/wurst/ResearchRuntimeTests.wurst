@@ -1,0 +1,250 @@
+package ResearchRuntimeTests
+
+import WarcraftRpgRuntime
+import CommandRouter
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import ScenarioData
+
+class ResearchOutput implements CommandOutput
+	string last=""
+	override function show(player recipient,string message)
+		last=message
+
+class ResearchResources implements ResearchCommandResources
+	string controller="player"
+	int balance=100000
+	int writes=0
+	override function controllerId(player sender) returns string
+		return controller
+	override function year() returns int
+		return 1450
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender,int amount)
+		balance=amount
+		writes++
+
+class ResearchEffects implements TechnologyEffectPort
+	int calls=0
+	int clears=0
+	int playerPower=0
+	int otherPower=0
+	string lastController=""
+	string lastEffect=""
+	override function applyTechnology(string controllerId,string effectId,int magnitude)
+		calls++
+		lastController=controllerId
+		lastEffect=effectId
+		if controllerId == "player"
+			playerPower+=magnitude
+		else
+			otherPower+=magnitude
+	override function clearTechnologyLayer(string controllerId)
+		clears++
+		if controllerId == "player"
+			playerPower=0
+		else
+			otherPower=0
+
+class ResearchFixture
+	ResearchEffects effects=new ResearchEffects()
+	ResearchResources resources=new ResearchResources()
+	ResearchOutput output=new ResearchOutput()
+	WarcraftRpgRuntime runtime
+	CommandRegistry commands
+	string initial
+	construct()
+		let generated=new WarcraftRpgRuntime(effects)
+		configureGeneratedRpg(generated)
+		runtime=new WarcraftRpgRuntime(effects)
+		// Keep every production-generated research definition. Other RPG domains
+		// are covered by WarcraftRpgRuntimeTests; rehashing their large payload in
+		// every codec fixture needlessly exhausts the interpreter's per-test limit.
+		runtime.technologies=generated.technologies
+		runtime.researchResources=resources
+		commands=new CommandRegistry(false,6,new CommandText(),output)
+		registerRpgRuntimeCommands(commands,runtime).assertEquals("")
+		initial=runtime.captureState()
+	function completions(string records)
+		// Existing completion records are independent of the newly repaired gates.
+		runtime.restoreState(initial+records).assertTrue()
+		runtime.reconcile("player")
+		runtime.reconcile("other")
+	function reject(string command)
+		let before=runtime.captureState()
+		let funds=resources.balance
+		let writes=resources.writes
+		let calls=effects.calls
+		let clears=effects.clears
+		let playerPower=effects.playerPower
+		let otherPower=effects.otherPower
+		commands.dispatch(null,command).assertTrue()
+		output.last.assertEquals("Requirements are not met here.")
+		runtime.captureState().assertEquals(before)
+		resources.balance.assertEquals(funds)
+		resources.writes.assertEquals(writes)
+		effects.calls.assertEquals(calls)
+		effects.clears.assertEquals(clears)
+		effects.playerPower.assertEquals(playerPower)
+		effects.otherPower.assertEquals(otherPower)
+	function succeed(string command,string id)
+		let technology=runtime.technologies.get(id)
+		let cost=runtime.technologies.cost(id,resources.year(),0,0)
+		let funds=resources.balance
+		let writes=resources.writes
+		let calls=effects.calls
+		let unlocks=runtime.technologies.unlockedCount
+		let playerPower=effects.playerPower
+		let otherPower=effects.otherPower
+		commands.dispatch(null,command).assertTrue()
+		output.last.assertEquals("Action completed.")
+		resources.balance.assertEquals(funds-cost)
+		resources.writes.assertEquals(writes+1)
+		runtime.technologies.unlockedCount.assertEquals(unlocks+1)
+		runtime.technologies.isUnlocked(resources.controller,id).assertTrue()
+		effects.calls.assertEquals(calls+1)
+		effects.lastController.assertEquals(resources.controller)
+		effects.lastEffect.assertEquals(technology.effectId)
+		if resources.controller == "player"
+			effects.playerPower.assertEquals(playerPower+technology.effectMagnitude)
+			effects.otherPower.assertEquals(otherPower)
+		else
+			effects.otherPower.assertEquals(otherPower+technology.effectMagnitude)
+			effects.playerPower.assertEquals(playerPower)
+		reject(command)
+
+@test function productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable()
+	let fixture=new ResearchFixture()
+	let before=fixture.runtime.captureState()
+	fixture.commands.dispatch(null,"/technology").assertTrue()
+	fixture.output.last.startsWith("Technology and Institutions").assertTrue()
+	let screen=fixture.output.last
+	fixture.commands.dispatch(null,"/institutions").assertTrue()
+	fixture.output.last.assertEquals(screen)
+	fixture.commands.dispatch(null,"/heroes").assertTrue()
+	fixture.output.last.startsWith("Heroes (strategic ").assertTrue()
+	fixture.commands.dispatch(null,"/items").assertTrue()
+	fixture.output.last.assertEquals("Choose a character with -inventory HERO.")
+	fixture.commands.dispatch(null,"/quests").assertTrue()
+	fixture.output.last.startsWith("Quest Journal").assertTrue()
+	fixture.commands.dispatch(null,"/research").assertFalse()
+	fixture.output.last.assertEquals("Invalid arguments. Usage: /research ID")
+	fixture.commands.dispatch(null,"/technology flintlock_drill").assertFalse()
+	fixture.runtime.captureState().assertEquals(before)
+	fixture.resources.writes.assertEquals(0)
+	fixture.effects.calls.assertEquals(0)
+	// A rejected action still proves that the production action handler ran.
+	fixture.reject("/research flintlock_drill")
+
+function assertRegistrationConflict(string alias)
+	let commands=new CommandRegistry(false,6,new CommandText(),new ResearchOutput())
+	commands.register("collision",alias,"collision","Fixture.","Fixture.",0,0,COMMAND_RELEASE,null).assertEquals("")
+	registerRpgRuntimeCommands(commands,new WarcraftRpgRuntime(null)).assertEquals("Ambiguous command registration: '"+alias+"' is already registered.")
+
+@test function productionRpgRegistrationReportsNameAndAliasConflicts()
+	assertRegistrationConflict("roster")
+	assertRegistrationConflict("institutions")
+	assertRegistrationConflict("unequip")
+	assertRegistrationConflict("research")
+	assertRegistrationConflict("unlock")
+	assertRegistrationConflict("institution")
+	assertRegistrationConflict("search")
+
+function exerciseGeneratedPrerequisites(string id,string first,string second,string action)
+	let fixture=new ResearchFixture()
+	let technology=fixture.runtime.technologies.get(id)
+	technology.prerequisiteCount.assertEquals(2)
+	technology.prerequisiteIds[0].assertEquals(first)
+	technology.prerequisiteIds[1].assertEquals(second)
+	fixture.reject(action+id)
+	fixture.completions("|u,player,"+first)
+	fixture.reject(action+id)
+	fixture.completions("|u,player,"+second)
+	fixture.reject(action+id)
+	fixture.completions("|u,other,"+first+"|u,other,"+second)
+	fixture.reject(action+id)
+	fixture.completions("|u,player,"+first+"|u,other,"+second)
+	fixture.reject(action+id)
+	fixture.completions("|u,player,"+first+"|u,player,"+second)
+	let cost=fixture.runtime.technologies.cost(id,fixture.resources.year(),0,0)
+	fixture.runtime.research("player",id,fixture.resources.year(),cost-1).assertFalse()
+	fixture.resources.balance=cost-1
+	fixture.reject(action+id)
+	fixture.resources.balance=cost
+	fixture.succeed(action+id,id)
+	fixture.resources.balance.assertEquals(0)
+	// Other controllers may commit with their own prerequisites and pay once.
+	fixture.completions("|u,other,"+first+"|u,other,"+second)
+	fixture.resources.controller="other"
+	fixture.resources.balance=100000
+	fixture.succeed("/unlock "+id,id)
+	fixture.runtime.technologies.isUnlocked("player",id).assertFalse()
+
+@test function generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit()
+	exerciseGeneratedPrerequisites("flintlock_drill","trace_italienne","military_fiscal_state","/research ")
+
+@test function generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites()
+	exerciseGeneratedPrerequisites("scientific_societies","experimental_method","movable_type_printing","/institution ")
+
+@test function unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired()
+	let fixture=new ResearchFixture()
+	fixture.reject("/research unknown_research")
+	let technology=new RuntimeTechnology("fixture_three","Three prerequisites",1450,10)
+	technology.addPrerequisite("trace_italienne")
+	technology.addPrerequisite("military_fiscal_state")
+	technology.addPrerequisite("movable_type_printing")
+	fixture.runtime.technologies.register(technology)
+	fixture.completions("|u,player,trace_italienne|u,player,military_fiscal_state")
+	fixture.reject("/research fixture_three")
+	fixture.completions("|u,player,trace_italienne|u,player,military_fiscal_state|u,player,movable_type_printing")
+	fixture.succeed("/research fixture_three","fixture_three")
+
+function codecRestore(ResearchFixture fixture,string records,int schema)
+	let prefix="v2;map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let document=prefix+records
+	let codec=new PlayableCampaignCodec()
+	var payload=""
+	if schema == CAMPAIGN_SAVE_SCHEMA_CURRENT
+		payload=codec.encode("manual-1",SAVE_SLOT_MANUAL,1,"now",document)
+	else
+		payload=campaignSaveEnvelope(schema,"manual-1",SAVE_SLOT_MANUAL,1,"now",document)
+	let decoded=codec.decodeMigrateAndValidate(payload,"manual-1")
+	decoded.assertEquals(document)
+	fixture.runtime.restoreState(SubString(decoded,StringLength(prefix),StringLength(decoded))).assertTrue()
+	fixture.runtime.reconcile("player")
+	fixture.runtime.reconcile("other")
+	fixture.runtime.captureState().assertEquals(records)
+
+@test function generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility()
+	let fixture=new ResearchFixture()
+	fixture.completions("|u,player,trace_italienne|u,other,military_fiscal_state")
+	fixture.reject("/research flintlock_drill")
+	let pending=fixture.runtime.captureState()
+	codecRestore(fixture,pending,CAMPAIGN_SAVE_SCHEMA_CURRENT)
+	fixture.reject("/research flintlock_drill")
+	fixture.completions("|u,player,trace_italienne|u,player,military_fiscal_state")
+	let eligible=fixture.runtime.captureState()
+	fixture.succeed("/research flintlock_drill","flintlock_drill")
+	let completed=fixture.runtime.captureState()
+	let balance=fixture.resources.balance
+	let projected=fixture.effects.playerPower
+	let resumed=new ResearchFixture()
+	codecRestore(resumed,eligible,CAMPAIGN_SAVE_SCHEMA_CURRENT)
+	resumed.succeed("/research flintlock_drill","flintlock_drill")
+	resumed.runtime.captureState().assertEquals(completed)
+	resumed.resources.balance.assertEquals(balance)
+	resumed.effects.playerPower.assertEquals(projected)
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		codecRestore(resumed,completed,schema)
+		resumed.effects.playerPower.assertEquals(projected)
+		resumed.reject("/research flintlock_drill")
+		resumed.resources.balance.assertEquals(balance)
+	// Saves made under the truncated gate keep their previously earned completion.
+	fixture.completions("|u,player,flintlock_drill|u,other,scientific_societies")
+	codecRestore(resumed,fixture.runtime.captureState(),CAMPAIGN_SAVE_SCHEMA_CURRENT)
+	resumed.effects.playerPower.assertEquals(1)
+	resumed.effects.otherPower.assertEquals(1)
+	resumed.reject("/research flintlock_drill")
+	resumed.resources.controller="other"
+	resumed.reject("/institution scientific_societies")

@@ -20,6 +20,7 @@ import CountryDiplomacyScreen
 import PlayableCountryInteractions
 import ReligionRuntime
 import PlayablePiracy
+import ErrorHandling
 
 constant int SAVE_SCHEMA_VERSION = 2
 
@@ -104,7 +105,9 @@ function initializeRegionalCampaign()
 	registerPlayableTrade(commands, campaign)
 	initializeMilitarySettlementRuntime(commands)
 	registerUnstuckCommand(commands, recoveryService)
-	registerRpgRuntimeCommands(commands,rpgRuntime)
+	let rpgRegistrationProblem=registerRpgRuntimeCommands(commands,rpgRuntime)
+	if rpgRegistrationProblem != ""
+		error(rpgRegistrationProblem)
 	registerReligion(commands,religionRuntime)
 	installPlayerGodMode(commands, campaign.saves)
 	installCommandRegistry(commands)

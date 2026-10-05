@@ -301,9 +301,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
         cost = row.get("timeCost", {})
         unlock = (row.get("unlocks") or [{}])[0]
         rpg += [f'\tlet technology{index}=new RuntimeTechnology("{ws(row["id"])}","{ws(row.get("name", row["id"]))}",{int(cost.get("preferredYear", 0))},{int(cost.get("baseCost", 1))})',
-                f'\ttechnology{index}.kind="{research_kind}"',
-                f'\ttechnology{index}.prerequisiteId="{ws((row.get("prerequisiteIds") or [""])[0])}"',
-                f'\ttechnology{index}.effectId="{ws(unlock.get("contentId", ""))}"',
+                f'\ttechnology{index}.kind="{research_kind}"']
+        for prerequisite_id in row["prerequisiteIds"]:
+            rpg.append(f'\ttechnology{index}.addPrerequisite("{ws(prerequisite_id)}")')
+        rpg += [f'\ttechnology{index}.effectId="{ws(unlock.get("contentId", ""))}"',
                 f'\ttechnology{index}.effectMagnitude=1', f'\truntime.technologies.register(technology{index})']
     for index, row in enumerate(world.get("quests", ())):
         journal = row.get("journal", {}); destinations = journal.get("destinations", {})

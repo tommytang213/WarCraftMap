@@ -301,7 +301,7 @@ class Projections implements RpgProjectionPort
 	var researched=false
 	for i=0 to runtime.technologies.count-1
 		let technology=runtime.technologies.definitions[i]
-		if not researched and technology.prerequisiteId == ""
+		if not researched and technology.prerequisiteCount == 0
 			runtime.research("player",technology.id,1450,runtime.technologies.cost(technology.id,1450,0,0)).assertTrue()
 			researched=true
 	researched.assertTrue()
