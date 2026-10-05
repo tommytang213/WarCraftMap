@@ -207,9 +207,40 @@ def validate_scenario(config: BuildConfig) -> None:
     result = subprocess.run([sys.executable, str(config.scenario_validator), str(config.scenario_file)], cwd=config.project, text=True, capture_output=True)
     if result.returncode: raise _fail("scenario validation", (result.stderr or result.stdout).strip() or f"validator exited {result.returncode}")
 
+def _character_recruitment_windows(world: dict) -> dict[str, tuple[date, date]]:
+    """Validate full authored dates before emitting any recruitment definitions."""
+    windows = {}
+    characters = world.get("characters", [])
+    if not isinstance(characters, list):
+        raise _fail("generation", "characters must be an array")
+    for row in characters:
+        ident = row.get("id") if isinstance(row, dict) else None
+        if (not isinstance(ident, str) or len(ident) > 64
+                or not re.fullmatch(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*", ident)):
+            raise _fail("generation", "character requires a valid stable ID")
+        if ident in windows:
+            raise _fail("generation", f"duplicate character ID: {ident}")
+        window = row.get("availabilityWindow")
+        if not isinstance(window, dict):
+            raise _fail("generation", f"character {ident}: availabilityWindow is required")
+        dates = []
+        for field in ("startDate", "endDate"):
+            value = window.get(field)
+            try:
+                if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                    raise ValueError("expected YYYY-MM-DD")
+                dates.append(date.fromisoformat(value))
+            except ValueError as error:
+                raise _fail("generation", f"character {ident}: invalid availabilityWindow.{field}: {value!r}") from error
+        if dates[0] > dates[1]:
+            raise _fail("generation", f"character {ident}: reversed availabilityWindow")
+        windows[ident] = (dates[0], dates[1])
+    return windows
+
 def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
+    recruitment_windows = _character_recruitment_windows(world)
     generated.mkdir(parents=True, exist_ok=True)
     if config.custom_2d_builder:
         result=subprocess.run([sys.executable,str(config.custom_2d_builder),"--output",str(generated/"custom-2d"),"--check"],cwd=config.project,text=True,capture_output=True)
@@ -235,6 +266,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
     settlement_runtime = _load_settlement_runtime_data(config, world)
     country_runtime = _load_country_interaction_runtime_data(config, world)
     runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", []), "settlementRuntimeStates": settlement_runtime, "countryInteractionState": {key: value for key, value in country_runtime.items() if key != "sources"}}
+    runtime["characterRecruitmentWindows"] = {
+        ident: {"startDate": start.isoformat(), "endDate": end.isoformat()}
+        for ident, (start, end) in recruitment_windows.items()
+    }
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -303,7 +338,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
     rpg = ["\npublic function configureGeneratedRpg(WarcraftRpgRuntime runtime)"]
     for index, row in enumerate(world.get("characters", ())):
         loyalty = row.get("loyalty", {})
+        start, end = recruitment_windows[row["id"]]
         rpg += [f'\tlet hero{index}=new RpgHero("{ws(row["id"])}","{ws(row.get("displayName", row["id"]))}",\'Hpal\')',
+                f'\thero{index}.availabilityStartDay={start.toordinal()}',
+                f'\thero{index}.availabilityEndDay={end.toordinal()}',
                 f'\thero{index}.loyalty={int(loyalty.get("score", 50))}',
                 f'\thero{index}.professionId="{ws((row.get("professionIds") or [""])[0])}"',
                 f'\thero{index}.personalQuestId="{ws((row.get("personalQuestIds") or [""])[0])}"',

@@ -183,6 +183,24 @@ every supported live schema (1–6). These are interpreter lifecycle checks, not
 client launch evidence; release status remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
 
+`RecruitmentWindowTests.wurst` dispatches the registered recruitment command
+against the live campaign clock, including the generated Leonardo record at
+1450, both inclusive full-date boundaries, leap days, large jumps, duplicate
+requests, restored dates, and already recruited companions in every supported
+campaign envelope. Remote-companion reconstruction executes the production RPG
+path without creating native units. Startup fixtures retain a generated
+1450-eligible hero alongside Leonardo and verify that only the eligible hero
+starts recruited. `test_recruitment_generation.py` compares all authored character
+windows by stable ID with generated Wurst and JSON, and rejects malformed dates,
+reversed windows and invalid identities at generation time.
+
+Recruitment windows are generated definition data, not new save fields. Campaign
+schema 6 and RPG schema 2 remain unchanged, and ownership carried by older campaign
+envelopes still restores without a date eligibility check. The legacy empty `rpg=v1`
+domain initializes an eligible starting companion. Generation provenance advances to version 16.
+The shared window predicate gates first recruitment only; existing ownership,
+assignments and progression survive the closing date.
+
 Boundary correspondence regressions execute production registration, travel,
 codec and destination startup at 0.25, 0.37 and 0.5 on the same generated route.
 They cover reversed travel, partial intervals, unequal dimensions, scale/offset,

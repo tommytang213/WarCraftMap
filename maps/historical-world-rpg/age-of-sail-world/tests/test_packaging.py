@@ -61,6 +61,7 @@ class PackagingTests(unittest.TestCase):
         self.assertNotIn("SCENARIO_RUNTIME_JSON", lua); self.assertIn("england", runtime["ids"]["polities"])
         self.assertEqual(__import__("hashlib").sha256((self.project / "scenario/world/world.json").read_bytes()).hexdigest(), runtime["sourceSha256"])
         world = json.loads((self.project / "scenario/world/world.json").read_text())
+        self.assertEqual({row["id"]: row["availabilityWindow"] for row in world["characters"]}, runtime["characterRecruitmentWindows"])
         self.assertEqual(len(world["polities"]),len(runtime["polityDefinitions"])); self.assertTrue({"england","france","byzantine_empire","mali_empire","ethiopian_empire","kongo_kingdom"}.issubset(item["id"] for item in runtime["polityDefinitions"]))
         self.assertEqual(len(world["provinces"]),len(runtime["provinceDefinitions"])); self.assertTrue({"greater_london","kent","ile_de_france","normandy","manding","shewa","kongo_core"}.issubset(item["id"] for item in runtime["provinceDefinitions"]))
         self.assertEqual(len(world["territorialHoldings"]),len(runtime["provinceHoldings"]))

@@ -1,0 +1,278 @@
+package RecruitmentWindowTests
+
+import WarcraftRpgRuntime
+import CampaignTimeline
+import CommandRouter
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import ScenarioData
+
+/** Only output and native resource/effect boundaries are recorded. The roster,
+ * clock, command registration/dispatch and campaign save/load are production. */
+class RecruitmentPorts implements CommandOutput, ResearchCommandResources, TechnologyEffectPort
+	string last = ""
+	int messages = 0
+	int balance = 777
+	int resourceWrites = 0
+	int effects = 0
+	override function show(player recipient, string message)
+		last = message
+		messages++
+	override function controllerId(player sender) returns string
+		return "player"
+	override function year() returns int
+		return 1450
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+		resourceWrites++
+	override function applyTechnology(string controllerId, string effectId, int magnitude)
+		effects++
+	override function clearTechnologyLayer(string controllerId)
+		effects++
+
+class RecruitmentStorage implements CampaignSaveStorage
+	string payload = ""
+	override function contains(string slotId) returns boolean
+		return payload != ""
+	override function read(string slotId) returns string
+		return payload
+	override function writeTransactional(string slotId, string payload) returns boolean
+		this.payload = payload
+		return true
+	override function diagnostic() returns string
+		return ""
+
+class RecruitmentFixture
+	RecruitmentPorts ports = new RecruitmentPorts()
+	RecruitmentStorage storage = new RecruitmentStorage()
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(ports)
+	CampaignClock clock
+	PlayableCampaignState state
+	CampaignSaveManager saves
+	CommandRegistry commands
+	RpgHero hero
+	string initial
+	construct(CampaignClock clock, RpgHero hero)
+		this.clock = clock
+		this.hero = hero
+		rpg.heroes.register(hero)
+		rpg.researchResources = ports
+		rpg.journal.currency = 321
+		rpg.inventory.registerItem(new RpgItem("token", "Token", "hand", "common", 1, 1))
+		rpg.inventory.grant("token").assertTrue()
+		state = new PlayableCampaignState(new WarcraftRegionalAdapter(), clock)
+		state.setRpgRuntime(rpg)
+		saves = new CampaignSaveManager(storage, new PlayableCampaignCodec(clock), state)
+		commands = new CommandRegistry(false, 6, new CommandText(), ports)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		initial = rpg.captureState()
+	function reject(string command, string expected)
+		let before = state.captureAuthoritativeState()
+		let beforeRpg = rpg.captureState()
+		let balance = ports.balance
+		let writes = ports.resourceWrites
+		let effects = ports.effects
+		let messages = ports.messages
+		commands.dispatch(null, command).assertTrue()
+		ports.last.assertEquals(expected)
+		(StringLength(ports.last) <= 96).assertTrue()
+		ports.messages.assertEquals(messages + 1)
+		state.captureAuthoritativeState().assertEquals(before)
+		rpg.captureState().assertEquals(beforeRpg)
+		ports.balance.assertEquals(balance)
+		ports.resourceWrites.assertEquals(writes)
+		ports.effects.assertEquals(effects)
+	function recruit()
+		commands.dispatch(null, "/recruit " + hero.id).assertTrue()
+		hero.recruited.assertTrue()
+		hero.assignment.assertEquals("reserve")
+		ports.last.startsWith(hero.name + " joined your strategic roster.").assertTrue()
+		rpg.heroes.strategicRosterSize().assertEquals(1)
+	function at(int day, boolean eligible)
+		clock.restoreState(clock.initialState()).assertTrue()
+		rpg.restoreState(initial).assertTrue()
+		clock.advanceTo(day).assertTrue()
+		if eligible
+			recruit()
+		else
+			reject("/hire " + hero.id, "That character is unavailable on the current campaign date.")
+
+function windowFixture() returns RecruitmentFixture
+	let hero = new RpgHero("window", "Window Hero", 'Hpal')
+	// Leap day through March 2, 1600: full dates, not year-only comparisons.
+	hero.availabilityStartDay = 584082
+	hero.availabilityEndDay = 584084
+	hero.regionId = "fixed_region"
+	return new RecruitmentFixture(new CampaignClock(529237, 664741, 529237, 1.), hero)
+
+function leonardoFixture() returns RecruitmentFixture
+	let generated = new WarcraftRpgRuntime(null)
+	configureGeneratedRpg(generated)
+	// Use the actual generated record and production clock, bounding unrelated
+	// catalogues so each interpreter case remains below its execution limit.
+	return new RecruitmentFixture(configureCampaignTimeline(), generated.heroes.get("leonardo_da_vinci"))
+
+function bothBoundaries(RecruitmentFixture f)
+	f.at(f.hero.availabilityStartDay - 1, false)
+	f.at(f.hero.availabilityStartDay, true)
+	f.at(f.hero.availabilityStartDay + 1, true)
+	f.at(f.hero.availabilityEndDay - 1, true)
+	f.at(f.hero.availabilityEndDay, true)
+	f.at(f.hero.availabilityEndDay + 1, false)
+
+@test function recruitmentCommandChecksEverySideOfBothFullDateBoundaries()
+	bothBoundaries(windowFixture())
+
+@test function generatedLeonardoIsUnavailableAtStartAndHasInclusiveAuthoredDates()
+	let f = leonardoFixture()
+	f.hero.availabilityStartDay.assertEquals(536542) // 1470-01-01
+	f.hero.availabilityEndDay.assertEquals(554559) // 1519-05-02
+	f.clock.campaignDay().assertEquals(529237) // 1450-01-01
+	f.reject("/recruit leonardo_da_vinci", "That character is unavailable on the current campaign date.")
+	bothBoundaries(f)
+
+@test function recruitmentUsesLiveTicksAndPreservesDuplicatesAfterExpiry()
+	let f = windowFixture()
+	f.clock.advanceTo(f.hero.availabilityStartDay - 1).assertTrue()
+	f.clock.advanceElapsed(.75).assertTrue()
+	f.reject("/recruit window", "That character is unavailable on the current campaign date.")
+	f.clock.advanceElapsed(.25).assertTrue()
+	f.recruit()
+	f.hero.becomeOathbound()
+	f.hero.awardExperience(300)
+	f.rpg.heroes.assignRemote("window", "governor", "remote_region").assertTrue()
+	f.reject("/hire window", "That character is already recruited.")
+	f.clock.advanceElapsed(1000000000000.).assertTrue()
+	f.clock.campaignDay().assertEquals(f.clock.endDay)
+	f.reject("/recruit window", "That character is already recruited.")
+	f.reject("/recruit unknown_character", "That character is unavailable.")
+	f.hero.oathbound.assertTrue()
+	f.hero.assignment.assertEquals("governor")
+	f.hero.regionId.assertEquals("remote_region")
+
+@test function largeJumpPastAnUnrecruitedWindowDoesNotGrantEligibility()
+	let f = windowFixture()
+	f.clock.advanceElapsed(1000000000000.).assertTrue()
+	f.reject("/recruit window", "That character is unavailable on the current campaign date.")
+	f.rpg.heroes.strategicRosterSize().assertEquals(0)
+
+@test function restoredCampaignClockControlsTheNextRecruitmentCommit()
+	let f = windowFixture()
+	f.clock.advanceTo(f.hero.availabilityStartDay).assertTrue()
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "eligible-unrecruited").assertTrue()
+	let payload = f.storage.payload
+	f.clock.advanceTo(f.hero.availabilityEndDay + 1).assertTrue()
+	f.reject("/recruit window", "That character is unavailable on the current campaign date.")
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.campaignDay().assertEquals(f.hero.availabilityStartDay)
+	f.storage.payload.assertEquals(payload)
+	f.recruit()
+	// A restored pre-window checkpoint must also override the running date.
+	f.clock.restoreState(f.clock.initialState()).assertTrue()
+	f.rpg.restoreState(f.initial).assertTrue()
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "before-window").assertTrue()
+	f.clock.advanceTo(f.hero.availabilityEndDay).assertTrue()
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.reject("/recruit window", "That character is unavailable on the current campaign date.")
+
+@test function recruitedHeroSurvivesExpirySaveLoadAndRepeatedReconstruction()
+	let f = leonardoFixture()
+	f.clock.advanceTo(f.hero.availabilityStartDay).assertTrue()
+	f.recruit()
+	f.hero.becomeOathbound()
+	f.hero.awardExperience(300)
+	f.rpg.heroes.assignRemote(f.hero.id, "adviser", "fixed_region").assertTrue()
+	f.clock.advanceTo(f.hero.availabilityEndDay + 1).assertTrue()
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "retained-companion").assertTrue()
+	let saved = f.rpg.captureState()
+	let restored = leonardoFixture()
+	restored.storage.payload = f.storage.payload
+	for attempt = 1 to 2
+		restored.clock.advanceTo(restored.clock.endDay).assertTrue()
+		restored.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		restored.clock.campaignDay().assertEquals(f.hero.availabilityEndDay + 1)
+		// Remote companions exercise the production reconstruction path without
+		// creating Warcraft units in the headless interpreter.
+		restored.rpg.reconstruct(null, 0., 0., "player")
+		restored.rpg.captureState().assertEquals(saved)
+		restored.rpg.heroes.strategicRosterSize().assertEquals(1)
+		restored.hero.assignment.assertEquals("adviser")
+		restored.hero.oathbound.assertTrue()
+		restored.reject("/hire leonardo_da_vinci", "That character is already recruited.")
+
+@test function legacyRecruitedHeroesAreRetainedAcrossEverySupportedEnvelope()
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		let f = windowFixture()
+		f.clock.advanceTo(f.hero.availabilityEndDay + 1).assertTrue()
+		// Literal populated RPG v2 records predate this gate. Some campaigns already
+		// own future-era heroes; neither migration nor reconstruction can remove them.
+		let legacyRpg = "v2|h,window,1,42,73,9,4,777,100,1,0,0,governor,fixed_region,scholar,quest_window,signature,~perk~|i,token|j,,321"
+		var authority = "v2;map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=" + legacyRpg + ";militarySettlements=v1;religion=v1;piracy=v1"
+		if schema >= 6
+			authority += ";clock=" + f.clock.captureState()
+		let payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority)
+		f.storage.payload = payload
+		f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.storage.payload.assertEquals(payload)
+		if schema < 6
+			f.clock.campaignDay().assertEquals(f.clock.initialDay)
+		else
+			f.clock.campaignDay().assertEquals(f.hero.availabilityEndDay + 1)
+		f.hero.recruited.assertTrue()
+		f.hero.level.assertEquals(42)
+		f.hero.experience.assertEquals(73)
+		f.hero.commandExperience.assertEquals(777)
+		f.hero.oathbound.assertTrue()
+		f.hero.assignment.assertEquals("governor")
+		f.hero.chosenPerks.assertEquals("~perk~")
+		f.hero.availabilityStartDay.assertEquals(584082)
+		f.hero.availabilityEndDay.assertEquals(584084)
+		f.reject("/hire window", "That character is already recruited.")
+		let saved = f.rpg.captureState()
+		f.clock.advanceElapsed(1000000000000.).assertTrue()
+		f.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
+		f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.rpg.reconstruct(null, 0., 0., "player")
+		f.rpg.captureState().assertEquals(saved)
+
+@test function newCampaignChoosesFirstEligibleGeneratedHeroAndRetainsExistingOwnership()
+	let rpg = new WarcraftRpgRuntime(null)
+	configureGeneratedRpg(rpg)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), configureCampaignTimeline())
+	state.setRpgRuntime(rpg)
+	rpg.prepareNewCampaign().assertTrue()
+	rpg.heroes.get("leonardo_da_vinci").recruited.assertFalse()
+	rpg.heroes.get("hang_tuah").recruited.assertTrue()
+	rpg.heroes.get("hang_tuah").assignment.assertEquals("field")
+	rpg.heroes.strategicRosterSize().assertEquals(1)
+	let existing = leonardoFixture()
+	existing.hero.recruited = true
+	existing.hero.level = 42
+	existing.rpg.prepareNewCampaign().assertTrue()
+	existing.hero.level.assertEquals(42)
+	existing.rpg.heroes.strategicRosterSize().assertEquals(1)
+
+@test function unavailableNewCampaignAndMissingClockFailWithoutRosterMutation()
+	let f = windowFixture()
+	let before = f.rpg.captureState()
+	f.rpg.prepareNewCampaign().assertFalse()
+	f.rpg.captureState().assertEquals(before)
+	f.rpg.heroes.clock = null
+	f.reject("/recruit window", "Campaign time is not ready for recruitment.")
+	f.rpg.heroes.clock = f.clock
+	f.clock.advanceTo(f.hero.availabilityStartDay).assertTrue()
+	f.clock.advancing = true
+	f.reject("/recruit window", "Campaign time is not ready for recruitment.")
+	f.clock.advancing = false
+
+@test function oneDayWindowsAreInclusiveAndInvalidRuntimeWindowsFailClosed()
+	let f = windowFixture()
+	f.hero.availabilityEndDay = f.hero.availabilityStartDay
+	f.at(f.hero.availabilityStartDay - 1, false)
+	f.at(f.hero.availabilityStartDay, true)
+	f.at(f.hero.availabilityStartDay + 1, false)
+	f.hero.availabilityEndDay = f.hero.availabilityStartDay - 1
+	f.at(f.hero.availabilityStartDay, false)
