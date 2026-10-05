@@ -17,6 +17,20 @@ import WarcraftRpgRuntime
 import MilitarySettlementRuntime
 import ReligionRuntime
 import PlayablePiracy
+import PhysicalInteraction
+
+/** Physical identity is distinct from map tracking and remote command view.
+ * Loads and transitions cannot authorize interactions while state is staged. */
+public class CampaignInteractionMaps implements InteractionMaps
+	PlayableCampaignState state
+	construct(PlayableCampaignState state)
+		this.state = state
+	override function available() returns boolean
+		return state.isSaveSafe() and state.identity != null and state.identity.hasOrigin()
+	override function loadedMap() returns string
+		return state.loadedPhysicalMap
+	override function partyMap() returns string
+		return state.identity.physicalMapId()
 
 /** Stable-domain extensions participate in every campaign lifecycle without
  * making their Warcraft projections part of the save authority. */

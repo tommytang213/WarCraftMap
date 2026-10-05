@@ -1,0 +1,331 @@
+package RpgInteractionTests
+
+import WarcraftRpgRuntime
+import PhysicalInteraction
+import ScenarioData
+import CommandRouter
+import CampaignTimeline
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import RemoteRegionManagement
+import ManagementScreenPauseController
+
+class InteractionOutput implements CommandOutput
+	string last = ""
+	override function show(player sender, string message)
+		last = message
+
+/** Only the Warcraft observation boundary is replaced. IDs, target geometry,
+ * hero eligibility, campaign identity and command dispatch remain production. */
+class RecordingActors implements InteractionActors
+	real actorX = 0.
+	real actorY = 0.
+	int kind = 0
+	boolean exists = true
+	boolean controlled = true
+	int reads = 0
+	int disappearAt = 0
+	int moveAwayAt = 0
+	override function present(int actor, player owner) returns boolean
+		reads++
+		return actor == 0 and exists and controlled and (disappearAt == 0 or reads < disappearAt)
+	override function x(int actor) returns real
+		if moveAwayAt > 0 and reads >= moveAwayAt
+			return actorX + INTERACTION_RANGE + 1.
+		return actorX
+	override function y(int actor) returns real
+		return actorY
+	override function movement(int actor) returns int
+		return kind
+	function moveTo(InteractionLocation target)
+		actorX = target.x
+		actorY = target.y
+
+/** Delegate ordinary map authority to production, but allow the loaded map
+ * to change between the initial resolution and the command's commit. */
+class RecordingInteractionMaps implements InteractionMaps
+	InteractionMaps delegate
+	int reads = 0
+	int changeAt = 0
+	construct(InteractionMaps delegate)
+		this.delegate = delegate
+	override function available() returns boolean
+		return delegate.available()
+	override function loadedMap() returns string
+		reads++
+		if changeAt > 0 and reads >= changeAt
+			return "africa"
+		return delegate.loadedMap()
+	override function partyMap() returns string
+		return delegate.partyMap()
+
+class InteractionPause implements CampaignPauseRuntime
+	override function setCampaignPaused(boolean paused)
+		skip
+
+class InteractionFixture
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
+	RecordingActors actors = new RecordingActors()
+	InteractionOutput output = new InteractionOutput()
+	CommandRegistry commands
+	PlayableCampaignState state
+	RuntimeQuest questDefinition
+	RuntimeQuest remoteQuest
+	RuntimeTreasure treasure
+	RuntimeTreasure remoteTreasure
+	RpgHero hero
+	construct()
+		configureGeneratedRpg(rpg)
+		configureGeneratedInteractions(rpg.interactions)
+		// Retain authored records relevant to this lifecycle, as startup tests
+		// do, to keep complete snapshot assertions within interpreter budgets.
+		hero = rpg.heroes.heroes[0]
+		hero.recruited = true
+		hero.assignment = "field"
+		rpg.heroes.count = 2
+		rpg.heroes.heroes[1].recruited = true
+		rpg.heroes.heroes[1].assignment = "reserve"
+		for i = 0 to rpg.journal.count - 1
+			if rpg.journal.quests[i].turnInId == "lisbon"
+				questDefinition = rpg.journal.quests[i]
+			if rpg.journal.quests[i].turnInId == "timbuktu"
+				remoteQuest = rpg.journal.quests[i]
+		rpg.journal.quests[0] = questDefinition
+		rpg.journal.count = 1
+		questDefinition.rewardCurrency = 37
+		treasure = rpg.treasures.get("treasure_order_of_christ_archive")
+		remoteTreasure = rpg.treasures.get("treasure_mali_royal_goldwork")
+		rpg.treasures.treasures[0] = treasure
+		rpg.treasures.treasures[1] = remoteTreasure
+		rpg.treasures.count = 2
+		let reward = new RpgItem("interaction_fixture_reward", "Recovered archive", "artifact", "rare", 1, 1)
+		rpg.inventory.registerItem(reward)
+		treasure.rewardItemId = reward.id
+		rpg.interactions.actors = actors
+		state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1450, 1820, 1450, 1.))
+		installCampaignClock(state.clock)
+		state.identity = new PlayerCampaignIdentity()
+		state.identity.startCampaign("portugal", "europe_west", "europe_iberia_western_med", "lisbon").assertTrue()
+		state.loadedPhysicalMap = "europe_west"
+		state.authority = replaceCampaignField(state.authority, "map", "europe_west")
+		state.setRpgRuntime(rpg)
+		rpg.interactions.maps = new CampaignInteractionMaps(state)
+		commands = new CommandRegistry(false, 8, new CommandText(), output)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		actors.moveTo(rpg.interactions.get("lisbon"))
+	function ready()
+		rpg.journal.accept(questDefinition.id).assertTrue()
+		rpg.journal.progress(questDefinition.id, questDefinition.objectiveTarget).assertTrue()
+	function turnIn() returns string
+		return "/turnin " + questDefinition.id + " " + hero.id
+	function reject(string command)
+		let before = state.captureAuthoritativeState()
+		commands.dispatch(null, command).assertTrue()
+		output.last.assertEquals("Requirements are not met here.")
+		state.captureAuthoritativeState().assertEquals(before)
+	function accept(string command)
+		commands.dispatch(null, command).assertTrue()
+		output.last.assertEquals("Action completed.")
+
+@test function rpgCommandsRejectRemoteDistantUnknownAndInvalidRecipientsWithoutMutation()
+	let f = new InteractionFixture()
+	f.ready()
+	// A refill becoming due must not mutate anything during a rejected request.
+	let due = new RuntimeQuest("due_elsewhere", "Due elsewhere", "local")
+	due.state = QUEST_COMPLETE
+	due.completionCap = 2
+	due.completions = 1
+	due.giverId = "timbuktu"
+	f.rpg.journal.register(due)
+	f.reject("/interact timbuktu")
+	f.reject("/interact africa")
+	f.remoteTreasure.clueStage = f.remoteTreasure.clueCount
+	f.reject("/interact " + f.remoteTreasure.resolvedLocationId)
+	f.reject("/interact cand_unknown")
+	f.reject("/interact " + f.treasure.resolvedLocationId)
+	f.reject("/turnin missing " + f.hero.id)
+	f.reject("/turnin " + f.questDefinition.id + " missing")
+	f.reject("/turnin " + f.questDefinition.id + " " + f.rpg.heroes.heroes[1].id)
+	f.actors.actorX += INTERACTION_RANGE + 1.
+	f.reject("/interact lisbon")
+	f.reject(f.turnIn())
+	f.actors.actorX = 100000.
+	f.reject("/interact europe")
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.hero.incapacitated = true
+	f.reject(f.turnIn())
+	f.hero.incapacitated = false
+	f.hero.recruited = false
+	f.reject("/interact lisbon")
+	f.hero.recruited = true
+	f.hero.assignment = "governor"
+	f.reject(f.turnIn())
+	f.hero.assignment = "field"
+	f.actors.exists = false
+	f.reject("/interact lisbon")
+	f.actors.exists = true
+	f.actors.controlled = false
+	f.reject(f.turnIn())
+	f.actors.controlled = true
+	f.actors.kind = 1
+	f.reject("/interact lisbon")
+	f.reject(f.turnIn())
+	let before = f.rpg.captureState()
+	f.rpg.worldEventAt("location", "lisbon", 1, 100).assertFalse()
+	f.rpg.captureState().assertEquals(before)
+
+@test function rpgTurnInRejectsAnotherAuthoredDestinationDespiteLocalPartyAndReadyObjectives()
+	let f = new InteractionFixture()
+	(f.remoteQuest != null).assertTrue()
+	f.rpg.journal.register(f.remoteQuest)
+	f.rpg.journal.accept(f.remoteQuest.id).assertTrue()
+	f.rpg.journal.progress(f.remoteQuest.id, f.remoteQuest.objectiveTarget).assertTrue()
+	f.reject("/turnin " + f.remoteQuest.id + " " + f.hero.id)
+	// An unrecruited or remote recipient cannot borrow the local actor's presence.
+	let recipient = f.rpg.heroes.heroes[1]
+	f.ready()
+	recipient.assignment = "field"
+	f.reject("/turnin " + f.questDefinition.id + " " + recipient.id)
+	f.accept(f.turnIn())
+	f.remoteQuest.state.assertEquals(QUEST_READY)
+
+@test function rpgLocalTurnInUsesAuthoredDestinationAndSurvivesMissingBuildings()
+	let f = new InteractionFixture()
+	f.reject(f.turnIn())
+	f.questDefinition.state = QUEST_READY
+	f.reject(f.turnIn())
+	f.questDefinition.state = QUEST_OFFERED
+	f.ready()
+	f.questDefinition.completions = f.questDefinition.completionCap
+	f.reject(f.turnIn())
+	f.questDefinition.completions = 0
+	// No settlement unit or military representation is installed in this fixture.
+	// Stable generated location/service records are sufficient at the real point.
+	f.actors.actorX += INTERACTION_RANGE
+	let experience = f.hero.experience
+	f.accept(f.turnIn())
+	f.questDefinition.state.assertEquals(QUEST_COMPLETE)
+	f.questDefinition.completions.assertEquals(1)
+	f.rpg.journal.currency.assertEquals(37)
+	(f.hero.level > 1 or f.hero.experience > experience).assertTrue()
+	f.reject(f.turnIn())
+
+@test function rpgLocalInteractionUsesQuestAliasesAndEligibleActorForAutomaticTurnIn()
+	let f = new InteractionFixture()
+	f.rpg.heroes.heroes[1].assignment = "governor"
+	let remote = f.rpg.heroes.heroes[1]
+	let before = remote.experience
+	f.accept("/interact quest_location_lisbon")
+	f.questDefinition.state.assertEquals(QUEST_COMPLETE)
+	remote.experience.assertEquals(before)
+	f.hero.level.assertEquals(2)
+	f.reject("/interact quest_location_lisbon")
+
+@test function rpgTreasureCommandsRequireLocalCluesAndResolvedGeneratedCandidate()
+	let f = new InteractionFixture()
+	let target = f.rpg.interactions.get(f.treasure.resolvedLocationId)
+	(target != null).assertTrue()
+	f.actors.moveTo(target)
+	f.reject("/interact " + target.id)
+	for i = 1 to f.treasure.clueCount
+		f.accept("/interact europe")
+	f.reject("/interact europe")
+	var otherCandidate = f.rpg.interactions.get("cand_templar_tomar")
+	if otherCandidate.id == target.id
+		otherCandidate = f.rpg.interactions.get("cand_templar_almourol")
+	f.actors.moveTo(otherCandidate)
+	f.reject("/interact " + otherCandidate.id)
+	f.actors.moveTo(target)
+	f.actors.kind = 1
+	f.reject("/interact " + target.id)
+	f.actors.kind = 0
+	// Failed unique-item delivery must leave discovery and all authority intact.
+	f.rpg.inventory.getItem(f.treasure.rewardItemId).unique = true
+	f.rpg.inventory.grant(f.treasure.rewardItemId).assertTrue()
+	f.reject("/interact " + target.id)
+	f.rpg.inventory.ownedCount = 0
+	f.accept("/search " + target.id)
+	f.treasure.discovered.assertTrue()
+	f.rpg.inventory.ownedCount.assertEquals(1)
+	f.reject("/interact " + target.id)
+	let saved = f.rpg.captureState()
+	for i = 1 to 2
+		f.rpg.restoreState(saved).assertTrue()
+		f.rpg.reconcile("player")
+		f.reject("/interact " + target.id)
+	f.rpg.inventory.ownedCount.assertEquals(1)
+
+@test function rpgCommitRechecksCoordinatesAndLoadedMapWithoutRetainingAuthorization()
+	let f = new InteractionFixture()
+	f.ready()
+	f.actors.moveAwayAt = 2
+	f.reject(f.turnIn())
+	f.actors.reads = 0
+	f.reject("/interact lisbon")
+	f.actors.moveAwayAt = 0
+	let maps = new RecordingInteractionMaps(f.rpg.interactions.maps)
+	f.rpg.interactions.maps = maps
+	maps.changeAt = 2
+	f.reject(f.turnIn())
+	maps.reads = 0
+	f.reject("/interact lisbon")
+	f.rpg.interactions.maps = null
+	f.reject(f.turnIn())
+	f.rpg.interactions.maps = maps
+	maps.changeAt = 0
+	// A failed earlier resolution cannot poison or authorize a later request.
+	f.accept(f.turnIn())
+	f.reject(f.turnIn())
+
+@test function rpgRevalidatesActorAtCommitAndPhysicalMapDuringReconstruction()
+	let f = new InteractionFixture()
+	f.ready()
+	f.actors.disappearAt = 2
+	f.reject(f.turnIn())
+	f.actors.reads = 0
+	f.reject("/interact lisbon")
+	f.actors.disappearAt = 0
+	f.state.loading = true
+	f.reject(f.turnIn())
+	f.state.loading = false
+	f.state.startupLocked = true
+	f.reject("/interact europe")
+	f.state.startupLocked = false
+	f.state.beginTransition()
+	f.reject(f.turnIn())
+	f.state.cancelTransition()
+	let codec = new PlayableCampaignCodec(f.state.clock)
+	let saved = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "fixture", f.state.captureAuthoritativeState())
+	let restored = codec.decodeMigrateAndValidate(saved, "manual_01")
+	(restored != "").assertTrue()
+	f.actors.exists = false
+	f.state.reconstructRuntime(restored).assertTrue()
+	f.reject(f.turnIn())
+	f.state.activateAuthoritativeState(restored)
+	f.reject(f.turnIn())
+	f.actors.exists = true
+	f.state.loadedPhysicalMap = "africa"
+	f.actors.moveTo(f.rpg.interactions.get("timbuktu"))
+	f.reject("/interact timbuktu")
+	f.reject("/interact africa")
+	f.state.loadedPhysicalMap = "europe_west"
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.accept(f.turnIn())
+
+@test function rpgRemoteCommandAndTrackingNeverConferPhysicalPresence()
+	let f = new InteractionFixture()
+	f.ready()
+	let access = new PlayableRegionAccess()
+	access.add("europe", true, true)
+	access.add("africa", true, true)
+	let selector = new RegionSelector(access, new PlayableRegionCommandRuntime(f.state.regional), "europe", new ManagementScreenPauseController(new InteractionPause(), false))
+	registerRegionCommand(f.commands, selector, f.output).assertEquals("")
+	f.commands.dispatch(null, "/region africa").assertTrue()
+	selector.getCommandRegionId().assertEquals("africa")
+	f.state.identity.physicalMapId().assertEquals("europe_west")
+	// Production tracking changes guidance only; its text uses the output port.
+	f.commands.dispatch(null, "/track " + f.questDefinition.id).assertTrue()
+	f.reject("/interact africa")
+	f.reject("/interact timbuktu")
+	f.accept(f.turnIn())

@@ -156,6 +156,24 @@ def _positions(project: Path) -> dict[str, dict]:
     return result
 
 
+def location_cell(position, layout, width, cells, surfaces, reserved=()):
+    """Place an authored local point using the materializer's bounded raster.
+
+    Ties use row/column order, so regeneration cannot reroll an interaction.
+    """
+    ox, oy, iw, ih = layout
+    sx, sy = position
+    cx, cy = ox + min(iw - 1, max(0, round(sx))), oy + min(ih - 1, max(0, round(sy)))
+    if cells[cy * width + cx] not in surfaces or (cx, cy) in reserved:
+        eligible = ((x, y) for y in range(oy, oy + ih) for x in range(ox, ox + iw)
+                    if cells[y * width + x] in surfaces and (x, y) not in reserved)
+        nearest = min(eligible, key=lambda p: (abs(p[0] - cx) + abs(p[1] - cy), p[1], p[0]), default=None)
+        if nearest is None:
+            raise MaterializationError("location has no compatible materialized terrain cell")
+        cx, cy = nearest
+    return cx, cy
+
+
 def settlement_placements(project: Path, physical, settlements: list[dict], width: int, height: int, cells: list[int], layouts: dict) -> list[dict]:
     """Shared physical placement for map objects and the campaign starting party."""
     authored = _positions(project)
@@ -176,13 +194,7 @@ def settlement_placements(project: Path, physical, settlements: list[dict], widt
             digest = hashlib.sha256(settlement["id"].encode()).digest()
             position = [int.from_bytes(digest[:2], "little") % iw,
                         int.from_bytes(digest[2:4], "little") % ih]
-        sx, sy = position
-        cx, cy = ox + min(iw - 1, max(0, round(sx))), oy + min(ih - 1, max(0, round(sy)))
-        if cells[cy * width + cx] != 1:
-            land = ((x, y) for y in range(oy, oy + ih) for x in range(ox, ox + iw)
-                    if cells[y * width + x] == 1)
-            cx, cy = min(land, key=lambda point: (abs(point[0] - cx) + abs(point[1] - cy), point[1], point[0]),
-                         default=(cx, cy))
+        cx, cy = location_cell(position, layout, width, cells, {1})
         wx, wy = (cx + .5 - width / 2) * 128.0, (cy + .5 - height / 2) * 128.0
         is_port = source.get("settlementClass") == "port" or "port" in source.get("roles", []) or "dockyard" in source.get("services", [])
         placed.append({"id": settlement["id"], "regionalInstanceId": source["regionalInstanceId"],

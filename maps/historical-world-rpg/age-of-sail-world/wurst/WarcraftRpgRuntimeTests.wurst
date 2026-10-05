@@ -84,6 +84,7 @@ class Projections implements RpgProjectionPort
 	let effects=new Effects()
 	let runtime=new WarcraftRpgRuntime(effects)
 	let hero=new RpgHero("hero","Hero",'Hpal')
+	hero.recruited=true
 	let questDefinition=new RuntimeQuest("quest","A Quest","regional")
 	questDefinition.objectiveTarget=2
 	questDefinition.rewardExperience=100
@@ -192,7 +193,7 @@ class Projections implements RpgProjectionPort
 	restored.restoreState("v99|broken").assertFalse()
 	restored.captureState().assertEquals(before)
 
-@test function playerReachableActionsWorldEventsAndRepeatLock()
+@test function rpgRewardsProjectionsAndRepeatLock()
 	let effects=new Effects()
 	let runtime=new WarcraftRpgRuntime(effects)
 	let projections=new Projections()
@@ -219,7 +220,8 @@ class Projections implements RpgProjectionPort
 	questDefinition.completionCap=2
 	runtime.journal.register(questDefinition)
 	runtime.acceptQuest("harbor_task").assertTrue()
-	runtime.worldEvent("location","london",1).assertTrue()
+	runtime.journal.progress("harbor_task",1).assertTrue()
+	runtime.journal.turnIn("harbor_task",hero,0,30).assertTrue()
 	questDefinition.state.assertEquals(QUEST_COMPLETE)
 	runtime.acceptQuest("harbor_task").assertFalse()
 	runtime.journal.refill(30)
@@ -228,8 +230,8 @@ class Projections implements RpgProjectionPort
 	treasure.clueCount=1
 	treasure.rewardItemId="blade"
 	runtime.treasures.register(treasure)
-	runtime.worldEvent("location","europe",1).assertTrue()
-	runtime.worldEvent("location","london",1).assertTrue()
+	runtime.treasures.advanceClue("charts").assertTrue()
+	runtime.treasures.discover("charts","london",runtime.inventory).assertTrue()
 	treasure.discovered.assertTrue()
 	let saved=runtime.captureState()
 	runtime.restoreState(saved).assertTrue()
@@ -261,11 +263,11 @@ class Projections implements RpgProjectionPort
 	runtime.journal.track("hidden").assertEquals("No destination is revealed yet.")
 	runtime.worldEvent("location","unrelated",1).assertFalse()
 	runtime.journal.progress("hidden",1).assertTrue()
-	runtime.turnInQuest("hidden","hero",1,30).assertTrue()
+	runtime.journal.turnIn("hidden",hero,1,30).assertTrue()
 	let treasure=new RuntimeTreasure("empty_reward","region","cave")
 	runtime.treasures.register(treasure)
-	runtime.worldEvent("location","region",1).assertTrue()
-	runtime.worldEvent("location","cave",1).assertTrue()
+	runtime.treasures.advanceClue("empty_reward").assertTrue()
+	runtime.treasures.discover("empty_reward","cave",runtime.inventory).assertTrue()
 	let saved=runtime.captureState()
 	for i=1 to 2
 		runtime.restoreState(saved).assertTrue()
@@ -319,17 +321,14 @@ class Projections implements RpgProjectionPort
 	researched.assertTrue()
 	let q=runtime.journal.quests[0]
 	runtime.acceptQuest(q.id).assertTrue()
-	if q.destinationId != ""
-		runtime.worldEvent("location",q.destinationId,1)
-	else
-		runtime.journal.progress(q.id,1).assertTrue()
-	if q.state == QUEST_READY
-		runtime.turnInQuest(q.id,hero.id,1,30).assertTrue()
+	// Catalogue/codec unit coverage; physical commands execute in RpgInteractionTests.
+	runtime.journal.progress(q.id,1).assertTrue()
+	runtime.journal.turnIn(q.id,hero,1,30).assertTrue()
 	q.state.assertEquals(QUEST_COMPLETE)
 	let treasure=runtime.treasures.treasures[0]
 	for i=1 to treasure.clueCount
-		runtime.worldEvent("location",treasure.regionId,1).assertTrue()
-	runtime.worldEvent("location",treasure.resolvedLocationId,1).assertTrue()
+		runtime.treasures.advanceClue(treasure.id).assertTrue()
+	runtime.treasures.discover(treasure.id,treasure.resolvedLocationId,runtime.inventory).assertTrue()
 	treasure.discovered.assertTrue()
 	let saved=runtime.captureState()
 	let restored=new WarcraftRpgRuntime(new Effects())
