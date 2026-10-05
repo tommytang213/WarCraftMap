@@ -88,6 +88,12 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	function registerPolityResources(string polityId, int availableTreasury, int availableMaterialStock)
 		if polityId != "" and polityIndex(polityId) < 0
 			polityIds[polityCount] = polityId
+			// A rolled-back founding may have used this registry slot before.
+			known[polityCount] = false
+			reputation[polityCount] = 0
+			favor[polityCount] = 0
+			contribution[polityCount] = 0
+			restoredPolities[polityCount] = false
 			treasury[polityCount] = availableTreasury
 			materialStock[polityCount] = availableMaterialStock
 			polityCount++
@@ -298,6 +304,20 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 		for i = 0 to profileCount - 1
 			copy.registerRewardProfile(profiles[i])
 		return copy
+	/** Validate against detached country and conflict registries, including a
+	 * polity introduced by the candidate's piracy authority. No live callbacks. */
+	function validateState(string candidate, MilitarySettlementRuntime warfare, string foundedPolity) returns boolean
+		let detached = copyDefinitions()
+		if foundedPolity != "" and detached.polityIndex(foundedPolity) < 0
+			if detached.polityCount >= 512
+				destroy detached
+				lastDiagnostic = "country registry is full"
+				return false
+			detached.registerPolity(foundedPolity, 0)
+		let valid = detached.validateState(candidate, warfare)
+		lastDiagnostic = detached.diagnostic()
+		destroy detached
+		return valid
 	function parseState(string candidate) returns PlayableCountryInteractionRuntime
 		if (candidate != "v1" and not candidate.startsWith("v1|") and candidate != "v2" and not candidate.startsWith("v2|")) or candidate.endsWith("|")
 			return null
@@ -316,6 +336,7 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	function validateState(string candidate, MilitarySettlementRuntime warfare) returns boolean
 		let staged = parseState(candidate)
 		if staged == null
+			lastDiagnostic = "country interaction state contains an invalid record"
 			return false
 		var valid = true
 		for i = 0 to staged.offerCount - 1
@@ -327,6 +348,9 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 					if found < 0 or not warfare.conflicts[found].opposes(staged.offerInitiators[i], staged.offerPolities[i])
 						valid = false
 		destroy staged
+		lastDiagnostic = ""
+		if not valid
+			lastDiagnostic = "country interaction state contains an invalid conflict binding"
 		return valid
 	function migrateLegacyConflicts(PlayableCountryInteractionRuntime staged)
 		if military == null or not staged.legacyState

@@ -150,6 +150,11 @@ public class AdministratorState
 		this.capacity = capacity
 
 public interface MilitarySettlementAdapter
+	/** Load checkpoints retain existing representations, including an empty
+	 * startup projection. Commit/rollback are non-failing ownership transfers. */
+	function beginLoad()
+	function rollbackLoad()
+	function commitLoad()
 	function playerForController(string controllerId, boolean localDefense) returns player
 	function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
 	function removeRepresentation(string stableId)
@@ -164,6 +169,36 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	int array[2048] baseMaximumLife
 	int array[2048] appliedMilestoneAbility
 	int count = 0
+	string array[2048] previousIds
+	unit array[2048] previousHandles
+	int array[2048] previousBaseLife
+	int array[2048] previousAbility
+	int previousCount = 0
+	override function beginLoad()
+		previousCount = count
+		for i = 0 to count - 1
+			previousIds[i] = ids[i]
+			previousHandles[i] = handles[i]
+			previousBaseLife[i] = baseMaximumLife[i]
+			previousAbility[i] = appliedMilestoneAbility[i]
+		count = 0
+	override function rollbackLoad()
+		for i = 0 to count - 1
+			removeRepresentation(ids[i])
+		count = previousCount
+		for i = 0 to count - 1
+			ids[i] = previousIds[i]
+			handles[i] = previousHandles[i]
+			baseMaximumLife[i] = previousBaseLife[i]
+			appliedMilestoneAbility[i] = previousAbility[i]
+			previousHandles[i] = null
+		previousCount = 0
+	override function commitLoad()
+		for i = 0 to previousCount - 1
+			if previousHandles[i] != null
+				compatRemoveUnit(previousHandles[i])
+			previousHandles[i] = null
+		previousCount = 0
 	function indexOf(string id) returns int
 		for i = 0 to count - 1
 			if ids[i] == id
@@ -750,6 +785,9 @@ public class MilitarySettlementRuntime
 		parsed.dispose()
 		return true
 	function restore(string candidate) returns boolean
+		return restore(candidate, true)
+	/** Rollback restores authority separately from the retained native objects. */
+	function restore(string candidate, boolean project) returns boolean
 		let parsed = parseSnapshot(candidate)
 		if parsed == null
 			return false
@@ -757,9 +795,9 @@ public class MilitarySettlementRuntime
 		// Preserve that projection target while restoring the snapshot's global
 		// authority; a detached/test runtime still follows the saved region.
 		var restoredRegion = parsed.activeRegionId
-		if activeRegionId != ""
+		if project and activeRegionId != ""
 			restoredRegion = activeRegionId
-		if activeRegionId != ""
+		if project and activeRegionId != ""
 			for i = 0 to forceCount - 1
 				if forces[i].regionId == activeRegionId
 					adapter.removeRepresentation(forces[i].id)
@@ -790,9 +828,11 @@ public class MilitarySettlementRuntime
 		traditionCount = parsed.traditionCount
 		for i = 0 to traditionCount - 1
 			traditions[i] = parsed.traditions[i]
-		activeRegionId = ""
-		reconcileSieges()
-		activateRegion(restoredRegion)
+		activeRegionId = restoredRegion
+		if project
+			activeRegionId = ""
+			reconcileSieges()
+			activateRegion(restoredRegion)
 		destroy parsed
 		return true
 	function managementSummary(string subjectId) returns string

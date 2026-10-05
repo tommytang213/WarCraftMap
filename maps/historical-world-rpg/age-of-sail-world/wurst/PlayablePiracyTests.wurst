@@ -9,6 +9,8 @@ class OrdinarySystems implements PiratePolityAuthority
 		if accept
 			founded=polity.id+":"+polity.capitalSettlementId+":"+polity.governmentFormId
 		return accept
+	override function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
+		return polity.capitalSettlementId!=""
 	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
 		return foundIndependentPolity(polity)
 	override function setRecognition(string polityId,string countryId,string status)

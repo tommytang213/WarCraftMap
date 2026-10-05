@@ -53,6 +53,11 @@ and siege attribution across the live codec and repeated reconstruction.
 `ConflictPeaceIntegrationTests.wurst` executes generated registrations, the
 registered country command/controller path, the campaign peace adapter, and the
 live save codec with initialized authority fixtures.
+Load-transaction regressions also validate both country payloads against the
+candidate's conflict membership and preserve settled conflicts, bound offers,
+active sieges, and existing projections after a late reconstruction failure.
+Founded-polity validation uses the military parser's v1 migration as well, so
+legacy settlements and pair wars remain loadable through that adapter.
 
 Release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
 Automated validation does not change that release gate or require player QA.

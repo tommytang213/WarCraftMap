@@ -1,0 +1,98 @@
+{
+  "checks": {
+    "diffCheck": "pass",
+    "nativeSave": {
+      "nativeClient": "unavailable",
+      "oracle": "pass",
+      "report": "ci-repair-native-save.json"
+    },
+    "packaging": {
+      "archiveSha256": "cb8b25acd4349022a6fe6d96b1bd3dcfbb81669219de49cb5a378a4e2c37b15b",
+      "command": "sh reports/issue-371/run-wurst.sh in the pinned container",
+      "stages": [
+        "scenario validation",
+        "generation",
+        "typecheck",
+        "required Wurst execution",
+        "map assembly",
+        "archive inspection"
+      ],
+      "status": "pass",
+      "transcript": "ci-repair-pinned-wurst-and-packaging.log.gz"
+    },
+    "pinnedWurst": {
+      "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "discovered": 121,
+      "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "passed": 121,
+      "report": "ci-repair-execution.json",
+      "sourceFilesMatchingExecutionEvidence": 46,
+      "status": "pass",
+      "transcript": "ci-repair-execution.log.gz"
+    },
+    "regressionBeforeRepair": {
+      "discovered": 121,
+      "failure": "rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects: Expected <148>, Actual <156>",
+      "passed": 120,
+      "transcript": "ci-repair-equipment-regression-before.log.gz"
+    },
+    "repository": {
+      "automationSuite": {
+        "seconds": 0.495,
+        "tests": 67
+      },
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "scenarioSuite": {
+        "seconds": 1087.164,
+        "tests": 796
+      },
+      "status": "pass",
+      "transcript": "ci-repair-repository.log.gz",
+      "wurstGate": "Executed separately with the pinned compiler and production map packager."
+    },
+    "saveCompatibility": {
+      "status": "pass",
+      "tests": 6,
+      "transcript": "ci-repair-save-compatibility.log.gz"
+    },
+    "wurstExecutionGate": {
+      "status": "pass",
+      "tests": 10,
+      "transcript": "ci-repair-wurst-gate.log.gz"
+    }
+  },
+  "ciFailure": {
+    "diagnostic": "The PR merge required RpgProjectionPort.applyEquipmentSet(heroId, setId, power), but LoadPorts still implemented the two-argument method. Typechecking failed; campaign packaging also stopped at its Wurst execution gate.",
+    "mergeRevision": "2e9f8abd89ea56f1da2618a009eb88a75d69167a",
+    "packagingJob": "https://github.com/tommytang213/WarCraftMap/actions/runs/37264962114/job/111619698997",
+    "typecheckJob": "https://github.com/tommytang213/WarCraftMap/actions/runs/37264962132/job/111619699281"
+  },
+  "completedAt": "2026-10-05T08:17:13.880551+00:00",
+  "container": {
+    "buildDirectory": "/tmp/issue371",
+    "compilerUser": "wurstuser",
+    "disposableContainersRemoved": true,
+    "hostToolingChanged": false,
+    "worktreeMount": "/source:read-only"
+  },
+  "integratedBaseRevision": "f181cf418e9fc5146c9caaef99da5a23e5c8d660",
+  "issue": 371,
+  "outcome": "complete",
+  "playerQARequired": false,
+  "pullRequest": 375,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repair": [
+    "Updated the transaction recorder to the merged equipment projection API, retaining the hero ID in recorded set effects.",
+    "Included equipment projection bookkeeping in the campaign party transaction. Checkpoint before detachment, restore after original-object reattachment without life writes, and discard the checkpoint after commit.",
+    "Added a production-projector regression for early extension and late party failures, retained object identities and unrelated modifiers, subsequent reconciliation and equipment removal, successful retry, and repeated committed reconstruction.",
+    "Required the new regression in pinned Wurst suite discovery."
+  ],
+  "saveSchemas": {
+    "current": 5,
+    "formatChanged": false,
+    "oldest": 1,
+    "sourceSlotsModifiedByLoad": false
+  },
+  "sourceBinding": "The checkout revision is unchanged. The Wurst source and inventory documentation changes already merged in PR #370 were applied from locally available Git objects without a commit or Git metadata changes. Execution input hashes bind all 46 final local Wurst source files, including the transaction repair.",
+  "sourceRevision": "8c7bd983e25c9b2cbf0f3d2c57269dad4acf927a"
+}

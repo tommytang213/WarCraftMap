@@ -14,7 +14,7 @@ import PlayablePiracy
 /** Founding bridge into the same campaign authorities used by normal states.
  * Captured settlement/force records remain the military and territorial source
  * of truth; the country runtime supplies treasury, diplomacy and war/peace. */
-class CampaignPiratePolityAuthority implements PiratePolityAuthority
+public class CampaignPiratePolityAuthority implements PiratePolityAuthority
 	PlayableCountryInteractionRuntime countries
 	PlayerCampaignIdentity identity
 	MilitarySettlementRuntime military
@@ -24,27 +24,33 @@ class CampaignPiratePolityAuthority implements PiratePolityAuthority
 		military=m
 	override function foundIndependentPolity(PiratePolityState polity) returns boolean
 		return reconcileFoundedPolity(polity)
-	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
-		// Validate the complete territory set before changing any ordinary
-		// authority, then make the projection idempotently.
-		var cursor=0
-		while cursor<StringLength(polity.territoryIds)
-			let remainder=SubString(polity.territoryIds,cursor,StringLength(polity.territoryIds))
-			let comma=remainder.indexOf(",")
-			var territory=remainder
-			if comma>=0
-				territory=SubString(remainder,0,comma)
-			var found=false
-			for i=0 to military.settlementCount-1
-				if military.settlements[i].id==territory
-					found=true
-			if territory=="" or not found
+	override function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
+		// Use the owning parser so legacy settlements and pair wars follow the
+		// same versioned migration as campaign validation and reconstruction.
+		let detached = military.parseSnapshot(militarySnapshot)
+		if detached == null
+			return false
+		let valid = validTerritories(polity, detached) and (countries.polityIndex(polity.id) >= 0 or countries.polityCount < 512)
+		detached.dispose()
+		return valid
+	function validTerritories(PiratePolityState polity, MilitarySettlementRuntime candidate) returns boolean
+		var cursor = 0
+		while cursor < StringLength(polity.territoryIds)
+			let tail = SubString(polity.territoryIds, cursor, StringLength(polity.territoryIds))
+			let comma = tail.indexOf(",")
+			var territory = tail
+			if comma >= 0
+				territory = SubString(tail, 0, comma)
+			if candidate.settlementIndex(territory) < 0
 				return false
-			if comma<0
-				cursor=StringLength(polity.territoryIds)
-			else
-				cursor+=comma+1
-		cursor=0
+			if comma < 0
+				return true
+			cursor += comma + 1
+		return false
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		if not validTerritories(polity, military) or (countries.polityIndex(polity.id) < 0 and countries.polityCount >= 512)
+			return false
+		var cursor=0
 		while cursor<StringLength(polity.territoryIds)
 			let remainder=SubString(polity.territoryIds,cursor,StringLength(polity.territoryIds))
 			let comma=remainder.indexOf(",")
