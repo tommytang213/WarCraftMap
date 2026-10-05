@@ -4,6 +4,7 @@ import WC3Compatibility
 import ManagementScreenPauseController
 import CommandRouter
 import CampaignTimeline
+import PhysicalInteraction
 
 public constant int RPG_LEVEL_CAP = 300
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
@@ -439,7 +440,7 @@ public class QuestJournalRuntime
 		return true
 	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
 		let questDefinition=get(id)
-		if questDefinition == null or questDefinition.state != QUEST_READY
+		if questDefinition == null or questDefinition.state != QUEST_READY or questDefinition.objective < questDefinition.objectiveTarget or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
 			return false
 		questDefinition.state=QUEST_COMPLETE
 		questDefinition.completions++
@@ -488,7 +489,7 @@ public class TreasureRuntime
 		return null
 	function advanceClue(string id) returns boolean
 		let treasure=get(id)
-		if treasure == null or treasure.discovered
+		if treasure == null or treasure.discovered or treasure.clueStage >= treasure.clueCount
 			return false
 		treasure.clueStage=IMinBJ(treasure.clueCount,treasure.clueStage+1)
 		return true
@@ -496,9 +497,9 @@ public class TreasureRuntime
 		let treasure=get(id)
 		if treasure == null or treasure.discovered or treasure.clueStage < treasure.clueCount or treasure.resolvedLocationId != locationId
 			return false
+		if treasure.rewardItemId != "" and not inventory.grant(treasure.rewardItemId)
+			return false
 		treasure.discovered=true
-		if treasure.rewardItemId != ""
-			inventory.grant(treasure.rewardItemId)
 		return true
 
 public interface TechnologyEffectPort
@@ -610,6 +611,22 @@ public class WarcraftResearchResources implements ResearchCommandResources
 	override function setGold(player sender,int amount)
 		SetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD,amount)
 
+/** A field assignment alone is insufficient: removed, dead, loaded and
+ * differently owned Warcraft representations cannot perform local actions. */
+public class WarcraftInteractionActors implements InteractionActors
+	HeroRoster heroes
+	construct(HeroRoster heroes)
+		this.heroes = heroes
+	override function present(int actor, player owner) returns boolean
+		let target = heroes.projected[actor]
+		return target != null and GetUnitTypeId(target) != 0 and GetOwningPlayer(target) == owner and GetWidgetLife(target) > 0.405 and not IsUnitType(target, UNIT_TYPE_DEAD) and not IsUnitLoaded(target) and not IsUnitHidden(target)
+	override function x(int actor) returns real
+		return GetUnitX(heroes.projected[actor])
+	override function y(int actor) returns real
+		return GetUnitY(heroes.projected[actor])
+	override function movement(int actor) returns int
+		return compatInteractionMovement(heroes.projected[actor])
+
 /** One owner for authoritative RPG state. Serialization ports capture these
  * stable fields; reconstruct() recreates only transient Warcraft projections. */
 public class WarcraftRpgRuntime
@@ -617,12 +634,14 @@ public class WarcraftRpgRuntime
 	PlayerInventory inventory = new PlayerInventory()
 	QuestJournalRuntime journal = new QuestJournalRuntime()
 	TreasureRuntime treasures = new TreasureRuntime()
+	PhysicalInteractionContext interactions = new PhysicalInteractionContext()
 	TechnologyRuntime technologies
 	ResearchCommandResources researchResources = new WarcraftResearchResources()
 	RpgProjectionPort projections = null
 	string lastDiagnostic = ""
 	construct(TechnologyEffectPort effects)
 		technologies = new TechnologyRuntime(effects)
+		interactions.actors = new WarcraftInteractionActors(heroes)
 	function setProjectionPort(RpgProjectionPort value)
 		projections=value
 	/** Establishes a deterministic playable party for a new campaign. Existing
@@ -662,12 +681,13 @@ public class WarcraftRpgRuntime
 			journal.track(id)
 			reconcile("player")
 		return accepted
-	/** World bridge used by settlement/region/combat adapters. One event can
-	 * advance matching active objectives and treasure knowledge, but never
-	 * bypasses clue or exact-location requirements. */
+	/** Trusted strategic combat/settlement notifications advance objectives.
+	 * Local rewards and discovery require the physical command entry points. */
 	function worldEvent(string eventKind,string locationId,int amount) returns boolean
 		return worldEventAt(eventKind,locationId,amount,0)
 	function worldEventAt(string eventKind,string locationId,int amount,int day) returns boolean
+		if eventKind != "combat" and eventKind != "settlement"
+			return false
 		var changed=false
 		journal.refill(day)
 		for i=0 to journal.count-1
@@ -679,30 +699,63 @@ public class WarcraftRpgRuntime
 			if q.state == QUEST_ACTIVE and (q.destinationId == locationId or q.giverId == locationId or eventKind == "combat" and q.kind == "combat")
 				if journal.progress(q.id,IMaxBJ(1,amount))
 					changed=true
-			if q.state == QUEST_READY and q.turnInId != "" and q.turnInId == locationId
-				RpgHero rewardHero=null
-				if inventory.equippedCount > 0
-					rewardHero=heroes.get(inventory.equippedHeroes[0])
-				if rewardHero == null
-					for heroIndex=0 to heroes.count-1
-						if rewardHero == null and heroes.heroes[heroIndex].recruited
-							rewardHero=heroes.heroes[heroIndex]
-				if journal.turnIn(q.id,rewardHero,day,30)
-					changed=true
+		if changed
+			reconcile("player")
+		return changed
+	function eligibleActor(int index) returns boolean
+		let hero = heroes.heroes[index]
+		return hero.recruited and not hero.incapacitated and hero.assignment == "field"
+	function localActor(player sender, string target) returns int
+		for i = 0 to heroes.count - 1
+			if eligibleActor(i) and interactions.resolve(i, sender, target) != null
+				return i
+		return -1
+	/** Resolve again at commit; no tracked marker, previous check or saved
+	 * assignment is a capability to mutate at a requested target. */
+	function interact(player sender, string requested, int day) returns boolean
+		let actor = localActor(sender, requested)
+		if actor < 0 or not eligibleActor(actor)
+			return false
+		let target = interactions.resolve(actor, sender, requested)
+		if target == null
+			return false
+		var changed = false
+		for i = 0 to journal.count - 1
+			let q = journal.quests[i]
+			let atGiver = target.matches(q.giverId)
+			let atObjective = target.matches(q.destinationId)
+			let atTurnIn = target.matches(q.turnInId)
+			// Refill only an eligible local offer, never unrelated quests during
+			// a rejected request or a repeated treasure collection.
+			if atGiver and (q.state == QUEST_COMPLETE or q.state == QUEST_FAILED) and q.completions < q.completionCap and day >= q.cooldownUntil
+				q.state = QUEST_OFFERED
+				q.objective = 0
+			if atGiver and q.state == QUEST_OFFERED and journal.accept(q.id)
+				journal.track(q.id)
+				changed = true
+			if (atGiver or atObjective) and journal.progress(q.id, 1)
+				changed = true
+			if atTurnIn and journal.turnIn(q.id, heroes.heroes[actor], day, 30)
+				changed = true
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
-			if not t.discovered and t.regionId == locationId and eventKind != "combat"
+			if target.kind == "region" and t.regionId == target.eventId
 				if treasures.advanceClue(t.id)
 					changed=true
-			if not t.discovered and t.resolvedLocationId == locationId
-				if treasures.discover(t.id,locationId,inventory)
+			if t.resolvedLocationId == target.id
+				if treasures.discover(t.id,target.id,inventory)
 					changed=true
 		if changed
 			reconcile("player")
 		return changed
-	function turnInQuest(string id,string heroId,int day,int cooldownDays) returns boolean
+	function turnInQuest(player sender,string id,string heroId,int day,int cooldownDays) returns boolean
 		let q=journal.get(id)
-		if q == null
+		let actor = heroes.indexOf(heroId)
+		if q == null or q.turnInId == "" or actor < 0 or not eligibleActor(actor)
+			return false
+		if interactions.resolve(actor, sender, q.turnInId) == null
+			return false
+		if not eligibleActor(actor) or interactions.resolve(actor, sender, q.turnInId) == null
 			return false
 		let result=journal.turnIn(id,heroes.get(heroId),day,cooldownDays)
 		if result
@@ -1035,10 +1088,12 @@ class RecruitHeroCommand implements CommandHandler
 
 class TrackQuestCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
-	construct(WarcraftRpgRuntime runtime)
+	CommandOutput output
+	construct(WarcraftRpgRuntime runtime, CommandOutput output)
 		this.runtime=runtime
+		this.output=output
 	override function execute(player sender,string arguments)
-		DisplayTimedTextToPlayer(sender,0.,0.,20.,runtime.journal.track(arguments))
+		output.show(sender,runtime.journal.track(arguments))
 		runtime.reconcile("player")
 
 class RpgActionCommand implements CommandHandler
@@ -1073,9 +1128,9 @@ class RpgActionCommand implements CommandHandler
 		else if action == "accept"
 			ok=runtime.acceptQuest(first)
 		else if action == "turnin"
-			ok=runtime.turnInQuest(first,second,getCampaignDay(),30)
+			ok=runtime.turnInQuest(sender,first,second,getCampaignDay(),30)
 		else if action == "interact"
-			ok=runtime.worldEventAt("location",first,1,getCampaignDay())
+			ok=runtime.interact(sender,first,getCampaignDay())
 		if ok
 			output.show(sender,"Action completed.")
 		else
@@ -1097,7 +1152,7 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
 	if problem != ""
 		return problem
-	problem=commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))
+	problem=commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime,commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip",commands.output))
@@ -1112,10 +1167,10 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Awards its persistent rewards and applies repeat or completion-lock rules.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin",commands.output))
+	problem=commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Requires the named field character at the authored turn-in location, then awards persistent rewards.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("interact","investigate,search","interact LOCATION","Interact with this world location.","Advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact",commands.output))
+	problem=commands.register("interact","investigate,search","interact LOCATION","Interact with a nearby world location.","Requires a local field character; advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact",commands.output))
 	if problem != ""
 		return problem
 	return ""

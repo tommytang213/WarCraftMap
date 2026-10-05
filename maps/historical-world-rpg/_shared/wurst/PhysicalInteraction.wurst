@@ -1,0 +1,108 @@
+package PhysicalInteraction
+
+/** Runtime boundaries supply observations, never a requested target ID or a
+ * camera/command region as proof of presence. No observation is persisted. */
+public interface InteractionActors
+	function present(int actor, player owner) returns boolean
+	function x(int actor) returns real
+	function y(int actor) returns real
+	function movement(int actor) returns int
+
+public interface InteractionMaps
+	function available() returns boolean
+	function loadedMap() returns string
+	function partyMap() returns string
+
+public constant real INTERACTION_RANGE = 256.
+
+/** Generated world coordinates, independent of buildings and marker objects.
+ * Several region rectangles may have the same ID on different physical maps.
+ * Quest-location aliases retain the settlement's canonical event identity. */
+public class InteractionLocation
+	string id
+	string eventId
+	string mapId
+	string kind
+	real x
+	real y
+	real minX
+	real minY
+	real maxX
+	real maxY
+	boolean array[4] movements
+	InteractionLocation anchor = null
+	string aliases = ""
+	construct(string id, string eventId, string mapId, string kind, real x, real y)
+		this.id = id
+		this.eventId = eventId
+		this.mapId = mapId
+		this.kind = kind
+		this.x = x
+		this.y = y
+	function allow(int movement) returns InteractionLocation
+		if movement >= 0 and movement < 4
+			movements[movement] = true
+		return this
+	function bounds(real minX, real minY, real maxX, real maxY) returns InteractionLocation
+		this.minX = minX
+		this.minY = minY
+		this.maxX = maxX
+		this.maxY = maxY
+		return this
+	function contains(real actorX, real actorY, int movement) returns boolean
+		if movement < 0 or movement >= 4 or not movements[movement]
+			return false
+		if kind == "region"
+			return actorX >= minX and actorX < maxX and actorY >= minY and actorY < maxY
+		let dx = actorX - x
+		let dy = actorY - y
+		return dx * dx + dy * dy <= INTERACTION_RANGE * INTERACTION_RANGE
+	function matches(string requested) returns boolean
+		if requested == ""
+			return false
+		if requested == id or requested == eventId
+			return true
+		if anchor != null
+			return anchor.matches(requested)
+		return aliases.indexOf("|" + requested + "|") >= 0
+
+/** Immutable after generated registration; share definitions across reconstructed
+ * runtimes without sharing any actor observations or authorization. */
+public class InteractionCatalog
+	InteractionLocation array[4096] locations
+	int count = 0
+	function add(InteractionLocation target)
+		if target.eventId != target.id
+			target.anchor = get(target.eventId)
+			if target.anchor != null
+				target.anchor.aliases += "|" + target.id + "|"
+		locations[count] = target
+		count++
+	function get(string id) returns InteractionLocation
+		for i = 0 to count - 1
+			if locations[i].id == id
+				return locations[i]
+		return null
+
+public class PhysicalInteractionContext
+	InteractionCatalog catalog = null
+	InteractionActors actors = null
+	InteractionMaps maps = null
+	function get(string id) returns InteractionLocation
+		if catalog == null
+			return null
+		return catalog.get(id)
+	function resolve(int actor, player owner, string requested) returns InteractionLocation
+		if catalog == null or actors == null or maps == null or not maps.available()
+			return null
+		let mapId = maps.loadedMap()
+		if mapId == "" or mapId != maps.partyMap() or not actors.present(actor, owner)
+			return null
+		let x = actors.x(actor)
+		let y = actors.y(actor)
+		let movement = actors.movement(actor)
+		for i = 0 to catalog.count - 1
+			let target = catalog.locations[i]
+			if target.id == requested and target.mapId == mapId and target.contains(x, y, movement)
+				return target
+		return null

@@ -18,6 +18,14 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+`RpgInteractionTests.wurst` dispatches production interaction, turn-in, tracking
+and remote-region commands with recording actor and map boundaries. It checks complete
+authority equivalence on rejection, generated local coordinates, eligible reward
+recipients, clue prerequisites, repeat collection, commit-time invalidation and
+codec reconstruction. `test_rpg_interactions.py` compares those target definitions
+with every materialized settlement and compatible treasure cell. See
+`docs/RPG_PHYSICAL_INTERACTIONS.md` for the runtime contract.
+
 Execute the complete Wurst suite with the pinned toolchain from the scenario
 directory:
 
