@@ -1,0 +1,145 @@
+package BoundaryArrival
+
+/** Same movement numbering as the navigation/recovery contract: land, naval,
+ * amphibious, flying. A null pathing port is used only for remote preflight;
+ * destination reconstruction always supplies its local native/recording port. */
+public interface BoundaryPathing
+	function pathable(real x, real y, int movement) returns boolean
+
+public constant real BOUNDARY_TRIGGER_DEPTH = 128.
+public constant real BOUNDARY_ARRIVAL_TOLERANCE = 512.
+
+public function validBoundaryPosition(real position) returns boolean
+	return position >= 0. and position <= 1.
+
+public function parseBoundaryPosition(string value) returns real
+	// S2R accepts malformed prefixes as zero; reject them before conversion.
+	var digits = 0
+	var dots = 0
+	for i = 0 to StringLength(value) - 1
+		let c = SubString(value, i, i + 1)
+		if c == "."
+			dots++
+		else if c == "0" or c == "1" or c == "2" or c == "3" or c == "4" or c == "5" or c == "6" or c == "7" or c == "8" or c == "9"
+			digits++
+		else
+			return -1.
+	if digits == 0 or dots > 1 or StringLength(value) > 32
+		return -1.
+	let result = S2R(value)
+	if not validBoundaryPosition(result)
+		return -1.
+	return result
+
+function clampBoundary(real value, real low, real high) returns real
+	if value < low
+		return low
+	if value > high
+		return high
+	return value
+
+class BoundarySpan
+	int movement
+	int component
+	real depth
+	real low
+	real high
+	construct(int movement, int component, real depth, real low, real high)
+		this.movement = movement
+		this.component = component
+		this.depth = depth
+		this.low = low
+		this.high = high
+
+/** Generated from packaged terrain/pathing, with four-neighbour components.
+ * Depth zero spans prove connection to this edge; inward spans supply safe
+ * candidates. All coordinates use this physical map's playable dimensions. */
+public class BoundaryEndpoint
+	string mapId
+	string edge
+	real intervalStart
+	real intervalEnd
+	real minX
+	real minY
+	real maxX
+	real maxY
+	BoundarySpan array[512] spans
+	int count = 0
+	real x = 0.
+	real y = 0.
+	construct(string mapId, string edge, real start, real finish, real minX, real minY, real maxX, real maxY)
+		this.mapId = mapId
+		this.edge = edge
+		intervalStart = start
+		intervalEnd = finish
+		this.minX = minX
+		this.minY = minY
+		this.maxX = maxX
+		this.maxY = maxY
+	function addSpan(int movement, int component, real depth, real low, real high)
+		spans[count] = new BoundarySpan(movement, component, depth, low, high)
+		count++
+	function vertical() returns boolean
+		return edge == "west" or edge == "east"
+	function valid() returns boolean
+		return mapId != "" and (vertical() or edge == "north" or edge == "south") and validBoundaryPosition(intervalStart) and validBoundaryPosition(intervalEnd) and intervalStart < intervalEnd and minX < maxX and minY < maxY and maxX - minX < 1000000. and maxY - minY < 1000000.
+	function along(real position) returns real
+		let coordinate = intervalStart + (intervalEnd - intervalStart) * position
+		if vertical()
+			return minY + (maxY - minY) * coordinate
+		return minX + (maxX - minX) * coordinate
+	function localPosition(real px, real py) returns real
+		var coordinate = (px - minX) / (maxX - minX)
+		if vertical()
+			coordinate = (py - minY) / (maxY - minY)
+		return (coordinate - intervalStart) / (intervalEnd - intervalStart)
+	function clearOfTriggers(real px, real py) returns boolean
+		return px > minX + BOUNDARY_TRIGGER_DEPTH and px < maxX - BOUNDARY_TRIGGER_DEPTH and py > minY + BOUNDARY_TRIGGER_DEPTH and py < maxY - BOUNDARY_TRIGGER_DEPTH
+	function resolve(real position, int movement, BoundaryPathing pathing) returns boolean
+		if not valid() or not validBoundaryPosition(position)
+			return false
+		let desired = along(position)
+		var component = 0
+		var nearest = BOUNDARY_ARRIVAL_TOLERANCE * BOUNDARY_ARRIVAL_TOLERANCE + 1.
+		for i = 0 to count - 1
+			let span = spans[i]
+			if span.movement == movement and span.depth == 0.
+				let delta = clampBoundary(desired, span.low, span.high) - desired
+				let distance = delta * delta
+				if distance < nearest or (distance == nearest and span.component < component)
+					nearest = distance
+					component = span.component
+		if component == 0 or nearest > BOUNDARY_ARRIVAL_TOLERANCE * BOUNDARY_ARRIVAL_TOLERANCE
+			return false
+		nearest = BOUNDARY_ARRIVAL_TOLERANCE * BOUNDARY_ARRIVAL_TOLERANCE + 1.
+		var found = false
+		for i = 0 to count - 1
+			let span = spans[i]
+			if span.movement == movement and span.component == component and span.depth > BOUNDARY_TRIGGER_DEPTH
+				let closest = clampBoundary(desired, span.low, span.high)
+				// Search the 32-world-unit pathing lattice, nearest first, within
+				// the certified connected span. Never widen the declared tolerance.
+				for probe = 0 to 32
+					var shift = ((probe + 1) div 2) * 32.
+					if ModuloInteger(probe, 2) == 0
+						shift = -shift
+					let coordinate = closest + shift
+					let delta = coordinate - desired
+					let distance = delta * delta + span.depth * span.depth
+					if coordinate >= span.low and coordinate <= span.high and distance < nearest and distance <= BOUNDARY_ARRIVAL_TOLERANCE * BOUNDARY_ARRIVAL_TOLERANCE
+						var px = coordinate
+						var py = coordinate
+						if edge == "west"
+							px = minX + span.depth
+						else if edge == "east"
+							px = maxX - span.depth
+						else if edge == "south"
+							py = minY + span.depth
+						else
+							py = maxY - span.depth
+						if clearOfTriggers(px, py) and (pathing == null or pathing.pathable(px, py, movement))
+							x = px
+							y = py
+							nearest = distance
+							found = true
+		return found

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import shutil
 import struct
@@ -211,7 +212,7 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
             raise PackagingError(f"campaign configuration: {label} has an invalid destination region")
         scale, offset = transform.get("scale", 1.0), transform.get("offset", 0.0)
         reverse = transform.get("reverse", False)
-        if not isinstance(scale, (int, float)) or scale <= 0 or not isinstance(offset, (int, float)) or not isinstance(reverse, bool):
+        if not isinstance(scale, (int, float)) or not math.isfinite(scale) or scale <= 0 or not isinstance(offset, (int, float)) or not math.isfinite(offset) or not isinstance(reverse, bool):
             raise PackagingError(f"campaign configuration: {label} has an invalid arrival transform")
         key = (source, edge, float(interval[0]), float(interval[1]))
         if key in occupied:
@@ -225,6 +226,8 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
     for source, destination in directed:
         if (destination, source) not in directed:
             raise PackagingError(f"campaign configuration: authored route {source} -> {destination} has no reverse boundary")
+        if sum(b.source_map_id == destination and b.destination_map_id == source for b in boundaries) != 1:
+            raise PackagingError(f"campaign configuration: ambiguous destination edge for {source} -> {destination}")
     reachable = {bootstrap_id}
     # Origin handoff reaches every content component via at least one configured start.
     frontier = {item.id for item in maps if not item.bootstrap and item.regional_instance_ids}
@@ -348,10 +351,50 @@ def position_campaign_origins(project: Path, generated: Path, world: dict, maps,
     return arrivals
 
 
-def campaign_arrival_configuration(arrivals: dict) -> str:
-    return "public function configureGeneratedArrivals(PlayableCampaignState state)\n" + "".join(
-        f'\tstate.addArrival({json.dumps(map_id)}, {point[0]}, {point[1]})\n'
-        for map_id, point in arrivals.items())
+def campaign_boundary_navigation(config, generated):
+    from boundary_arrival import components, endpoint, playable_cells, MOVEMENTS
+    from materialize_physical_map import physical_layout
+    endpoints = {}
+    for physical in config.maps:
+        local = [b for b in config.boundaries if b.source_map_id == physical.id]
+        if not local:
+            continue
+        width, height, cells, _ = physical_layout(generated, physical)
+        info = (physical.source_map / 'war3map.w3i').read_bytes()
+        bounds = playable_cells(info, width, height)
+        labels = {m: components(width, height, cells, bounds, m) for m in MOVEMENTS}
+        for b in local:
+            endpoints[b.id] = endpoint(width, height, cells, bounds, b.source_edge,
+                                       (b.interval_start, b.interval_end), labels)
+            endpoints[b.id]['mapId'] = physical.id
+    return endpoints
+
+
+def campaign_arrival_configuration(config, endpoints: dict) -> str:
+    lines = []
+    for index, b in enumerate(config.boundaries):
+        e = endpoints[b.id]
+        if len(e['spans']) > 512:
+            raise PackagingError(f'boundary navigation span budget exceeded: {b.id}')
+        args = ', '.join(str(float(n)) for n in (*e['interval'], *e['bounds']))
+        lines += [f'function generatedBoundaryEndpoint{index}() returns BoundaryEndpoint',
+                  f'\tlet endpoint = new BoundaryEndpoint({json.dumps(b.source_map_id)}, {json.dumps(b.source_edge)}, {args})']
+        for movement, component, depth, low, high in e['spans']:
+            lines.append(f'\tendpoint.addSpan({movement}, {component}, {depth}, {low}, {high})')
+        lines += ['\treturn endpoint', '']
+    lines.append('public function configureGeneratedArrivals(PlayableCampaignState state)')
+    for index, b in enumerate(config.boundaries):
+        lines.append(f'\tlet endpoint{index} = generatedBoundaryEndpoint{index}()')
+    for index, b in enumerate(config.boundaries):
+        reverse_index = next(i for i, reverse in enumerate(config.boundaries)
+                             if reverse.source_map_id == b.destination_map_id and reverse.destination_map_id == b.source_map_id)
+        package = next(m.package_path for m in config.maps if m.id == b.destination_map_id)
+        args = ', '.join(json.dumps(s) for s in (b.id, b.source_map_id, b.destination_map_id, package, b.destination_region_id))
+        lines += [f'\tlet route{index} = new BoundaryCorrespondence({args}, {str(b.reverse).lower()}, {b.scale}, {b.offset})',
+                  f'\troute{index}.source = endpoint{index}', f'\troute{index}.destination = endpoint{reverse_index}',
+                  f'\tstate.addBoundary(route{index})']
+    lines.append('\tstate.boundaryConfigurationComplete = true')
+    return '\n'.join(lines) + '\n'
 
 
 def campaign_origin_configuration(origins: list[dict], maps) -> str:
@@ -402,6 +445,8 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
             "destinationPackagePath": next(x.package_path for x in config.maps if x.id == item.destination_map_id),
             "destinationRegionId": item.destination_region_id, "sourceEdge": item.source_edge,
             "sourceInterval": [item.interval_start, item.interval_end],
+            "destinationEdge": next(b.source_edge for b in config.boundaries if b.source_map_id == item.destination_map_id and b.destination_map_id == item.source_map_id),
+            "destinationInterval": next([b.interval_start, b.interval_end] for b in config.boundaries if b.source_map_id == item.destination_map_id and b.destination_map_id == item.source_map_id),
             "arrivalTransform": {"reverse": item.reverse, "scale": item.scale, "offset": item.offset},
             "requiresDiscovery": item.requires_discovery,
         } for item in config.boundaries if item.source_map_id == physical.id],
@@ -421,16 +466,9 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     text = wurst_path.read_text(encoding="utf-8")
     origin_configuration = campaign_origin_configuration(origins, config.maps)
     boundary_configuration = "public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n"
-    package_by_id = {item.id: item.package_path for item in config.maps}
     local_boundaries = [item for item in config.boundaries if item.source_map_id == physical.id]
     for boundary in local_boundaries:
-        values = [boundary.id, boundary.source_map_id, boundary.destination_map_id,
-                  package_by_id[boundary.destination_map_id], boundary.destination_region_id,
-                  boundary.source_edge]
-        args = ", ".join(json.dumps(value) for value in values)
-        boundary_configuration += (f"\tregistry.add({args}, {boundary.interval_start}, {boundary.interval_end}, "
-            f"{str(boundary.reverse).lower()}, {boundary.scale}, {boundary.offset}, "
-            f"{str(boundary.requires_discovery).lower()})\n")
+        boundary_configuration += f'\tregistry.add({json.dumps(boundary.id)}, {str(boundary.requires_discovery).lower()})\n'
     if not local_boundaries:
         boundary_configuration += "\tskip\n"
     text = text.replace(
@@ -590,6 +628,14 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
             raise ValueError("malformed materialized terrain")
         if wpm[:8] != b"MP3W\0\0\0\0" or (path_width, path_height) != (width * 4, height * 4) or len(wpm) != 16 + path_width * path_height:
             raise ValueError("materialized pathing does not match terrain")
+        if not physical.bootstrap:
+            from boundary_arrival import verify_packaged_navigation
+            navigation = runtime.get('boundaryNavigation', {})
+            for boundary in runtime.get('physicalBoundaries', []):
+                entry = navigation.get(boundary['id'])
+                if not entry or entry['mapId'] != physical.id or entry['edge'] != boundary['sourceEdge'] or entry['interval'] != boundary['sourceInterval']:
+                    raise ValueError('missing or mismatched boundary navigation')
+            verify_packaged_navigation(navigation, physical.id, w3i, wpm)
         if units[:12] != b"W3do" + struct.pack("<II", 8, 11):
             raise ValueError("malformed materialized player objects")
         if manifest.get("physicalMapId") != physical.id or manifest.get("terrain", {}).get("width") != width or manifest.get("terrain", {}).get("height") != height:

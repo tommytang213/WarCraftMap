@@ -1,6 +1,7 @@
 package CampaignStartupTests
 
 import CampaignHandoff
+import BoundaryArrival
 import CampaignTimeline
 import CampaignTimelineTests
 import CampaignRegistration
@@ -50,7 +51,7 @@ public class StartupStorage implements CampaignSaveStorage
 
 /** Only native/UI/storage boundaries are recorded. Authority, generated
  * registrations, selector writer, startup consumer and codec are production. */
-class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, OriginSelectionPresentation
+class StartupPorts implements BoundaryPathing, PhysicalMapLoader, CampaignPartyProjection, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, OriginSelectionPresentation
 	CampaignClock clock
 	string expectedClock = ""
 	PlayerCampaignIdentity selectorIdentity
@@ -63,9 +64,12 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 	string destination = ""
 	boolean failProjection = false
 	boolean closed = false
+	boolean arrivalAvailable = true
 	int savedPlayers = 0
 	real savedX = 0.
 	real savedY = 0.
+	override function pathable(real x, real y, int movement) returns boolean
+		return arrivalAvailable
 	override function beginLoad(WarcraftRpgRuntime rpg)
 		savedPlayers = activePlayers
 		savedX = x
@@ -175,6 +179,7 @@ public class StartupFixture
 		selector.setObserver(handoff)
 		configureGeneratedOrigins(selector)
 		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign.state.arrivalPathing = ports
 		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
 	function register()
 		trade = registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)
@@ -194,16 +199,17 @@ public class StartupFixture
 		military.traditionCount = 1
 		military.conflictCount = 0
 		let countries = campaign.countries
-		string array[5] selected
+		string array[6] selected
 		selected[0] = "england"
 		selected[1] = "portugal"
 		selected[2] = "ming_empire"
 		selected[3] = "songhai_kingdom"
 		selected[4] = "ethiopian_empire"
+		selected[5] = "aq_qoyunlu"
 		countries.polityCount = 0
 		countries.profileCount = 1
 		countries.conflictCount = 0
-		for i = 0 to 4
+		for i = 0 to 5
 			countries.registerPolity(selected[i], 1000)
 		trade.marketCount = 2
 		trade.storeCount = 1
@@ -376,8 +382,8 @@ function originLifecycle(string origin, string mapId)
 	f.ports.loads.assertEquals(0)
 
 @test function populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain()
-	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
-	f.start("england")
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "east_asia")
+	f.start("ming_empire")
 	let rpg = f.campaign.state.rpg
 	rpg.heroes.heroes[0].experience = 753
 	rpg.journal.currency = 123
@@ -403,14 +409,14 @@ function originLifecycle(string origin, string mapId)
 	f.campaign.state.piracy.state.prizesTaken = 2
 	f.campaign.identity.changeAllegiance("portugal")
 	// The same travel coordinator writes the checkpoint before loading a region.
-	let boundary = new BoundaryCorrespondence("fixture", "europe_west", "east_asia", "Maps/EastAsia.w3x", "east_asia", false, 1., 0.)
-	f.campaign.travel.transition(boundary, 0.25, "transfer").assertTrue()
-	let destination = new StartupFixture(f.cache, f.saves, "east_asia")
+	let boundary = f.campaign.state.boundary("east_asia_to_pacific_north")
+	f.campaign.travel.transition(boundary, 0.75, "transfer").assertTrue()
+	let destination = new StartupFixture(f.cache, f.saves, "pacific_north")
 	destination.ports.spawns.assertEquals(0)
 	destination.register()
 	destination.campaign.startup().assertTrue()
 	let resumed = destination.campaign
-	resumed.identity.originId().assertEquals("england")
+	resumed.identity.originId().assertEquals("ming_empire")
 	resumed.identity.allegianceId().assertEquals("portugal")
 	resumed.state.rpg.heroes.heroes[0].experience.assertEquals(753)
 	resumed.state.rpg.journal.currency.assertEquals(123)
@@ -432,9 +438,8 @@ function originLifecycle(string origin, string mapId)
 	resumed.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	resumed.state.captureAuthoritativeState().assertEquals(normalized)
 	destination.ports.activePlayers.assertEquals(1)
-	let arrival = resumed.state.arrivalIndex("east_asia")
-	destination.ports.x.assertEquals(resumed.state.arrivalX[arrival])
-	destination.ports.y.assertEquals(resumed.state.arrivalY[arrival])
+	destination.ports.x.assertEquals(-3136.)
+	destination.ports.y.assertEquals(1408.)
 	destination.ports.loads.assertEquals(0)
 
 @test function transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject()
@@ -442,20 +447,18 @@ function originLifecycle(string origin, string mapId)
 	source.start("ethiopian_empire")
 	let settlement = source.campaign.identity.settlementId()
 	source.campaign.state.militarySettlements.settlementIndex(settlement).assertEquals(-1)
-	let boundary = new BoundaryCorrespondence("africa_to_europe_west", "africa", "europe_west", "Maps/EuropeWest.w3x", "europe", false, 1., 0.)
+	let boundary = source.campaign.state.boundary("africa_to_middle_east_india")
 	source.campaign.travel.transition(boundary, 0.25, "transfer").assertTrue()
-	let destination = new StartupFixture(source.cache, source.saves, "europe_west")
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
 	destination.register()
 	destination.campaign.startup().assertTrue()
 	destination.ports.activePlayers.assertEquals(1)
-	let arrival = destination.campaign.state.arrivalIndex("europe_west")
-	(arrival >= 0).assertTrue()
-	destination.ports.x.assertEquals(destination.campaign.state.arrivalX[arrival])
-	destination.ports.y.assertEquals(destination.campaign.state.arrivalY[arrival])
+	destination.ports.x.assertEquals(-7232.)
+	destination.ports.y.assertEquals(1600.)
 	destination.ports.loads.assertEquals(0)
 	destination.campaign.identity.settlementId().assertEquals(settlement)
 	destination.campaign.identity.originId().assertEquals("ethiopian_empire")
-	destination.campaign.identity.physicalMapId().assertEquals("europe_west")
+	destination.campaign.identity.physicalMapId().assertEquals("middle_east_india")
 
 @test function checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite()
 	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
@@ -620,14 +623,14 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	recordingTimer.stops.assertEquals(4)
 
 @test function productionClockSurvivesDestinationStartupAndReturnTravel()
-	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
-	source.start("england")
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "east_asia")
+	source.start("ming_empire")
 	source.clock.advanceTo(source.clock.startDay + 3000).assertTrue()
 	source.clock.setSpeed(2.125).assertTrue()
 	source.clock.advanceElapsed(.1234567).assertTrue()
 	let outbound = source.clock.captureState()
-	source.campaign.travel.transition(new BoundaryCorrespondence("outbound", "europe_west", "east_asia", "Maps/EastAsia.w3x", "east_asia", false, 1., 0.), .25, "travel").assertTrue()
-	let destination = new StartupFixture(source.cache, source.saves, "east_asia")
+	source.campaign.travel.transition(source.campaign.state.boundary("east_asia_to_pacific_north"), .75, "travel").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "pacific_north")
 	let recordingTimer = new RecordingClockTimer()
 	destination.campaign.enableClockTimer(recordingTimer, 1.).assertFalse()
 	recordingTimer.starts.assertEquals(0)
@@ -644,8 +647,8 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	recordingTimer.starts.assertEquals(1)
 	recordingTimer.tick(50.25)
 	let returning = destination.clock.captureState()
-	destination.campaign.travel.transition(new BoundaryCorrespondence("return", "east_asia", "europe_west", "Maps/EuropeWest.w3x", "europe", false, 1., 0.), .5, "return").assertTrue()
-	let revisited = new StartupFixture(source.cache, source.saves, "europe_west")
+	destination.campaign.travel.transition(destination.campaign.state.boundary("pacific_north_to_east_asia"), .37, "return").assertTrue()
+	let revisited = new StartupFixture(source.cache, source.saves, "east_asia")
 	revisited.ports.expectedClock = returning
 	revisited.register()
 	revisited.campaign.startup().assertTrue()
@@ -672,3 +675,163 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.clock.captureState().assertEquals(initial)
+
+function boundaryStartupAt(real position, real expectedY)
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	let route = source.campaign.state.boundary("middle_east_india_to_europe_central_east")
+	source.campaign.travel.transition(route, position, "fixed-time").assertTrue()
+	let payload = source.saves.read("major_milestone")
+	let destination = new StartupFixture(source.cache, source.saves, "europe_central_east")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.x.assertEquals(7232.)
+	// Warcraft reals are floats; this numerical epsilon is far below one
+	// pathing pixel and separate from the 512-unit navigation snap tolerance.
+	(RAbsBJ(destination.ports.y - expectedY) < .01).assertTrue()
+	destination.ports.loads.assertEquals(0)
+	let endpoint = destination.campaign.state.boundary(route.id).destination
+	endpoint.clearOfTriggers(destination.ports.x, destination.ports.y).assertTrue()
+	parseBoundaryPosition(lastAuthorityValue(destination.campaign.state.authorityDocument(), "position")).assertEquals(position)
+	source.saves.read("major_milestone").assertEquals(payload)
+
+@test function generatedBoundaryQuarterUsesCorrespondence()
+	boundaryStartupAt(.25, -3968.)
+
+@test function originStartupRequiresConfiguredBoundariesButAllowsAnEmptyCatalogue()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	f.campaign.state.boundaryConfigurationComplete = false
+	f.campaign.finishRegistration().assertFalse()
+	f.campaign.startup().assertFalse()
+	f.ports.spawns.assertEquals(0)
+	// A supported single-map package completes configuration with no routes.
+	f.campaign.state.boundaryCount = 0
+	f.campaign.state.boundaryConfigurationComplete = true
+	f.campaign.finishRegistration().assertTrue()
+	f.campaign.startup().assertTrue()
+	let origin = f.selector.find("england")
+	f.ports.x.assertEquals(origin.x)
+	f.ports.y.assertEquals(origin.y)
+
+@test function generatedBoundaryThirtySevenPercentUsesCorrespondence()
+	boundaryStartupAt(.37, -2186.24)
+
+@test function generatedBoundaryHalfUsesDistinctCorrespondence()
+	boundaryStartupAt(.5, -256.)
+
+@test function configuredScaleOffsetAndReverseAreNotReappliedByDestinationStartup()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	let route = source.campaign.state.boundary("middle_east_india_to_europe_central_east")
+	// A configured variation of the registered route, with its generated
+	// source segment and destination pathing retained.
+	route.reverse = true
+	route.scale = .5
+	route.offset = .1
+	source.campaign.travel.transition(route, .37, "fixed-time").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "europe_central_east")
+	destination.register()
+	let arrivalRoute = destination.campaign.state.boundary(route.id)
+	arrivalRoute.reverse = true
+	arrivalRoute.scale = .5
+	arrivalRoute.offset = .1
+	destination.campaign.startup().assertTrue()
+	destination.ports.x.assertEquals(7232.)
+	(RAbsBJ(destination.ports.y + 1518.08) < .01).assertTrue()
+
+@test function reversedGeneratedBoundaryAppliesTransformOnceThenPartialReturnSegment()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	let outward = source.campaign.state.boundary("middle_east_india_to_africa")
+	source.campaign.travel.transition(outward, .75, "fixed-time").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "africa")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.x.assertEquals(7232.)
+	destination.ports.y.assertEquals(-3808.)
+	parseBoundaryPosition(lastAuthorityValue(destination.campaign.state.authorityDocument(), "position")).assertEquals(.25)
+	destination.ports.selectorIdentity = destination.campaign.identity
+	let returning = destination.campaign.state.boundary("africa_to_middle_east_india")
+	destination.campaign.travel.transition(returning, .37, "fixed-time").assertTrue()
+	let revisited = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	revisited.register()
+	revisited.campaign.startup().assertTrue()
+	revisited.ports.x.assertEquals(-7232.)
+	revisited.ports.y.assertEquals(2490.88)
+	revisited.campaign.identity.originId().assertEquals("aq_qoyunlu")
+
+@test function destinationUnavailableRetainsTransferForRetryWithoutPartyOrAutosaves()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "fixed-time").assertTrue()
+	let saved = source.saves.read("major_milestone")
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	destination.ports.arrivalAvailable = false
+	destination.campaign.startup().assertFalse()
+	destination.ports.spawns.assertEquals(0)
+	destination.campaign.state.isSaveSafe().assertFalse()
+	destination.saves.read("major_milestone").assertEquals(saved)
+	destination.ports.arrivalAvailable = true
+	destination.campaign.startup().assertTrue()
+	destination.ports.x.assertEquals(-7232.)
+	destination.ports.y.assertEquals(2490.88)
+
+@test function malformedSavedBoundaryTupleNeverReconstructsOrOverwrites()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "fixed-time").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	let valid = destination.campaign.saves.codec.decodeMigrateAndValidate(source.saves.read("major_milestone"), "major_milestone")
+	string array[8] invalid
+	invalid[0] = replaceCampaignField(valid, "boundary", "unknown_route")
+	invalid[1] = replaceCampaignField(valid, "boundary", "middle_east_india_to_africa")
+	invalid[2] = replaceCampaignField(valid, "position", "nan")
+	invalid[3] = replaceCampaignField(valid, "position", "1.1")
+	invalid[4] = replaceCampaignField(valid, "position", "0.37junk")
+	invalid[5] = replaceCampaignField(valid, "position", "-0.1")
+	invalid[6] = replaceCampaignField(valid, "arrival", "0.5")
+	invalid[7] = replaceCampaignField(valid, "region", "europe")
+	for i = 0 to 7
+		let payload = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "fixed-time", invalid[i])
+		source.saves.writeTransactional("major_milestone", payload)
+		destination.campaign.startup().assertFalse()
+		destination.ports.spawns.assertEquals(0)
+		destination.saves.read("major_milestone").assertEquals(payload)
+
+@test function generatedTravelFailureNeverCommitsOrLoadsAndCanRetry()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	let before = source.campaign.state.authorityDocument()
+	let saved = source.saves.read("major_milestone")
+	let route = source.campaign.state.boundary("africa_to_middle_east_india")
+	source.campaign.travel.transition(route, 2., "invalid").assertFalse()
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_europe_west"), .37, "unavailable").assertFalse()
+	source.campaign.travel.transition(source.campaign.state.boundary("middle_east_india_to_africa"), .75, "wrong-map").assertFalse()
+	source.saves.failKey = "major_milestone"
+	source.campaign.travel.transition(route, .37, "failed-save").assertFalse()
+	source.campaign.state.authorityDocument().assertEquals(before)
+	source.saves.read("major_milestone").assertEquals(saved)
+	source.ports.loads.assertEquals(1)
+	source.campaign.travel.physicalMapId().assertEquals("africa")
+	source.campaign.state.isSaveSafe().assertTrue()
+	source.campaign.travel.transition(route, .37, "retry").assertTrue()
+	source.ports.loads.assertEquals(2)
+
+@test function supportedTransferSchemasResolveExistingBoundaryPositionWithoutNewFields()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "fixed-time").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	let valid = destination.campaign.saves.codec.decodeMigrateAndValidate(source.saves.read("major_milestone"), "major_milestone")
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		let payload = campaignSaveEnvelope(schema, "major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "legacy", valid)
+		source.saves.writeTransactional("major_milestone", payload)
+		destination.campaign.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
+		destination.ports.x.assertEquals(-7232.)
+		destination.ports.y.assertEquals(2490.88)
+		destination.saves.read("major_milestone").assertEquals(payload)

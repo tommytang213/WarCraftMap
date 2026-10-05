@@ -4,6 +4,7 @@ import CampaignHandoff
 import CampaignSaveManager
 import CampaignAutosaveScheduler
 import PlayableCampaignRuntime
+import BoundaryArrival
 import CampaignTimeline
 import WarcraftRegionalRuntime
 import RemoteRegionManagement
@@ -216,7 +217,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
-	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", true, 1., 0.)
+	let edge = testBoundary(state, "west_east", "west", "east", "Maps/East.w3x", true)
 	travel.transition(edge, .25, "day-2").assertTrue()
 	travel.physicalMapId().assertEquals("east")
 	loader.loaded.assertEquals("Maps/East.w3x")
@@ -229,7 +230,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
-	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
+	let edge = testBoundary(state, "west_east", "west", "east", "Maps/East.w3x", false)
 	let before = state.authorityDocument()
 	storage.failNext = true
 	travel.transition(edge, .4, "day-3").assertFalse()
@@ -242,8 +243,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
 	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), new FakeLoader(), "west", "europe")
-	let east = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
-	let west = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
+	let east = testBoundary(state, "west_east", "west", "east", "Maps/East.w3x", false)
+	let west = testBoundary(state, "east_west", "east", "west", "Maps/West.w3x", false)
 	state.replaceAuthority("v1;map=west;region=europe;world=w;players=p;quests=delivery_started;discovery=lisbon;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;city_lisbon_owner=portugal")
 	travel.transition(east, .4, "day-4").assertTrue()
 	state.replaceAuthority(state.authorityDocument() + ";quests=delivery_complete;city_lisbon_owner=castile")
@@ -258,7 +259,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
-	let wrongSource = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
+	let wrongSource = testBoundary(state, "east_west", "east", "west", "Maps/West.w3x", false)
 	travel.transition(wrongSource, .5, "day-6").assertFalse()
 	loader.loaded.assertEquals("")
 	storage.contains("major_milestone").assertFalse()
@@ -289,3 +290,12 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	pause.paused.assertFalse()
 	pause.changes.assertEquals(2)
 	pauses.getModalOwnerCount().assertEquals(0)
+
+function testBoundary(PlayableCampaignState state, string id, string source, string destination, string path, boolean reverse) returns BoundaryCorrespondence
+	let route = new BoundaryCorrespondence(id, source, destination, path, "europe", reverse, 1., 0.)
+	route.source = new BoundaryEndpoint(source, "east", 0., 1., -4096., -4096., 4096., 4096.)
+	route.destination = new BoundaryEndpoint(destination, "west", 0., 1., -4096., -4096., 4096., 4096.)
+	route.destination.addSpan(0, 1, 0., -4096., 4096.)
+	route.destination.addSpan(0, 1, 192., -3904., 3904.)
+	state.addBoundary(route)
+	return route
