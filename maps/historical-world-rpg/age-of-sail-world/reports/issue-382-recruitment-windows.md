@@ -27,7 +27,7 @@ after their windows in every supported campaign envelope. Generation tests
 compare every authored window against both generated representations and cover
 malformed dates, leap days, one-day windows, and invalid stable IDs.
 
-Validation passed:
+Validation of the original implementation passed:
 
 - **186/186 pinned Wurst tests**, including all 10 recruitment-window tests,
   startup, live clock, load rollback, and save compatibility. The pinned compiler
@@ -45,9 +45,45 @@ Validation passed:
   An independent MPQ read confirmed all 107 windows, generator version 16, and
   the English recruitment rejection message in the compiled Lua.
 - All 56 executed project Wurst sources, including regenerated `ScenarioData`,
-  and the explicit compiler options match the final worktree. The
+  and the explicit compiler options matched that implementation snapshot. The
   [validation summary](issue-382/validation.json) retains these hashes and the
   packaged map's digest. The generated map remains under ignored `_build/`.
+
+PR #387 CI was inspected after merge commit
+`33e990d4e2cf9f2a42ced48b1ae9ec4240aa9715`. All four failed checks were cancelled
+before executing any steps. Each has the same GitHub annotation:
+"The job was not acquired by Runner of type hosted even after multiple attempts."
+The runs are [37370020857](https://github.com/tommytang213/WarCraftMap/actions/runs/37370020857),
+[37370026019](https://github.com/tommytang213/WarCraftMap/actions/runs/37370026019),
+[37370020582](https://github.com/tommytang213/WarCraftMap/actions/runs/37370020582),
+and [37370141123](https://github.com/tommytang213/WarCraftMap/actions/runs/37370141123).
+`gh pr checks 387`, run/job metadata, and check annotations establish a hosted
+runner acquisition failure, not a compiler or test failure. No implementation or
+workflow change is warranted by that diagnosis.
+
+Fresh validation of the merged worktree passed:
+
+- **194/194 pinned Wurst tests**, including all 10 recruitment-window tests and
+  the merged physical-interaction regressions:
+  [results](issue-382/ci-revalidation-execution.json.gz),
+  [transcript](issue-382/ci-revalidation-execution.log.gz).
+- **124 Python tests** covering generation, character availability/progression,
+  clock/timeline, campaign saves and legacy compatibility, map/campaign packaging,
+  the execution gate, runtime acceptance, and physical interactions:
+  [transcript](issue-382/ci-revalidation-python.log.gz).
+- World, global-character projection, and canonical map-source validators.
+- Pinned typecheck, execution, real map compilation and packaging:
+  [build log](issue-382/ci-revalidation-package.log.gz).
+  Independent MPQ inspection again matched all 107 authored windows and checked
+  the compiled recruitment predicate and English temporal rejection message.
+- All 58 project/shared Wurst sources, including regenerated `ScenarioData`,
+  plus the compiler options match the executed inputs. The
+  [revalidation summary](issue-382/ci-revalidation.json) records those hashes,
+  the map digest, compiler identity, test modules, and CI diagnosis.
+
+The temporary validation container was removed after copying its results into
+the worktree. The generated map remains in ignored
+`_build/issue-382-revalidation/` at the repository root.
 
 Validation uses the pinned Wurst image with a read-only worktree mount. Sources
 are copied into container-private `/tmp` and built as `wurstuser`; no container
