@@ -257,8 +257,12 @@ its checkpoint, including the selected market and cargo store. Party and militar
 adapters retain their previous native units until commit; rejection removes the
 candidate units and restores the original handles, positions, orders and effects.
 Authority rollback uses the existing domain restore boundaries and restores RPG
-and religion modifier layers. It does not rerun pirate-polity callbacks. The
-authority document and command context are published only on success.
+and religion modifier layers. The RPG projector checkpoints the equipment
+contributions on retained party objects before detachment and restores that
+bookkeeping after reattachment without rewriting native life. Later equipment
+reconciliation or removal therefore cannot duplicate the retained bonuses. It
+does not rerun pirate-polity callbacks. The authority document and command context
+are published only on success.
 
 Startup restoration keeps this transaction open through session/milestone writes
 and selector acknowledgement. Publication failure rolls back live state while

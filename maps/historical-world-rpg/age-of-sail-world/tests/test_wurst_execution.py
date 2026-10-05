@@ -59,6 +59,7 @@ class WurstExecutionTests(unittest.TestCase):
             "latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
             "reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
             "rejectedLoadRestoresInactiveMilitaryProjectionTarget",
+            "rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects",
             "boundStartupProjectionFailureRollsBackAllDomainsAndRetries",
             "boundStartupSessionFailureRollsBackBeforePublication",
             "boundStartupMilestoneFailureRollsBackBeforePublication",

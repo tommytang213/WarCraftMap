@@ -16,13 +16,19 @@ class Projections implements RpgProjectionPort
 	int setPower=0
 	int guidance=0
 	int knowledge=0
+	override function beginPartyLoad()
+		skip
+	override function rollbackPartyLoad()
+		skip
+	override function commitPartyLoad()
+		skip
 	override function clearEquipmentLayer()
 		clears++
 		equipmentPower=0
 		setPower=0
 	override function applyEquipment(string heroId,string itemId,int power)
 		equipmentPower+=power
-	override function applyEquipmentSet(string setId,int power)
+	override function applyEquipmentSet(string heroId,string setId,int power)
 		setPower+=power
 	override function clearGuidanceLayer()
 		guidance=0
@@ -56,6 +62,7 @@ class Projections implements RpgProjectionPort
 	let runtime=new WarcraftRpgRuntime(new Effects())
 	let hero=new RpgHero("hero","Hero",'Hpal')
 	hero.level=20
+	hero.recruited=true
 	let coat=new RpgItem("coat","Coat","chest","rare",10,5)
 	coat.setId="set"
 	coat.unique=true
@@ -69,7 +76,7 @@ class Projections implements RpgProjectionPort
 	runtime.inventory.grant("hat")
 	runtime.inventory.equip("hero","coat",hero,1600,"","").assertEquals(true)
 	runtime.inventory.equip("hero","hat",hero,1600,"","").assertEquals(true)
-	runtime.inventory.setBonusPower().assertEquals(10)
+	runtime.inventory.setBonusPower("hero").assertEquals(10)
 
 @test function questTreasureTechnologyAndReconstruction()
 	let effects=new Effects()
@@ -239,7 +246,7 @@ class Projections implements RpgProjectionPort
 	runtime.inventory.registerItem(itemDefinition)
 	runtime.inventory.grant("plain").assertTrue()
 	runtime.equipItem("hero","plain",1450).assertTrue()
-	(runtime.inventory.comparison("plain").indexOf("Plain")>=0).assertTrue()
+	(runtime.inventory.comparison("hero","plain").indexOf("Plain")>=0).assertTrue()
 	let technology=new RuntimeTechnology("basic","Basic",1450,1)
 	technology.effectId.assertEquals("")
 	runtime.technologies.register(technology)
@@ -291,7 +298,7 @@ class Projections implements RpgProjectionPort
 	for i=0 to runtime.inventory.definitionCount-1
 		let itemDefinition=runtime.inventory.definitions[i]
 		// Exercise generated optional fields on every itemDefinition and equip an eligible one.
-		runtime.inventory.comparison(itemDefinition.id)
+		runtime.inventory.comparison(hero.id,itemDefinition.id)
 		if not equipped and runtime.inventory.available(itemDefinition,hero,1450,"","")
 			runtime.inventory.grant(itemDefinition.id).assertTrue()
 			runtime.equipItem(hero.id,itemDefinition.id,1450).assertTrue()

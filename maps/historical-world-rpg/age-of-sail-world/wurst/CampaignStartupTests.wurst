@@ -90,11 +90,17 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 		return activePlayers > 0
 	override function clear(WarcraftRpgRuntime rpg)
 		activePlayers = 0
+	override function beginPartyLoad()
+		skip
+	override function rollbackPartyLoad()
+		skip
+	override function commitPartyLoad()
+		skip
 	override function clearEquipmentLayer()
 		skip
 	override function applyEquipment(string heroId, string itemId, int power)
 		skip
-	override function applyEquipmentSet(string setId, int power)
+	override function applyEquipmentSet(string heroId,string setId, int power)
 		skip
 	override function clearGuidanceLayer()
 		skip

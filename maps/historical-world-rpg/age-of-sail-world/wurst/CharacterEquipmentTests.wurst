@@ -1,0 +1,417 @@
+package CharacterEquipmentTests
+
+import WarcraftRpgRuntime
+import WarcraftRpgProjections
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import CampaignSaveManager
+import CommandRouter
+import CampaignTimeline
+
+class EquipmentCommandOutput implements CommandOutput
+	string last = ""
+	override function show(player recipient, string message)
+		last = message
+
+/** Records native recipients, live values and representation replacement. The
+ * production projector, resolver, inventory actions and codecs remain intact. */
+class EquipmentNatives implements RpgEquipmentNatives
+	int array[32] identities
+	int array[32] life
+	int array[32] writes
+	int totalWrites = 0
+	override function representationId(int heroIndex) returns int
+		return identities[heroIndex]
+	override function maxLife(int heroIndex) returns int
+		(identities[heroIndex] > 0).assertTrue()
+		return life[heroIndex]
+	override function setMaxLife(int heroIndex, int value)
+		(identities[heroIndex] > 0).assertTrue()
+		life[heroIndex] = value
+		writes[heroIndex]++
+		totalWrites++
+	function represent(int index, int identity, int baseLife)
+		identities[index] = identity
+		life[index] = baseLife
+
+class EquipmentFixture
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
+	EquipmentNatives natives = new EquipmentNatives()
+	construct()
+		addHero("alpha", "Alpha", 0)
+		addHero("beta", "Beta", 1)
+		addHero("gamma", "Gamma", 2)
+		addItem("coat", "chest", 5, "uniform", false, 2)
+		addItem("hat", "head", 4, "uniform", false, 1)
+		addItem("boots", "feet", 2, "uniform", false, 1)
+		addItem("replacement", "chest", 8, "", false, 1)
+		addItem("relic", "chest", 9, "", true, 1)
+		addItem("stored", "hand", 20, "", false, 0)
+		addItem("token", "", 20, "", false, 1)
+		rpg.inventory.registerSet(new EquipmentSet("uniform", 2, 3, 3, 7))
+		rpg.setProjectionPort(new WarcraftRpgProjections(rpg.heroes, natives))
+	function addHero(string id, string name, int index)
+		let hero = new RpgHero(id, name, 'Hpal')
+		hero.recruited = true
+		hero.level = 20
+		rpg.heroes.register(hero)
+		natives.represent(index, index + 1, (index + 1) * 100)
+	function addItem(string id, string slot, int power, string setId, boolean unique, int copies)
+		let itemDefinition = new RpgItem(id, id, slot, "rare", 10, power)
+		itemDefinition.setId = setId
+		itemDefinition.unique = unique
+		rpg.inventory.registerItem(itemDefinition)
+		for i = 1 to copies
+			rpg.inventory.grant(id).assertTrue()
+	function equip(string heroId, string itemId)
+		rpg.equipItem(heroId, itemId, 1600).assertTrue()
+	function rejectEquip(string heroId, string itemId)
+		let before = rpg.captureState()
+		let writes = natives.totalWrites
+		rpg.equipItem(heroId, itemId, 1600).assertFalse()
+		rpg.captureState().assertEquals(before)
+		natives.totalWrites.assertEquals(writes)
+	function itemAt(string heroId, string slot) returns string
+		let found = rpg.inventory.slotIndex(heroId, slot)
+		if found < 0
+			return ""
+		return rpg.inventory.equippedItems[found]
+	function rejectSnapshot(string candidate)
+		let before = rpg.captureState()
+		let writes = natives.totalWrites
+		rpg.restoreState(candidate).assertFalse()
+		rpg.captureState().assertEquals(before)
+		natives.totalWrites.assertEquals(writes)
+
+@test function characterSlotsConserveOrdinaryAndUniqueCopiesThroughProductionActions()
+	let f = new EquipmentFixture()
+	let inventory = f.rpg.inventory
+	let owned = inventory.ownedCount
+	f.equip("alpha", "coat")
+	f.equip("beta", "coat")
+	inventory.equippedCount.assertEquals(2)
+	f.itemAt("alpha", "chest").assertEquals("coat")
+	f.itemAt("beta", "chest").assertEquals("coat")
+	f.rejectEquip("gamma", "coat")
+	let beforeRepeat = f.rpg.captureState()
+	f.equip("alpha", "coat")
+	f.rpg.captureState().assertEquals(beforeRepeat)
+	f.equip("alpha", "replacement")
+	f.itemAt("beta", "chest").assertEquals("coat")
+	f.equip("gamma", "coat")
+	inventory.equippedQuantity("coat").assertEquals(2)
+	f.equip("alpha", "relic")
+	f.rejectEquip("beta", "relic")
+	f.itemAt("beta", "chest").assertEquals("coat")
+	inventory.grant("relic").assertFalse()
+	f.rpg.unequipItem("alpha", "chest").assertTrue()
+	f.equip("beta", "relic")
+	f.itemAt("alpha", "chest").assertEquals("")
+	f.itemAt("gamma", "chest").assertEquals("coat")
+	inventory.equippedQuantity("relic").assertEquals(1)
+	inventory.ownedQuantity("coat").assertEquals(2)
+	inventory.ownedQuantity("relic").assertEquals(1)
+	inventory.ownedCount.assertEquals(owned)
+
+@test function equipmentCommandsPreserveWearerSelectionAndRecordedOutput()
+	let previousClock = getCampaignClock()
+	let day = 584023 // 1600-01-01, used by the production equip command.
+	let clock = new CampaignClock(day, day, day, 1.)
+	installCampaignClock(clock)
+	let f = new EquipmentFixture()
+	let output = new EquipmentCommandOutput()
+	let commands = new CommandRegistry(false, 6, new CommandText(), output)
+	registerRpgRuntimeCommands(commands, f.rpg).assertEquals("")
+	commands.dispatch(null, "/equip alpha coat").assertTrue()
+	output.last.assertEquals("Action completed.")
+	commands.dispatch(null, "/equip beta coat").assertTrue()
+	output.last.assertEquals("Action completed.")
+	f.itemAt("alpha", "chest").assertEquals("coat")
+	f.itemAt("beta", "chest").assertEquals("coat")
+	let before = f.rpg.captureState()
+	let writes = f.natives.totalWrites
+	commands.dispatch(null, "/equip gamma coat").assertTrue()
+	output.last.assertEquals("Requirements are not met here.")
+	commands.dispatch(null, "/inventory").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("alpha"))
+	commands.dispatch(null, "/items beta").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("beta"))
+	commands.dispatch(null, "/equipment gamma").assertTrue()
+	output.last.assertEquals(f.rpg.inventorySummary("gamma"))
+	commands.dispatch(null, "/inventory missing").assertTrue()
+	output.last.assertEquals("Choose a character with -inventory HERO.")
+	commands.dispatch(null, "/inventory alpha beta").assertFalse()
+	output.last.assertEquals("Invalid arguments. Usage: /inventory [HERO]")
+	f.rpg.captureState().assertEquals(before)
+	f.natives.totalWrites.assertEquals(writes)
+	commands.dispatch(null, "/unequip beta chest").assertTrue()
+	output.last.assertEquals("Action completed.")
+	f.itemAt("alpha", "chest").assertEquals("coat")
+	f.itemAt("beta", "chest").assertEquals("")
+	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
+	f.natives.life[0].assertEquals(105)
+	f.natives.life[1].assertEquals(200)
+	installCampaignClock(previousClock)
+	destroy clock
+
+@test function invalidWearersItemsAndRequirementsRejectAtomically()
+	let f = new EquipmentFixture()
+	f.equip("alpha", "coat")
+	f.rejectEquip("missing", "coat")
+	f.rejectEquip("alpha", "missing")
+	f.rejectEquip("alpha", "stored")
+	f.rejectEquip("alpha", "token")
+	f.rpg.heroes.get("gamma").recruited = false
+	f.rejectEquip("gamma", "coat")
+	let before = f.rpg.captureState()
+	f.rpg.inventory.equip("alpha", "hat", f.rpg.heroes.get("beta"), 1600, "", "").assertFalse()
+	f.rpg.inventory.equip("alpha", "hat", null, 1600, "", "").assertFalse()
+	f.rpg.unequipItem("missing", "chest").assertFalse()
+	f.rpg.unequipItem("alpha", "missing").assertFalse()
+	f.rpg.captureState().assertEquals(before)
+	let gated = f.rpg.inventory.getItem("replacement")
+	gated.requiredLevel = 21
+	f.rejectEquip("alpha", "replacement")
+	gated.requiredLevel = 20
+	gated.startYear = 1601
+	f.rejectEquip("alpha", "replacement")
+	gated.startYear = 1500
+	gated.endYear = 1599
+	f.rejectEquip("alpha", "replacement")
+	gated.endYear = 1700
+	gated.technologyId = "craft"
+	gated.institutionId = "guild"
+	f.rpg.technologies.register(new RuntimeTechnology("craft", "Craft", 1500, 1))
+	let institution = new RuntimeTechnology("guild", "Guild", 1500, 1)
+	institution.kind = "institution"
+	f.rpg.technologies.register(institution)
+	f.rejectEquip("alpha", "replacement")
+	// Existing valid unlock authority; these tests are independent of research.
+	f.rpg.technologies.unlockedKeys[0] = "player:craft"
+	f.rpg.technologies.unlockedCount = 1
+	f.rejectEquip("alpha", "replacement")
+	f.rpg.technologies.unlockedKeys[1] = "player:guild"
+	f.rpg.technologies.unlockedCount = 2
+	f.equip("alpha", "replacement")
+	f.rpg.validateState(f.rpg.captureState()).assertTrue()
+
+@test function splitSetsAndCompletedThresholdsProjectOnlyToTheirWearer()
+	let f = new EquipmentFixture()
+	f.equip("alpha", "coat")
+	f.equip("beta", "hat")
+	f.rpg.inventory.setPieceCount("alpha", "uniform").assertEquals(1)
+	f.rpg.inventory.setPieceCount("beta", "uniform").assertEquals(1)
+	f.rpg.inventory.setBonusPower("alpha").assertEquals(0)
+	f.rpg.inventory.setBonusPower("beta").assertEquals(0)
+	f.natives.life[0].assertEquals(105)
+	f.natives.life[1].assertEquals(204)
+	f.natives.life[2].assertEquals(300)
+	f.rpg.unequipItem("beta", "head").assertTrue()
+	f.equip("alpha", "hat")
+	f.natives.life[0].assertEquals(112)
+	f.equip("alpha", "boots")
+	f.rpg.inventory.setBonusPower("alpha").assertEquals(10)
+	for i = 1 to 3
+		f.rpg.reconcile("player")
+		f.natives.life[0].assertEquals(121)
+		f.natives.life[1].assertEquals(200)
+		f.natives.life[2].assertEquals(300)
+	f.natives.writes[2].assertEquals(0)
+	f.rpg.inventory.setPieceCount("gamma", "uniform").assertEquals(0)
+	(f.rpg.inventory.comparison("alpha", "replacement").indexOf("+3 power") >= 0).assertTrue()
+	(f.rpg.inventory.comparison("beta", "replacement").indexOf("+8 power") >= 0).assertTrue()
+	(f.rpg.inventory.comparison("alpha", "coat").indexOf("0 power") >= 0).assertTrue()
+	(f.rpg.inventorySummary("alpha").indexOf("Alpha (alpha)") >= 0).assertTrue()
+	(f.rpg.inventorySummary("alpha").indexOf("Set uniform: 3 pieces") >= 0).assertTrue()
+	(f.rpg.inventorySummary("alpha").indexOf("Active set bonus for Alpha: +10 power") >= 0).assertTrue()
+	(f.rpg.inventorySummary("gamma").indexOf("Active set bonus for Gamma: +0 power") >= 0).assertTrue()
+
+@test function replacementRemovalAndRepresentationRecreationPreserveOtherLayers()
+	let f = new EquipmentFixture()
+	f.equip("alpha", "coat")
+	f.equip("alpha", "hat")
+	f.equip("alpha", "boots")
+	f.equip("beta", "coat")
+	// Another modifier arrives after gear was projected. Clearing gear must
+	// subtract its own contribution rather than restore an old base-life cache.
+	f.natives.life[0] += 40
+	f.natives.life[1] += 60
+	f.rpg.reconcile("player")
+	f.natives.life[0].assertEquals(161)
+	f.natives.life[1].assertEquals(265)
+	f.equip("alpha", "replacement")
+	f.natives.life[0].assertEquals(157)
+	f.natives.life[1].assertEquals(265)
+	f.rpg.unequipItem("alpha", "head").assertTrue()
+	f.natives.life[0].assertEquals(150)
+	f.rpg.unequipItem("alpha", "feet").assertTrue()
+	f.natives.life[0].assertEquals(148)
+	// Inactive wearers retain authority. Their missing objects receive no calls.
+	f.rpg.heroes.assignRemote("alpha", "governor", "remote").assertTrue()
+	f.natives.identities[0] = 0
+	let writes = f.natives.writes[0]
+	f.rpg.reconcile("player")
+	f.equip("alpha", "coat")
+	f.equip("alpha", "hat")
+	f.equip("alpha", "boots")
+	f.natives.writes[0].assertEquals(writes)
+	f.itemAt("beta", "chest").assertEquals("coat")
+	// Reconstruction has different base life and existing unrelated modifiers.
+	f.natives.represent(0, 4, 500)
+	f.rpg.reconcile("player")
+	f.natives.life[0].assertEquals(521)
+	f.natives.life[1].assertEquals(265)
+	// Destruction/recreation may happen entirely between reconciliations.
+	f.natives.represent(0, 5, 700)
+	f.natives.represent(1, 6, 800)
+	for i = 1 to 2
+		f.rpg.reconcile("player")
+		f.natives.life[0].assertEquals(721)
+		f.natives.life[1].assertEquals(805)
+		f.natives.life[2].assertEquals(300)
+	f.rpg.unequipItem("alpha", "chest").assertTrue()
+	f.rpg.unequipItem("alpha", "head").assertTrue()
+	f.rpg.unequipItem("alpha", "feet").assertTrue()
+	f.natives.life[0].assertEquals(700)
+	f.natives.life[1].assertEquals(805)
+	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
+
+@test function characterEquipmentSnapshotsValidateCopiesPairsAndLegacyWearers()
+	let f = new EquipmentFixture()
+	f.equip("alpha", "coat")
+	f.equip("beta", "coat")
+	f.equip("alpha", "hat")
+	let saved = f.rpg.captureState()
+	let restored = new EquipmentFixture()
+	restored.rpg.restoreState(saved).assertTrue()
+	restored.rpg.captureState().assertEquals(saved)
+	restored.rpg.reconcile("player")
+	restored.natives.life[0].assertEquals(112)
+	restored.natives.life[1].assertEquals(205)
+	restored.natives.life[2].assertEquals(300)
+	restored.rejectSnapshot(saved + "|e,chest,replacement,alpha")
+	restored.rejectSnapshot(saved + "|e,chest,coat,gamma")
+	restored.rejectSnapshot(saved + "|e,feet,boots,missing")
+	restored.rejectSnapshot(saved + "|e,hand,boots,gamma")
+	restored.rejectSnapshot(saved + "|e,hand,stored,gamma")
+	restored.rejectSnapshot(saved + "|e,,token,gamma")
+	f.rpg.unequipItem("alpha", "chest").assertTrue()
+	f.rpg.unequipItem("beta", "chest").assertTrue()
+	f.equip("beta", "relic")
+	restored.rejectSnapshot(f.rpg.captureState() + "|e,chest,relic,gamma")
+	restored.rejectSnapshot(saved + "|i,relic")
+	// Literal v2 fixture keeps its recorded wearer, including a reserve hero.
+	let legacy = "v2|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,relic|e,chest,relic,beta|j,,0"
+	restored.rpg.restoreState(legacy).assertTrue()
+	restored.rpg.captureState().assertEquals(legacy)
+	restored.rpg.reconcile("player")
+	restored.natives.life[0].assertEquals(100)
+	restored.natives.life[1].assertEquals(209)
+	// Equipment can precede owned records; validation uses candidate totals.
+	let reordered = "v2|e,chest,relic,beta|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,relic|j,,0"
+	restored.rpg.restoreState(reordered).assertTrue()
+	restored.rpg.captureState().assertEquals(legacy)
+	restored.rpg.restoreState("v1").assertTrue()
+	restored.rpg.inventory.equippedCount.assertEquals(0)
+	restored.rpg.reconcile("player")
+	restored.natives.life[0].assertEquals(100)
+	restored.natives.life[1].assertEquals(200)
+
+class EquipmentStorage implements CampaignSaveStorage
+	string payload = ""
+	override function contains(string slotId) returns boolean
+		return payload != ""
+	override function read(string slotId) returns string
+		return payload
+	override function writeTransactional(string slotId, string value) returns boolean
+		payload = value
+		return true
+	override function diagnostic() returns string
+		return ""
+
+@test function campaignEnvelopesPreserveWearersAndRejectOverallocatedAuthority()
+	let f = new EquipmentFixture()
+	f.equip("alpha", "coat")
+	f.equip("beta", "coat")
+	f.equip("alpha", "hat")
+	let saved = f.rpg.captureState()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	state.setRpgRuntime(f.rpg)
+	let codec = new PlayableCampaignCodec()
+	let storage = new EquipmentStorage()
+	let manager = new CampaignSaveManager(storage, codec, state)
+	let authority = state.captureAuthoritativeState()
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		storage.payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority)
+		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.rpg.captureState().assertEquals(saved)
+		f.rpg.reconcile("player")
+		f.natives.life[0].assertEquals(112)
+		f.natives.life[1].assertEquals(205)
+		f.natives.life[2].assertEquals(300)
+	let before = state.captureAuthoritativeState()
+	storage.payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "bad", authority + ";rpg=" + saved + "|e,chest,coat,gamma")
+	manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	state.captureAuthoritativeState().assertEquals(before)
+	let rejectedPayload = storage.payload
+	manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	storage.payload.assertEquals(rejectedPayload)
+	f.rpg.captureState().assertEquals(saved)
+	// A pre-RPG envelope migrates to empty equipment; no derived bonus survives.
+	let legacy = "v1;map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1"
+	storage.payload = campaignSaveEnvelope(2, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", legacy)
+	manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.inventory.equippedCount.assertEquals(0)
+	f.rpg.reconcile("player")
+	f.natives.life[0].assertEquals(100)
+	f.natives.life[1].assertEquals(200)
+
+@test function fullLocalGroupEquipmentRoundTripsThroughLiveCampaignCodec()
+	let rpg = new WarcraftRpgRuntime(null)
+	for slot = 0 to 8
+		rpg.inventory.registerItem(new RpgItem("item" + slot, "Item", "slot" + slot, "common", 1, 1))
+	for wearer = 0 to RPG_DEFAULT_ACTIVE_HERO_LIMIT - 1
+		let hero = new RpgHero("hero" + wearer, "Hero", 'Hpal')
+		hero.recruited = true
+		rpg.heroes.register(hero)
+		for slot = 0 to 8
+			rpg.inventory.grant("item" + slot).assertTrue()
+			rpg.equipItem(hero.id, "item" + slot, 1600).assertTrue()
+	rpg.inventory.equippedCount.assertEquals(288)
+	let savedRpg = rpg.captureState()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
+	state.setRpgRuntime(rpg)
+	let codec = new PlayableCampaignCodec()
+	let storage = new EquipmentStorage()
+	let manager = new CampaignSaveManager(storage, codec, state)
+	manager.save(SAVE_SLOT_MANUAL, 1, "fixture").assertTrue()
+	let savedPayload = storage.payload
+	rpg.unequipItem("hero0", "slot0").assertTrue()
+	manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	rpg.captureState().assertEquals(savedRpg)
+	let natives = new EquipmentNatives()
+	for wearer = 0 to RPG_DEFAULT_ACTIVE_HERO_LIMIT - 1
+		natives.represent(wearer, wearer + 1, 1000 + wearer)
+	rpg.setProjectionPort(new WarcraftRpgProjections(rpg.heroes, natives))
+	for repetition = 1 to 2
+		rpg.reconcile("player")
+		for wearer = 0 to RPG_DEFAULT_ACTIVE_HERO_LIMIT - 1
+			natives.life[wearer].assertEquals(1009 + wearer)
+	let before = state.captureAuthoritativeState()
+	// Re-encode malformed authority with a valid checksum: domain validation,
+	// rather than envelope integrity alone, must atomically reject the load.
+	storage.payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "bad", before + ";rpg=" + savedRpg + "|e,slot0,item0,hero0")
+	manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	state.captureAuthoritativeState().assertEquals(before)
+	rpg.captureState().assertEquals(savedRpg)
+	storage.payload = savedPayload
+	manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	rpg.captureState().assertEquals(savedRpg)
+
+@test function inventoryCapacityRejectionKeepsAuthorityUnchanged()
+	let inventory = new PlayerInventory()
+	inventory.registerItem(new RpgItem("copy", "Copy", "hand", "common", 1, 1))
+	for i = 1 to RPG_INVENTORY_CAPACITY
+		inventory.grant("copy").assertTrue()
+	inventory.grant("copy").assertFalse()
+	inventory.ownedQuantity("copy").assertEquals(RPG_INVENTORY_CAPACITY)

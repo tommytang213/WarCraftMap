@@ -148,3 +148,6 @@ Reentrant saves are deferred through observer delivery. Successful retry and
 repeated reconstruction verify the same projections and resources. Startup tests
 also inject projection, session, milestone and acknowledgement failures while
 restoring a bound checkpoint, then retry the retained selector handoff.
+The equipment rollback regression executes the production Warcraft projector
+through recording object identities and life writes, including later equipment
+removal and reconciliation after failed loads and successful retries.

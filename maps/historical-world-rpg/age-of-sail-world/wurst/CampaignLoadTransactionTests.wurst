@@ -9,6 +9,7 @@ import PlayableCountryInteractions
 import PlayableTrade
 import PlayablePiracy
 import WarcraftRpgRuntime
+import WarcraftRpgProjections
 import WarcraftRegionalRuntime
 import MilitarySettlementRuntime
 import ReligionRuntime
@@ -115,12 +116,18 @@ class LoadPorts implements CampaignPartyProjection, PhysicalMapLoader, RpgProjec
 	override function afterCampaignLoad()
 		notifications++
 		probeSave()
+	override function beginPartyLoad()
+		skip
+	override function rollbackPartyLoad()
+		skip
+	override function commitPartyLoad()
+		skip
 	override function clearEquipmentLayer()
 		equipment = ""
 	override function applyEquipment(string heroId, string itemId, int power)
 		equipment += heroId + itemId + power.toString()
-	override function applyEquipmentSet(string setId, int power)
-		equipment += setId + power.toString()
+	override function applyEquipmentSet(string heroId, string setId, int power)
+		equipment += heroId + setId + power.toString()
 	override function clearGuidanceLayer()
 		guidance = ""
 	override function applyQuestGuidance(string questId, string precision, string regionId, string destinationId)
@@ -380,3 +387,104 @@ class LoadFixture
 	f.rejectAndVerify(f.candidate())
 	f.military.activeRegionId.assertEquals("")
 	f.ports.forceCount.assertEquals(0)
+
+/** Record the native object lifetime used by WarcraftCampaignPartyProjection:
+ * detach the old object, project a candidate, then restore or discard the old
+ * object. Equipment writes still execute the production Warcraft projector. */
+class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNatives
+	LoadPorts ports
+	int identity = 1
+	int life = 100
+	int nextIdentity = 2
+	int previousIdentity = 0
+	int previousLife = 0
+	int observedIdentity = 0
+	int projectionIdentity = 0
+	int originalLifeWrites = 0
+	construct(LoadPorts ports)
+		this.ports = ports
+	override function representationId(int heroIndex) returns int
+		if identity == 0
+			observedIdentity = 0
+			return 0
+		// As at the native boundary, re-observing a retained object after a
+		// candidate object may give it a new projection identity.
+		if observedIdentity != identity
+			observedIdentity = identity
+			projectionIdentity++
+		return projectionIdentity
+	override function maxLife(int heroIndex) returns int
+		(identity > 0).assertTrue()
+		return life
+	override function setMaxLife(int heroIndex, int value)
+		(identity > 0).assertTrue()
+		if identity == 1
+			originalLifeWrites++
+		life = value
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		ports.beginLoad(rpg)
+		previousIdentity = identity
+		previousLife = life
+		identity = 0
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		identity = 0
+		ports.rollbackLoad(rpg)
+		identity = previousIdentity
+		life = previousLife
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		ports.commitLoad(rpg)
+		previousIdentity = 0
+	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+		identity = nextIdentity
+		nextIdentity++
+		life = 100
+		return ports.project(rpg, x, y)
+	override function clear(WarcraftRpgRuntime rpg)
+		identity = 0
+		ports.clear(rpg)
+
+@test function rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects()
+	let f = new LoadFixture()
+	let objects = new LoadEquipmentObjects(f.ports)
+	f.campaign.state.party = objects
+	// No native quest handles are needed for this equipment boundary regression.
+	f.rpg.journal.trackedId = ""
+	f.rpg.inventory.getItem("coat").setId = "uniform"
+	f.rpg.inventory.registerSet(new EquipmentSet("uniform", 1, 3, 2, 7))
+	f.rpg.setProjectionPort(new WarcraftRpgProjections(f.rpg.heroes, objects))
+	f.rpg.reconcile("player")
+	objects.life.assertEquals(108)
+	objects.life += 40 // An unrelated modifier on the retained original object.
+	let before = f.rpg.captureState()
+	f.rpg.heroes.heroes[0].level = 25
+	f.rpg.inventory.equippedCount = 0
+	let changed = f.rpg.captureState()
+	f.rpg.restoreState(before).assertTrue()
+	let candidate = f.candidate() + ";rpg=" + changed
+	for failure = 1 to 2
+		f.extension.fail = failure == 1
+		f.ports.failParty = failure == 2
+		let originalWrites = objects.originalLifeWrites
+		f.rejectAndVerify(candidate)
+		objects.identity.assertEquals(1)
+		objects.life.assertEquals(148)
+		objects.originalLifeWrites.assertEquals(originalWrites)
+		for repeat = 1 to 2
+			f.rpg.reconcile("player")
+			objects.life.assertEquals(148)
+		// Removal must still subtract both the item and set contributions.
+		f.rpg.unequipItem("hero", "chest").assertTrue()
+		objects.life.assertEquals(140)
+		f.rpg.equipItem("hero", "coat", 1600).assertTrue()
+		objects.life.assertEquals(148)
+	f.ports.failParty = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	(objects.identity > 1).assertTrue()
+	f.rpg.reconcile("player")
+	objects.life.assertEquals(100)
+	f.ports.notifications.assertEquals(1)
+	// Repeated committed reconstruction of the old gear also applies it once.
+	for repeat = 1 to 2
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+		f.rpg.reconcile("player")
+		objects.life.assertEquals(108)

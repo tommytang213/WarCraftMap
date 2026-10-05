@@ -97,6 +97,20 @@ and may further restrict compatible slot types. Threshold policy defaults to
 ordinary equipped instance IDs plus stable set/effect references and is safe to call
 after every state transition or object reconstruction. Its result is never saved.
 
+The live Wurst party inventory identifies an assignment by `(characterId, slotId)`.
+Each assignment reserves one owned copy; replacement or removal releases that
+reservation without changing owned quantities. Unique items can have only one
+wearer. Comparisons, distinct equipped-piece counts, and cumulative set thresholds
+use that character's loadout. `-inventory [HERO]` shows the selected wearer's
+comparisons and set results (default: first recruited character); `-unequip HERO SLOT`
+removes an assignment. Inactive wearers keep their authoritative equipment.
+
+`WarcraftRpgProjections` applies item and set power only to the named wearer's live
+representation. Reconciliation subtracts its previous contribution from that same
+representation, preserving unrelated modifier layers. Replacement representations
+start with a fresh contribution ledger. The ledger and set totals are derived and
+never saved.
+
 ## Pickup order and overflow
 
 Routing is transactional and does not mutate its input:
@@ -116,6 +130,15 @@ Persist `ownerId`, `backpackUnlockTierId`, six outer slots, ordered active backp
 slot map. Every item stack and backpack instance has an immutable stable `instanceId`;
 types and slots use stable IDs. Quantity is authoritative. Handles, object rawcodes,
 translated names, and UI page numbers are not persistence keys.
+
+The live Wurst RPG snapshot remains v2: its existing `e,slotId,itemId,characterId`
+records already store the wearer, so no format migration or reassignment is needed.
+The loader validates duplicate character-slot pairs and per-item owned/equipped
+copy counts across the whole candidate before changing authority. The v1 empty-RPG
+migration and existing campaign envelope versions remain supported. Equipment uses
+the existing 4,096 owned-copy budget, replacing the global 32-assignment limit;
+the 32-hero local group can retain full loadouts. Stored items and other characters'
+equipment never contribute to a wearer's set thresholds.
 
 Validate after loading. `recover_over_capacity` accepts legacy/changed-capacity
 storage, rebuilds current legal slots in canonical order, and returns every item or

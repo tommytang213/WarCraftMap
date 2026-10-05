@@ -1,0 +1,122 @@
+package WarcraftRpgProjections
+
+import WC3Compatibility
+import WarcraftRpgRuntime
+
+/** Native boundary only: tests record individual representation identities and
+ * max-life writes while executing the production ownership/projection logic. */
+public interface RpgEquipmentNatives
+	function representationId(int heroIndex) returns int
+	function maxLife(int heroIndex) returns int
+	function setMaxLife(int heroIndex, int value)
+
+class WarcraftEquipmentNatives implements RpgEquipmentNatives
+	HeroRoster heroes
+	unit array[2048] observed
+	int array[2048] identities
+	int nextIdentity = 0
+	construct(HeroRoster heroes)
+		this.heroes = heroes
+	override function representationId(int heroIndex) returns int
+		let target = heroes.projected[heroIndex]
+		if target == null or GetUnitTypeId(target) == 0
+			observed[heroIndex] = null
+			return 0
+		// Retain the observed handle until replacement, so a recycled native
+		// handle ID cannot make a new object inherit an old contribution.
+		if observed[heroIndex] != target
+			observed[heroIndex] = target
+			nextIdentity++
+			identities[heroIndex] = nextIdentity
+		return identities[heroIndex]
+	override function maxLife(int heroIndex) returns int
+		return compatGetUnitMaxLife(heroes.projected[heroIndex])
+	override function setMaxLife(int heroIndex, int value)
+		compatSetUnitMaxLife(heroes.projected[heroIndex], value)
+
+public class WarcraftRpgProjections implements RpgProjectionPort
+	HeroRoster heroes
+	RpgEquipmentNatives natives
+	int array[2048] appliedRepresentation
+	int array[2048] appliedLife
+	int array[2048] retainedLife
+	boolean partyLoading = false
+	quest array[1024] guidance
+	int guidanceCount = 0
+	quest array[512] knowledge
+	int knowledgeCount = 0
+	construct(HeroRoster heroes)
+		this.heroes = heroes
+		this.natives = new WarcraftEquipmentNatives(heroes)
+	construct(HeroRoster heroes, RpgEquipmentNatives natives)
+		this.heroes = heroes
+		this.natives = natives
+	override function beginPartyLoad()
+		partyLoading = true
+		for i = 0 to heroes.count - 1
+			retainedLife[i] = 0
+			if appliedRepresentation[i] != 0 and appliedRepresentation[i] == natives.representationId(i)
+				retainedLife[i] = appliedLife[i]
+	override function rollbackPartyLoad()
+		if not partyLoading
+			return
+		for i = 0 to heroes.count - 1
+			// The retained units still have their old bonuses. Restore only the
+			// bookkeeping; native life writes here could clamp current health.
+			// Observing a reattached handle may assign a new projection identity.
+			appliedRepresentation[i] = natives.representationId(i)
+			appliedLife[i] = retainedLife[i]
+		commitPartyLoad()
+	override function commitPartyLoad()
+		for i = 0 to heroes.count - 1
+			retainedLife[i] = 0
+		partyLoading = false
+	override function clearEquipmentLayer()
+		for i = 0 to heroes.count - 1
+			// Remove only our contribution on the same surviving representation.
+			// Reconstructed units have their own base stats and modifier layers.
+			if appliedRepresentation[i] != 0 and appliedRepresentation[i] == natives.representationId(i) and appliedLife[i] > 0
+				natives.setMaxLife(i, natives.maxLife(i) - appliedLife[i])
+			appliedRepresentation[i] = 0
+			appliedLife[i] = 0
+	function applyPower(string heroId, int power)
+		let found = heroes.indexOf(heroId)
+		if found < 0 or power <= 0
+			return
+		let representation = natives.representationId(found)
+		if representation == 0
+			return
+		if appliedRepresentation[found] != representation
+			appliedRepresentation[found] = representation
+			appliedLife[found] = 0
+		natives.setMaxLife(found, natives.maxLife(found) + power)
+		appliedLife[found] += power
+	override function applyEquipment(string heroId, string itemId, int power)
+		applyPower(heroId, power)
+	override function applyEquipmentSet(string heroId, string setId, int power)
+		applyPower(heroId, power)
+	override function clearGuidanceLayer()
+		for i=0 to guidanceCount-1
+			DestroyQuest(guidance[i])
+		guidanceCount=0
+	override function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
+		let marker=CreateQuest()
+		QuestSetTitle(marker,"Tracked: "+questId)
+		QuestSetDescription(marker,precision+" guidance: "+regionId+" / "+destinationId)
+		QuestSetRequired(marker,true)
+		QuestSetEnabled(marker,true)
+		guidance[guidanceCount]=marker
+		guidanceCount++
+	override function clearTreasureKnowledgeLayer()
+		for i=0 to knowledgeCount-1
+			DestroyQuest(knowledge[i])
+		knowledgeCount=0
+	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+		if clueStage > 0 or discovered
+			let marker=CreateQuest()
+			QuestSetTitle(marker,"Treasure: "+treasureId)
+			QuestSetDescription(marker,"Clue stage "+clueStage.toString())
+			QuestSetCompleted(marker,discovered)
+			QuestSetEnabled(marker,true)
+			knowledge[knowledgeCount]=marker
+			knowledgeCount++
