@@ -494,6 +494,10 @@ public class PlayableCampaignState implements CampaignStatePort
 			authority = staged
 		staged = ""
 		clock.reconstructTimer()
+		// UI ownership is transient. Only a committed load retires the old RPG
+		// view; rejected/staged loads retain its token and close command.
+		if rpg != null
+			rpg.management.close()
 		loading = false
 		if militarySettlements != null
 			militarySettlements.resumeCallbacks()
@@ -1091,6 +1095,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			if not saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
 				return rejectRestoration(saves.diagnostic())
 		started = true
+		state.rpg.management.close()
 		state.startupLocked = false
 		lastDiagnostic = ""
 		return true

@@ -16,6 +16,7 @@ public constant string QUEST_ACTIVE = "active"
 public constant string QUEST_READY = "ready_to_turn_in"
 public constant string QUEST_COMPLETE = "complete"
 public constant string QUEST_FAILED = "failed"
+constant string RPG_MANAGEMENT_HELP = "Management pauses the campaign. Switch with /roster, /inventory [HERO], /journal, or /technology. Close with /rpg-close. Other open management screens retain their pause."
 
 function textContains(string haystack,string needle) returns boolean
 	if needle == ""
@@ -630,6 +631,7 @@ public class WarcraftInteractionActors implements InteractionActors
 /** One owner for authoritative RPG state. Serialization ports capture these
  * stable fields; reconstruct() recreates only transient Warcraft projections. */
 public class WarcraftRpgRuntime
+	ManagementScreenSession management = new ManagementScreenSession()
 	HeroRoster heroes = new HeroRoster()
 	PlayerInventory inventory = new PlayerInventory()
 	QuestJournalRuntime journal = new QuestJournalRuntime()
@@ -996,7 +998,7 @@ public class WarcraftRpgRuntime
 	function inventorySummary(string heroId) returns string
 		let hero=heroes.get(heroId)
 		if hero == null
-			return "Choose a character with -inventory HERO."
+			return "Choose a character with /inventory HERO."
 		var rows="Inventory and Equipment - "+hero.name+" ("+hero.id+")"
 		for i=0 to inventory.ownedCount-1
 			rows+="\n"+inventory.comparison(heroId,inventory.owned[i])
@@ -1018,7 +1020,8 @@ function rosterText(WarcraftRpgRuntime runtime) returns string
 	return rows
 
 public function showRoster(player viewer, WarcraftRpgRuntime runtime)
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rosterText(runtime))
+	runtime.management.open("roster")
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rosterText(runtime)+"\n"+RPG_MANAGEMENT_HELP)
 
 function inventoryText(WarcraftRpgRuntime runtime, string heroId) returns string
 	var selected=heroId
@@ -1029,7 +1032,8 @@ function inventoryText(WarcraftRpgRuntime runtime, string heroId) returns string
 	return runtime.inventorySummary(selected)
 
 public function showInventory(player viewer, WarcraftRpgRuntime runtime, string heroId)
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,inventoryText(runtime,heroId))
+	runtime.management.open("inventory")
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,inventoryText(runtime,heroId)+"\n"+RPG_MANAGEMENT_HELP)
 
 public function showInventory(player viewer, WarcraftRpgRuntime runtime)
 	showInventory(viewer,runtime,"")
@@ -1043,7 +1047,8 @@ function journalText(WarcraftRpgRuntime runtime) returns string
 	return rows
 
 public function showJournal(player viewer, WarcraftRpgRuntime runtime)
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,journalText(runtime))
+	runtime.management.open("journal")
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,journalText(runtime)+"\n"+RPG_MANAGEMENT_HELP)
 
 function technologyText(WarcraftRpgRuntime runtime, string controllerId, int year) returns string
 	var rows="Technology and Institutions"
@@ -1055,7 +1060,8 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 	return rows
 
 public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,technologyText(runtime,controllerId,year))
+	runtime.management.open("technology")
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,technologyText(runtime,controllerId,year)+"\n"+RPG_MANAGEMENT_HELP)
 
 class RpgScreenCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
@@ -1066,14 +1072,21 @@ class RpgScreenCommand implements CommandHandler
 		this.screen=screen
 		this.output=output
 	override function execute(player sender,string arguments)
+		if screen == "close"
+			runtime.management.close()
+			output.show(sender,"RPG management closed.")
+			return
+		runtime.management.open(screen)
+		var rows = ""
 		if screen == "roster"
-			output.show(sender,rosterText(runtime))
+			rows = rosterText(runtime)
 		else if screen == "inventory"
-			output.show(sender,inventoryText(runtime,arguments))
+			rows = inventoryText(runtime,arguments)
 		else if screen == "journal"
-			output.show(sender,journalText(runtime))
+			rows = journalText(runtime)
 		else
-			output.show(sender,technologyText(runtime,runtime.researchResources.controllerId(sender),runtime.researchResources.year()))
+			rows = technologyText(runtime,runtime.researchResources.controllerId(sender),runtime.researchResources.year())
+		output.show(sender,rows+"\n"+RPG_MANAGEMENT_HELP)
 
 class RecruitHeroCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
@@ -1137,16 +1150,20 @@ class RpgActionCommand implements CommandHandler
 			output.show(sender,"Requirements are not met here.")
 
 public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime) returns string
-	var problem=commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster",commands.output))
+	// Install the close action before any command that can acquire ownership.
+	var problem=commands.register("rpg-close","","rpg-close","Close RPG management.","Closes roster, inventory/equipment, journal or technology management. Other open screens and a pre-existing manual pause remain paused.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"close",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("inventory","equipment,items","inventory [HERO]","Open inventory and equipment for a character.","Shows comparisons and set thresholds for the named wearer, or the first recruited character.",0,1,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory",commands.output))
+	problem=commands.register("roster","heroes,companions","roster","Open the hero roster; /rpg-close closes it.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("journal","quests","journal","Open the custom quest journal.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal",commands.output))
+	problem=commands.register("inventory","equipment,items","inventory [HERO]","Open equipment; /rpg-close closes it.","Shows comparisons and set thresholds for the named wearer, or the first recruited character. "+RPG_MANAGEMENT_HELP,0,1,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("technology","institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
+	problem=commands.register("journal","quests","journal","Open the quest journal; /rpg-close closes it.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("technology","institutions","technology","Open technology; /rpg-close closes it.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))

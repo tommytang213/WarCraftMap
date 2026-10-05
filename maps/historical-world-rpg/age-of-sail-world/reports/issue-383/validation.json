@@ -1,0 +1,185 @@
+{
+  "campaignSaveSchema": 6,
+  "containerPolicy": "read-only worktree/generated-project mounts; copy and build in container-private /tmp as wurstuser; no worktree ownership or permission changes",
+  "fullMapPackagingGate": {
+    "command": "python3 tooling/package_release.py",
+    "reason": "Full execution gate stopped at two unchanged catalogue-heavy fixture timeouts; it was not bypassed or marked passed.",
+    "status": "not_completed"
+  },
+  "issue": 383,
+  "pinnedLuaCompilation": {
+    "command": "grill build map/AgeOfSailWorld.w3x",
+    "scope": "supplemental compiler/map assembly check in a private copy; no released artifact",
+    "status": "pass"
+  },
+  "pinnedTypecheck": {
+    "status": "pass"
+  },
+  "python": {
+    "mapCampaignPackagingAndRuntimeAcceptanceTests": 55,
+    "status": "pass",
+    "targetedTests": 69,
+    "total": 124
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "revalidation": {
+    "compilerInputsMatchRetainedEvidence": true,
+    "containerPolicy": "Pinned cached image; no network; wurstuser; read-only worktree mount; private /tmp source copy; no chown/chmod.",
+    "inputSetSha256": "8200a5eb4b09081316ae4a38599267fb0645a4037465bfb05d1b706d6989d88f",
+    "pinnedLuaCompilation": {
+      "command": "grill build map/AgeOfSailWorld.w3x",
+      "scope": "Private compiler/map assembly check; no released artifact.",
+      "status": "pass"
+    },
+    "pinnedTypecheck": {
+      "command": "grill typecheck",
+      "status": "pass"
+    },
+    "python": {
+      "mapCampaignPackagingAndRuntimeAcceptanceTests": 55,
+      "packagingCommand": "PYTHONPATH=tests python3 -m unittest -v tests.test_packaging tests.test_campaign_packaging tests.test_runtime_acceptance",
+      "packagingScope": "Packaging unit tests use their synthetic compiler fixture; these are not full release-package execution evidence.",
+      "status": "pass",
+      "targetedCommand": "PYTHONPATH=tests python3 -m unittest -v tests.test_wurst_execution tests.test_campaign_clock tests.test_playable_trade tests.test_rpg_interactions tests.test_campaign_save_manager tests.test_warcraft_military_runtime tests.test_warcraft_country_interactions tests.test_map_discovery tests.test_cross_map_persistence",
+      "targetedTests": 53,
+      "total": 108
+    },
+    "status": "ready_for_repository_validation",
+    "uncompressedLogSha256": {
+      "recheck-pinned-build.log.gz": "78dd080cda0e018d79daede7152e7aa7341f7b448c73d1d9b62dfe31158ae607",
+      "recheck-pinned-wurst.log.gz": "8acfa2b4f1039d1aba0aec0c4f6035983982892fb41b4ea3f40c2f211e44784e",
+      "recheck-python-packaging.log.gz": "8efa203e0f5a972921b87138e2bde90f463b2eadf19d3db72016dd9b02b51333",
+      "recheck-python-targeted.log.gz": "612304f121eab30e675253e0fa76f3bef9236ad8037f3e55fd0fd06244a080b9"
+    },
+    "wurst": {
+      "command": "grill test",
+      "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "discovered": 196,
+      "gateErrors": [
+        "non-passing or incomplete individual results",
+        "summary does not match complete passing discovery",
+        "assertion, compiler or interpreter error in transcript"
+      ],
+      "passed": 194,
+      "requiredSuites": {
+        "CampaignLoadTransactionTests": {
+          "status": "pass",
+          "tests": 15
+        },
+        "CampaignStartupTests": {
+          "status": "pass",
+          "tests": 36
+        },
+        "CampaignTimelineTests": {
+          "status": "pass",
+          "tests": 6
+        },
+        "CharacterEquipmentTests": {
+          "status": "pass",
+          "tests": 9
+        },
+        "CommandRouterTests": {
+          "status": "pass",
+          "tests": 3
+        },
+        "ManagementCommandTests": {
+          "status": "pass",
+          "tests": 7
+        },
+        "ManagementScreenPauseControllerTests": {
+          "status": "pass",
+          "tests": 5
+        },
+        "PlayableTradeTests": {
+          "status": "pass",
+          "tests": 15
+        },
+        "ResearchRuntimeTests": {
+          "status": "pass",
+          "tests": 6
+        }
+      },
+      "returnCode": 1,
+      "status": "partial_due_to_interpreter_timeouts",
+      "timeoutSeconds": 20,
+      "timeouts": [
+        "wurst/MilitaryCombatEventsTests.wurst:delayedTimerDoesNotCatchUpWavesOrSpendAtTheQuietDeadline",
+        "wurst/WarcraftRpgRuntimeTests.wurst:generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration"
+      ]
+    }
+  },
+  "sourceRevision": "db9403083ce47ee16d51bdd23c0cd59f77f679a3",
+  "status": "ready_for_repository_validation",
+  "tradeDomainSchema": 2,
+  "validatedSourceSha256": {
+    "maps/historical-world-rpg/age-of-sail-world/wurst/Bootstrap.wurst": "33295d3e26ffe4e1a90a25ae6c0c1dc42203e796a935f1797d460a0207404847",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignLoadTransactionTests.wurst": "2a38e6d93333990d97816695467c03fead30cac6231ce77d26fdc4bed8178961",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignStartupTests.wurst": "15b4a8775e1d64a915fa234f55dd9aec87a4af813f67ce021a1b97018b8f645f",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignTimeline.wurst": "cd9b7483acfbebc5765fc1564da8dfe0e40662088ab10ad13919cf8114344760",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CharacterEquipmentTests.wurst": "62975123d4125424ce42b4a31cb53dc83ac48ecdadfff5a5033ab634828fba2b",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/ManagementCommandTests.wurst": "a58eb638d99a9d9b435e37d2793ddeff24501fcb89a7e51d46835e5b64c840a7",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/ManagementScreenPauseController.wurst": "aa6569684c6ae9d7a0acccdd3959ee8bd9922286eebb19c1cde8c25a97966606",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableCampaignRuntime.wurst": "77ea94ef74f2a9bfc30e0a35d17cd6ad682f1f250a8e81ddb87beca5028c878d",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTrade.wurst": "8638ec16fdaf61dce3c493fa4f421aa68eb81ee84a23be988248b98bf267a4ab",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTradeTests.wurst": "43cbf4059f001bc9dc04c3efc39dd6514dad7288920d14238a139e6f78fe7b0f",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/ResearchRuntimeTests.wurst": "488080b97e759ee95aee5cb5d208d742a2d2dbf3dfc7aff40503d90a799f5b82",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/WarcraftRpgRuntime.wurst": "92942df4d3f97517cc15c5274b43c2e2e1f54ad8089a059d4cb291019bebdc38"
+  },
+  "validationNotes": [
+    "All tested Wurst source hashes match the current worktree.",
+    "The original full-suite runs and the offline recheck hit the same two fixture timeouts; their source files are unchanged. No baseline pass/fail claim is inferred.",
+    "A supplemental filter attempt was stopped because Grill ignored the compiler filter arguments and started another full suite.",
+    "The outer worker must perform authoritative repository validation; native Warcraft launch smoke remains pending."
+  ],
+  "worktreeChanges": "uncommitted",
+  "wurst": {
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "discovered": 196,
+    "newRegressionTestsPassed": 12,
+    "passed": 194,
+    "requiredSuites": {
+      "CampaignLoadTransactionTests": {
+        "status": "pass",
+        "tests": 15
+      },
+      "CampaignStartupTests": {
+        "status": "pass",
+        "tests": 36
+      },
+      "CampaignTimelineTests": {
+        "status": "pass",
+        "tests": 6
+      },
+      "CharacterEquipmentTests": {
+        "status": "pass",
+        "tests": 9
+      },
+      "CommandRouterTests": {
+        "status": "pass",
+        "tests": 3
+      },
+      "ManagementCommandTests": {
+        "status": "pass",
+        "tests": 7
+      },
+      "ManagementScreenPauseControllerTests": {
+        "status": "pass",
+        "tests": 5
+      },
+      "PlayableTradeTests": {
+        "status": "pass",
+        "tests": 15
+      },
+      "ResearchRuntimeTests": {
+        "status": "pass",
+        "tests": 6
+      }
+    },
+    "status": "partial_due_to_interpreter_timeouts",
+    "timeoutSeconds": 20,
+    "timeouts": [
+      "wurst/MilitaryCombatEventsTests.wurst:delayedTimerDoesNotCatchUpWavesOrSpendAtTheQuietDeadline",
+      "wurst/WarcraftRpgRuntimeTests.wurst:generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration"
+    ]
+  }
+}

@@ -18,6 +18,15 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+`ManagementCommandTests.wurst` opens roster, inventory/equipment, journal,
+technology and market views through production command registration with
+recording output, pause, clock and gameplay-timer boundaries. It checks repeat
+opens, switches, nested military/map/shared owners, duplicate closes, manual
+pause, registration conflicts, passive output and deterministic event delivery
+after closing. `CampaignLoadTransactionTests.wurst` and `CampaignStartupTests.wurst`
+also dispatch these commands during successful/rejected loads, staged aborts,
+repeated reconstruction and startup retry. See [MODAL_MANAGEMENT.md](../docs/MODAL_MANAGEMENT.md).
+
 `RpgInteractionTests.wurst` dispatches production interaction, turn-in, tracking
 and remote-region commands with recording actor and map boundaries. It checks complete
 authority equivalence on rejection, generated local coordinates, eligible reward

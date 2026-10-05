@@ -4,6 +4,11 @@ import CargoProvenance
 import PlayableCampaignRuntime
 import CampaignTimeline
 import CampaignSaveManager
+import ManagementScreenPauseController
+
+class TradeTestPause implements CampaignPauseRuntime
+	override function setCampaignPaused(boolean paused)
+		skip
 
 class Presentation implements TradePresentation
 	string market=""
@@ -21,8 +26,12 @@ class Presentation implements TradePresentation
 	let london=new RuntimeMarket("london","Pepper",5,10000,30,25)
 	let ship=new TradeStore("ship_hold",12,1000)
 	let warehouse=new TradeStore("london_warehouse",50,0)
-	inspectMarket(null,calicut,ui)
-	ui.market.assertEquals("calicut|Pepper: 100 available; buy 10; sell 8; steady")
+	let runtime = new PlayableTradeRuntime()
+	runtime.market = calicut
+	runtime.management.pauses = new ManagementScreenPauseController(new TradeTestPause(), false)
+	inspectMarket(null,runtime,ui)
+	ui.market.startsWith("calicut|Pepper: 100 available; buy 10; sell 8; steady").assertTrue()
+	runtime.management.close()
 	buyCargo(null,"buy_1",calicut,ship,10,controller,ui)
 	ui.result.assertEquals("Bought 10 Pepper.")
 	ship.cargo.assertEquals(10)

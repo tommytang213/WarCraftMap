@@ -15,6 +15,8 @@ import MilitarySettlementRuntime
 import ReligionRuntime
 import PlayablePiracy
 import ScenarioData
+import ManagementCommandTests
+import ManagementScreenPauseController
 
 public class StartupStorage implements CampaignSaveStorage
 	string array[32] keys
@@ -251,6 +253,55 @@ function originLifecycle(string origin, string mapId)
 
 @test function selectorToEuropeanRegionUsesGeneratedOriginAndCodec()
 	originLifecycle("england", "europe_west")
+
+@test function startupClosesTransientViewsAndRepeatedStartupRetainsNewOwners()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, true)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.campaign.state.rpg, f.trade, pauses, ports)
+	commands.dispatch(null, "/roster").assertTrue()
+	commands.dispatch(null, "/trade inspect").assertTrue()
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(0)
+	f.clock.isPaused().assertTrue()
+	ports.pauseWrites.assertEquals(0)
+	commands.dispatch(null, "/journal").assertTrue()
+	commands.dispatch(null, "/trade open").assertTrue()
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(2)
+	commands.dispatch(null, "/rpg-close").assertTrue()
+	commands.dispatch(null, "/trade close").assertTrue()
+	pauses.isCampaignPaused().assertTrue()
+	pauses.setManuallyPaused(false)
+	f.clock.isPaused().assertFalse()
+
+@test function rejectedStartupCheckpointPreservesViewsUntilSuccessfulRetry()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.choose("england")
+	source.register()
+	source.saves.failKey = "session_start"
+	source.campaign.startup().assertFalse()
+	let f = new StartupFixture(source.cache, source.saves, "europe_west")
+	f.register()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, false)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.campaign.state.rpg, f.trade, pauses, ports)
+	commands.dispatch(null, "/inventory").assertTrue()
+	commands.dispatch(null, "/trade open").assertTrue()
+	f.ports.failProjection = true
+	f.campaign.startup().assertFalse()
+	pauses.getModalOwnerCount().assertEquals(2)
+	ports.pauseWrites.assertEquals(1)
+	f.clock.isPaused().assertTrue()
+	f.ports.failProjection = false
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(0)
+	ports.pauseWrites.assertEquals(2)
+	f.clock.isPaused().assertFalse()
 
 @test function selectorToAsianRegionUsesPhysicalStartingCoordinates()
 	originLifecycle("ming_empire", "east_asia")

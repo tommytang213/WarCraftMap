@@ -2,6 +2,7 @@ package PlayableTrade
 import CommandRouter
 import PlayableCampaignRuntime
 import CargoProvenance
+import ManagementScreenPauseController
 
 public constant int LIVE_TRADE_SCHEMA_CURRENT = 2
 
@@ -211,8 +212,9 @@ public class WarcraftTradePresentation implements TradePresentation
 		DisplayTimedTextToPlayer(viewer,0.,0.,10.,message)
 
 /** Adapter entry points used by settlement interaction frames and integration tests. */
-public function inspectMarket(player viewer,RuntimeMarket market,TradePresentation presentation)
-	presentation.showMarket(viewer,market.id,market.inspect())
+public function inspectMarket(player viewer,PlayableTradeRuntime runtime,TradePresentation presentation)
+	runtime.management.open("market")
+	presentation.showMarket(viewer,runtime.market.id,runtime.market.inspect()+"\nCampaign paused. Use /trade buy QUANTITY, /trade sell QUANTITY, or /trade close. Other open management screens retain their pause.")
 public function buyCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,PlayableTradeController controller,TradePresentation presentation)
 	presentation.showTradeResult(viewer,controller.buy(transactionId,market,store,quantity))
 public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
@@ -270,6 +272,7 @@ function tradePayload(string document) returns string
 	return document
 
 public class PlayableTradeRuntime implements CampaignRuntimeExtension
+	ManagementScreenSession management = new ManagementScreenSession()
 	MerchantProgress progress = new MerchantProgress()
 	PlayableTradeController controller = new PlayableTradeController(progress)
 	RuntimeMarket market = new RuntimeMarket("unconfigured","",0,0,1,1)
@@ -296,8 +299,11 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		market=rollbackMarket
 		market.id=rollbackMarketId
 		hold=rollbackHold
-		commitLoad()
+		clearLoadCheckpoint()
 	override function commitLoad()
+		management.close()
+		clearLoadCheckpoint()
+	function clearLoadCheckpoint()
 		rollbackState=""
 		rollbackMarket=null
 		rollbackHold=null
@@ -341,6 +347,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 			markets[i].stock=IMaxBJ(0,markets[i].stock+delta)
 			markets[i].reprice()
 	override function newCampaign(string startingSettlementId)
+		management.close()
 		progress = new MerchantProgress()
 		controller = new PlayableTradeController(progress)
 		settlementId = startingSettlementId
@@ -637,18 +644,30 @@ public class TradeCommand implements CommandHandler
 			action=SubString(arguments,0,cut)
 			quantity=S2I(SubString(arguments,cut+1,StringLength(arguments)))
 		if action=="inspect" or action=="open"
-			inspectMarket(sender,runtime.market,presentation)
+			if cut>=0
+				presentation.showTradeResult(sender,"Use /trade inspect or /trade open.")
+				return
+			inspectMarket(sender,runtime,presentation)
+		else if action=="close"
+			if cut>=0
+				presentation.showTradeResult(sender,"Use /trade close.")
+				return
+			runtime.management.close()
+			presentation.showTradeResult(sender,"Market management closed.")
 		else if action=="buy"
 			buyCargo(sender,runtime.transactionId("buy"),runtime.market,runtime.hold,quantity,runtime.controller,presentation)
 		else if action=="sell"
 			sellCargo(sender,runtime.transactionId("sell"),runtime.market,runtime.hold,quantity,1000,runtime.controller,presentation)
 		else
-			presentation.showTradeResult(sender,"Use /trade inspect, /trade buy QUANTITY, or /trade sell QUANTITY.")
+			presentation.showTradeResult(sender,"Use /trade inspect (or open), /trade buy QUANTITY, /trade sell QUANTITY, or /trade close.")
 
 public PlayableTradeRuntime playableTradeRuntime = null
 
 /** Registers the reachable settlement market for new games, resumed maps and loads. */
-public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns PlayableTradeRuntime
+public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns string
 	playableTradeRuntime = campaign.extension castTo PlayableTradeRuntime
-	commands.register("trade","market","trade <inspect|buy QUANTITY|sell QUANTITY>","Open the current settlement commodity market.","Inspect current authoritative quotes and atomically buy or sell cargo in an eligible ship hold.",1,2,COMMAND_RELEASE,new TradeCommand(playableTradeRuntime,new WarcraftTradePresentation()))
-	return playableTradeRuntime
+	return registerPlayableTradeCommands(commands,playableTradeRuntime,new WarcraftTradePresentation())
+
+/** Production registration with replaceable output for interpreter tests. */
+public function registerPlayableTradeCommands(CommandRegistry commands,PlayableTradeRuntime runtime,TradePresentation presentation) returns string
+	return commands.register("trade","market","trade <inspect|open|buy QUANTITY|sell QUANTITY|close>","Manage the settlement market; /trade close closes it.","Inspect/open pauses the campaign until /trade close. Reopening retains one owner. Buy/sell atomically exchanges cargo and currency without opening management. Other open screens and a pre-existing manual pause remain paused.",1,2,COMMAND_RELEASE,new TradeCommand(runtime,presentation))

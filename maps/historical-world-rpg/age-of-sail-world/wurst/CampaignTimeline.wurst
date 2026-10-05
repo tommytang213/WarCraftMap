@@ -1,5 +1,7 @@
 package CampaignTimeline
 
+import ManagementScreenPauseController
+
 /** Consumers in technology, economy, diplomacy, quests, and events implement this port. */
 public interface CampaignTimelineListener
 	function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
@@ -95,7 +97,7 @@ public class ScheduledCampaignEvent
 		occurrence = number
 
 /** Scenario-neutral authoritative clock. Dates use Gregorian ordinal days. */
-public class CampaignClock
+public class CampaignClock implements CampaignPauseListener
 	int startDay
 	int endDay
 	int initialDay
@@ -104,6 +106,7 @@ public class CampaignClock
 	real daysPerSecond
 	real speed = 1.
 	boolean paused = false
+	ManagementScreenPauseController managementPause = null
 	boolean advancing = false
 	string lastDiagnostic = ""
 	CampaignEra array[64] eras
@@ -180,6 +183,17 @@ public class CampaignClock
 	function setPaused(boolean value)
 		paused = value
 
+	/** Subscribe once, including an already-open modal or manual pause. */
+	function bindManagementPause(ManagementScreenPauseController pauses)
+		if managementPause != null
+			managementPause.unsubscribe(this)
+		managementPause = pauses
+		if pauses != null
+			pauses.subscribe(this)
+			setPaused(pauses.isCampaignPaused())
+	override function onCampaignPause(boolean value)
+		setPaused(value)
+
 	function setSpeed(real value) returns boolean
 		if not (value > 0.) or value - value != 0.
 			lastDiagnostic = "campaign speed must be positive"
@@ -221,6 +235,8 @@ public class CampaignClock
 		if target < currentDay or target > endDay
 			lastDiagnostic = "target campaign day is outside the current scenario range"
 			return false
+		if paused
+			return true
 		advancing = true
 		while nextOccurrence < occurrenceCount and occurrences[nextOccurrence].day <= target
 			let scheduled = occurrences[nextOccurrence]
@@ -357,9 +373,15 @@ function ordinalAtYearStart(int year) returns int
 	return previous * 365 + previous div 4 - previous div 100 + previous div 400
 
 public function installCampaignClock(CampaignClock value)
+	installCampaignClock(value, getManagementScreenPauseController())
+
+public function installCampaignClock(CampaignClock value, ManagementScreenPauseController pauses)
 	if campaignClock != null and campaignClock != value
 		campaignClock.detachTimer()
+		campaignClock.bindManagementPause(null)
 	campaignClock = value
+	if value != null
+		value.bindManagementPause(pauses)
 
 public function getCampaignClock() returns CampaignClock
 	return campaignClock
@@ -383,4 +405,4 @@ public function advanceCampaignTo(int target) returns boolean
 	return campaignClock.advanceTo(target)
 
 public function setCampaignTimePaused(boolean paused)
-	campaignClock.setPaused(paused)
+	setCampaignManuallyPaused(paused)
