@@ -474,7 +474,9 @@ public class RuntimeTechnology
 	string kind = "technology"
 	int historicalYear
 	int baseCost
-	string prerequisiteId = ""
+	// Definitions are scenario-owned; saves contain only controller completion IDs.
+	string array[512] prerequisiteIds
+	int prerequisiteCount = 0
 	string effectId = ""
 	int effectMagnitude
 	construct(string id,string name,int historicalYear,int baseCost)
@@ -482,6 +484,9 @@ public class RuntimeTechnology
 		this.name=name
 		this.historicalYear=historicalYear
 		this.baseCost=baseCost
+	function addPrerequisite(string id)
+		prerequisiteIds[prerequisiteCount]=id
+		prerequisiteCount++
 
 public class TechnologyRuntime
 	RuntimeTechnology array[512] definitions
@@ -518,8 +523,11 @@ public class TechnologyRuntime
 		return IMaxBJ(1,technology.baseCost+ahead*technology.baseCost div 20-provincialAdoption-institutionalSupport)
 	function unlock(string controllerId,string id,int year,int paid,int provincialAdoption,int institutionalSupport) returns boolean
 		let technology=get(id)
-		if technology == null or isUnlocked(controllerId,id) or paid < cost(id,year,provincialAdoption,institutionalSupport) or technology.prerequisiteId != "" and not isUnlocked(controllerId,technology.prerequisiteId)
+		if technology == null or isUnlocked(controllerId,id) or paid < cost(id,year,provincialAdoption,institutionalSupport)
 			return false
+		for i=0 to technology.prerequisiteCount-1
+			if not isUnlocked(controllerId,technology.prerequisiteIds[i])
+				return false
 		unlockedKeys[unlockedCount]=controllerId+":"+id
 		unlockedCount++
 		if effects != null
@@ -533,6 +541,24 @@ public class TechnologyRuntime
 			if isUnlocked(controllerId,definitions[i].id)
 				effects.applyTechnology(controllerId,definitions[i].effectId,definitions[i].effectMagnitude)
 
+/** Campaign time and native resources used by the production research command. */
+public interface ResearchCommandResources
+	function controllerId(player sender) returns string
+	function year() returns int
+	function gold(player sender) returns int
+	function setGold(player sender,int amount)
+
+public class WarcraftResearchResources implements ResearchCommandResources
+	override function controllerId(player sender) returns string
+		// The single-player campaign's existing persisted research identity.
+		return "player"
+	override function year() returns int
+		return getCampaignYear()
+	override function gold(player sender) returns int
+		return GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD)
+	override function setGold(player sender,int amount)
+		SetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD,amount)
+
 /** One owner for authoritative RPG state. Serialization ports capture these
  * stable fields; reconstruct() recreates only transient Warcraft projections. */
 public class WarcraftRpgRuntime
@@ -541,6 +567,7 @@ public class WarcraftRpgRuntime
 	QuestJournalRuntime journal = new QuestJournalRuntime()
 	TreasureRuntime treasures = new TreasureRuntime()
 	TechnologyRuntime technologies
+	ResearchCommandResources researchResources = new WarcraftResearchResources()
 	RpgProjectionPort projections = null
 	string lastDiagnostic = ""
 	construct(TechnologyEffectPort effects)
@@ -850,53 +877,67 @@ public class WarcraftRpgRuntime
 
 /** Player-facing fallback presentation. Frame screens can implement the same
  * controller calls; these commands ensure every system is usable in-game. */
-public function showRoster(player viewer, WarcraftRpgRuntime runtime)
+function rosterText(WarcraftRpgRuntime runtime) returns string
 	var rows="Heroes (strategic " + runtime.heroes.strategicRosterSize() + ", active " + runtime.heroes.activeCount() + "/" + runtime.heroes.activeLimit + ")"
 	for i=0 to runtime.heroes.count-1
 		let hero=runtime.heroes.heroes[i]
 		if hero.recruited
 			rows += "\n"+hero.name+" - level "+hero.level+", "+hero.assignment+", loyalty "+hero.loyalty
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+	return rows
 
-public function showInventory(player viewer, WarcraftRpgRuntime runtime)
+public function showRoster(player viewer, WarcraftRpgRuntime runtime)
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rosterText(runtime))
+
+function inventoryText(WarcraftRpgRuntime runtime) returns string
 	var rows="Inventory and Equipment"
 	for i=0 to runtime.inventory.ownedCount-1
 		rows += "\n"+runtime.inventory.comparison(runtime.inventory.owned[i])
 	rows += "\nActive set bonus: +"+runtime.inventory.setBonusPower()+" power"
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+	return rows
 
-public function showJournal(player viewer, WarcraftRpgRuntime runtime)
+public function showInventory(player viewer, WarcraftRpgRuntime runtime)
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,inventoryText(runtime))
+
+function journalText(WarcraftRpgRuntime runtime) returns string
 	var rows="Quest Journal"
 	for i=0 to runtime.journal.count-1
 		let questDefinition=runtime.journal.quests[i]
 		if questDefinition.state != QUEST_OFFERED
 			rows += "\n"+questDefinition.title+" - "+questDefinition.state+" ["+questDefinition.precision+"]"
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+	return rows
 
-public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
+public function showJournal(player viewer, WarcraftRpgRuntime runtime)
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,journalText(runtime))
+
+function technologyText(WarcraftRpgRuntime runtime, string controllerId, int year) returns string
 	var rows="Technology and Institutions"
 	for i=0 to runtime.technologies.count-1
 		let technology=runtime.technologies.definitions[i]
 		rows += "\n"+technology.name+" - cost "+runtime.technologies.cost(technology.id,year,0,0)
 		if runtime.technologies.isUnlocked(controllerId,technology.id)
 			rows += " (unlocked)"
-	DisplayTimedTextToPlayer(viewer,0.,0.,30.,rows)
+	return rows
+
+public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
+	DisplayTimedTextToPlayer(viewer,0.,0.,30.,technologyText(runtime,controllerId,year))
 
 class RpgScreenCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
 	string screen
-	construct(WarcraftRpgRuntime runtime,string screen)
+	CommandOutput output
+	construct(WarcraftRpgRuntime runtime,string screen,CommandOutput output)
 		this.runtime=runtime
 		this.screen=screen
+		this.output=output
 	override function execute(player sender,string arguments)
 		if screen == "roster"
-			showRoster(sender,runtime)
+			output.show(sender,rosterText(runtime))
 		else if screen == "inventory"
-			showInventory(sender,runtime)
+			output.show(sender,inventoryText(runtime))
 		else if screen == "journal"
-			showJournal(sender,runtime)
+			output.show(sender,journalText(runtime))
 		else
-			showTechnology(sender,runtime,"player",1450)
+			output.show(sender,technologyText(runtime,runtime.researchResources.controllerId(sender),runtime.researchResources.year()))
 
 class RecruitHeroCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
@@ -920,9 +961,11 @@ class TrackQuestCommand implements CommandHandler
 class RpgActionCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
 	string action
-	construct(WarcraftRpgRuntime runtime,string action)
+	CommandOutput output
+	construct(WarcraftRpgRuntime runtime,string action,CommandOutput output)
 		this.runtime=runtime
 		this.action=action
+		this.output=output
 	override function execute(player sender,string arguments)
 		let cut=arguments.indexOf(" ")
 		var first=arguments
@@ -934,11 +977,14 @@ class RpgActionCommand implements CommandHandler
 		if action == "equip"
 			ok=runtime.equipItem(first,second,getCampaignYear())
 		else if action == "research"
-			let cost=runtime.technologies.cost(first,getCampaignYear(),0,0)
-			if GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD) >= cost
-				ok=runtime.research("player",first,getCampaignYear(),cost)
+			let resources=runtime.researchResources
+			let year=resources.year()
+			let cost=runtime.technologies.cost(first,year,0,0)
+			let available=resources.gold(sender)
+			if available >= cost
+				ok=runtime.research(resources.controllerId(sender),first,year,cost)
 				if ok
-					SetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD,GetPlayerState(sender,PLAYER_STATE_RESOURCE_GOLD)-cost)
+					resources.setGold(sender,available-cost)
 		else if action == "accept"
 			ok=runtime.acceptQuest(first)
 		else if action == "turnin"
@@ -946,19 +992,42 @@ class RpgActionCommand implements CommandHandler
 		else if action == "interact"
 			ok=runtime.worldEventAt("location",first,1,getCampaignDay())
 		if ok
-			DisplayTimedTextToPlayer(sender,0.,0.,15.,"Action completed.")
+			output.show(sender,"Action completed.")
 		else
-			DisplayTimedTextToPlayer(sender,0.,0.,15.,"Requirements are not met here.")
+			output.show(sender,"Requirements are not met here.")
 
-public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime)
-	commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster"))
-	commands.register("inventory","equipment,items","inventory","Open inventory and equipment.","Shows item level, rarity, requirements, comparisons and set bonuses.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory"))
-	commands.register("journal","quests","journal","Open the custom quest journal.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal"))
-	commands.register("technology","research,institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology"))
-	commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
-	commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))
-	commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip"))
-	commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the displayed gold cost and applies the unlocked Warcraft effect.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research"))
-	commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept"))
-	commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Awards its persistent rewards and applies repeat or completion-lock rules.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin"))
-	commands.register("interact","investigate,search","interact LOCATION","Interact with this world location.","Advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact"))
+public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime) returns string
+	var problem=commands.register("roster","heroes,companions","roster","Open the hero roster.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("inventory","equipment,items","inventory","Open inventory and equipment.","Shows item level, rarity, requirements, comparisons and set bonuses.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"inventory",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("journal","quests","journal","Open the custom quest journal.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("technology","institutions","technology","Open technology and institutions.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","Adds the character to the unlimited strategic roster; active-field capacity remains separate.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime))
+	if problem != ""
+		return problem
+	problem=commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime))
+	if problem != ""
+		return problem
+	problem=commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the displayed gold cost and applies the unlocked Warcraft effect.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Awards its persistent rewards and applies repeat or completion-lock rules.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("interact","investigate,search","interact LOCATION","Interact with this world location.","Advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact",commands.output))
+	if problem != ""
+		return problem
+	return ""
