@@ -1,6 +1,8 @@
 package CampaignStartupTests
 
 import CampaignHandoff
+import CampaignTimeline
+import CampaignTimelineTests
 import CampaignRegistration
 import CampaignSaveManager
 import CommandRouter
@@ -49,6 +51,8 @@ class StartupStorage implements CampaignSaveStorage
 /** Only native/UI/storage boundaries are recorded. Authority, generated
  * registrations, selector writer, startup consumer and codec are production. */
 class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, OriginSelectionPresentation
+	CampaignClock clock
+	string expectedClock = ""
 	PlayerCampaignIdentity selectorIdentity
 	StartupStorage handoff
 	int loads = 0
@@ -65,6 +69,8 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 		destination = path
 		loads++
 	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+		if expectedClock != ""
+			clock.captureState().assertEquals(expectedClock)
 		(rpg.heroes.count > 0 and rpg.inventory.definitionCount > 0 and rpg.projections != null).assertTrue()
 		if failProjection
 			return false
@@ -127,16 +133,18 @@ class StartupFixture
 	NewCampaignOriginController selector
 	PlayableCampaignServices campaign
 	PlayableTradeRuntime trade
+	CampaignClock clock = configureCampaignTimeline()
 	construct(StartupStorage cache, StartupStorage saves, string physicalMap)
 		this.cache = cache
 		this.saves = saves
 		ports.handoff = cache
+		ports.clock = clock
 		ports.selectorIdentity = new PlayerCampaignIdentity()
 		handoff = new CampaignHandoff(cache, ports)
 		selector = new NewCampaignOriginController(8, ports, ports.selectorIdentity)
 		selector.setObserver(handoff)
 		configureGeneratedOrigins(selector)
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
 		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
 	function register()
 		trade = registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)
@@ -480,9 +488,94 @@ function originLifecycle(string origin, string mapId)
 	f.saves.writeTransactional("major_milestone", payload)
 	f.campaign.startup().assertTrue()
 	f.ports.activePlayers.assertEquals(1)
+
 	f.campaign.identity.originId().assertEquals("england")
 	f.campaign.identity.allegianceId().assertEquals("portugal")
 	f.saves.read("major_milestone").assertEquals(payload)
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.ports.activePlayers.assertEquals(1)
+
+@test function productionClockRestoresExactlyThroughManualAutosaveAndRecoverySlots()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	f.clock.advanceTo(f.clock.startDay + 2500).assertTrue()
+	f.clock.setSpeed(1.123456789).assertTrue()
+	f.clock.advanceElapsed(.123456789).assertTrue()
+	(f.clock.nextOccurrence > 0).assertTrue()
+	let saved = f.clock.captureState()
+	let fraction = f.clock.fractionalDays
+	let cursor = f.clock.nextOccurrence
+	let recordingTimer = new RecordingClockTimer()
+	f.campaign.enableClockTimer(recordingTimer, 1.).assertTrue()
+	f.ports.expectedClock = saved
+	// Manual/autosave indices are 1; recovery checkpoints use index 0.
+	for kind = SAVE_SLOT_AUTOSAVE to SAVE_SLOT_MAJOR_MILESTONE
+		var index = 0
+		if kind == SAVE_SLOT_MANUAL or kind == SAVE_SLOT_AUTOSAVE
+			index = 1
+		f.campaign.saves.save(kind, index, "live-clock").assertTrue()
+		f.clock.advanceElapsed(4000.).assertTrue()
+		recordingTimer.expected = saved
+		f.campaign.saves.load(kind, index).assertTrue()
+		f.clock.captureState().assertEquals(saved)
+		f.clock.currentDay.assertEquals(f.clock.startDay + 2500)
+		f.clock.fractionalDays.assertEquals(fraction)
+		f.clock.speed.assertEquals(1.123456789)
+		f.clock.nextOccurrence.assertEquals(cursor)
+	recordingTimer.starts.assertEquals(5)
+	recordingTimer.stops.assertEquals(4)
+
+@test function productionClockSurvivesDestinationStartupAndReturnTravel()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.start("england")
+	source.clock.advanceTo(source.clock.startDay + 3000).assertTrue()
+	source.clock.setSpeed(2.125).assertTrue()
+	source.clock.advanceElapsed(.1234567).assertTrue()
+	let outbound = source.clock.captureState()
+	source.campaign.travel.transition(new BoundaryCorrespondence("outbound", "europe_west", "east_asia", "Maps/EastAsia.w3x", "east_asia", false, 1., 0.), .25, "travel").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "east_asia")
+	let recordingTimer = new RecordingClockTimer()
+	destination.campaign.enableClockTimer(recordingTimer, 1.).assertFalse()
+	recordingTimer.starts.assertEquals(0)
+	destination.ports.expectedClock = outbound
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.clock.captureState().assertEquals(outbound)
+	// After a restored startup, the loader observes the active campaign identity;
+	// no second origin-selection action occurs on the destination map.
+	destination.ports.selectorIdentity = destination.campaign.identity
+	recordingTimer.expected = outbound
+	destination.campaign.enableClockTimer(recordingTimer, 1.).assertTrue()
+	destination.campaign.startup().assertTrue()
+	recordingTimer.starts.assertEquals(1)
+	recordingTimer.tick(50.25)
+	let returning = destination.clock.captureState()
+	destination.campaign.travel.transition(new BoundaryCorrespondence("return", "east_asia", "europe_west", "Maps/EuropeWest.w3x", "europe", false, 1., 0.), .5, "return").assertTrue()
+	let revisited = new StartupFixture(source.cache, source.saves, "europe_west")
+	revisited.ports.expectedClock = returning
+	revisited.register()
+	revisited.campaign.startup().assertTrue()
+	revisited.clock.captureState().assertEquals(returning)
+	(revisited.clock != source.clock and revisited.clock != destination.clock).assertTrue()
+	(revisited.clock.timerAdapter == null).assertTrue()
+
+@test function legacyClockMigrationUsesConfiguredInitialTimeEvenAfterLiveAdvancement()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	let initial = f.clock.initialState()
+	let document = f.campaign.state.captureAuthoritativeState()
+	// Strip exactly the new domain to recreate a schema-5 live checkpoint.
+	let clockStart = document.indexOf(";clock=")
+	let legacy = campaignSaveEnvelope(5, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", SubString(document, 0, clockStart))
+	f.saves.writeTransactional("manual_01", legacy)
+	f.clock.advanceTo(f.clock.startDay + 10000).assertTrue()
+	f.clock.setSpeed(3.).assertTrue()
+	f.clock.advanceElapsed(.1).assertTrue()
+	f.ports.expectedClock = initial
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.captureState().assertEquals(initial)
+	f.saves.read("manual_01").assertEquals(legacy)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.captureState().assertEquals(initial)

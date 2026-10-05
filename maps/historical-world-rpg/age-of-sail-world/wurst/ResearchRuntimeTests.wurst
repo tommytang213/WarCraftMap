@@ -4,6 +4,7 @@ import WarcraftRpgRuntime
 import CommandRouter
 import CampaignSaveManager
 import PlayableCampaignRuntime
+import CampaignTimeline
 import ScenarioData
 
 class ResearchOutput implements CommandOutput
@@ -201,9 +202,10 @@ function exerciseGeneratedPrerequisites(string id,string first,string second,str
 	fixture.succeed("/research fixture_three","fixture_three")
 
 function codecRestore(ResearchFixture fixture,string records,int schema)
-	let prefix="v2;map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let clock=new CampaignClock(1, 100, 1, 1.)
+	let prefix="v2;clock="+clock.initialState()+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
 	let document=prefix+records
-	let codec=new PlayableCampaignCodec()
+	let codec=new PlayableCampaignCodec(clock)
 	var payload=""
 	if schema == CAMPAIGN_SAVE_SCHEMA_CURRENT
 		payload=codec.encode("manual-1",SAVE_SLOT_MANUAL,1,"now",document)

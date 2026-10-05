@@ -1,0 +1,241 @@
+package CampaignTimelineTests
+
+import CampaignTimeline
+import CampaignSaveManager
+import CampaignAutosaveScheduler
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import CampaignHandoff
+
+public class RecordingClockTimer implements CampaignTimerAdapter
+	CampaignClock clock = null
+	boolean active = false
+	int starts = 0
+	int stops = 0
+	string expected = ""
+	override function start(CampaignClock clock, real interval)
+		active.assertFalse()
+		if expected != ""
+			clock.captureState().assertEquals(expected)
+		this.clock = clock
+		active = true
+		starts++
+	override function stop()
+		active = false
+		stops++
+	function tick(real elapsed)
+		active.assertTrue()
+		clock.advanceElapsed(elapsed).assertTrue()
+
+class TimelineEvents implements CampaignTimelineListener
+	string delivered = ""
+	override function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
+		delivered += scheduleId + ":" + eventId + ":" + occurrence.toString() + ":" + campaignDay.toString() + ";"
+
+class TimelineStorage implements CampaignSaveStorage
+	string payload = ""
+	int writes = 0
+	override function contains(string slotId) returns boolean
+		return payload != ""
+	override function read(string slotId) returns string
+		return payload
+	override function writeTransactional(string slotId, string payload) returns boolean
+		this.payload = payload
+		writes++
+		return true
+	override function diagnostic() returns string
+		return ""
+
+function scheduledClock() returns CampaignClock
+	let clock = new CampaignClock(100, 200, 100, .25)
+	clock.addOccurrence("opening_a", "alpha", 100, 1)
+	clock.addOccurrence("opening_b", "beta", 100, 1)
+	clock.addOccurrence("recurring", "alpha", 102, 1)
+	clock.addOccurrence("simultaneous", "beta", 102, 1)
+	clock.addOccurrence("recurring", "alpha", 105, 2)
+	clock.addOccurrence("closing", "omega", 200, 1)
+	return clock
+
+class TimelineFixture
+	CampaignClock clock = scheduledClock()
+	TimelineStorage storage = new TimelineStorage()
+	PlayableCampaignState state = new PlayableCampaignState(new WarcraftRegionalAdapter(), clock)
+	PlayableCampaignCodec codec = new PlayableCampaignCodec(clock)
+	CampaignSaveManager saves = new CampaignSaveManager(storage, codec, state)
+
+class AdvancingSaveListener implements CampaignTimelineListener
+	TimelineFixture fixture
+	int attempts = 0
+	construct(TimelineFixture fixture)
+		this.fixture = fixture
+	override function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
+		let clock = fixture.clock
+		let day = clock.currentDay
+		let fraction = clock.fractionalDays
+		let cursor = clock.nextOccurrence
+		fixture.saves.save(SAVE_SLOT_MANUAL, 1, "inside-delivery").assertFalse()
+		fixture.saves.hasDeferredSave().assertTrue()
+		fixture.storage.writes.assertEquals(0)
+		clock.captureState().assertEquals("")
+		fixture.state.captureAuthoritativeState().assertEquals("")
+		// Reentrant advancement or load must not disturb a partly delivered batch.
+		clock.advanceElapsed(.25).assertFalse()
+		clock.advanceTo(110).assertFalse()
+		clock.restoreState(clock.initialState()).assertFalse()
+		clock.currentDay.assertEquals(day)
+		clock.fractionalDays.assertEquals(fraction)
+		clock.nextOccurrence.assertEquals(cursor)
+		attempts++
+
+@test function liveClockSavesDeferUntilAllSimultaneousOccurrencesFinish()
+	let f = new TimelineFixture()
+	let listener = new AdvancingSaveListener(f)
+	f.clock.subscribe(listener)
+	f.clock.advanceElapsed(10.5).assertTrue()
+	listener.attempts.assertEquals(4)
+	f.saves.retryDeferred().assertTrue()
+	f.storage.writes.assertEquals(1)
+	let saved = f.clock.captureState()
+	f.clock.listenerCount = 0
+	f.clock.advanceTo(150).assertTrue()
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.captureState().assertEquals(saved)
+	f.clock.currentDay.assertEquals(102)
+	f.clock.nextOccurrence.assertEquals(4)
+	f.clock.fractionalDays.assertEquals(.625)
+
+@test function resumedClockDeliveryMatchesUninterruptedLargeJumpsAndFractionalTicks()
+	let whole = scheduledClock()
+	let expected = new TimelineEvents()
+	whole.subscribe(expected)
+	whole.setSpeed(1.1).assertTrue()
+	whole.advanceElapsed(.1234567).assertTrue()
+	whole.advanceElapsed(10.).assertTrue()
+	whole.advanceTo(150).assertTrue()
+	whole.advanceElapsed(1000000000000.).assertTrue()
+	let source = new TimelineFixture()
+	let actual = new TimelineEvents()
+	source.clock.subscribe(actual)
+	source.clock.setSpeed(1.1).assertTrue()
+	source.clock.advanceElapsed(.1234567).assertTrue()
+	source.saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, "fraction").assertTrue()
+	let resumed = new TimelineFixture()
+	resumed.storage.payload = source.storage.payload
+	resumed.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
+	resumed.clock.subscribe(actual)
+	resumed.clock.advanceElapsed(10.).assertTrue()
+	resumed.saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, "simultaneous-consumed").assertTrue()
+	let finalLeg = new TimelineFixture()
+	finalLeg.storage.payload = resumed.storage.payload
+	finalLeg.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
+	finalLeg.clock.subscribe(actual)
+	finalLeg.clock.advanceTo(150).assertTrue()
+	finalLeg.clock.advanceElapsed(1000000000000.).assertTrue()
+	actual.delivered.assertEquals(expected.delivered)
+	finalLeg.clock.captureState().assertEquals(whole.captureState())
+	finalLeg.clock.fractionalDays.assertEquals(0.)
+	finalLeg.clock.nextOccurrence.assertEquals(6)
+
+@test function repeatedClockResavesPreserveExactNonDecimalFractionsAndSpeed()
+	let f = new TimelineFixture()
+	f.clock.setSpeed(1.123456789).assertTrue()
+	f.clock.advanceElapsed(.123456789).assertTrue()
+	let fraction = f.clock.fractionalDays
+	let speed = f.clock.speed
+	let saved = f.clock.captureState()
+	for i = 0 to 9
+		f.saves.save(SAVE_SLOT_MANUAL, 1, "repeat").assertTrue()
+		f.clock.advanceElapsed(.5).assertTrue()
+		f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.clock.fractionalDays.assertEquals(fraction)
+		f.clock.speed.assertEquals(speed)
+		f.clock.captureState().assertEquals(saved)
+
+function rejectClockRecord(TimelineFixture f, string record)
+	let before = f.clock.captureState()
+	let authority = f.state.captureAuthoritativeState()
+	// Signed corrupt records must be rejected before any authority or timer changes.
+	let cut = authority.indexOf(";clock=")
+	let candidate = SubString(authority, 0, cut) + ";clock=" + record
+	f.storage.payload = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "invalid", candidate)
+	let payload = f.storage.payload
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.clock.captureState().assertEquals(before)
+	f.state.captureAuthoritativeState().assertEquals(authority)
+	f.storage.payload.assertEquals(payload)
+
+@test function invalidClockRecordsRejectBeforeMutationOrTimerReconstruction()
+	let f = new TimelineFixture()
+	f.clock.advanceElapsed(12.5).assertTrue()
+	let recordingTimer = new RecordingClockTimer()
+	f.clock.attachTimer(recordingTimer, .25)
+	let suffix = "|" + f.clock.scheduleFingerprint.toString()
+	rejectClockRecord(f, "2|99|0|0|0:1" + suffix)
+	rejectClockRecord(f, "2|201|6|0|0:1" + suffix)
+	rejectClockRecord(f, "2|invalid|0|0|0:1" + suffix)
+	rejectClockRecord(f, "2|103|4|-1|0:1" + suffix)
+	rejectClockRecord(f, "2|103|4|0:1|0:1" + suffix)
+	rejectClockRecord(f, "2|103|4|nan|0:1" + suffix)
+	rejectClockRecord(f, "2|103|4|0|0" + suffix)
+	rejectClockRecord(f, "2|103|4|0|-1" + suffix)
+	rejectClockRecord(f, "2|103|4|0|inf" + suffix)
+	rejectClockRecord(f, "2|103|4|0|9999:1" + suffix)
+	rejectClockRecord(f, "2|103|-1|0|0:1" + suffix)
+	rejectClockRecord(f, "2|103|7|0|0:1" + suffix)
+	rejectClockRecord(f, "2|103|2|0|0:1" + suffix)
+	rejectClockRecord(f, "2|103|5|0|0:1" + suffix)
+	rejectClockRecord(f, "2|102|3|0|0:1" + suffix)
+	rejectClockRecord(f, "2|100|1|0|0:1" + suffix)
+	rejectClockRecord(f, "2|200|6|-1:1|0:1" + suffix)
+	rejectClockRecord(f, "3|103|4|0|0:1" + suffix)
+	rejectClockRecord(f, "2|103|4|0|0:1|wrong-schedule")
+	rejectClockRecord(f, f.clock.captureState() + "|extra")
+	rejectClockRecord(f, f.clock.captureState() + ";clock=" + f.clock.captureState())
+	rejectClockRecord(f, "")
+	recordingTimer.active.assertTrue()
+	recordingTimer.starts.assertEquals(1)
+	recordingTimer.stops.assertEquals(0)
+
+@test function generatedScheduleChangesCannotReuseAnOldCursor()
+	let f = new TimelineFixture()
+	f.clock.advanceTo(103).assertTrue()
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "schedule").assertTrue()
+	let other = new TimelineFixture()
+	other.clock.addOccurrence("new_schedule", "new_event", 200, 1)
+	other.storage.payload = f.storage.payload
+	let before = other.clock.captureState()
+	other.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	other.clock.captureState().assertEquals(before)
+
+@test function clockTimerReconstructionAndRepeatedInstallationLeaveOneWakeSource()
+	let previousClock = getCampaignClock()
+	let f = new TimelineFixture()
+	let first = new RecordingClockTimer()
+	f.clock.attachTimer(first, .25)
+	first.tick(12.5)
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "timer").assertTrue()
+	first.expected = f.clock.captureState()
+	first.tick(2.)
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	first.starts.assertEquals(3)
+	first.stops.assertEquals(2)
+	first.active.assertTrue()
+	let second = new RecordingClockTimer()
+	f.clock.attachTimer(second, .25)
+	first.active.assertFalse()
+	second.active.assertTrue()
+	installCampaignClock(f.clock)
+	installCampaignClock(f.clock)
+	second.stops.assertEquals(0)
+	let nextMap = scheduledClock()
+	installCampaignClock(nextMap)
+	second.active.assertFalse()
+	(nextMap.timerAdapter == null).assertTrue()
+	let third = new RecordingClockTimer()
+	nextMap.attachTimer(third, .25)
+	nextMap.detachTimer()
+	nextMap.detachTimer()
+	third.starts.assertEquals(1)
+	third.stops.assertEquals(1)
+	installCampaignClock(previousClock)

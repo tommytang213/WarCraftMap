@@ -57,7 +57,7 @@ No unresolved or accepted defects were found.
 
 - 32 tracked validation reports
 - 7 hashed release inputs
-- 5 supported release-save schemas migrated and authority-checked
+- 6 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
 - Journey rows execute campaign-save round trips and migration; their route/system coverage is declared metadata.
 - Native Warcraft save/load, physical-map launches and real-client journeys are not executed by this audit.

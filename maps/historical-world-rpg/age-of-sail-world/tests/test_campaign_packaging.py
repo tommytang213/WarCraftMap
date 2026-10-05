@@ -318,7 +318,7 @@ class CampaignPackagingTests(unittest.TestCase):
             self.assertLess(registration.index(domain), registration.index("campaign.finishRegistration()"))
         bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text()
         self.assertLess(bootstrap.index("registerCampaignDomains("), bootstrap.index("campaign.startup()"))
-        self.assertLess(bootstrap.index("campaign.startup()"), bootstrap.index("clock.attachTimer("))
+        self.assertLess(bootstrap.index("campaign.startup()"), bootstrap.index("campaign.enableClockTimer("))
         self.assertLess(bootstrap.index("campaign.startup()"), bootstrap.index("enableCampaignAutosaves()"))
 
     def test_authoritative_boundaries_are_bidirectional_connected_and_codegen_reachable(self):
