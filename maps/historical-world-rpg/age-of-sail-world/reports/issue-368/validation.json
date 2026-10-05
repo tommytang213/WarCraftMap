@@ -1,0 +1,67 @@
+{
+  "issue": 368,
+  "status": "pass",
+  "sourceRevision": "a9151705f3d15ca453cfcc7fd528a2f32640e990",
+  "sourceBinding": "Final working-tree Wurst files match the execution input hashes; changes are uncommitted.",
+  "verifiedWurstSourceFiles": 44,
+  "isolation": "Read-only worktree mount; source copy, Python dependency, compiler and build run in container-private /tmp storage. No ownership changes on the mounted worktree.",
+  "nativeClientStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "wurst": {
+    "status": "pass",
+    "discovered": 103,
+    "succeeded": 103,
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "inputSetSha256": "5812eb9109c362054536bf5d2ed54c67ba59b33d5c8ef38f11953234d2f2d952",
+    "results": "execution.json",
+    "log": "execution.log.gz"
+  },
+  "automatedChecks": [
+    {
+      "name": "inventory",
+      "command": "python3 -m unittest discover -s tests -p 'test_inventory.py'",
+      "status": "pass",
+      "tests": 18,
+      "seconds": 0.007,
+      "log": "inventory.log.gz"
+    },
+    {
+      "name": "save-compatibility",
+      "command": "python3 -m unittest discover -s tests -p 'test_*save*.py'",
+      "status": "pass",
+      "tests": 40,
+      "seconds": 2.482,
+      "log": "save-compatibility.log.gz"
+    },
+    {
+      "name": "items-persistence",
+      "command": "PYTHONPATH=tests python3 -m unittest test_player_items test_americas_caribbean_player_items test_asia_pacific_player_items test_cross_map_persistence",
+      "status": "pass",
+      "tests": 26,
+      "seconds": 1.132,
+      "log": "items-persistence.log.gz"
+    },
+    {
+      "name": "packaging",
+      "command": "PYTHONPATH=tests python3 -m unittest test_packaging test_campaign_packaging test_wurst_execution test_runtime_acceptance",
+      "status": "pass",
+      "tests": 64,
+      "seconds": 249.676,
+      "log": "packaging.log.gz"
+    }
+  ],
+  "mapPackaging": {
+    "command": "SOURCE_REVISION=a9151705f3d15ca453cfcc7fd528a2f32640e990 python3 tooling/package_release.py",
+    "status": "pass",
+    "log": "map-build.log.gz",
+    "artifact": "AgeOfSailWorld.w3x",
+    "bytes": 1511092,
+    "sha256": "5bbf3267b54c31474faa0c52964407153b35edd0d7b65789ca27b09791db6864"
+  },
+  "coverage": [
+    "Character-slot ownership and ordinary/unique copy conservation through production actions",
+    "Per-wearer set thresholds and comparisons, with native-boundary recording of production projection recipients",
+    "Repeated reconciliation, replacement/removal, inactive characters and recreated representations with unrelated modifiers",
+    "Atomic malformed/overallocated snapshot rejection, literal v2 wearer preservation, v1 migration and supported campaign envelopes",
+    "32 heroes with 9 equipment slots each (288 records), campaign codec round-trip and production projection"
+  ]
+}

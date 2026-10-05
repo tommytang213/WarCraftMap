@@ -150,4 +150,18 @@ also inject projection, session, milestone and acknowledgement failures while
 restoring a bound checkpoint, then retry the retained selector handoff.
 The equipment rollback regression executes the production Warcraft projector
 through recording object identities and life writes, including later equipment
-removal and reconciliation after failed loads and successful retries.
+removal and reconciliation after failed loads and successful retries. Rejected loads
+and aborted staged loads also restore clock day, cursor, fraction and speed, retain
+the original timer, and restart it only on commit; startup failure/retry fixtures
+carry a changed clock through the recoverable handoff.
+
+`CampaignTimelineTests.wurst` executes the production clock and campaign codec with
+recording listeners/timers: exact real round trips, simultaneous occurrences,
+fractional ticks, large jumps, deferred saves, malformed records, inconsistent
+cursors, changed generated schedules and timer reconstruction. `CampaignStartupTests`
+also advances the generated production clock through all slot types and independently
+constructed destination/return clocks, asserting time before party reconstruction
+and timer activation. `PlayableCampaignRuntimeTests` migrates and repeatedly resaves
+every supported live schema (1–6). These are interpreter lifecycle checks, not native
+client launch evidence; release status remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke`.

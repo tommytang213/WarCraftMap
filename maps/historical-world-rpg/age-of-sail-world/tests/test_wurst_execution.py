@@ -57,6 +57,7 @@ class WurstExecutionTests(unittest.TestCase):
             "invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
             "lateExtensionFailureRestoresEveryAuthorityAndProjection",
             "latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
+            "stagedLoadAbortRetainsClockAndTimerUntilCommit",
             "reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
             "rejectedLoadRestoresInactiveMilitaryProjectionTarget",
             "rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects",

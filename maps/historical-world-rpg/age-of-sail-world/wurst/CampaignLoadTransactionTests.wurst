@@ -1,6 +1,8 @@
 package CampaignLoadTransactionTests
 
 import CampaignSaveManager
+import CampaignTimeline
+import CampaignTimelineTests
 import CampaignHandoff
 import CampaignRegistration
 import CommandRouter
@@ -206,6 +208,9 @@ class LoadPolity implements PiratePolityAuthority
 class LoadFixture
 	LoadStorage storage = new LoadStorage()
 	LoadPorts ports = new LoadPorts()
+	CampaignClock clock = new CampaignClock(1, 100, 1, 1.)
+	RecordingClockTimer recordingTimer = new RecordingClockTimer()
+	string candidateClock = ""
 	PlayableCampaignServices campaign
 	LoadExtension extension = new LoadExtension(ports)
 	LoadPolity polity
@@ -214,7 +219,11 @@ class LoadFixture
 	ReligionRuntime religion = new ReligionRuntime(ports)
 	PiracyRuntime piracy = new PiracyRuntime(new PiracyRules(30, 20, 5000, 3, 150))
 	construct()
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
+		clock.addOccurrence("early", "early", 5, 1)
+		clock.addOccurrence("late", "late", 50, 1)
+		clock.advanceElapsed(10.125).assertTrue()
+		clock.setSpeed(1.125).assertTrue()
+		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
 		campaign.state.startupLocked = false
 		campaign.origins.add("england", "England", "europe_west", "west.w3x", "west", "port")
 		campaign.origins.setPosition("england", 12., 34.)
@@ -273,9 +282,15 @@ class LoadFixture
 		campaign.saves.setLoadObserver(ports)
 		campaign.maps.setCommandRegion("africa")
 		campaign.regionSelector.commandRegionId = "africa"
+		recordingTimer.expected = clock.captureState()
+		clock.attachTimer(recordingTimer, 1.)
 	function candidate() returns string
 		// A separate production authority supplies changed, independently valid domains.
 		let other = new LoadFixture()
+		other.clock.advanceTo(60).assertTrue()
+		other.clock.setSpeed(2.125).assertTrue()
+		other.clock.advanceElapsed(.125).assertTrue()
+		candidateClock = other.clock.captureState()
 		other.rpg.heroes.heroes[0].level = 25
 		other.rpg.journal.currency = 77
 		other.rpg.inventory.equippedCount = 0
@@ -298,12 +313,20 @@ class LoadFixture
 		let before = campaign.state.captureAuthoritativeState()
 		let authority = campaign.state.authorityDocument()
 		let projection = ports.projection()
+		let clockBefore = clock.captureState()
+		let timerStarts = recordingTimer.starts
+		let timerStops = recordingTimer.stops
 		let source = store(candidate)
 		ports.probe = true
 		campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
 		campaign.state.captureAuthoritativeState().assertEquals(before)
 		campaign.state.authorityDocument().assertEquals(authority)
 		ports.projection().assertEquals(projection)
+		clock.captureState().assertEquals(clockBefore)
+		(clock.timerAdapter == recordingTimer).assertTrue()
+		recordingTimer.active.assertTrue()
+		recordingTimer.starts.assertEquals(timerStarts)
+		recordingTimer.stops.assertEquals(timerStops)
 		campaign.identity.allegianceId().assertEquals("england")
 		campaign.identity.regionalInstanceId().assertEquals("west")
 		campaign.maps.getCommandRegionId().assertEquals("africa")
@@ -355,7 +378,11 @@ class LoadFixture
 	f.ports.failParty = true
 	f.rejectAndVerify(candidate)
 	f.ports.failParty = false
+	f.recordingTimer.expected = f.candidateClock
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.captureState().assertEquals(f.candidateClock)
+	f.recordingTimer.starts.assertEquals(2)
+	f.recordingTimer.stops.assertEquals(1)
 	f.ports.notifications.assertEquals(1)
 	f.rpg.heroes.heroes[0].level.assertEquals(25)
 	f.rpg.journal.currency.assertEquals(77)
@@ -366,11 +393,43 @@ class LoadFixture
 	let authority = f.campaign.state.captureAuthoritativeState()
 	let projection = f.ports.projection()
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.clock.captureState().assertEquals(f.candidateClock)
+	f.recordingTimer.starts.assertEquals(3)
+	f.recordingTimer.stops.assertEquals(2)
 	f.campaign.state.captureAuthoritativeState().assertEquals(authority)
 	f.ports.projection().assertEquals(projection)
 	f.ports.notifications.assertEquals(2)
 	f.campaign.saves.retryDeferred().assertTrue()
 	f.campaign.saves.codec.decodeMigrateAndValidate(f.storage.read("manual_09"), "manual_09").assertEquals(authority)
+
+@test function stagedLoadAbortRetainsClockAndTimerUntilCommit()
+	let f = new LoadFixture()
+	let candidate = f.candidate()
+	let before = f.campaign.state.captureAuthoritativeState()
+	let projection = f.ports.projection()
+	// The clock must be loaded for reconstruction, but no timer may restart
+	// while startup's fallible checkpoint publication is still pending.
+	f.campaign.saves.stageCandidate(candidate).assertTrue()
+	f.clock.captureState().assertEquals(f.candidateClock)
+	f.recordingTimer.starts.assertEquals(1)
+	f.recordingTimer.stops.assertEquals(0)
+	f.campaign.saves.isSaveSafe().assertFalse()
+	f.ports.notifications.assertEquals(0)
+	f.campaign.saves.abortLoad()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.ports.projection().assertEquals(projection)
+	f.recordingTimer.active.assertTrue()
+	f.recordingTimer.starts.assertEquals(1)
+	f.recordingTimer.stops.assertEquals(0)
+	f.campaign.saves.isSaveSafe().assertTrue()
+	f.ports.notifications.assertEquals(0)
+	f.campaign.saves.stageCandidate(candidate).assertTrue()
+	f.recordingTimer.expected = f.candidateClock
+	f.campaign.saves.commitLoad(true)
+	f.clock.captureState().assertEquals(f.candidateClock)
+	f.recordingTimer.starts.assertEquals(2)
+	f.recordingTimer.stops.assertEquals(1)
+	f.ports.notifications.assertEquals(1)
 
 @test function reportedOrdinaryPolityFailureRollsBackItsOwnMutations()
 	let f = new LoadFixture()
@@ -478,12 +537,14 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 		f.rpg.equipItem("hero", "coat", 1600).assertTrue()
 		objects.life.assertEquals(148)
 	f.ports.failParty = false
+	f.recordingTimer.expected = f.candidateClock
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	(objects.identity > 1).assertTrue()
 	f.rpg.reconcile("player")
 	objects.life.assertEquals(100)
 	f.ports.notifications.assertEquals(1)
 	// Repeated committed reconstruction of the old gear also applies it once.
+	f.recordingTimer.expected = ""
 	for repeat = 1 to 2
 		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
 		f.rpg.reconcile("player")
