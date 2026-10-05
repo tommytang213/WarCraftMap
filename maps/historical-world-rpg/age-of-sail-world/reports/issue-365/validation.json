@@ -1,0 +1,187 @@
+{
+  "changedSourceSha256": {
+    "maps/historical-world-rpg/_shared/tooling/materialize_physical_map.py": "a2be0212477b555d3521692989270ef9f68ecb8954cb49419456fc87faac6118",
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_campaign.py": "c057747faa4bf04930780129c23cafe966ee74f6e4c9328356508df495928995",
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_map.py": "1d8142731ae9b249d5d92434d6d70dc3d6d6af4c540ea4b512ffd965dbfcaee9",
+    "maps/historical-world-rpg/age-of-sail-world/docs/ARCHITECTURE.md": "391c804eff2ef677fd2ae40989a5aaa9f0c7f6896b16bbbb38f71be1e49c43ff",
+    "maps/historical-world-rpg/age-of-sail-world/reports/release-blocker-audit.json": "954ffb582d519d9f27c9db2adf93e33a669ad551f56ef8802f8f6ee0bf5f0a93",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/runtime-integration.json": "d9ea1d81195e3803222cae8d5b8ecb051687b5f0347836d02df8df782b95890c",
+    "maps/historical-world-rpg/age-of-sail-world/tests/README.md": "64ea46897c6ab65d69071510e98dd84131e402c1ba1a703534c38dde17619b35",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_campaign_packaging.py": "92cd4b37f084c633d23c80cd61806214dc37dfbaabee6fc9c2a3e91bad3513e8",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_runtime_acceptance.py": "f168efe6c3f7029c9963855e8a695b88e52b403efc5015bbd72b20b0940333e2",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_wurst_execution.py": "fdc695815dc1b82ab85586ba9f980f2947825e2c296409a42e28e893e70007be",
+    "maps/historical-world-rpg/age-of-sail-world/tooling/runtime_acceptance.py": "4d1cebf83f8b1eb1f6784dd52aefd05c5926e0f737a4f2f40ac681ac878562e3",
+    "maps/historical-world-rpg/age-of-sail-world/wurst-bootstrap/Bootstrap.wurst": "b6ec629bdb8bc8583fe25d571b2877885990ebd6bd6c871c7a7e4e987ee1f9cf",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/Bootstrap.wurst": "7f80d8fc238faa96cd20f97fa129429c7987ce32b6bb743f471a9156876ce4bb",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignHandoff.wurst": "193b93af5e9ff8e4a17ffab289499fc87ea3b6e92202f769294154db1761ad62",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignRegistration.wurst": "c5113ccdaff0047ad6b45bb881bbefd050f948e934fb4fa6283cdb60e46f9dfe",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignSaveManager.wurst": "df396c35604454339210d7c3f61acb69be4f1e4e5820f5b451603819041e122b",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignStartupTests.wurst": "8d4e2b18c19780cfa758c77c5cc52e63d492702f32b9f7497c23b41c97937469",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CommandRouter.wurst": "3092b50789bc8e812d00ca31d011a0fc6b63a79743cb3daa2a84511895d9d00f",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableCampaignRuntime.wurst": "b605da9470c366ec2978ae2aaa7eb3860a0c3a9fd9d97cf9f094b9a25b751b1b",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableCampaignRuntimeTests.wurst": "faee9e418b50a06cba81749357b0adc74655bceda2ed7e10cdc5dba0c277b53d",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTrade.wurst": "d38f9e549ba2409c382f3a2d7094e485e1d864f92e46e6dc7412570339039518",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/WarcraftRpgRuntime.wurst": "3dcdbd656dfed35300408010b4a4c1bedbb7075588b2c77df4e06960aee050d2"
+  },
+  "checks": {
+    "artifactVerification": {
+      "artifact": {
+        "bytes": 23358627,
+        "name": "AgeOfSailWorld-phase9-rc1.zip",
+        "sha256": "0fa4ef86cc96ed8b8c628ef799a85afbdf621c25b676ba89172af7c08f9d6578"
+      },
+      "log": "artifact-verification.log.gz",
+      "published": false,
+      "results": "ci-artifact.json",
+      "status": "pass"
+    },
+    "campaignPackaging": {
+      "gates": {
+        "finalBudgets": "pass",
+        "humanLaunchSmokeTest": "not_run_separate_manual_smoke",
+        "licenseAndAssetProvenance": "pass",
+        "packagedArtifactVerification": "pass",
+        "phase8Content": "pass",
+        "recoveryDocumentation": "pass",
+        "releaseSaveCompatibility": "pass",
+        "runtimeAcceptance": "pass",
+        "wurstExecution": "pass",
+        "zeroCampaignBlockers": "pass"
+      },
+      "log": "release-candidate.log.gz",
+      "normalizedEquivalence": {
+        "builds": 2,
+        "equal": true,
+        "ignoredDifference": "ZIP/MPQ entry order, timestamps, compression, and container metadata only"
+      },
+      "origins": 230,
+      "physicalMaps": 17,
+      "results": "artifact-validation.json",
+      "status": "pass",
+      "transitions": 34
+    },
+    "diffWhitespace": {
+      "command": "git diff --check",
+      "status": "pass"
+    },
+    "nativeSave": {
+      "oracle": "pass",
+      "results": "native-save.json",
+      "warcraftExecution": "runtime_unavailable"
+    },
+    "repository": {
+      "automationSeconds": 0.47,
+      "automationTests": 67,
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "log": "repository-validation.log.gz",
+      "note": "Host Python/source validation. The required Wurst gate ran separately in the pinned container during each campaign build.",
+      "returnCode": 0,
+      "scenarioSeconds": 1039.466,
+      "scenarioTests": 792,
+      "status": "pass"
+    },
+    "saveCompatibility": {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_release_save_compatibility.py'",
+      "log": "save-compatibility.log.gz",
+      "status": "pass",
+      "supportedSchemas": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "tests": 6
+    },
+    "wurstExecution": {
+      "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "discovered": 95,
+      "inputSetSha256": "15b9176d1ece5b1f20e8402b6bc3874f422243ca6918369eef730aa0c6266896",
+      "log": "execution.log.gz",
+      "results": "execution.json",
+      "startupRegressionCount": 17,
+      "status": "pass",
+      "succeeded": 95
+    }
+  },
+  "container": {
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "isolation": "read-only checkout mount, private /tmp source and build copy",
+    "stages": [
+      {
+        "command": [
+          "python3",
+          "tooling/package_release_candidate.py",
+          "--source-revision",
+          "484c62a8ef08248898f8e1f41e73638d608aac1a"
+        ],
+        "name": "release-candidate",
+        "returnCode": 0,
+        "seconds": 1390.08
+      },
+      {
+        "command": [
+          "python3",
+          "tooling/verify_ci_release_artifact.py",
+          "_build/release/AgeOfSailWorld-phase9-rc1.zip",
+          "--source-revision",
+          "484c62a8ef08248898f8e1f41e73638d608aac1a",
+          "--evidence",
+          "/tmp/issue365-workspace/evidence/ci-artifact.json"
+        ],
+        "name": "artifact-verification",
+        "returnCode": 0,
+        "seconds": 24.48
+      },
+      {
+        "command": [
+          "python3",
+          "tooling/run_native_save_regression.py"
+        ],
+        "name": "native-save",
+        "returnCode": 0,
+        "seconds": 0.04
+      }
+    ]
+  },
+  "evidenceSha256": {
+    "artifact-validation.json": "cd751374c3d1e897436125f07a3b79283feb6dcd58ef5b330496cfea649844de",
+    "artifact-verification.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "campaign-packaging-tests.log.gz": "b8e1c60f4870a723e42d3969fcaacd074971f6ce4659d3485914c6617a7c1194",
+    "ci-artifact.json": "7f946d1a9212a883ed10aebf967be8a5fb1d023c0560797d5bf70554acf78288",
+    "container-validation.json": "eda4547acce989c68eb5c8014d37645d0c05a6bc341bdfb451a91d6ae134ec8b",
+    "execution.json": "7fd6e021bcca3dc3594d71600213ca43fb8a85e0f179f16c24486a737f45f2fa",
+    "execution.log.gz": "9b4fe685407430a1a4ad1333ff2431366949231350766d8f12c9fb699f3b90d8",
+    "initial-release-gate.json": "5259ab2be82eec284c7ab7919e1e9afc6d70006243bc44f48f0e4d5fbcda6d2c",
+    "input-comparison.json": "7693180b7cdeac67312b039bc2575e0798d432f764caf7a44fdbe5131cfda95e",
+    "map-packaging-tests.log.gz": "480aaca2c397366c11dce28f020cec17f45746a2fc388cd5415cc0753aeb5b08",
+    "native-save.json": "bbba5d124993691f0d857604766e450e6aca33ecd74a19c13d9a3b0f41c1e886",
+    "release-candidate-initial.log.gz": "d061dd3c86816aa9ceae1eaa572cb7e4520b4bc75c31bc07e08b66f2a365c7d3",
+    "release-candidate.log.gz": "41fabb25dcc526a8bc0dc95f503603924a864276adb6833d180448284251fad1",
+    "repository-validation.log.gz": "41535ca04b0ea9c360ccf2c699751901b7b070c1d0ff7a87ace120f2fa865c0a",
+    "runtime-acceptance-tests.log.gz": "89d01a8198022263e46ae82f69bdea4512d34f09df0ed7d9341c05c0149e7d0c",
+    "save-compatibility.log.gz": "abc55172be3e03246d8a707e8ac6794bf8b87f910952731b5219bba30cd09924",
+    "selector-assembly-tests.log.gz": "198f6953923cb7043c99751207edb568cac300fe59aad2ea991bbcc2e7562b4b",
+    "wurst-gate-regressions.log.gz": "b24214a212179e66e2f5bc18ed4cf8fce72cf0b35dbf09a47a31619174449912"
+  },
+  "format": "warcraftmap_issue365_validation_v1",
+  "nativeClientStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "recordedAtUtc": "2026-10-04T23:40:39.552475+00:00",
+  "sourceComparison": {
+    "artifactSha256": "0fa4ef86cc96ed8b8c628ef799a85afbdf621c25b676ba89172af7c08f9d6578",
+    "changedProductionInputs": [],
+    "checkedInputCount": 410,
+    "note": "All implementation, compiler configuration, scenario and packaging inputs match the validated build snapshot. Issue reports and retained evidence are finalized after validation.",
+    "reportOnlyDifferences": [
+      "reports/issue-365-startup.md",
+      "reports/issue-365/execution.json",
+      "reports/issue-365/execution.log.gz",
+      "reports/issue-365/repository-validation.log.gz",
+      "reports/issue-365/save-compatibility.log.gz"
+    ],
+    "status": "pass"
+  },
+  "sourceRevision": "484c62a8ef08248898f8e1f41e73638d608aac1a",
+  "status": "pass",
+  "workingTree": "uncommitted issue implementation; changed-source hashes bind these results to the worktree"
+}

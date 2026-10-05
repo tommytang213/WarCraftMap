@@ -1,0 +1,39 @@
+{
+  "sourceRevision": "484c62a8ef08248898f8e1f41e73638d608aac1a",
+  "isolation": "read-only checkout mount, private /tmp source and build copy",
+  "nativeClientStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "stages": [
+    {
+      "name": "wurst-execution",
+      "command": [
+        "python3",
+        "../_shared/tooling/run_wurst_tests.py",
+        "package.json",
+        "--source-revision",
+        "484c62a8ef08248898f8e1f41e73638d608aac1a"
+      ],
+      "returnCode": 0,
+      "seconds": 80.4
+    },
+    {
+      "name": "release-candidate",
+      "command": [
+        "python3",
+        "tooling/package_release_candidate.py",
+        "--source-revision",
+        "484c62a8ef08248898f8e1f41e73638d608aac1a"
+      ],
+      "returnCode": 1,
+      "seconds": 1351.39
+    },
+    {
+      "name": "native-save",
+      "command": [
+        "python3",
+        "tooling/run_native_save_regression.py"
+      ],
+      "returnCode": 0,
+      "seconds": 0.04
+    }
+  ]
+}

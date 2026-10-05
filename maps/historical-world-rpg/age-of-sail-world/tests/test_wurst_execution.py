@@ -40,6 +40,16 @@ class WurstExecutionTests(unittest.TestCase):
         with patch.dict(os.environ, {"FAKE_WURST_RESULT": mode}):
             return execution.execute_tests(self.root, str(self.fake), self.root / "evidence", "a" * 40)
 
+    def test_required_suite_discovers_production_startup_regressions(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)
+                      if row["id"].startswith("wurst/CampaignStartupTests.wurst:")}
+        self.assertIn("selectorCommitFailureAllowsAnotherChoiceAndNeverLoads", discovered)
+        self.assertIn("selectorToAsianRegionUsesPhysicalStartingCoordinates", discovered)
+        self.assertIn("interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing", discovered)
+        self.assertIn("populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain", discovered)
+        self.assertIn("transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject", discovered)
+        self.assertIn("checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite", discovered)
+
     def test_discovery_and_complete_results_bind_compiler_revision_and_inputs(self):
         report = self.run_suite()
         self.assertEqual(["wurst/Fixture.wurst:actual", "wurst/Fixture.wurst:second"],

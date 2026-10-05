@@ -86,10 +86,27 @@
       ],
       "runtime": [
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst-bootstrap/Bootstrap.wurst",
           "contains": [
-            "registerOriginSelection",
-            "configureGeneratedOrigins"
+            "new CampaignHandoff",
+            "configureGeneratedOrigins",
+            "registerOriginSelection"
+          ]
+        },
+        {
+          "path": "wurst/CampaignHandoff.wurst",
+          "contains": [
+            "commitSelection",
+            "acknowledge",
+            "decodeCampaignStartRequest"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "function startup()",
+            "loadStartupPayload",
+            "startNewCampaign"
           ]
         }
       ],
@@ -105,7 +122,7 @@
         {
           "path": "wurst/PlayableCampaignRuntime.wurst",
           "contains": [
-            "campaignStarted"
+            "function startup()"
           ]
         }
       ],
@@ -114,6 +131,13 @@
           "path": "wurst/NewCampaignOriginSelectionTests.wurst",
           "contains": [
             "@test"
+          ]
+        },
+        {
+          "path": "wurst/CampaignStartupTests.wurst",
+          "contains": [
+            "selectorToEuropeanRegionUsesGeneratedOriginAndCodec",
+            "interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing"
           ]
         }
       ],
@@ -152,7 +176,7 @@
           ]
         },
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst/CampaignRegistration.wurst",
           "contains": [
             "configureGeneratedCountryInteractions"
           ]
@@ -667,8 +691,13 @@
         {
           "path": "wurst/Bootstrap.wurst",
           "contains": [
-            "configureGeneratedRpg",
             "WarcraftTechnologyEffects"
+          ]
+        },
+        {
+          "path": "wurst/CampaignRegistration.wurst",
+          "contains": [
+            "configureGeneratedRpg"
           ]
         }
       ],
@@ -934,7 +963,12 @@
         {
           "path": "wurst/PlayableCampaignRuntime.wurst",
           "contains": [
-            "CampaignTravelRuntime",
+            "CampaignTravelRuntime"
+          ]
+        },
+        {
+          "path": "wurst/CampaignHandoff.wurst",
+          "contains": [
             "compatLoadPhysicalMap"
           ]
         }
@@ -1113,7 +1147,7 @@
           ]
         },
         {
-          "path": "wurst/Bootstrap.wurst",
+          "path": "wurst/CampaignRegistration.wurst",
           "contains": [
             "configureGeneratedCountryInteractions"
           ]
@@ -1259,7 +1293,12 @@
         {
           "path": "wurst/Bootstrap.wurst",
           "contains": [
-            "registerPiracy",
+            "registerPiracy"
+          ]
+        },
+        {
+          "path": "wurst/CampaignRegistration.wurst",
+          "contains": [
             "configureGeneratedPiracy"
           ]
         }

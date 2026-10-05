@@ -196,3 +196,49 @@ units retain only stable controller/category assignments; transient Warcraft
 objects receive a replaceable, namespaced tradition layer from the runtime
 adapter on activation or reconstruction. Campaign saves store
 `militaryTraditionState`; handles and derived modifiers are reconstructed.
+
+## Selector handoff and regional startup
+
+The packaged selector uses `CampaignHandoff`, `CommandRouter` and the transactional
+cache adapter. Its generated `ScenarioData` contains only origin records and their
+physical starting coordinates. It does not import regional gameplay registration.
+`OriginCatalog` is generated from the same authoritative records for the selector,
+regional runtime and executable tests. Starting coordinates use the map
+materializer's existing settlement placement calculation, including compressed
+representations of abstract communities; military object existence is not needed
+to locate the player.
+
+Transfer reconstruction uses the loaded map's materialized player arrival point.
+The last visited settlement remains history and need not have a military object
+on that map. Invalid saved origins are rejected before reconstruction.
+
+The `bootstrap` mission in `AgeOfSailCampaign.w3v` stores one versioned `request`:
+`v1|sequence|pending-or-consumed|origin|map|instance|settlement`. The selector writes
+that record transactionally, commits its local identity, closes the selector, then
+loads the generated package path. Failed persistence leaves identity unselected.
+The former four unversioned keys are read as a pending version-1 request and must
+pass the same generated-record validation before use.
+
+Regional construction only allocates services. `registerCampaignDomains` completes
+generated country, trade, military, religion, piracy and RPG registrations and
+attaches their authority/projection ports. Only then does `startup()` validate the
+request against the generated origin tuple and the loaded `PHYSICAL_MAP_ID`, or
+restore the existing transfer milestone. Founded polity bridges reconstruct before
+saved country resources are applied, so registration cannot reset their treasury.
+Migration defaults are captured after registration; campaign schemas 1–5 remain
+supported without changing their persisted representation.
+
+A pending new request takes precedence over an unrelated milestone. After identity,
+authored location and party projection succeed, startup writes a codec checkpoint
+under `bootstrap/campaign_start_N`, publishes `campaign/session_start` and
+`campaign/major_milestone`, then marks the request consumed. A failed publication or
+acknowledgement retains the request and its sequence-bound checkpoint. Retry loads
+that checkpoint rather than granting a new party or rewards again. Consumed
+requests use the ordinary milestone; repeated startup on an active service is a
+no-op. Both cache namespaces share one native cache handle in regional maps.
+
+Rejected startup retains durable saves, retires attempted local projections and
+keeps campaign saving, simulation timers, autosaves and gameplay command activation
+closed. There is no destination loader call in regional startup. Interpreter and
+packaging validation do not establish native Warcraft launch success; that remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke`.

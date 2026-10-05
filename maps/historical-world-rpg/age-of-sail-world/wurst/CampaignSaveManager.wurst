@@ -134,6 +134,12 @@ public class WarcraftCampaignSaveStorage implements CampaignSaveStorage
 
 	construct(string fileName)
 		cache = compatInitGameCache(fileName)
+	construct(string fileName, string mission)
+		cache = compatInitGameCache(fileName)
+		this.mission = mission
+	construct(gamecache cache, string mission)
+		this.cache = cache
+		this.mission = mission
 
 	override function contains(string slotId) returns boolean
 		return compatHaveStoredString(cache, mission, slotId)

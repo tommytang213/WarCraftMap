@@ -15,13 +15,14 @@ from package_wurst_campaign import (  # noqa: E402
     PackagingError,
     _inspect_physical_map,
     _localize_runtime,
+    _retain_bootstrap_dependencies,
     _write_browser_safe_w3x,
     build_campaign,
     inspect_campaign,
     load_campaign_config,
     validate_campaign,
 )
-from package_wurst_map import generate, load_config, verify_generated  # noqa: E402
+from package_wurst_map import _assemble, generate, load_config, verify_generated  # noqa: E402
 from wurst_execution_fixture import FAKE_EXECUTION, allow_synthetic_compiler
 from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq  # noqa: E402
 
@@ -278,9 +279,18 @@ class CampaignPackagingTests(unittest.TestCase):
         _localize_runtime(campaign, world, campaign.maps[0], generated)
         scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
         self.assertIn("configureGeneratedOrigins", scenario)
+        handoff = (self.project / "wurst/CampaignHandoff.wurst").read_text()
+        imports = {line.split()[1] for line in handoff.splitlines() if line.startswith("import ")}
+        self.assertEqual({"CommandRouter", "CampaignSaveManager", "WC3Compatibility"}, imports)
         for token in ("registerSettlement", "registerMarket", "registerForce", "registerReward",
                       "registerHero", "registerQuest", "registerItem", "registerTechnology"):
             self.assertNotIn(token, scenario)
+        compiled = _assemble(base, self.project / "_build/minimal-compile", generated, include_tests=False)
+        shutil.copy2(self.project / "wurst-bootstrap/Bootstrap.wurst", compiled / "wurst/Bootstrap.wurst")
+        _retain_bootstrap_dependencies(compiled)
+        self.assertEqual({"Bootstrap.wurst", "ScenarioData.wurst", "CommandRouter.wurst",
+                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst"},
+                         {path.name for path in (compiled / "wurst").glob("*.wurst")})
 
     def test_origin_handoff_and_every_physical_map_region_are_explicit(self):
         campaign = load_campaign_config(self.manifest)
@@ -297,9 +307,19 @@ class CampaignPackagingTests(unittest.TestCase):
         runtime = (self.project / "wurst/PlayableCampaignRuntime.wurst").read_text(encoding="utf-8")
         for physical in campaign.maps:
             self.assertIn(f'mapId == "{physical.id}"', runtime)
-        commit = runtime.index('saves.save(SAVE_SLOT_SESSION_START, 0, "campaign-start")')
-        load = runtime.index("travel.loader.load(packagePath)")
-        self.assertLess(commit, load)
+        selector = (self.project / "wurst-bootstrap/Bootstrap.wurst").read_text()
+        self.assertIn("new CampaignHandoff(", selector)
+        self.assertNotIn("campaignStarted", runtime)
+        self.assertIn("function startup() returns boolean", runtime)
+        registration = (self.project / "wurst/CampaignRegistration.wurst").read_text()
+        for domain in ("configureGeneratedRpg", "configureGeneratedCountryInteractions",
+                       "configureGeneratedTrade", "configureMilitarySettlementScenario",
+                       "configureGeneratedReligion", "configureGeneratedPiracy"):
+            self.assertLess(registration.index(domain), registration.index("campaign.finishRegistration()"))
+        bootstrap = (self.project / "wurst/Bootstrap.wurst").read_text()
+        self.assertLess(bootstrap.index("registerCampaignDomains("), bootstrap.index("campaign.startup()"))
+        self.assertLess(bootstrap.index("campaign.startup()"), bootstrap.index("clock.attachTimer("))
+        self.assertLess(bootstrap.index("campaign.startup()"), bootstrap.index("enableCampaignAutosaves()"))
 
     def test_authoritative_boundaries_are_bidirectional_connected_and_codegen_reachable(self):
         campaign = load_campaign_config(self.manifest)
@@ -431,12 +451,20 @@ class CampaignPackagingTests(unittest.TestCase):
                     self.assertEqual({x["id"] for x in runtime_local["settlementDefinitions"]},
                                      {x["id"] for x in physical["objects"]["settlements"]})
                     self.assertEqual(1, physical["objects"]["spawnCount"])
+                    self.assertEqual(runtime_local["physicalMapArrivals"][configured["id"]],
+                                     physical["objects"]["arrivalWorld"])
+                    placed = {row["id"]: row for row in physical["objects"]["settlements"]}
+                    for origin in runtime_local["newCampaignOrigins"]:
+                        start = origin["startingLocation"]
+                        if start["physicalMapId"] == configured["id"]:
+                            self.assertEqual(start["worldPosition"], placed[start["settlementId"]]["world"])
             identity = f'public constant string PHYSICAL_MAP_ID = "{configured["id"]}"'
             self.assertEqual(1, lua.count("public constant string PHYSICAL_MAP_ID"))
             self.assertIn(identity, lua)
             if configured.get("bootstrap", False):
                 self.assertNotIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
                 self.assertIn("configureGeneratedOrigins(bootstrapOriginSelection)", lua)
+                self.assertIn('new CampaignHandoff(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE, "bootstrap")', lua)
             else:
                 self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
         self.assertGreater(len(physical_hashes), 1, "regional maps reused placeholder terrain/pathing")

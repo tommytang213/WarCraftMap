@@ -26,7 +26,10 @@ COMPILED_TEXT_REQUIREMENTS={
  "technology_institutions":({"configureGeneratedRpg","registerRpgRuntimeCommands"},{"technology","research"}),
  "quests_journal":({"registerRpgRuntimeCommands"},{"journal","track"}),
  "treasures_discovery":({"registerRpgRuntimeCommands"},{"interact"}),
- "religion":({"configureGeneratedReligion","registerReligion"},{"faith","convert"}),
+ # The pinned compiler inlines the small generated religion wrapper into
+ # CampaignRegistration. Require its real registry/state calls, not the
+ # surviving diagnostic string naming the inlined wrapper.
+ "religion":({"registerFaith","setCharacterFaith","setInfluence","registerReligion"},{"faith","convert"}),
  "piracy":({"configureGeneratedPiracy","registerPiracy"},{"piracy","prize-confirm"}),
  "save_autosave_load":({"initializePlayableCampaignRuntime"},{"save","load"}),
  "cross_map_travel":({"configureGeneratedPhysicalBoundaries","compatLoadPhysicalMap"},set()),

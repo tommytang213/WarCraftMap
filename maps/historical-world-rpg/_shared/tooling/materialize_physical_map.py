@@ -156,36 +156,11 @@ def _positions(project: Path) -> dict[str, dict]:
     return result
 
 
-def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime: dict) -> dict:
-    if physical.bootstrap:
-        manifest = {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": True,
-                    "terrain": {"width": 64, "height": 64},
-                    "objects": {"spawnCount": 1, "settlementCount": 0}}
-        runtime_dir = map_dir / "runtime"
-        runtime_dir.mkdir(exist_ok=True)
-        runtime_dir.joinpath("physical-map.json").write_text(
-            json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-        return manifest
-    docs = [json.loads((generated / f"terrain-{terrain_id}.json").read_text(encoding="utf-8"))
-            for terrain_id in physical.terrain_ids]
-    if docs:
-        width, height, cells, layouts = _compose(docs, set(physical.regional_instance_ids))
-    else:
-        # Purpose-built encounter chapters have no persistent regional
-        # authority. Bound their navigable water with the same blocked void
-        # used around composed regional rasters. The perimeter is not land:
-        # vessels can use the interior but cannot leave the encounter arena.
-        width = height = 64
-        cells = [2 if 0 < x < width - 1 and 0 < y < height - 1 else 0
-                 for y in range(height) for x in range(width)]
-        layouts = {physical.id: (0, 0, width, height)}
-    map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
-    map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
-    info_path = map_dir / "war3map.w3i"
-    info_path.write_bytes(_resize_map_info(info_path.read_bytes(), width, height))
+def settlement_placements(project: Path, physical, settlements: list[dict], width: int, height: int, cells: list[int], layouts: dict) -> list[dict]:
+    """Shared physical placement for map objects and the campaign starting party."""
     authored = _positions(project)
-    placed, records = [], []
-    for settlement in sorted(runtime.get("settlementDefinitions", []), key=lambda row: row["id"]):
+    placed = []
+    for settlement in sorted(settlements, key=lambda row: row["id"]):
         source = authored.get(settlement["id"], settlement)
         if source.get("regionalInstanceId") not in physical.regional_instance_ids:
             raise MaterializationError(f"{physical.id}: settlement {settlement['id']} has inconsistent regional placement")
@@ -210,9 +185,48 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
                          default=(cx, cy))
         wx, wy = (cx + .5 - width / 2) * 128.0, (cy + .5 - height / 2) * 128.0
         is_port = source.get("settlementClass") == "port" or "port" in source.get("roles", []) or "dockyard" in source.get("services", [])
-        records.append(_unit(b"nshp" if is_port else b"ntav", wx, wy, 15, len(records) + 1))
         placed.append({"id": settlement["id"], "regionalInstanceId": source["regionalInstanceId"],
-                       "cell": [cx, cy], "kind": "port" if is_port else "settlement"})
+                       "cell": [cx, cy], "world": [wx, wy], "kind": "port" if is_port else "settlement"})
+    return placed
+
+
+def physical_layout(generated: Path, physical):
+    docs = [json.loads((generated / f"terrain-{terrain_id}.json").read_text(encoding="utf-8"))
+            for terrain_id in physical.terrain_ids]
+    if docs:
+        return _compose(docs, set(physical.regional_instance_ids))
+    # Encounter chapters use a bounded water arena without regional terrain.
+    width = height = 64
+    cells = [2 if 0 < x < width - 1 and 0 < y < height - 1 else 0
+             for y in range(height) for x in range(width)]
+    return width, height, cells, {physical.id: (0, 0, width, height)}
+
+
+def player_arrival_world(width: int, height: int, placed: list[dict]) -> list[float]:
+    spawn = placed[0]["cell"] if placed else [width // 2, height // 2]
+    return [(spawn[0] + .5 - width / 2) * 128.0, (spawn[1] + .5 - height / 2) * 128.0]
+
+
+def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime: dict) -> dict:
+    if physical.bootstrap:
+        manifest = {"formatVersion": FORMAT_VERSION, "physicalMapId": physical.id, "bootstrap": True,
+                    "terrain": {"width": 64, "height": 64},
+                    "objects": {"spawnCount": 1, "settlementCount": 0}}
+        runtime_dir = map_dir / "runtime"
+        runtime_dir.mkdir(exist_ok=True)
+        runtime_dir.joinpath("physical-map.json").write_text(
+            json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+        return manifest
+    docs = [json.loads((generated / f"terrain-{terrain_id}.json").read_text(encoding="utf-8"))
+            for terrain_id in physical.terrain_ids]
+    width, height, cells, layouts = physical_layout(generated, physical)
+    map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
+    map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
+    info_path = map_dir / "war3map.w3i"
+    info_path.write_bytes(_resize_map_info(info_path.read_bytes(), width, height))
+    placed = settlement_placements(project, physical, runtime.get("settlementDefinitions", []), width, height, cells, layouts)
+    records = [_unit(b"nshp" if row["kind"] == "port" else b"ntav", *row["world"], 15, index + 1)
+               for index, row in enumerate(placed)]
     world_markers = []
     marker_ids = []
     for doc in docs:
@@ -231,8 +245,7 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
         records.append(_unit(b"nfoh", wx, wy, 15, len(records) + 1))
         world_markers.append({"id": marker_id, "cell": [cx, cy]})
     # Player arrival exists independently of settlement object lifetime.
-    spawn = placed[0]["cell"] if placed else [width // 2, height // 2]
-    sx, sy = (spawn[0] + .5 - width / 2) * 128.0, (spawn[1] + .5 - height / 2) * 128.0
+    sx, sy = player_arrival_world(width, height, placed)
     records.insert(0, _unit(b"sloc", sx, sy, 0, 0))
     if len(records) > MAX_OBJECTS:
         raise MaterializationError(f"{physical.id}: object budget exceeded")
@@ -241,7 +254,7 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
         "terrain": {"width": width, "height": height, "cellCount": width * height,
                     "authoritySha256": hashlib.sha256(b"".join((generated / f"terrain-{x}.json").read_bytes() for x in physical.terrain_ids)).hexdigest()},
         "instances": [{"id": key, "layout": list(value)} for key, value in sorted(layouts.items())],
-        "objects": {"spawnCount": 1, "settlementCount": len(placed), "worldMarkerCount": len(world_markers),
+        "objects": {"spawnCount": 1, "arrivalWorld": [sx, sy], "settlementCount": len(placed), "worldMarkerCount": len(world_markers),
                     "unitObjectCount": len(records), "settlements": placed, "worldMarkers": world_markers},
         "representations": {"routes": "pathable terrain plus stock neutral markers", "landmarks": "stock neutral markers",
                             "transitions": "stock neutral markers", "ports": "stock neutral shops"}}
