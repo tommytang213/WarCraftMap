@@ -27,6 +27,24 @@ after closing. `CampaignLoadTransactionTests.wurst` and `CampaignStartupTests.wu
 also dispatch these commands during successful/rejected loads, staged aborts,
 repeated reconstruction and startup retry. See [MODAL_MANAGEMENT.md](../docs/MODAL_MANAGEMENT.md).
 
+The delayed combat callback regression uses one initialized siege with production
+combat and timer logic, so its interpreter budget goes to deadline behavior.
+The other combat journeys retain generated registration and startup coverage.
+Generated RPG tests exercise every item comparison and partition hero, quest
+and treasure records into deterministic batches after full production
+registration. Together the batches cover every generated record through fresh
+and repeated restoration, retaining populated equipment, research, quest rewards,
+treasure and guidance in each snapshot. Combined full-world scale remains covered
+by the repository's separate simulation and save-stress gates.
+Snapshot scanning reads each record's fields once, without copying the remaining
+document or rescanning field prefixes.
+Record-boundary checks preserve empty optional fields and verify atomic rejection
+of empty interior records and malformed suffixes. Catalogue cursors accelerate
+canonical snapshots while stable-ID fallback still accepts reordered records;
+duplicate-index tests cover hash collisions without merging distinct IDs.
+The pinned interpreter's 20-second limit and complete-suite execution gate remain
+unchanged.
+
 `RpgInteractionTests.wurst` dispatches production interaction, turn-in, tracking
 and remote-region commands with recording actor and map boundaries. It checks complete
 authority equivalence on rejection, generated local coordinates, eligible reward

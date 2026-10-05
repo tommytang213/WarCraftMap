@@ -7,6 +7,7 @@ import CampaignStartupTests
 import CampaignSaveManager
 import CampaignTimeline
 import CampaignRegistration
+import CommandRouter
 import ManagementScreenPauseController
 import Wurstunit
 
@@ -381,13 +382,30 @@ class CombatFixture
 	restored.close()
 
 @test function delayedTimerDoesNotCatchUpWavesOrSpendAtTheQuietDeadline()
-	let f = new CombatFixture()
-	f.natives.damage(f.core(), f.token("enemy")).assertEquals(1)
+	// This deadline test needs one initialized siege. The journeys above cover
+	// generated registration and startup; repeating the world catalogue here can
+	// exhaust the interpreter's per-test budget before any timer is exercised.
+	let representations = new CombatRepresentations()
+	let runtime = new MilitarySettlementRuntime(representations)
+	runtime.registerSettlement(new SettlementRuntimeState("city", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 0., 0.))
+	runtime.registerForce(new RuntimeForce("enemy", "france", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+	runtime.registerConflictMember("combat_war", "england", 1).assertTrue()
+	runtime.registerConflictMember("combat_war", "france", 2).assertTrue()
+	runtime.activateRegion("europe_west")
+	let natives = new RecordingCombatNatives()
+	let pause = new ManagementScreenPauseController(new RecordingCombatPause(), false)
+	let events = new MilitaryCombatEvents(runtime, new PlayerCampaignIdentity(), pause, natives)
+	events.install()
+	representations.cleanupEvents = events
+	representations.cleanupKiller = representations.representationId("enemy")
+	natives.damage(representations.representationId("core:city"), representations.representationId("enemy")).assertEquals(1)
 	// A delayed callback must do bounded work, not replay elapsed wave slots.
-	f.natives.elapsed = 19.
-	f.events.onTimer(f.natives.serial)
-	f.runtime.settlements[0].reserves.assertEquals(10)
-	f.natives.advance(1.)
-	f.runtime.settlements[0].underAttack.assertFalse()
-	f.runtime.settlements[0].reserves.assertEquals(10)
-	f.close()
+	natives.elapsed = 19.
+	events.onTimer(natives.serial)
+	runtime.gameplaySeconds.assertEquals(19.)
+	runtime.settlements[0].reserves.assertEquals(10)
+	natives.advance(1.)
+	runtime.gameplaySeconds.assertEquals(20.)
+	runtime.settlements[0].underAttack.assertFalse()
+	runtime.settlements[0].reserves.assertEquals(10)
+	events.stop()

@@ -286,7 +286,76 @@ class Projections implements RpgProjectionPort
 	runtime.restoreState(withCopies+"|h,hero").assertFalse()
 	runtime.captureState().assertEquals(withCopies)
 
-@test function generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration()
+@test function snapshotRecordBoundariesRetainEmptyFieldsAndRejectMalformedSuffixes()
+	let runtime = new WarcraftRpgRuntime(new Effects())
+	runtime.heroes.register(new RpgHero("hero", "Hero", 'Hpal'))
+	runtime.heroes.recruit("hero").assertTrue()
+	runtime.journal.register(new RuntimeQuest("quest", "Quest", "regional"))
+	runtime.treasures.register(new RuntimeTreasure("treasure", "region", "cave"))
+	let saved = runtime.captureState()
+	// Empty optional hero fields and an untracked journal are valid. Retain
+	// the codec's existing support for an optional final record separator.
+	runtime.restoreState(saved + "|").assertTrue()
+	runtime.captureState().assertEquals(saved)
+	runtime.restoreState(saved).assertTrue()
+	runtime.captureState().assertEquals(saved)
+	// Empty interior records and unknown final records reject atomically.
+	runtime.restoreState("v2||" + SubString(saved, 3, StringLength(saved))).assertFalse()
+	runtime.captureState().assertEquals(saved)
+	runtime.restoreState(saved + "||").assertFalse()
+	runtime.captureState().assertEquals(saved)
+	runtime.restoreState(saved + "|unknown,late").assertFalse()
+	runtime.captureState().assertEquals(saved)
+	runtime.restoreState(saved + "|q,quest").assertFalse()
+	runtime.captureState().assertEquals(saved)
+	let nextRecord = saved.indexOf("|q,")
+	runtime.restoreState(SubString(saved, 0, nextRecord) + ",extra" + SubString(saved, nextRecord, StringLength(saved))).assertFalse()
+	runtime.captureState().assertEquals(saved)
+
+@test function reorderedSnapshotsAndCollidingStableIdsRestoreWithoutMergingAuthority()
+	let runtime = new WarcraftRpgRuntime(new Effects())
+	// Warcraft's hash is case-insensitive, but stable IDs compare exactly.
+	StringHash("h,hero").assertEquals(StringHash("h,HERO"))
+	runtime.heroes.register(new RpgHero("hero", "First", 'Hpal'))
+	runtime.heroes.register(new RpgHero("HERO", "Second", 'Hpal'))
+	runtime.heroes.get("hero").level = 3
+	runtime.heroes.get("HERO").level = 7
+	for i = 0 to 1
+		let id = i.toString()
+		runtime.journal.register(new RuntimeQuest("quest" + id, "Quest", "regional"))
+		runtime.journal.accept("quest" + id).assertTrue()
+		let treasure = new RuntimeTreasure("treasure" + id, "region", "cave")
+		treasure.clueStage = 1
+		runtime.treasures.register(treasure)
+	let saved = runtime.captureState()
+	var reordered = "v2"
+	var start = 3
+	while start < StringLength(saved)
+		var finish = saved.indexOf("|", start)
+		if finish < 0
+			finish = StringLength(saved)
+		reordered = "v2|" + SubString(saved, start, finish) + SubString(reordered, 2, StringLength(reordered))
+		start = finish + 1
+	runtime.restoreState("v1").assertTrue()
+	runtime.restoreState(reordered).assertTrue()
+	runtime.captureState().assertEquals(saved)
+	let firstRecord = SubString(saved, 3, saved.indexOf("|", 3))
+	runtime.restoreState(reordered + "|" + firstRecord).assertFalse()
+	runtime.captureState().assertEquals(saved)
+	runtime.restoreState(saved).assertTrue()
+	runtime.captureState().assertEquals(saved)
+
+@test function generatedItemComparisonsCoverEveryDefinition()
+	let runtime=new WarcraftRpgRuntime(new Effects())
+	configureGeneratedRpg(runtime)
+	let hero=runtime.heroes.heroes[0]
+	runtime.heroes.recruit(hero.id).assertTrue()
+	for i=0 to runtime.inventory.definitionCount-1
+		let itemDefinition=runtime.inventory.definitions[i]
+		(runtime.inventory.comparison(hero.id,itemDefinition.id) != "Unknown item").assertTrue()
+
+/** Execute every generated registration and populate each authority domain. */
+function generatedRpgWithProgress() returns WarcraftRpgRuntime
 	let runtime=new WarcraftRpgRuntime(new Effects())
 	configureGeneratedRpg(runtime)
 	(runtime.heroes.count>0).assertTrue()
@@ -299,8 +368,6 @@ class Projections implements RpgProjectionPort
 	var equipped=false
 	for i=0 to runtime.inventory.definitionCount-1
 		let itemDefinition=runtime.inventory.definitions[i]
-		// Exercise generated optional fields on every itemDefinition and equip an eligible one.
-		runtime.inventory.comparison(hero.id,itemDefinition.id)
 		if not equipped and runtime.inventory.available(itemDefinition,hero,1450,"","")
 			runtime.inventory.grant(itemDefinition.id).assertTrue()
 			runtime.equipItem(hero.id,itemDefinition.id,1450).assertTrue()
@@ -324,9 +391,38 @@ class Projections implements RpgProjectionPort
 		runtime.treasures.advanceClue(treasure.id).assertTrue()
 	runtime.treasures.discover(treasure.id,treasure.resolvedLocationId,runtime.inventory).assertTrue()
 	treasure.discovered.assertTrue()
+	return runtime
+
+/** Partition only the fixture population after production registration. The
+ * intervals cover every generated hero, quest and treasure; row zero remains
+ * in each batch for the populated equipment, reward and guidance relations. */
+function selectGeneratedBatch(WarcraftRpgRuntime runtime, string domain, int part, int parts)
+	let heroes = runtime.heroes.count
+	let quests = runtime.journal.count
+	let treasures = runtime.treasures.count
+	runtime.heroes.count = 1
+	runtime.journal.count = 1
+	runtime.treasures.count = 1
+	if domain == "heroes"
+		for i = heroes * part div parts to heroes * (part + 1) div parts - 1
+			if i > 0
+				runtime.heroes.heroes[runtime.heroes.count] = runtime.heroes.heroes[i]
+				runtime.heroes.count++
+	else if domain == "quests"
+		for i = quests * part div parts to quests * (part + 1) div parts - 1
+			if i > 0
+				runtime.journal.quests[runtime.journal.count] = runtime.journal.quests[i]
+				runtime.journal.count++
+	else
+		runtime.treasures.count = treasures
+
+function generatedBatchRoundTrips(string domain, int part, int parts)
+	let runtime=generatedRpgWithProgress()
+	selectGeneratedBatch(runtime, domain, part, parts)
 	let saved=runtime.captureState()
 	let restored=new WarcraftRpgRuntime(new Effects())
 	configureGeneratedRpg(restored)
+	selectGeneratedBatch(restored, domain, part, parts)
 	let projections=new Projections()
 	restored.setProjectionPort(projections)
 	for i=1 to 2
@@ -335,3 +431,36 @@ class Projections implements RpgProjectionPort
 		restored.captureState().assertEquals(saved)
 	projections.clears.assertEquals(2)
 	projections.guidance.assertEquals(1)
+
+@test function generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration()
+	generatedBatchRoundTrips("heroes", 0, 4)
+
+@test function generatedHeroesSecondQuarterRoundTrips()
+	generatedBatchRoundTrips("heroes", 1, 4)
+
+@test function generatedHeroesThirdQuarterRoundTrips()
+	generatedBatchRoundTrips("heroes", 2, 4)
+
+@test function generatedHeroesFourthQuarterRoundTrips()
+	generatedBatchRoundTrips("heroes", 3, 4)
+
+@test function generatedQuestsFirstBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 0, 6)
+
+@test function generatedQuestsSecondBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 1, 6)
+
+@test function generatedQuestsThirdBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 2, 6)
+
+@test function generatedQuestsFourthBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 3, 6)
+
+@test function generatedQuestsFifthBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 4, 6)
+
+@test function generatedQuestsSixthBatchRoundTrips()
+	generatedBatchRoundTrips("quests", 5, 6)
+
+@test function generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress()
+	generatedBatchRoundTrips("treasures", 0, 1)

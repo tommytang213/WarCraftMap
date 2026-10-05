@@ -26,25 +26,58 @@ function textContains(string haystack,string needle) returns boolean
 			return true
 	return false
 
-function rpgField(string record, int wanted) returns string
-	var start = 0
-	var field = 0
-	for i = 0 to StringLength(record)
-		if i == StringLength(record) or SubString(record,i,i+1) == ","
-			if field == wanted
-				return SubString(record,start,i)
-			field++
-			start=i+1
-	return ""
-
-function rpgFieldCount(string record) returns int
-	if record == ""
-		return 0
-	var result=1
-	for i=0 to StringLength(record)-1
-		if SubString(record,i,i+1) == ","
-			result++
-	return result
+/** Reused for one snapshot pass. Scan each record's fields once, without
+ * copying the remaining catalogue or reparsing the prefix for every field.
+ * Eighteen fields is the largest supported record (a hero). */
+class RpgSnapshotRecord
+	string array[18] fields
+	int count = 0
+	int nextHero = 0
+	int nextQuest = 0
+	int nextTreasure = 0
+	function append(string value)
+		if count < 18
+			fields[count] = value
+		count++
+	function read(string candidate, int start) returns int
+		count = 0
+		let length = StringLength(candidate)
+		var fieldStart = start
+		var finish = start
+		while finish < length
+			let delimiter = SubString(candidate, finish, finish + 1)
+			if delimiter == "|"
+				break
+			if delimiter == ","
+				append(SubString(candidate, fieldStart, finish))
+				fieldStart = finish + 1
+			finish++
+		append(SubString(candidate, fieldStart, finish))
+		return finish + 1
+	function field(int index) returns string
+		if index >= count or index >= 18
+			return ""
+		return fields[index]
+	// Captured records follow catalogue order. Reordered compatible snapshots
+	// still resolve by stable ID; the cursor is only a lookup optimization.
+	function resolveHero(HeroRoster roster) returns RpgHero
+		let index = nextHero
+		nextHero++
+		if index < roster.count and roster.heroes[index].id == field(1)
+			return roster.heroes[index]
+		return roster.get(field(1))
+	function resolveQuest(QuestJournalRuntime journal) returns RuntimeQuest
+		let index = nextQuest
+		nextQuest++
+		if index < journal.count and journal.quests[index].id == field(1)
+			return journal.quests[index]
+		return journal.get(field(1))
+	function resolveTreasure(TreasureRuntime treasures) returns RuntimeTreasure
+		let index = nextTreasure
+		nextTreasure++
+		if index < treasures.count and treasures.treasures[index].id == field(1)
+			return treasures.treasures[index]
+		return treasures.get(field(1))
 
 function rpgBool(string value) returns boolean
 	return value == "1"
@@ -67,20 +100,29 @@ function rpgValidInt(string value) returns boolean
 function rpgStableText(string value) returns boolean
 	return value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0
 
-/** Per-load duplicate index. Cache record keys once instead of reparsing the
- * whole snapshot for every hero, quest and treasure in a generated campaign. */
+/** Per-load duplicate index. Hash buckets retain full keys so collisions never
+ * merge distinct authority, without a quadratic scan of earlier records. */
 class RpgSnapshotKeys
 	string array[14849] keys
+	int array[14849] next
+	int array[2048] buckets
 	int array[4096] ownedCopies
 	int array[4096] equippedCopies
 	int count = 0
 	function claim(string key) returns boolean
 		if count >= 14849
 			return false
-		for i = 0 to count - 1
-			if keys[i] == key
+		var bucket = StringHash(key) mod 2048
+		if bucket < 0
+			bucket += 2048
+		var entry = buckets[bucket]
+		while entry > 0
+			if keys[entry - 1] == key
 				return false
+			entry = next[entry - 1]
 		keys[count] = key
+		next[count] = buckets[bucket]
+		buckets[bucket] = count + 1
 		count++
 		return true
 
@@ -767,23 +809,24 @@ public class WarcraftRpgRuntime
 		return lastDiagnostic
 	function validQuestState(string value) returns boolean
 		return value == QUEST_OFFERED or value == QUEST_ACTIVE or value == QUEST_READY or value == QUEST_COMPLETE or value == QUEST_FAILED
-	function validateRecord(string record) returns boolean
-		let kind=rpgField(record,0)
-		let id=rpgField(record,1)
+	function validateRecord(RpgSnapshotRecord record) returns boolean
+		let kind=record.field(0)
+		let id=record.field(1)
 		if kind == "h"
-			return rpgFieldCount(record) == 18 and heroes.get(id) != null and rpgValidBool(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and S2I(rpgField(record,3)) >= 1 and S2I(rpgField(record,3)) <= RPG_LEVEL_CAP and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5)) and rpgValidInt(rpgField(record,6)) and rpgValidInt(rpgField(record,7)) and rpgValidInt(rpgField(record,8)) and S2I(rpgField(record,8)) >= 0 and S2I(rpgField(record,8)) <= 100 and rpgValidBool(rpgField(record,9)) and rpgValidBool(rpgField(record,10)) and rpgValidInt(rpgField(record,11)) and rpgStableText(rpgField(record,12)) and rpgStableText(rpgField(record,13)) and rpgStableText(rpgField(record,14)) and rpgStableText(rpgField(record,15)) and rpgStableText(rpgField(record,16)) and rpgStableText(rpgField(record,17))
+			return record.count == 18 and record.resolveHero(heroes) != null and rpgValidBool(record.field(2)) and rpgValidInt(record.field(3)) and S2I(record.field(3)) >= 1 and S2I(record.field(3)) <= RPG_LEVEL_CAP and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5)) and rpgValidInt(record.field(6)) and rpgValidInt(record.field(7)) and rpgValidInt(record.field(8)) and S2I(record.field(8)) >= 0 and S2I(record.field(8)) <= 100 and rpgValidBool(record.field(9)) and rpgValidBool(record.field(10)) and rpgValidInt(record.field(11)) and rpgStableText(record.field(12)) and rpgStableText(record.field(13)) and rpgStableText(record.field(14)) and rpgStableText(record.field(15)) and rpgStableText(record.field(16)) and rpgStableText(record.field(17))
 		if kind == "i"
-			return rpgFieldCount(record) == 2 and inventory.getItem(id) != null
+			return record.count == 2 and inventory.getItem(id) != null
 		if kind == "e"
-			return rpgFieldCount(record) == 4 and id != "" and inventory.getItem(rpgField(record,2)) != null and id == inventory.getItem(rpgField(record,2)).slotId and heroes.get(rpgField(record,3)) != null
+			return record.count == 4 and id != "" and inventory.getItem(record.field(2)) != null and id == inventory.getItem(record.field(2)).slotId and heroes.get(record.field(3)) != null
 		if kind == "u"
-			return rpgFieldCount(record) == 3 and id != "" and technologies.get(rpgField(record,2)) != null
+			return record.count == 3 and id != "" and technologies.get(record.field(2)) != null
 		if kind == "q"
-			return rpgFieldCount(record) == 6 and journal.get(id) != null and validQuestState(rpgField(record,2)) and rpgValidInt(rpgField(record,3)) and rpgValidInt(rpgField(record,4)) and rpgValidInt(rpgField(record,5))
+			return record.count == 6 and record.resolveQuest(journal) != null and validQuestState(record.field(2)) and rpgValidInt(record.field(3)) and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5))
 		if kind == "j"
-			return rpgFieldCount(record) == 3 and (id == "" or journal.get(id) != null) and rpgValidInt(rpgField(record,2))
+			return record.count == 3 and (id == "" or journal.get(id) != null) and rpgValidInt(record.field(2))
 		if kind == "t"
-			return rpgFieldCount(record) == 4 and treasures.get(id) != null and rpgValidInt(rpgField(record,2)) and S2I(rpgField(record,2)) >= 0 and S2I(rpgField(record,2)) <= treasures.get(id).clueCount and rpgValidBool(rpgField(record,3))
+			let treasure = record.resolveTreasure(treasures)
+			return record.count == 4 and treasure != null and rpgValidInt(record.field(2)) and S2I(record.field(2)) >= 0 and S2I(record.field(2)) <= treasure.clueCount and rpgValidBool(record.field(3))
 		return false
 	function captureState() returns string
 		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()
@@ -806,51 +849,51 @@ public class WarcraftRpgRuntime
 			let t=treasures.treasures[i]
 			result+="|t,"+t.id+","+t.clueStage.toString()+","+rpgBoolText(t.discovered)
 		return result
-	function applyRecord(string record)
-		let kind=rpgField(record,0)
-		let id=rpgField(record,1)
+	function applyRecord(RpgSnapshotRecord record)
+		let kind=record.field(0)
+		let id=record.field(1)
 		if kind == "h"
-			let h=heroes.get(id)
-			h.recruited=rpgBool(rpgField(record,2))
-			h.level=S2I(rpgField(record,3))
-			h.experience=S2I(rpgField(record,4))
-			h.skillPoints=S2I(rpgField(record,5))
-			h.masteryPoints=S2I(rpgField(record,6))
-			h.commandExperience=S2I(rpgField(record,7))
-			h.loyalty=S2I(rpgField(record,8))
-			h.oathbound=rpgBool(rpgField(record,9))
-			h.incapacitated=rpgBool(rpgField(record,10))
-			h.recoveryDay=S2I(rpgField(record,11))
-			h.assignment=rpgField(record,12)
-			h.regionId=rpgField(record,13)
-			h.professionId=rpgField(record,14)
-			h.personalQuestId=rpgField(record,15)
-			h.signatureProgressionId=rpgField(record,16)
-			h.chosenPerks=rpgField(record,17)
+			let h=record.resolveHero(heroes)
+			h.recruited=rpgBool(record.field(2))
+			h.level=S2I(record.field(3))
+			h.experience=S2I(record.field(4))
+			h.skillPoints=S2I(record.field(5))
+			h.masteryPoints=S2I(record.field(6))
+			h.commandExperience=S2I(record.field(7))
+			h.loyalty=S2I(record.field(8))
+			h.oathbound=rpgBool(record.field(9))
+			h.incapacitated=rpgBool(record.field(10))
+			h.recoveryDay=S2I(record.field(11))
+			h.assignment=record.field(12)
+			h.regionId=record.field(13)
+			h.professionId=record.field(14)
+			h.personalQuestId=record.field(15)
+			h.signatureProgressionId=record.field(16)
+			h.chosenPerks=record.field(17)
 		else if kind == "i"
 			inventory.owned[inventory.ownedCount]=id
 			inventory.ownedCount++
 		else if kind == "e"
 			inventory.equippedSlots[inventory.equippedCount]=id
-			inventory.equippedItems[inventory.equippedCount]=rpgField(record,2)
-			inventory.equippedHeroes[inventory.equippedCount]=rpgField(record,3)
+			inventory.equippedItems[inventory.equippedCount]=record.field(2)
+			inventory.equippedHeroes[inventory.equippedCount]=record.field(3)
 			inventory.equippedCount++
 		else if kind == "u"
-			technologies.unlockedKeys[technologies.unlockedCount]=id+":"+rpgField(record,2)
+			technologies.unlockedKeys[technologies.unlockedCount]=id+":"+record.field(2)
 			technologies.unlockedCount++
 		else if kind == "q"
-			let q=journal.get(id)
-			q.state=rpgField(record,2)
-			q.objective=S2I(rpgField(record,3))
-			q.cooldownUntil=S2I(rpgField(record,4))
-			q.completions=S2I(rpgField(record,5))
+			let q=record.resolveQuest(journal)
+			q.state=record.field(2)
+			q.objective=S2I(record.field(3))
+			q.cooldownUntil=S2I(record.field(4))
+			q.completions=S2I(record.field(5))
 		else if kind == "j"
 			journal.trackedId=id
-			journal.currency=S2I(rpgField(record,2))
+			journal.currency=S2I(record.field(2))
 		else if kind == "t"
-			let t=treasures.get(id)
-			t.clueStage=S2I(rpgField(record,2))
-			t.discovered=rpgBool(rpgField(record,3))
+			let t=record.resolveTreasure(treasures)
+			t.clueStage=S2I(record.field(2))
+			t.discovered=rpgBool(record.field(3))
 	function restoreState(string candidate) returns boolean
 		if not validateState(candidate)
 			return false
@@ -886,13 +929,12 @@ public class WarcraftRpgRuntime
 				treasures.treasures[i].discovered=false
 			lastDiagnostic=""
 			return true
+		let record = new RpgSnapshotRecord()
 		var start=3
 		while start < StringLength(candidate)
-			var finish=SubString(candidate,start,StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish=StringLength(candidate)-start
-			applyRecord(SubString(candidate,start,start+finish))
-			start+=finish+1
+			start=record.read(candidate,start)
+			applyRecord(record)
+		destroy record
 		lastDiagnostic=""
 		return true
 	function validateState(string candidate) returns boolean
@@ -903,6 +945,7 @@ public class WarcraftRpgRuntime
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
 		let keys = new RpgSnapshotKeys()
+		let record = new RpgSnapshotRecord()
 		var start=3
 		var heroRecords=0
 		var itemRecords=0
@@ -912,24 +955,23 @@ public class WarcraftRpgRuntime
 		var journalRecords=0
 		var treasureRecords=0
 		while start < StringLength(candidate)
-			var finish=SubString(candidate,start,StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish=StringLength(candidate)-start
-			let record=SubString(candidate,start,start+finish)
+			start=record.read(candidate,start)
 			if not validateRecord(record)
+				destroy record
 				destroy keys
 				lastDiagnostic="RPG state contains malformed or unknown authority"
 				return false
-			let kind=rpgField(record,0)
-			let id=rpgField(record,1)
+			let kind=record.field(0)
+			let id=record.field(1)
 			var key=kind+","+id
 			if kind == "u"
-				key+=","+rpgField(record,2)
+				key+=","+record.field(2)
 			else if kind == "e"
-				key+=","+rpgField(record,3)
+				key+=","+record.field(3)
 			// Multiple copies of ordinary items are valid inventory authority.
 			// Unique items, character-slot pairs, and other records stay unique.
 			if not (kind == "i" and not inventory.getItem(id).unique) and not keys.claim(key)
+				destroy record
 				destroy keys
 				lastDiagnostic="RPG state contains duplicate authority"
 				return false
@@ -940,7 +982,7 @@ public class WarcraftRpgRuntime
 				keys.ownedCopies[inventory.itemIndex(id)]++
 			else if kind == "e"
 				equipmentRecords++
-				keys.equippedCopies[inventory.itemIndex(rpgField(record,2))]++
+				keys.equippedCopies[inventory.itemIndex(record.field(2))]++
 			else if kind == "u"
 				unlockRecords++
 			else if kind == "q"
@@ -949,7 +991,7 @@ public class WarcraftRpgRuntime
 				journalRecords++
 			else if kind == "t"
 				treasureRecords++
-			start+=finish+1
+		destroy record
 		// Check the entire candidate, independent of record order, before any
 		// authority is changed. Every equipped record reserves one owned copy.
 		for i=0 to inventory.definitionCount-1
