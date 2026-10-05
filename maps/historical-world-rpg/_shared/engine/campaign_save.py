@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 6
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -102,6 +102,7 @@ class MigrationRegistry:
             self.register(2, _migrate_v2_to_v3)
             self.register(3, _migrate_v3_to_v4)
             self.register(4, _migrate_v4_to_v5)
+            self.register(5, _migrate_v5_to_v6)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -203,6 +204,17 @@ def _migrate_v4_to_v5(document: dict[str, Any]) -> dict[str, Any]:
     # empty stable IDs inside arbitrary historical player dictionaries; the
     # new-campaign service supplies the complete identity atomically.
     document["schemaVersion"] = 5
+    return document
+
+
+def _migrate_v5_to_v6(document: dict[str, Any]) -> dict[str, Any]:
+    """Align the release envelope with live clock persistence.
+
+    Headless clocks already live in world.clock and must be preserved verbatim.
+    The Wurst codec supplies scenario-configured defaults for its formerly
+    omitted clock; this generic envelope cannot invent a scenario calendar.
+    """
+    document["schemaVersion"] = 6
     return document
 
 

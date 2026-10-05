@@ -137,3 +137,14 @@ checks remain separate repository gates. Packaging regressions also compare ever
 origin's generated coordinates with its materialized settlement and check that the
 campaign chapter selects `wurst-bootstrap/Bootstrap.wurst` using the tested shared
 writer.
+
+`CampaignTimelineTests.wurst` executes the production clock and campaign codec with
+recording listeners/timers: exact real round trips, simultaneous occurrences,
+fractional ticks, large jumps, deferred saves, malformed records, inconsistent
+cursors, changed generated schedules and timer reconstruction. `CampaignStartupTests`
+also advances the generated production clock through all slot types and independently
+constructed destination/return clocks, asserting time before party reconstruction
+and timer activation. `PlayableCampaignRuntimeTests` migrates and repeatedly resaves
+every supported live schema (1–6). These are interpreter lifecycle checks, not native
+client launch evidence; release status remains
+`blocked_pending_real_forsaken_kingdom_launch_smoke`.

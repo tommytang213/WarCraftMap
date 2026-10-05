@@ -226,7 +226,7 @@ request against the generated origin tuple and the loaded `PHYSICAL_MAP_ID`, or
 restore the existing transfer milestone. Founded polity bridges reconstruct before
 saved country resources are applied, so registration cannot reset their treasury.
 Migration defaults are captured after registration; campaign schemas 1–5 remain
-supported without changing their persisted representation.
+supported through migration to schema 6; source saves are never rewritten on load.
 
 A pending new request takes precedence over an unrelated milestone. After identity,
 authored location and party projection succeed, startup writes a codec checkpoint
@@ -242,3 +242,36 @@ keeps campaign saving, simulation timers, autosaves and gameplay command activat
 closed. There is no destination loader call in regional startup. Interpreter and
 packaging validation do not establish native Warcraft launch success; that remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+## Live campaign clock persistence
+
+`PlayableCampaignState` and `PlayableCampaignCodec` receive the same configured
+`CampaignClock` that Bootstrap installs. Campaign schema 6 requires a separate
+`clock` authority field; `world=instance:...` continues to identify the regional
+instance. Clock record version 2 contains the Gregorian ordinal day, next occurrence
+index, fractional-day accumulator, speed and a fingerprint of the generated schedule
+(including date bounds, initial date and tick rate). Binary significand/exponent
+encoding preserves reals exactly; Warcraft's display-oriented R2S rounding is not
+suitable for repeated save/load. Clock helper version 1 was never part of a live
+campaign save format.
+
+Decode checks the complete clock record and schedule fingerprint before mutation.
+The cursor must consume every occurrence through the saved day without splitting
+simultaneous occurrences or consuming future events. The pristine initial clock can
+still have initial-day occurrences pending. During event delivery, reentrant clock
+advancement/restoration is rejected and ordinary saves use the manager's existing
+deferred-save path. A transfer cannot start until advancement is complete.
+
+Restoration precedes RPG, military, religion, trade and party reconstruction. Regional
+startup enables simulation and clock timers only after checkpoint restoration has
+succeeded. Timers, listener objects and UI pause ownership are transient: manual load
+restarts the attached adapter, map startup attaches a new one, and installing a
+replacement clock detaches the previous timer. Repeated startup never creates a second
+clock timer.
+
+Schemas 1–5 migrate missing clocks to the scenario's configured initial day, zero
+fraction, speed 1 and cursor 0, independent of the live clock at load time. Their
+omitted historical time cannot be recovered. Explicit records are validated and
+preserved; schema 6 rejects missing records. The generic Python save envelope also
+advances to version 6 while preserving its already supported `world.clock` records;
+calendar-dependent migration defaults belong to the live scenario codec.

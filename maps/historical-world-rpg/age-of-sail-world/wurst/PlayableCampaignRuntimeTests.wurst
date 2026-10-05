@@ -4,6 +4,7 @@ import CampaignHandoff
 import CampaignSaveManager
 import CampaignAutosaveScheduler
 import PlayableCampaignRuntime
+import CampaignTimeline
 import WarcraftRegionalRuntime
 import RemoteRegionManagement
 import PlayablePiracy
@@ -95,8 +96,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 @test function playableAutosaveLoadAndIntegrityAreRuntimeWired()
 	let storage = new MemoryStorage()
 	let regional = new WarcraftRegionalAdapter()
-	let state = new PlayableCampaignState(regional)
-	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let state = new PlayableCampaignState(regional, new CampaignClock(1, 100, 1, 1.))
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let scheduler = new CampaignAutosaveScheduler(manager, 10.)
 	state.replaceAuthority("v1;map=west;region=europe;world=w;players=p;quests=q1_open;discovery=lisbon;orders=fleet_sail;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1")
 	scheduler.advance(10., "day-1").assertTrue()
@@ -121,17 +122,17 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	original.setPolityAuthority(ordinary)
 	original.foundPolity("free_nassau","free_republic","Free Nassau","First Captain","nassau","nassau")
 	original.setRecognition("england","recognized")
-	let source=new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let source=new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
 	source.setPiracyRuntime(original)
 	source.replaceAuthority("v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1")
-	let writer=new CampaignSaveManager(storage,new PlayableCampaignCodec(),source)
+	let writer=new CampaignSaveManager(storage,new PlayableCampaignCodec(source.clock),source)
 	writer.save(SAVE_SLOT_MAJOR_MILESTONE,0,"before-travel").assertTrue()
 	let resumed=persistencePiracy()
 	let resumedOrdinary=new PersistencePolityAuthority()
 	resumed.setPolityAuthority(resumedOrdinary)
-	let destination=new PlayableCampaignState(new WarcraftRegionalAdapter())
+	let destination=new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
 	destination.setPiracyRuntime(resumed)
-	let reader=new CampaignSaveManager(storage,new PlayableCampaignCodec(),destination)
+	let reader=new CampaignSaveManager(storage,new PlayableCampaignCodec(destination.clock),destination)
 	reader.load(SAVE_SLOT_MAJOR_MILESTONE,0).assertTrue()
 	resumed.actionSeen("prize_1").assertTrue()
 	resumed.state.havenStanding[0].assertEquals(1)
@@ -160,7 +161,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let migration=persistencePiracy()
 	migration.state.notoriety=99
 	piracyMigrationRuntime=migration
-	let codec=new PlayableCampaignCodec()
+	let codec=new PlayableCampaignCodec(new CampaignClock(1, 100, 1, 1.))
 	let legacyState="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1"
 	let payload=campaignSaveEnvelope(4,"manual_01",SAVE_SLOT_MANUAL,1,"legacy",legacyState)
 	let migrated=codec.decodeMigrateAndValidate(payload,"manual_01")
@@ -179,28 +180,38 @@ class FakeRegionRuntime implements RegionCommandRuntime
 			fixtureState+=";militarySettlements=v1"
 		if schema>=5
 			fixtureState+=";piracy="+piracyMigrationRuntime.migrationAuthority()
+		if schema>=6
+			fixtureState+=";clock="+(new CampaignClock(1, 100, 1, 1.)).initialState()
 		let storage=new MemoryStorage()
-		let state=new PlayableCampaignState(new WarcraftRegionalAdapter())
-		let codec=new PlayableCampaignCodec()
+		let state=new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+		let codec=new PlayableCampaignCodec(state.clock)
 		let manager=new CampaignSaveManager(storage,codec,state)
 		let fixture=campaignSaveEnvelope(schema,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",fixtureState)
 		storage.writeTransactional("manual_01",fixture).assertTrue()
+		state.clock.advanceElapsed(30.75).assertTrue()
+		state.clock.setSpeed(3.).assertTrue()
+		manager.load(SAVE_SLOT_MANUAL,1).assertTrue()
+		state.clock.captureState().assertEquals(state.clock.initialState())
+		storage.read("manual_01").assertEquals(fixture)
+		manager.save(SAVE_SLOT_MANUAL,1,"resaved").assertTrue()
+		(storage.read("manual_01").indexOf("|schema=6|slot=manual_01|")>=0).assertTrue()
+		(codec.decodeMigrateAndValidate(storage.read("manual_01"),"manual_01")!="").assertTrue()
+		let resaved = storage.read("manual_01")
 		manager.load(SAVE_SLOT_MANUAL,1).assertTrue()
 		manager.save(SAVE_SLOT_MANUAL,1,"resaved").assertTrue()
-		(storage.read("manual_01").indexOf("|schema=5|slot=manual_01|")>=0).assertTrue()
-		(codec.decodeMigrateAndValidate(storage.read("manual_01"),"manual_01")!="").assertTrue()
+		storage.read("manual_01").assertEquals(resaved)
 
 @test function currentLiveSchemaCannotSilentlyInventMissingDomains()
-	let codec=new PlayableCampaignCodec()
+	let codec=new PlayableCampaignCodec(new CampaignClock(1, 100, 1, 1.))
 	let incomplete="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade="
-	let fixture=campaignSaveEnvelope(5,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",incomplete)
+	let fixture=campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",incomplete)
 	codec.decodeMigrateAndValidate(fixture,"manual_01").assertEquals("")
 	codec.diagnostic().assertEquals("save is missing authority required by its schema")
 
 @test function transitionCommitsBeforeLoadAndPreservesNormalizedBoundaryPosition()
 	let storage = new MemoryStorage()
-	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
-	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
 	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", true, 1., 0.)
@@ -212,8 +223,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 
 @test function interruptedTransitionKeepsPhysicalRuntimeAndAuthority()
 	let storage = new MemoryStorage()
-	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
-	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
 	let edge = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
@@ -226,8 +237,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 
 @test function changedCityAndQuestSurviveMapRevisit()
 	let storage = new MemoryStorage()
-	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
-	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), new FakeLoader(), "west", "europe")
 	let east = new BoundaryCorrespondence("west_east", "west", "east", "Maps/East.w3x", "europe", false, 1., 0.)
 	let west = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)
@@ -241,8 +252,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 
 @test function invalidPhysicalBoundaryNeverLoadsMap()
 	let storage = new MemoryStorage()
-	let state = new PlayableCampaignState(new WarcraftRegionalAdapter())
-	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
 	let loader = new FakeLoader()
 	let travel = new CampaignTravelRuntime(state, manager, new CampaignAutosaveScheduler(manager, 10.), loader, "west", "europe")
 	let wrongSource = new BoundaryCorrespondence("east_west", "east", "west", "Maps/West.w3x", "europe", false, 1., 0.)

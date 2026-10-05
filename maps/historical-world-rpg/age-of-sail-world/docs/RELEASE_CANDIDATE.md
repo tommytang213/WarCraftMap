@@ -7,7 +7,7 @@ Status: **blocked_pending_real_forsaken_kingdom_launch_smoke**
 The release pipeline builds every physical W3X twice and inspects the packaged W3N.
 Automated checks cover binary structure, physical-map identities, localized terrain
 and pathing, settlement and spawn representations, destination data and arrival
-transforms, and save schemas 1–5. Compiled script checks identify handoff calls and
+transforms, and save schemas 1–6. Compiled script checks identify handoff calls and
 registrations but do not execute them or prove control-flow reachability. Player QA
 is not required to produce this candidate.
 
@@ -19,10 +19,17 @@ is not required to produce this candidate.
 
 ## Save compatibility
 
-This candidate writes campaign save schema 5. It transactionally supports schema 1, 2,
-3, 4, and 5 saves through the documented migration chain. Keep a copy of an older save
+This candidate writes campaign save schema 6. It transactionally supports schema 1, 2,
+3, 4, 5, and 6 saves through the documented migration chain. Keep a copy of an older save
 until it has loaded and been saved successfully. Saves from a newer or modified build are
 not supported; a rejected save is never rewritten.
+
+Schema 6 preserves the live campaign date, fractional day, speed and scheduled-event
+cursor through manual saves, autosaves, recovery checkpoints and map travel. Schemas
+1–5 omitted this clock state. Their deterministic migration starts at the scenario's
+configured initial date with zero fractional progress, speed 1 and all initial
+scheduled occurrences pending. Discarded historical time cannot be recovered from
+those saves. Migration never infers time from play duration or the current map.
 
 ## Real-client smoke status
 
