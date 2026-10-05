@@ -1,0 +1,382 @@
+package CampaignLoadTransactionTests
+
+import CampaignSaveManager
+import CampaignHandoff
+import CampaignRegistration
+import CommandRouter
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import PlayablePiracy
+import WarcraftRpgRuntime
+import WarcraftRegionalRuntime
+import MilitarySettlementRuntime
+import ReligionRuntime
+
+class LoadStorage implements CampaignSaveStorage
+	string array[16] keys
+	string array[16] values
+	int count = 0
+	override function contains(string key) returns boolean
+		for i = 0 to count - 1
+			if keys[i] == key
+				return true
+		return false
+	override function read(string key) returns string
+		for i = 0 to count - 1
+			if keys[i] == key
+				return values[i]
+		return ""
+	override function writeTransactional(string key, string value) returns boolean
+		for i = 0 to count - 1
+			if keys[i] == key
+				values[i] = value
+				return true
+		keys[count] = key
+		values[count] = value
+		count++
+		return true
+	override function diagnostic() returns string
+		return ""
+
+/** Only the native boundaries are replaced. Record the complete live projection,
+ * not just the number of times activation was requested. */
+class LoadPorts implements CampaignPartyProjection, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver
+	CampaignSaveManager manager = null
+	boolean failParty = false
+	boolean probe = false
+	int notifications = 0
+	int partyCalls = 0
+	string partyState = ""
+	string previousParty = ""
+	string equipment = ""
+	string guidance = ""
+	string knowledge = ""
+	string technology = ""
+	string religion = ""
+	string array[32] ids
+	string array[32] forces
+	string array[32] traditions
+	int forceCount = 0
+	string array[32] savedIds
+	string array[32] savedForces
+	string array[32] savedTraditions
+	int savedCount = 0
+	override function beginLoad()
+		savedCount = forceCount
+		for i = 0 to forceCount - 1
+			savedIds[i] = ids[i]
+			savedForces[i] = forces[i]
+			savedTraditions[i] = traditions[i]
+		forceCount = 0
+	override function rollbackLoad()
+		forceCount = savedCount
+		for i = 0 to forceCount - 1
+			ids[i] = savedIds[i]
+			forces[i] = savedForces[i]
+			traditions[i] = savedTraditions[i]
+	override function commitLoad()
+		savedCount = 0
+	function forceIndex(string id) returns int
+		for i = 0 to forceCount - 1
+			if ids[i] == id
+				return i
+		ids[forceCount] = id
+		forceCount++
+		return forceCount - 1
+	function projection() returns string
+		var result = partyState + equipment + guidance + knowledge + technology + religion
+		for i = 0 to forceCount - 1
+			if forces[i] != ""
+				result += forces[i] + traditions[i]
+		return result
+	function probeSave()
+		if probe
+			manager.isSaveSafe().assertFalse()
+			manager.save(SAVE_SLOT_MANUAL, 9, "intermediate").assertFalse()
+			manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		previousParty = partyState
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		partyState = previousParty
+		rpg.reconcile("player")
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		previousParty = ""
+	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+		partyCalls++
+		partyState = rpg.captureState() + R2S(x) + "," + R2S(y)
+		rpg.reconcile("player")
+		probeSave()
+		return not failParty
+	override function clear(WarcraftRpgRuntime rpg)
+		partyState = ""
+	override function load(string path)
+		skip
+	override function afterCampaignLoad()
+		notifications++
+		probeSave()
+	override function clearEquipmentLayer()
+		equipment = ""
+	override function applyEquipment(string heroId, string itemId, int power)
+		equipment += heroId + itemId + power.toString()
+	override function applyEquipmentSet(string setId, int power)
+		equipment += setId + power.toString()
+	override function clearGuidanceLayer()
+		guidance = ""
+	override function applyQuestGuidance(string questId, string precision, string regionId, string destinationId)
+		guidance += questId + precision + regionId + destinationId
+	override function clearTreasureKnowledgeLayer()
+		knowledge = ""
+	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered)
+		knowledge += treasureId + clueStage.toString()
+	override function clearTechnologyLayer(string controllerId)
+		technology = ""
+	override function applyTechnology(string controllerId, string effectId, int magnitude)
+		technology += controllerId + effectId + magnitude.toString()
+	override function clearReligionModifiers(string characterId)
+		religion = ""
+	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)
+		religion += characterId + attributeId + basisPoints.toString()
+	override function playerForController(string controllerId, boolean localDefense) returns player
+		return Player(0)
+	override function createRepresentation(RuntimeForce f, player owner) returns unit
+		forces[forceIndex(f.id)] = f.id + f.controllerId + f.strength.toString() + "," + f.supply.toString() + R2S(f.x) + R2S(f.y) + f.orderId + R2S(f.orderX) + R2S(f.orderY)
+		return null
+	override function removeRepresentation(string stableId)
+		forces[forceIndex(stableId)] = ""
+	override function changeRepresentationOwner(string stableId, player owner)
+		skip
+	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+		traditions[forceIndex(stableId)] = lifePermille.toString() + milestoneAbilityId.toString()
+	override function protectRepresentation(string stableId, boolean shouldProtect)
+		skip
+	override function showManagement(player viewer, string heading, string body)
+		skip
+
+/** Inject failure AFTER the production extension has mutated its live stores. */
+class LoadExtension implements CampaignRuntimeExtension
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	LoadPorts ports
+	boolean fail = false
+	int applications = 0
+	construct(LoadPorts ports)
+		this.ports = ports
+	override function newCampaign(string settlementId)
+		trade.newCampaign(settlementId)
+	override function validate(string document) returns boolean
+		return trade.validate(document)
+	override function beginLoad()
+		trade.beginLoad()
+	override function reconstruct(string document) returns boolean
+		applications++
+		let accepted = trade.reconstruct(document)
+		ports.probeSave()
+		return accepted and not fail
+	override function rollbackLoad()
+		trade.rollbackLoad()
+	override function commitLoad()
+		trade.commitLoad()
+	override function capture() returns string
+		return trade.capture()
+
+/** The real ordinary-polity callback runs even when a late failure is injected. */
+class LoadPolity implements PiratePolityAuthority
+	CampaignPiratePolityAuthority ordinary
+	boolean fail = false
+	int applications = 0
+	construct(PlayableCampaignServices campaign)
+		ordinary = new CampaignPiratePolityAuthority(campaign.countries, campaign.identity, campaign.state.militarySettlements)
+	override function validateReconciliation(PiratePolityState polity, string military) returns boolean
+		return ordinary.validateReconciliation(polity, military)
+	override function foundIndependentPolity(PiratePolityState polity) returns boolean
+		return ordinary.foundIndependentPolity(polity)
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		applications++
+		return ordinary.reconcileFoundedPolity(polity) and not fail
+	override function setRecognition(string polityId, string countryId, string status)
+		ordinary.setRecognition(polityId, countryId, status)
+
+class LoadFixture
+	LoadStorage storage = new LoadStorage()
+	LoadPorts ports = new LoadPorts()
+	PlayableCampaignServices campaign
+	LoadExtension extension = new LoadExtension(ports)
+	LoadPolity polity
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(ports)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(ports)
+	ReligionRuntime religion = new ReligionRuntime(ports)
+	PiracyRuntime piracy = new PiracyRuntime(new PiracyRules(30, 20, 5000, 3, 150))
+	construct()
+		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
+		campaign.state.startupLocked = false
+		campaign.origins.add("england", "England", "europe_west", "west.w3x", "west", "port")
+		campaign.origins.setPosition("england", 12., 34.)
+		campaign.identity.restore("england", "england", "europe_west", "west", "port")
+		campaign.state.replaceAuthority("v2;map=europe_west;region=europe;boundary=;position=0.5;world=instance:west;players=origin:england,allegiance:england,settlement:port;quests=q;discovery=port;orders=fleet_hold;trade=")
+		campaign.countries.registerPolityResources("england", 1000, 50)
+		campaign.countries.registerPolity("portugal", 500)
+		campaign.countries.discover("england")
+		campaign.countries.setStanding("england", 12, 34)
+		let hero = new RpgHero("hero", "Captain", 'Hpal')
+		rpg.heroes.register(hero)
+		rpg.heroes.recruit("hero")
+		hero.level = 20
+		hero.assignment = "field"
+		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "rare", 10, 5))
+		rpg.inventory.grant("coat").assertTrue()
+		rpg.inventory.equip("hero", "coat", hero, 1600, "", "").assertTrue()
+		let tech = new RuntimeTechnology("printing", "Printing", 1450, 100)
+		tech.effectId = "stock"
+		tech.effectMagnitude = 2
+		rpg.technologies.register(tech)
+		rpg.technologies.unlock("player", "printing", 1450, 100, 0, 0).assertTrue()
+		let questDefinition = new RuntimeQuest("quest", "Quest", "regional")
+		questDefinition.precision = "exact"
+		questDefinition.regionId = "europe"
+		questDefinition.destinationId = "port"
+		rpg.journal.register(questDefinition)
+		rpg.journal.accept("quest")
+		rpg.journal.track("quest")
+		rpg.treasures.register(new RuntimeTreasure("treasure", "europe", "cave"))
+		rpg.setProjectionPort(ports)
+		campaign.state.setRpgRuntime(rpg)
+		military.registerSettlement(new SettlementRuntimeState("port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 12., 34.))
+		military.registerForce(new RuntimeForce("fleet", "england", "europe_west", "naval", FORCE_FLEET, 'hfoo', 50, 30, 40., 50.))
+		military.registerTradition(new TraditionState("england", "naval", 2, 100, 'Adef'))
+		military.awardTradition("england", "naval", 100)
+		military.issueOrder("fleet", "sail", 60., 70.)
+		military.activateRegion("europe_west")
+		campaign.state.setMilitarySettlementRuntime(military)
+		let faith = new RuntimeFaith("faith", "Faith", 100, 100)
+		faith.addBenefit(new ReligionBenefit("resolve", 1000, "Resolve"))
+		religion.registerFaith(faith)
+		religion.setCharacterFaith("faith", 200)
+		religion.setInfluence("faith", 100, 100, 100, 100, 0)
+		religion.currencyUnits = 300
+		campaign.registerPiracyRuntime(piracy)
+		polity = new LoadPolity(campaign)
+		piracy.setPolityAuthority(polity)
+		piracy.registerGovernmentForm("free_republic", "First Captain")
+		extension.trade.registerMarket(new RuntimeMarket("port", "grain", 100, 1000, 10, 8))
+		extension.trade.registerStore(new TradeStore("cargo:ship", 50, 500))
+		extension.newCampaign("port")
+		campaign.registerExtension(extension)
+		ports.project(rpg, 101., 202.).assertTrue()
+		ports.manager = campaign.saves
+		campaign.saves.setLoadObserver(ports)
+		campaign.maps.setCommandRegion("africa")
+		campaign.regionSelector.commandRegionId = "africa"
+	function candidate() returns string
+		// A separate production authority supplies changed, independently valid domains.
+		let other = new LoadFixture()
+		other.rpg.heroes.heroes[0].level = 25
+		other.rpg.journal.currency = 77
+		other.rpg.inventory.equippedCount = 0
+		other.military.recordLoss("fleet", 10)
+		other.military.settlements[0].supply = 20
+		other.military.registerSettlement(new SettlementRuntimeState("new_port", "england", "europe_west", 'htow', 'hfoo', 20, 10, 40, 40, 45., 67.))
+		other.religion.setCharacterFaith("faith", 900)
+		other.extension.trade.controller.buy("loaded-trade", other.extension.trade.market, other.extension.trade.hold, 2)
+		other.piracy.polity = new PiratePolityState("free_port", "free_republic", "Free Port", "First Captain", "new_port", "port,new_port")
+		other.piracy.polity.recognition = "portugal,recognized~"
+		other.campaign.countries.registerPolity("free_port", 777)
+		other.campaign.countries.discover("free_port")
+		other.campaign.identity.changeAllegiance("free_port")
+		return other.campaign.state.captureAuthoritativeState()
+	function store(string candidate) returns string
+		let payload = campaign.saves.codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "candidate", candidate)
+		storage.writeTransactional("manual_01", payload)
+		return payload
+	function rejectAndVerify(string candidate)
+		let before = campaign.state.captureAuthoritativeState()
+		let authority = campaign.state.authorityDocument()
+		let projection = ports.projection()
+		let source = store(candidate)
+		ports.probe = true
+		campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+		campaign.state.captureAuthoritativeState().assertEquals(before)
+		campaign.state.authorityDocument().assertEquals(authority)
+		ports.projection().assertEquals(projection)
+		campaign.identity.allegianceId().assertEquals("england")
+		campaign.identity.regionalInstanceId().assertEquals("west")
+		campaign.maps.getCommandRegionId().assertEquals("africa")
+		campaign.regionSelector.getCommandRegionId().assertEquals("africa")
+		campaign.countries.polityIndex("free_port").assertEquals(-1)
+		ports.notifications.assertEquals(0)
+		storage.contains("manual_09").assertFalse()
+		campaign.saves.save(SAVE_SLOT_MANUAL, 2, "after-rejection").assertTrue()
+		campaign.saves.codec.decodeMigrateAndValidate(storage.read("manual_02"), "manual_02").assertEquals(before)
+		storage.read("manual_01").assertEquals(source)
+
+@test function checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation()
+	let f = new LoadFixture()
+	let candidate = f.candidate()
+	f.rejectAndVerify(candidate + ";religion=v1|faith=unknown|investment=1|currency=1|sequence=1|influence=")
+	f.rejectAndVerify(candidate + ";religion=" + f.religion.captureState() + "unknown,1,1,1,1,0~")
+	f.rejectAndVerify(candidate + ";diplomacy=v1|p,unknown,1,1,1,1,1,1")
+	f.extension.applications.assertEquals(0)
+	f.polity.applications.assertEquals(0)
+	f.ports.partyCalls.assertEquals(1)
+
+@test function invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks()
+	let f = new LoadFixture()
+	let candidate = f.candidate()
+	f.rejectAndVerify(candidate + ";trade=port:invalid")
+	f.rejectAndVerify(candidate + ";trade=" + f.extension.capture() + "~unknown_store,1,1,10,grain")
+	f.piracy.polity = new PiratePolityState("free_port", "free_republic", "Free Port", "First Captain", "absent", "absent")
+	let invalid = f.piracy.captureAuthority()
+	f.piracy.polity = null
+	f.rejectAndVerify(candidate + ";piracy=" + invalid)
+	f.polity.applications.assertEquals(0)
+
+@test function lateExtensionFailureRestoresEveryAuthorityAndProjection()
+	let f = new LoadFixture()
+	f.extension.fail = true
+	f.rejectAndVerify(f.candidate())
+	f.extension.applications.assertEquals(1)
+	f.polity.applications.assertEquals(1)
+	// Reusing the rolled-back registry slot must not inherit the rejected polity.
+	f.campaign.countries.registerPolity("later_polity", 42)
+	let added = f.campaign.countries.polityIndex("later_polity")
+	f.campaign.countries.known[added].assertFalse()
+	f.campaign.countries.reputation[added].assertEquals(0)
+	f.campaign.countries.treasury[added].assertEquals(42)
+
+@test function latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce()
+	let f = new LoadFixture()
+	let candidate = f.candidate()
+	f.ports.failParty = true
+	f.rejectAndVerify(candidate)
+	f.ports.failParty = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.ports.notifications.assertEquals(1)
+	f.rpg.heroes.heroes[0].level.assertEquals(25)
+	f.rpg.journal.currency.assertEquals(77)
+	f.campaign.identity.allegianceId().assertEquals("free_port")
+	f.military.settlements[f.military.settlementIndex("new_port")].controllerId.assertEquals("free_port")
+	f.campaign.maps.getCommandRegionId().assertEquals("europe")
+	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
+	let authority = f.campaign.state.captureAuthoritativeState()
+	let projection = f.ports.projection()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.campaign.state.captureAuthoritativeState().assertEquals(authority)
+	f.ports.projection().assertEquals(projection)
+	f.ports.notifications.assertEquals(2)
+	f.campaign.saves.retryDeferred().assertTrue()
+	f.campaign.saves.codec.decodeMigrateAndValidate(f.storage.read("manual_09"), "manual_09").assertEquals(authority)
+
+@test function reportedOrdinaryPolityFailureRollsBackItsOwnMutations()
+	let f = new LoadFixture()
+	f.polity.fail = true
+	f.rejectAndVerify(f.candidate())
+	f.polity.applications.assertEquals(1)
+	f.extension.applications.assertEquals(0)
+
+@test function rejectedLoadRestoresInactiveMilitaryProjectionTarget()
+	let f = new LoadFixture()
+	f.military.activeRegionId = ""
+	f.ports.forceCount = 0
+	f.extension.fail = true
+	f.rejectAndVerify(f.candidate())
+	f.military.activeRegionId.assertEquals("")
+	f.ports.forceCount.assertEquals(0)

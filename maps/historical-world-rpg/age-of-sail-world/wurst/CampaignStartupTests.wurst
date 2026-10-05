@@ -59,6 +59,20 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 	string destination = ""
 	boolean failProjection = false
 	boolean closed = false
+	int savedPlayers = 0
+	real savedX = 0.
+	real savedY = 0.
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		savedPlayers = activePlayers
+		savedX = x
+		savedY = y
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		activePlayers = savedPlayers
+		x = savedX
+		y = savedY
+		rpg.reconcile("player")
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		skip
 	override function load(string path)
 		selectorIdentity.hasOrigin().assertTrue()
 		handoff.contains(HANDOFF_REQUEST).assertTrue()
@@ -97,6 +111,12 @@ class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgPro
 	override function clearReligionModifiers(string characterId)
 		skip
 	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)
+		skip
+	override function beginLoad()
+		skip
+	override function rollbackLoad()
+		skip
+	override function commitLoad()
 		skip
 	override function playerForController(string controllerId, boolean localDefense) returns player
 		return Player(0)
@@ -486,3 +506,60 @@ function originLifecycle(string origin, string mapId)
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.ports.activePlayers.assertEquals(1)
+
+class StartupLoadObserver implements CampaignLoadObserver
+	int calls = 0
+	override function afterCampaignLoad()
+		calls++
+
+function rejectedBoundCheckpoint(string failure, boolean failProjection)
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.choose("england")
+	source.register()
+	source.cache.failKey = HANDOFF_REQUEST
+	source.campaign.startup().assertFalse()
+	let request = source.handoff.readRequest()
+	// Keep the selector binding, but populate a visibly different valid checkpoint.
+	source.campaign.state.rpg.heroes.heroes[0].level = 40
+	source.campaign.state.rpg.journal.currency = 321
+	source.campaign.state.militarySettlements.forces[0].supply = 7
+	source.campaign.countries.treasury[0] = 2345
+	let checkpoint = source.campaign.saves.codec.encode(request.checkpointSlot(), SAVE_SLOT_SESSION_START, 0, "fixture", source.campaign.state.captureAuthoritativeState())
+	source.cache.writeTransactional(request.checkpointSlot(), checkpoint)
+	let restored = new StartupFixture(source.cache, source.saves, "europe_west")
+	restored.register()
+	let before = restored.campaign.state.captureAuthoritativeState()
+	let observer = new StartupLoadObserver()
+	restored.campaign.saves.setLoadObserver(observer)
+	restored.ports.failProjection = failProjection
+	if failure == HANDOFF_REQUEST
+		restored.cache.failKey = failure
+	else
+		restored.saves.failKey = failure
+	restored.campaign.startup().assertFalse()
+	restored.campaign.state.captureAuthoritativeState().assertEquals(before)
+	restored.campaign.identity.hasOrigin().assertFalse()
+	restored.ports.activePlayers.assertEquals(0)
+	observer.calls.assertEquals(0)
+	restored.handoff.readRequest().status.assertEquals("pending")
+	restored.cache.read(request.checkpointSlot()).assertEquals(checkpoint)
+	restored.campaign.state.isSaveSafe().assertFalse()
+	restored.ports.failProjection = false
+	restored.campaign.startup().assertTrue()
+	restored.campaign.state.rpg.heroes.heroes[0].level.assertEquals(40)
+	restored.campaign.state.rpg.journal.currency.assertEquals(321)
+	restored.ports.activePlayers.assertEquals(1)
+	observer.calls.assertEquals(1)
+	restored.cache.read(request.checkpointSlot()).assertEquals(checkpoint)
+
+@test function boundStartupProjectionFailureRollsBackAllDomainsAndRetries()
+	rejectedBoundCheckpoint("", true)
+
+@test function boundStartupSessionFailureRollsBackBeforePublication()
+	rejectedBoundCheckpoint("session_start", false)
+
+@test function boundStartupMilestoneFailureRollsBackBeforePublication()
+	rejectedBoundCheckpoint("major_milestone", false)
+
+@test function boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff()
+	rejectedBoundCheckpoint(HANDOFF_REQUEST, false)

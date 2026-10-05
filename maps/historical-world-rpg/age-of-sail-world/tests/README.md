@@ -137,3 +137,14 @@ checks remain separate repository gates. Packaging regressions also compare ever
 origin's generated coordinates with its materialized settlement and check that the
 campaign chapter selects `wurst-bootstrap/Bootstrap.wurst` using the tested shared
 writer.
+
+`CampaignLoadTransactionTests.wurst` uses the production save manager, codec and
+populated campaign domains with recording native boundaries. Checksummed candidates
+change valid RPG/military records before an invalid religion, diplomacy, trade or
+pirate-territory record. Late ordinary-polity, extension and party failures verify
+complete authority and projection rollback, retained identity/command context,
+no success observers, byte-identical source slots and original subsequent saves.
+Reentrant saves are deferred through observer delivery. Successful retry and
+repeated reconstruction verify the same projections and resources. Startup tests
+also inject projection, session, milestone and acknowledgement failures while
+restoring a bound checkpoint, then retry the retained selector handoff.

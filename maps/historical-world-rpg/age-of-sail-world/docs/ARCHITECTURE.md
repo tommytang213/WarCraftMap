@@ -237,8 +237,32 @@ that checkpoint rather than granting a new party or rewards again. Consumed
 requests use the ordinary milestone; repeated startup on an active service is a
 no-op. Both cache namespaces share one native cache handle in regional maps.
 
-Rejected startup retains durable saves, retires attempted local projections and
-keeps campaign saving, simulation timers, autosaves and gameplay command activation
+Rejected startup retains durable saves, rolls back attempted checkpoint restoration
+and keeps campaign saving, simulation timers, autosaves and gameplay command activation
 closed. There is no destination loader call in regional startup. Interpreter and
 packaging validation do not establish native Warcraft launch success; that remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+## Atomic campaign loads
+
+`CampaignSaveManager` guards manual, recovery and startup checkpoint loads. Before
+reconstruction, `PlayableCampaignState` validates RPG, military/settlement,
+religion, piracy, diplomacy/rewards and trade records. Pirate-polity reconciliation
+checks territory against the candidate military snapshot and country validation
+includes the candidate's founded polity, without invoking live callbacks.
+
+Reconstruction retains a rollback checkpoint for every participating authority,
+including ordinary country registry membership and player identity. Trade owns
+its checkpoint, including the selected market and cargo store. Party and military
+adapters retain their previous native units until commit; rejection removes the
+candidate units and restores the original handles, positions, orders and effects.
+Authority rollback uses the existing domain restore boundaries and restores RPG
+and religion modifier layers. It does not rerun pirate-polity callbacks. The
+authority document and command context are published only on success.
+
+Startup restoration keeps this transaction open through session/milestone writes
+and selector acknowledgement. Publication failure rolls back live state while
+retaining the sequence-bound checkpoint for retry. Load observers run only after
+commit, and saves remain deferred through reconstruction and observer delivery.
+These checkpoints are internal runtime state: persisted schemas 1–5 and the
+original source slots remain unchanged.

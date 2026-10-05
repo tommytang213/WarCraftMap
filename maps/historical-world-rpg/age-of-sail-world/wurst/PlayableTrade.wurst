@@ -237,6 +237,16 @@ function tradeSafeId(string value) returns string
 	return result
 
 /** Authoritative stable-ID trade domain. Frames and command text only project it. */
+function tradeFieldCount(string document,string separator) returns int
+	var count=1
+	for i=0 to StringLength(document)-1
+		if SubString(document,i,i+1)==separator
+			count++
+	return count
+
+function tradeInteger(string value) returns boolean
+	return value!="" and S2I(value).toString()==value
+
 public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	MerchantProgress progress = new MerchantProgress()
 	PlayableTradeController controller = new PlayableTradeController(progress)
@@ -248,6 +258,27 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	int storeCount=0
 	string settlementId = "starting_settlement"
 	int nextTransaction = 1
+	string rollbackState = ""
+	RuntimeMarket rollbackMarket = null
+	TradeStore rollbackHold = null
+	string rollbackMarketId = ""
+	override function beginLoad()
+		rollbackState=capture()
+		rollbackMarket=market
+		rollbackMarketId=market.id
+		rollbackHold=hold
+	override function rollbackLoad()
+		market=rollbackMarket
+		hold=rollbackHold
+		applyState(rollbackState)
+		market=rollbackMarket
+		market.id=rollbackMarketId
+		hold=rollbackHold
+		commitLoad()
+	override function commitLoad()
+		rollbackState=""
+		rollbackMarket=null
+		rollbackHold=null
 	function registerMarket(RuntimeMarket value)
 		markets[marketCount]=value
 		marketCount++
@@ -331,7 +362,85 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				storeState+="~"
 			storeState+=tradeSafeId(stores[i].id)+","+stores[i].cargo.toString()+","+stores[i].money.toString()+","+stores[i].capacity.toString()+","+stores[i].goodId
 		return settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.cargo.toString()+":"+hold.money.toString()+":"+controller.carriedCost.toString()+":"+controller.carriedQuantity.toString()+":"+controller.carriedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+tradeSafeId(hold.id)+":"+hold.capacity.toString()+":"+storeState
+	/** Accept the original summary plus the additive market/store encodings.
+	 * Parse every record and reference before any stock, resource or view changes. */
+	override function validate(string document) returns boolean
+		if document==""
+			return true
+		let fields=tradeFieldCount(document,":")
+		if (fields!=16 and fields!=17 and fields!=19 and fields!=20) or tradeField(document,0)==""
+			return false
+		for i=1 to 14
+			if i!=10
+				let value=tradeField(document,i)
+				if not tradeInteger(value) or (i!=12 and S2I(value)<0)
+					return false
+		if S2I(tradeField(document,3))<1 or S2I(tradeField(document,4))<1 or S2I(tradeField(document,14))<1
+			return false
+		let history=tradeField(document,15)
+		if history!="" and (tradeFieldCount(history,",")>4096 or history.startsWith(",") or history.endsWith(",") or history.indexOf(",,")>=0)
+			return false
+		boolean array[8192] seenMarkets
+		let states=tradeField(document,16)
+		var start=0
+		while start<StringLength(states)
+			var finish=SubString(states,start,StringLength(states)).indexOf("~")
+			if finish<0
+				finish=StringLength(states)-start
+			let row=SubString(states,start,start+finish)
+			let columns=tradeFieldCount(row,",")
+			if columns!=11 and columns!=14
+				return false
+			var found=-1
+			for i=0 to marketCount-1
+				if markets[i].id==compactField(row,0) and markets[i].goodName==compactField(row,1)
+					found=i
+			if found<0 or seenMarkets[found]
+				return false
+			seenMarkets[found]=true
+			for i=2 to columns-1
+				let value=compactField(row,i)
+				if not tradeInteger(value) or (i!=6 and i!=7 and i!=8 and S2I(value)<0)
+					return false
+			if S2I(compactField(row,4))<1 or S2I(compactField(row,5))<1 or S2I(compactField(row,9))>1 or S2I(compactField(row,10))>1
+				return false
+			start+=finish+1
+		let savedHold=tradeField(document,17)
+		if savedHold!=""
+			var found=tradeSafeId(hold.id)==savedHold
+			for i=0 to storeCount-1
+				found=found or tradeSafeId(stores[i].id)==savedHold
+			if not found or not tradeInteger(tradeField(document,18)) or S2I(tradeField(document,18))<S2I(tradeField(document,6))
+				return false
+		boolean array[1024] seenStores
+		let storesState=tradeField(document,19)
+		start=0
+		while start<StringLength(storesState)
+			var finish=SubString(storesState,start,StringLength(storesState)).indexOf("~")
+			if finish<0
+				finish=StringLength(storesState)-start
+			let row=SubString(storesState,start,start+finish)
+			if tradeFieldCount(row,",")!=5
+				return false
+			var found=-1
+			for i=0 to storeCount-1
+				if tradeSafeId(stores[i].id)==compactField(row,0)
+					found=i
+			if found<0 or seenStores[found]
+				return false
+			seenStores[found]=true
+			for i=1 to 3
+				if not tradeInteger(compactField(row,i)) or S2I(compactField(row,i))<0
+					return false
+			if S2I(compactField(row,1))>S2I(compactField(row,3))
+				return false
+			start+=finish+1
+		return true
 	override function reconstruct(string document) returns boolean
+		if not validate(document)
+			return false
+		return applyState(document)
+	function applyState(string document) returns boolean
 		if document==""
 			return true
 		let restoredSettlement=tradeField(document,0)
@@ -339,9 +448,15 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 			return false
 		// Resolve stable projections before applying legacy summary fields. The
 		// current view may point at a different market/store after reconstruction.
+		var foundMarket=false
 		for i=0 to marketCount-1
 			if markets[i].id==restoredSettlement
 				market=markets[i]
+				foundMarket=true
+		// Legacy summary-only saves and settlements without a configured market
+		// use an isolated fallback, never rename an unrelated live market.
+		if not foundMarket
+			market=new RuntimeMarket(restoredSettlement,"",0,0,1,1)
 		let savedHoldId=tradeField(document,17)
 		if savedHoldId!=""
 			for i=0 to storeCount-1

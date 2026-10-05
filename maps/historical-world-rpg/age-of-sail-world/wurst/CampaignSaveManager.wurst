@@ -22,7 +22,9 @@ public interface CampaignStatePort
 	function isSaveSafe() returns boolean
 	function captureAuthoritativeState() returns string
 	function validateAuthoritativeState(string candidate) returns boolean
+	/** Transactional: on false all authority and projections must be restored. */
 	function reconstructRuntime(string candidate) returns boolean
+	function rollbackRuntime()
 	function activateAuthoritativeState(string candidate)
 	function diagnostic() returns string
 public interface CampaignLoadObserver
@@ -55,6 +57,8 @@ public class CampaignSaveManager
 	string lastDiagnostic = ""
 	CampaignLoadObserver array[16] loadObservers
 	int loadObserverCount = 0
+	boolean loading = false
+	string loadingCandidate = ""
 
 	construct(CampaignSaveStorage saveStorage, CampaignSaveCodec saveCodec, CampaignStatePort statePort)
 		storage = saveStorage
@@ -62,7 +66,7 @@ public class CampaignSaveManager
 		state = statePort
 
 	function isSaveSafe() returns boolean
-		return state.isSaveSafe()
+		return not loading and state.isSaveSafe()
 
 	function hasDeferredSave() returns boolean
 		return deferred
@@ -80,7 +84,7 @@ public class CampaignSaveManager
 		if slotId == ""
 			lastDiagnostic = "invalid campaign save slot"
 			return false
-		if not state.isSaveSafe()
+		if not isSaveSafe()
 			deferred = true
 			deferredKind = kind
 			deferredIndex = index
@@ -105,6 +109,9 @@ public class CampaignSaveManager
 		return save(deferredKind, deferredIndex, deferredCreatedAt)
 
 	function load(int kind, int index) returns boolean
+		if loading
+			lastDiagnostic = "campaign load is already in progress"
+			return false
 		let slotId = campaignSlotId(kind, index)
 		if slotId == "" or not storage.contains(slotId)
 			lastDiagnostic = "campaign save slot is missing"
@@ -113,17 +120,56 @@ public class CampaignSaveManager
 		if candidate == ""
 			lastDiagnostic = "campaign save rejected: " + codec.diagnostic()
 			return false
+		return loadCandidate(candidate, true)
+
+	/** Also used by bound startup checkpoints. Startup publishes observers only
+	 * after its recoverable selector handoff has been acknowledged. */
+	function loadCandidate(string candidate, boolean notify) returns boolean
+		if not stageCandidate(candidate)
+			return false
+		commitLoad(notify)
+		return true
+
+	function stageCandidate(string candidate) returns boolean
+		if loading
+			lastDiagnostic = "campaign load is already in progress"
+			return false
+		loading = true
 		if not state.validateAuthoritativeState(candidate)
 			lastDiagnostic = "authoritative state rejected: " + state.diagnostic()
+			loading = false
 			return false
 		if not state.reconstructRuntime(candidate)
 			lastDiagnostic = "runtime reconstruction failed: " + state.diagnostic()
+			loading = false
 			return false
-		state.activateAuthoritativeState(candidate)
+		loadingCandidate = candidate
+		return true
+
+	function abortLoad()
+		if loading
+			state.rollbackRuntime()
+		loadingCandidate = ""
+		loading = false
+
+	function commitLoad(boolean notify)
+		if not loading or loadingCandidate == ""
+			return
+		state.activateAuthoritativeState(loadingCandidate)
+		loadingCandidate = ""
+		if notify
+			publishLoad()
+		loading = false
+		lastDiagnostic = ""
+
+	function publishLoad()
+		// Observers can update identity and command context. A reentrant save
+		// must wait until every observer has seen the committed campaign.
+		let wasLoading = loading
+		loading = true
 		for i = 0 to loadObserverCount - 1
 			loadObservers[i].afterCampaignLoad()
-		lastDiagnostic = ""
-		return true
+		loading = wasLoading
 
 
 

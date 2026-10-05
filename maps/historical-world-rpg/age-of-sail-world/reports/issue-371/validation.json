@@ -1,0 +1,117 @@
+{
+  "checks": {
+    "diffCheck": "pass",
+    "nativeSave": {
+      "nativeClient": "unavailable",
+      "oracle": "pass",
+      "report": "native-save.json"
+    },
+    "packaging": {
+      "archiveSha256": "f76223aa3763a323509c5d1f43919e0c37af27584571860d669566ebe476264f",
+      "command": "./tooling/package_release.sh",
+      "stages": [
+        "scenario validation",
+        "generation",
+        "typecheck",
+        "required Wurst execution",
+        "map assembly",
+        "archive inspection"
+      ],
+      "status": "pass",
+      "transcript": "packaging-verified.log.gz"
+    },
+    "pinnedWurst": {
+      "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "discovered": 111,
+      "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "passed": 111,
+      "report": "execution.json",
+      "status": "pass",
+      "transcript": "execution.log.gz"
+    },
+    "repository": {
+      "automationSuite": {
+        "seconds": 0.546,
+        "tests": 67
+      },
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "scenarioSuite": {
+        "seconds": 1085.712,
+        "tests": 796
+      },
+      "status": "pass",
+      "transcript": "repository-checks.log.gz",
+      "wurstGate": "Executed separately with the pinned container and production packaging pipeline."
+    },
+    "requiredTransactionDiscovery": {
+      "status": "pass",
+      "tests": 1
+    },
+    "saveCompatibility": {
+      "status": "pass",
+      "tests": 6,
+      "transcript": "save-compatibility.log.gz"
+    }
+  },
+  "container": {
+    "buildDirectory": "/tmp/issue371",
+    "compilerUser": "wurstuser",
+    "disposableContainerRemoved": true,
+    "hostToolingChanged": false,
+    "reproductionScript": "run-wurst.sh",
+    "worktreeMount": "/source:read-only"
+  },
+  "implementation": [
+    "Non-mutating validation of every participating domain and candidate pirate-polity territory/country references before reconstruction.",
+    "Rollback of domain authority, ordinary-polity callback mutations, identity, selected trade projections and derived effects; native party and military objects are retained until commit.",
+    "Saves and nested loads are guarded through staging, reconstruction and successful observer delivery.",
+    "Startup checkpoint restoration remains provisional through recovery checkpoint publication and selector acknowledgement; failures restore live state and retain the bound source checkpoint for retry."
+  ],
+  "issue": 371,
+  "outcome": "complete",
+  "playerQARequired": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "revalidation": {
+    "completedAt": "2026-10-05T04:25:52.499020+00:00",
+    "diffCheck": "pass",
+    "nativeSave": {
+      "nativeClient": "unavailable",
+      "oracle": "pass",
+      "report": "native-save.json"
+    },
+    "pinnedWurstAndPackaging": {
+      "command": "Read-only pinned container invoking reports/issue-371/run-wurst.sh",
+      "passed": 111,
+      "status": "pass",
+      "transcript": "revalidation-wurst.log.gz"
+    },
+    "repository": {
+      "automationSuite": {
+        "seconds": 0.541,
+        "tests": 67
+      },
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "scenarioSuite": {
+        "seconds": 1077.17,
+        "tests": 796
+      },
+      "status": "pass",
+      "transcript": "revalidation.log.gz",
+      "wurstGate": "Passed separately using the pinned container, including typechecking, all 111 Wurst tests and release-map packaging."
+    },
+    "saveCompatibility": {
+      "status": "pass",
+      "tests": 6,
+      "transcript": "save-compatibility.log.gz"
+    },
+    "sourceFilesMatchingExecutionEvidence": 44
+  },
+  "saveSchemas": {
+    "current": 5,
+    "formatChanged": false,
+    "oldest": 1,
+    "sourceSlotsModifiedByLoad": false
+  },
+  "sourceBinding": "The revision is the unchanged base checkout; execution.json input hashes bind the tested worktree changes. All 44 local Wurst files match those hashes.",
+  "sourceRevision": "a6e09039bb96d17694a0ae3695ee15b688d7c042"
+}
