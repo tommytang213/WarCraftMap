@@ -9,6 +9,7 @@ import CommandRouter
 import PlayableCampaignRuntime
 import PlayableCountryInteractions
 import PlayableTrade
+import CargoProvenance
 import PlayablePiracy
 import WarcraftRpgRuntime
 import WarcraftRpgProjections
@@ -439,6 +440,30 @@ class LoadFixture
 	f.campaign.countries.known[added].assertFalse()
 	f.campaign.countries.reputation[added].assertEquals(0)
 	f.campaign.countries.treasury[added].assertEquals(42)
+
+@test function failedCampaignLoadRestoresPopulatedCargoLotsAndEarnedStanding()
+	let f = new LoadFixture()
+	let trade = f.extension.trade
+	trade.registerMarket(new RuntimeMarket("other", "grain", 100, 10000, 30, 27))
+	trade.registerStore(new TradeStore("warehouse:other", 50, 100))
+	let ship = trade.stores[0]
+	let warehouse = trade.stores[1]
+	trade.controller.buy("original-buy", trade.markets[0], ship, 3)
+	trade.controller.moveCargo("original-move", ship, warehouse, 2)
+	trade.controller.sell("original-profit", trade.markets[1], warehouse, 1, 1000)
+	trade.progress.standing.assertEquals(17)
+	trade.controller.buy("other-origin", trade.markets[1], ship, 2)
+	trade.selectMarket("other", "grain")
+	trade.hold = warehouse
+	let before = trade.capture()
+	f.extension.fail = true
+	f.rejectAndVerify(f.candidate())
+	trade.capture().assertEquals(before)
+	trade.controller.provenance.costIn(ship.id, "grain").assertEquals(68)
+	trade.controller.provenance.costIn(warehouse.id, "grain").assertEquals(10)
+	trade.progress.standing.assertEquals(17)
+	trade.controller.seen("loaded-trade").assertFalse()
+	trade.controller.moveCargo("original-move", ship, warehouse, 1).assertEquals("Transaction already processed.")
 
 @test function latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce()
 	let f = new LoadFixture()
