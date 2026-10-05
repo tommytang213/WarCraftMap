@@ -138,6 +138,8 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	campaign.state.piracy.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries, campaign.identity, military))
 	campaign.state.piracy.setActionAuthority(new CampaignPiracyActionAuthority(military))
 	configureGeneratedRpg(rpg)
+	configureGeneratedInteractions(rpg.interactions)
+	rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)
 	rpg.setProjectionPort(projections)
 	campaign.state.setRpgRuntime(rpg)
 	military.setRpgRuntime(rpg)

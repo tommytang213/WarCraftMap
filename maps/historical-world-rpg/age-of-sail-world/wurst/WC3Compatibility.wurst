@@ -3,6 +3,20 @@ package WC3Compatibility
 import ErrorHandling
 import Annotations
 
+/** Native movement types mapped to the navigation contract's land, naval,
+ * amphibious and flying classes. Unsupported/static types fail closed. */
+public function compatInteractionMovement(unit actor) returns int
+	let movement = ConvertMoveType(BlzGetUnitIntegerField(actor, UNIT_IF_MOVE_TYPE))
+	if movement == MOVE_TYPE_FOOT or movement == MOVE_TYPE_HORSE
+		return 0
+	if movement == MOVE_TYPE_FLOAT
+		return 1
+	if movement == MOVE_TYPE_AMPHIBIOUS
+		return 2
+	if movement == MOVE_TYPE_FLY
+		return 3
+	return -1
+
 // Stable reusable boundary for Warcraft III patch-specific natives.
 public constant string WC3_COMPAT_PATCH_FAMILY = "v3.0"
 public constant string WC3_COMPAT_SCRIPT_BACKEND = "LUA"
