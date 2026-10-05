@@ -3,22 +3,12 @@ package Bootstrap
 import WC3Compatibility
 import CommandRouter
 import ScenarioData
+import CampaignHandoff
+import CampaignSaveManager
 
 /** The campaign chapter is deliberately a selector, not a gameplay map.  Keep
  * this package's dependency graph bounded: destination maps initialize the
  * regional campaign systems after this map has committed its handoff. */
-class BootstrapOriginHandoff implements OriginSelectionObserver
-	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
-		let cache = compatInitGameCache("AgeOfSailCampaign.w3v")
-		compatStoreString(cache, "bootstrap", "origin", polityId)
-		compatStoreString(cache, "bootstrap", "map", physicalMapId)
-		compatStoreString(cache, "bootstrap", "instance", regionalInstanceId)
-		compatStoreString(cache, "bootstrap", "settlement", settlementId)
-		if compatSaveGameCache(cache)
-			compatLoadPhysicalMap(packagePath)
-		else
-			DisplayTimedTextToPlayer(Player(0), 0., 0., 12., "Campaign start could not be committed. Please choose the origin again.")
-
 NewCampaignOriginController bootstrapOriginSelection = null
 
 function openBootstrapOriginSelection()
@@ -31,7 +21,7 @@ init
 	requireWC3Compatibility()
 	let commands = createCommandRegistry(false)
 	bootstrapOriginSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), new PlayerCampaignIdentity())
-	bootstrapOriginSelection.setObserver(new BootstrapOriginHandoff())
+	bootstrapOriginSelection.setObserver(new CampaignHandoff(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE, "bootstrap"), new WarcraftPhysicalMapLoader()))
 	configureGeneratedOrigins(bootstrapOriginSelection)
 	registerOriginSelection(commands, bootstrapOriginSelection)
 	installCommandRegistry(commands)

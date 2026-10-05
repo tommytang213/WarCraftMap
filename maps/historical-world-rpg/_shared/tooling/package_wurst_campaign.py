@@ -39,7 +39,7 @@ from treasures import validate_catalog as validate_treasure_catalog  # noqa: E40
 STABLE_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 CAMPAIGN_FORMAT = "warcraftmap_physical_maps_v1"
 CAMPAIGN_ARCHIVE_FORMAT = "warcraftmap_campaign_v1"
-LOCAL_PROVENANCE_VERSION = 3
+LOCAL_PROVENANCE_VERSION = 4
 
 
 @dataclass(frozen=True)
@@ -310,20 +310,8 @@ def validate_campaign(config: CampaignConfig) -> dict:
     return world
 
 
-def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap, generated: Path) -> None:
-    runtime_path = generated / GENERATED_DATA
-    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
-    instance_ids = set(physical.regional_instance_ids)
-    settlements = [item for item in world.get("settlements", []) if item.get("regionalInstanceId") in instance_ids]
-    treasure_catalog = world.get("treasureCatalog", {})
-    local_candidates = [item for item in treasure_catalog.get("candidateLocations", []) if item.get("regionalInstanceId") in instance_ids]
-    local_candidate_ids = {item["id"] for item in local_candidates}
-    local_treasures = [item for item in treasure_catalog.get("treasures", []) if local_candidate_ids.intersection(item.get("candidateLocationIds", []))]
-    province_ids = {item["provinceId"] for item in settlements}
-    provinces = [item for item in world.get("provinces", []) if item["id"] in province_ids]
-    polity_ids = {item.get("legalOwnerPolityId") for item in provinces} | {item.get("controllerPolityId") for item in provinces}
-    polities = [item for item in world.get("polities", []) if item["id"] in polity_ids]
-    map_for_instance = {instance_id: item.id for item in config.maps
+def campaign_origin_records(world: dict, maps) -> list[dict]:
+    map_for_instance = {instance_id: item.id for item in maps
                         for instance_id in item.regional_instance_ids}
     settlements_by_polity = {}
     for item in world.get("settlements", []):
@@ -339,6 +327,62 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
             "startingLocation": {"physicalMapId": map_for_instance[start["regionalInstanceId"]],
                 "regionalInstanceId": start["regionalInstanceId"], "settlementId": start["id"]}})
     origins.sort(key=lambda row: (row["name"].casefold(), row["polityId"]))
+    return origins
+
+
+def position_campaign_origins(project: Path, generated: Path, world: dict, maps, origins: list[dict]) -> dict:
+    from materialize_physical_map import physical_layout, player_arrival_world, settlement_placements
+    positions = {}
+    arrivals = {}
+    for physical in maps:
+        if physical.bootstrap:
+            continue
+        settlements = [row for row in world.get("settlements", [])
+                       if row.get("regionalInstanceId") in physical.regional_instance_ids]
+        width, height, cells, layouts = physical_layout(generated, physical)
+        placed = settlement_placements(project, physical, settlements, width, height, cells, layouts)
+        positions.update({row["id"]: row["world"] for row in placed})
+        arrivals[physical.id] = player_arrival_world(width, height, placed)
+    for origin in origins:
+        origin["startingLocation"]["worldPosition"] = positions[origin["startingLocation"]["settlementId"]]
+    return arrivals
+
+
+def campaign_arrival_configuration(arrivals: dict) -> str:
+    return "public function configureGeneratedArrivals(PlayableCampaignState state)\n" + "".join(
+        f'\tstate.addArrival({json.dumps(map_id)}, {point[0]}, {point[1]})\n'
+        for map_id, point in arrivals.items())
+
+
+def campaign_origin_configuration(origins: list[dict], maps) -> str:
+    origin_configuration = "public function configureGeneratedOrigins(OriginCatalog controller)\n"
+    for origin in origins:
+        start = origin["startingLocation"]
+        package_path = next(item.package_path for item in maps if item.id == start["physicalMapId"])
+        values = [origin["polityId"], origin["name"], start["physicalMapId"], package_path,
+                  start["regionalInstanceId"], start["settlementId"]]
+        args = ", ".join(json.dumps(value, ensure_ascii=False) for value in values)
+        origin_configuration += f"\tcontroller.add({args})\n"
+        x, y = start["worldPosition"]
+        origin_configuration += f'\tcontroller.setPosition({json.dumps(origin["polityId"])}, {x}, {y})\n'
+    return origin_configuration
+
+
+def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap, generated: Path) -> None:
+    runtime_path = generated / GENERATED_DATA
+    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+    instance_ids = set(physical.regional_instance_ids)
+    settlements = [item for item in world.get("settlements", []) if item.get("regionalInstanceId") in instance_ids]
+    treasure_catalog = world.get("treasureCatalog", {})
+    local_candidates = [item for item in treasure_catalog.get("candidateLocations", []) if item.get("regionalInstanceId") in instance_ids]
+    local_candidate_ids = {item["id"] for item in local_candidates}
+    local_treasures = [item for item in treasure_catalog.get("treasures", []) if local_candidate_ids.intersection(item.get("candidateLocationIds", []))]
+    province_ids = {item["provinceId"] for item in settlements}
+    provinces = [item for item in world.get("provinces", []) if item["id"] in province_ids]
+    polity_ids = {item.get("legalOwnerPolityId") for item in provinces} | {item.get("controllerPolityId") for item in provinces}
+    polities = [item for item in world.get("polities", []) if item["id"] in polity_ids]
+    origins = campaign_origin_records(world, config.maps)
+    position_campaign_origins(config.project, generated, world, config.maps, origins)
     runtime.update({
         "physicalMap": {
             "id": physical.id, "bootstrap": physical.bootstrap, "packagePath": physical.package_path,
@@ -375,18 +419,7 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     runtime_path.write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     wurst_path = generated / GENERATED_WURST
     text = wurst_path.read_text(encoding="utf-8")
-    origin_configuration = "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n"
-    for origin in origins:
-        start = origin["startingLocation"]
-        package_path = next(item.package_path for item in config.maps if item.id == start["physicalMapId"])
-        values = [origin["polityId"], origin["name"], start["physicalMapId"], package_path,
-                  start["regionalInstanceId"], start["settlementId"]]
-        args = ", ".join(json.dumps(value, ensure_ascii=False) for value in values)
-        origin_configuration += f"\tcontroller.add({args})\n"
-    text = text.replace(
-        "public function configureGeneratedOrigins(NewCampaignOriginController controller)\n\tskip\n",
-        origin_configuration,
-    )
+    origin_configuration = campaign_origin_configuration(origins, config.maps)
     boundary_configuration = "public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n"
     package_by_id = {item.id: item.package_path for item in config.maps}
     local_boundaries = [item for item in config.boundaries if item.source_map_id == physical.id]
@@ -612,6 +645,33 @@ def clean(config: CampaignConfig) -> None:
         shutil.rmtree(root)
 
 
+def _retain_bootstrap_dependencies(compile_root: Path) -> None:
+    """Typecheck only the selector's transitive source graph.
+
+    Wurst typechecks unreferenced files too. Regional registration packages name
+    generated gameplay functions that deliberately do not exist in the selector.
+    Standard-library dependencies are installed separately by Grill.
+    """
+    packages = {}
+    for path in (compile_root / "wurst").rglob("*.wurst"):
+        code = path.read_text(encoding="utf-8")
+        package = re.search(r"^package (\w+)", code, re.M)
+        if package:
+            packages.setdefault(package[1], []).append((path, code))
+    retained, pending = set(), ["Bootstrap"]
+    while pending:
+        name = pending.pop()
+        if name in retained:
+            continue
+        retained.add(name)
+        for _path, code in packages.get(name, []):
+            pending.extend(re.findall(r"^import (?:public )?(\w+)", code, re.M))
+    for name, files in packages.items():
+        if name not in retained:
+            for path, _code in files:
+                path.unlink()
+
+
 def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: bool = True, revision: str | None = None) -> Path:
     config = load_campaign_config(manifest_path)
     base = load_config(config.map_config_path)
@@ -651,6 +711,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
             if not source.is_file():
                 raise PackagingError("bootstrap assembly stage failed: missing minimal Bootstrap.wurst")
             shutil.copy2(source, target)
+            _retain_bootstrap_dependencies(compile_root)
         runtime = json.loads((generated / GENERATED_DATA).read_text(encoding="utf-8"))
         try:
             materialize(config.project, compile_root / "map" / map_config.source_map.name,

@@ -447,7 +447,6 @@ public PlayableTradeRuntime playableTradeRuntime = null
 
 /** Registers the reachable settlement market for new games, resumed maps and loads. */
 public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns PlayableTradeRuntime
-	playableTradeRuntime = new PlayableTradeRuntime()
-	campaign.registerExtension(playableTradeRuntime)
+	playableTradeRuntime = campaign.extension castTo PlayableTradeRuntime
 	commands.register("trade","market","trade <inspect|buy QUANTITY|sell QUANTITY>","Open the current settlement commodity market.","Inspect current authoritative quotes and atomically buy or sell cargo in an eligible ship hold.",1,2,COMMAND_RELEASE,new TradeCommand(playableTradeRuntime,new WarcraftTradePresentation()))
 	return playableTradeRuntime

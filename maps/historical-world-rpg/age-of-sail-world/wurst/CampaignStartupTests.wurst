@@ -1,0 +1,488 @@
+package CampaignStartupTests
+
+import CampaignHandoff
+import CampaignRegistration
+import CampaignSaveManager
+import CommandRouter
+import PlayableCampaignRuntime
+import PlayableTrade
+import WarcraftRegionalRuntime
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import ReligionRuntime
+import PlayablePiracy
+import ScenarioData
+
+class StartupStorage implements CampaignSaveStorage
+	string array[32] keys
+	string array[32] values
+	int count = 0
+	int writes = 0
+	string failKey = ""
+	function find(string key) returns int
+		for i = 0 to count - 1
+			if keys[i] == key
+				return i
+		return -1
+	override function contains(string key) returns boolean
+		return find(key) >= 0
+	override function read(string key) returns string
+		let i = find(key)
+		if i < 0
+			return ""
+		return values[i]
+	override function writeTransactional(string key, string value) returns boolean
+		if failKey == key
+			failKey = ""
+			return false
+		var i = find(key)
+		if i < 0
+			i = count
+			keys[i] = key
+			count++
+		values[i] = value
+		writes++
+		return true
+	override function diagnostic() returns string
+		return "injected commit failure"
+
+/** Only native/UI/storage boundaries are recorded. Authority, generated
+ * registrations, selector writer, startup consumer and codec are production. */
+class StartupPorts implements PhysicalMapLoader, CampaignPartyProjection, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, OriginSelectionPresentation
+	PlayerCampaignIdentity selectorIdentity
+	StartupStorage handoff
+	int loads = 0
+	int spawns = 0
+	int activePlayers = 0
+	real x = 0.
+	real y = 0.
+	string destination = ""
+	boolean failProjection = false
+	boolean closed = false
+	override function load(string path)
+		selectorIdentity.hasOrigin().assertTrue()
+		handoff.contains(HANDOFF_REQUEST).assertTrue()
+		destination = path
+		loads++
+	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+		(rpg.heroes.count > 0 and rpg.inventory.definitionCount > 0 and rpg.projections != null).assertTrue()
+		if failProjection
+			return false
+		this.x = x
+		this.y = y
+		activePlayers = rpg.heroes.strategicRosterSize()
+		spawns++
+		rpg.reconcile("player")
+		return activePlayers > 0
+	override function clear(WarcraftRpgRuntime rpg)
+		activePlayers = 0
+	override function clearEquipmentLayer()
+		skip
+	override function applyEquipment(string heroId, string itemId, int power)
+		skip
+	override function applyEquipmentSet(string setId, int power)
+		skip
+	override function clearGuidanceLayer()
+		skip
+	override function applyQuestGuidance(string questId, string precision, string regionId, string destinationId)
+		skip
+	override function clearTreasureKnowledgeLayer()
+		skip
+	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered)
+		skip
+	override function applyTechnology(string controllerId, string effectId, int magnitude)
+		skip
+	override function clearTechnologyLayer(string controllerId)
+		skip
+	override function clearReligionModifiers(string characterId)
+		skip
+	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)
+		skip
+	override function playerForController(string controllerId, boolean localDefense) returns player
+		return Player(0)
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		return null
+	override function removeRepresentation(string stableId)
+		skip
+	override function changeRepresentationOwner(string stableId, player owner)
+		skip
+	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+		skip
+	override function protectRepresentation(string stableId, boolean shouldProtect)
+		skip
+	override function showManagement(player viewer, string heading, string body)
+		skip
+	override function show(string heading, string rows, int page, int pages)
+		skip
+	override function showError(string message)
+		skip
+	override function close()
+		closed = true
+
+class StartupFixture
+	StartupStorage cache
+	StartupStorage saves
+	StartupPorts ports = new StartupPorts()
+	CampaignHandoff handoff
+	NewCampaignOriginController selector
+	PlayableCampaignServices campaign
+	PlayableTradeRuntime trade
+	construct(StartupStorage cache, StartupStorage saves, string physicalMap)
+		this.cache = cache
+		this.saves = saves
+		ports.handoff = cache
+		ports.selectorIdentity = new PlayerCampaignIdentity()
+		handoff = new CampaignHandoff(cache, ports)
+		selector = new NewCampaignOriginController(8, ports, ports.selectorIdentity)
+		selector.setObserver(handoff)
+		configureGeneratedOrigins(selector)
+		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
+	function register()
+		trade = registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)
+		campaign.registered.assertTrue()
+		// Bound the authority fixture AFTER executing every production registration.
+		// The interpreter has a fixed 20-second limit per test. Catalogue-wide
+		// generation and scale are covered by the repository's separate gates.
+		(campaign.state.rpg.heroes.count > 100 and campaign.state.militarySettlements.settlementCount > 700 and trade.marketCount > 700).assertTrue()
+		campaign.state.rpg.heroes.count = 2
+		campaign.state.rpg.journal.count = 2
+		campaign.state.rpg.treasures.count = 1
+		let military = campaign.state.militarySettlements
+		// The first generated settlement is accompanied by its core and defense.
+		military.settlementCount = 1
+		military.forceCount = 2
+		military.administratorCount = 1
+		military.traditionCount = 1
+		military.warCount = 0
+		let countries = campaign.countries
+		string array[5] selected
+		selected[0] = "england"
+		selected[1] = "portugal"
+		selected[2] = "ming_empire"
+		selected[3] = "songhai_kingdom"
+		selected[4] = "ethiopian_empire"
+		countries.polityCount = 0
+		countries.profileCount = 1
+		countries.conflictCount = 0
+		for i = 0 to 4
+			countries.registerPolity(selected[i], 1000)
+		trade.marketCount = 2
+		trade.storeCount = 1
+		// Keep the selected origin's location in the small fixture for transfer
+		// reconstruction, including origins without a military city record.
+		let row = selector.find("england")
+		military.registerSettlement(new SettlementRuntimeState(row.settlementId, row.polityId, row.physicalMapId, 'htow', 'hfoo', 40, 80, 100, 100, row.x, row.y))
+		campaign.finishRegistration().assertTrue()
+	function choose(string origin)
+		selector.choose(origin).assertTrue()
+	function start(string origin)
+		choose(origin)
+		register()
+		campaign.startup().assertTrue()
+
+function originLifecycle(string origin, string mapId)
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), mapId)
+	source.start(origin)
+	let row = source.selector.find(origin)
+	source.ports.destination.assertEquals(row.packagePath)
+	source.campaign.identity.originId().assertEquals(origin)
+	source.campaign.identity.allegianceId().assertEquals(origin)
+	source.campaign.identity.physicalMapId().assertEquals(mapId)
+	source.campaign.identity.regionalInstanceId().assertEquals(row.regionalInstanceId)
+	source.campaign.identity.settlementId().assertEquals(row.settlementId)
+	source.ports.x.assertEquals(row.x)
+	source.ports.y.assertEquals(row.y)
+	source.ports.activePlayers.assertEquals(1)
+	source.handoff.readRequest().status.assertEquals("consumed")
+	source.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "round-trip").assertTrue()
+	let saved = source.campaign.state.captureAuthoritativeState()
+	source.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	source.campaign.state.captureAuthoritativeState().assertEquals(saved)
+	source.ports.activePlayers.assertEquals(1)
+	source.ports.loads.assertEquals(1)
+
+@test function selectorToEuropeanRegionUsesGeneratedOriginAndCodec()
+	originLifecycle("england", "europe_west")
+
+@test function selectorToAsianRegionUsesPhysicalStartingCoordinates()
+	originLifecycle("ming_empire", "east_asia")
+
+@test function selectorToAfricanRegionUsesGeneratedOriginAndCodec()
+	originLifecycle("songhai_kingdom", "africa")
+
+@test function abstractStartingSettlementStillHasAuthoredPhysicalProjection()
+	originLifecycle("ethiopian_empire", "africa")
+
+@test function selectorCommitFailureAllowsAnotherChoiceAndNeverLoads()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "east_asia")
+	f.cache.failKey = HANDOFF_REQUEST
+	f.selector.choose("england").assertFalse()
+	f.ports.selectorIdentity.hasOrigin().assertFalse()
+	f.ports.closed.assertFalse()
+	f.ports.loads.assertEquals(0)
+	f.cache.contains(HANDOFF_REQUEST).assertFalse()
+	f.choose("ming_empire")
+	f.ports.loads.assertEquals(1)
+	f.handoff.readRequest().origin.assertEquals("ming_empire")
+
+@test function unrelatedMilestoneCannotReplaceNewCampaignAndConsumedStartupIsIdempotent()
+	let cache = new StartupStorage()
+	let saves = new StartupStorage()
+	let old = new StartupFixture(cache, saves, "europe_west")
+	old.start("portugal")
+	old.campaign.state.rpg.journal.currency = 12345
+	old.campaign.majorMilestone("unrelated")
+	let current = new StartupFixture(cache, saves, "east_asia")
+	current.start("ming_empire")
+	current.campaign.state.rpg.journal.currency.assertEquals(0)
+	let before = current.campaign.state.captureAuthoritativeState()
+	let writes = saves.writes
+	current.campaign.startup().assertTrue()
+	current.ports.spawns.assertEquals(1)
+	current.ports.loads.assertEquals(1)
+	saves.writes.assertEquals(writes)
+	let repeated = new StartupFixture(cache, saves, "east_asia")
+	repeated.register()
+	repeated.campaign.startup().assertTrue()
+	repeated.campaign.state.captureAuthoritativeState().assertEquals(before)
+	repeated.ports.activePlayers.assertEquals(1)
+	repeated.ports.loads.assertEquals(0)
+
+@test function startupRequiresRegistrationsAndRejectsEmptyCacheWithoutSaving()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.campaign.startup().assertFalse()
+	f.register()
+	f.campaign.startup().assertFalse()
+	f.campaign.started.assertFalse()
+	f.campaign.state.isSaveSafe().assertFalse()
+	f.saves.writes.assertEquals(0)
+	f.ports.spawns.assertEquals(0)
+
+@test function malformedHandoffsAndWrongPhysicalMapPreserveRecoverySaves()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.register()
+	f.saves.writeTransactional("major_milestone", "recoverable-old-save")
+	string array[7] invalid
+	invalid[0] = "v1|1|pending|england|europe_west|europe_atlantic_isles"
+	invalid[1] = "v1|1|pending|england|europe_west|europe_atlantic_isles|beijing"
+	invalid[2] = "v2|1|pending|england|europe_west|europe_atlantic_isles|london"
+	invalid[3] = "v1|1|pending|ming_empire|east_asia|east_asia_china_north|beijing"
+	invalid[4] = "v1|1|pending|england|europe_west||london"
+	invalid[5] = "v1|x|pending|england|europe_west|europe_atlantic_isles|london"
+	invalid[6] = ""
+	for i = 0 to 6
+		f.cache.writeTransactional(HANDOFF_REQUEST, invalid[i])
+		f.campaign.startup().assertFalse()
+		f.campaign.started.assertFalse()
+		f.campaign.state.isSaveSafe().assertFalse()
+		f.saves.read("major_milestone").assertEquals("recoverable-old-save")
+	f.ports.spawns.assertEquals(0)
+
+@test function failedDestinationProjectionAndCheckpointCommitCanRetry()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	f.saves.writeTransactional("major_milestone", "recoverable-old-save")
+	f.ports.failProjection = true
+	f.campaign.startup().assertFalse()
+	f.ports.activePlayers.assertEquals(0)
+	f.handoff.readRequest().status.assertEquals("pending")
+	f.saves.read("major_milestone").assertEquals("recoverable-old-save")
+	f.ports.failProjection = false
+	f.cache.failKey = f.handoff.readRequest().checkpointSlot()
+	f.campaign.startup().assertFalse()
+	f.saves.read("major_milestone").assertEquals("recoverable-old-save")
+	f.campaign.state.isSaveSafe().assertFalse()
+	f.saves.writeTransactional("session_start", "previous-session")
+	f.saves.failKey = "session_start"
+	f.campaign.startup().assertFalse()
+	f.saves.read("session_start").assertEquals("previous-session")
+	f.saves.read("major_milestone").assertEquals("recoverable-old-save")
+	f.campaign.startup().assertTrue()
+	f.ports.activePlayers.assertEquals(1)
+	f.campaign.state.rpg.heroes.strategicRosterSize().assertEquals(1)
+	f.ports.loads.assertEquals(1)
+
+@test function interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing()
+	let cache = new StartupStorage()
+	let saves = new StartupStorage()
+	let f = new StartupFixture(cache, saves, "europe_west")
+	f.choose("england")
+	f.register()
+	cache.failKey = HANDOFF_REQUEST
+	f.campaign.startup().assertFalse()
+	f.campaign.started.assertFalse()
+	f.campaign.state.isSaveSafe().assertFalse()
+	f.handoff.readRequest().status.assertEquals("pending")
+	let checkpoint = cache.read(f.handoff.readRequest().checkpointSlot())
+	let retried = new StartupFixture(cache, saves, "europe_west")
+	retried.register()
+	retried.campaign.startup().assertTrue()
+	cache.read(f.handoff.readRequest().checkpointSlot()).assertEquals(checkpoint)
+	retried.ports.activePlayers.assertEquals(1)
+	retried.ports.loads.assertEquals(0)
+	retried.handoff.readRequest().status.assertEquals("consumed")
+
+@test function legacySelectorFieldsMigrateWithoutChangingCampaignSaveSchema()
+	let cache = new StartupStorage()
+	cache.writeTransactional("origin", "england")
+	let f = new StartupFixture(cache, new StartupStorage(), "europe_west")
+	f.register()
+	f.campaign.startup().assertFalse()
+	cache.writeTransactional("map", "europe_west")
+	cache.writeTransactional("instance", "europe_atlantic_isles")
+	cache.writeTransactional("settlement", "london")
+	f.campaign.startup().assertTrue()
+	cache.read(HANDOFF_REQUEST).startsWith("v1|1|consumed|").assertTrue()
+	f.ports.loads.assertEquals(0)
+
+@test function populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	let rpg = f.campaign.state.rpg
+	rpg.heroes.heroes[0].experience = 753
+	rpg.journal.currency = 123
+	let military = f.campaign.state.militarySettlements
+	military.settlements[0].reserves = 17
+	military.forces[0].supply = 13
+	let countries = f.campaign.countries
+	countries.treasury[0] = 876
+	countries.reputation[0] = 321
+	countries.granted[0] = true
+	f.trade.markets[0].stock = 23
+	f.trade.progress.standing = 77
+	f.campaign.state.religion.personalInvestment = 42
+	f.campaign.state.religion.currencyUnits = 543
+	let piracy = f.campaign.state.piracy
+	piracy.state.notoriety = piracy.rules.foundingNotoriety
+	piracy.state.piracyWealthMinor = piracy.rules.foundingWealthMinor
+	piracy.state.prizesTaken = piracy.rules.foundingPrizes
+	let capital = military.settlements[0].id
+	piracy.foundPolity("fixture_free_polity", "free_republic", "Fixture Free Polity", "First Captain", capital, capital).startsWith("Independent polity founded").assertTrue()
+	countries.treasury[countries.polityIndex("fixture_free_polity")] = 4321
+	f.campaign.state.piracy.state.notoriety = 37
+	f.campaign.state.piracy.state.prizesTaken = 2
+	f.campaign.identity.changeAllegiance("portugal")
+	// The same travel coordinator writes the checkpoint before loading a region.
+	let boundary = new BoundaryCorrespondence("fixture", "europe_west", "east_asia", "Maps/EastAsia.w3x", "east_asia", false, 1., 0.)
+	f.campaign.travel.transition(boundary, 0.25, "transfer").assertTrue()
+	let destination = new StartupFixture(f.cache, f.saves, "east_asia")
+	destination.ports.spawns.assertEquals(0)
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	let resumed = destination.campaign
+	resumed.identity.originId().assertEquals("england")
+	resumed.identity.allegianceId().assertEquals("portugal")
+	resumed.state.rpg.heroes.heroes[0].experience.assertEquals(753)
+	resumed.state.rpg.journal.currency.assertEquals(123)
+	resumed.state.militarySettlements.settlements[0].reserves.assertEquals(17)
+	resumed.state.militarySettlements.forces[0].supply.assertEquals(13)
+	resumed.countries.treasury[0].assertEquals(876)
+	resumed.countries.reputation[0].assertEquals(321)
+	resumed.countries.granted[0].assertTrue()
+	destination.trade.markets[0].stock.assertEquals(23)
+	destination.trade.progress.standing.assertEquals(77)
+	resumed.state.religion.personalInvestment.assertEquals(42)
+	resumed.state.religion.currencyUnits.assertEquals(543)
+	resumed.state.piracy.state.notoriety.assertEquals(37)
+	resumed.state.piracy.state.prizesTaken.assertEquals(2)
+	resumed.countries.treasury[resumed.countries.polityIndex("fixture_free_polity")].assertEquals(4321)
+	resumed.state.militarySettlements.settlements[0].controllerId.assertEquals("fixture_free_polity")
+	let normalized = resumed.state.captureAuthoritativeState()
+	resumed.saves.save(SAVE_SLOT_MANUAL, 1, "normalized").assertTrue()
+	resumed.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	resumed.state.captureAuthoritativeState().assertEquals(normalized)
+	destination.ports.activePlayers.assertEquals(1)
+	let arrival = resumed.state.arrivalIndex("east_asia")
+	destination.ports.x.assertEquals(resumed.state.arrivalX[arrival])
+	destination.ports.y.assertEquals(resumed.state.arrivalY[arrival])
+	destination.ports.loads.assertEquals(0)
+
+@test function transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	let settlement = source.campaign.identity.settlementId()
+	source.campaign.state.militarySettlements.settlementIndex(settlement).assertEquals(-1)
+	let boundary = new BoundaryCorrespondence("africa_to_europe_west", "africa", "europe_west", "Maps/EuropeWest.w3x", "europe", false, 1., 0.)
+	source.campaign.travel.transition(boundary, 0.25, "transfer").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "europe_west")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.activePlayers.assertEquals(1)
+	let arrival = destination.campaign.state.arrivalIndex("europe_west")
+	(arrival >= 0).assertTrue()
+	destination.ports.x.assertEquals(destination.campaign.state.arrivalX[arrival])
+	destination.ports.y.assertEquals(destination.campaign.state.arrivalY[arrival])
+	destination.ports.loads.assertEquals(0)
+	destination.campaign.identity.settlementId().assertEquals(settlement)
+	destination.campaign.identity.originId().assertEquals("ethiopian_empire")
+	destination.campaign.identity.physicalMapId().assertEquals("europe_west")
+
+@test function checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.start("england")
+	let candidate = source.campaign.state.captureAuthoritativeState() + ";players=origin:unknown,allegiance:england,settlement:london"
+	let payload = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "invalid", candidate)
+	source.saves.writeTransactional("major_milestone", payload)
+	let destination = new StartupFixture(source.cache, source.saves, "europe_west")
+	destination.register()
+	destination.campaign.startup().assertFalse()
+	destination.campaign.started.assertFalse()
+	destination.campaign.state.isSaveSafe().assertFalse()
+	destination.ports.spawns.assertEquals(0)
+	destination.saves.read("major_milestone").assertEquals(payload)
+
+@test function failedMilestonePublicationAndCorruptBoundCheckpointNeverActivate()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	f.saves.writeTransactional("major_milestone", "old-recovery")
+	f.saves.failKey = "major_milestone"
+	f.campaign.startup().assertFalse()
+	f.campaign.started.assertFalse()
+	f.saves.read("major_milestone").assertEquals("old-recovery")
+	let key = f.handoff.readRequest().checkpointSlot()
+	let checkpoint = f.cache.read(key)
+	f.cache.writeTransactional(key, "damaged")
+	f.campaign.startup().assertFalse()
+	f.cache.read(key).assertEquals("damaged")
+	f.saves.read("major_milestone").assertEquals("old-recovery")
+	f.cache.writeTransactional(key, checkpoint)
+	f.campaign.startup().assertTrue()
+	f.ports.activePlayers.assertEquals(1)
+	f.campaign.state.rpg.heroes.strategicRosterSize().assertEquals(1)
+
+@test function invalidTransferCheckpointStopsBeforeAutosavesOrRewrites()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	let payload = f.saves.read("major_milestone")
+	let wrongMap = new StartupFixture(f.cache, f.saves, "east_asia")
+	wrongMap.register()
+	wrongMap.campaign.startup().assertFalse()
+	wrongMap.campaign.state.isSaveSafe().assertFalse()
+	wrongMap.ports.spawns.assertEquals(0)
+	f.saves.read("major_milestone").assertEquals(payload)
+	f.saves.writeTransactional("major_milestone", payload + "corrupt")
+	let corrupted = new StartupFixture(f.cache, f.saves, "europe_west")
+	corrupted.register()
+	corrupted.campaign.startup().assertFalse()
+	corrupted.campaign.started.assertFalse()
+	corrupted.campaign.saves.save(SAVE_SLOT_AUTOSAVE, 1, "blocked").assertFalse()
+	f.saves.contains("autosave_01").assertFalse()
+	f.saves.read("major_milestone").assertEquals(payload + "corrupt")
+
+@test function legacyTransferMigrationUsesRegisteredDefaultsAndCreatesMissingRpgParty()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.register()
+	let legacy = "v1;map=europe_west;region=europe;world=instance:europe_atlantic_isles;players=origin:england,allegiance:portugal,settlement:london;quests=;discovery=london;orders=;trade=;diplomacy=v1;rewards=v1"
+	let payload = campaignSaveEnvelope(2, "major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "legacy", legacy)
+	f.saves.writeTransactional("major_milestone", payload)
+	f.campaign.startup().assertTrue()
+	f.ports.activePlayers.assertEquals(1)
+	f.campaign.identity.originId().assertEquals("england")
+	f.campaign.identity.allegianceId().assertEquals("portugal")
+	f.saves.read("major_milestone").assertEquals(payload)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "migrated").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.ports.activePlayers.assertEquals(1)

@@ -550,7 +550,7 @@ public class WarcraftRpgRuntime
 	/** Establishes a deterministic playable party for a new campaign. Existing
 	 * recruited characters win; otherwise the first scenario character becomes
 	 * the main character. Authority is changed before the Warcraft unit exists. */
-	function startNewCampaign(player owner, real x, real y) returns boolean
+	function prepareNewCampaign() returns boolean
 		if heroes.count == 0
 			return false
 		var main = 0
@@ -559,7 +559,12 @@ public class WarcraftRpgRuntime
 				main=i
 		heroes.heroes[main].recruited=true
 		heroes.heroes[main].assignment="field"
-		return heroes.deploy(heroes.heroes[main].id,owner,x,y)
+		return true
+	function startNewCampaign(player owner, real x, real y) returns boolean
+		if not prepareNewCampaign()
+			return false
+		reconstruct(owner,x,y,"player")
+		return heroes.activeCount() > 0
 	function equipItem(string heroId,string itemId,int year) returns boolean
 		let hero=heroes.get(heroId)
 		if not inventory.equip(heroId,itemId,hero,year,technologies.unlockedOfKind("player","technology"),technologies.unlockedOfKind("player","institution"))

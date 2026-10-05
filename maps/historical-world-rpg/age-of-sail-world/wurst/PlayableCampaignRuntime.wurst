@@ -1,6 +1,7 @@
 package PlayableCampaignRuntime
 
 import CampaignSaveManager
+import CampaignHandoff
 import CampaignAutosaveScheduler
 import CommandRouter
 import MapDiscoveryScreen
@@ -22,7 +23,6 @@ public interface CampaignRuntimeExtension
 	function reconstruct(string authorityDocument) returns boolean
 	function capture() returns string
 
-public constant string CAMPAIGN_CACHE_FILE = "AgeOfSailCampaign.w3v"
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 /** These values mirror the release-save manifest and are checked by the release gate. */
 public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 5
@@ -57,10 +57,23 @@ function lastAuthorityValue(string document, string key) returns string
 	if found < 0
 		return ""
 	let tail = SubString(document, found, StringLength(document))
-	let finish = tail.indexOf(";")
-	if finish < 0
-		return tail
-	return SubString(tail, 0, finish)
+	// Trade's supported encoding uses semicolons inside kind:id store IDs.
+	// A domain boundary is ;key=, not an arbitrary semicolon in its value.
+	var separator = tail.indexOf(";")
+	while separator >= 0
+		var cursor = separator + 1
+		while cursor < StringLength(tail) and cursor <= separator + 32
+			let character = SubString(tail, cursor, cursor + 1)
+			if character == "="
+				return SubString(tail, 0, separator)
+			if character == ";" or character == "," or character == ":" or character == "|" or character == "~"
+				break
+			cursor++
+		let following = SubString(tail, separator + 1, StringLength(tail)).indexOf(";")
+		if following < 0
+			return tail
+		separator += following + 1
+	return tail
 
 function playerAuthorityValue(string document, string key) returns string
 	let players = lastAuthorityValue(document, "players")
@@ -100,6 +113,29 @@ function withoutTravelAuthority(string document) returns string
 			result += ";" + field
 	return result
 
+/** Replace one field without leaving stale authority behind. */
+function replaceCampaignField(string document, string key, string value) returns string
+	let marker = ";" + key + "="
+	let fieldStart = document.indexOf(marker)
+	if fieldStart < 0
+		return document + marker + value
+	let tail = SubString(document, fieldStart + StringLength(marker), StringLength(document))
+	let finish = tail.indexOf(";")
+	if finish < 0
+		return SubString(document, 0, fieldStart) + marker + value
+	return SubString(document, 0, fieldStart) + marker + value + SubString(tail, finish, StringLength(tail))
+
+public interface CampaignPartyProjection
+	function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+	function clear(WarcraftRpgRuntime rpg)
+
+public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
+	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+		rpg.reconstruct(Player(0), x, y, "player")
+		return rpg.heroes.activeCount() > 0
+	override function clear(WarcraftRpgRuntime rpg)
+		rpg.heroes.loseRuntimeObjects()
+
 /**
  * The compact runtime authority uses stable IDs only. Domain payloads are supplied by the
  * gameplay systems (quests, settlements, inventory, fleets, orders and discovery); Warcraft
@@ -108,7 +144,15 @@ function withoutTravelAuthority(string document) returns string
 public class PlayableCampaignState implements CampaignStatePort
 	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
 	string staged = ""
-	string lastLoadedPiracyAuthority = ""
+	boolean startupLocked = false
+	CampaignPartyProjection party = null
+	PlayerCampaignIdentity identity = null
+	string loadedPhysicalMap = ""
+	OriginCatalog origins = null
+	string array[32] arrivalMaps
+	real array[32] arrivalX
+	real array[32] arrivalY
+	int arrivalCount = 0
 	boolean transitionOpen = false
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
@@ -120,6 +164,16 @@ public class PlayableCampaignState implements CampaignStatePort
 	PiracyRuntime piracy = null
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
+	function addArrival(string mapId, real x, real y)
+		arrivalMaps[arrivalCount] = mapId
+		arrivalX[arrivalCount] = x
+		arrivalY[arrivalCount] = y
+		arrivalCount++
+	function arrivalIndex(string mapId) returns int
+		for i = 0 to arrivalCount - 1
+			if arrivalMaps[i] == mapId
+				return i
+		return -1
 	function replaceAuthority(string value)
 		authority = value
 	function setExtension(CampaignRuntimeExtension value)
@@ -143,9 +197,11 @@ public class PlayableCampaignState implements CampaignStatePort
 	function cancelTransition()
 		transitionOpen = false
 	override function isSaveSafe() returns boolean
-		return not transitionOpen
+		return not transitionOpen and not startupLocked
 	override function captureAuthoritativeState() returns string
 		var result = authority
+		if identity != null and identity.hasOrigin()
+			result = replaceCampaignField(result, "players", "origin:" + identity.originId() + ",allegiance:" + identity.allegianceId() + ",settlement:" + identity.settlementId())
 		if countries != null
 			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
 		if rpg != null
@@ -160,6 +216,12 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";trade=" + extension.capture()
 		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
+		if loadedPhysicalMap != "" and (lastAuthorityValue(candidate, "map") != loadedPhysicalMap or playerAuthorityValue(candidate, "origin") == "")
+			lastDiagnostic = "checkpoint does not belong to the loaded physical map or has no player identity"
+			return false
+		if origins != null and origins.find(playerAuthorityValue(candidate, "origin")) == null
+			lastDiagnostic = "checkpoint player origin is not an authored campaign origin"
+			return false
 		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";world=") < 0 or candidate.indexOf(";players=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or candidate.indexOf(";trade=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
@@ -183,7 +245,6 @@ public class PlayableCampaignState implements CampaignStatePort
 			return false
 		// Saves produced before playable trade remain compatible.
 		staged = candidate
-		lastLoadedPiracyAuthority=lastAuthorityValue(candidate,"piracy")
 		if staged.indexOf(";trade=") < 0
 			staged += ";trade="
 		lastDiagnostic = ""
@@ -194,12 +255,6 @@ public class PlayableCampaignState implements CampaignStatePort
 		if rpg != null and not rpg.restoreState(lastAuthorityValue(candidate,"rpg"))
 			lastDiagnostic=rpg.diagnostic()
 			return false
-		if countries != null and not countries.restoreState(lastAuthorityValue(candidate, "diplomacy"))
-			lastDiagnostic = countries.diagnostic()
-			return false
-		regional.recoverActiveRegion()
-		if rpg != null
-			rpg.reconstruct(Player(0),0.,0.,"player")
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
 			return false
@@ -209,10 +264,40 @@ public class PlayableCampaignState implements CampaignStatePort
 		if piracy != null and not piracy.restoreAuthority(lastAuthorityValue(candidate,"piracy"))
 			lastDiagnostic=piracy.lastDiagnostic
 			return false
+		// Founded polities must exist before their saved treasury, standing and
+		// diplomacy are restored; reconciliation must not overwrite those values.
+		if countries != null and not countries.restoreState(lastAuthorityValue(candidate, "diplomacy"))
+			lastDiagnostic = countries.diagnostic()
+			return false
 		if extension != null and not extension.reconstruct(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade runtime reconstruction failed"
 			return false
+		if party != null and lastAuthorityValue(candidate, "rpg") == "v1" and not rpg.prepareNewCampaign()
+			lastDiagnostic = "legacy player could not be reconstructed"
+			return false
+		if party != null and not projectParty(candidate)
+			lastDiagnostic = "local player representation could not be created"
+			return false
+		regional.recoverActiveRegion()
 		return true
+	function projectParty(string candidate) returns boolean
+		if rpg == null or militarySettlements == null or party == null
+			return false
+		// Travel retains the last visited settlement as campaign history. Its
+		// representation may be absent or belong to another physical map. Use
+		// this map's materialized player arrival, independent of city objects.
+		if lastAuthorityValue(candidate, "boundary") != ""
+			let arrival = arrivalIndex(loadedPhysicalMap)
+			return arrival >= 0 and party.project(rpg, arrivalX[arrival], arrivalY[arrival])
+		if origins != null
+			let origin = origins.find(playerAuthorityValue(candidate, "origin"))
+			if origin != null and origin.physicalMapId == loadedPhysicalMap and origin.settlementId == playerAuthorityValue(candidate, "settlement")
+				return party.project(rpg, origin.x, origin.y)
+		let found = militarySettlements.settlementIndex(playerAuthorityValue(candidate, "settlement"))
+		if found < 0
+			return false
+		let settlement = militarySettlements.settlements[found]
+		return party.project(rpg, settlement.x, settlement.y)
 	override function activateAuthoritativeState(string candidate)
 		if countries != null
 			authority = withoutCountryAuthority(staged)
@@ -236,6 +321,13 @@ public function campaignSaveEnvelope(int schema, string slotId, int slotKind, in
 /** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
 public class PlayableCampaignCodec implements CampaignSaveCodec
 	string lastDiagnostic = ""
+	string initialMilitary = ""
+	string initialReligion = ""
+	string initialPiracy = ""
+	function configureMigrationDefaults(MilitarySettlementRuntime military, ReligionRuntime religion, PiracyRuntime piracy)
+		initialMilitary = military.snapshot()
+		initialReligion = religion.captureState()
+		initialPiracy = piracy.migrationAuthority()
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
 		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, authoritativeState)
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
@@ -277,12 +369,21 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			decoded += ";rpg=v1"
 		// Schema 4 introduced military/settlement and religion authority.
 		if sourceSchema < 4 and decoded.indexOf(";militarySettlements=") < 0
-			decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
-		if sourceSchema < 4 and decoded.indexOf(";religion=") < 0 and religionMigrationRuntime != null
-			decoded += ";religion=" + religionMigrationRuntime.captureState()
+			if initialMilitary != ""
+				decoded += ";militarySettlements=" + initialMilitary
+			else
+				decoded += ";militarySettlements=" + militarySettlementRuntime.snapshot()
+		if sourceSchema < 4 and decoded.indexOf(";religion=") < 0
+			if initialReligion != ""
+				decoded += ";religion=" + initialReligion
+			else if religionMigrationRuntime != null
+				decoded += ";religion=" + religionMigrationRuntime.captureState()
 		// Schema 5 introduced piracy. Migration uses a pristine configured authority.
-		if sourceSchema < 5 and decoded.indexOf(";piracy=") < 0 and piracyMigrationRuntime != null
-			decoded += ";piracy=" + piracyMigrationRuntime.migrationAuthority()
+		if sourceSchema < 5 and decoded.indexOf(";piracy=") < 0
+			if initialPiracy != ""
+				decoded += ";piracy=" + initialPiracy
+			else if piracyMigrationRuntime != null
+				decoded += ";piracy=" + piracyMigrationRuntime.migrationAuthority()
 		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
 		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
 			lastDiagnostic = "save is missing authority required by its schema"
@@ -320,13 +421,6 @@ public class BoundaryCorrespondence
 		if value > 1.
 			return 1.
 		return value
-
-public interface PhysicalMapLoader
-	function load(string packagePath)
-
-public class WarcraftPhysicalMapLoader implements PhysicalMapLoader
-	override function load(string packagePath)
-		compatLoadPhysicalMap(packagePath)
 
 /** Commit-first transition coordinator. Loading is the sole irreversible step. */
 public class CampaignTravelRuntime
@@ -567,7 +661,7 @@ public class CampaignMapCommand implements CommandHandler
 public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps)
 	commands.register("map", "worldmap", "map <world|region-id|close>", "Open a discovered campaign map.", "Show legitimately known geography, locations, search areas, and route breadcrumbs without moving the physical character.", 1, 1, COMMAND_RELEASE, new CampaignMapCommand(maps))
 
-public class PlayableCampaignServices implements OriginSelectionObserver, CampaignLoadObserver
+public class PlayableCampaignServices implements CampaignLoadObserver
 	PlayerCampaignIdentity identity
 	PlayableCampaignState state
 	CampaignSaveManager saves
@@ -580,17 +674,32 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries
 	CountryDiplomacyController countryScreen
-	construct(WarcraftRegionalAdapter regional, string physicalMapId, ReligionRuntime religion)
+	CampaignHandoff handoff
+	OriginCatalog origins = new OriginCatalog()
+	string physicalMapId
+	boolean registered = false
+	boolean started = false
+	string lastDiagnostic = ""
+	string initialRpg = ""
+	string initialCountries = ""
+	construct(WarcraftRegionalAdapter regional, string physicalMapId, ReligionRuntime religion, CampaignSaveStorage storage, CampaignHandoff handoff, PhysicalMapLoader loader, CampaignPartyProjection party)
+		this.physicalMapId = physicalMapId
+		this.handoff = handoff
 		identity = new PlayerCampaignIdentity()
 		state = new PlayableCampaignState(regional)
+		state.startupLocked = true
+		state.loadedPhysicalMap = physicalMapId
+		state.party = party
+		state.identity = identity
+		state.origins = origins
 		countries = new PlayableCountryInteractionRuntime(identity)
 		countryScreen = new CountryDiplomacyController(countries, new WarcraftCountryDiplomacyPresentation())
 		state.setCountryRuntime(countries)
 		state.setReligionRuntime(religion)
-		saves = new CampaignSaveManager(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE), new PlayableCampaignCodec(), state)
+		saves = new CampaignSaveManager(storage, new PlayableCampaignCodec(), state)
 		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
 		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
-		travel = new CampaignTravelRuntime(state, saves, autosaves, new WarcraftPhysicalMapLoader(), physicalMapId, logicalRegion)
+		travel = new CampaignTravelRuntime(state, saves, autosaves, loader, physicalMapId, logicalRegion)
 		regionAccess = new PlayableRegionAccess()
 		regionAccess.add("europe", true, true)
 		regionAccess.add("africa", false, false)
@@ -605,93 +714,147 @@ public class PlayableCampaignServices implements OriginSelectionObserver, Campai
 		mapPresentation.setKnowledge(logicalRegion, "", "", "")
 		maps = new MapDiscoveryScreenController(getManagementScreenPauseController(), mapPresentation, logicalRegion, logicalRegion)
 		saves.setLoadObserver(this)
-		// Destination maps resume the last commit. Rejection is intentionally non-destructive.
-		if physicalMapId != "bootstrap_runtime_validation"
-			saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
 	function registerExtension(CampaignRuntimeExtension value)
 		extension = value
 		state.setExtension(value)
-		// Registration follows service construction, so reconstruct the commit
-		// already loaded by a destination map before exposing any commands.
-		value.reconstruct(lastAuthorityValue(state.authorityDocument(), "trade"))
-	/** Piracy registers after its ordinary polity/territory bridges exist. This
-	 * also reconstructs a destination map whose cache load preceded Bootstrap's
-	 * scenario wiring. */
 	function registerPiracyRuntime(PiracyRuntime value)
 		state.setPiracyRuntime(value)
-		var authority=state.lastLoadedPiracyAuthority
-		if authority==""
-			authority=lastAuthorityValue(state.authorityDocument(),"piracy")
-		if authority==""
-			authority=value.captureAuthority()
-		if value.validateAuthority(authority)
-			value.restoreAuthority(authority)
+	function finishRegistration() returns boolean
+		registered = state.rpg != null and state.rpg.projections != null and state.militarySettlements != null and state.religion != null and state.piracy != null and extension != null and countries.peaceAuthority != null and state.piracy.polityAuthority != null and state.piracy.actionAuthority != null and origins.count > 0
+		registered = registered and state.arrivalCount > 0
+		if registered
+			(saves.codec castTo PlayableCampaignCodec).configureMigrationDefaults(state.militarySettlements, state.religion, state.piracy)
+		return registered
+	function diagnostic() returns string
+		return lastDiagnostic
+	function rejectStartup(string reason) returns boolean
+		state.startupLocked = true
+		lastDiagnostic = reason
+		if state.party != null and state.rpg != null
+			state.party.clear(state.rpg)
+		if state.militarySettlements != null
+			let military = state.militarySettlements
+			for i = 0 to military.forceCount - 1
+				if military.forces[i].regionId == military.activeRegionId
+					military.adapter.removeRepresentation(military.forces[i].id)
+		state.regional.retireRegion(state.regional.activeRegionId)
+		return false
+	function loadStartupPayload(string payload, CampaignStartRequest request) returns boolean
+		let candidate = saves.codec.decodeMigrateAndValidate(payload, request.checkpointSlot())
+		if candidate != "" and (playerAuthorityValue(candidate, "origin") != request.origin or lastAuthorityValue(candidate, "world") != "instance:" + request.instanceId or playerAuthorityValue(candidate, "settlement") != request.settlementId)
+			return rejectStartup("The startup checkpoint does not match its request.")
+		if candidate == "" or not state.validateAuthoritativeState(candidate)
+			return rejectStartup("Campaign startup checkpoint rejected: " + saves.codec.diagnostic() + " " + state.diagnostic())
+		if not state.reconstructRuntime(candidate)
+			return rejectStartup("Campaign startup reconstruction failed: " + state.diagnostic())
+		state.activateAuthoritativeState(candidate)
+		afterCampaignLoad()
+		return true
+	function startNewCampaign(CampaignStartRequest request) returns boolean
+		// Restore registered defaults on a retry, never register them over saved mutations.
+		if initialRpg == ""
+			initialRpg = state.rpg.captureState()
+			initialCountries = countries.captureState()
+		if not state.rpg.restoreState(initialRpg) or not countries.restoreState(initialCountries)
+			return rejectStartup("Campaign defaults could not be restored.")
+		identity.restore(request.origin, request.origin, request.mapId, request.instanceId, request.settlementId)
+		extension.newCampaign(request.settlementId)
+		countries.discover(request.origin)
+		state.replaceAuthority("v2;map=" + request.mapId + ";region=" + logicalRegionForPhysicalMap(request.mapId) + ";boundary=;position=0.5;world=instance:" + request.instanceId + ";players=origin:" + request.origin + ",allegiance:" + request.origin + ",settlement:" + request.settlementId + ";quests=;discovery=" + request.settlementId + ";orders=;trade=")
+		if not state.rpg.prepareNewCampaign() or not state.projectParty(state.authorityDocument())
+			return rejectStartup("The starting player representation could not be initialized.")
+		let candidate = state.captureAuthoritativeState()
+		if not state.validateAuthoritativeState(candidate)
+			return rejectStartup(state.diagnostic())
+		let payload = saves.codec.encode(request.checkpointSlot(), SAVE_SLOT_SESSION_START, 0, "campaign-start", candidate)
+		if payload == "" or not handoff.storage.writeTransactional(request.checkpointSlot(), payload)
+			return rejectStartup("The new campaign checkpoint could not be committed.")
+		afterCampaignLoad()
+		return true
+	/** The only regional entry point. Registrations and ports must be complete;
+	 * no clocks, autosaves or commands are enabled until this returns true. */
+	function startup() returns boolean
+		if started
+			return true
+		if not registered
+			return rejectStartup("Campaign registration is incomplete.")
+		let request = handoff.readRequest()
+		if handoff.hasRequest() and (request == null or not request.valid(origins))
+			return rejectStartup("The campaign start request is missing fields or does not match the authored origins.")
+		if request != null and request.status == "pending"
+			if request.mapId != physicalMapId
+				return rejectStartup("The campaign start request targets a different physical map.")
+			// Each sequence owns its checkpoint; corrupt records are never mistaken
+			// for an unrelated old save and silently overwritten.
+			if handoff.storage.contains(request.checkpointSlot())
+				if not loadStartupPayload(handoff.storage.read(request.checkpointSlot()), request)
+					return false
+			else if not startNewCampaign(request)
+				return false
+			// Initialization and its recoverable checkpoint succeeded. Publish the
+			// campaign through the existing codec before acknowledging consumption.
+			let candidate = state.captureAuthoritativeState()
+			let session = saves.codec.encode("session_start", SAVE_SLOT_SESSION_START, 0, "campaign-start", candidate)
+			if not saves.storage.writeTransactional("session_start", session)
+				return rejectStartup("The session checkpoint could not be committed; the start request is recoverable.")
+			let milestone = saves.codec.encode("major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "campaign-start", candidate)
+			if not saves.storage.writeTransactional("major_milestone", milestone)
+				return rejectStartup("The campaign milestone could not be committed; the start request is recoverable.")
+			if not handoff.acknowledge(request)
+				return rejectStartup("Campaign acknowledgement was interrupted; the start checkpoint is recoverable.")
+		else
+			if not saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
+				return rejectStartup(saves.diagnostic())
+		started = true
+		state.startupLocked = false
+		lastDiagnostic = ""
+		return true
 	function sessionStart(string createdAt)
 		saves.save(SAVE_SLOT_SESSION_START, 0, createdAt)
 	function majorMilestone(string createdAt)
 		saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
-	function reconstructPartyAt(string settlementId,boolean newCampaign)
-		if state.rpg == null
-			return
-		var x=0.
-		var y=0.
-		if state.militarySettlements != null
-			let found=state.militarySettlements.settlementIndex(settlementId)
-			if found >= 0
-				x=state.militarySettlements.settlements[found].x
-				y=state.militarySettlements.settlements[found].y
-		if newCampaign
-			state.rpg.startNewCampaign(Player(0),x,y)
-		else
-			state.rpg.reconstruct(Player(0),x,y,"player")
-	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
-		let logicalRegion = logicalRegionForPhysicalMap(physicalMapId)
-		if extension != null
-			extension.newCampaign(settlementId)
-		countries.discover(polityId)
-		state.replaceAuthority("v2;map=" + physicalMapId + ";region=" + logicalRegion + ";boundary=;position=0.5;world=instance:" + regionalInstanceId + ";players=origin:" + polityId + ",allegiance:" + polityId + ",settlement:" + settlementId + ";quests=;discovery=" + settlementId + ";orders=;trade=")
-		travel.startAt(physicalMapId, logicalRegion)
-		regionAccess.revealAndAuthorize(logicalRegion)
-		regionSelector.setPhysicalRegionId(logicalRegion)
-		mapPresentation.setKnowledge(logicalRegion, settlementId, "", "")
-		maps.setPhysicalRegion(logicalRegion)
-		maps.setCommandRegion(logicalRegion)
-		reconstructPartyAt(settlementId,true)
-		// The cache commit must precede the irreversible cross-map handoff.
-		if saves.save(SAVE_SLOT_SESSION_START, 0, "campaign-start")
-			travel.loader.load(packagePath)
 	override function afterCampaignLoad()
-		let loadedMap = lastAuthorityValue(state.authorityDocument(), "map")
-		let loadedRegion = lastAuthorityValue(state.authorityDocument(), "region")
-		if loadedMap != "" and loadedRegion != ""
-			let loadedOrigin = playerAuthorityValue(state.authorityDocument(), "origin")
-			var loadedAllegiance = playerAuthorityValue(state.authorityDocument(), "allegiance")
-			let loadedSettlement = playerAuthorityValue(state.authorityDocument(), "settlement")
-			if loadedAllegiance == ""
-				loadedAllegiance = loadedOrigin
-			identity.restore(loadedOrigin, loadedAllegiance, loadedMap, loadedRegion, loadedSettlement)
-			travel.startAt(loadedMap, loadedRegion)
-			regionAccess.revealAndAuthorize(loadedRegion)
-			regionSelector.setPhysicalRegionId(loadedRegion)
-			maps.setPhysicalRegion(loadedRegion)
-			maps.setCommandRegion(loadedRegion)
-			reconstructPartyAt(loadedSettlement,false)
+		let document = state.authorityDocument()
+		let loadedMap = lastAuthorityValue(document, "map")
+		let loadedRegion = lastAuthorityValue(document, "region")
+		let loadedOrigin = playerAuthorityValue(document, "origin")
+		var loadedAllegiance = playerAuthorityValue(document, "allegiance")
+		let loadedSettlement = playerAuthorityValue(document, "settlement")
+		var instance = lastAuthorityValue(document, "world")
+		if instance.startsWith("instance:")
+			instance = SubString(instance, 9, StringLength(instance))
+		if loadedAllegiance == ""
+			loadedAllegiance = loadedOrigin
+		identity.restore(loadedOrigin, loadedAllegiance, loadedMap, instance, loadedSettlement)
+		travel.startAt(loadedMap, loadedRegion)
+		regionAccess.revealAndAuthorize(loadedRegion)
+		regionSelector.setPhysicalRegionId(loadedRegion)
+		mapPresentation.setKnowledge(loadedRegion, loadedSettlement, "", "")
+		maps.setPhysicalRegion(loadedRegion)
+		maps.setCommandRegion(loadedRegion)
 
 public PlayableCampaignServices campaignServices = null
 timer campaignAutosaveTimer = null
 
 function campaignAutosaveTick()
-	if campaignServices != null
+	if campaignServices != null and campaignServices.started
 		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
 public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, ReligionRuntime religion, PiracyRuntime piracy) returns PlayableCampaignServices
 	religionMigrationRuntime = religion
 	piracyMigrationRuntime = piracy
-	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion)
+	// Both namespaces must share the same cache handle: saving an independently
+	// opened handle must not replace records committed through the other one.
+	let cache = compatInitGameCache(CAMPAIGN_CACHE_FILE)
+	campaignServices = new PlayableCampaignServices(regionalRuntime, physicalMapId, religion, new WarcraftCampaignSaveStorage(cache, "campaign"), new CampaignHandoff(new WarcraftCampaignSaveStorage(cache, "bootstrap"), new WarcraftPhysicalMapLoader()), new WarcraftPhysicalMapLoader(), new WarcraftCampaignPartyProjection())
 	registerCampaignSaveCommands(commands, campaignServices.saves)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
 	registerCampaignMapCommand(commands, campaignServices.maps)
 	registerGovernmentRewards(commands, campaignServices.countryScreen)
+	return campaignServices
+
+public function enableCampaignAutosaves()
+	if campaignServices == null or not campaignServices.started or campaignAutosaveTimer != null
+		return
 	campaignAutosaveTimer = CreateTimer()
 	TimerStart(campaignAutosaveTimer, CAMPAIGN_AUTOSAVE_SECONDS, true, function campaignAutosaveTick)
-	return campaignServices

@@ -121,3 +121,19 @@ encoded checkpoint/resume path has the same normalized final state:
 python3 tooling/run_full_world_soak.py --profile complete_multi_century \
   --summary-out _build/stress/full-world-multi-century.json
 ```
+
+`CampaignStartupTests.wurst` executes the production selector writer, registration
+order, regional consumer and campaign codec through recording cache, loader and
+projection ports. It covers generated European, Asian and African origins,
+including a starting settlement without a military city record; interrupted
+commits/acknowledgements; invalid and consumed requests; unrelated older milestones;
+and populated/legacy transfers. Physical arrival points share the map
+materialization calculation, and transfers from abstract starting settlements
+reconstruct without a military city object. Fixtures execute every generated
+registration, then bound the authority population before exercising the lifecycle to stay within
+the pinned interpreter's 20-second limit per test. No authority domain, codec step,
+registration phase or lifecycle callback is replaced. Catalogue-wide and scale
+checks remain separate repository gates. Packaging regressions also compare every
+origin's generated coordinates with its materialized settlement and check that the
+campaign chapter selects `wurst-bootstrap/Bootstrap.wurst` using the tested shared
+writer.

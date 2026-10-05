@@ -1,0 +1,46 @@
+{
+  "sourceRevision": "484c62a8ef08248898f8e1f41e73638d608aac1a",
+  "isolation": "read-only checkout mount, private /tmp source and build copy",
+  "nativeClientStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "stages": [
+    {
+      "name": "release-candidate",
+      "command": [
+        "python3",
+        "tooling/package_release_candidate.py",
+        "--source-revision",
+        "484c62a8ef08248898f8e1f41e73638d608aac1a"
+      ],
+      "returnCode": 0,
+      "seconds": 1390.08
+    },
+    {
+      "name": "artifact-verification",
+      "command": [
+        "python3",
+        "tooling/verify_ci_release_artifact.py",
+        "_build/release/AgeOfSailWorld-phase9-rc1.zip",
+        "--source-revision",
+        "484c62a8ef08248898f8e1f41e73638d608aac1a",
+        "--evidence",
+        "/tmp/issue365-workspace/evidence/ci-artifact.json"
+      ],
+      "returnCode": 0,
+      "seconds": 24.48
+    },
+    {
+      "name": "native-save",
+      "command": [
+        "python3",
+        "tooling/run_native_save_regression.py"
+      ],
+      "returnCode": 0,
+      "seconds": 0.04
+    }
+  ],
+  "artifact": {
+    "name": "AgeOfSailWorld-phase9-rc1.zip",
+    "bytes": 23358627,
+    "sha256": "0fa4ef86cc96ed8b8c628ef799a85afbdf621c25b676ba89172af7c08f9d6578"
+  }
+}

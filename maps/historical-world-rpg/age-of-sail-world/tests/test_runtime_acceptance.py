@@ -288,6 +288,20 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("production calls absent" in x for x in result["failures"]))
 
+    def test_inlined_religion_requires_actual_registration_and_initialization(self):
+        script = self.executable_script()
+        # The wrapper disappears in the production Lua after registration was
+        # moved out of Bootstrap, while the domain operations remain calls.
+        self.assertNotIn("configureGeneratedReligion", script)
+        self.assertEqual("pass", runtime.verify_compiled_script(script)["status"])
+        for operation in ("registerFaith", "setCharacterFaith", "setInfluence"):
+            broken = script.replace(f"  {operation}()", "")
+            broken += '\nwurst_stack[wurst_stack_depth] = "when calling configureGeneratedReligion in CampaignRegistration, line 119"\n'
+            result = runtime.verify_compiled_script(broken)
+            self.assertEqual("fail", result["status"])
+            self.assertTrue(any(f"religion: production calls absent: {operation}" in failure
+                                for failure in result["failures"]))
+
     def test_compiled_lua_payload_budgets_reject_pathological_line(self):
         result = runtime.verify_compiled_script("function main() " +
                                                 "x" * (runtime.MAX_LUA_LINE_BYTES + 1) + " end")

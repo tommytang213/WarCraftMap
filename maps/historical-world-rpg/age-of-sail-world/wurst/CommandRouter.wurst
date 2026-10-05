@@ -280,6 +280,7 @@ public interface OriginSelectionPresentation
 	function close()
 
 public interface OriginSelectionObserver
+	function commitSelection(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean
 	function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 
 public class WarcraftOriginPresentation implements OriginSelectionPresentation
@@ -291,7 +292,9 @@ public class WarcraftOriginPresentation implements OriginSelectionPresentation
 		DisplayTimedTextToPlayer(Player(0), 0., 0., 12., "Origin confirmed. Your current allegiance begins there, but may change later.")
 		PauseGame(false)
 
-class OriginDefinition
+public class OriginDefinition
+	real x = 0.
+	real y = 0.
 	string polityId
 	string name
 	string physicalMapId
@@ -306,10 +309,31 @@ class OriginDefinition
 		this.regionalInstanceId = regionalInstanceId
 		this.settlementId = settlementId
 
-/** Searchable/paged pre-game selector; gameplay remains locked until choose succeeds. */
-public class NewCampaignOriginController
+/** Generated onboarding records shared by the selector and destination validator. */
+public class OriginCatalog
 	OriginDefinition array[256] definitions
 	int count = 0
+	function find(string polityId) returns OriginDefinition
+		for i = 0 to count - 1
+			if definitions[i].polityId == polityId
+				return definitions[i]
+		return null
+	function setPosition(string polityId, real x, real y)
+		let row = find(polityId)
+		if row != null
+			row.x = x
+			row.y = y
+	function accepts(string polityId, string mapId, string instanceId, string settlementId) returns boolean
+		let row = find(polityId)
+		return row != null and row.physicalMapId == mapId and row.regionalInstanceId == instanceId and row.settlementId == settlementId
+	function add(string polityId, string name, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
+		if polityId == "" or name == "" or physicalMapId == "" or packagePath == "" or regionalInstanceId == "" or settlementId == "" or find(polityId) != null or count >= 256
+			return
+		definitions[count] = new OriginDefinition(polityId, name, physicalMapId, packagePath, regionalInstanceId, settlementId)
+		count++
+
+/** Searchable/paged pre-game selector; gameplay remains locked until choose succeeds. */
+public class NewCampaignOriginController extends OriginCatalog
 	int pageSize
 	string query = ""
 	OriginSelectionPresentation presentation
@@ -325,15 +349,6 @@ public class NewCampaignOriginController
 
 	function setObserver(OriginSelectionObserver observer)
 		this.observer = observer
-
-	function add(string polityId, string name, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
-		if polityId == "" or name == "" or physicalMapId == "" or packagePath == "" or regionalInstanceId == "" or settlementId == ""
-			return
-		for i = 0 to count - 1
-			if definitions[i].polityId == polityId
-				return
-		definitions[count] = new OriginDefinition(polityId, name, physicalMapId, packagePath, regionalInstanceId, settlementId)
-		count++
 
 	function matches(OriginDefinition row) returns boolean
 		let wanted = StringCase(query, false)
@@ -381,10 +396,13 @@ public class NewCampaignOriginController
 		for i = 0 to count - 1
 			let row = definitions[i]
 			if row.polityId == polityId
+				if observer != null and not observer.commitSelection(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
+					presentation.showError("Campaign start could not be committed. Please choose the origin again.")
+					return false
 				if identity.startCampaign(row.polityId, row.physicalMapId, row.regionalInstanceId, row.settlementId)
+					presentation.close()
 					if observer != null
 						observer.campaignStarted(row.polityId, row.physicalMapId, row.packagePath, row.regionalInstanceId, row.settlementId)
-					presentation.close()
 					return true
 		presentation.showError("That polity is not active in the authoritative 1450 world.")
 		return false
