@@ -25,6 +25,14 @@ directory:
 python3 ../_shared/tooling/run_wurst_tests.py package.json
 ```
 
+`PlayableTradeTests.wurst` exercises store/commodity/origin FIFO provenance,
+uncosted cargo, split transfers and sales, integer rounding, transaction rejection
+and replay, and the production trade serializer inside campaign envelopes 1–6.
+Literal legacy fixtures cover every supported aggregate layout.
+`CampaignLoadTransactionTests.wurst` checks rollback with populated lots and
+earned merchant standing. The versioned contract and migration limitation are
+documented in [LIVE_TRADE_SAVE.md](../docs/LIVE_TRADE_SAVE.md).
+
 The same gate is required by `automation/run_checks.sh`, the Wurst workflow,
 map/campaign packaging, and the RC upload verifier. See
 `reports/issue-363-execution.md` for the failure classification and retained

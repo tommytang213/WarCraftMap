@@ -1,0 +1,132 @@
+package CargoProvenance
+
+/** FIFO acquisition history, mirroring engine/trade.py. Store and commodity
+ * IDs are authority; no Warcraft handle or selected market owns these lots. */
+public constant int CARGO_LOT_LIMIT = 4096
+
+public class CargoLot
+	string storeId
+	string goodId
+	int quantity
+	int cost
+	string origin
+	construct(string storeId, string goodId, int quantity, int cost, string origin)
+		this.storeId = storeId
+		this.goodId = goodId
+		this.quantity = quantity
+		this.cost = cost
+		this.origin = origin
+
+/** floor(cost * take / quantity), without overflowing the intermediate product.
+ * The caller keeps the unallocated integer remainder on the surviving lot. */
+public function allocateCargoCost(int cost, int take, int quantity) returns int
+	var result = (cost div quantity) * take
+	var fraction = cost mod quantity
+	var whole = 0
+	var remainder = 0
+	var multiplier = take
+	while multiplier > 0
+		if multiplier mod 2 == 1
+			result += whole
+			if remainder >= quantity - fraction
+				result++
+				remainder -= quantity - fraction
+			else
+				remainder += fraction
+		multiplier = multiplier div 2
+		if multiplier > 0
+			whole *= 2
+			if fraction >= quantity - fraction
+				whole++
+				fraction -= quantity - fraction
+			else
+				fraction *= 2
+	return result
+
+public class CargoAllocation
+	int quantity = 0
+	int cost = 0
+	int routeQuantity = 0
+	int routeCost = 0
+
+public class CargoProvenance
+	CargoLot array[4096] lots
+	int count = 0
+	function add(string storeId, string goodId, int quantity, int cost, string origin)
+		lots[count] = new CargoLot(storeId, goodId, quantity, cost, origin)
+		count++
+	function clear()
+		for i = 0 to count - 1
+			destroy lots[i]
+			lots[i] = null
+		count = 0
+	function compact()
+		var retained = 0
+		for i = 0 to count - 1
+			if lots[i].quantity > 0
+				lots[retained] = lots[i]
+				retained++
+			else
+				destroy lots[i]
+		for i = retained to count - 1
+			lots[i] = null
+		count = retained
+	function quantityIn(string storeId, string goodId) returns int
+		var result = 0
+		for i = 0 to count - 1
+			if lots[i].storeId == storeId and lots[i].goodId == goodId
+				result += lots[i].quantity
+		return result
+	function costIn(string storeId, string goodId) returns int
+		var result = 0
+		for i = 0 to count - 1
+			if lots[i].storeId == storeId and lots[i].goodId == goodId
+				result += lots[i].cost
+		return result
+	function consume(string storeId, string goodId, int quantity, string saleMarket) returns CargoAllocation
+		let result = new CargoAllocation()
+		var remaining = quantity
+		for i = 0 to count - 1
+			let lot = lots[i]
+			if remaining > 0 and lot.storeId == storeId and lot.goodId == goodId
+				let take = IMinBJ(remaining, lot.quantity)
+				let cost = allocateCargoCost(lot.cost, take, lot.quantity)
+				lot.quantity -= take
+				lot.cost -= cost
+				remaining -= take
+				result.quantity += take
+				result.cost += cost
+				if lot.origin != "" and lot.origin != saleMarket
+					result.routeQuantity += take
+					result.routeCost += cost
+		compact()
+		return result
+	function canTransfer(string storeId, string goodId, int quantity) returns boolean
+		var remaining = quantity
+		for i = 0 to count - 1
+			let lot = lots[i]
+			if remaining > 0 and lot.storeId == storeId and lot.goodId == goodId
+				if remaining < lot.quantity
+					// Only a partial final lot increases the total record count.
+					return count < CARGO_LOT_LIMIT
+				remaining -= lot.quantity
+		return true
+	function transfer(string sourceId, string destinationId, string goodId, int quantity)
+		CargoLot array[4096] moved
+		var movedCount = 0
+		var remaining = quantity
+		for i = 0 to count - 1
+			let lot = lots[i]
+			if remaining > 0 and lot.storeId == sourceId and lot.goodId == goodId
+				let take = IMinBJ(remaining, lot.quantity)
+				let cost = allocateCargoCost(lot.cost, take, lot.quantity)
+				moved[movedCount] = new CargoLot(destinationId, goodId, take, cost, lot.origin)
+				movedCount++
+				lot.quantity -= take
+				lot.cost -= cost
+				remaining -= take
+		compact()
+		// Destination acquisitions already there stay ahead of transferred lots.
+		for i = 0 to movedCount - 1
+			lots[count] = moved[i]
+			count++
