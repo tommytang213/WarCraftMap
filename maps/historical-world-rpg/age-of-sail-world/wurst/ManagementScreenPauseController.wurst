@@ -4,6 +4,10 @@ package ManagementScreenPauseController
 public interface CampaignPauseRuntime
 	function setCampaignPaused(boolean paused)
 
+/** Clock adapters sample fractional elapsed time at the pause boundary. */
+public interface CampaignPauseListener
+	function onCampaignPause(boolean paused)
+
 /** An idempotent ownership token for one open modal management screen. */
 public class ModalManagementScreen
 	ManagementScreenPauseController owner
@@ -31,6 +35,8 @@ public class ManagementScreenPauseController
 	int modalOwnerCount = 0
 	boolean campaignPaused = false
 	boolean pausedBeforeFirstModal = false
+	CampaignPauseListener array[32] listeners
+	int listenerCount = 0
 
 	construct(CampaignPauseRuntime runtime, boolean initiallyPaused)
 		this.runtime = runtime
@@ -55,6 +61,19 @@ public class ManagementScreenPauseController
 
 	function isCampaignPaused() returns boolean
 		return campaignPaused
+	function subscribe(CampaignPauseListener listener)
+		for i = 0 to listenerCount - 1
+			if listeners[i] == listener
+				return
+		listeners[listenerCount] = listener
+		listenerCount++
+	function unsubscribe(CampaignPauseListener listener)
+		for i = 0 to listenerCount - 1
+			if listeners[i] == listener
+				listenerCount--
+				listeners[i] = listeners[listenerCount]
+				listeners[listenerCount] = null
+				return
 
 	function getModalOwnerCount() returns int
 		return modalOwnerCount
@@ -68,6 +87,8 @@ public class ManagementScreenPauseController
 
 	function applyPauseState(boolean paused)
 		if campaignPaused != paused
+			for i = 0 to listenerCount - 1
+				listeners[i].onCampaignPause(paused)
 			campaignPaused = paused
 			runtime.setCampaignPaused(paused)
 

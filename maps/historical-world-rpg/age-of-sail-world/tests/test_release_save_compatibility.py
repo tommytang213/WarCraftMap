@@ -42,8 +42,11 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         self.assertEqual(advertised["supportedSources"], supported)
         self.assertEqual(live["current"], current)
         self.assertEqual(live["supportedSources"], supported)
-        self.assertEqual({domain: {"current": 2, "supportedSources": [1, 2]}
-                          for domain in ("diplomacy", "militarySettlements", "trade")},
+        military = (LIVE_CODEC.parent / "MilitarySettlementRuntime.wurst").read_text()
+        military_version = int(re.search(r"MILITARY_SETTLEMENT_SNAPSHOT_VERSION\s*=\s*(\d+)", military).group(1))
+        self.assertEqual({"diplomacy": {"current": 2, "supportedSources": [1, 2]},
+                          "militarySettlements": {"current": military_version, "supportedSources": [1, 2, 3]},
+                          "trade": {"current": 2, "supportedSources": [1, 2]}},
                          live["domainSchemas"])
         trade_source = (LIVE_CODEC.parent / "PlayableTrade.wurst").read_text(encoding="utf-8")
         trade_version = int(re.search(r"LIVE_TRADE_SCHEMA_CURRENT\s*=\s*(\d+)", trade_source).group(1))
