@@ -9,6 +9,12 @@ class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 	string protectedId = ""
 	int tradition = 0
 	int appliedAbility = 0
+	override function beginLoad()
+		skip
+	override function rollbackLoad()
+		skip
+	override function commitLoad()
+		skip
 	override function playerForController(string controllerId, boolean localDefense) returns player
 		if localDefense
 			return Player(11)

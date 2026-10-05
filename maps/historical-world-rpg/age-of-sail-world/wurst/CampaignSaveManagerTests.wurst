@@ -40,6 +40,8 @@ public class State implements CampaignStatePort
 		return valid
 	override function reconstructRuntime(string candidate) returns boolean
 		return rebuilt
+	override function rollbackRuntime()
+		skip
 	override function activateAuthoritativeState(string candidate)
 		activations++
 	override function diagnostic() returns string

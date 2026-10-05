@@ -80,6 +80,12 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 	function registerPolityResources(string polityId, int availableTreasury, int availableMaterialStock)
 		if polityId != "" and polityIndex(polityId) < 0
 			polityIds[polityCount] = polityId
+			// A rolled-back founding may have used this registry slot before.
+			known[polityCount] = false
+			reputation[polityCount] = 0
+			favor[polityCount] = 0
+			contribution[polityCount] = 0
+			restoredPolities[polityCount] = false
 			treasury[polityCount] = availableTreasury
 			materialStock[polityCount] = availableMaterialStock
 			polityCount++
@@ -289,6 +295,24 @@ public class PlayableCountryInteractionRuntime implements CountryDiplomacyAuthor
 			offerCount++
 			return true
 		return false
+	/** Validate against a detached registry, including a polity introduced by
+	 * the candidate's piracy authority. No callbacks touch the live campaign. */
+	function validateState(string candidate,string foundedPolity) returns boolean
+		let detached=new PlayableCountryInteractionRuntime(identity)
+		for i=0 to polityCount-1
+			detached.registerPolityResources(polityIds[i],treasury[i],materialStock[i])
+		if foundedPolity!="" and detached.polityIndex(foundedPolity)<0
+			if detached.polityCount>=512
+				destroy detached
+				lastDiagnostic="country registry is full"
+				return false
+			detached.registerPolity(foundedPolity,0)
+		for i=0 to profileCount-1
+			detached.registerRewardProfile(profiles[i])
+		let valid=detached.restoreState(candidate)
+		lastDiagnostic=detached.diagnostic()
+		destroy detached
+		return valid
 	/** Restore scalar authority only; Warcraft/UI projections are deliberately rebuilt elsewhere. */
 	function restoreState(string candidate) returns boolean
 		if (candidate != "v1" and not candidate.startsWith("v1|")) or candidate.endsWith("|")

@@ -22,6 +22,8 @@ class PersistencePolityAuthority implements PiratePolityAuthority
 	string recognition=""
 	override function foundIndependentPolity(PiratePolityState polity) returns boolean
 		return reconcileFoundedPolity(polity)
+	override function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
+		return polity.capitalSettlementId!=""
 	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
 		reconciliations++
 		return polity.capitalSettlementId!=""

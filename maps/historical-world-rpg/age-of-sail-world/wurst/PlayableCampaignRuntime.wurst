@@ -21,7 +21,13 @@ import PlayablePiracy
  * making their Warcraft projections part of the save authority. */
 public interface CampaignRuntimeExtension
 	function newCampaign(string settlementId)
+	/** Validation must not mutate live authority or invoke live callbacks. */
+	function validate(string authorityDocument) returns boolean
+	function beginLoad()
 	function reconstruct(string authorityDocument) returns boolean
+	/** Rollback uses a known-good checkpoint, independent of fallible reconstruction. */
+	function rollbackLoad()
+	function commitLoad()
 	function capture() returns string
 
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
@@ -127,13 +133,43 @@ function replaceCampaignField(string document, string key, string value) returns
 	return SubString(document, 0, fieldStart) + marker + value + SubString(tail, finish, StringLength(tail))
 
 public interface CampaignPartyProjection
+	/** Retain the previous objects until commit. Rollback must not respawn them
+	 * through the projection operation that just reported failure. */
+	function beginLoad(WarcraftRpgRuntime rpg)
+	function rollbackLoad(WarcraftRpgRuntime rpg)
+	function commitLoad(WarcraftRpgRuntime rpg)
 	function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
 	function clear(WarcraftRpgRuntime rpg)
 
 public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
+	unit array[2048] previous
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		// Keep old units (including position, orders and life) until commit.
+		for i = 0 to rpg.heroes.count - 1
+			previous[i] = rpg.heroes.projected[i]
+			rpg.heroes.projected[i] = null
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		rpg.heroes.loseRuntimeObjects()
+		// Restore shared technology/guidance layers with the old units detached.
+		// Their equipment was never changed; clearing/reapplying it could clamp
+		// current life while temporarily reducing maximum life.
+		rpg.reconcile("player")
+		for i = 0 to rpg.heroes.count - 1
+			rpg.heroes.projected[i] = previous[i]
+			previous[i] = null
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			if previous[i] != null
+				compatRemoveUnit(previous[i])
+			previous[i] = null
 	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
 		rpg.reconstruct(Player(0), x, y, "player")
-		return rpg.heroes.activeCount() > 0
+		var expected = 0
+		for i = 0 to rpg.heroes.count - 1
+			let hero = rpg.heroes.heroes[i]
+			if hero.recruited and hero.assignment == "field" and not hero.incapacitated
+				expected++
+		return expected > 0 and rpg.heroes.activeCount() == IMinBJ(expected, rpg.heroes.activeLimit)
 	override function clear(WarcraftRpgRuntime rpg)
 		rpg.heroes.loseRuntimeObjects()
 
@@ -146,6 +182,8 @@ public class PlayableCampaignState implements CampaignStatePort
 	string authority = "v2;map=world-map;region=europe;boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
 	string staged = ""
 	boolean startupLocked = false
+	boolean loading = false
+	CampaignLoadCheckpoint checkpoint = null
 	CampaignPartyProjection party = null
 	PlayerCampaignIdentity identity = null
 	string loadedPhysicalMap = ""
@@ -200,12 +238,16 @@ public class PlayableCampaignState implements CampaignStatePort
 	function cancelTransition()
 		transitionOpen = false
 	override function isSaveSafe() returns boolean
-		return not transitionOpen and not startupLocked and not clock.advancing
+		return not transitionOpen and not startupLocked and not loading and not clock.advancing
 	override function captureAuthoritativeState() returns string
+		return captureDomains(authority, true)
+	function captureStagedAuthoritativeState() returns string
+		return captureDomains(staged, false)
+	function captureDomains(string document, boolean includeIdentity) returns string
 		if clock.advancing
 			return ""
-		var result = authority
-		if identity != null and identity.hasOrigin()
+		var result = document
+		if includeIdentity and identity != null and identity.hasOrigin()
 			result = replaceCampaignField(result, "players", "origin:" + identity.originId() + ",allegiance:" + identity.allegianceId() + ",settlement:" + identity.settlementId())
 		if countries != null
 			result = withoutCountryAuthority(result) + ";diplomacy=" + countries.captureState() + ";rewards=" + countries.captureState()
@@ -221,6 +263,10 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";trade=" + extension.capture()
 		return replaceCampaignField(result, "clock", clock.captureState())
 	override function validateAuthoritativeState(string candidate) returns boolean
+		if loading
+			lastDiagnostic = "campaign reconstruction is already in progress"
+			return false
+		staged = ""
 		if not clock.validateState(lastAuthorityValue(candidate, "clock"))
 			lastDiagnostic = clock.diagnostic()
 			return false
@@ -251,13 +297,70 @@ public class PlayableCampaignState implements CampaignStatePort
 		if piracy != null and not piracy.validateAuthority(lastAuthorityValue(candidate,"piracy"))
 			lastDiagnostic=piracy.lastDiagnostic
 			return false
-		// Saves produced before playable trade remain compatible.
+		if religion != null and not religion.validateState(lastAuthorityValue(candidate, "religion"))
+			lastDiagnostic = religion.lastDiagnostic
+			return false
+		var foundedPolity = ""
+		if piracy != null and piracy.stagedRestore.polity != null
+			foundedPolity = piracy.stagedRestore.polity.id
+			if piracy.polityAuthority == null or not piracy.polityAuthority.validateReconciliation(piracy.stagedRestore.polity, lastAuthorityValue(candidate, "militarySettlements"))
+				lastDiagnostic = "ordinary campaign authorities rejected staged pirate-polity reconciliation"
+				return false
+		if countries != null and (not countries.validateState(lastAuthorityValue(candidate, "diplomacy"), foundedPolity) or not countries.validateState(lastAuthorityValue(candidate, "rewards"), foundedPolity))
+			lastDiagnostic = countries.diagnostic()
+			return false
+		if extension != null and not extension.validate(lastAuthorityValue(candidate, "trade"))
+			lastDiagnostic = "trade authority is invalid"
+			return false
 		staged = candidate
-		if staged.indexOf(";trade=") < 0
-			staged += ";trade="
 		lastDiagnostic = ""
 		return true
 	override function reconstructRuntime(string candidate) returns boolean
+		if loading
+			lastDiagnostic = "campaign reconstruction is already in progress"
+			return false
+		// Direct reconstruction consumers get the same validation/rollback boundary.
+		if staged != candidate and not validateAuthoritativeState(candidate)
+			return false
+		loading = true
+		checkpoint = new CampaignLoadCheckpoint(this)
+		if party != null and rpg != null
+			if rpg.projections != null
+				rpg.projections.beginPartyLoad()
+			party.beginLoad(rpg)
+		if extension != null
+			extension.beginLoad()
+		if militarySettlements != null
+			militarySettlements.adapter.beginLoad()
+		if not applyRuntime(candidate)
+			rollbackRuntime()
+			return false
+		// Keep old authority and native objects until the caller commits. Startup
+		// retains this checkpoint through its recoverable handoff writes.
+		return true
+	override function rollbackRuntime()
+		if checkpoint == null
+			return
+		let failure = lastDiagnostic
+		let restored = checkpoint.restore(this)
+		if extension != null
+			extension.rollbackLoad()
+		if militarySettlements != null
+			militarySettlements.adapter.rollbackLoad()
+		if party != null and rpg != null
+			party.rollbackLoad(rpg)
+			if rpg.projections != null
+				rpg.projections.rollbackPartyLoad()
+		else if rpg != null
+			rpg.reconcile("player")
+		staged = ""
+		loading = not restored
+		lastDiagnostic = failure
+		if not restored
+			lastDiagnostic += "; campaign rollback failed; saving remains locked"
+		destroy checkpoint
+		checkpoint = null
+	function applyRuntime(string candidate) returns boolean
 		// Date-sensitive reconstruction must see the checkpoint's time, including
 		// on manual loads after this map's clock has already advanced.
 		if not clock.restoreState(lastAuthorityValue(candidate, "clock"))
@@ -291,8 +394,6 @@ public class PlayableCampaignState implements CampaignStatePort
 		if party != null and not projectParty(candidate)
 			lastDiagnostic = "local player representation could not be created"
 			return false
-		regional.recoverActiveRegion()
-		clock.reconstructTimer()
 		return true
 	function projectParty(string candidate) returns boolean
 		if rpg == null or militarySettlements == null or party == null
@@ -313,13 +414,86 @@ public class PlayableCampaignState implements CampaignStatePort
 		let settlement = militarySettlements.settlements[found]
 		return party.project(rpg, settlement.x, settlement.y)
 	override function activateAuthoritativeState(string candidate)
+		if checkpoint == null or staged != candidate
+			return
+		if extension != null
+			extension.commitLoad()
+		if party != null and rpg != null
+			party.commitLoad(rpg)
+			if rpg.projections != null
+				rpg.projections.commitPartyLoad()
+		if militarySettlements != null
+			militarySettlements.adapter.commitLoad()
+		destroy checkpoint
+		checkpoint = null
+		regional.recoverActiveRegion()
 		if countries != null
 			authority = withoutCountryAuthority(staged)
 		else
 			authority = staged
 		staged = ""
+		clock.reconstructTimer()
+		loading = false
 	override function diagnostic() returns string
 		return lastDiagnostic
+
+/** Internal rollback checkpoint, never a persisted save format. Callback-owned
+ * mutations are restored directly; rollback never reruns polity callbacks. */
+class CampaignLoadCheckpoint
+	string clockState
+	string rpgState = ""
+	string militaryState = ""
+	string religionState = ""
+	string countryState = ""
+	int polityCount = 0
+	int nextOffer = 1
+	PiracySnapshot piracyState = null
+	PlayerCampaignIdentity identityState = null
+	construct(PlayableCampaignState state)
+		clockState = state.clock.captureState()
+		if state.rpg != null
+			rpgState = state.rpg.captureState()
+		if state.militarySettlements != null
+			militaryState = state.militarySettlements.snapshot()
+		if state.religion != null
+			religionState = state.religion.captureState()
+		if state.countries != null
+			countryState = state.countries.captureState()
+			polityCount = state.countries.polityCount
+			nextOffer = state.countries.nextOffer
+		if state.piracy != null
+			piracyState = new PiracySnapshot(state.piracy)
+		if state.identity != null
+			let i = state.identity
+			identityState = new PlayerCampaignIdentity()
+			identityState.restore(i.originId(), i.allegianceId(), i.physicalMapId(), i.regionalInstanceId(), i.settlementId())
+	function restore(PlayableCampaignState state) returns boolean
+		// Restore time before date-sensitive domain effects, retaining the timer.
+		var restored = state.clock.restoreState(clockState)
+		// Do not short-circuit: every domain must roll back even if one reports failure.
+		if state.rpg != null
+			restored = state.rpg.restoreState(rpgState) and restored
+		if state.militarySettlements != null
+			restored = state.militarySettlements.restore(militaryState, false) and restored
+		if state.religion != null
+			restored = state.religion.restoreState(religionState) and restored
+		if state.piracy != null
+			piracyState.applyTo(state.piracy)
+			state.piracy.stagedRestore = null
+		if state.countries != null
+			// A candidate may have registered a new ordinary pirate polity.
+			state.countries.polityCount = polityCount
+			restored = state.countries.restoreState(countryState) and restored
+			state.countries.nextOffer = nextOffer
+		if state.identity != null
+			let i = identityState
+			state.identity.restore(i.originId(), i.allegianceId(), i.physicalMapId(), i.regionalInstanceId(), i.settlementId())
+		return restored
+	ondestroy
+		if piracyState != null
+			destroy piracyState
+		if identityState != null
+			destroy identityState
 
 function runtimeChecksum(string value) returns int
 	var result = 5381
@@ -765,7 +939,14 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		return registered
 	function diagnostic() returns string
 		return lastDiagnostic
+	function rejectRestoration(string reason) returns boolean
+		state.startupLocked = true
+		lastDiagnostic = reason
+		return false
 	function rejectStartup(string reason) returns boolean
+		if saves.loading
+			saves.abortLoad()
+			return rejectRestoration(reason)
 		state.startupLocked = true
 		state.clock.detachTimer()
 		lastDiagnostic = reason
@@ -781,13 +962,9 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 	function loadStartupPayload(string payload, CampaignStartRequest request) returns boolean
 		let candidate = saves.codec.decodeMigrateAndValidate(payload, request.checkpointSlot())
 		if candidate != "" and (playerAuthorityValue(candidate, "origin") != request.origin or lastAuthorityValue(candidate, "world") != "instance:" + request.instanceId or playerAuthorityValue(candidate, "settlement") != request.settlementId)
-			return rejectStartup("The startup checkpoint does not match its request.")
-		if candidate == "" or not state.validateAuthoritativeState(candidate)
-			return rejectStartup("Campaign startup checkpoint rejected: " + saves.codec.diagnostic() + " " + state.diagnostic())
-		if not state.reconstructRuntime(candidate)
-			return rejectStartup("Campaign startup reconstruction failed: " + state.diagnostic())
-		state.activateAuthoritativeState(candidate)
-		afterCampaignLoad()
+			return rejectRestoration("The startup checkpoint does not match its request.")
+		if candidate == "" or not saves.stageCandidate(candidate)
+			return rejectRestoration("Campaign startup checkpoint rejected: " + saves.codec.diagnostic() + " " + saves.diagnostic())
 		return true
 	function startNewCampaign(CampaignStartRequest request) returns boolean
 		// Restore registered defaults on a retry, never register them over saved mutations.
@@ -810,7 +987,6 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		let payload = saves.codec.encode(request.checkpointSlot(), SAVE_SLOT_SESSION_START, 0, "campaign-start", candidate)
 		if payload == "" or not handoff.storage.writeTransactional(request.checkpointSlot(), payload)
 			return rejectStartup("The new campaign checkpoint could not be committed.")
-		afterCampaignLoad()
 		return true
 	/** The only regional entry point. Registrations and ports must be complete;
 	 * no clocks, autosaves or commands are enabled until this returns true. */
@@ -834,7 +1010,9 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 				return false
 			// Initialization and its recoverable checkpoint succeeded. Publish the
 			// campaign through the existing codec before acknowledging consumption.
-			let candidate = state.captureAuthoritativeState()
+			var candidate = state.captureAuthoritativeState()
+			if saves.loading
+				candidate = state.captureStagedAuthoritativeState()
 			let session = saves.codec.encode("session_start", SAVE_SLOT_SESSION_START, 0, "campaign-start", candidate)
 			if not saves.storage.writeTransactional("session_start", session)
 				return rejectStartup("The session checkpoint could not be committed; the start request is recoverable.")
@@ -843,9 +1021,13 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 				return rejectStartup("The campaign milestone could not be committed; the start request is recoverable.")
 			if not handoff.acknowledge(request)
 				return rejectStartup("Campaign acknowledgement was interrupted; the start checkpoint is recoverable.")
+			if saves.loading
+				saves.commitLoad(true)
+			else
+				saves.publishLoad()
 		else
 			if not saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
-				return rejectStartup(saves.diagnostic())
+				return rejectRestoration(saves.diagnostic())
 		started = true
 		state.startupLocked = false
 		lastDiagnostic = ""

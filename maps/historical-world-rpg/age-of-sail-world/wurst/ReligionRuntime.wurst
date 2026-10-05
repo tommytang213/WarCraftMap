@@ -192,7 +192,10 @@ public class ReligionRuntime
 		if finish<0
 			return tail
 		return SubString(tail,0,finish)
-	function restoreState(string candidate) returns boolean
+	function validSavedInteger(string candidate, string key) returns boolean
+		let value=field(candidate,key)
+		return value!="" and S2I(value).toString()==value
+	function validateState(string candidate) returns boolean
 		if not candidate.startsWith("v1|") or candidate.indexOf("|faith=")<0 or candidate.indexOf("|influence=")<0
 			lastDiagnostic="Religion authority is malformed."
 			return false
@@ -203,42 +206,90 @@ public class ReligionRuntime
 		let candidateInvestment=S2I(field(candidate,"investment"))
 		let candidateCurrency=S2I(field(candidate,"currency"))
 		let candidateSequence=S2I(field(candidate,"sequence"))
-		if candidateInvestment<0 or candidateCurrency<0 or candidateSequence<1
+		if not validSavedInteger(candidate,"investment") or not validSavedInteger(candidate,"currency") or not validSavedInteger(candidate,"tick") or not validSavedInteger(candidate,"sequence") or not validSavedInteger(candidate,"last") or candidateInvestment<0 or candidateCurrency<0 or candidateSequence<1
 			lastDiagnostic="Religion authority contains invalid values."
 			return false
-		primaryFaithId=candidateFaith
-		personalInvestment=candidateInvestment
-		currencyUnits=candidateCurrency
+		let encoded=field(candidate,"influence")
+		var cursor=0
+		string array[64] seen
+		var count=0
+		while cursor<StringLength(encoded)
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			if finish<0 or count>=64
+				lastDiagnostic="Religion influence records are malformed."
+				return false
+			let row=SubString(encoded,cursor,cursor+finish)
+			var columns=1
+			for i=0 to StringLength(row)-1
+				if SubString(row,i,i+1)==","
+					columns++
+			if columns!=6
+				lastDiagnostic="Religion influence record is malformed."
+				return false
+			let id=influenceColumn(row,0)
+			if influenceIndex(id)<0
+				lastDiagnostic="Religion influence names an unknown faith."
+				return false
+			for i=0 to count-1
+				if seen[i]==id
+					lastDiagnostic="Religion influence is duplicated."
+					return false
+			for i=1 to 5
+				let value=influenceColumn(row,i)
+				if value=="" or S2I(value).toString()!=value or (i<5 and S2I(value)<0)
+					lastDiagnostic="Religion influence contains invalid values."
+					return false
+			seen[count]=id
+			count++
+			cursor+=finish+1
+		lastDiagnostic=""
+		return true
+	function influenceColumn(string row,int wanted) returns string
+		var cursor=0
+		for i=0 to wanted
+			let tail=SubString(row,cursor,StringLength(row))
+			let comma=tail.indexOf(",")
+			if i==wanted
+				if comma<0
+					return tail
+				return SubString(tail,0,comma)
+			if comma<0
+				return ""
+			cursor+=comma+1
+		return ""
+	function restoreState(string candidate) returns boolean
+		if not validateState(candidate)
+			return false
+		primaryFaithId=field(candidate,"faith")
+		personalInvestment=S2I(field(candidate,"investment"))
+		currencyUnits=S2I(field(candidate,"currency"))
 		campaignTick=S2I(field(candidate,"tick"))
 		polityId=field(candidate,"polity")
 		policyId=field(candidate,"policy")
 		supportedFaithIds=field(candidate,"supported")
 		institutionalState=field(candidate,"institution")
 		regionId=field(candidate,"region")
-		nextConversionSequence=candidateSequence
+		nextConversionSequence=S2I(field(candidate,"sequence"))
 		lastConversionTick=S2I(field(candidate,"last"))
 		conversionHistory=field(candidate,"history")
+		for i=0 to influenceCount-1
+			populationInfluence[i]=0
+			institutionInfluence[i]=0
+			governmentInfluence[i]=0
+			prestigeInfluence[i]=0
+			eventInfluence[i]=0
 		let encoded=field(candidate,"influence")
-		var start=0
-		while start<StringLength(encoded)
-			let finishRelative=SubString(encoded,start,StringLength(encoded)).indexOf("~")
-			if finishRelative<0
-				start=StringLength(encoded)
-			else
-				let row=SubString(encoded,start,start+finishRelative)
-				var cursor=0
-				string array[6] columns
-				for column=0 to 5
-					let remainder=SubString(row,cursor,StringLength(row))
-					let comma=remainder.indexOf(",")
-					if comma<0
-						columns[column]=remainder
-						cursor=StringLength(row)
-					else
-						columns[column]=SubString(remainder,0,comma)
-						cursor+=comma+1
-				setInfluence(columns[0],S2I(columns[1]),S2I(columns[2]),S2I(columns[3]),S2I(columns[4]),S2I(columns[5]))
-				start+=finishRelative+1
+		var cursor=0
+		while cursor<StringLength(encoded)
+			let finish=SubString(encoded,cursor,StringLength(encoded)).indexOf("~")
+			let row=SubString(encoded,cursor,cursor+finish)
+			let i=influenceIndex(influenceColumn(row,0))
+			populationInfluence[i]=S2I(influenceColumn(row,1))
+			institutionInfluence[i]=S2I(influenceColumn(row,2))
+			governmentInfluence[i]=S2I(influenceColumn(row,3))
+			prestigeInfluence[i]=S2I(influenceColumn(row,4))
+			eventInfluence[i]=S2I(influenceColumn(row,5))
+			cursor+=finish+1
 		reconcile()
 		lastDiagnostic=""
 		return true

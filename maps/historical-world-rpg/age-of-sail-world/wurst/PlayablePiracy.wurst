@@ -123,6 +123,7 @@ public interface PiratePolityAuthority
 	function foundIndependentPolity(PiratePolityState polity) returns boolean
 	/** Idempotently projects an already-founded polity into the ordinary
 	 * territory, diplomacy, military and economy authorities after load. */
+	function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
 	function reconcileFoundedPolity(PiratePolityState polity) returns boolean
 	function setRecognition(string polityId,string countryId,string status)
 
@@ -512,7 +513,7 @@ public class PiracyRuntime
 		lastDiagnostic=""
 		return true
 	function restoreAuthority(string candidate) returns boolean
-		if stagedRestore==null and not validateAuthority(candidate)
+		if not validateAuthority(candidate)
 			return false
 		if stagedRestore.polity!=null and (polityAuthority==null or not polityAuthority.reconcileFoundedPolity(stagedRestore.polity))
 			lastDiagnostic="Ordinary campaign authorities rejected pirate-polity reconciliation."

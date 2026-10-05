@@ -16,6 +16,12 @@ class Projections implements RpgProjectionPort
 	int setPower=0
 	int guidance=0
 	int knowledge=0
+	override function beginPartyLoad()
+		skip
+	override function rollbackPartyLoad()
+		skip
+	override function commitPartyLoad()
+		skip
 	override function clearEquipmentLayer()
 		clears++
 		equipmentPower=0

@@ -50,6 +50,23 @@ class WurstExecutionTests(unittest.TestCase):
         self.assertIn("transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject", discovered)
         self.assertIn("checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite", discovered)
 
+    def test_required_suite_discovers_cross_domain_load_transactions(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
+        self.assertTrue({
+            "checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation",
+            "invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
+            "lateExtensionFailureRestoresEveryAuthorityAndProjection",
+            "latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
+            "stagedLoadAbortRetainsClockAndTimerUntilCommit",
+            "reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
+            "rejectedLoadRestoresInactiveMilitaryProjectionTarget",
+            "rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects",
+            "boundStartupProjectionFailureRollsBackAllDomainsAndRetries",
+            "boundStartupSessionFailureRollsBackBeforePublication",
+            "boundStartupMilestoneFailureRollsBackBeforePublication",
+            "boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
+        }.issubset(discovered))
+
     def test_discovery_and_complete_results_bind_compiler_revision_and_inputs(self):
         report = self.run_suite()
         self.assertEqual(["wurst/Fixture.wurst:actual", "wurst/Fixture.wurst:second"],

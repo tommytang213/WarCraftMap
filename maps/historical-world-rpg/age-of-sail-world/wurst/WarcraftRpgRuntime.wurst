@@ -506,6 +506,11 @@ public interface TechnologyEffectPort
 	function clearTechnologyLayer(string controllerId)
 
 public interface RpgProjectionPort
+	/** Preserve bookkeeping for retained party objects. Begin before detaching
+	 * them; roll back after the original objects have been reattached. */
+	function beginPartyLoad()
+	function rollbackPartyLoad()
+	function commitPartyLoad()
 	function clearEquipmentLayer()
 	function applyEquipment(string heroId,string itemId,int power)
 	function applyEquipmentSet(string heroId,string setId,int power)
