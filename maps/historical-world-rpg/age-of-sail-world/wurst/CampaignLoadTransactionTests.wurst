@@ -242,7 +242,8 @@ class LoadFixture
 		campaign.countries.setStanding("england", 12, 34)
 		let hero = new RpgHero("hero", "Captain", 'Hpal')
 		rpg.heroes.register(hero)
-		rpg.heroes.recruit("hero")
+		campaign.state.setRpgRuntime(rpg)
+		rpg.heroes.recruit("hero").assertTrue()
 		hero.level = 20
 		hero.assignment = "field"
 		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "rare", 10, 5))
