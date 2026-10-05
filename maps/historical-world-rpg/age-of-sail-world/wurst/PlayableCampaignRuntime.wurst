@@ -183,10 +183,13 @@ public class PlayableCampaignState implements CampaignStatePort
 		extension = value
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
+		countries.setMilitaryAuthority(militarySettlements)
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
+		if countries != null
+			countries.setMilitaryAuthority(runtime)
 	function setReligionRuntime(ReligionRuntime runtime)
 		religion = runtime
 	function setPiracyRuntime(PiracyRuntime runtime)
@@ -251,6 +254,22 @@ public class PlayableCampaignState implements CampaignStatePort
 		if piracy != null and not piracy.validateAuthority(lastAuthorityValue(candidate,"piracy"))
 			lastDiagnostic=piracy.lastDiagnostic
 			return false
+		if countries != null
+			var warfare = militarySettlements
+			if warfare != null
+				warfare = militarySettlements.parseSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+			let definitions = countries.copyDefinitions()
+			// Validate founded governments on a detached registry, before their
+			// ordinary authority is reconstructed by the piracy integration.
+			if piracy != null and piracy.stagedRestore != null and piracy.stagedRestore.polity != null
+				definitions.registerPolity(piracy.stagedRestore.polity.id, 0)
+			let valid = definitions.validateState(lastAuthorityValue(candidate, "diplomacy"), warfare)
+			destroy definitions
+			if warfare != null
+				warfare.dispose()
+			if not valid
+				lastDiagnostic = "country interaction authority or offer binding is invalid"
+				return false
 		// Saves produced before playable trade remain compatible.
 		staged = candidate
 		if staged.indexOf(";trade=") < 0

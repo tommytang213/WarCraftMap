@@ -17,7 +17,25 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 1
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 2
+
+/** Stable conflict identity survives settlement. Membership is immutable once
+ * registered; a new war needs a new ID, even between the same governments. */
+public class MilitaryConflict
+	string id
+	boolean settled = false
+	string array[64] polities
+	int array[64] sides
+	int count = 0
+	construct(string id)
+		this.id = id
+	function side(string polityId) returns int
+		for i = 0 to count - 1
+			if polities[i] == polityId
+				return sides[i]
+		return 0
+	function opposes(string first, string second) returns boolean
+		return first != second and side(first) > 0 and side(second) > 0 and side(first) != side(second)
 
 public class RuntimeForce
 	string id
@@ -65,6 +83,9 @@ public class TraditionState
 public class SettlementRuntimeState
 	string id
 	string controllerId
+	string legalOwnerId
+	string occupationConflictId = ""
+	string attackerId = ""
 	string regionId
 	int coreTypeId
 	int defenderTypeId
@@ -85,6 +106,7 @@ public class SettlementRuntimeState
 	construct(string id, string controllerId, string regionId, int coreTypeId, int defenderTypeId, int strength, int reserves, int manpower, int supply, real x, real y)
 		this.id = id
 		this.controllerId = controllerId
+		legalOwnerId = controllerId
 		this.regionId = regionId
 		this.coreTypeId = coreTypeId
 		this.defenderTypeId = defenderTypeId
@@ -98,6 +120,10 @@ public class SettlementRuntimeState
 		quietPeriod = 20.
 		this.x = x
 		this.y = y
+
+	function withLegalOwner(string ownerId) returns SettlementRuntimeState
+		legalOwnerId = ownerId
+		return this
 
 public class AdministratorState
 	string characterId
@@ -196,13 +222,14 @@ public class MilitarySettlementRuntime
 	SettlementRuntimeState array[1024] settlements
 	AdministratorState array[1024] administrators
 	string array[1024] administratorSettlementIds
-	string array[256] warAttackers
-	string array[256] warDefenders
+	MilitaryConflict array[256] conflicts
+	int conflictCount = 0
+	string initialConflicts = ""
+	boolean legacyConflicts = false
 	int forceCount = 0
 	int traditionCount = 0
 	int settlementCount = 0
 	int administratorCount = 0
-	int warCount = 0
 	string activeRegionId = ""
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
@@ -273,23 +300,87 @@ public class MilitarySettlementRuntime
 		if found >= 0 and administrators[found].loyalty < 30
 			return "Warning: replacement may trigger refusal, defection, mutiny, or rebellion."
 		return ""
+	function validConflictAtom(string value) returns boolean
+		return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0
+	function conflictIndex(string id) returns int
+		for i = 0 to conflictCount - 1
+			if conflicts[i].id == id
+				return i
+		return -1
+	function registerConflictMember(string id, string polityId, int side) returns boolean
+		if not validConflictAtom(id) or not validConflictAtom(polityId) or (side != 1 and side != 2)
+			return false
+		var found = conflictIndex(id)
+		if found < 0
+			if conflictCount >= 256
+				return false
+			found = conflictCount
+			conflicts[conflictCount] = new MilitaryConflict(id)
+			conflictCount++
+		let conflict = conflicts[found]
+		if conflict.side(polityId) != 0
+			return conflict.side(polityId) == side
+		if conflict.settled or conflict.count >= 64
+			return false
+		conflict.polities[conflict.count] = polityId
+		conflict.sides[conflict.count] = side
+		conflict.count++
+		return true
+	function activeOpponents(string id, string first, string second) returns boolean
+		let found = conflictIndex(id)
+		return found >= 0 and not conflicts[found].settled and conflicts[found].opposes(first, second)
+	function activeConflictBetween(string first, string second) returns string
+		for i = 0 to conflictCount - 1
+			if not conflicts[i].settled and conflicts[i].opposes(first, second)
+				return conflicts[i].id
+		return ""
+	/** Compatibility entry point for callers without an authored conflict ID.
+	 * Pair wars have their own stable identity and cannot overwrite named wars. */
 	function setWar(string first, string second, boolean active)
+		if first == "" or second == "" or first == second
+			return
+		var id = "legacy:" + first + ":" + second
+		if conflictIndex("legacy:" + second + ":" + first) >= 0
+			id = "legacy:" + second + ":" + first
 		if active
-			if atWar(first, second)
-				return
-			warAttackers[warCount] = first
-			warDefenders[warCount] = second
-			warCount++
+			if not atWar(first, second)
+				registerConflictMember(id, first, 1)
+				registerConflictMember(id, second, 2)
 		else
-			for i = 0 to warCount - 1
-				if (warAttackers[i] == first and warDefenders[i] == second) or (warAttackers[i] == second and warDefenders[i] == first)
-					warAttackers[i] = ""
-					warDefenders[i] = ""
+			settleConflict(id)
 	function atWar(string first, string second) returns boolean
-		for i = 0 to warCount - 1
-			if (warAttackers[i] == first and warDefenders[i] == second) or (warAttackers[i] == second and warDefenders[i] == first)
-				return true
-		return false
+		return activeConflictBetween(first, second) != ""
+	function settleConflict(string id) returns boolean
+		let found = conflictIndex(id)
+		if found < 0 or conflicts[found].settled
+			return false
+		conflicts[found].settled = true
+		reconcileSieges()
+		return true
+	function endSettlementAttack(SettlementRuntimeState state)
+		state.underAttack = false
+		state.attackerId = ""
+		state.nextWaveAt = 0.
+		for j = 0 to forceCount - 1
+			if forces[j].kind == FORCE_GARRISON and hasPrefix(forces[j].id, "garrison:" + state.id + ":")
+				forces[j].active = false
+				adapter.removeRepresentation(forces[j].id)
+	function reconcileSieges()
+		for i = 0 to settlementCount - 1
+			let state = settlements[i]
+			if state.underAttack and not atWar(state.attackerId, state.controllerId)
+				endSettlementAttack(state)
+	function conflictSnapshot() returns string
+		var result = ""
+		for i = 0 to conflictCount - 1
+			let conflict = conflicts[i]
+			result += "|c," + conflict.id + "," + boolText(conflict.settled)
+			for j = 0 to conflict.count - 1
+				result += "|m," + conflict.id + "," + conflict.polities[j] + "," + conflict.sides[j].toString()
+		return result
+	function rememberConflictDefaults()
+		if initialConflicts == ""
+			initialConflicts = conflictSnapshot()
 	function traditionLifePermille(RuntimeForce runtimeForce) returns int
 		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 		if found < 0
@@ -355,6 +446,7 @@ public class MilitarySettlementRuntime
 			return false
 		let state = settlements[found]
 		state.underAttack = true
+		state.attackerId = attackerId
 		state.lastCombatAt = now
 		state.nextWaveAt = now
 		return true
@@ -370,15 +462,13 @@ public class MilitarySettlementRuntime
 		instantiate(forces[forceCount - 1])
 		state.nextWaveAt = now + state.reinforcementInterval
 	function tick(real now)
+		reconcileSieges()
 		for i = 0 to settlementCount - 1
 			let state = settlements[i]
 			if state.underAttack and now >= state.nextWaveAt
 				spawnGarrisonWave(state, now)
 			if state.underAttack and now - state.lastCombatAt >= state.quietPeriod
-				state.underAttack = false
-				for j = 0 to forceCount - 1
-					if forces[j].kind == FORCE_GARRISON and hasPrefix(forces[j].id, "garrison:" + state.id + ":")
-						adapter.removeRepresentation(forces[j].id)
+				endSettlementAttack(state)
 	function recordGarrisonLoss(string settlementId, string forceId, int loss, real now)
 		let found = settlementIndex(settlementId)
 		if found < 0
@@ -405,31 +495,70 @@ public class MilitarySettlementRuntime
 		let state = settlements[found]
 		if now < state.captureImmuneUntil or not atWar(attackerId, state.controllerId)
 			return false
+		state.occupationConflictId = activeConflictBetween(attackerId, state.controllerId)
+		transferSettlement(settlementId, attackerId)
+		if state.controllerId == state.legalOwnerId
+			state.occupationConflictId = ""
+		state.captureImmuneUntil = now + CITY_CAPTURE_IMMUNITY_SECONDS
+		adapter.protectRepresentation("core:" + settlementId, true)
+		for i = 0 to forceCount - 1
+			if hasPrefix(forces[i].id, "defense:" + settlementId + ":")
+				adapter.protectRepresentation(forces[i].id, true)
+		if rpg != null
+			rpg.worldEventAt("settlement",settlementId,1,getCampaignDay())
+		return true
+	/** Territorial authority owns control, defenses and office reconciliation. */
+	function transferSettlement(string settlementId, string controllerId)
+		let state = settlements[settlementIndex(settlementId)]
+		endSettlementAttack(state)
 		// Cleanup all old local military representations before rebuilding the core.
 		for i = 0 to forceCount - 1
 			if forces[i].id == "core:" + settlementId or hasPrefix(forces[i].id, "garrison:" + settlementId + ":") or hasPrefix(forces[i].id, "defense:" + settlementId + ":")
 				forces[i].active = false
 				adapter.removeRepresentation(forces[i].id)
-		state.controllerId = attackerId
-		state.captureImmuneUntil = now + CITY_CAPTURE_IMMUNITY_SECONDS
+		state.controllerId = controllerId
 		state.underAttack = false
 		state.garrisonStrength = 0
 		state.reserves = 0
 		let core = forces[forceIndex("core:" + settlementId)]
-		core.controllerId = attackerId
+		core.controllerId = controllerId
 		core.active = true
 		instantiate(core)
-		adapter.protectRepresentation(core.id, true)
 		// Pre-authored defense records retain their exact type and coordinates.
 		for i = 0 to forceCount - 1
 			if hasPrefix(forces[i].id, "defense:" + settlementId + ":")
-				forces[i].controllerId = attackerId
+				forces[i].controllerId = controllerId
 				forces[i].active = true
 				instantiate(forces[i])
-				adapter.protectRepresentation(forces[i].id, true)
-		if rpg != null
-			rpg.worldEventAt("settlement",settlementId,1,getCampaignDay())
-		return true
+		let office = administratorIndex(settlementId)
+		if office < 0 or administrators[office].controllerId != controllerId
+			appoint(settlementId, new AdministratorState("acting:" + settlementId + ":" + controllerId, "Local Deputy", "Acting Administrator", controllerId, state.regionId, settlementId, 50, 50, 40, 1))
+	function canCede(string conflictId, string settlementId, string grantor, string beneficiary) returns boolean
+		let found = settlementIndex(settlementId)
+		if found < 0 or not activeOpponents(conflictId, grantor, beneficiary)
+			return false
+		let state = settlements[found]
+		return state.legalOwnerId == grantor and (state.controllerId == grantor or (state.controllerId == beneficiary and state.occupationConflictId == conflictId))
+	/** Called after the complete treaty has been validated. No fallible work
+	 * remains between territorial reconciliation and settling the conflict. */
+	function commitPeace(string conflictId, string cededSettlementId, string beneficiary) returns boolean
+		let found = conflictIndex(conflictId)
+		if found < 0 or conflicts[found].settled
+			return false
+		if cededSettlementId != ""
+			let city = settlementIndex(cededSettlementId)
+			if city < 0 or not canCede(conflictId, cededSettlementId, settlements[city].legalOwnerId, beneficiary)
+				return false
+		for i = 0 to settlementCount - 1
+			let state = settlements[i]
+			if state.id == cededSettlementId
+				state.legalOwnerId = beneficiary
+				transferSettlement(state.id, beneficiary)
+				state.occupationConflictId = ""
+			else if state.occupationConflictId == conflictId
+				transferSettlement(state.id, state.legalOwnerId)
+				state.occupationConflictId = ""
+		return settleConflict(conflictId)
 	function releaseCaptureProtection(real now)
 		for i = 0 to settlementCount - 1
 			if settlements[i].captureImmuneUntil > 0. and now >= settlements[i].captureImmuneUntil
@@ -448,6 +577,12 @@ public class MilitarySettlementRuntime
 				field++
 				start = i + 1
 		return ""
+	function snapshotFieldCount(string record) returns int
+		var count = 1
+		for i = 0 to StringLength(record) - 1
+			if SubString(record, i, i + 1) == ","
+				count++
+		return count
 	function boolText(boolean value) returns string
 		if value
 			return "1"
@@ -461,13 +596,11 @@ public class MilitarySettlementRuntime
 			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.typeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
 		for i = 0 to settlementCount - 1
 			let s = settlements[i]
-			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + R2S(s.reinforcementInterval) + "," + R2S(s.quietPeriod) + "," + R2S(s.nextWaveAt) + "," + R2S(s.lastCombatAt) + "," + R2S(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack)
+			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + R2S(s.reinforcementInterval) + "," + R2S(s.quietPeriod) + "," + R2S(s.nextWaveAt) + "," + R2S(s.lastCombatAt) + "," + R2S(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack) + "," + s.legalOwnerId + "," + s.occupationConflictId + "," + s.attackerId
 		for i = 0 to administratorCount - 1
 			let d = administrators[i]
 			result += "|d," + administratorSettlementIds[i] + "," + d.characterId + "," + d.name + "," + d.title + "," + d.controllerId + "," + d.physicalRegionId + "," + d.jurisdiction + "," + d.loyalty.toString() + "," + d.administration.toString() + "," + d.command.toString() + "," + d.capacity.toString() + "," + boolText(d.oathbound)
-		for i = 0 to warCount - 1
-			if warAttackers[i] != "" and warDefenders[i] != ""
-				result += "|w," + warAttackers[i] + "," + warDefenders[i]
+		result += conflictSnapshot()
 		for i = 0 to traditionCount - 1
 			let t = traditions[i]
 			result += "|t," + t.controllerId + "," + t.categoryId + "," + t.experience.toString() + "," + t.lifePermillePerHundredXp.toString() + "," + t.milestoneXp.toString() + "," + t.milestoneAbilityId.toString()
@@ -502,6 +635,14 @@ public class MilitarySettlementRuntime
 			s.lastCombatAt = S2R(snapshotField(record, 15))
 			s.captureImmuneUntil = S2R(snapshotField(record, 16))
 			s.underAttack = snapshotField(record, 19) == "1"
+			if not target.legacyConflicts
+				if snapshotFieldCount(record) != 23
+					return false
+				s.legalOwnerId = snapshotField(record, 20)
+				s.occupationConflictId = snapshotField(record, 21)
+				s.attackerId = snapshotField(record, 22)
+				if s.legalOwnerId == ""
+					return false
 			target.settlements[target.settlementCount] = s
 			target.settlementCount++
 			return s.controllerId != "" and s.regionId != "" and s.garrisonMaximum >= s.garrisonStrength and s.garrisonStrength >= 0 and s.reserves >= 0 and s.manpower >= 0 and s.supply >= 0
@@ -515,9 +656,33 @@ public class MilitarySettlementRuntime
 			target.administrators[target.administratorCount] = d
 			target.administratorCount++
 			return d.characterId != "" and target.settlementIndex(settlementId) >= 0
-		if kind == "w"
-			if snapshotField(record, 1) == "" or snapshotField(record, 2) == "" or snapshotField(record, 1) == snapshotField(record, 2) or target.warCount >= 256 or target.atWar(snapshotField(record, 1), snapshotField(record, 2))
+		if kind == "c"
+			let id = snapshotField(record, 1)
+			let settled = snapshotField(record, 2)
+			if snapshotFieldCount(record) != 3 or not validConflictAtom(id) or target.conflictIndex(id) >= 0 or target.conflictCount >= 256 or (settled != "0" and settled != "1")
 				return false
+			target.conflicts[target.conflictCount] = new MilitaryConflict(id)
+			target.conflicts[target.conflictCount].settled = settled == "1"
+			target.conflictCount++
+			return true
+		if kind == "m"
+			let found = target.conflictIndex(snapshotField(record, 1))
+			let polity = snapshotField(record, 2)
+			let side = snapshotField(record, 3)
+			if snapshotFieldCount(record) != 4 or found < 0 or not validConflictAtom(polity) or (side != "1" and side != "2")
+				return false
+			let conflict = target.conflicts[found]
+			if conflict.side(polity) != 0 or conflict.count >= 64
+				return false
+			conflict.polities[conflict.count] = polity
+			conflict.sides[conflict.count] = S2I(side)
+			conflict.count++
+			return true
+		if kind == "w"
+			if not target.legacyConflicts or snapshotField(record, 1) == "" or snapshotField(record, 2) == "" or snapshotField(record, 1) == snapshotField(record, 2)
+				return false
+			// The authored conflict already justifies this legacy pair, so it must
+			// not acquire a second, immortal source of hostility during migration.
 			target.setWar(snapshotField(record, 1), snapshotField(record, 2), true)
 			return true
 		if kind == "t"
@@ -528,38 +693,66 @@ public class MilitarySettlementRuntime
 			target.registerTradition(t)
 			return t.controllerId != "" and t.categoryId != "" and t.experience >= 0
 		return false
-	/** Parse completely into detached authority, then replace and reproject once. */
-	function validateSnapshot(string candidate) returns boolean
-		if not candidate.startsWith("v" + MILITARY_SETTLEMENT_SNAPSHOT_VERSION.toString() + "|")
-			return false
+	function dispose()
+		for i = 0 to forceCount - 1
+			destroy forces[i]
+		for i = 0 to settlementCount - 1
+			destroy settlements[i]
+		for i = 0 to administratorCount - 1
+			destroy administrators[i]
+		for i = 0 to traditionCount - 1
+			destroy traditions[i]
+		for i = 0 to conflictCount - 1
+			destroy conflicts[i]
+		destroy this
+	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
+		if (not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
-		var start = 3
-		while start < StringLength(candidate)
-			var finish = SubString(candidate, start, StringLength(candidate)).indexOf("|")
+		parsed.legacyConflicts = candidate.startsWith("v1|")
+		var records = SubString(candidate, 2, StringLength(candidate))
+		if parsed.legacyConflicts
+			records = initialConflicts + records
+		var start = 1
+		while start < StringLength(records)
+			var finish = SubString(records, start, StringLength(records)).indexOf("|")
 			if finish < 0
-				finish = StringLength(candidate) - start
-			if not restoreSnapshotRecord(SubString(candidate, start, start + finish), parsed)
-				return false
+				finish = StringLength(records) - start
+			if not restoreSnapshotRecord(SubString(records, start, start + finish), parsed)
+				parsed.dispose()
+				return null
 			start += finish + 1
+		for i = 0 to parsed.conflictCount - 1
+			var attackers = 0
+			var defenders = 0
+			for j = 0 to parsed.conflicts[i].count - 1
+				if parsed.conflicts[i].sides[j] == 1
+					attackers++
+				else
+					defenders++
+			if attackers == 0 or defenders == 0
+				parsed.dispose()
+				return null
 		for i = 0 to parsed.settlementCount - 1
-			if parsed.forceIndex("core:" + parsed.settlements[i].id) < 0
-				return false
+			let state = parsed.settlements[i]
+			if parsed.forceIndex("core:" + state.id) < 0
+				parsed.dispose()
+				return null
+			if state.occupationConflictId != "" and parsed.conflictIndex(state.occupationConflictId) < 0
+				parsed.dispose()
+				return null
+		return parsed
+	/** Parse completely into detached authority before replacing projections. */
+	function validateSnapshot(string candidate) returns boolean
+		let parsed = parseSnapshot(candidate)
+		if parsed == null
+			return false
+		parsed.dispose()
 		return true
 	function restore(string candidate) returns boolean
-		if not validateSnapshot(candidate)
+		let parsed = parseSnapshot(candidate)
+		if parsed == null
 			return false
-		let parsed = new MilitarySettlementRuntime(adapter)
-		var start = 3
-		while start < StringLength(candidate)
-			var finish = SubString(candidate, start, StringLength(candidate)).indexOf("|")
-			if finish < 0
-				finish = StringLength(candidate) - start
-			if not restoreSnapshotRecord(SubString(candidate, start, start + finish), parsed)
-				return false
-			start += finish + 1
-		for i = 0 to parsed.settlementCount - 1
-			if parsed.forceIndex("core:" + parsed.settlements[i].id) < 0
-				return false
 		// A freshly loaded physical map activates itself before campaign restore.
 		// Preserve that projection target while restoring the snapshot's global
 		// authority; a detached/test runtime still follows the saved region.
@@ -570,6 +763,16 @@ public class MilitarySettlementRuntime
 			for i = 0 to forceCount - 1
 				if forces[i].regionId == activeRegionId
 					adapter.removeRepresentation(forces[i].id)
+		for i = 0 to forceCount - 1
+			destroy forces[i]
+		for i = 0 to settlementCount - 1
+			destroy settlements[i]
+		for i = 0 to administratorCount - 1
+			destroy administrators[i]
+		for i = 0 to traditionCount - 1
+			destroy traditions[i]
+		for i = 0 to conflictCount - 1
+			destroy conflicts[i]
 		forceCount = parsed.forceCount
 		for i = 0 to forceCount - 1
 			forces[i] = parsed.forces[i]
@@ -580,15 +783,17 @@ public class MilitarySettlementRuntime
 		for i = 0 to administratorCount - 1
 			administrators[i] = parsed.administrators[i]
 			administratorSettlementIds[i] = parsed.administratorSettlementIds[i]
-		warCount = parsed.warCount
-		for i = 0 to warCount - 1
-			warAttackers[i] = parsed.warAttackers[i]
-			warDefenders[i] = parsed.warDefenders[i]
+		conflictCount = parsed.conflictCount
+		for i = 0 to conflictCount - 1
+			conflicts[i] = parsed.conflicts[i]
+		legacyConflicts = parsed.legacyConflicts
 		traditionCount = parsed.traditionCount
 		for i = 0 to traditionCount - 1
 			traditions[i] = parsed.traditions[i]
 		activeRegionId = ""
+		reconcileSieges()
 		activateRegion(restoredRegion)
+		destroy parsed
 		return true
 	function managementSummary(string subjectId) returns string
 		let f = forceIndex(subjectId)

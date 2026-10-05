@@ -84,11 +84,14 @@ class CampaignPiracyActionAuthority implements PiracyActionAuthority
 /** Commits peace into the persistent military/settlement authority.  Territory
  * clauses use cede:settlement_id:grantor_polity_id:beneficiary_polity_id; the
  * country screen remains only a projection over this state. */
-class CampaignCountryPeaceAuthority implements CountryPeaceAuthority
+public class CampaignCountryPeaceAuthority implements CountryPeaceAuthority
 	MilitarySettlementRuntime military
 	construct(MilitarySettlementRuntime military)
 		this.military = military
 	override function commitPeace(string conflictId, string terms) returns boolean
+		let conflict = military.conflictIndex(conflictId)
+		if conflict < 0 or military.conflicts[conflict].settled
+			return false
 		if terms.startsWith("cede:")
 			let remainder = SubString(terms, 5, StringLength(terms))
 			let first = remainder.indexOf(":")
@@ -101,14 +104,12 @@ class CampaignCountryPeaceAuthority implements CountryPeaceAuthority
 			let settlementId = SubString(remainder, 0, first)
 			let grantor = SubString(parties, 0, second)
 			let beneficiary = SubString(parties, second + 1, StringLength(parties))
-			if beneficiary == "" or beneficiary == grantor
+			if not military.canCede(conflictId, settlementId, grantor, beneficiary)
 				return false
-			for i = 0 to military.settlementCount - 1
-				if military.settlements[i].id == settlementId and military.settlements[i].controllerId == grantor
-					military.settlements[i].controllerId = beneficiary
-					return true
-			return false
-		return terms != ""
+			return military.commitPeace(conflictId, settlementId, beneficiary)
+		if terms == "ceasefire"
+			return military.commitPeace(conflictId, "", "")
+		return false
 
 
 /** Production registration order, also executed by the startup regressions.
@@ -124,6 +125,7 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	campaign.registerExtension(trade)
 	configureMilitarySettlementScenario(military)
 	campaign.state.setMilitarySettlementRuntime(military)
+	campaign.countries.setMilitaryAuthority(military)
 	// Choose the actual projection slice without creating default objects yet.
 	military.activeRegionId = campaign.physicalMapId
 	campaign.countries.setPeaceAuthority(new CampaignCountryPeaceAuthority(military))
