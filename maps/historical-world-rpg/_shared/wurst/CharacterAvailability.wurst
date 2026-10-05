@@ -1,0 +1,6 @@
+package CharacterAvailability
+
+/** Inclusive proleptic Gregorian ordinal dates, matching character_availability.py.
+ * This gates first recruitment only; ownership and reconstruction never use it. */
+public function isCharacterRecruitmentDay(int day, int startDay, int endDay) returns boolean
+	return startDay >= 1 and endDay <= 3652059 and startDay <= endDay and day >= startDay and day <= endDay

@@ -88,6 +88,7 @@ class RecordingCombatNatives implements MilitaryCombatNatives
 	real elapsed = 0.
 	real delay = 0.
 	int heroToken = 9000
+	int heroIndex = -1
 	override function install(MilitaryCombatEvents events, int generation)
 		this.events = events
 		epoch = generation
@@ -107,7 +108,7 @@ class RecordingCombatNatives implements MilitaryCombatNatives
 	override function timerElapsed() returns real
 		return elapsed
 	override function heroRepresentationId(int index) returns int
-		if index == 0
+		if index == heroIndex
 			return heroToken
 		return 0
 	function damage(int target, int source) returns int
@@ -147,6 +148,10 @@ class CombatFixture
 		// startup before installing the exact production combat registration.
 		(installMilitaryCombatEvents(startup.campaign, natives, pause) == null).assertTrue()
 		startup.start("england")
+		let heroes = startup.campaign.state.rpg.heroes
+		for i = 0 to heroes.count - 1
+			if heroes.heroes[i].recruited and heroes.heroes[i].assignment == "field"
+				natives.heroIndex = i
 		runtime = startup.campaign.state.militarySettlements
 		installCampaignClock(startup.clock)
 		runtime.adapter = representations

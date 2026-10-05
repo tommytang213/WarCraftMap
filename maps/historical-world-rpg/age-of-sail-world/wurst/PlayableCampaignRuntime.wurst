@@ -252,6 +252,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		countries.setMilitaryAuthority(militarySettlements)
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
+		// The same clock is restored transactionally by campaign save/load.
+		rpg.heroes.clock = clock
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
 		if countries != null

@@ -1,6 +1,7 @@
 package WarcraftRpgRuntimeTests
 import WarcraftRpgRuntime
 import ScenarioData
+import CampaignTimeline
 
 class Effects implements TechnologyEffectPort
 	int applied=0
@@ -41,6 +42,7 @@ class Projections implements RpgProjectionPort
 
 @test function recruitmentProgressionRecoveryAndReconstruction()
 	let runtime=new WarcraftRpgRuntime(new Effects())
+	runtime.heroes.clock=new CampaignClock(1,100,1,1.)
 	let hero=new RpgHero("nelson","Horatio Nelson",'Hpal')
 	runtime.heroes.register(hero)
 	runtime.heroes.recruit("nelson").assertEquals(true)
@@ -117,6 +119,7 @@ class Projections implements RpgProjectionPort
 @test function authoritativeStateRoundTripsAndReconcilesExactlyOnce()
 	let effects=new Effects()
 	let source=new WarcraftRpgRuntime(effects)
+	source.heroes.clock=new CampaignClock(1,100,1,1.)
 	let hero=new RpgHero("hero","Hero",'Hpal')
 	source.heroes.register(hero)
 	source.heroes.recruit("hero")
@@ -235,6 +238,7 @@ class Projections implements RpgProjectionPort
 @test function minimalOptionalRecordsHaveValidDefaultsAndReconstruct()
 	let effects=new Effects()
 	let runtime=new WarcraftRpgRuntime(effects)
+	runtime.heroes.clock=new CampaignClock(1,100,1,1.)
 	let projections=new Projections()
 	runtime.setProjectionPort(projections)
 	let hero=new RpgHero("hero","Hero",'Hpal')
@@ -293,6 +297,8 @@ class Projections implements RpgProjectionPort
 	(runtime.journal.count>0).assertTrue()
 	(runtime.treasures.count>0).assertTrue()
 	let hero=runtime.heroes.heroes[0]
+	runtime.heroes.clock=configureCampaignTimeline()
+	runtime.heroes.clock.advanceTo(hero.availabilityStartDay).assertTrue()
 	runtime.heroes.recruit(hero.id).assertTrue()
 	var equipped=false
 	for i=0 to runtime.inventory.definitionCount-1

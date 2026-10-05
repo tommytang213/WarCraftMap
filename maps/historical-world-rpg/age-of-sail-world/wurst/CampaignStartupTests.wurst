@@ -188,6 +188,9 @@ public class StartupFixture
 		// The interpreter has a fixed 20-second limit per test. Catalogue-wide
 		// generation and scale are covered by the repository's separate gates.
 		(campaign.state.rpg.heroes.count > 100 and campaign.state.militarySettlements.settlementCount > 700 and trade.marketCount > 700).assertTrue()
+		// Retain a generated 1450-eligible character alongside Leonardo, whose
+		// first-recruitment window has not opened at campaign start.
+		campaign.state.rpg.heroes.heroes[1] = campaign.state.rpg.heroes.get("hang_tuah")
 		campaign.state.rpg.heroes.count = 2
 		campaign.state.rpg.journal.count = 2
 		campaign.state.rpg.treasures.count = 1
@@ -238,6 +241,8 @@ function originLifecycle(string origin, string mapId)
 	source.ports.x.assertEquals(row.x)
 	source.ports.y.assertEquals(row.y)
 	source.ports.activePlayers.assertEquals(1)
+	source.campaign.state.rpg.heroes.get("leonardo_da_vinci").recruited.assertFalse()
+	source.campaign.state.rpg.heroes.get("hang_tuah").recruited.assertTrue()
 	source.handoff.readRequest().status.assertEquals("consumed")
 	source.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "round-trip").assertTrue()
 	let saved = source.campaign.state.captureAuthoritativeState()
