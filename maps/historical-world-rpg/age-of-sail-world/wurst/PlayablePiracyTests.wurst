@@ -1,5 +1,6 @@
 package PlayablePiracyTests
 import PlayablePiracy
+import PiracyCommandTests
 
 class OrdinarySystems implements PiratePolityAuthority
 	boolean accept=true
@@ -18,45 +19,6 @@ class OrdinarySystems implements PiratePolityAuthority
 
 function rules() returns PiracyRules
 	return new PiracyRules(30,20,5000,3,150)
-
-function prize(string id,string target,string kind,string commission,string outcome,int tick,boolean validated) returns PrizeProposal
-	return new PrizeProposal(id,target,kind,"spain","caribbean",commission,outcome,"sugar",4,2000,2,"ransom",tick,validated)
-
-@test function bootstrapContractSupportsCommissionedPrivateeringAndPrizeDisposition()
-	let runtime=new PiracyRuntime(rules())
-	runtime.issueCommission("marque_1","england","spain",100,250).assertTrue()
-	let proposal=prize("action_1","ship_1","merchant_ship","marque_1","capture",10,true)
-	(runtime.previewPrize(proposal).indexOf("LAWFUL PRIVATEERING")>=0).assertTrue()
-	(runtime.previewPrize(proposal).indexOf("known consequences")>=0).assertTrue()
-	(runtime.commitPrize(proposal).indexOf("cargo seized and vessel capture")>=0).assertTrue()
-	runtime.state.piracyWealthMinor.assertEquals(2500)
-	runtime.state.bountyMinor.assertEquals(0)
-	(runtime.commitPrize(proposal)).assertEquals("Action already processed.")
-
-@test function unlicensedPiracyCreatesNotorietyBountyPressureAndExhaustion()
-	let runtime=new PiracyRuntime(rules())
-	let proposal=prize("raid_1","port_1","coastal_target","","release",40,true)
-	(runtime.previewPrize(proposal).indexOf("PIRACY")>=0).assertTrue()
-	runtime.commitPrize(proposal)
-	runtime.state.outlaw.assertTrue()
-	runtime.state.notoriety.assertEquals(4)
-	runtime.state.bountyMinor.assertEquals(600)
-	runtime.regionalPressure[0].assertEquals(4)
-	(runtime.commitPrize(prize("raid_2","port_1","coastal_target","","release",41,true)).indexOf("exhausted")>=0).assertTrue()
-	(runtime.bountyResponse().indexOf("patrol and expedition")>=0).assertTrue()
-
-@test function rejectsExpiredRevokedIneligibleAndInvalidPrizeActionsAtomically()
-	let runtime=new PiracyRuntime(rules())
-	runtime.issueCommission("old_marque","england","spain",20,250)
-	(runtime.commitPrize(prize("expired","ship_2","merchant_ship","old_marque","capture",20,true))).assertEquals("Commission is expired or revoked.")
-	runtime.issueCommission("revoked","england","spain",100,250)
-	runtime.revokeCommission("revoked")
-	(runtime.commitPrize(prize("revoked_action","ship_3","merchant_ship","revoked","capture",21,true))).assertEquals("Commission is expired or revoked.")
-	(runtime.commitPrize(prize("bad_kind","ship_4","fortress","","release",22,true))).assertEquals("Ineligible piracy target.")
-	(runtime.commitPrize(prize("bad_outcome","port_2","coastal_target","","capture",23,true)).indexOf("Rejected prize action")>=0).assertTrue()
-	(runtime.commitPrize(prize("unvalidated","ship_5","merchant_ship","","capture",24,false))).assertEquals("War/crime authority was not validated.")
-	runtime.state.prizesTaken.assertEquals(0)
-	runtime.processedCount.assertEquals(0)
 
 @test function havenAndIndependentPolityUseOrdinaryCampaignAuthorities()
 	let runtime=new PiracyRuntime(rules())
@@ -90,9 +52,12 @@ function prize(string id,string target,string kind,string commission,string outc
 	runtime.state.polityId.assertEquals("")
 
 @test function saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition()
-	let runtime=new PiracyRuntime(rules())
+	let f=new PrizeFixture()
+	let runtime=f.piracy
 	runtime.registerGovernmentForm("pirate_confederacy","Admiral")
-	runtime.commitPrize(prize("captured_vessel_1","ship_9","military_ship","","capture",50,true))
+	f.combat.encounters[0].targetKind="military_ship"
+	f.preview("captured_vessel_1","-","capture")
+	f.confirm()
 	runtime.state.notoriety=20
 	runtime.state.piracyWealthMinor=6000
 	runtime.state.prizesTaken=3

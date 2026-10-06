@@ -37,8 +37,10 @@ function persistencePiracy() returns PiracyRuntime
 	result.registerGovernmentForm("free_republic","First Captain")
 	return result
 
-function persistencePrize(string id,string target,int tick) returns PrizeProposal
-	return new PrizeProposal(id,target,"merchant_ship","spain","caribbean","marque_1","capture","sugar",4,2000,2,"ransom",tick,true)
+// Literal supported v1 history: a save fixture is historical data, never a
+// capability to authorize a new action or reconstruct pending confirmation.
+function restoreHistoricalPrize(PiracyRuntime runtime)
+	runtime.restoreAuthority("v1|notoriety=1|bounty=0|wealth=2500|prizes=1|outlaw=0|commissions=marque_1,england,spain,100,250,1~|targets=ship_1,10~|havens=|regions=caribbean,2~|actions=prize_1,ship_1,merchant_ship,spain,caribbean,marque_1,capture,sugar,4,2000,2,ransom,10~|polity=|government=|name=|title=|capital=|territories=|recognition=").assertTrue()
 
 class MemoryStorage implements CampaignSaveStorage
 	string array[64] keys
@@ -116,7 +118,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let storage=new MemoryStorage()
 	let original=persistencePiracy()
 	original.issueCommission("marque_1","england","spain",100,250).assertTrue()
-	original.commitPrize(persistencePrize("prize_1","ship_1",10))
+	restoreHistoricalPrize(original)
 	original.state.notoriety=20
 	original.state.piracyWealthMinor=6000
 	original.state.prizesTaken=3
@@ -152,7 +154,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 @test function malformedDuplicatePiracyRecordsRejectAtomically()
 	let runtime=persistencePiracy()
 	runtime.issueCommission("marque_1","england","spain",100,250)
-	runtime.commitPrize(persistencePrize("prize_1","ship_1",10))
+	restoreHistoricalPrize(runtime)
 	let before=runtime.captureAuthority()
 	let actionMarker="|actions="
 	let actionStart=before.indexOf(actionMarker)+StringLength(actionMarker)
