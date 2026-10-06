@@ -9,7 +9,7 @@ is used. Text disappearing from the chat display does not close management.
 | Inventory/equipment | `/inventory [HERO]` (`/equipment`, `/items`) | `/rpg-close` |
 | Journal | `/journal` (`/quests`) | `/rpg-close` |
 | Technology/institutions | `/technology` (`/institutions`) | `/rpg-close` |
-| Settlement market | `/trade inspect` or `/trade open` (`/market`) | `/trade close` |
+| Settlement market | `/trade inspect`, `/trade open`, `/trade markets`, `/trade commodities MARKET`, `/trade stores` (`/market`) | `/trade close` |
 
 The four RPG views share one session. Reopening a view, selecting another hero,
 or switching between those views retains that session's single pause owner.
@@ -19,12 +19,16 @@ management closes with `/management-close`, and maps close with `/map close`.
 Each close releases only its own owner. The final close restores the manual
 pause state from before the first management screen opened.
 
+`/trade select MARKET COMMODITY`, `/trade store STORE`, `/trade move SOURCE DESTINATION QUANTITY`,
 `/trade buy QUANTITY`, `/trade sell QUANTITY`, recruitment, equipment actions,
 research, quest actions, help, and passive notifications do not acquire ownership.
 Actions issued inside management leave the existing session open. Screen output
 and command help describe the available close and switch actions. Registration
 errors stop bootstrap; RPG registration installs the close action before any
 command that can open an RPG view.
+
+See [local market and cargo commands](LIVE_TRADE_COMMANDS.md) for eligible listings,
+physical access and selection requirements. These use the same market session.
 
 `ManagementScreenSession` retains a token from the existing
 `ManagementScreenPauseController`; it does not introduce a pause authority.

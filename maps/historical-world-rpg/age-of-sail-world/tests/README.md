@@ -72,6 +72,12 @@ python3 ../_shared/tooling/run_wurst_tests.py package.json
 uncosted cargo, split transfers and sales, integer rounding, transaction rejection
 and replay, and the production trade serializer inside campaign envelopes 1–7.
 Literal legacy fixtures cover every supported aggregate layout.
+`TradeCommandTests.wurst` uses registered production commands and recording physical
+boundaries for two commodities, multiple stores, transfers and a two-settlement
+journey. It verifies rejection without economic mutation, populated codec restore,
+replay protection, older personal-store migration and the existing modal lifecycle.
+Generated ownership/location bindings are checked by `test_trade_selection.py`.
+See [LIVE_TRADE_COMMANDS.md](../docs/LIVE_TRADE_COMMANDS.md).
 `CampaignLoadTransactionTests.wurst` checks rollback with populated lots and
 earned merchant standing. The versioned contract and migration limitation are
 documented in [LIVE_TRADE_SAVE.md](../docs/LIVE_TRADE_SAVE.md).

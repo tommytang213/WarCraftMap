@@ -227,6 +227,7 @@ public class StartupFixture
 		(campaign.state.rpg.interactions.maps != null).assertTrue()
 		campaign.state.rpg.interactions.maps.loadedMap().assertEquals(campaign.physicalMapId)
 		campaign.state.rpg.interactions.maps.available().assertFalse()
+		(trade.access!=null and trade.access.state==campaign.state and trade.access.cargoActors!=null).assertTrue()
 		// Bound the authority fixture AFTER executing every production registration.
 		// The interpreter has a fixed 20-second limit per test. Catalogue-wide
 		// generation and scale are covered by the repository's separate gates.

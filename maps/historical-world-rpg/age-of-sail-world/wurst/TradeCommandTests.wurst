@@ -1,0 +1,409 @@
+package TradeCommandTests
+
+import PlayableTrade
+import LiveTradeAccess
+import PhysicalInteraction
+import WarcraftRpgRuntime
+import WarcraftRegionalRuntime
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import PlayableCampaignRuntime
+import CampaignTimeline
+import CampaignSaveManager
+import CommandRouter
+import ManagementScreenPauseController
+import ScenarioData
+
+class TradeCommandPorts implements CommandOutput,TradePresentation,CampaignPauseRuntime
+	string output=""
+	override function show(player sender,string message)
+		output=message
+	override function showMarket(player sender,string id,string rows)
+		output=rows
+	override function showTradeResult(player sender,string message)
+		output=message
+	override function setCampaignPaused(boolean paused)
+		skip
+
+/** These replace only native observations. All eligibility, state, catalogue,
+ * command registration, transactions, provenance and codecs are production. */
+class TradeActors implements InteractionActors
+	real actorX=0.
+	real actorY=0.
+	boolean exists=true
+	int reads=0
+	int invalidateAt=0
+	int movementKind=0
+	SettlementRuntimeState changeCity=null
+	RuntimeForce changeVessel=null
+	override function present(int actor,player owner) returns boolean
+		reads++
+		if invalidateAt>0 and reads>=invalidateAt
+			if changeCity!=null
+				changeCity.controllerId="changed"
+			else if changeVessel!=null
+				changeVessel.controllerId="changed"
+			else
+				return false
+		return exists
+	override function x(int actor) returns real
+		return actorX
+	override function y(int actor) returns real
+		return actorY
+	override function movement(int actor) returns int
+		return movementKind
+	function moveTo(InteractionLocation point)
+		actorX=point.x
+		actorY=point.y
+
+class TradeCommandFixture
+	PlayableTradeRuntime trade=new PlayableTradeRuntime()
+	TradeCommandPorts ports=new TradeCommandPorts()
+	TradeActors actors=new TradeActors()
+	TradeActors vessels=new TradeActors()
+	WarcraftRpgRuntime rpg=new WarcraftRpgRuntime(null)
+	CampaignClock clock=new CampaignClock(1450,1820,1450,1.)
+	PlayableCampaignState state=new PlayableCampaignState(new WarcraftRegionalAdapter(),clock)
+	MilitarySettlementRuntime military=new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CommandRegistry commands
+	RuntimeForce vessel
+	construct()
+		configureGeneratedTrade(trade)
+		// Execute all generated registration, then retain a journey-sized slice
+		// for complete snapshot comparisons within the pinned interpreter budget.
+		var kept=0
+		for i=0 to trade.marketCount-1
+			let value=trade.markets[i]
+			if (value.id=="lisbon" or value.id=="london") and (value.goodName=="grain" or value.goodName=="tools")
+				trade.markets[kept]=value
+				kept++
+			else
+				destroy value
+		trade.marketCount=kept
+		kept=0
+		for i=0 to trade.storeCount-1
+			let value=trade.stores[i]
+			if value.accessKind=="personal" or value.accessId=="lisbon" or value.accessId=="london" or value.id=="cargo:english_patrol_ship"
+				trade.stores[kept]=value
+				kept++
+			else
+				destroy value
+		trade.storeCount=kept
+		trade.marketCount.assertEquals(4)
+		trade.storeCount.assertEquals(4)
+		configureGeneratedInteractions(rpg.interactions)
+		let hero=new RpgHero("trader","Trader",'Hpal')
+		hero.recruited=true
+		hero.assignment="field"
+		rpg.heroes.register(hero)
+		rpg.interactions.actors=actors
+		rpg.interactions.maps=new CampaignInteractionMaps(state)
+		state.setRpgRuntime(rpg)
+		state.setMilitarySettlementRuntime(military)
+		state.identity=new PlayerCampaignIdentity()
+		state.identity.startCampaign("portugal","europe_west","europe_iberia_western_med","lisbon").assertTrue()
+		state.loadedPhysicalMap="europe_west"
+		state.setExtension(trade)
+		let lisbon=rpg.interactions.get("lisbon")
+		let london=rpg.interactions.get("london")
+		military.registerSettlement(new SettlementRuntimeState("lisbon","portugal",lisbon.mapId,'htow','hfoo',40,80,100,100,lisbon.x,lisbon.y))
+		military.registerSettlement(new SettlementRuntimeState("london","england",london.mapId,'htow','hfoo',40,80,100,100,london.x,london.y))
+		vessel=new RuntimeForce("english_patrol_ship","player",lisbon.mapId,"sailing_naval",FORCE_FLEET,'hbot',20,100,lisbon.x,lisbon.y)
+		military.registerForce(vessel)
+		trade.access=new LiveTradeAccess(state)
+		trade.access.cargoActors=vessels
+		trade.management.pauses=new ManagementScreenPauseController(ports,false)
+		trade.newCampaign("lisbon")
+		commands=new CommandRegistry(false,6,new CommandText(),ports)
+		registerPlayableTradeCommands(commands,trade,ports).assertEquals("")
+		actors.moveTo(lisbon)
+		vessels.moveTo(lisbon)
+	function dispatch(string command)
+		commands.dispatch(Player(0),command).assertTrue()
+	function selectPersonal()
+		dispatch("/trade select lisbon grain")
+		dispatch("/trade store player_ship_hold")
+	function reject(string command)
+		let before=state.captureAuthoritativeState()
+		dispatch(command)
+		state.captureAuthoritativeState().assertEquals(before)
+		(StringLength(ports.output)<500).assertTrue()
+	function personal() returns TradeStore
+		return trade.findStore("player_ship_hold")
+	function warehouse() returns TradeStore
+		return trade.findStore("warehouse:lisbon")
+	function ship() returns TradeStore
+		return trade.findStore("cargo:english_patrol_ship")
+
+function tradeCommandDocument(string saved,CampaignClock clock) returns string
+	return "v2;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:portugal,allegiance:portugal,settlement:lisbon;quests=;discovery=lisbon;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
+
+@test function registeredTradeCommandsCompleteTwoCommodityTwoSettlementCargoJourney()
+	let f=new TradeCommandFixture()
+	// An established merchant may use authored warehouse services. New traders
+	// can use their personal hold without citizenship granting a public store.
+	f.trade.progress.standing=100
+	f.dispatch("/market markets")
+	(f.ports.output.indexOf("lisbon")>=0).assertTrue()
+	(f.ports.output.indexOf("london")<0).assertTrue()
+	f.dispatch("/trade commodities lisbon")
+	(f.ports.output.indexOf("grain")>=0 and f.ports.output.indexOf("tools")>=0).assertTrue()
+	f.dispatch("/trade select lisbon tools")
+	f.dispatch("/trade store player_ship_hold")
+	f.dispatch("/trade buy 6")
+	f.ports.output.assertEquals("Bought 6 tools.")
+	f.dispatch("/trade stores")
+	(f.ports.output.indexOf("warehouse:lisbon")>=0 and f.ports.output.indexOf("cargo:english_patrol_ship")>=0).assertTrue()
+	f.dispatch("/trade move player_ship_hold warehouse:lisbon 2")
+	f.dispatch("/trade move player_ship_hold cargo:english_patrol_ship 4")
+	f.ports.output.assertEquals("Cargo moved.")
+	// Generated tools use 100 quantity units per display unit. Buy edges
+	// 85..90 sum to 895 minor units before scaling; the debit rounds up to 9.
+	f.personal().money.assertEquals(991)
+	f.warehouse().cargo.assertEquals(2)
+	f.ship().cargo.assertEquals(4)
+	f.trade.controller.provenance.costIn(f.ship().id,"tools").assertEquals(6)
+	f.trade.controller.provenance.costIn(f.warehouse().id,"tools").assertEquals(3)
+	f.dispatch("/trade select lisbon grain")
+	f.dispatch("/trade buy 5")
+	f.ports.output.assertEquals("Bought 5 grain.")
+	f.reject("/trade move cargo:english_patrol_ship player_ship_hold 1")
+	f.ports.output.assertEquals("Cargo store contains another commodity.")
+	// Five grain units settle for 2 on purchase and 1 on resale; smaller
+	// sales may be below the supported minimum currency settlement.
+	f.dispatch("/trade sell 5")
+	f.ports.output.assertEquals("Sold 5 grain; realized P/L -1.")
+	f.personal().cargo.assertEquals(0)
+	f.personal().money.assertEquals(990)
+	f.dispatch("/trade close")
+	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)
+	// Only physical observation boundaries move; command/UI selections do not.
+	f.actors.moveTo(f.rpg.interactions.get("london"))
+	f.vessels.moveTo(f.rpg.interactions.get("london"))
+	f.reject("/trade buy 1")
+	f.dispatch("/trade select london tools")
+	f.dispatch("/trade store cargo:english_patrol_ship")
+	// A trusted shortage event changes the commit quote through its existing API.
+	f.trade.applyMarketModifiers("london",2000,false,false,0,0,1000,1000)
+	f.dispatch("/trade sell 2")
+	// The sale rounds 739/100 down to 7, consuming cost 3. Existing route
+	// progression allocates (7 div 2)*2-3 = 3 standing from that profit.
+	f.ports.output.assertEquals("Sold 2 tools; realized P/L 4.")
+	f.ship().money.assertEquals(7)
+	f.trade.progress.realizedProfit.assertEquals(3)
+	f.trade.progress.standing.assertEquals(103)
+	f.trade.progress.completedRouteCount.assertEquals(1)
+	f.dispatch("/trade move cargo:english_patrol_ship player_ship_hold 2")
+	f.dispatch("/trade store player_ship_hold")
+	f.personal().cargo.assertEquals(2)
+	f.trade.controller.provenance.costIn(f.personal().id,"tools").assertEquals(3)
+	f.warehouse().cargo.assertEquals(2)
+	f.trade.controller.processedCount.assertEquals(7)
+	f.trade.nextTransaction.assertEquals(8)
+	f.trade.storeCount.assertEquals(4)
+	let saved=f.trade.capture()
+	let clock=new CampaignClock(1450,1820,1450,1.)
+	let codec=new PlayableCampaignCodec(clock)
+	let document=tradeCommandDocument(saved,clock)
+	let payload=codec.encode("manual_01",SAVE_SLOT_MANUAL,1,"trade journey",document)
+	let restored=new TradeCommandFixture()
+	restored.trade.reconstruct(lastAuthorityValue(codec.decodeMigrateAndValidate(payload,"manual_01"),"trade")).assertTrue()
+	restored.trade.capture().assertEquals(saved)
+	restored.trade.hold.id.assertEquals("player_ship_hold")
+	restored.trade.market.id.assertEquals("london")
+	restored.trade.controller.seen("runtime-move-7").assertTrue()
+	restored.reject("/trade sell 1")
+	restored.actors.moveTo(restored.rpg.interactions.get("london"))
+	restored.dispatch("/trade select london tools")
+	restored.dispatch("/trade store player_ship_hold")
+	// A repeated request number after restore still meets the persisted replay
+	// barrier through command dispatch, even against a different market.
+	restored.trade.nextTransaction=1
+	restored.reject("/trade buy 1")
+	restored.ports.output.assertEquals("Transaction already processed.")
+
+@test function tradeCommandsRejectUnknownHiddenRemoteAndUnauthorizedTargets()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
+	let local=f.trade.capture()
+	f.commands.dispatch(Player(1),"/trade buy 1").assertTrue()
+	f.trade.capture().assertEquals(local)
+	f.reject("/trade select absent grain")
+	f.reject("/trade select london grain")
+	f.reject("/trade select lisbon missing")
+	f.trade.findMarket("lisbon","tools").discovered=false
+	f.reject("/trade select lisbon tools")
+	f.dispatch("/trade commodities lisbon")
+	(f.ports.output.indexOf("tools")<0).assertTrue()
+	f.trade.findMarket("london","grain").discovered=false
+	f.trade.findMarket("london","tools").discovered=false
+	f.actors.moveTo(f.rpg.interactions.get("london"))
+	f.dispatch("/trade markets")
+	(f.ports.output.indexOf("london")<0).assertTrue()
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.reject("/trade store missing")
+	f.reject("/trade store warehouse:lisbon")
+	f.reject("/trade store warehouse:london")
+	f.vessel.controllerId="portugal"
+	f.reject("/trade store cargo:english_patrol_ship")
+	f.dispatch("/trade stores")
+	(f.ports.output.indexOf("warehouse:")<0 and f.ports.output.indexOf("cargo:")<0).assertTrue()
+	f.reject("/trade move player_ship_hold cargo:english_patrol_ship 1")
+	f.vessel.controllerId="player"
+	f.vessels.moveTo(f.rpg.interactions.get("london"))
+	f.reject("/trade store cargo:english_patrol_ship")
+	f.vessels.moveTo(f.rpg.interactions.get("lisbon"))
+	f.vessels.exists=false
+	f.reject("/trade store cargo:english_patrol_ship")
+	f.reject("/trade buy 1x")
+	f.reject("/trade buy 2147483648")
+	f.reject("/trade buy -1")
+	f.reject("/trade move player_ship_hold warehouse:lisbon 0")
+	f.reject("/trade commodities lisbon 0")
+
+@test function tradeCommandsRecheckMovementOwnershipAndCampaignAvailabilityAtCommit()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
+	f.dispatch("/trade buy 2")
+	f.actors.actorX+=INTERACTION_RANGE+1.
+	f.reject("/trade buy 1")
+	f.reject("/trade sell 1")
+	f.reject("/trade move player_ship_hold cargo:english_patrol_ship 1")
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.actors.movementKind=1
+	f.reject("/trade buy 1")
+	f.actors.movementKind=0
+	f.state.loadedPhysicalMap="africa"
+	f.reject("/trade buy 1")
+	f.state.loadedPhysicalMap="europe_west"
+	f.state.beginTransition()
+	f.reject("/trade buy 1")
+	f.state.cancelTransition()
+	f.rpg.heroes.heroes[0].assignment="reserve"
+	f.reject("/trade buy 1")
+	f.rpg.heroes.heroes[0].assignment="field"
+	f.actors.reads=0
+	f.actors.invalidateAt=2
+	f.reject("/trade buy 1")
+	f.actors.invalidateAt=0
+	f.trade.market.blockaded=true
+	f.reject("/trade buy 1")
+	f.trade.market.blockaded=false
+	f.military.settlements[0].controllerId="england"
+	f.reject("/trade buy 1")
+	f.military.setWar("portugal","england",true)
+	f.reject("/trade select lisbon grain")
+	f.military.setWar("portugal","england",false)
+	// Military administrative labels are not physical map coordinates. The
+	// generated interaction catalogue remains the settlement's physical target.
+	f.military.settlements[0].regionId="europe_iberia_western_med"
+	f.dispatch("/trade select lisbon grain")
+	f.dispatch("/trade buy 1")
+	f.ports.output.assertEquals("Bought 1 grain.")
+	f.dispatch("/trade store cargo:english_patrol_ship")
+	f.vessel.controllerId="portugal"
+	f.reject("/trade buy 1")
+
+@test function tradeCommitRejectsControlChangesBetweenResolutionAndMutation()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
+	let before=f.trade.capture()
+	f.actors.reads=0
+	f.actors.invalidateAt=2
+	f.actors.changeCity=f.military.settlements[0]
+	f.dispatch("/trade buy 1")
+	f.trade.capture().assertEquals(before)
+	f.actors.invalidateAt=0
+	f.dispatch("/trade select lisbon grain")
+	f.dispatch("/trade buy 2")
+	let bought=f.trade.capture()
+	f.vessels.reads=0
+	f.vessels.invalidateAt=2
+	f.vessels.changeVessel=f.vessel
+	f.dispatch("/trade move player_ship_hold cargo:english_patrol_ship 1")
+	f.trade.capture().assertEquals(bought)
+
+@test function tradeSelectionLoadRollbackAndLegacyPersonalStoreMigrationPreserveAuthority()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
+	f.dispatch("/trade buy 2")
+	let before=f.trade.capture()
+	f.trade.beginLoad()
+	f.trade.reconstruct(before).assertTrue()
+	f.reject("/trade buy 1")
+	f.trade.rollbackLoad()
+	f.trade.capture().assertEquals(before)
+	f.dispatch("/trade buy 1")
+	f.ports.output.assertEquals("Bought 1 grain.")
+	f.trade.beginLoad()
+	f.trade.reconstruct(before).assertTrue()
+	f.trade.commitLoad()
+	f.reject("/trade buy 1")
+	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)
+	// Literal supported v2 save from before the personal hold was registered.
+	let old="v2:lisbon:90:82080:24:22:24:2:900:0:0::100:0:0:2:runtime-buy-1:lisbon,grain,90,82080,24,22,0,0,0,0,0,1000,1000,24:warehouse;lisbon:24000:warehouse;lisbon,2,900,24000,grain:grain:grain:warehouse;lisbon,grain,2,48,lisbon"
+	f.trade.reconstruct(old).assertTrue()
+	f.personal().cargo.assertEquals(0)
+	f.personal().money.assertEquals(0)
+	f.warehouse().cargo.assertEquals(2)
+	f.warehouse().money.assertEquals(900)
+	f.trade.controller.provenance.costIn(f.warehouse().id,"grain").assertEquals(48)
+	let migrated=f.trade.capture()
+	f.trade.reconstruct(migrated).assertTrue()
+	f.trade.capture().assertEquals(migrated)
+	let codec=new PlayableCampaignCodec(f.clock)
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		let payload=campaignSaveEnvelope(schema,"manual_01",SAVE_SLOT_MANUAL,1,"legacy stores",tradeCommandDocument(old,f.clock))
+		f.trade.reconstruct(lastAuthorityValue(codec.decodeMigrateAndValidate(payload,"manual_01"),"trade")).assertTrue()
+		f.trade.capture().assertEquals(migrated)
+	f.dispatch("/trade select lisbon grain")
+	f.dispatch("/trade store warehouse:lisbon")
+	f.dispatch("/trade move warehouse:lisbon player_ship_hold 1")
+	f.ports.output.assertEquals("Cargo moved.")
+	f.personal().money.assertEquals(0)
+
+@test function legacySummaryTradeKeepsHistoricalStoreAndCapacityDespiteCurrentSelection()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
+	f.dispatch("/trade buy 2")
+	f.dispatch("/trade store cargo:english_patrol_ship")
+	// These formats predate explicit store IDs. Forty cargo fits the historical
+	// starting warehouse, but neither the new personal hold nor selected vessel.
+	let summary="lisbon:90:82080:24:22:24:40:900:0:0::100:0:0:2:legacy-buy"
+	for fields=16 to 17
+		var saved=summary
+		if fields==17
+			saved+=":lisbon,grain,90,82080,24,22,0,0,0,0,0"
+		f.trade.reconstruct(saved).assertTrue()
+		f.trade.hold.id.assertEquals("warehouse:lisbon")
+		f.warehouse().capacity.assertEquals(24000)
+		f.warehouse().cargo.assertEquals(40)
+		f.warehouse().money.assertEquals(900)
+		f.warehouse().goodId.assertEquals("")
+		f.personal().cargo.assertEquals(0)
+		f.personal().money.assertEquals(0)
+		f.trade.controller.provenance.count.assertEquals(0)
+		f.trade.controller.seen("legacy-buy").assertTrue()
+		let migrated=f.trade.capture()
+		f.trade.reconstruct(migrated).assertTrue()
+		f.trade.capture().assertEquals(migrated)
+		f.reject("/trade sell 1")
+		f.dispatch("/trade select lisbon grain")
+		f.dispatch("/trade store player_ship_hold")
+
+@test function tradeListsAreBoundedAndShareOnlyTheExistingMarketPauseOwner()
+	let f=new TradeCommandFixture()
+	for i=0 to 8
+		f.trade.registerMarket(new RuntimeMarket("lisbon","extra"+i.toString(),10,100,1,1))
+	let before=f.trade.capture()
+	f.dispatch("/trade commodities lisbon")
+	(f.ports.output.indexOf("Page 1/2")>=0 and f.ports.output.indexOf("extra8")<0).assertTrue()
+	f.dispatch("/trade commodities lisbon 2")
+	(f.ports.output.indexOf("extra8")>=0 and f.ports.output.indexOf("grain")<0).assertTrue()
+	f.dispatch("/trade markets")
+	f.dispatch("/trade inspect")
+	f.trade.capture().assertEquals(before)
+	f.trade.management.pauses.getModalOwnerCount().assertEquals(1)
+	f.dispatch("/trade close")
+	f.dispatch("/trade close")
+	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)

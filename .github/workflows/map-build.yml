@@ -21,6 +21,7 @@ jobs:
       WURST_IMAGE: frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a
       MAP_PROJECT: maps/historical-world-rpg/age-of-sail-world
       RELEASE_ARTIFACT: maps/historical-world-rpg/age-of-sail-world/_build/release/AgeOfSailWorld-phase9-rc1.zip
+      RELEASE_VERSION_PREFIX: v0.9
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -60,15 +61,43 @@ jobs:
                 --evidence "/out/artifact-evidence.json"
             '
 
+      - name: Create versioned player files
+        run: |
+          artifact_dir="$RUNNER_TEMP/age-of-sail-release"
+          canonical_zip="$artifact_dir/AgeOfSailWorld-phase9-rc1.zip"
+          short_sha="${GITHUB_SHA::7}"
+          build_version="${RELEASE_VERSION_PREFIX}.${GITHUB_RUN_NUMBER}-g${short_sha}"
+          versioned_zip="$artifact_dir/AgeOfSailWorld-phase9-rc1-${build_version}.zip"
+          versioned_campaign="$artifact_dir/AgeOfSailWorldCampaign-${build_version}.w3n"
+
+          python3 - "$canonical_zip" "$versioned_campaign" <<'PY'
+          import sys
+          import zipfile
+
+          archive_path, output_path = sys.argv[1], sys.argv[2]
+          with zipfile.ZipFile(archive_path) as archive:
+              payload = archive.read("Campaigns/AgeOfSailWorldCampaign.w3n")
+          with open(output_path, "wb") as stream:
+              stream.write(payload)
+          PY
+
+          mv "$canonical_zip" "$versioned_zip"
+          printf '%s\n' "$build_version" > "$artifact_dir/BUILD_VERSION.txt"
+
       - name: Confirm verified release payload and evidence
         run: |
-          test -s "$RUNNER_TEMP/age-of-sail-release/AgeOfSailWorld-phase9-rc1.zip"
-          test -s "$RUNNER_TEMP/age-of-sail-release/artifact-evidence.json"
+          artifact_dir="$RUNNER_TEMP/age-of-sail-release"
+          short_sha="${GITHUB_SHA::7}"
+          build_version="${RELEASE_VERSION_PREFIX}.${GITHUB_RUN_NUMBER}-g${short_sha}"
+          test -s "$artifact_dir/AgeOfSailWorld-phase9-rc1-${build_version}.zip"
+          test -s "$artifact_dir/AgeOfSailWorldCampaign-${build_version}.w3n"
+          test -s "$artifact_dir/artifact-evidence.json"
+          test -s "$artifact_dir/BUILD_VERSION.txt"
 
       - name: Upload Age of Sail campaign
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: age-of-sail-world-release-candidate
+          name: age-of-sail-world-release-candidate-${{ env.RELEASE_VERSION_PREFIX }}.${{ github.run_number }}
           path: ${{ runner.temp }}/age-of-sail-release
           if-no-files-found: error
           retention-days: 14
