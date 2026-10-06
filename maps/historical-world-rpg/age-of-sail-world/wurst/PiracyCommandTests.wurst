@@ -1,0 +1,460 @@
+package PiracyCommandTests
+
+import PlayablePiracy
+import CampaignPiracyAuthority
+import PlayableCampaignRuntime
+import PlayableTrade
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import WarcraftRpgRuntime
+import WarcraftRegionalRuntime
+import PhysicalInteraction
+import PrizeCombat
+import CampaignTimeline
+import CampaignTimelineTests
+import CampaignSaveManager
+import CommandRouter
+
+class PrizeOutput implements CommandOutput, PiracyPresentation
+	string last=""
+	override function show(player sender,string message)
+		last=message
+	override function showPiracy(player sender,string message)
+		last=message
+
+class PrizeActors implements InteractionActors
+	boolean exists=true
+	real actorX=0.
+	int reads=0
+	int disappearAt=0
+	override function present(int actor,player owner) returns boolean
+		reads++
+		return exists and actor==0 and owner==null and (disappearAt==0 or reads<disappearAt)
+	override function x(int actor) returns real
+		return actorX
+	override function y(int actor) returns real
+		return 0.
+	override function movement(int actor) returns int
+		return 0
+
+class PrizeStorage implements CampaignSaveStorage
+	string saved=""
+	override function contains(string slotId) returns boolean
+		return saved!=""
+	override function read(string slotId) returns string
+		return saved
+	override function writeTransactional(string slotId,string payload) returns boolean
+		saved=payload
+		return true
+	override function diagnostic() returns string
+		return ""
+
+/** Change commission authority while the adapter makes its final observation.
+ * The post-change snapshot distinguishes this external change from any writes
+ * made by the rejected prize transaction itself. */
+class CommissionChangingCombat implements PrizeCombatAuthority
+	PrizeFixture fixture
+	string issuer
+	int rate
+	int reads=0
+	string afterChange=""
+	construct(PrizeFixture fixture,string issuer,int rate)
+		this.fixture=fixture
+		this.issuer=issuer
+		this.rate=rate
+	override function resolve(string actorId,string targetId) returns PrizeEncounter
+		reads++
+		if reads==2
+			let commission=fixture.piracy.findCommission("marque")
+			commission.issuerPolityId=issuer
+			commission.rewardPermille=rate
+			afterChange=fixture.snapshot()
+		return fixture.combat.resolve(actorId,targetId)
+	override function consume(string encounterId,string prisonerOutcome)
+		fixture.combat.consume(encounterId,prisonerOutcome)
+	override function retire()
+		fixture.combat.retire()
+
+/** Production command, adapter, rules, cargo, identity, military and clock.
+ * Only native actor observations, military projection and timer are recorded.
+ * Combat publishes a completed encounter independently of the command. */
+public class PrizeFixture
+	PiracyRuntime piracy=new PiracyRuntime(new PiracyRules(30,20,5000,3,150))
+	PlayableTradeRuntime trade=new PlayableTradeRuntime()
+	RecordingMilitaryAdapter projection=new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime military=new MilitarySettlementRuntime(projection)
+	PrizeEncounters combat=military.prizeCombat castTo PrizeEncounters
+	WarcraftRpgRuntime rpg=new WarcraftRpgRuntime(null)
+	PrizeActors actors=new PrizeActors()
+	CampaignClock clock=new CampaignClock(1,500,10,1.)
+	RecordingClockTimer clockTimer=new RecordingClockTimer()
+	PlayableCampaignState state=new PlayableCampaignState(new WarcraftRegionalAdapter(),clock)
+	PrizeOutput output=new PrizeOutput()
+	CommandRegistry commands=new CommandRegistry(false,16,new CommandText(),output)
+	TradeStore source=new TradeStore("cargo:ship",100,2000)
+	TradeStore destination=new TradeStore("player_ship_hold",100,100)
+	RuntimeForce ship=new RuntimeForce("ship","spain","caribbean","naval",FORCE_FLEET,'hfoo',10,20,0.,0.)
+	RpgHero hero=new RpgHero("captain","Captain",'Hpal')
+	PrizeStorage storage=new PrizeStorage()
+	CampaignSaveManager saves=new CampaignSaveManager(storage,new PlayableCampaignCodec(clock),state)
+	construct()
+		hero.recruited=true
+		hero.assignment="field"
+		rpg.heroes.register(hero)
+		rpg.interactions.actors=actors
+		state.identity=new PlayerCampaignIdentity()
+		state.identity.startCampaign("england","caribbean","caribbean","port").assertTrue()
+		state.loadedPhysicalMap="caribbean"
+		state.authority=replaceCampaignField(state.authority,"map","caribbean")
+		state.authority=replaceCampaignField(state.authority,"region","caribbean")
+		state.setRpgRuntime(rpg)
+		state.setPiracyRuntime(piracy)
+		state.setMilitarySettlementRuntime(military)
+		state.extension=trade
+		rpg.interactions.maps=new CampaignInteractionMaps(state)
+		military.activeRegionId="caribbean"
+		military.registerForce(ship)
+		source.cargo=4
+		source.goodId="sugar"
+		trade.registerStore(source)
+		trade.registerStore(destination)
+		trade.hold=destination
+		trade.registerMarket(new RuntimeMarket("victim_port","sugar",100,1000,10,8))
+		trade.selectMarket("victim_port","sugar").assertTrue()
+		trade.controller.provenance.add(source.id,"sugar",4,1000,"victim_port")
+		piracy.setActionAuthority(new CampaignPiracyActionAuthority(state,military,trade))
+		registerPiracy(commands,piracy,output)
+		clock.attachTimer(clockTimer,1.)
+		record("encounter",true)
+	function record(string id,boolean crime)
+		combat.record(new PrizeEncounter(id,hero.id,"england","ship","spain","merchant_ship","caribbean",2,crime)).assertTrue()
+	function snapshot() returns string
+		var encounters=""
+		for i=0 to combat.count-1
+			let e=combat.encounters[i]
+			var ready="0"
+			if e.ready
+				ready="1"
+			var crime="0"
+			if e.crimeAuthorized
+				crime="1"
+			encounters+=e.id+"|"+e.actorId+"|"+e.actorPolityId+"|"+e.targetId+"|"+e.victimPolityId+"|"+e.targetKind+"|"+e.mapId+"|"+e.prisoners.toString()+"|"+ready+"|"+crime+"~"
+		return state.captureAuthoritativeState()+"!"+encounters+"!"+projection.created+projection.removed+projection.protectedId+projection.tradition.toString()+projection.appliedAbility.toString()+"!"+state.identity.allegianceId()+"!"+clockTimer.starts.toString()+clockTimer.stops.toString()
+	function dispatch(string command)
+		commands.dispatch(null,command).assertTrue()
+	function preview(string action,string commission,string vessel)
+		dispatch("/prize-preview "+action+" ship "+commission+" "+vessel+" ransom")
+		output.last.contains("Confirm to commit.").assertTrue()
+	function reject(string command)
+		let before=snapshot()
+		dispatch(command)
+		output.last.contains("Committed:").assertFalse()
+		output.last.contains("Confirm to commit.").assertFalse()
+		snapshot().assertEquals(before)
+	function confirm()
+		dispatch("/prize-confirm")
+		output.last.contains("Committed:").assertTrue()
+
+@test function piracyProductionCommandsResolvePrivateeringAndConserveCargoAndMoney()
+	let f=new PrizeFixture()
+	f.combat.encounters[0].crimeAuthorized=false
+	f.piracy.issueCommission("marque","england","spain",100,250).assertTrue()
+	let before=f.snapshot()
+	f.preview("prize","marque","capture")
+	f.output.last.contains("LAWFUL PRIVATEERING").assertTrue()
+	f.snapshot().assertEquals(before)
+	f.confirm()
+	f.source.cargo.assertEquals(0)
+	f.source.money.assertEquals(0)
+	f.destination.cargo.assertEquals(4)
+	f.destination.money.assertEquals(2600)
+	f.trade.controller.provenance.count.assertEquals(0)
+	f.trade.progress.standing.assertEquals(0)
+	f.ship.controllerId.assertEquals("player")
+	f.piracy.state.piracyWealthMinor.assertEquals(2500)
+	f.piracy.state.bountyMinor.assertEquals(0)
+	f.piracy.state.prizesTaken.assertEquals(1)
+	f.combat.encounters[0].ready.assertFalse()
+	f.reject("/prize-confirm")
+	f.reject("/prize-preview prize ship marque capture ransom")
+	f.output.last.assertEquals("Action already processed.")
+
+@test function piracyProductionCommandsPermitExplicitUnlicensedCrimeAndOrdinaryWar()
+	let f=new PrizeFixture()
+	f.military.atWar("england","spain").assertFalse()
+	f.preview("pirate","-","scuttle")
+	f.output.last.startsWith("PIRACY:").assertTrue()
+	f.confirm()
+	f.ship.active.assertFalse()
+	f.piracy.state.outlaw.assertTrue()
+	f.piracy.state.notoriety.assertEquals(3)
+	f.piracy.state.bountyMinor.assertEquals(450)
+	f.piracy.regionalPressure[0].assertEquals(3)
+	let war=new PrizeFixture()
+	war.combat.encounters[0].crimeAuthorized=false
+	war.reject("/prize-preview refused ship - release ransom")
+	war.military.setWar("england","spain",true)
+	war.preview("war_prize","-","release")
+	war.confirm()
+
+@test function piracyForgedFactsAndUnsupportedDispositionsLeaveEveryAuthorityUnchanged()
+	let f=new PrizeFixture()
+	let prefix="/prize-preview forged ship "
+	f.reject(prefix+"merchant_ship england caribbean - capture sugar 4 2000 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain remote - capture sugar 4 2000 2 ransom 10")
+	f.reject(prefix+"military_ship spain caribbean - capture sugar 4 2000 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture gold 4 2000 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar 5 2000 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar 4 2001 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar 4 2000 3 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar 4 2000 2 ransom 99999")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar 4 2000 2 ransom 0")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar nope 2000 2 ransom 10")
+	f.reject(prefix+"merchant_ship spain caribbean - capture sugar -1 2000 2 ransom 10")
+	f.reject(prefix+"- sell ransom")
+	f.reject(prefix+"- capture enslave")
+	f.reject("/prize-preview missing absent - capture ransom")
+	f.reject("/prize-confirm")
+	// Supported legacy syntax is only an assertion against resolved facts.
+	f.dispatch(prefix+"merchant_ship spain caribbean - release sugar 4 2000 2 ransom 10")
+	f.output.last.contains("Confirm to commit.").assertTrue()
+	f.confirm()
+
+@test function piracyRequiresPresentActingPartyAndCompletedLocalCombat()
+	let f=new PrizeFixture()
+	f.actors.actorX=INTERACTION_RANGE+1.
+	f.reject("/prize-preview remote ship - capture ransom")
+	f.actors.actorX=0.
+	f.actors.exists=false
+	f.reject("/prize-preview absent ship - capture ransom")
+	f.actors.exists=true
+	f.hero.assignment="reserve"
+	f.reject("/prize-preview reserve ship - capture ransom")
+	f.hero.assignment="field"
+	f.hero.incapacitated=true
+	f.reject("/prize-preview hurt ship - capture ransom")
+	f.hero.incapacitated=false
+	f.ship.regionId="remote"
+	f.reject("/prize-preview remote_target ship - capture ransom")
+	f.ship.regionId="caribbean"
+	f.state.loadedPhysicalMap="remote"
+	f.reject("/prize-preview remote_map ship - capture ransom")
+	f.state.loadedPhysicalMap="caribbean"
+	f.combat.encounters[0].ready=false
+	f.reject("/prize-preview no_combat ship - capture ransom")
+	f.combat.encounters[0].ready=true
+	f.combat.encounters[0].actorPolityId="france"
+	f.reject("/prize-preview wrong_actor ship - capture ransom")
+
+@test function piracyConfirmationRechecksControllerRemovalAndPhysicalContext()
+	let f=new PrizeFixture()
+	f.preview("control","-","capture")
+	f.ship.controllerId="france"
+	f.reject("/prize-confirm")
+	f.ship.controllerId="spain"
+	f.preview("removed","-","capture")
+	f.military.forceCount=0
+	f.reject("/prize-confirm")
+	f.military.forceCount=1
+	f.preview("remote","-","capture")
+	f.actors.actorX=INTERACTION_RANGE+1.
+	f.reject("/prize-confirm")
+	f.actors.actorX=0.
+	f.preview("ended","-","capture")
+	f.combat.encounters[0].ready=false
+	f.reject("/prize-confirm")
+	f.combat.encounters[0].ready=true
+	f.preview("destroyed","-","capture")
+	f.ship.active=false
+	f.reject("/prize-confirm")
+
+@test function piracyConfirmationRequiresNewPreviewForChangedCargoPrisonersOrReward()
+	let f=new PrizeFixture()
+	f.preview("cargo","-","release")
+	let used=f.trade.controller.provenance.consume(f.source.id,"sugar",1,"")
+	destroy used
+	f.source.cargo=3
+	f.reject("/prize-confirm")
+	f.output.last.contains("Refresh the preview").assertTrue()
+	f.preview("prisoners","-","release")
+	f.combat.encounters[0].prisoners=1
+	f.reject("/prize-confirm")
+	f.piracy.issueCommission("marque","england","spain",100,250)
+	f.preview("reward","marque","release")
+	f.piracy.findCommission("marque").rewardPermille=500
+	f.reject("/prize-confirm")
+	f.preview("reward","marque","release")
+	f.confirm()
+	f.destination.money.assertEquals(3100)
+	f.destination.cargo.assertEquals(3)
+
+@test function piracyConfirmationRechecksCommissionRevocationExpiryAndClockCooldown()
+	let f=new PrizeFixture()
+	f.piracy.issueCommission("marque","england","spain",40,250)
+	f.preview("revoked","marque","release")
+	f.piracy.revokeCommission("marque")
+	f.reject("/prize-confirm")
+	f.piracy.issueCommission("expiry","england","spain",40,250)
+	f.preview("expired","expiry","release")
+	f.clockTimer.tick(30.)
+	f.reject("/prize-confirm")
+	f.clock.campaignDay().assertEquals(40)
+	f.preview("first","-","release")
+	f.clockTimer.tick(1.)
+	f.confirm()
+	f.piracy.state.lastTargetTick("ship").assertEquals(41)
+	f.record("second_encounter",true)
+	f.clockTimer.tick(29.)
+	f.reject("/prize-preview early ship - release ransom")
+	f.reject("/prize-preview forged ship merchant_ship spain caribbean - release sugar 0 0 2 ransom 999")
+	f.clockTimer.tick(1.)
+	f.preview("boundary","-","release")
+	f.confirm()
+	f.piracy.state.lastTargetTick("ship").assertEquals(71)
+
+function rejectChangedCommissionDuringFinalRead(string issuer,int rate)
+	let f=new PrizeFixture()
+	f.source.money=0
+	f.combat.encounters[0].crimeAuthorized=false
+	f.piracy.issueCommission("marque","england","spain",100,250).assertTrue()
+	f.preview("terms","marque","capture")
+	let combat=new CommissionChangingCombat(f,issuer,rate)
+	f.military.prizeCombat=combat
+	f.dispatch("/prize-confirm")
+	combat.reads.assertEquals(2)
+	f.output.last.contains("Refresh the preview").assertTrue()
+	f.snapshot().assertEquals(combat.afterChange)
+	// The reward is still zero, but the new terms need a fresh confirmation.
+	f.preview("terms","marque","capture")
+	f.confirm()
+	f.destination.money.assertEquals(100)
+
+@test function piracyFinalReadRevalidatesCommissionTermsEvenWithIdenticalRewards()
+	rejectChangedCommissionDuringFinalRead("france",250)
+	rejectChangedCommissionDuringFinalRead("england",500)
+
+@test function piracyCaptureRequiresFreshPreviewWhenVesselSuppliesOrMaximumStrengthChange()
+	let f=new PrizeFixture()
+	f.preview("supplies","-","capture")
+	f.ship.supply--
+	f.reject("/prize-confirm")
+	f.output.last.contains("Refresh the preview").assertTrue()
+	f.preview("strength","-","capture")
+	f.ship.maximumStrength++
+	f.reject("/prize-confirm")
+	f.output.last.contains("Refresh the preview").assertTrue()
+	f.preview("strength","-","capture")
+	f.confirm()
+	f.ship.supply.assertEquals(19)
+	f.ship.maximumStrength.assertEquals(11)
+	f.ship.controllerId.assertEquals("player")
+
+@test function piracyFinalAdapterReadCannotUsePreviewAuthorizationOrPartiallyCommit()
+	let f=new PrizeFixture()
+	f.preview("late","-","capture")
+	// Confirmation resolves twice, including immediately before mutation.
+	f.actors.disappearAt=f.actors.reads+2
+	f.reject("/prize-confirm")
+	f.actors.disappearAt=0
+	f.preview("capacity","-","capture")
+	f.destination.capacity=3
+	f.reject("/prize-confirm")
+	f.destination.capacity=100
+	f.preview("overflow","-","capture")
+	f.destination.money=2147483647
+	f.reject("/prize-confirm")
+	f.destination.money=100
+	f.preview("exhausted","-","capture")
+	f.piracy.state.recordTarget("ship",10)
+	f.reject("/prize-confirm")
+
+@test function piracyCoastalRaidUsesSettlementAuthorityAndRejectsVesselDisposition()
+	let f=new PrizeFixture()
+	let port=new SettlementRuntimeState("port","spain","caribbean",'htow','hfoo',10,0,0,20,0.,0.)
+	f.military.registerSettlement(port)
+	let warehouse=new TradeStore("warehouse:port",100,50)
+	f.trade.registerStore(warehouse)
+	f.trade.hold=f.destination
+	f.combat.record(new PrizeEncounter("raid",f.hero.id,"england","port","spain","coastal_target","caribbean",0,true)).assertTrue()
+	f.reject("/coastal-raid invalid port - capture release")
+	port.captureImmuneUntil=5.
+	f.reject("/coastal-raid protected port - release release")
+	port.captureImmuneUntil=0.
+	f.dispatch("/coastal-raid valid port - release release")
+	f.output.last.contains("coastal_target").assertTrue()
+	f.confirm()
+	f.piracy.state.notoriety.assertEquals(4)
+	f.destination.money.assertEquals(150)
+	warehouse.money.assertEquals(0)
+	port.controllerId.assertEquals("spain")
+
+@test function piracySaveLoadRetiresPendingRequestsAndPreservesHistoricalDeduplication()
+	let f=new PrizeFixture()
+	f.preview("pending","-","release")
+	f.saves.save(SAVE_SLOT_MANUAL,1,"pending").assertTrue()
+	let loaded=f.saves.load(SAVE_SLOT_MANUAL,1)
+	f.saves.diagnostic().assertEquals("")
+	loaded.assertTrue()
+	f.reject("/prize-confirm")
+	f.combat.count.assertEquals(0)
+	f.reject("/prize-preview pending ship - release ransom")
+	f.record("after_load",true)
+	f.preview("pending","-","release")
+	f.confirm()
+	f.saves.save(SAVE_SLOT_MANUAL,1,"committed").assertTrue()
+	f.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
+	f.piracy.actionSeen("pending").assertTrue()
+	f.piracy.state.prizesTaken.assertEquals(1)
+	f.reject("/prize-preview pending ship - release ransom")
+	f.reject("/prize-confirm")
+	let saved=f.piracy.captureAuthority()
+	f.piracy.restoreAuthority(saved).assertTrue()
+	f.piracy.captureAuthority().assertEquals(saved)
+
+@test function piracyChangedKindAllegianceAndWarNeedCurrentAuthorization()
+	let f=new PrizeFixture()
+	f.preview("kind","-","release")
+	f.combat.encounters[0].targetKind="military_ship"
+	f.reject("/prize-confirm")
+	f.preview("party","-","release")
+	f.state.identity.changeAllegiance("france")
+	f.reject("/prize-confirm")
+	f.state.identity.changeAllegiance("england")
+	f.combat.encounters[0].crimeAuthorized=false
+	f.military.setWar("england","spain",true)
+	f.preview("peace","-","release")
+	f.military.setWar("england","spain",false)
+	f.reject("/prize-confirm")
+	f.combat.encounters[0].crimeAuthorized=true
+	f.piracy.issueCommission("wrong_target","england","france",100,250)
+	f.reject("/prize-preview outside ship wrong_target release ransom")
+	f.reject("/prize-preview missing ship no_commission release ransom")
+	f.piracy.state.recordTarget("ship",2147483647)
+	f.reject("/prize-preview future_history ship - release ransom")
+
+@test function piracyReconstructionAndAuthorityReplacementCannotRetainAPendingCapability()
+	let f=new PrizeFixture()
+	f.preview("snapshot","-","release")
+	let saved=f.piracy.snapshot()
+	f.piracy.restore(saved)
+	f.reject("/prize-confirm")
+	f.preview("replacement","-","release")
+	f.piracy.setActionAuthority(new CampaignPiracyActionAuthority(f.state,f.military,f.trade))
+	f.reject("/prize-confirm")
+	f.preview("missing","-","release")
+	f.piracy.setActionAuthority(null)
+	f.reject("/prize-confirm")
+	f.reject("/prize-preview missing ship - release ransom")
+
+@test function piracyCrimeAuthorityDecidesEligibilityWithoutInventingADiplomaticWar()
+	let f=new PrizeFixture()
+	f.ship.controllerId="england"
+	f.combat.encounters[0].victimPolityId="england"
+	f.combat.encounters[0].crimeAuthorized=false
+	f.reject("/prize-preview unauthorized ship - release ransom")
+	// An explicit scenario crime ruling is independent of ordinary hostility.
+	f.combat.encounters[0].crimeAuthorized=true
+	f.preview("authorized_crime","-","release")
+	f.confirm()
+	f.piracy.state.outlaw.assertTrue()
+	f.piracy.state.bountyMinor.assertEquals(300)

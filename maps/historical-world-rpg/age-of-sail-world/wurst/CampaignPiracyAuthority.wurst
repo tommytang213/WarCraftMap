@@ -1,0 +1,135 @@
+package CampaignPiracyAuthority
+
+import PlayablePiracy
+import PlayableCampaignRuntime
+import PlayableTrade
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+import PhysicalInteraction
+import PrizeCombat
+
+/** The production request boundary. Chat supplies choices, combat supplies a
+ * completed encounter, military supplies the current target, stores supply the
+ * loot, and the campaign supplies actor identity and time. No reads mutate. */
+public class CampaignPiracyActionAuthority implements PiracyActionAuthority
+	PlayableCampaignState campaign
+	MilitarySettlementRuntime military
+	PlayableTradeRuntime trade
+	construct(PlayableCampaignState campaign, MilitarySettlementRuntime military, PlayableTradeRuntime trade)
+		this.campaign=campaign
+		this.military=military
+		this.trade=trade
+	function store(string id) returns TradeStore
+		for i=0 to trade.storeCount-1
+			if trade.stores[i].id==id
+				return trade.stores[i]
+		return null
+	override function resolvePrize(player sender, PrizeRequest request) returns PrizeProposal
+		let rpg=campaign.rpg
+		if campaign.loading or campaign.startupLocked or campaign.identity==null or campaign.clock==null or rpg==null or military.prizeCombat==null
+			return null
+		let maps=rpg.interactions.maps
+		let actors=rpg.interactions.actors
+		if maps==null or actors==null or not maps.available()
+			return null
+		let mapId=maps.loadedMap()
+		let allegiance=campaign.identity.allegianceId()
+		if mapId=="" or mapId!=maps.partyMap() or mapId!=military.activeRegionId or allegiance==""
+			return null
+		for i=0 to rpg.heroes.count-1
+			if rpg.eligibleActor(i) and actors.present(i,sender)
+				let encounter=military.prizeCombat.resolve(rpg.heroes.heroes[i].id,request.targetId)
+				if encounter!=null and encounter.ready and encounter.actorId==rpg.heroes.heroes[i].id and encounter.actorPolityId==allegiance and encounter.targetId==request.targetId and encounter.mapId==mapId and encounter.prisoners>=0
+					let proposal=resolveEncounter(request,encounter,actors.x(i),actors.y(i))
+					if proposal!=null
+						return proposal
+		return null
+	function resolveEncounter(PrizeRequest request, PrizeEncounter encounter, real actorX, real actorY) returns PrizeProposal
+		var victim=""
+		var targetRegion=""
+		var sourceId=""
+		var targetState=""
+		var x=0.
+		var y=0.
+		if encounter.targetKind=="coastal_target"
+			let found=military.settlementIndex(request.targetId)
+			if found<0
+				return null
+			let target=military.settlements[found]
+			if military.gameplaySeconds<target.captureImmuneUntil
+				return null
+			victim=target.controllerId
+			targetRegion=target.regionId
+			x=target.x
+			y=target.y
+			sourceId="warehouse:"+target.id
+			targetState=target.legalOwnerId+"|"+target.garrisonStrength.toString()+"|"+target.occupationConflictId
+		else if encounter.targetKind=="merchant_ship" or encounter.targetKind=="military_ship"
+			let found=military.forceIndex(request.targetId)
+			if found<0
+				return null
+			let target=military.forces[found]
+			if target.kind!=FORCE_FLEET or not target.active or target.strength<=0
+				return null
+			victim=target.controllerId
+			targetRegion=target.regionId
+			x=target.x
+			y=target.y
+			sourceId="cargo:"+target.id
+			targetState=target.categoryId+"|"+target.strength.toString()+"|"+target.maximumStrength.toString()+"|"+target.supply.toString()+"|"+target.typeId.toString()
+		else
+			return null
+		let dx=actorX-x
+		let dy=actorY-y
+		if victim=="" or victim=="player" or victim!=encounter.victimPolityId or targetRegion!=encounter.mapId or dx*dx+dy*dy>INTERACTION_RANGE*INTERACTION_RANGE
+			return null
+		let tick=campaign.clock.campaignDay()
+		let commission=campaign.piracy.findCommission(request.commissionId)
+		let commissioned=commission!=null and commission.active and tick<commission.expiresTick and commission.targetPolityId==victim
+		if not commissioned and not encounter.crimeAuthorized and not military.atWar(encounter.actorPolityId,victim)
+			return null
+		let source=store(sourceId)
+		let destination=trade.hold
+		if source==null or destination==null or source.id==destination.id or source.cargo<0 or source.money<0 or destination.money<0 or source.cargo>destination.freeCapacity() or (destination.cargo>0 and source.cargo>0 and source.goodId!=destination.goodId)
+			return null
+		let proposal=new PrizeProposal(request.actionId,request.targetId,encounter.targetKind,victim,targetRegion,request.commissionId,request.vesselOutcome,source.goodId,source.cargo,source.money,encounter.prisoners,request.prisonerOutcome,tick)
+		proposal.actorId=encounter.actorId
+		proposal.actorPolityId=encounter.actorPolityId
+		proposal.encounterId=encounter.id
+		proposal.sourceStoreId=source.id
+		proposal.destinationStoreId=destination.id
+		proposal.targetState=targetState+"|"+x.toString()+"|"+y.toString()
+		if commission!=null
+			// Copy terms into the observation so the final read compares them
+			// even when changed terms happen to produce the same cash reward.
+			proposal.commissionTerms=commission.issuerPolityId+"|"+commission.targetPolityId+"|"+commission.rewardPermille.toString()
+		return proposal
+	override function commitPrize(player sender, PrizeRequest request, PrizeProposal proposal, int reward) returns boolean
+		// No native callbacks, timers or failing mutations occur after this read.
+		let current=resolvePrize(sender,request)
+		if current==null
+			return false
+		let same=current.outcomeKey()==proposal.outcomeKey() and current.tick==proposal.tick and campaign.piracy.validate(current)=="" and campaign.piracy.capacityProblem(current)=="" and campaign.piracy.rewardFor(current)==reward
+		destroy current
+		if not same or reward<0 or trade.hold.money>2147483647-reward
+			return false
+		let source=store(proposal.sourceStoreId)
+		let destination=trade.hold
+		// Seized goods are uncosted cargo; the victim's purchase history cannot
+		// become the captain's merchant route credit. No trade selection changes.
+		if proposal.cargoUnits>0
+			let consumed=trade.controller.provenance.consume(source.id,source.goodId,proposal.cargoUnits,"")
+			destroy consumed
+			destination.goodId=source.goodId
+			destination.cargo+=proposal.cargoUnits
+			source.cargo-=proposal.cargoUnits
+			source.goodId=""
+		source.money-=proposal.moneyMinor
+		destination.money+=reward
+		military.prizeCombat.consume(proposal.encounterId,proposal.prisonerOutcome)
+		if proposal.vesselOutcome=="capture"
+			military.transferControl(proposal.targetId,"player")
+		else if proposal.vesselOutcome=="scuttle"
+			let target=military.forces[military.forceIndex(proposal.targetId)]
+			military.recordLoss(target.id,target.strength)
+		return true

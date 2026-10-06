@@ -11,6 +11,7 @@ import MilitarySettlementRuntime
 import PlayableCountryInteractions
 import ReligionRuntime
 import PlayablePiracy
+import CampaignPiracyAuthority
 
 /** Founding bridge into the same campaign authorities used by normal states.
  * Captured settlement/force records remain the military and territorial source
@@ -73,21 +74,6 @@ public class CampaignPiratePolityAuthority implements PiratePolityAuthority
 	override function setRecognition(string polityId,string countryId,string status)
 		countries.discover(countryId)
 
-class CampaignPiracyActionAuthority implements PiracyActionAuthority
-	MilitarySettlementRuntime military
-	construct(MilitarySettlementRuntime m)
-		military=m
-	override function validateTarget(PrizeProposal proposal) returns boolean
-		if proposal.targetKind=="coastal_target"
-			for i=0 to military.settlementCount-1
-				if military.settlements[i].id==proposal.targetId and military.settlements[i].controllerId==proposal.victimPolityId
-					return true
-		else
-			for i=0 to military.forceCount-1
-				if military.forces[i].id==proposal.targetId and military.forces[i].controllerId==proposal.victimPolityId and military.forces[i].kind==FORCE_FLEET
-					return true
-		return false
-
 /** Commits peace into the persistent military/settlement authority.  Territory
  * clauses use cede:settlement_id:grantor_polity_id:beneficiary_polity_id; the
  * country screen remains only a projection over this state. */
@@ -137,7 +123,7 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	military.activeRegionId = campaign.physicalMapId
 	campaign.countries.setPeaceAuthority(new CampaignCountryPeaceAuthority(military))
 	campaign.state.piracy.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries, campaign.identity, military))
-	campaign.state.piracy.setActionAuthority(new CampaignPiracyActionAuthority(military))
+	campaign.state.piracy.setActionAuthority(new CampaignPiracyActionAuthority(campaign.state,military,trade))
 	configureGeneratedRpg(rpg)
 	configureGeneratedInteractions(rpg.interactions)
 	rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)

@@ -274,3 +274,11 @@ Malformed arrivals cannot enroll remote field companions or omit traveler IDs.
 `PartyLocationTests.wurst` checks connected nearby and last-safe recovery without
 crossing disconnected land. Packaging compares the full party navigation raster
 with each physical map's playable bounds and archived pathing.
+
+`PiracyCommandTests.wurst` dispatches production prize preview and confirmation
+through `CampaignPiracyActionAuthority`, initialized military targets, real trade
+stores/provenance and the campaign clock. Recording actor and completed-combat
+boundaries cover forged facts, remote or stale targets, changed loot and commission
+terms, final-read invalidation, exhaustion, duplicate delivery and save/load with a
+pending preview. Every rejected action compares participating authority and native
+projection writes. See [PIRACY_CONFIRMATION.md](../docs/PIRACY_CONFIRMATION.md).
