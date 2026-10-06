@@ -63,6 +63,23 @@ The earlier [validation.json](issue-389/validation.json) and
 development evidence. The complete integration run supersedes those batches for
 repository readiness; the outer worker performs the authoritative repository check.
 
+Revalidation from checkpoint `b0a44d0` again passed all **228 pinned Wurst tests**
+in one complete interpreter run, followed by canonical Lua compilation and map
+packaging. All 60 checked-in Wurst inputs match the passing execution evidence.
+All **220 Python checks** also passed: 97 targeted, 53 packaging/release and 70
+automation tests, including the three new failure-log regressions.
+The outer worker's reported execution failure did not recur, so this retry
+preserves the production implementation and existing tests. See
+[revalidation.json](issue-389/revalidation.json) for the current evidence.
+
+The repository runner now prints the container's Wurst execution transcript on
+failure before `--rm` removes it. The previous error referenced a log inside the
+deleted container and did not expose the failing test or interpreter exception.
+Automated shell regressions verify transcript forwarding, failures without a log,
+quiet successful execution, and preservation of the original exit status. The
+pinned compiler, complete-suite gate, timeout and read-only source mount remain
+unchanged.
+
 Release status remains **blocked_pending_real_forsaken_kingdom_launch_smoke**.
 No real-client launch/gameplay validation or player QA was performed. No commit,
 push, issue/PR modification, service installation or global tooling change was made.

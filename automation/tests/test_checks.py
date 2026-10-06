@@ -61,6 +61,40 @@ class RequiredWurstChecksTests(unittest.TestCase):
         result = self.run_checks(37)
         self.assertEqual(37, result.returncode, result.stdout + result.stderr)
 
+    def container_packaging_result(self, status, transcript):
+        self.run_checks(0)
+        arguments = json.loads((self.root / "docker.json").read_text())
+        # Execute the real packaging/diagnostic shell block with a recording su
+        # boundary; dependency installation and source copying are separate.
+        script = arguments[-1].split("validation_status=0", 1)[1]
+        container_project = self.root / "container-project"
+        log = container_project / "_build/wurst-tests/execution.log"
+        log.parent.mkdir(parents=True)
+        if transcript is not None:
+            log.write_text(transcript)
+        self.executable("su", f"#!/bin/sh\nexit {status}\n")
+        (self.bin / "cat").symlink_to(shutil.which("cat"))
+        script = "validation_status=0" + script.replace(
+            "/tmp/historical-world-rpg/age-of-sail-world", str(container_project))
+        return subprocess.run(["/bin/sh", "-eu", "-c", script], env=self.env,
+                              capture_output=True, text=True)
+
+    def test_container_failure_emits_execution_log_before_removal(self):
+        transcript = "Running tests\nFAILED - TIMEOUT\njava.lang.OutOfMemoryError\n"
+        result = self.container_packaging_result(37, transcript)
+        self.assertEqual(37, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(transcript, result.stdout)
+
+    def test_container_failure_without_execution_log_retains_original_status(self):
+        result = self.container_packaging_result(29, None)
+        self.assertEqual(29, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("", result.stdout + result.stderr)
+
+    def test_container_success_does_not_replay_execution_log(self):
+        result = self.container_packaging_result(0, "Tests succeeded: 228/228\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("", result.stdout + result.stderr)
+
     def test_absent_execution_tools_prevent_default_validation_success(self):
         result = self.run_checks()
         self.assertEqual(1, result.returncode)

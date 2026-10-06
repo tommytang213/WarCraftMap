@@ -1,0 +1,88 @@
+{
+  "changedSourceSha256": {
+    "automation/run_checks.sh": "2534f97ef20daca6ce70b92d407c6b42cbbac95c9345f8ea371022baeecbe578",
+    "automation/tests/test_checks.py": "fc96b1a856f937af40a88ed366a6d53a79edd4fdf20a893a834a8bcf84be0e52"
+  },
+  "clientGameplay": "not_run",
+  "completedAt": "2026-10-06T03:20:56.218143+00:00",
+  "containerIsolation": "Read-only worktree mount; sources copied to container-private /tmp; builds run as wurstuser. No worktree ownership or permission changes. A private Grill wrapper tees the unmodified test stream for progress diagnostics. The stopped container was removed after evidence retention.",
+  "format": "warcraftmap_issue_389_revalidation_v1",
+  "python": {
+    "automation": 70,
+    "commands": [
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests python3 -m unittest test_campaign_save test_campaign_save_manager test_autosave_scheduler test_navigation test_regional_navigation test_release_save_compatibility test_boundary_arrival test_wurst_execution test_runtime_acceptance test_new_campaign_origins test_recovery_documentation",
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests python3 -m unittest test_packaging test_campaign_packaging test_release_blocker_audit test_release_upload_verification",
+      "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s automation/tests -p 'test_*.py'"
+    ],
+    "newRegressions": "The real shell packaging block emits the execution transcript on failure, retains a failure without a transcript, and remains quiet on success; every case preserves its original status.",
+    "packaging": 53,
+    "packagingScope": "Python map/campaign packaging uses a recording compiler and inspects materialized MPQ/pathing for all 17 maps. The separate pinned toolchain run compiles and packages the canonical map.",
+    "status": "pass",
+    "targeted": 97,
+    "total": 220
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repair": "Preserve the existing issue implementation. Forward the failed container Wurst execution log before removal, retaining the original package exit status.",
+  "reportedFailureReproduced": false,
+  "repositoryValidation": "The outer worker performs the authoritative full repository validation; this retry ran the targeted suites and complete pinned map packaging gate.",
+  "sourceRevision": "b0a44d05e0a53d002c8d9490b0ad95859f8285fc",
+  "staticChecks": [
+    "world validation",
+    "Europe geography",
+    "canonical map source",
+    "bash -n automation/run_checks.sh",
+    "git diff --check"
+  ],
+  "status": "ready_for_repository_validation",
+  "uncompressedLogSha256": {
+    "revalidation-execution.json.gz": "83f6d88f2b2d150ca856caa19a31e3a37fb1819594086474d51c510f1db39c82",
+    "revalidation-execution.log.gz": "ad22f2846244f3108ec2da7eeebe6b9a15c2c53b1562f73a327ff51541229cb0",
+    "revalidation-packaging.log.gz": "558842d242f743b6b0b22164c99b5a28d3be7b742fdef29eb90e137292a0cf75",
+    "revalidation-python-automation.log.gz": "29063e6aee8368439183eb1d72361a92fda6178de631749f27163a952738d17b",
+    "revalidation-python-packaging.log.gz": "4f4b0e4064a2fddbb44e4c09acf5d28c31582b5a64827091b7b278cc183bd606",
+    "revalidation-python-targeted.log.gz": "72e7a57445b97d2cad1ba4b7eacb5eaa5c8b33d373b8c2689d9fce8c83bb8ff9"
+  },
+  "wurst": {
+    "command": "./tooling/package_release.sh",
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "containerScript": "revalidation-container.sh",
+    "discovered": 228,
+    "execution": "One complete interpreter run with all annotations and the unchanged 20-second per-test limit.",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "packaging": "Passed dependency installation, typecheck, complete execution, canonical Lua compilation, map assembly and archive inspection.",
+    "passed": 228,
+    "sourceInputs": "All current checked-in Wurst files match the hashed inputs in revalidation-execution.json.gz.",
+    "sourceInputsVerified": 60,
+    "suiteCounts": {
+      "BoundaryArrivalTests.wurst": 3,
+      "CampaignAutosaveSchedulerTests.wurst": 2,
+      "CampaignLoadTransactionTests.wurst": 15,
+      "CampaignSaveManagerTests.wurst": 3,
+      "CampaignStartupTests.wurst": 43,
+      "CampaignTimelineTests.wurst": 6,
+      "CharacterEquipmentTests.wurst": 9,
+      "CommandRouterTests.wurst": 3,
+      "ConflictPeaceIntegrationTests.wurst": 10,
+      "CountryDiplomacyScreenTests.wurst": 6,
+      "ManagementCommandTests.wurst": 7,
+      "ManagementScreenPauseControllerTests.wurst": 5,
+      "MapDiscoveryScreenTests.wurst": 2,
+      "MilitaryCombatEventsTests.wurst": 9,
+      "MilitarySettlementRuntimeTests.wurst": 8,
+      "NewCampaignOriginSelectionTests.wurst": 2,
+      "PartyLocationTests.wurst": 2,
+      "PlayableCampaignRuntimeTests.wurst": 11,
+      "PlayablePiracyTests.wurst": 6,
+      "PlayableTradeTests.wurst": 15,
+      "PlayerGodModeTests.wurst": 4,
+      "RecruitmentWindowTests.wurst": 10,
+      "ReligionRuntimeTests.wurst": 5,
+      "ResearchRuntimeTests.wurst": 6,
+      "RpgInteractionTests.wurst": 8,
+      "UnstuckRecoveryTests.wurst": 7,
+      "WC3CompatibilityCompileFixture.wurst": 1,
+      "WarcraftRpgRuntimeTests.wurst": 20
+    },
+    "workingDirectory": "/tmp/historical-world-rpg/age-of-sail-world"
+  }
+}
