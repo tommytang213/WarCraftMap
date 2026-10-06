@@ -553,7 +553,8 @@ class LoadFixture
 	f.extension.fail = true
 	f.rejectAndVerify(f.candidate())
 	trade.capture().assertEquals(before)
-	trade.controller.provenance.costIn(ship.id, "grain").assertEquals(68)
+	// Retained port cost 10 plus two marginal base-30 purchases at 32 each.
+	trade.controller.provenance.costIn(ship.id, "grain").assertEquals(74)
 	trade.controller.provenance.costIn(warehouse.id, "grain").assertEquals(10)
 	trade.progress.standing.assertEquals(17)
 	trade.controller.seen("loaded-trade").assertFalse()

@@ -8,7 +8,7 @@ from pathlib import Path
 from wurst_execution import WurstExecutionError, execute_tests, source_revision
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 16
+GENERATOR_VERSION = 17
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -473,6 +473,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             settlement_sources[row["id"]] = (region, row)
     if goods_path.is_file():
         goods_catalog = json.loads(goods_path.read_text(encoding="utf-8"))
+        trade_defaults = json.loads((config.project / "scenario/economy/playable-trade.json").read_text(encoding="utf-8"))["marketDefaults"]
         goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
         for settlement in settlement_runtime:
             region, row = settlement_sources[settlement["id"]]
@@ -490,13 +491,14 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 good = goods[good_id]
                 stock = 320 if good_id in production else 180 if good_id in imports else 24 if good_id in shortages else 90
                 if row.get("port") and good_id in imports: stock = stock * 13 // 10
-                pressure = 1350 if good_id in shortages else 820 if good_id in production else 1000
-                buy = max(1, int(good["basePriceMinor"]) * pressure // 1000)
                 liquidity = max(1000, sum(max(1, int(goods[x]["basePriceMinor"])) * stock for x in basket if x in goods))
                 trade_records.append(
                     f'\truntime.registerMarketProfile("{ws(settlement["id"])}","{ws(good_id)}",'
-                    f'{stock},{liquidity},{buy},{1250 if good_id in production else 1000},'
-                    f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0})')
+                    f'{stock},{liquidity},{int(good["basePriceMinor"])},{1250 if good_id in production else 1000},'
+                    f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0},'
+                    f'{int(good["quantityUnitsPerDisplayUnit"])},{int(good.get("priceElasticityPermille", 1000))},'
+                    f'{int(trade_defaults["spreadPermille"])},{int(trade_defaults["priceFloorPermille"])},'
+                    f'{int(trade_defaults["priceCeilingPermille"])})')
             capacity = 24000 if "warehouse" in services else 120 if row.get("port") else 60
             trade_records.append(f'\truntime.registerStore(new TradeStore("warehouse:{ws(settlement["id"])}",{capacity},1000))')
         # Cargo belongs to authored vessels. One eligible player store is selected

@@ -1,0 +1,70 @@
+{
+  "campaignSchemas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "containerPolicy": "read-only worktree mount; copied and built in container-private /tmp as wurstuser; no host tooling installation, ownership or permission changes",
+  "example": {
+    "basePriceMinor": 10,
+    "buyCostMinor": 1080,
+    "currencyChangeMinor": -175,
+    "initialStock": 100,
+    "quantityUnits": 75,
+    "resaleProceedsMinor": 905,
+    "spreadPermille": 80,
+    "targetStock": 100
+  },
+  "generatorVersion": 17,
+  "issue": 390,
+  "packaging": {
+    "bytes": 1874063,
+    "checks": [
+      "Lua bootstrap markers",
+      "MPQ metadata, terrain and pathing",
+      "exact generated runtime data and provenance",
+      "all generated custom asset imports"
+    ],
+    "customAssets": 16,
+    "luaBytes": 9488659,
+    "runtimeResources": 10,
+    "sha256": "ccbcb1a65e40575bdef56f0065e0ad5cb615b1732f413ca65135f0ff824cb7b2",
+    "status": "pass"
+  },
+  "python": {
+    "nativeSaveAndCampaignSaveStressTests": 14,
+    "status": "pass",
+    "total": 106,
+    "tradeEconomySaveCompatibilityPackagingAndExecutionGateTests": 92
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "sourceRevision": "077e9dd7a2b3543e89a2b7c266a2ba344d596830",
+  "status": "ready_for_repository_validation",
+  "tradeDomainSchema": 2,
+  "validatedSourceSha256": {
+    "maps/historical-world-rpg/_shared/engine/trade.py": "220e47dfc15840fd674d54d6a4ee98cddebffabf7e33d82a31ba08eb9804b86d",
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_map.py": "9cc6ff21a90f2e651d24405303ded89d89128d9c5ddc99f98fd983df2f4e3384",
+    "maps/historical-world-rpg/_shared/wurst/TradePricing.wurst": "6de7d51b51717e00c91454473a4dd88387afbefc6bd5221047246ebb8b687e12",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_packaging.py": "f9dc5135c84a8bb2b9f3e4428197c18ea083be42b23303b29398d7ee00c49980",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_trade_pricing.py": "6c1bdac008dc7dce4a45e532b8d8bcd522ea345c18b49c7b5e3f6938c4dae562",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignLoadTransactionTests.wurst": "36215528c869be83097dfbf425809c0ead4a21eafe8149fb2a2e0a681570728f",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTrade.wurst": "813377b1e8307c7136c25a66e645d78602f72c7c5a95906911a69c1447fc6234",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTradeTests.wurst": "901742b84fa97a027114bbe6b78f37018734b18eb33d5339d3e95e13518d3a93",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/TradePricingTests.wurst": "411623e17306157cbac09794a36b4737d9652fc470230b9b3a38c0682c5af6a1",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/TradePricingVectorsTests.wurst": "c2aeb6a3a24a94bfd3d60389177483232fc9ae28c9dff78beb216a971c3486dd"
+  },
+  "worktreeChanges": "uncommitted",
+  "worldValidation": "pass",
+  "wurst": {
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "heapOption": "-Xmx6g",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "liveQuoteVectors": 71,
+    "status": "pass",
+    "testDeadlineSeconds": 20,
+    "tests": 239
+  }
+}

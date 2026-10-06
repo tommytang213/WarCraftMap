@@ -1,0 +1,178 @@
+package TradePricing
+
+/** Integer minor-currency arithmetic. Keep the fractional numerator separately
+ * so a large quantity never overflows an intermediate price * quantity. */
+class PriceSum
+	int denominator
+	int amount=0
+	int remainder=0
+	boolean valid=true
+	construct(int denominator)
+		this.denominator=denominator
+	function addParts(int whole,int fraction)
+		if whole<0 or amount>2147483647-whole
+			valid=false
+			return
+		amount+=whole
+		if remainder>=denominator-fraction
+			if amount==2147483647
+				valid=false
+				return
+			amount++
+			remainder-=denominator-fraction
+		else
+			remainder+=fraction
+	function add(int price,int quantity)
+		if quantity==0 or price==0
+			return
+		// Normal authored prices fit the product; avoid bitwise accumulation in
+		// routine market registration/repricing and reserve it for large orders.
+		if price<=2147483647 div quantity
+			let numerator=price*quantity
+			addParts(numerator div denominator,numerator mod denominator)
+			return
+		var whole=price div denominator
+		var fraction=price mod denominator
+		var multiplier=quantity
+		while multiplier>0 and valid
+			if multiplier mod 2==1
+				addParts(whole,fraction)
+			multiplier=multiplier div 2
+			if multiplier>0
+				if whole<0 or whole>2147483647 div 2
+					whole=-1
+				else
+					whole*=2
+				if fraction>=denominator-fraction
+					if whole>=0
+						whole++
+					fraction-=denominator-fraction
+				else
+					fraction*=2
+	function rounded(boolean up) returns int
+		if not valid or (up and remainder>0 and amount==2147483647)
+			return -1
+		if up and remainder>0
+			return amount+1
+		return amount
+
+function scaledPrice(int value,int multiplier,int denominator,int bias,boolean up) returns int
+	// Keep catalogue-wide repricing allocation-free for ordinary integers.
+	if multiplier==0 or value<=(2147483647-bias) div multiplier
+		let numerator=value*multiplier+bias
+		let quotient=numerator div denominator
+		if up and numerator mod denominator!=0
+			return quotient+1
+		return quotient
+	let sum=new PriceSum(denominator)
+	sum.remainder=bias
+	sum.add(value,multiplier)
+	let result=sum.rounded(up)
+	destroy sum
+	return result
+
+/** Mathematical floor, including negative production/connectivity modifiers. */
+public function tradeFloorDiv(int value,int denominator) returns int
+	var result=value div denominator
+	if value<0 and value mod denominator!=0
+		result--
+	return result
+
+/** Scenario-neutral counterpart of engine/trade.py::quote. These are generated
+ * definition fields, not save state. Each stock edge uses its half-unit midpoint
+ * rounded UP on both sides, so purchases and returns traverse identical prices.
+ * Sum marginal prices BEFORE currency rounding; a whole-order rounded midpoint
+ * is not additive at scarcity clamps or integer price boundaries. */
+public class TradePricing
+	int quantityUnitsPerDisplayUnit=1
+	int elasticityPermille=1000
+	int spreadPermille=80
+	int priceFloorPermille=350
+	int priceCeilingPermille=4000
+	function unitPrice(int upperStock,int target,int basePrice,int adjustment,boolean buying) returns int
+		if target<1 or basePrice<1 or elasticityPermille<0 or spreadPermille<0 or spreadPermille>1000 or priceFloorPermille<1 or priceCeilingPermille<priceFloorPermille
+			return -1
+		var scarcity=0
+		if upperStock<=target
+			scarcity=scaledPrice(target-upperStock,elasticityPermille,target,0,false)
+			if scarcity<0 or scarcity>2000
+				scarcity=2000
+		else
+			let surplus=scaledPrice(upperStock-target,elasticityPermille,target,0,true)
+			if surplus<0 or surplus>750
+				scarcity=-750
+			else
+				scarcity=-surplus
+		// Avoid overflow while clamping positive disruption to the price ceiling.
+		var pressure=priceCeilingPermille
+		if adjustment<=2147483647-(1000+scarcity)
+			pressure=IMaxBJ(priceFloorPermille,IMinBJ(priceCeilingPermille,1000+scarcity+adjustment))
+		let raw=scaledPrice(basePrice,pressure,1000,500,false)
+		if raw<0
+			return -1
+		var spread=1000-spreadPermille
+		if buying
+			spread=1000+spreadPermille
+		let result=scaledPrice(IMaxBJ(1,raw),spread,1000,0,false)
+		if result<0
+			return -1
+		return IMaxBJ(1,result)
+	/** Return -1 for an invalid/unrepresentable quote and 0 for a sale below
+	 * the minimum settlement unit. Neither result can authorize a transaction. */
+	function amount(int stock,int target,int basePrice,int adjustment,int quantity,boolean buying) returns int
+		if stock<0 or quantity<1 or quantityUnitsPerDisplayUnit<1
+			return -1
+		var low=stock
+		var high=stock
+		if buying
+			if quantity>stock
+				return -1
+			low-=quantity
+		else
+			if stock>2147483647-quantity
+				return -1
+			high+=quantity
+		let total=new PriceSum(quantityUnitsPerDisplayUnit)
+		while low<high
+			let marginal=unitPrice(low+1,target,basePrice,adjustment,buying)
+			if marginal<1
+				destroy total
+				return -1
+			// At most 2,751 monotone scarcity bands, independent of order size.
+			var left=low+1
+			var right=high
+			while left<right
+				let middle=left+(right-left) div 2+(right-left) mod 2
+				if unitPrice(middle,target,basePrice,adjustment,buying)==marginal
+					left=middle
+				else
+					right=middle-1
+			total.add(marginal,left-low)
+			if not total.valid
+				destroy total
+				return -1
+			low=left
+		let result=total.rounded(buying)
+		destroy total
+		return result
+
+/** Generated definitions are shared, never mutated by transactions or loads.
+ * A world may have thousands of markets but only a handful of pricing rules.
+ * Stock, target, base price and live modifiers remain market-owned arguments. */
+public class TradePricingCatalog
+	TradePricing array[8192] rules
+	int count=0
+	function resolve(int quantityUnits,int elasticity,int spread,int priceFloor,int priceCeiling) returns TradePricing
+		for i=0 to count-1
+			let existing=rules[i]
+			if existing.quantityUnitsPerDisplayUnit==quantityUnits and existing.elasticityPermille==elasticity and existing.spreadPermille==spread and existing.priceFloorPermille==priceFloor and existing.priceCeilingPermille==priceCeiling
+				return existing
+		let definition=new TradePricing()
+		definition.quantityUnitsPerDisplayUnit=quantityUnits
+		definition.elasticityPermille=elasticity
+		definition.spreadPermille=spread
+		definition.priceFloorPermille=priceFloor
+		definition.priceCeilingPermille=priceCeiling
+		rules[count]=definition
+		count++
+		return definition
