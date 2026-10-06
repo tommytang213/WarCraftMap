@@ -6,6 +6,8 @@ import CampaignSaveManager
 import PlayableCampaignRuntime
 import CampaignTimeline
 import ScenarioData
+import ManagementScreenPauseController
+import ManagementCommandTests
 
 class ResearchOutput implements CommandOutput
 	string last=""
@@ -59,6 +61,7 @@ class ResearchFixture
 		let generated=new WarcraftRpgRuntime(effects)
 		configureGeneratedRpg(generated)
 		runtime=new WarcraftRpgRuntime(effects)
+		runtime.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		// Keep every production-generated research definition. Other RPG domains
 		// are covered by WarcraftRpgRuntimeTests; rehashing their large payload in
 		// every codec fixture needlessly exhausts the interpreter's per-test limit.
@@ -126,7 +129,7 @@ class ResearchFixture
 	fixture.commands.dispatch(null,"/heroes").assertTrue()
 	fixture.output.last.startsWith("Heroes (strategic ").assertTrue()
 	fixture.commands.dispatch(null,"/items").assertTrue()
-	fixture.output.last.assertEquals("Choose a character with -inventory HERO.")
+	fixture.output.last.startsWith("Choose a character with /inventory HERO.\n").assertTrue()
 	fixture.commands.dispatch(null,"/quests").assertTrue()
 	fixture.output.last.startsWith("Quest Journal").assertTrue()
 	fixture.commands.dispatch(null,"/research").assertFalse()
@@ -137,6 +140,8 @@ class ResearchFixture
 	fixture.effects.calls.assertEquals(0)
 	// A rejected action still proves that the production action handler ran.
 	fixture.reject("/research flintlock_drill")
+	fixture.commands.dispatch(null,"/rpg-close").assertTrue()
+	fixture.runtime.management.pauses.getModalOwnerCount().assertEquals(0)
 
 function assertRegistrationConflict(string alias)
 	let commands=new CommandRegistry(false,6,new CommandText(),new ResearchOutput())

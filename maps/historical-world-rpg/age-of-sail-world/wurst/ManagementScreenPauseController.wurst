@@ -24,6 +24,27 @@ public class ModalManagementScreen
 	function isOpen() returns boolean
 		return open
 
+/** Transient UI session: switching views retains one shared pause token.
+ * This state is never serialized with campaign authority. */
+public class ManagementScreenSession
+	ManagementScreenPauseController pauses
+	ModalManagementScreen modal = null
+	string view = ""
+	construct()
+		pauses = getManagementScreenPauseController()
+	construct(ManagementScreenPauseController pauses)
+		this.pauses = pauses
+	function open(string view)
+		if modal == null
+			modal = pauses.openModalManagementScreen()
+		this.view = view
+	function close()
+		if modal != null
+			modal.close()
+			destroy modal
+			modal = null
+		view = ""
+
 /**
  * Scenario-neutral campaign pause coordinator for the runtime/UI layer.
  *

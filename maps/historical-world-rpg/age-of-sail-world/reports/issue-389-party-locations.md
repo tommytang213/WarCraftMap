@@ -32,30 +32,36 @@ Discarded ordinary movement cannot be recovered; explicit carried position recor
 are preserved and validated. The compatibility manifest, generic envelope, release
 inspection and English documentation now advertise schemas 1–7.
 
-All **203 pinned Wurst tests**, **150 Python tests**, and the real canonical
-folder-map compilation passed. Validation results and 60 source hashes are recorded in
-[validation.json](issue-389/validation.json). Interpreter tests replace native
-movement/projection and storage boundaries while running production save/load,
-startup, migration, navigation and transaction code. Python campaign packaging uses
-its recording compiler and inspects actual materialized MPQ/pathing payloads for all
-17 maps. A separate pinned compiler builds the canonical folder map.
+After integration with current main, all **228 pinned Wurst tests** passed in one
+interpreter run through the unchanged `./tooling/package_release.sh` gate. Its
+dependency installation, typecheck, canonical Lua compilation, map assembly and
+archive inspection also passed. All **217 Python tests** passed: 97 targeted
+persistence/navigation/compatibility checks, 53 packaging/release checks and 67
+automation checks. Results, commands, transcript hashes and 60 verified current
+Wurst source hashes are in
+[integration-validation.json](issue-389/integration-validation.json).
 
-The full Wurst test set is executed in two fresh interpreter processes: startup,
-then all remaining tests. Earlier monolithic attempts exceeded the pinned
-interpreter's 20-second per-test limit in catalogue registration late in the run.
-Only test annotations outside each batch are removed in container-private copies;
-production code and scenario data are unchanged. Both batches together must cover
-every discovered test exactly once. The worktree is mounted read-only, builds run
-as the image's `wurstuser`, and source/build writes stay under private `/tmp`.
-The input copy is prepared using the shared map packager's `generate` and `_assemble`
-functions with `package.json`, the same assembly path used by `run_wurst_tests.py`.
-The [validation script](issue-389/validate.sh) records the exact batching/build steps.
-It takes the assembled compile directory as its first argument; the final run used
-`_build/issue-389-review/final/compile` through the read-only `/source` mount.
-The current Python run covers persistence, autosaving, navigation, boundary
-arrival, origin generation, compatibility, execution-evidence checks, runtime
-acceptance, map/campaign packaging, release blockers, upload inspection and
-recovery documentation. Suite commands and logs are listed in `validation.json`.
+The import conflicts in startup and load-transaction tests retain both the party
+location and management-screen regressions. Startup fixtures now destroy discarded
+generated catalogue records before reducing their counts. Previously, each fixture
+retained an entire world: a diagnostic full-suite run filled nearly all of the
+interpreter's 4 GB heap and recorded 11 timeouts before being stopped. The cleanup
+retains full production registration, the same authority slices and assertions,
+every test annotation, and the pinned 20-second per-test limit. No production
+persistence or management behavior changed during this integration repair.
+
+Interpreter tests replace native movement/projection and storage boundaries while
+running production save/load, startup, migration, navigation and transaction code.
+Python campaign packaging uses its recording compiler and inspects materialized
+MPQ/pathing payloads for all 17 maps; actual pinned compilation and packaging cover
+the canonical folder map. World, geography, map-source, recovery-documentation and
+diff checks also passed. Container validation mounted the worktree read-only and
+built as `wurstuser` from copies under private `/tmp`.
+
+The earlier [validation.json](issue-389/validation.json) and
+[batched validation script](issue-389/validate.sh) are retained as historical
+development evidence. The complete integration run supersedes those batches for
+repository readiness; the outer worker performs the authoritative repository check.
 
 Release status remains **blocked_pending_real_forsaken_kingdom_launch_smoke**.
 No real-client launch/gameplay validation or player QA was performed. No commit,

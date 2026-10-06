@@ -18,6 +18,8 @@ import MilitarySettlementRuntime
 import ReligionRuntime
 import PartyLocations
 import BoundaryArrival
+import ManagementScreenPauseController
+import ManagementCommandTests
 
 class LoadStorage implements CampaignSaveStorage
 	string array[16] keys
@@ -370,6 +372,93 @@ class LoadFixture
 		campaign.saves.save(SAVE_SLOT_MANUAL, 2, "after-rejection").assertTrue()
 		campaign.saves.codec.decodeMigrateAndValidate(storage.read("manual_02"), "manual_02").assertEquals(before)
 		storage.read("manual_01").assertEquals(source)
+
+@test function rejectedLoadsAndAbortedReconstructionRetainManagementOwners()
+	let f = new LoadFixture()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, false)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.rpg, f.extension.trade, pauses, ports)
+	let candidate = f.candidate()
+	let before = f.campaign.state.captureAuthoritativeState()
+	commands.dispatch(null, "/inventory hero").assertTrue()
+	commands.dispatch(null, "/market open").assertTrue()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.rejectAndVerify(candidate + ";religion=invalid")
+	f.ports.failParty = true
+	f.rejectAndVerify(candidate)
+	f.ports.failParty = false
+	pauses.getModalOwnerCount().assertEquals(2)
+	f.rpg.management.view.assertEquals("inventory")
+	f.extension.trade.management.view.assertEquals("market")
+	ports.pauseWrites.assertEquals(1)
+	for i = 0 to 1
+		f.campaign.saves.stageCandidate(candidate).assertTrue()
+		pauses.getModalOwnerCount().assertEquals(2)
+		f.campaign.saves.abortLoad()
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	let time = f.clock.captureState()
+	f.recordingTimer.tick(20.)
+	f.clock.advanceTo(99).assertTrue()
+	f.clock.captureState().assertEquals(time)
+	commands.dispatch(null, "/rpg-close").assertTrue()
+	pauses.isCampaignPaused().assertTrue()
+	commands.dispatch(null, "/trade close").assertTrue()
+	pauses.getModalOwnerCount().assertEquals(0)
+	f.clock.isPaused().assertFalse()
+	ports.pauseWrites.assertEquals(2)
+
+@test function successfulRepeatedLoadsCloseOnlyCommittedManagementSessions()
+	let f = new LoadFixture()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, false)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.rpg, f.extension.trade, pauses, ports)
+	let candidate = f.candidate()
+	let saved = f.store(candidate)
+	f.recordingTimer.expected = f.candidateClock
+	let otherScreen = pauses.openModalManagementScreen()
+	for i = 0 to 2
+		commands.dispatch(null, "/roster").assertTrue()
+		commands.dispatch(null, "/trade inspect").assertTrue()
+		pauses.getModalOwnerCount().assertEquals(3)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		pauses.getModalOwnerCount().assertEquals(1)
+		f.rpg.management.view.assertEquals("")
+		f.extension.trade.management.view.assertEquals("")
+		f.clock.captureState().assertEquals(f.candidateClock)
+		commands.dispatch(null, "/rpg-close").assertTrue()
+		commands.dispatch(null, "/trade close").assertTrue()
+		f.clock.isPaused().assertTrue()
+		f.storage.read("manual_01").assertEquals(saved)
+	ports.pauseWrites.assertEquals(1)
+	otherScreen.close()
+	f.clock.isPaused().assertFalse()
+	pauses.getModalOwnerCount().assertEquals(0)
+	f.recordingTimer.tick(1.)
+	(f.clock.captureState() != f.candidateClock).assertTrue()
+
+@test function managementLoadCommitPreservesManualPauseAndDirectReconstructionIsIdempotent()
+	let f = new LoadFixture()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, true)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.rpg, f.extension.trade, pauses, ports)
+	let candidate = f.candidate()
+	f.recordingTimer.expected = f.candidateClock
+	for i = 0 to 1
+		commands.dispatch(null, "/journal").assertTrue()
+		commands.dispatch(null, "/trade open").assertTrue()
+		f.campaign.state.reconstructRuntime(candidate).assertTrue()
+		pauses.getModalOwnerCount().assertEquals(2)
+		f.campaign.state.activateAuthoritativeState(candidate)
+		pauses.getModalOwnerCount().assertEquals(0)
+		f.clock.isPaused().assertTrue()
+		f.recordingTimer.tick(10.)
+		f.clock.captureState().assertEquals(f.candidateClock)
+	ports.pauseWrites.assertEquals(0)
+	pauses.setManuallyPaused(false)
+	f.clock.isPaused().assertFalse()
 
 @test function checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation()
 	let f = new LoadFixture()

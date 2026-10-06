@@ -17,6 +17,8 @@ import PlayablePiracy
 import ScenarioData
 import PartyLocations
 import CampaignAutosaveScheduler
+import ManagementCommandTests
+import ManagementScreenPauseController
 
 public class StartupStorage implements CampaignSaveStorage
 	string array[32] keys
@@ -231,12 +233,42 @@ public class StartupFixture
 		(campaign.state.rpg.heroes.count > 100 and campaign.state.militarySettlements.settlementCount > 700 and trade.marketCount > 700).assertTrue()
 		// Retain a generated 1450-eligible character alongside Leonardo, whose
 		// first-recruitment window has not opened at campaign start.
-		campaign.state.rpg.heroes.heroes[1] = campaign.state.rpg.heroes.get("hang_tuah")
-		campaign.state.rpg.heroes.count = 2
-		campaign.state.rpg.journal.count = 2
-		campaign.state.rpg.treasures.count = 1
+		let rpg = campaign.state.rpg
+		let companion = rpg.heroes.get("hang_tuah")
+		// Release discarded catalogue objects before reducing the counts. Merely
+		// hiding them leaks a full world per fixture into the shared interpreter,
+		// eventually exhausting its heap during the complete execution gate.
+		for i = 1 to rpg.heroes.count - 1
+			if rpg.heroes.heroes[i] != companion
+				destroy rpg.heroes.heroes[i]
+			rpg.heroes.heroes[i] = null
+		rpg.heroes.heroes[1] = companion
+		rpg.heroes.count = 2
+		for i = 2 to rpg.journal.count - 1
+			destroy rpg.journal.quests[i]
+			rpg.journal.quests[i] = null
+		rpg.journal.count = 2
+		for i = 1 to rpg.treasures.count - 1
+			destroy rpg.treasures.treasures[i]
+			rpg.treasures.treasures[i] = null
+		rpg.treasures.count = 1
 		let military = campaign.state.militarySettlements
 		// The first generated settlement is accompanied by its core and defense.
+		for i = 1 to military.settlementCount - 1
+			destroy military.settlements[i]
+			military.settlements[i] = null
+		for i = 2 to military.forceCount - 1
+			destroy military.forces[i]
+			military.forces[i] = null
+		for i = 1 to military.administratorCount - 1
+			destroy military.administrators[i]
+			military.administrators[i] = null
+		for i = 1 to military.traditionCount - 1
+			destroy military.traditions[i]
+			military.traditions[i] = null
+		for i = 0 to military.conflictCount - 1
+			destroy military.conflicts[i]
+			military.conflicts[i] = null
 		military.settlementCount = 1
 		military.forceCount = 2
 		military.administratorCount = 1
@@ -250,11 +282,20 @@ public class StartupFixture
 		selected[3] = "songhai_kingdom"
 		selected[4] = "ethiopian_empire"
 		selected[5] = "aq_qoyunlu"
+		for i = 1 to countries.profileCount - 1
+			destroy countries.profiles[i]
+			countries.profiles[i] = null
 		countries.polityCount = 0
 		countries.profileCount = 1
 		countries.conflictCount = 0
 		for i = 0 to 5
 			countries.registerPolity(selected[i], 1000)
+		for i = 2 to trade.marketCount - 1
+			destroy trade.markets[i]
+			trade.markets[i] = null
+		for i = 1 to trade.storeCount - 1
+			destroy trade.stores[i]
+			trade.stores[i] = null
 		trade.marketCount = 2
 		trade.storeCount = 1
 		// Keep the selected origin's location in the small fixture for transfer
@@ -297,6 +338,55 @@ function originLifecycle(string origin, string mapId)
 
 @test function selectorToEuropeanRegionUsesGeneratedOriginAndCodec()
 	originLifecycle("england", "europe_west")
+
+@test function startupClosesTransientViewsAndRepeatedStartupRetainsNewOwners()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, true)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.campaign.state.rpg, f.trade, pauses, ports)
+	commands.dispatch(null, "/roster").assertTrue()
+	commands.dispatch(null, "/trade inspect").assertTrue()
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(0)
+	f.clock.isPaused().assertTrue()
+	ports.pauseWrites.assertEquals(0)
+	commands.dispatch(null, "/journal").assertTrue()
+	commands.dispatch(null, "/trade open").assertTrue()
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(2)
+	commands.dispatch(null, "/rpg-close").assertTrue()
+	commands.dispatch(null, "/trade close").assertTrue()
+	pauses.isCampaignPaused().assertTrue()
+	pauses.setManuallyPaused(false)
+	f.clock.isPaused().assertFalse()
+
+@test function rejectedStartupCheckpointPreservesViewsUntilSuccessfulRetry()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.choose("england")
+	source.register()
+	source.saves.failKey = "session_start"
+	source.campaign.startup().assertFalse()
+	let f = new StartupFixture(source.cache, source.saves, "europe_west")
+	f.register()
+	let ports = new RecordingManagementPorts()
+	let pauses = new ManagementScreenPauseController(ports, false)
+	f.clock.bindManagementPause(pauses)
+	let commands = managementCommands(f.campaign.state.rpg, f.trade, pauses, ports)
+	commands.dispatch(null, "/inventory").assertTrue()
+	commands.dispatch(null, "/trade open").assertTrue()
+	f.ports.failProjection = true
+	f.campaign.startup().assertFalse()
+	pauses.getModalOwnerCount().assertEquals(2)
+	ports.pauseWrites.assertEquals(1)
+	f.clock.isPaused().assertTrue()
+	f.ports.failProjection = false
+	f.campaign.startup().assertTrue()
+	pauses.getModalOwnerCount().assertEquals(0)
+	ports.pauseWrites.assertEquals(2)
+	f.clock.isPaused().assertFalse()
 
 @test function selectorToAsianRegionUsesPhysicalStartingCoordinates()
 	originLifecycle("ming_empire", "east_asia")
