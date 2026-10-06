@@ -168,7 +168,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	let legacyState="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1"
 	let payload=campaignSaveEnvelope(4,"manual_01",SAVE_SLOT_MANUAL,1,"legacy",legacyState)
 	let migrated=codec.decodeMigrateAndValidate(payload,"manual_01")
-	(migrated.indexOf(";piracy=v1|")>=0).assertTrue()
+	(migrated.indexOf(";piracy=v2|")>=0).assertTrue()
 	(migrated.indexOf("|notoriety=0|")>=0).assertTrue()
 
 @test function everyAdvertisedLiveSchemaDecodesAndResavesAsCurrent()

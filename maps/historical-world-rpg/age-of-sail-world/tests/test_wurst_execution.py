@@ -90,6 +90,18 @@ class WurstExecutionTests(unittest.TestCase):
             "transferDoesNotMaterializeAbstractCompanionAssignedToDestination",
         }.issubset(discovered))
 
+    def test_required_suite_discovers_production_pirate_founding_and_load_regressions(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
+        self.assertTrue({
+            "registeredFoundingRejectsUnqualifiedCaptainsAndGovernmentTerritory",
+            "registeredFoundingRejectsMalformedListsAndLateTerritoryFailures",
+            "registeredFoundingCannotConvertOccupationIntoLegalOwnership",
+            "registeredFoundingCommitsOrdinaryTerritoryAndReconstructionIsIdempotent",
+            "foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources",
+            "legacyPiracyHistoryMigratesWithoutGrantingDisputedTitle",
+            "failedLoadRetainsFoundedPolityLossesAndLegacyMigrationIsAtomic",
+        }.issubset(discovered))
+
     def test_discovery_and_complete_results_bind_compiler_revision_and_inputs(self):
         report = self.run_suite()
         self.assertEqual(["wurst/Fixture.wurst:actual", "wurst/Fixture.wurst:second"],

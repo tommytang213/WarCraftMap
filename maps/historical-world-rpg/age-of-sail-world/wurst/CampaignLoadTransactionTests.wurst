@@ -49,7 +49,12 @@ class LoadStorage implements CampaignSaveStorage
 
 /** Only the native boundaries are replaced. Record the complete live projection,
  * not just the number of times activation was requested. */
-class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver
+class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver, PiracyPresentation, CommandOutput
+	string lastPiracy = ""
+	override function show(player viewer, string message)
+		skip
+	override function showPiracy(player viewer, string message)
+		lastPiracy = message
 	CampaignSaveManager manager = null
 	boolean failParty = false
 	boolean probe = false
@@ -245,6 +250,7 @@ class LoadFixture
 	MilitarySettlementRuntime military = new MilitarySettlementRuntime(ports)
 	ReligionRuntime religion = new ReligionRuntime(ports)
 	PiracyRuntime piracy = new PiracyRuntime(new PiracyRules(30, 20, 5000, 3, 150))
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), ports)
 	construct()
 		clock.addOccurrence("early", "early", 5, 1)
 		clock.addOccurrence("late", "late", 50, 1)
@@ -304,7 +310,9 @@ class LoadFixture
 		campaign.registerPiracyRuntime(piracy)
 		polity = new LoadPolity(campaign)
 		piracy.setPolityAuthority(polity)
+		piracy.setActionAuthority(new CampaignPiracyActionAuthority(military))
 		piracy.registerGovernmentForm("free_republic", "First Captain")
+		registerPiracy(commands, piracy, ports)
 		extension.trade.registerMarket(new RuntimeMarket("port", "grain", 100, 1000, 10, 8))
 		extension.trade.registerStore(new TradeStore("cargo:ship", 50, 500))
 		extension.newCampaign("port")
@@ -319,6 +327,33 @@ class LoadFixture
 		campaign.regionSelector.commandRegionId = "africa"
 		recordingTimer.expected = clock.captureState()
 		clock.attachTimer(recordingTimer, 1.)
+	function qualifyFounding()
+		// Exercise the prize authority rather than assigning progression totals.
+		military.registerSettlement(new SettlementRuntimeState("prize_coast", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 80., 80.))
+		for i = 0 to 4
+			let prize = new PrizeProposal("founding-prize-" + i.toString(), "prize_coast", "coastal_target", "england", "europe", "", "release", "grain", 0, 2000, 0, "release", i * 30, false)
+			prize.authorityValidated = piracy.actionAuthority.validateTarget(prize)
+			prize.authorityValidated.assertTrue()
+			piracy.commitPrize(prize).contains("Committed:").assertTrue()
+		piracy.canFoundPolity().assertTrue()
+	function acquireTitle(string settlementId)
+		let grantor = military.settlements[military.settlementIndex(settlementId)].legalOwnerId
+		let conflict = "title:" + settlementId
+		military.registerConflictMember(conflict, grantor, 1).assertTrue()
+		military.registerConflictMember(conflict, "player", 2).assertTrue()
+		military.capture(settlementId, "player", 100.).assertTrue()
+		military.commitPeace(conflict, settlementId, "player").assertTrue()
+	function found(string id, string capital, string territories)
+		commands.dispatch(null, "/found-free-polity " + id + " free_republic Free-Port " + capital + " " + territories).assertTrue()
+	function rejectFounding(string id, string capital, string territories)
+		let before = campaign.state.captureAuthoritativeState()
+		let projection = ports.projection()
+		let time = clock.captureState()
+		found(id, capital, territories)
+		ports.lastPiracy.startsWith("Independent polity founded").assertFalse()
+		campaign.state.captureAuthoritativeState().assertEquals(before)
+		ports.projection().assertEquals(projection)
+		clock.captureState().assertEquals(time)
 	function candidate() returns string
 		// A separate production authority supplies changed, independently valid domains.
 		let other = new LoadFixture()
@@ -334,11 +369,13 @@ class LoadFixture
 		other.military.registerSettlement(new SettlementRuntimeState("new_port", "england", "europe_west", 'htow', 'hfoo', 20, 10, 40, 40, 45., 67.))
 		other.religion.setCharacterFaith("faith", 900)
 		other.extension.trade.controller.buy("loaded-trade", other.extension.trade.market, other.extension.trade.hold, 2)
-		other.piracy.polity = new PiratePolityState("free_port", "free_republic", "Free Port", "First Captain", "new_port", "port,new_port")
-		other.piracy.polity.recognition = "portugal,recognized~"
-		other.campaign.countries.registerPolity("free_port", 777)
-		other.campaign.countries.discover("free_port")
-		other.campaign.identity.changeAllegiance("free_port")
+		other.qualifyFounding()
+		other.acquireTitle("port")
+		other.acquireTitle("new_port")
+		other.found("free_port", "new_port", "port,new_port")
+		other.ports.lastPiracy.startsWith("Independent polity founded").assertTrue()
+		other.piracy.setRecognition("portugal", "recognized").assertTrue()
+		other.campaign.countries.reconcileResources("free_port", 777, 12)
 		return other.campaign.state.captureAuthoritativeState()
 	function store(string candidate) returns string
 		let payload = campaign.saves.codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "candidate", candidate)
@@ -346,6 +383,10 @@ class LoadFixture
 		return payload
 	function rejectAndVerify(string candidate)
 		let before = campaign.state.captureAuthoritativeState()
+		let allegiance = campaign.identity.allegianceId()
+		let mapRegion = campaign.maps.getCommandRegionId()
+		let selectorRegion = campaign.regionSelector.getCommandRegionId()
+		let foundedIndex = campaign.countries.polityIndex("free_port")
 		let authority = campaign.state.authorityDocument()
 		let projection = ports.projection()
 		let clockBefore = clock.captureState()
@@ -362,11 +403,11 @@ class LoadFixture
 		recordingTimer.active.assertTrue()
 		recordingTimer.starts.assertEquals(timerStarts)
 		recordingTimer.stops.assertEquals(timerStops)
-		campaign.identity.allegianceId().assertEquals("england")
+		campaign.identity.allegianceId().assertEquals(allegiance)
 		campaign.identity.regionalInstanceId().assertEquals("west")
-		campaign.maps.getCommandRegionId().assertEquals("africa")
-		campaign.regionSelector.getCommandRegionId().assertEquals("africa")
-		campaign.countries.polityIndex("free_port").assertEquals(-1)
+		campaign.maps.getCommandRegionId().assertEquals(mapRegion)
+		campaign.regionSelector.getCommandRegionId().assertEquals(selectorRegion)
+		campaign.countries.polityIndex("free_port").assertEquals(foundedIndex)
 		ports.notifications.assertEquals(0)
 		storage.contains("manual_09").assertFalse()
 		campaign.saves.save(SAVE_SLOT_MANUAL, 2, "after-rejection").assertTrue()
@@ -770,3 +811,203 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
 		f.rpg.reconcile("player")
 		objects.life.assertEquals(108)
+
+@test function registeredFoundingRejectsUnqualifiedCaptainsAndGovernmentTerritory()
+	let f = new LoadFixture()
+	f.acquireTitle("port")
+	f.rejectFounding("free_port", "port", "port")
+	f.qualifyFounding()
+	f.military.registerSettlement(new SettlementRuntimeState("government_port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 50., 50.))
+	// Service to England grants no right to incorporate its capital or land.
+	f.rejectFounding("free_port", "government_port", "government_port")
+	f.rejectFounding("free_port", "port", "port,government_port")
+	f.rejectFounding("england", "port", "port")
+	f.rejectFounding("player", "port", "port")
+	// A military identity must not be taken over even without a country row.
+	f.military.registerForce(new RuntimeForce("other_fleet", "existing_captain", "europe_west", "naval", FORCE_FLEET, 'hfoo', 50, 30, 40., 50.))
+	f.rejectFounding("existing_captain", "port", "port")
+
+@test function registeredFoundingRejectsMalformedListsAndLateTerritoryFailures()
+	let f = new LoadFixture()
+	f.qualifyFounding()
+	f.acquireTitle("port")
+	f.military.registerSettlement(new SettlementRuntimeState("second", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 50., 50.))
+	f.acquireTitle("second")
+	f.rejectFounding("free_port", "port", "port,port")
+	f.rejectFounding("free_port", "port", "port,")
+	f.rejectFounding("free_port", "port", "port,,second")
+	f.rejectFounding("free_port", "port", "port,invalid~id")
+	f.rejectFounding("free_port", "port", "port,absent")
+	f.rejectFounding("free_port", "absent", "port,absent")
+	f.rejectFounding("free_port", "second", "port")
+	// The last territory has valid title/control but no durable live core.
+	f.military.recordLoss("core:second", 100)
+	f.rejectFounding("free_port", "port", "port,second")
+	f.rejectFounding("free_port", "second", "second")
+	// Even an otherwise valid grant must not commit before identity validation.
+	f.campaign.identity.restore("", "", "europe_west", "west", "port")
+	f.rejectFounding("free_port", "port", "port")
+
+@test function registeredFoundingCannotConvertOccupationIntoLegalOwnership()
+	let f = new LoadFixture()
+	f.qualifyFounding()
+	f.military.registerConflictMember("occupation", "england", 1).assertTrue()
+	f.military.registerConflictMember("occupation", "player", 2).assertTrue()
+	f.military.capture("port", "player", 100.).assertTrue()
+	f.rejectFounding("free_port", "port", "port")
+	f.military.settlements[0].legalOwnerId.assertEquals("england")
+	f.military.commitPeace("occupation", "port", "player").assertTrue()
+	f.military.registerConflictMember("siege", "portugal", 1).assertTrue()
+	f.military.registerConflictMember("siege", "player", 2).assertTrue()
+	f.military.beginSettlementAttack("port", "portugal", 200.).assertTrue()
+	f.rejectFounding("free_port", "port", "port")
+
+function foundedTerritoryFixture() returns LoadFixture
+	let f = new LoadFixture()
+	f.qualifyFounding()
+	f.military.registerSettlement(new SettlementRuntimeState("new_port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 50., 50.))
+	f.military.registerForce(new RuntimeForce("defense:port:gate", "england", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, 12., 10.))
+	f.military.registerForce(new RuntimeForce("defense:new_port:gate", "england", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, 52., 50.))
+	f.acquireTitle("port")
+	f.acquireTitle("new_port")
+	f.found("free_port", "port", "port,new_port")
+	f.ports.lastPiracy.startsWith("Independent polity founded").assertTrue()
+	return f
+
+function assertTerritoryRegistrations(LoadFixture f, string id, string controller, string owner)
+	let city = f.military.settlements[f.military.settlementIndex(id)]
+	city.controllerId.assertEquals(controller)
+	city.legalOwnerId.assertEquals(owner)
+	f.military.forces[f.military.forceIndex("core:" + id)].controllerId.assertEquals(controller)
+	f.military.forces[f.military.forceIndex("defense:" + id + ":gate")].controllerId.assertEquals(controller)
+	f.military.administrators[f.military.administratorIndex(id)].controllerId.assertEquals(controller)
+	f.ports.forces[f.ports.forceIndex("core:" + id)].startsWith("core:" + id + controller).assertTrue()
+	if f.military.forces[f.military.forceIndex("defense:" + id + ":gate")].active
+		f.ports.forces[f.ports.forceIndex("defense:" + id + ":gate")].startsWith("defense:" + id + ":gate" + controller).assertTrue()
+	else
+		f.ports.projection().contains("defense:" + id + ":gate" + controller).assertFalse()
+
+@test function registeredFoundingCommitsOrdinaryTerritoryAndReconstructionIsIdempotent()
+	let f = foundedTerritoryFixture()
+	assertTerritoryRegistrations(f, "port", "free_port", "free_port")
+	assertTerritoryRegistrations(f, "new_port", "free_port", "free_port")
+	f.piracy.polity.foundingTerritoryIds.assertEquals("port,new_port")
+	f.campaign.identity.allegianceId().assertEquals("free_port")
+	f.campaign.countries.reconcileResources("free_port", 777, 31)
+	f.campaign.identity.changeAllegiance("portugal").assertTrue()
+	let before = f.campaign.state.captureAuthoritativeState()
+	let projection = f.ports.projection()
+	for i = 0 to 2
+		f.polity.ordinary.reconcileFoundedPolity(f.piracy.polity).assertTrue()
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+		f.ports.projection().assertEquals(projection)
+	f.rejectFounding("another_polity", "port", "port")
+
+@test function foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources()
+	let f = foundedTerritoryFixture()
+	f.military.registerConflictMember("later_capture", "free_port", 1).assertTrue()
+	f.military.registerConflictMember("later_capture", "portugal", 2).assertTrue()
+	f.military.capture("port", "portugal", 200.).assertTrue()
+	f.military.registerConflictMember("later_cession", "free_port", 1).assertTrue()
+	f.military.registerConflictMember("later_cession", "england", 2).assertTrue()
+	let peace = new CampaignCountryPeaceAuthority(f.military)
+	peace.commitPeace("later_cession", "cede:new_port:free_port:england").assertTrue()
+	// Territory gained after founding is also solely military authority.
+	f.military.registerSettlement(new SettlementRuntimeState("later_port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 70., 70.))
+	f.military.registerForce(new RuntimeForce("defense:later_port:gate", "england", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, 72., 70.))
+	f.military.registerConflictMember("later_gain", "free_port", 1).assertTrue()
+	f.military.registerConflictMember("later_gain", "england", 2).assertTrue()
+	f.military.capture("later_port", "free_port", 200.).assertTrue()
+	peace.commitPeace("later_gain", "cede:later_port:england:free_port").assertTrue()
+	f.campaign.countries.reconcileResources("free_port", 777, 31)
+	f.campaign.identity.changeAllegiance("portugal").assertTrue()
+	// Damage and finite resources must not be replenished by reconstruction.
+	f.military.recordLoss("defense:port:gate", 7)
+	f.military.recordLoss("defense:new_port:gate", 40)
+	f.military.settlements[0].supply = 13
+	let saved = f.campaign.state.captureAuthoritativeState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "after-losses").assertTrue()
+	for i = 0 to 2
+		f.campaign.identity.changeAllegiance("england").assertTrue()
+		f.campaign.countries.reconcileResources("free_port", 1, 0)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		assertTerritoryRegistrations(f, "port", "portugal", "free_port")
+		assertTerritoryRegistrations(f, "new_port", "england", "england")
+		assertTerritoryRegistrations(f, "later_port", "free_port", "free_port")
+		f.piracy.polity.foundingTerritoryIds.assertEquals("port,new_port")
+		f.military.settlements[0].occupationConflictId.assertEquals("later_capture")
+		f.military.forces[f.military.forceIndex("defense:port:gate")].strength.assertEquals(33)
+		f.military.forces[f.military.forceIndex("defense:new_port:gate")].active.assertFalse()
+		f.campaign.identity.allegianceId().assertEquals("portugal")
+		f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
+		f.campaign.countries.materialStock[f.campaign.countries.polityIndex("free_port")].assertEquals(31)
+		f.campaign.state.captureAuthoritativeState().assertEquals(saved)
+	// A fresh physical runtime registers identity without replaying either grant.
+	let resumed = new LoadFixture()
+	resumed.store(saved)
+	resumed.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	assertTerritoryRegistrations(resumed, "port", "portugal", "free_port")
+	assertTerritoryRegistrations(resumed, "new_port", "england", "england")
+	assertTerritoryRegistrations(resumed, "later_port", "free_port", "free_port")
+	resumed.campaign.identity.allegianceId().assertEquals("portugal")
+	// Resolve the remaining occupation normally; loading cannot undo this either.
+	let resumedPeace = new CampaignCountryPeaceAuthority(resumed.military)
+	resumedPeace.commitPeace("later_capture", "cede:port:free_port:portugal").assertTrue()
+	resumed.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "after-peace").assertTrue()
+	resumed.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	assertTerritoryRegistrations(resumed, "port", "portugal", "portugal")
+
+function legacyPirateFounding() returns string
+	return "v1|notoriety=20|bounty=3000|wealth=10000|prizes=5|outlaw=0|commissions=|targets=|havens=|regions=|actions=|polity=free_port|government=free_republic|name=Free Port|title=First Captain|capital=port|territories=port,new_port|recognition="
+
+@test function legacyPiracyHistoryMigratesWithoutGrantingDisputedTitle()
+	let f = new LoadFixture()
+	f.military.registerSettlement(new SettlementRuntimeState("new_port", "portugal", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 50., 50.))
+	f.military.registerForce(new RuntimeForce("defense:port:gate", "england", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, 12., 10.))
+	f.military.registerForce(new RuntimeForce("defense:new_port:gate", "portugal", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, 52., 50.))
+	// Reproduce v1 founding's inconsistent derived records. Current settlement
+	// control survives, but no migration may invent title or a conflict.
+	f.military.settlements[0].controllerId = "free_port"
+	f.military.recordLoss("defense:port:gate", 9)
+	f.military.recordLoss("defense:new_port:gate", 40)
+	f.campaign.countries.registerPolityResources("free_port", 777, 31)
+	f.store(f.campaign.state.captureAuthoritativeState() + ";piracy=" + legacyPirateFounding())
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	assertTerritoryRegistrations(f, "port", "free_port", "england")
+	assertTerritoryRegistrations(f, "new_port", "portugal", "portugal")
+	f.military.forces[f.military.forceIndex("defense:port:gate")].strength.assertEquals(31)
+	f.military.forces[f.military.forceIndex("defense:new_port:gate")].active.assertFalse()
+	f.military.settlements[0].occupationConflictId.assertEquals("")
+	f.campaign.identity.allegianceId().assertEquals("england")
+	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
+	f.piracy.captureAuthority().startsWith("v2|").assertTrue()
+	f.piracy.captureAuthority().contains("|foundingTerritories=port,new_port|").assertTrue()
+	let migrated = f.campaign.state.captureAuthoritativeState()
+	let projection = f.ports.projection()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
+	for i = 0 to 2
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+		f.campaign.state.captureAuthoritativeState().assertEquals(migrated)
+		f.ports.projection().assertEquals(projection)
+
+@test function failedLoadRetainsFoundedPolityLossesAndLegacyMigrationIsAtomic()
+	let f = foundedTerritoryFixture()
+	f.military.registerConflictMember("later_capture", "free_port", 1).assertTrue()
+	f.military.registerConflictMember("later_capture", "portugal", 2).assertTrue()
+	f.military.capture("port", "portugal", 200.).assertTrue()
+	f.campaign.identity.changeAllegiance("portugal").assertTrue()
+	f.campaign.countries.reconcileResources("free_port", 777, 31)
+	let candidate = f.candidate()
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.rejectAndVerify(candidate + ";piracy=" + legacyPirateFounding())
+	f.extension.fail = false
+	f.polity.fail = true
+	f.rejectAndVerify(candidate)
+	assertTerritoryRegistrations(f, "port", "portugal", "free_port")
+	f.polity.fail = false
+	// Version and history errors reject during staging, before callbacks.
+	let beforeCalls = f.polity.applications
+	f.rejectAndVerify(candidate + ";piracy=" + f.piracy.captureAuthority() + "|territories=port")
+	f.rejectAndVerify(candidate + ";piracy=" + legacyPirateFounding() + "|foundingTerritories=port")
+	f.polity.applications.assertEquals(beforeCalls)
