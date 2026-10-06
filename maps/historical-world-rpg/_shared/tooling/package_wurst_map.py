@@ -8,7 +8,7 @@ from pathlib import Path
 from wurst_execution import WurstExecutionError, execute_tests, source_revision
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 17
+GENERATOR_VERSION = 18
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -465,6 +465,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     # every settlement/good pair is large enough to exhaust Grill's compiler heap
     # on the full world catalogue even though the resulting JASS is valid.
     trade_records = []
+    trade_stores = []
     goods_path = config.project / "scenario/economy/global-goods.json"
     settlement_sources = {}
     for path in sorted((config.project / "scenario/settlements").glob("*-1450.json")):
@@ -472,6 +473,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
         for row in json.loads(path.read_text(encoding="utf-8")).get("settlements", []):
             settlement_sources[row["id"]] = (region, row)
     if goods_path.is_file():
+        # Keep the existing personal hold instead of implicitly granting the
+        # first generated warehouse. Bindings are definitions, not save grants.
+        trade_records.append('\truntime.registerPersonalStore()')
+        trade_stores.append(dict(id='player_ship_hold', kind='personal', authorityId='player', warehouseService=False))
         goods_catalog = json.loads(goods_path.read_text(encoding="utf-8"))
         goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
         for settlement in settlement_runtime:
@@ -498,13 +503,17 @@ def generate(config: BuildConfig, generated: Path) -> None:
                     f'{stock},{liquidity},{buy},{1250 if good_id in production else 1000},'
                     f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0})')
             capacity = 24000 if "warehouse" in services else 120 if row.get("port") else 60
-            trade_records.append(f'\truntime.registerStore(new TradeStore("warehouse:{ws(settlement["id"])}",{capacity},1000))')
-        # Cargo belongs to authored vessels. One eligible player store is selected
-        # at campaign start; stable IDs survive map transitions and save/load.
+            service = "warehouse" in services
+            trade_stores.append(dict(id=f'warehouse:{settlement["id"]}', kind='warehouse', authorityId=settlement['id'], warehouseService=service))
+            trade_records.append(f'\truntime.registerStore(new TradeStore("warehouse:{ws(settlement["id"])}",{capacity},1000).withAccess("warehouse","{ws(settlement["id"])}",{str(service).lower()}))')
+        # Resolve vessel ownership and live location from the military authority
+        # at commit. Citizenship and a typed vessel ID do not confer ownership.
         for unit in world.get("strategicUnits", []):
             if unit.get("kind") == "ship":
                 capacity = max(1, int(unit.get("representedStrength", 10)) * 20)
-                trade_records.append(f'\truntime.registerStore(new TradeStore("cargo:{ws(unit["id"])}",{capacity},0))')
+                trade_stores.append(dict(id=f'cargo:{unit["id"]}', kind='ship', authorityId=unit['id'], warehouseService=False))
+                trade_records.append(f'\truntime.registerStore(new TradeStore("cargo:{ws(unit["id"])}",{capacity},0).withAccess("ship","{ws(unit["id"])}",false))')
+    runtime["tradeStoreDefinitions"] = trade_stores
     runtime["tradeMarketCount"] = sum(1 for line in trade_records if "runtime.registerMarketProfile(" in line)
     if settlement_runtime and runtime["tradeMarketCount"] == 0:
         raise PackagingError("generation: playable settlements would receive no authoritative trade markets")

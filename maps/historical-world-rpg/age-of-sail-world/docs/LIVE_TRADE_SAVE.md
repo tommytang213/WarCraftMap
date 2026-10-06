@@ -5,6 +5,16 @@ envelope is version 7, supporting envelopes 1–7. This follows the existing
 independently versioned diplomacy and military domains. The headless JSON trade
 contract already contains attributable lots and remains unchanged.
 
+Player selection, physical access and cargo-transfer commands are documented in
+[LIVE_TRADE_COMMANDS.md](LIVE_TRADE_COMMANDS.md). Generated access bindings reuse
+the saved military and merchant authorities; saved selections never confer access.
+Older saves that omit the now-registered personal hold receive a zero balance for
+that missing store before any saved record or legacy summary is applied.
+Summary-only generated saves retain the historical starting-settlement store
+(or the first generated store when no local store exists), including its capacity.
+Their destination does not depend on the current UI selection or the newly
+registered personal hold.
+
 `_shared/wurst/CargoProvenance.wurst` uses the FIFO rules from
 `_shared/engine/trade.py`. Each acquisition records its stable store ID,
 commodity ID, quantity, integer cost and original market ID. Sales consume only
