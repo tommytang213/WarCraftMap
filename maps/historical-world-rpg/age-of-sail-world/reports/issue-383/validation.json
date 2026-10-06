@@ -7,6 +7,7 @@
     "status": "not_completed"
   },
   "issue": 383,
+  "latestValidation": "integration-validation.json",
   "pinnedLuaCompilation": {
     "command": "grill build map/AgeOfSailWorld.w3x",
     "scope": "supplemental compiler/map assembly check in a private copy; no released artifact",
@@ -126,10 +127,9 @@
     "maps/historical-world-rpg/age-of-sail-world/wurst/WarcraftRpgRuntime.wurst": "92942df4d3f97517cc15c5274b43c2e2e1f54ad8089a059d4cb291019bebdc38"
   },
   "validationNotes": [
-    "All tested Wurst source hashes match the current worktree.",
-    "The original full-suite runs and the offline recheck hit the same two fixture timeouts; their source files are unchanged. No baseline pass/fail claim is inferred.",
-    "A supplemental filter attempt was stopped because Grill ignored the compiler filter arguments and started another full suite.",
-    "The outer worker must perform authoritative repository validation; native Warcraft launch smoke remains pending."
+    "The original and recheck evidence below predates the main-branch merge and integration repair; it is retained as historical evidence.",
+    "See integration-validation.json for the current complete pinned execution and packaging results.",
+    "The outer worker performs authoritative repository validation; native Warcraft launch smoke remains pending."
   ],
   "worktreeChanges": "uncommitted",
   "wurst": {

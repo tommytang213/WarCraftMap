@@ -292,6 +292,7 @@ class Projections implements RpgProjectionPort
 
 @test function snapshotRecordBoundariesRetainEmptyFieldsAndRejectMalformedSuffixes()
 	let runtime = new WarcraftRpgRuntime(new Effects())
+	runtime.heroes.clock = new CampaignClock(1, 100, 1, 1.)
 	runtime.heroes.register(new RpgHero("hero", "Hero", 'Hpal'))
 	runtime.heroes.recruit("hero").assertTrue()
 	runtime.journal.register(new RuntimeQuest("quest", "Quest", "regional"))
@@ -353,6 +354,8 @@ class Projections implements RpgProjectionPort
 	let runtime=new WarcraftRpgRuntime(new Effects())
 	configureGeneratedRpg(runtime)
 	let hero=runtime.heroes.heroes[0]
+	runtime.heroes.clock=configureCampaignTimeline()
+	runtime.heroes.clock.advanceTo(hero.availabilityStartDay).assertTrue()
 	runtime.heroes.recruit(hero.id).assertTrue()
 	for i=0 to runtime.inventory.definitionCount-1
 		let itemDefinition=runtime.inventory.definitions[i]

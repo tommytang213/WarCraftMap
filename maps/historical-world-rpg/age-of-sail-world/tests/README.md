@@ -26,6 +26,8 @@ pause, registration conflicts, passive output and deterministic event delivery
 after closing. `CampaignLoadTransactionTests.wurst` and `CampaignStartupTests.wurst`
 also dispatch these commands during successful/rejected loads, staged aborts,
 repeated reconstruction and startup retry. See [MODAL_MANAGEMENT.md](../docs/MODAL_MANAGEMENT.md).
+Recruitment fixtures bind an initialized campaign clock before recruiting;
+generated characters use a date within their authored recruitment window.
 
 The delayed combat callback regression uses one initialized siege with production
 combat and timer logic, so its interpreter budget goes to deadline behavior.

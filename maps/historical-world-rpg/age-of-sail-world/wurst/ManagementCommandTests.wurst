@@ -79,6 +79,7 @@ class ManagementFixture
 		installCampaignClock(clock, pauses)
 		clock.attachTimer(timerPort, 1.)
 		clock.advanceElapsed(.25).assertTrue()
+		rpg.heroes.clock = clock
 		let hero = new RpgHero("captain", "Captain", 'Hpal')
 		rpg.heroes.register(hero)
 		rpg.heroes.recruit(hero.id).assertTrue()
