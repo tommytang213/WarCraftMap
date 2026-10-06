@@ -5,12 +5,15 @@ import CampaignTimeline
 import CampaignTimelineTests
 import CampaignHandoff
 import CampaignRegistration
+import CampaignPiracyAuthority
 import CommandRouter
 import PlayableCampaignRuntime
 import PlayableCountryInteractions
 import PlayableTrade
 import CargoProvenance
 import PlayablePiracy
+import PrizeCombat
+import PhysicalInteraction
 import WarcraftRpgRuntime
 import WarcraftRpgProjections
 import WarcraftRegionalRuntime
@@ -49,7 +52,7 @@ class LoadStorage implements CampaignSaveStorage
 
 /** Only the native boundaries are replaced. Record the complete live projection,
  * not just the number of times activation was requested. */
-class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver, PiracyPresentation, CommandOutput
+class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver, PiracyPresentation, CommandOutput, InteractionActors
 	string lastPiracy = ""
 	override function show(player viewer, string message)
 		skip
@@ -68,6 +71,14 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 	real previousY = 202.
 	override function pathable(real x, real y, int movement) returns boolean
 		return true
+	override function present(int actor, player owner) returns boolean
+		return actor == 0 and owner == null
+	override function x(int actor) returns real
+		return partyX
+	override function y(int actor) returns real
+		return partyY
+	override function movement(int actor) returns int
+		return 0
 	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
 		return true
 	override function x(WarcraftRpgRuntime rpg, int index) returns real
@@ -310,11 +321,15 @@ class LoadFixture
 		campaign.registerPiracyRuntime(piracy)
 		polity = new LoadPolity(campaign)
 		piracy.setPolityAuthority(polity)
-		piracy.setActionAuthority(new CampaignPiracyActionAuthority(military))
+		rpg.interactions.actors = ports
+		rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)
+		piracy.setActionAuthority(new CampaignPiracyActionAuthority(campaign.state, military, extension.trade))
 		piracy.registerGovernmentForm("free_republic", "First Captain")
 		registerPiracy(commands, piracy, ports)
 		extension.trade.registerMarket(new RuntimeMarket("port", "grain", 100, 1000, 10, 8))
 		extension.trade.registerStore(new TradeStore("cargo:ship", 50, 500))
+		for i = 0 to 4
+			extension.trade.registerStore(new TradeStore("warehouse:prize_coast_" + i.toString(), 50, 2000))
 		extension.newCampaign("port")
 		campaign.registerExtension(extension)
 		let locations = new PartyLocationSet()
@@ -328,13 +343,20 @@ class LoadFixture
 		recordingTimer.expected = clock.captureState()
 		clock.attachTimer(recordingTimer, 1.)
 	function qualifyFounding()
-		// Exercise the prize authority rather than assigning progression totals.
-		military.registerSettlement(new SettlementRuntimeState("prize_coast", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 80., 80.))
+		// Production commands resolve completed combat and finite loot. Distinct
+		// targets respect cooldowns without advancing the load fixture's clock.
+		let combat = military.prizeCombat castTo PrizeEncounters
 		for i = 0 to 4
-			let prize = new PrizeProposal("founding-prize-" + i.toString(), "prize_coast", "coastal_target", "england", "europe", "", "release", "grain", 0, 2000, 0, "release", i * 30, false)
-			prize.authorityValidated = piracy.actionAuthority.validateTarget(prize)
-			prize.authorityValidated.assertTrue()
-			piracy.commitPrize(prize).contains("Committed:").assertTrue()
+			let target = "prize_coast_" + i.toString()
+			let action = "founding-prize-" + i.toString()
+			military.registerSettlement(new SettlementRuntimeState(target, "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 80., 80.))
+			let loot = extension.trade.findStore("warehouse:" + target)
+			combat.record(new PrizeEncounter(action, "hero", "england", target, "england", "coastal_target", "europe_west", 0, true)).assertTrue()
+			commands.dispatch(null, "/prize-preview " + action + " " + target + " - release release").assertTrue()
+			ports.lastPiracy.contains("Confirm to commit.").assertTrue()
+			commands.dispatch(null, "/prize-confirm").assertTrue()
+			ports.lastPiracy.contains("Committed:").assertTrue()
+			loot.money.assertEquals(0)
 		piracy.canFoundPolity().assertTrue()
 	function acquireTitle(string settlementId)
 		let grantor = military.settlements[military.settlementIndex(settlementId)].legalOwnerId

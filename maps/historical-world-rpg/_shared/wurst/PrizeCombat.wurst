@@ -1,0 +1,65 @@
+package PrizeCombat
+
+/** A completed boarding/raid encounter belongs to combat, never to a chat
+ * request. Scenario combat may authorize a crime without declaring a war.
+ * These short-lived observations are deliberately absent from campaign saves. */
+public class PrizeEncounter
+	string id
+	string actorId
+	string actorPolityId
+	string targetId
+	string victimPolityId
+	string targetKind
+	string mapId
+	int prisoners
+	boolean crimeAuthorized
+	boolean ready = true
+	construct(string id, string actor, string allegiance, string target, string victim, string kind, string mapId, int prisoners, boolean crimeAuthorized)
+		this.id = id
+		actorId = actor
+		actorPolityId = allegiance
+		targetId = target
+		victimPolityId = victim
+		targetKind = kind
+		this.mapId = mapId
+		this.prisoners = prisoners
+		this.crimeAuthorized = crimeAuthorized
+
+public interface PrizeCombatAuthority
+	/** Read-only observation of a still-eligible, completed encounter. */
+	function resolve(string actorId, string targetId) returns PrizeEncounter
+	/** Non-failing consumption after all participating authorities pass preflight. */
+	function consume(string encounterId, string prisonerOutcome)
+	function retire()
+
+/** Combat producers publish encounters here after resolving boarding/raiding.
+ * Merely finding a nearby enemy, attacking it or knowing its ID cannot publish
+ * one. Missing encounters fail closed, including on a freshly loaded map. */
+public class PrizeEncounters implements PrizeCombatAuthority
+	PrizeEncounter array[128] encounters
+	int count = 0
+	function record(PrizeEncounter encounter) returns boolean
+		if encounter == null or encounter.id == "" or encounter.prisoners < 0 or count >= 128
+			return false
+		for i = 0 to count - 1
+			if encounters[i].id == encounter.id
+				return false
+		encounters[count] = encounter
+		count++
+		return true
+	override function resolve(string actorId, string targetId) returns PrizeEncounter
+		for i = 0 to count - 1
+			let encounter = encounters[i]
+			if encounter.ready and encounter.actorId == actorId and encounter.targetId == targetId
+				return encounter
+		return null
+	override function consume(string encounterId, string prisonerOutcome)
+		for i = 0 to count - 1
+			if encounters[i].id == encounterId
+				encounters[i].ready = false
+				encounters[i].prisoners = 0
+	override function retire()
+		for i = 0 to count - 1
+			destroy encounters[i]
+			encounters[i] = null
+		count = 0

@@ -17,6 +17,20 @@ public class PiracyRules
 		foundingPrizes=prizes
 		bountyPerNotorietyMinor=bountyRate
 
+/** Player choices only. Facts and time are resolved by the campaign adapter. */
+public class PrizeRequest
+	string actionId
+	string targetId
+	string commissionId
+	string vesselOutcome
+	string prisonerOutcome
+	construct(string action, string target, string commission, string vessel, string prisoners)
+		actionId=action
+		targetId=target
+		commissionId=commission
+		vesselOutcome=vessel
+		prisonerOutcome=prisoners
+
 public class PrizeProposal
 	string actionId
 	string targetId
@@ -31,8 +45,14 @@ public class PrizeProposal
 	int prisoners
 	string prisonerOutcome
 	int tick
-	boolean authorityValidated
-	construct(string action, string target, string kind, string victim, string regionalId, string commission, string vessel, string good, int units, int money, int prisonerCount, string prisonerDisposition, int atTick, boolean validated)
+	string targetState=""
+	string actorId=""
+	string actorPolityId=""
+	string encounterId=""
+	string sourceStoreId=""
+	string destinationStoreId=""
+	string commissionTerms=""
+	construct(string action, string target, string kind, string victim, string regionalId, string commission, string vessel, string good, int units, int money, int prisonerCount, string prisonerDisposition, int atTick)
 		actionId=action
 		targetId=target
 		targetKind=kind
@@ -46,7 +66,10 @@ public class PrizeProposal
 		prisoners=prisonerCount
 		prisonerOutcome=prisonerDisposition
 		tick=atTick
-		authorityValidated=validated
+	/** Time may advance without changing the outcome. Every other resolved fact
+	 * must still match, including the resolved commission terms. */
+	function outcomeKey() returns string
+		return actionId+"|"+targetId+"|"+targetKind+"|"+victimPolityId+"|"+regionId+"|"+commissionId+"|"+vesselOutcome+"|"+cargoGoodId+"|"+cargoUnits.toString()+"|"+moneyMinor.toString()+"|"+prisoners.toString()+"|"+prisonerOutcome+"|"+actorId+"|"+actorPolityId+"|"+encounterId+"|"+sourceStoreId+"|"+destinationStoreId+"|"+targetState+"|"+commissionTerms
 
 public class PiracyPlayerState
 	int notoriety=0
@@ -151,7 +174,9 @@ public interface PiratePolityAuthority
 	function setRecognition(string polityId,string countryId,string status)
 
 public interface PiracyActionAuthority
-	function validateTarget(PrizeProposal proposal) returns boolean
+	function resolvePrize(player sender, PrizeRequest request) returns PrizeProposal
+	/** Must recheck its own observations before any mutation; false is atomic. */
+	function commitPrize(player sender, PrizeRequest request, PrizeProposal proposal, int reward) returns boolean
 
 public interface PiracyPresentation
 	function showPiracy(player viewer,string message)
@@ -176,7 +201,10 @@ public class PiracyRuntime
 	int array[16] havenMinimumNotoriety
 	int havenCount=0
 	PiratePolityState polity=null
-	PrizeProposal pendingPrize=null
+	private PrizeProposal pendingPrize=null
+	private PrizeRequest pendingRequest=null
+	private player pendingSender=null
+	private string pendingOutcome=""
 	PiracyRuntime stagedRestore=null
 	string lastDiagnostic=""
 	PiratePolityAuthority polityAuthority=null
@@ -186,6 +214,7 @@ public class PiracyRuntime
 	function setPolityAuthority(PiratePolityAuthority authority)
 		polityAuthority=authority
 	function setActionAuthority(PiracyActionAuthority authority)
+		retirePendingPrize()
 		actionAuthority=authority
 	function registerHaven(string id,int minimumNotoriety,string services)
 		havenIds[havenCount]=id
@@ -238,21 +267,22 @@ public class PiracyRuntime
 			result++
 		return result
 	function validate(PrizeProposal proposal) returns string
-		if not validAtom(proposal.actionId) or not validAtom(proposal.targetId) or not validAtom(proposal.victimPolityId) or not validAtom(proposal.regionId) or not validAtom(proposal.cargoGoodId)
+		if not validAtom(proposal.actionId) or not validAtom(proposal.targetId) or not validAtom(proposal.victimPolityId) or not validAtom(proposal.regionId) or (proposal.commissionId!="" and not validAtom(proposal.commissionId)) or (proposal.cargoUnits>0 and not validAtom(proposal.cargoGoodId))
 			return "Prize action contains an invalid stable ID."
 		if actionSeen(proposal.actionId)
 			return "Action already processed."
-		if not proposal.authorityValidated
-			return "War/crime authority was not validated."
 		if proposal.targetKind!="merchant_ship" and proposal.targetKind!="military_ship" and proposal.targetKind!="coastal_target"
 			return "Ineligible piracy target."
 		if proposal.targetKind=="coastal_target" and proposal.vesselOutcome!="release"
 			return "Rejected prize action: coastal targets have no vessel disposition."
 		if proposal.vesselOutcome!="release" and proposal.vesselOutcome!="capture" and proposal.vesselOutcome!="scuttle"
 			return "Rejected prize action: invalid vessel disposition."
-		if proposal.cargoUnits<0 or proposal.moneyMinor<0 or proposal.prisoners<0
+		if proposal.prisonerOutcome!="ransom" and proposal.prisonerOutcome!="release"
+			return "Rejected prize action: invalid prisoner disposition."
+		if proposal.tick<0 or proposal.cargoUnits<0 or proposal.moneyMinor<0 or proposal.prisoners<0
 			return "Rejected prize action: negative cargo, ransom, or prisoners."
-		if proposal.tick<state.lastTargetTick(proposal.targetId)+rules.repeatTargetCooldownTicks
+		let lastTick=state.lastTargetTick(proposal.targetId)
+		if lastTick>=0 and (proposal.tick<lastTick or proposal.tick-lastTick<rules.repeatTargetCooldownTicks)
 			return "Target is exhausted; anti-farming cooldown active."
 		if proposal.commissionId!=""
 			let commission=findCommission(proposal.commissionId)
@@ -261,32 +291,115 @@ public class PiracyRuntime
 			if commission.targetPolityId!=proposal.victimPolityId
 				return "Target is outside commission."
 		return ""
-	function previewPrize(PrizeProposal proposal) returns string
-		let problem=validate(proposal)
+	function rewardFor(PrizeProposal proposal) returns int
+		var reward=proposal.moneyMinor
+		if classification(proposal)=="LAWFUL PRIVATEERING"
+			let rate=findCommission(proposal.commissionId).rewardPermille
+			if rate>0 and reward>2147483647 div rate
+				return -1
+			let bonus=reward*rate div 1000
+			if reward>2147483647-bonus
+				return -1
+			reward+=bonus
+		return reward
+	function capacityProblem(PrizeProposal proposal) returns string
+		let reward=rewardFor(proposal)
+		let impact=severity(proposal)
+		if reward<0 or state.piracyWealthMinor>2147483647-reward or state.notoriety>2147483647-impact or rules.bountyPerNotorietyMinor>2147483647 div impact
+			return "Prize totals exceed supported limits."
+		if state.bountyMinor>2147483647-impact*rules.bountyPerNotorietyMinor or state.prizesTaken==2147483647 or processedCount>=128
+			return "Prize history or totals are full."
+		if state.lastTargetTick(proposal.targetId)==-1000000 and state.targetCount>=64
+			return "Prize target history is full."
+		for i=0 to regionCount-1
+			if regionIds[i]==proposal.regionId
+				if regionalPressure[i]>2147483647-impact
+					return "Regional pressure is full."
+				return ""
+		if regionCount>=32
+			return "Regional pressure history is full."
+		return ""
+	function retirePendingPrize()
+		if pendingPrize!=null
+			destroy pendingPrize
+		pendingPrize=null
+		if pendingRequest!=null
+			destroy pendingRequest
+		pendingRequest=null
+		pendingSender=null
+		pendingOutcome=""
+	function previewPrize(player sender, PrizeRequest request) returns string
+		return previewPrize(sender,request,null)
+	/** Legacy facts, when supplied, are assertions only. They confer no authority. */
+	function previewPrize(player sender, PrizeRequest request, PrizeProposal expected) returns string
+		retirePendingPrize()
+		if actionSeen(request.actionId)
+			return "Action already processed."
+		if actionAuthority==null
+			return "No eligible boarding or raid context."
+		let proposal=actionAuthority.resolvePrize(sender,request)
+		if proposal==null
+			return "No eligible boarding or raid context."
+		var problem=validate(proposal)
+		if problem==""
+			problem=capacityProblem(proposal)
+		if expected!=null and (expected.targetKind!=proposal.targetKind or expected.victimPolityId!=proposal.victimPolityId or expected.regionId!=proposal.regionId or expected.cargoGoodId!=proposal.cargoGoodId or expected.cargoUnits!=proposal.cargoUnits or expected.moneyMinor!=proposal.moneyMinor or expected.prisoners!=proposal.prisoners or expected.tick!=proposal.tick)
+			problem="Requested prize facts do not match current authority. Refresh the preview."
 		if problem!=""
+			destroy proposal
 			return problem
+		pendingPrize=proposal
+		// Retain a copy so a caller cannot edit the choices after preview.
+		pendingRequest=new PrizeRequest(request.actionId,request.targetId,request.commissionId,request.vesselOutcome,request.prisonerOutcome)
+		pendingSender=sender
+		pendingOutcome=proposal.outcomeKey()
+		return describePrize(proposal)
+	function describePrize(PrizeProposal proposal) returns string
 		let lawful=classification(proposal)=="LAWFUL PRIVATEERING"
 		let impact=severity(proposal)
-		var reward=proposal.moneyMinor
-		if lawful
-			reward+=proposal.moneyMinor*findCommission(proposal.commissionId).rewardPermille div 1000
+		let reward=rewardFor(proposal)
 		var notorietyImpact=impact
 		var bountyImpact=impact*rules.bountyPerNotorietyMinor
 		if lawful
 			notorietyImpact=IMaxBJ(1,impact div 3)
 			bountyImpact=0
-		return classification(proposal)+": cargo "+proposal.cargoUnits.toString()+", reward "+reward.toString()+", vessel "+proposal.vesselOutcome+", prisoners "+proposal.prisonerOutcome+"; known consequences: notoriety +"+notorietyImpact.toString()+", bounty +"+bountyImpact.toString()+", regional pressure +"+impact.toString()+". Confirm to commit."
-	function commitPrize(PrizeProposal proposal) returns string
-		let preview=previewPrize(proposal)
-		let problem=validate(proposal)
+		return classification(proposal)+": target "+proposal.targetId+" ("+proposal.targetKind+", "+proposal.victimPolityId+", "+proposal.regionId+"); cargo "+proposal.cargoUnits.toString()+" "+proposal.cargoGoodId+", reward "+reward.toString()+", vessel "+proposal.vesselOutcome+", prisoners "+proposal.prisoners.toString()+" "+proposal.prisonerOutcome+"; known consequences: notoriety +"+notorietyImpact.toString()+", bounty +"+bountyImpact.toString()+", regional pressure +"+impact.toString()+". Confirm to commit."
+	function commitPrize(player sender) returns string
+		if pendingPrize==null or pendingRequest==null or sender!=pendingSender
+			return "No validated prize action is awaiting confirmation."
+		let request=pendingRequest
+		let expected=pendingOutcome
+		pendingRequest=null
+		retirePendingPrize()
+		let result=commitResolvedPrize(sender,request,expected)
+		destroy request
+		return result
+	private function commitResolvedPrize(player sender, PrizeRequest request, string expected) returns string
+		if actionSeen(request.actionId)
+			return "Action already processed."
+		if actionAuthority==null
+			return "No eligible boarding or raid context. Refresh the preview."
+		let proposal=actionAuthority.resolvePrize(sender,request)
+		if proposal==null
+			return "No eligible boarding or raid context. Refresh the preview."
+		var problem=validate(proposal)
+		if problem==""
+			problem=capacityProblem(proposal)
+		if problem=="" and proposal.outcomeKey()!=expected
+			problem="Prize facts changed. Refresh the preview before confirming."
 		if problem!=""
+			destroy proposal
 			return problem
+		let preview=describePrize(proposal)
 		let lawful=classification(proposal)=="LAWFUL PRIVATEERING"
 		let impact=severity(proposal)
-		var reward=proposal.moneyMinor
+		let reward=rewardFor(proposal)
+		// All piracy checks precede the owning authorities' final read/commit.
+		if not actionAuthority.commitPrize(sender,request,proposal,reward)
+			destroy proposal
+			return "Prize context changed. Refresh the preview before confirming."
 		var notorietyImpact=impact
 		if lawful
-			reward+=proposal.moneyMinor*findCommission(proposal.commissionId).rewardPermille div 1000
 			notorietyImpact=IMaxBJ(1,impact div 3)
 		else
 			state.outlaw=true
@@ -299,7 +412,9 @@ public class PiracyRuntime
 		processedActionIds[processedCount]=proposal.actionId
 		processedPrizeRecords[processedCount]=proposal.actionId+","+proposal.targetId+","+proposal.targetKind+","+proposal.victimPolityId+","+proposal.regionId+","+proposal.commissionId+","+proposal.vesselOutcome+","+proposal.cargoGoodId+","+proposal.cargoUnits.toString()+","+proposal.moneyMinor.toString()+","+proposal.prisoners.toString()+","+proposal.prisonerOutcome+","+proposal.tick.toString()
 		processedCount++
-		return preview+" Committed: cargo seized and vessel "+proposal.vesselOutcome+"."
+		let result=preview+" Committed: cargo seized and vessel "+proposal.vesselOutcome+"."
+		destroy proposal
+		return result
 	function addPressure(string regionalId,int amount)
 		for i=0 to regionCount-1
 			if regionIds[i]==regionalId
@@ -601,6 +716,7 @@ public class PiracySnapshot
 			savedRegions[i]=runtime.regionIds[i]
 			savedPressure[i]=runtime.regionalPressure[i]
 	function applyTo(PiracyRuntime runtime)
+		runtime.retirePendingPrize()
 		runtime.state=playerState
 		runtime.commissionCount=savedCommissionCount
 		runtime.processedCount=savedActionCount
@@ -647,10 +763,24 @@ class PrizePreviewCommand implements CommandHandler
 		runtime=r
 		presentation=p
 	override function execute(player sender,string a)
-		runtime.pendingPrize=new PrizeProposal(piracyArgument(a,0),piracyArgument(a,1),piracyArgument(a,2),piracyArgument(a,3),piracyArgument(a,4),piracyOptionalId(piracyArgument(a,5)),piracyArgument(a,6),piracyArgument(a,7),S2I(piracyArgument(a,8)),S2I(piracyArgument(a,9)),S2I(piracyArgument(a,10)),piracyArgument(a,11),S2I(piracyArgument(a,12)),false)
-		if runtime.actionAuthority!=null
-			runtime.pendingPrize.authorityValidated=runtime.actionAuthority.validateTarget(runtime.pendingPrize)
-		presentation.showPiracy(sender,runtime.previewPrize(runtime.pendingPrize))
+		runtime.retirePendingPrize()
+		var count=1
+		for i=0 to StringLength(a)-1
+			if SubString(a,i,i+1)==" "
+				count++
+		if count==5
+			let choices=new PrizeRequest(piracyArgument(a,0),piracyArgument(a,1),piracyOptionalId(piracyArgument(a,2)),piracyArgument(a,3),piracyArgument(a,4))
+			presentation.showPiracy(sender,runtime.previewPrize(sender,choices))
+			destroy choices
+			return
+		if count!=13 or not runtime.validInteger(piracyArgument(a,8)) or not runtime.validInteger(piracyArgument(a,9)) or not runtime.validInteger(piracyArgument(a,10)) or not runtime.validInteger(piracyArgument(a,12))
+			presentation.showPiracy(sender,"Invalid prize request. Use target and disposition choices.")
+			return
+		let request=new PrizeRequest(piracyArgument(a,0),piracyArgument(a,1),piracyOptionalId(piracyArgument(a,5)),piracyArgument(a,6),piracyArgument(a,11))
+		let expected=new PrizeProposal(request.actionId,request.targetId,piracyArgument(a,2),piracyArgument(a,3),piracyArgument(a,4),request.commissionId,request.vesselOutcome,piracyArgument(a,7),S2I(piracyArgument(a,8)),S2I(piracyArgument(a,9)),S2I(piracyArgument(a,10)),request.prisonerOutcome,S2I(piracyArgument(a,12)))
+		presentation.showPiracy(sender,runtime.previewPrize(sender,request,expected))
+		destroy expected
+		destroy request
 
 class PrizeConfirmCommand implements CommandHandler
 	PiracyRuntime runtime
@@ -659,11 +789,7 @@ class PrizeConfirmCommand implements CommandHandler
 		runtime=r
 		presentation=p
 	override function execute(player sender,string a)
-		if runtime.pendingPrize==null
-			presentation.showPiracy(sender,"No validated prize action is awaiting confirmation.")
-		else
-			presentation.showPiracy(sender,runtime.commitPrize(runtime.pendingPrize))
-			runtime.pendingPrize=null
+		presentation.showPiracy(sender,runtime.commitPrize(sender))
 
 class HavenCommand implements CommandHandler
 	PiracyRuntime runtime
@@ -684,15 +810,14 @@ class FoundPiratePolityCommand implements CommandHandler
 		let government=piracyArgument(a,1)
 		presentation.showPiracy(sender,runtime.foundPolity(piracyArgument(a,0),government,piracyArgument(a,2),runtime.governmentTitle(government),piracyArgument(a,3),piracyArgument(a,4)))
 
-/** Registers the release-visible discovery/status entry point. Contextual ship,
- * prison, haven and settlement frames call previewPrize/commitPrize/useHaven/
- * foundPolity only after their owning systems validate the physical action. */
+/** Both commands and contextual prize views use the same resolving boundary.
+ * A preview is presentation state, never a persistent combat capability. */
 public function registerPiracy(CommandRegistry commands,PiracyRuntime runtime)
 	registerPiracy(commands,runtime,new WarcraftPiracyPresentation())
 
 public function registerPiracy(CommandRegistry commands,PiracyRuntime runtime,PiracyPresentation presentation)
 	commands.register("piracy","privateering","piracy","Open piracy and privateering actions.","Shows lawful status, notoriety, bounty, boarding/plunder, cargo seizure, ransom/prisoner, vessel capture/scuttle, commission, haven, coastal raid and free-polity interactions.",0,0,COMMAND_RELEASE,new PiracyStatusCommand(runtime,presentation))
-	commands.register("prize-preview","board,plunder,coastal-raid","prize-preview <action> <target> <kind> <victim> <region> <commission|- > <capture|scuttle|release> <good> <units> <money> <prisoners> <ransom|release> <tick>","Preview a validated prize action.","Displays whether the action is lawful privateering or piracy and bounded known consequences before commitment.",13,13,COMMAND_RELEASE,new PrizePreviewCommand(runtime,presentation))
+	commands.register("prize-preview","board,plunder,coastal-raid","prize-preview <action> <target> <commission|-> <capture|scuttle|release> <ransom|release>","Preview a validated prize action.","Displays whether the action is lawful privateering or piracy and bounded known consequences before commitment.",5,13,COMMAND_RELEASE,new PrizePreviewCommand(runtime,presentation))
 	commands.register("prize-confirm","seize-cargo","prize-confirm","Commit the previewed prize disposition.","Atomically commits cargo seizure, ransom/prisoner outcome and vessel capture, scuttle or release.",0,0,COMMAND_RELEASE,new PrizeConfirmCommand(runtime,presentation))
 	commands.register("pirate-haven","haven","pirate-haven <haven> <service> <tick>","Use a pirate-haven service.","Uses scenario-configured fence, market, repair, refit, recruit, contract or intelligence services when eligible.",3,3,COMMAND_RELEASE,new HavenCommand(runtime,presentation))
 	commands.register("found-free-polity","free-polity","found-free-polity <id> <government> <name> <capital> <territories>","Found an independent free polity.","When authoritative prerequisites hold, uses the scenario title and transfers territory, sovereignty, government, economy, diplomacy, military, taxation, technology and AI state to ordinary campaign systems.",5,5,COMMAND_RELEASE,new FoundPiratePolityCommand(runtime,presentation))

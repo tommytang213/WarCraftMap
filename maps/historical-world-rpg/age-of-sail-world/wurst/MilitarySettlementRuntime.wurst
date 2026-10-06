@@ -5,6 +5,7 @@ import CommandRouter
 import ManagementScreenPauseController
 import WarcraftRpgRuntime
 import CampaignTimeline
+import PrizeCombat
 
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
@@ -271,6 +272,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		DisplayTimedTextToPlayer(viewer, 0., 0., 60., heading + "\n" + body + "\nUse /management-close to resume the campaign.")
 
 public class MilitarySettlementRuntime
+	PrizeCombatAuthority prizeCombat = new PrizeEncounters()
 	MilitarySettlementAdapter adapter
 	MilitaryRuntimeCallbacks callbacks = null
 	real gameplaySeconds = 0.
@@ -293,6 +295,10 @@ public class MilitarySettlementRuntime
 	string activeRegionId = ""
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
+	ondestroy
+		if prizeCombat != null
+			prizeCombat.retire()
+			destroy prizeCombat
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg=runtime
 	function forceIndex(string id) returns int
@@ -912,6 +918,9 @@ public class MilitarySettlementRuntime
 		let parsed = parseSnapshot(candidate)
 		if parsed == null
 			return false
+		// Combat observations cannot survive replacement of their target records.
+		if prizeCombat != null
+			prizeCombat.retire()
 		suspendCallbacks()
 		// A freshly loaded physical map activates itself before campaign restore.
 		// Preserve that projection target while restoring the snapshot's global
