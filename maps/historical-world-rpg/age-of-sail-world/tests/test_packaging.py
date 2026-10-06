@@ -1,4 +1,4 @@
-import json, shutil, stat, sys, tempfile, unittest, zipfile
+import json, re, shutil, stat, sys, tempfile, unittest, zipfile
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -98,6 +98,19 @@ class PackagingTests(unittest.TestCase):
         self.assertGreater(source.count("runtime.registerMarketProfile("), reachable)
         self.assertEqual(reachable, source.count('runtime.registerStore(new TradeStore("warehouse:'))
         self.assertGreater(source.count("function configureGeneratedTrade"), 2)
+        goods = {row["id"]: row for row in json.loads((self.project / "scenario/economy/global-goods.json").read_text())["goods"]}
+        defaults = json.loads((self.project / "scenario/economy/playable-trade.json").read_text())["marketDefaults"]
+        records = re.findall(r'runtime.registerMarketProfile\("([^"]+)","([^"]+)",([^\n]+)\)', source)
+        self.assertEqual(source.count("runtime.registerMarketProfile("), len(records))
+        for market, good_id, arguments in records:
+            with self.subTest(market=market, good=good_id):
+                values = list(map(int, arguments.split(",")))
+                good = goods[good_id]
+                self.assertEqual(11, len(values))
+                self.assertEqual(good["basePriceMinor"], values[2])
+                self.assertEqual([good["quantityUnitsPerDisplayUnit"], good["priceElasticityPermille"],
+                                  defaults["spreadPermille"], defaults["priceFloorPermille"],
+                                  defaults["priceCeilingPermille"]], values[6:])
         self.assertNotIn('new RuntimeMarket("starting_settlement","Grain",100,10000,10,8)', source)
         self.assertIn('runtime.registerMarketProfile("london","grain"', source)
 

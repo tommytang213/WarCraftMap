@@ -34,7 +34,8 @@ class WurstExecutionTests(unittest.TestCase):
         # in its input scan. Production discovery is tested independently.
         protocol = FAKE_EXECUTION.replace('text = path.read_text()',
             'text = re.sub(r"//[^\\n]*|/\\*.*?\\*/", lambda m: " " * len(m[0]), path.read_text())')
-        self.fake.write_text('#!/usr/bin/env python3\nimport pathlib, sys\nroot=pathlib.Path.cwd()\n' + protocol)
+        self.fake.write_text('#!/usr/bin/env python3\nimport os, pathlib, sys\nroot=pathlib.Path.cwd()\n'
+                             'print("JAVA_TOOL_OPTIONS=" + os.environ.get("JAVA_TOOL_OPTIONS", ""))\n' + protocol)
         self.fake.chmod(0o755)
         allow_synthetic_compiler(self, self.fake)
 
@@ -96,6 +97,26 @@ class WurstExecutionTests(unittest.TestCase):
         self.assertEqual((2, 2), (report["discovered"], report["succeeded"]))
         execution.verify_evidence(report, (self.root / "evidence/execution.log").read_bytes(), "a" * 40)
         self.assertIn("wurst/Fixture.wurst", report["inputs"])
+
+    def test_execution_and_packaging_receive_heap_without_mutating_caller_environment(self):
+        probe = self.root / "java_environment.py"
+        probe.write_text('import os, pathlib\npathlib.Path("java-options.txt").write_text('
+                         'os.environ.get("JAVA_TOOL_OPTIONS", ""))\n')
+        for options in (None, "-Dfile.encoding=UTF-8", "-Xmx8g -Dfile.encoding=UTF-8"):
+            with self.subTest(options=options), patch.dict(os.environ):
+                if options is None:
+                    os.environ.pop("JAVA_TOOL_OPTIONS", None)
+                else:
+                    os.environ["JAVA_TOOL_OPTIONS"] = options
+                before = dict(os.environ)
+                expected = "-Xmx6g" + (" " + options if options else "")
+                self.run_suite()
+                log = (self.root / "evidence/execution.log").read_text()
+                self.assertIn("JAVA_TOOL_OPTIONS=" + expected + "\n", log)
+                # Map and campaign compilation share this subprocess boundary.
+                maps._run("heap probe", [sys.executable, str(probe)], self.root)
+                self.assertEqual(expected, (self.root / "java-options.txt").read_text())
+                self.assertEqual(before, dict(os.environ))
 
     def test_assertion_exception_absence_truncation_incomplete_and_zero_fail_closed(self):
         for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):

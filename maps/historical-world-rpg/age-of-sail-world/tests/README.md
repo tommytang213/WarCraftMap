@@ -76,6 +76,17 @@ Literal legacy fixtures cover every supported aggregate layout.
 earned merchant standing. The versioned contract and migration limitation are
 documented in [LIVE_TRADE_SAVE.md](../docs/LIVE_TRADE_SAVE.md).
 
+`TradePricingTests.wurst` covers quantity-aware commits, the 100-stock/base-10/
+75-unit exploit, partitioned and reversed cycles, currency rounding, stale UI,
+rejection atomicity, overflow and save/resume. `TradePricingVectorsTests.wurst`
+executes live quotes across stock, quantity, modifiers, units, elasticity, spread
+and price bounds. Its 71 vectors are checked against `engine/trade.py::quote()`
+and an independent rational oracle by `test_trade_pricing.py`. Intentional pricing
+contract updates can regenerate them with
+`python3 tests/test_trade_pricing.py --write-vectors`; both Python and pinned
+Wurst execution must then pass. Existing provenance fixtures retain their FIFO,
+conservation and progression checks under the corrected prices.
+
 The same gate is required by `automation/run_checks.sh`, the Wurst workflow,
 map/campaign packaging, and the RC upload verifier. See
 `reports/issue-363-execution.md` for the failure classification and retained
