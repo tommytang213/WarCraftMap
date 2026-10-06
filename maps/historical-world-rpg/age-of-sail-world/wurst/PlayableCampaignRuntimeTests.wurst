@@ -185,6 +185,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 			fixtureState+=";piracy="+piracyMigrationRuntime.migrationAuthority()
 		if schema>=6
 			fixtureState+=";clock="+(new CampaignClock(1, 100, 1, 1.)).initialState()
+		if schema>=7
+			fixtureState+=";partyLocations=v1"
 		let storage=new MemoryStorage()
 		let state=new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
 		let codec=new PlayableCampaignCodec(state.clock)
@@ -197,7 +199,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 		state.clock.captureState().assertEquals(state.clock.initialState())
 		storage.read("manual_01").assertEquals(fixture)
 		manager.save(SAVE_SLOT_MANUAL,1,"resaved").assertTrue()
-		(storage.read("manual_01").indexOf("|schema=6|slot=manual_01|")>=0).assertTrue()
+		(storage.read("manual_01").indexOf("|schema=7|slot=manual_01|")>=0).assertTrue()
 		(codec.decodeMigrateAndValidate(storage.read("manual_01"),"manual_01")!="").assertTrue()
 		let resaved = storage.read("manual_01")
 		manager.load(SAVE_SLOT_MANUAL,1).assertTrue()

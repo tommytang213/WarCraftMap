@@ -225,8 +225,8 @@ attaches their authority/projection ports. Only then does `startup()` validate t
 request against the generated origin tuple and the loaded `PHYSICAL_MAP_ID`, or
 restore the existing transfer milestone. Founded polity bridges reconstruct before
 saved country resources are applied, so registration cannot reset their treasury.
-Migration defaults are captured after registration; campaign schemas 1–5 remain
-supported through migration to schema 6; source saves are never rewritten on load.
+Migration defaults are captured after registration; campaign schemas 1–6 remain
+supported through migration to schema 7; source saves are never rewritten on load.
 
 A pending new request takes precedence over an unrelated milestone. After identity,
 authored location and party projection succeed, startup writes a codec checkpoint
@@ -271,7 +271,7 @@ commit, and saves remain deferred through reconstruction and observer delivery.
 The clock rolls back before date-sensitive domain effects, retaining its original
 timer; successful activation restarts the timer only after commit. These checkpoints
 are internal runtime state: atomic loading adds no persisted format changes, and
-supported schemas 1–6 and the original source slots remain intact.
+supported schemas 1–7 and the original source slots remain intact.
 
 ## Live campaign clock persistence
 
@@ -305,3 +305,46 @@ omitted historical time cannot be recovered. Explicit records are validated and
 preserved; schema 6 rejects missing records. The generic Python save envelope also
 advances to version 6 while preserving its already supported `world.clock` records;
 calendar-dependent migration defaults belong to the live scenario codec.
+
+## Local party position authority (campaign schema 7)
+
+`partyLocations` has its own v1 contract: stable character ID, physical map ID,
+current x/y, generated land component and last verified safe x/y. Safe manual,
+autosave and recovery capture reads the party's native position port. Loss of a
+representation retains its last committed record. Remote assignments remain RPG
+roster authority and receive no local record or duplicate representation. Field
+capacity limits apply to both capture and reconstruction.
+
+A transfer checkpoint uses `arrival|...` with the traveling members' source
+records. These identify the local party independently of remote field assignments.
+Every traveler must have a compatible source-map field assignment before it can
+be rebound to the destination; missing membership or a nonlocal traveler rejects.
+Destination reconstruction uses the existing generated boundary correspondence
+once, changes only the travelers' physical assignment and commits ordinary `v1`
+location records. Historical boundary metadata may remain in the document, but
+ordinary location reconstruction never resolves its arrival again. Failed transfer
+storage writes retain the prior active authority; rejected loads retain the prior
+location records and native projections through `CampaignLoadCheckpoint`.
+
+The reusable `PartyLocations` resolver uses generated land components from the same
+raster and playable bounds as boundary arrival and packaged WPM. The archive gate
+recomputes those components. It rejects malformed numbers, duplicates, unknown
+characters, foreign maps, empty parties and incompatible components before
+activation. A blocked native point searches within 512 world units in its connected
+component, then tries its verified last-safe point. No implicit settlement recovery
+anchor is registered: if neither succeeds the load fails without moving the party.
+Current party projections are land heroes; navigation for other movement classes
+must be introduced explicitly with matching projection support.
+
+Schemas 1–6 without this domain migrate in memory to `legacy`. The existing saved
+boundary arrival takes precedence, then the selected origin if it belongs to the
+loaded map and recorded settlement, then that exact recorded local settlement.
+That fallback undergoes the same navigation checks and becomes current coordinates
+on successful reconstruction. Legacy membership follows the former field projection
+up to its capacity; stale authored home regions on those field rows are cleared.
+Governor, reserve and recovering assignments remain abstract. Discarded movement is
+unrecoverable. Explicit carried
+location records are validated and preserved. Schema 7 rejects missing or duplicate
+location domains. The generic Python envelope advances to 7 without modifying its
+existing stable-ID coordinates; the live codec owns coordinate-less anchor migration.
+Source saves are never rewritten by migration or reconstruction.

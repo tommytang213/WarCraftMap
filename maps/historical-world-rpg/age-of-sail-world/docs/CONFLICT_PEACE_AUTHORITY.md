@@ -25,7 +25,7 @@ local garrisons; a siege still authorized by another conflict continues.
 
 ## Save compatibility
 
-The campaign envelope remains schema 6. Its existing, independently versioned
+The campaign envelope is schema 7. Its existing, independently versioned
 `diplomacy` domain uses **v2**. Military **v3** adds the gameplay clock described
 in [Settlement combat events](SETTLEMENT_COMBAT_EVENTS.md), retaining the conflict
 records introduced by **v2**:

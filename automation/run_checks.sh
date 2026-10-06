@@ -40,7 +40,17 @@ case "${WARCRAFTMAP_WURST_CHECK:-required}" in
           cd /source/maps/historical-world-rpg/_shared
           tar -cf - . | tar -C /tmp/historical-world-rpg/_shared -xf -
           chown -R wurstuser:wurstuser /tmp/historical-world-rpg
-          su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"
+          validation_status=0
+          su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh" || validation_status=$?
+          if [ "$validation_status" -ne 0 ]; then
+            # The --rm container owns this log. Include it in the worker output
+            # before removal so interpreter failures remain diagnosable.
+            execution_log=/tmp/historical-world-rpg/age-of-sail-world/_build/wurst-tests/execution.log
+            if [ -f "$execution_log" ]; then
+              cat "$execution_log" || true
+            fi
+          fi
+          exit "$validation_status"
         '
     else
       echo "ERROR: Wurst validation requires grill or Docker." >&2

@@ -36,7 +36,7 @@ receive whatever capture protection remains in authority.
 
 ## Save compatibility
 
-The campaign envelope remains schema 6. The independently versioned
+The campaign envelope is schema 7. The independently versioned
 `militarySettlements` payload advances to **v3**, adding one `k` record for elapsed
 unpaused gameplay seconds. Deadline and interval fields use the campaign clock's
 exact binary-real encoding rather than rounded decimal formatting. Saves sample

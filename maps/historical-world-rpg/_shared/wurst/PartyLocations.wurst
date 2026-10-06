@@ -1,0 +1,169 @@
+package PartyLocations
+
+import BoundaryArrival
+
+public function pendingPartyArrival(string value) returns boolean
+	return value == "arrival" or value.startsWith("arrival|")
+
+/** Stable records for the local land party. No Warcraft objects are authority. */
+public function locationField(string value, int wanted) returns string
+	var start = 0
+	var field = 0
+	for i = 0 to StringLength(value)
+		if i == StringLength(value) or SubString(value, i, i + 1) == ","
+			if field == wanted
+				return SubString(value, start, i)
+			field++
+			start = i + 1
+	return ""
+
+public function locationNumber(string value) returns boolean
+	var digits = 0
+	var dots = 0
+	if StringLength(value) > 24
+		return false
+	for i = 0 to StringLength(value) - 1
+		let c = SubString(value, i, i + 1)
+		if c == "."
+			dots++
+		else if c == "-" and i == 0
+			skip
+		else if c == "0" or c == "1" or c == "2" or c == "3" or c == "4" or c == "5" or c == "6" or c == "7" or c == "8" or c == "9"
+			digits++
+		else
+			return false
+	let number = S2R(value)
+	return digits > 0 and dots <= 1 and number > -1000000. and number < 1000000.
+
+public class PartyLocation
+	string id
+	string mapId
+	real x
+	real y
+	int component
+	real safeX
+	real safeY
+	construct(string id, string mapId, real x, real y, int component, real safeX, real safeY)
+		this.id = id
+		this.mapId = mapId
+		this.x = x
+		this.y = y
+		this.component = component
+		this.safeX = safeX
+		this.safeY = safeY
+	function encode() returns string
+		return id + "," + mapId + "," + x.toString() + "," + y.toString() + "," + component.toString() + "," + safeX.toString() + "," + safeY.toString()
+
+public class PartyLocationSet
+	PartyLocation array[2048] entries
+	int count = 0
+	function get(string id) returns PartyLocation
+		for i = 0 to count - 1
+			if entries[i].id == id
+				return entries[i]
+		return null
+	function add(PartyLocation value)
+		entries[count] = value
+		count++
+	function encode() returns string
+		var result = "v1"
+		for i = 0 to count - 1
+			result += "|" + entries[i].encode()
+		return result
+	ondestroy
+		for i = 0 to count - 1
+			destroy entries[i]
+
+public function parsePartyLocations(string value) returns PartyLocationSet
+	if value != "v1" and not value.startsWith("v1|")
+		return null
+	let result = new PartyLocationSet()
+	var start = 3
+	while start <= StringLength(value)
+		let rest = SubString(value, start, StringLength(value))
+		var length = rest.indexOf("|")
+		if length < 0
+			length = StringLength(rest)
+		let row = SubString(rest, 0, length)
+		var fields = 1
+		for i = 0 to StringLength(row) - 1
+			if SubString(row, i, i + 1) == ","
+				fields++
+		let id = locationField(row, 0)
+		let mapId = locationField(row, 1)
+		let component = locationField(row, 4)
+		var valid = fields == 7 and id != "" and mapId != "" and result.count < 2048 and result.get(id) == null and S2I(component) > 0 and S2I(component).toString() == component
+		valid = valid and row.indexOf(";") < 0 and row.indexOf("=") < 0
+		for i = 2 to 6
+			if i != 4 and not locationNumber(locationField(row, i))
+				valid = false
+		if not valid
+			destroy result
+			return null
+		result.add(new PartyLocation(id, mapId, S2R(locationField(row, 2)), S2R(locationField(row, 3)), S2I(component), S2R(locationField(row, 5)), S2R(locationField(row, 6))))
+		start += length + 1
+	return result
+
+/** Land components from the exact packaged terrain raster, clipped to playable
+ * bounds. Rows encode exclusive cell end,component pairs. Native pathing is
+ * additionally checked at activation. Geography stays generated configuration. */
+public class PartyNavigation
+	string mapId
+	real minX
+	real minY
+	int width
+	int height
+	string array[1024] rows
+	construct(string mapId, real minX, real minY, int width, int height)
+		this.mapId = mapId
+		this.minX = minX
+		this.minY = minY
+		this.width = width
+		this.height = height
+	function componentAt(real x, real y) returns int
+		if not (x >= minX and y >= minY and x < minX + width * 128. and y < minY + height * 128.)
+			return 0
+		let column = R2I((x - minX) / 128.)
+		let row = rows[R2I((y - minY) / 128.)]
+		var start = 0
+		while start < StringLength(row)
+			let rest = SubString(row, start, StringLength(row))
+			let separator = rest.indexOf(":")
+			let finish = rest.indexOf(",")
+			if separator < 0 or finish < separator
+				return 0
+			if column < S2I(SubString(rest, 0, separator))
+				return S2I(SubString(rest, separator + 1, finish))
+			start += finish + 1
+		return 0
+	function accepts(PartyLocation value) returns boolean
+		return value.mapId == mapId and value.component > 0 and componentAt(value.x, value.y) == value.component and componentAt(value.safeX, value.safeY) == value.component
+	function resolve(PartyLocation value, BoundaryPathing pathing) returns boolean
+		if pathing == null or not accepts(value)
+			return false
+		if pathing.pathable(value.x, value.y, 0)
+			return true
+		// Same recovery order as /unstuck: nearby connected, verified last-safe,
+		// then an explicitly configured connected anchor. This map has no implicit
+		// settlement anchors; if safety cannot be proven, fail without moving.
+		var nearest = 512. * 512. + 1.
+		var px = value.x
+		var py = value.y
+		for dy = -16 to 16
+			for dx = -16 to 16
+				let distance = (dx * dx + dy * dy) * 1024.
+				let x = value.x + dx * 32.
+				let y = value.y + dy * 32.
+				if distance < nearest and distance <= 512. * 512. and componentAt(x, y) == value.component and pathing.pathable(x, y, 0)
+					nearest = distance
+					px = x
+					py = y
+		if nearest <= 512. * 512.
+			value.x = px
+			value.y = py
+			return true
+		if pathing.pathable(value.safeX, value.safeY, 0)
+			value.x = value.safeX
+			value.y = value.safeY
+			return true
+		return false

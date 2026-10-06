@@ -357,7 +357,7 @@ def verify_release_archive(path: Path, config: dict) -> None:
             raise PackagingError("release inspection stage failed: RC identifier mismatch")
         if manifest.get("sourceRevision") != provenance.get("sourceRevision"):
             raise PackagingError("release inspection stage failed: source revision mismatch")
-        if manifest.get("schemaCompatibility", {}).get("supportedSaveSchemas") != [1, 2, 3, 4, 5, 6]:
+        if manifest.get("schemaCompatibility", {}).get("supportedSaveSchemas") != release_save_compatibility.compatibility_matrix()["campaign"]["supportedSources"]:
             raise PackagingError("release inspection stage failed: save-schema contract mismatch")
         payload_rows = [item for item in manifest["artifacts"] if item["kind"] != "physical-map"]
         listed = {item["archivePath"]: item for item in payload_rows}

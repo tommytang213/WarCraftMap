@@ -1,0 +1,114 @@
+{
+  "changedSourceSha256": {
+    "maps/historical-world-rpg/_shared/tooling/wurst_execution.py": "ac19e5fb83202dc25771b5dbd6974c2540dc1e2b977632807f869221d2aa1315",
+    "maps/historical-world-rpg/age-of-sail-world/docs/TOOLCHAIN.md": "34d7f62291ba9635ae6ac25d7472d4c50c491347b12b425bbda142732cf66d54",
+    "maps/historical-world-rpg/age-of-sail-world/reports/issue-389-party-locations.md": "492cf2827295f235189dce32362f932964000ba7f51d3c6ba824b128e6954a20",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_wurst_execution.py": "8db86c323cbf40953bf2c9e3a1878d3303f49cc89e6a1b87a42ffc814e80833e",
+    "maps/historical-world-rpg/age-of-sail-world/tests/wurst_execution_fixture.py": "2570bd6cef02cea824d30f22ec6cf62ad63dc7676b13a3b8bef10e0dcf076a88",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignStartupTests.wurst": "ad84612e7948d634206c3b5f3bac242f89a2a318858a290974a51fc4c46d7213"
+  },
+  "ci": {
+    "baseline": "Unchanged source passed 228/228 pinned tests and canonical map packaging with a two-CPU container limit.",
+    "checksCommand": "gh pr checks 394",
+    "exactRootCauseConfirmed": false,
+    "failedJobs": [
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37410664339/job/112098145219",
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37410672609/job/112098171459"
+    ],
+    "observedFailure": "Each failing job reported 226/228 passing tests. The campaign job first passed 228/228 on its first clean build, then failed the second build. Private transcripts were removed without exposing the failing tests.",
+    "originalFailureReproduced": false,
+    "repair": "Split the two slowest observed startup schema matrices into bounded cases, preserving all schemas and assertions. Emit the retained interpreter transcript from the shared execution gate on every failure."
+  },
+  "completedAt": "2026-10-06T05:05:05.606630+00:00",
+  "containerIsolation": "Read-only worktree mount; sources copied into container-private /tmp and built as wurstuser. No worktree ownership or permission changes. Only container-private dependencies were installed.",
+  "format": "warcraftmap_issue_389_ci_repair_v1",
+  "notRun": [
+    "two-clean-build release-candidate gate",
+    "real-client launch/gameplay"
+  ],
+  "playerQA": "not_requested",
+  "python": {
+    "automation": 70,
+    "commands": [
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests python3 -m unittest test_campaign_save test_campaign_save_manager test_autosave_scheduler test_navigation test_regional_navigation test_release_save_compatibility test_boundary_arrival test_wurst_execution test_runtime_acceptance test_new_campaign_origins test_recovery_documentation",
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests python3 -m unittest test_wurst_execution test_packaging test_campaign_packaging test_release_blocker_audit test_release_upload_verification",
+      "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s automation/tests -p 'test_*.py'"
+    ],
+    "distinctTotal": 223,
+    "packaging": 53,
+    "packagingRunTotalIncludingRepeatedHarnessChecks": 65,
+    "scope": "Python packaging uses a recording compiler and inspects materialized map/campaign payloads. The separate pinned toolchain run compiles and packages the canonical map.",
+    "status": "pass",
+    "targeted": 100
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repositoryValidation": "The outer worker performs authoritative repository validation.",
+  "sourceRevision": "08ae85f539203e4d7df29e472bedf36faf65686b",
+  "staticChecks": [
+    "canonical map source",
+    "world validation",
+    "bash -n automation/run_checks.sh",
+    "git diff --check"
+  ],
+  "status": "ready_for_repository_validation",
+  "uncompressedEvidenceSha256": {
+    "ci-campaign-failure.log.gz": "730cca492d95f2ca231d34976b68bd79a31990d66fb090c7249b29ae08d1956f",
+    "ci-repair-execution.json.gz": "1725107b272a54468a61c90e986a30be2e6fe141ae32ec5b5d9bd64fa5ff0d53",
+    "ci-repair-execution.log.gz": "06960f4b4bd7237d2b7113a2a47b93e0cffc9ad4a1eec61f26eae44de0998edc",
+    "ci-repair-pinned-packaging.log.gz": "3b240087e46efac9c1ebe33e231b0b329aae28bcf286ce089c5311dad01a1d2b",
+    "ci-repair-python-automation.log.gz": "48338415fb11be4193337c03eafe703212b7e40a2719f9e9209d16492cb9af77",
+    "ci-repair-python-packaging.log.gz": "a1e01c92d867f19b28a5fc7371c70f4f5345d088d6650b5092d5045c47d598f6",
+    "ci-repair-python-targeted.log.gz": "15d8bd4e9303506dced831a7273356f489eb2fb61c072c0a6c1c0fcc60a7aece",
+    "ci-repair-timings.log.gz": "3e424cf913d18eafe61113a995bcccfd5f1f59b74881aa5d50c666a206780028",
+    "ci-reproduction-execution.json.gz": "38ec5e09a9e2f5b63e7199e520d682229a20d995d84aab9429876807b3234151",
+    "ci-reproduction-execution.log.gz": "ad22f2846244f3108ec2da7eeebe6b9a15c2c53b1562f73a327ff51541229cb0",
+    "ci-reproduction-timings.log.gz": "ac768d7c6a340de004b0c56db6e4bad078a5df20312a9278fe4f21287f6c4238",
+    "ci-reproduction.log.gz": "a497683f647697897dd4ba190ceaa22ec993ad94c7a4118c693fe369854ac568",
+    "ci-typecheck-failure.log.gz": "548474b23569973cfec690ab9a289694a132b16cd1959a2c68acadd028734907"
+  },
+  "wurst": {
+    "command": "./tooling/package_release.sh",
+    "compilerOptionsVerified": true,
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "containerScript": "revalidation-container.sh",
+    "cpuLimit": 1,
+    "discovered": 232,
+    "execution": "One complete interpreter run; no filtered tests, retries, changed annotations in generated sources, or timeout changes.",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "packaging": "Passed dependency installation, typecheck, complete interpreter execution, canonical Lua compilation, map assembly and archive inspection; command exit status 0.",
+    "passed": 232,
+    "perTestTimeoutSeconds": 20,
+    "sourceInputsVerified": 60,
+    "suiteCounts": {
+      "BoundaryArrivalTests.wurst": 3,
+      "CampaignAutosaveSchedulerTests.wurst": 2,
+      "CampaignLoadTransactionTests.wurst": 15,
+      "CampaignSaveManagerTests.wurst": 3,
+      "CampaignStartupTests.wurst": 47,
+      "CampaignTimelineTests.wurst": 6,
+      "CharacterEquipmentTests.wurst": 9,
+      "CommandRouterTests.wurst": 3,
+      "ConflictPeaceIntegrationTests.wurst": 10,
+      "CountryDiplomacyScreenTests.wurst": 6,
+      "ManagementCommandTests.wurst": 7,
+      "ManagementScreenPauseControllerTests.wurst": 5,
+      "MapDiscoveryScreenTests.wurst": 2,
+      "MilitaryCombatEventsTests.wurst": 9,
+      "MilitarySettlementRuntimeTests.wurst": 8,
+      "NewCampaignOriginSelectionTests.wurst": 2,
+      "PartyLocationTests.wurst": 2,
+      "PlayableCampaignRuntimeTests.wurst": 11,
+      "PlayablePiracyTests.wurst": 6,
+      "PlayableTradeTests.wurst": 15,
+      "PlayerGodModeTests.wurst": 4,
+      "RecruitmentWindowTests.wurst": 10,
+      "ReligionRuntimeTests.wurst": 5,
+      "ResearchRuntimeTests.wurst": 6,
+      "RpgInteractionTests.wurst": 8,
+      "UnstuckRecoveryTests.wurst": 7,
+      "WC3CompatibilityCompileFixture.wurst": 1,
+      "WarcraftRpgRuntimeTests.wurst": 20
+    },
+    "timings": "Progress sampled every 0.5 seconds. New schema batches observed at approximately 5.5-8.5 seconds under one CPU. Diagnostic samples are not performance guarantees."
+  }
+}

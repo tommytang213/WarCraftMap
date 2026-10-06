@@ -15,6 +15,8 @@ import MilitarySettlementRuntime
 import ReligionRuntime
 import PlayablePiracy
 import ScenarioData
+import PartyLocations
+import CampaignAutosaveScheduler
 import ManagementCommandTests
 import ManagementScreenPauseController
 
@@ -65,18 +67,36 @@ class StartupPorts implements BoundaryPathing, PhysicalMapLoader, CampaignPartyP
 	real y = 0.
 	string destination = ""
 	boolean failProjection = false
+	boolean failAfterFirstMember = false
 	boolean closed = false
 	boolean arrivalAvailable = true
+	boolean blockOnePoint = false
+	real blockedX = 0.
+	real blockedY = 0.
 	int savedPlayers = 0
 	real savedX = 0.
 	real savedY = 0.
+	real array[2048] memberX
+	real array[2048] memberY
+	boolean array[2048] represented
+	real array[2048] previousX
+	real array[2048] previousY
+	boolean array[2048] previousRepresented
 	override function pathable(real x, real y, int movement) returns boolean
-		return arrivalAvailable
+		return arrivalAvailable and (not blockOnePoint or x != blockedX or y != blockedY)
 	override function beginLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			previousX[i] = memberX[i]
+			previousY[i] = memberY[i]
+			previousRepresented[i] = represented[i]
 		savedPlayers = activePlayers
 		savedX = x
 		savedY = y
 	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			memberX[i] = previousX[i]
+			memberY[i] = previousY[i]
+			represented[i] = previousRepresented[i]
 		activePlayers = savedPlayers
 		x = savedX
 		y = savedY
@@ -88,20 +108,38 @@ class StartupPorts implements BoundaryPathing, PhysicalMapLoader, CampaignPartyP
 		handoff.contains(HANDOFF_REQUEST).assertTrue()
 		destination = path
 		loads++
-	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		return represented[index]
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return memberX[index]
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return memberY[index]
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
 		if expectedClock != ""
 			clock.captureState().assertEquals(expectedClock)
 		(rpg.heroes.count > 0 and rpg.inventory.definitionCount > 0 and rpg.projections != null).assertTrue()
 		if failProjection
 			return false
-		this.x = x
-		this.y = y
-		activePlayers = rpg.heroes.strategicRosterSize()
+		this.x = locations.entries[0].x
+		this.y = locations.entries[0].y
+		for i = 0 to rpg.heroes.count - 1
+			represented[i] = false
+		for i = 0 to locations.count - 1
+			let value = locations.entries[i]
+			let index = rpg.heroes.indexOf(value.id)
+			represented[index] = true
+			memberX[index] = value.x
+			memberY[index] = value.y
+			if failAfterFirstMember
+				return false
+		activePlayers = locations.count
 		spawns++
 		rpg.reconcile("player")
 		return activePlayers > 0
 	override function clear(WarcraftRpgRuntime rpg)
 		activePlayers = 0
+		for i = 0 to rpg.heroes.count - 1
+			represented[i] = false
 	override function beginPartyLoad()
 		skip
 	override function rollbackPartyLoad()
@@ -195,12 +233,42 @@ public class StartupFixture
 		(campaign.state.rpg.heroes.count > 100 and campaign.state.militarySettlements.settlementCount > 700 and trade.marketCount > 700).assertTrue()
 		// Retain a generated 1450-eligible character alongside Leonardo, whose
 		// first-recruitment window has not opened at campaign start.
-		campaign.state.rpg.heroes.heroes[1] = campaign.state.rpg.heroes.get("hang_tuah")
-		campaign.state.rpg.heroes.count = 2
-		campaign.state.rpg.journal.count = 2
-		campaign.state.rpg.treasures.count = 1
+		let rpg = campaign.state.rpg
+		let companion = rpg.heroes.get("hang_tuah")
+		// Release discarded catalogue objects before reducing the counts. Merely
+		// hiding them leaks a full world per fixture into the shared interpreter,
+		// eventually exhausting its heap during the complete execution gate.
+		for i = 1 to rpg.heroes.count - 1
+			if rpg.heroes.heroes[i] != companion
+				destroy rpg.heroes.heroes[i]
+			rpg.heroes.heroes[i] = null
+		rpg.heroes.heroes[1] = companion
+		rpg.heroes.count = 2
+		for i = 2 to rpg.journal.count - 1
+			destroy rpg.journal.quests[i]
+			rpg.journal.quests[i] = null
+		rpg.journal.count = 2
+		for i = 1 to rpg.treasures.count - 1
+			destroy rpg.treasures.treasures[i]
+			rpg.treasures.treasures[i] = null
+		rpg.treasures.count = 1
 		let military = campaign.state.militarySettlements
 		// The first generated settlement is accompanied by its core and defense.
+		for i = 1 to military.settlementCount - 1
+			destroy military.settlements[i]
+			military.settlements[i] = null
+		for i = 2 to military.forceCount - 1
+			destroy military.forces[i]
+			military.forces[i] = null
+		for i = 1 to military.administratorCount - 1
+			destroy military.administrators[i]
+			military.administrators[i] = null
+		for i = 1 to military.traditionCount - 1
+			destroy military.traditions[i]
+			military.traditions[i] = null
+		for i = 0 to military.conflictCount - 1
+			destroy military.conflicts[i]
+			military.conflicts[i] = null
 		military.settlementCount = 1
 		military.forceCount = 2
 		military.administratorCount = 1
@@ -214,11 +282,20 @@ public class StartupFixture
 		selected[3] = "songhai_kingdom"
 		selected[4] = "ethiopian_empire"
 		selected[5] = "aq_qoyunlu"
+		for i = 1 to countries.profileCount - 1
+			destroy countries.profiles[i]
+			countries.profiles[i] = null
 		countries.polityCount = 0
 		countries.profileCount = 1
 		countries.conflictCount = 0
 		for i = 0 to 5
 			countries.registerPolity(selected[i], 1000)
+		for i = 2 to trade.marketCount - 1
+			destroy trade.markets[i]
+			trade.markets[i] = null
+		for i = 1 to trade.storeCount - 1
+			destroy trade.stores[i]
+			trade.stores[i] = null
 		trade.marketCount = 2
 		trade.storeCount = 1
 		// Keep the selected origin's location in the small fixture for transfer
@@ -231,7 +308,10 @@ public class StartupFixture
 	function start(string origin)
 		choose(origin)
 		register()
-		campaign.startup().assertTrue()
+		let started = campaign.startup()
+		if not started
+			print("Startup failed: " + campaign.diagnostic() + "; " + campaign.state.diagnostic())
+		started.assertTrue()
 
 function originLifecycle(string origin, string mapId)
 	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), mapId)
@@ -880,17 +960,318 @@ function boundaryStartupAt(real position, real expectedY)
 	source.campaign.travel.transition(route, .37, "retry").assertTrue()
 	source.ports.loads.assertEquals(2)
 
-@test function supportedTransferSchemasResolveExistingBoundaryPositionWithoutNewFields()
+// Keep each schema batch below the interpreter's per-test limit on CI. Every
+// case still executes full production registration, migration and activation.
+function transferSchemasResolveExistingBoundaryPosition(int firstSchema, int lastSchema)
 	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
 	source.start("ethiopian_empire")
 	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "fixed-time").assertTrue()
 	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
 	destination.register()
 	let valid = destination.campaign.saves.codec.decodeMigrateAndValidate(source.saves.read("major_milestone"), "major_milestone")
-	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+	for schema = firstSchema to lastSchema
 		let payload = campaignSaveEnvelope(schema, "major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "legacy", valid)
 		source.saves.writeTransactional("major_milestone", payload)
 		destination.campaign.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
 		destination.ports.x.assertEquals(-7232.)
 		destination.ports.y.assertEquals(2490.88)
 		destination.saves.read("major_milestone").assertEquals(payload)
+
+@test function legacyTransferSchemasOneAndTwoResolveGeneratedBoundary()
+	transferSchemasResolveExistingBoundaryPosition(CAMPAIGN_SAVE_SCHEMA_OLDEST, 2)
+
+@test function legacyTransferSchemasThreeAndFourResolveGeneratedBoundary()
+	transferSchemasResolveExistingBoundaryPosition(3, 4)
+
+@test function transferSchemasFiveThroughSevenResolveGeneratedBoundary()
+	transferSchemasResolveExistingBoundaryPosition(5, CAMPAIGN_SAVE_SCHEMA_CURRENT)
+
+/** Move through the recording native boundary, then let production capture read
+ * the observations. Search only generated connected land, away from the spawn. */
+function moveRecordedMember(StartupFixture f, int member, int direction)
+	let nav = f.campaign.state.partyNavigation
+	let x = f.ports.memberX[member]
+	let y = f.ports.memberY[member]
+	let component = nav.componentAt(x, y)
+	for distanceStep = 4 to 16
+		for axis = 0 to 3
+			var px = x
+			var py = y
+			if axis == 0
+				px += distanceStep * 64. * direction
+			else if axis == 1
+				py += distanceStep * 64. * direction
+			else if axis == 2
+				px -= distanceStep * 64. * direction
+			else
+				py -= distanceStep * 64. * direction
+			if component > 0 and nav.componentAt(px, py) == component
+				f.ports.memberX[member] = px
+				f.ports.memberY[member] = py
+				return
+	false.assertTrue()
+
+function deployRecordedCompanion(StartupFixture f)
+	let hero = f.campaign.state.rpg.heroes.heroes[0]
+	hero.recruited = true
+	hero.assignment = "field"
+	hero.regionId = ""
+	f.ports.represented[0] = true
+	f.ports.memberX[0] = f.ports.memberX[1]
+	f.ports.memberY[0] = f.ports.memberY[1]
+
+@test function currentPartyCoordinatesSurviveManualAutosaveAndRecoveryLoads()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	deployRecordedCompanion(f)
+	moveRecordedMember(f, 0, 1)
+	moveRecordedMember(f, 1, -1)
+	let x0 = f.ports.memberX[0]
+	let y0 = f.ports.memberY[0]
+	let x1 = f.ports.memberX[1]
+	let y1 = f.ports.memberY[1]
+	(x0 != x1 or y0 != y1).assertTrue()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "moved").assertTrue()
+	f.campaign.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, "moved").assertTrue()
+	f.campaign.saves.save(SAVE_SLOT_SESSION_START, 0, "moved").assertTrue()
+	f.campaign.saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, "moved").assertTrue()
+	int array[4] kinds
+	kinds[0] = SAVE_SLOT_MANUAL
+	kinds[1] = SAVE_SLOT_AUTOSAVE
+	kinds[2] = SAVE_SLOT_SESSION_START
+	kinds[3] = SAVE_SLOT_MAJOR_MILESTONE
+	for repeat = 0 to 1
+		for i = 0 to 3
+			moveRecordedMember(f, 0, 1)
+			moveRecordedMember(f, 1, -1)
+			var index = 0
+			if i < 2
+				index = 1
+			f.campaign.saves.load(kinds[i], index).assertTrue()
+			(RAbsBJ(f.ports.memberX[0] - x0) < .01).assertTrue()
+			(RAbsBJ(f.ports.memberY[0] - y0) < .01).assertTrue()
+			(RAbsBJ(f.ports.memberX[1] - x1) < .01).assertTrue()
+			(RAbsBJ(f.ports.memberY[1] - y1) < .01).assertTrue()
+			f.ports.activePlayers.assertEquals(2)
+
+@test function ordinaryDestinationMovementDoesNotReplayTransferArrival()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	deployRecordedCompanion(source)
+	// Explicitly local assignments must travel, while remote assignments do not.
+	source.campaign.state.rpg.heroes.heroes[1].regionId = "africa"
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "travel").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.x.assertEquals(-7232.)
+	destination.ports.y.assertEquals(2490.88)
+	destination.campaign.state.rpg.heroes.heroes[1].regionId.assertEquals("middle_east_india")
+	moveRecordedMember(destination, 0, 1)
+	moveRecordedMember(destination, 1, -1)
+	let x = destination.ports.memberX[0]
+	let y = destination.ports.memberY[0]
+	destination.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "after-movement").assertTrue()
+	// Exhausting arrival pathing later must not prevent ordinary location loads.
+	let route = destination.campaign.state.boundary("africa_to_middle_east_india")
+	route.destination.count = 0
+	destination.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	(RAbsBJ(destination.ports.memberX[0] - x) < .01).assertTrue()
+	(RAbsBJ(destination.ports.memberY[0] - y) < .01).assertTrue()
+	destination.ports.activePlayers.assertEquals(2)
+
+@test function lostRepresentationsRetainCommittedPositionsAndRemoteCompanionsStayAbstract()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	deployRecordedCompanion(f)
+	moveRecordedMember(f, 0, 1)
+	moveRecordedMember(f, 1, -1)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before-loss").assertTrue()
+	let x = f.ports.memberX[1]
+	let y = f.ports.memberY[1]
+	f.ports.represented[1] = false
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "after-loss").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	(RAbsBJ(f.ports.memberX[1] - x) < .01).assertTrue()
+	(RAbsBJ(f.ports.memberY[1] - y) < .01).assertTrue()
+	let companion = f.campaign.state.rpg.heroes.heroes[1]
+	companion.assignment = "governor"
+	companion.regionId = "east_asia"
+	f.ports.represented[1] = false
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 3, "remote").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 3).assertTrue()
+	f.ports.activePlayers.assertEquals(1)
+	f.ports.represented[1].assertFalse()
+	companion.assignment.assertEquals("governor")
+	companion.regionId.assertEquals("east_asia")
+	// A field assignment in a different physical region is also nonlocal.
+	companion.assignment = "field"
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 4, "remote-field").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 4).assertTrue()
+	f.ports.represented[1].assertFalse()
+
+@test function failedPartyReconstructionRetainsMovedMembersAuthorityAndStoredSaves()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	deployRecordedCompanion(f)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "candidate").assertTrue()
+	let stored = f.saves.read("manual_01")
+	moveRecordedMember(f, 0, 1)
+	moveRecordedMember(f, 1, -1)
+	let before = f.campaign.state.captureAuthoritativeState()
+	let authority = f.campaign.state.authorityDocument()
+	let x0 = f.ports.memberX[0]
+	let y0 = f.ports.memberY[0]
+	let x1 = f.ports.memberX[1]
+	let y1 = f.ports.memberY[1]
+	let writes = f.saves.writes
+	f.ports.failAfterFirstMember = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.ports.memberX[0].assertEquals(x0)
+	f.ports.memberY[0].assertEquals(y0)
+	f.ports.memberX[1].assertEquals(x1)
+	f.ports.memberY[1].assertEquals(y1)
+	f.campaign.state.authorityDocument().assertEquals(authority)
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.saves.read("manual_01").assertEquals(stored)
+	f.saves.writes.assertEquals(writes)
+	f.campaign.state.isSaveSafe().assertTrue()
+	f.ports.failAfterFirstMember = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+
+function coordinateLessSaveSchemasUseDeterministicFallback(int firstSchema, int lastSchema)
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	moveRecordedMember(f, 1, 1)
+	let saved = f.campaign.state.captureAuthoritativeState()
+	let marker = saved.indexOf(";partyLocations=")
+	let tail = SubString(saved, marker + 16, StringLength(saved))
+	let finish = tail.indexOf(";")
+	var legacy = SubString(saved, 0, marker)
+	if finish >= 0
+		legacy += SubString(tail, finish, StringLength(tail))
+	// Actual older deployment retained the main character's authored home
+	// region even when the chosen origin was on another physical map.
+	f.campaign.state.rpg.heroes.heroes[1].regionId = "southeast_asia"
+	legacy = replaceCampaignField(legacy, "rpg", f.campaign.state.rpg.captureState())
+	f.campaign.state.rpg.heroes.heroes[1].regionId = ""
+	for schema = firstSchema to lastSchema
+		let payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "old-save", legacy)
+		f.saves.writeTransactional("manual_01", payload)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.campaign.state.rpg.heroes.heroes[1].regionId.assertEquals("")
+		let origin = f.campaign.origins.find("england")
+		(RAbsBJ(f.ports.memberX[1] - origin.x) < .01).assertTrue()
+		(RAbsBJ(f.ports.memberY[1] - origin.y) < .01).assertTrue()
+		f.saves.read("manual_01").assertEquals(payload)
+		moveRecordedMember(f, 1, 1)
+		let x = f.ports.memberX[1]
+		let y = f.ports.memberY[1]
+		f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "upgraded").assertTrue()
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+		(RAbsBJ(f.ports.memberX[1] - x) < .01).assertTrue()
+		(RAbsBJ(f.ports.memberY[1] - y) < .01).assertTrue()
+
+@test function coordinateLessSchemasOneAndTwoUseDeterministicFallback()
+	coordinateLessSaveSchemasUseDeterministicFallback(1, 2)
+
+@test function coordinateLessSchemasThreeAndFourUseDeterministicFallback()
+	coordinateLessSaveSchemasUseDeterministicFallback(3, 4)
+
+@test function coordinateLessSchemasFiveAndSixUseDeterministicFallback()
+	coordinateLessSaveSchemasUseDeterministicFallback(5, 6)
+
+@test function malformedAndBlockedPartyLocationsRejectWithoutRelocatingAuthority()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	moveRecordedMember(f, 1, 1)
+	let before = f.campaign.state.captureAuthoritativeState()
+	let locations = parsePartyLocations(lastAuthorityValue(before, "partyLocations"))
+	let value = locations.entries[0]
+	let validRecord = value.encode()
+	let validX = value.x
+	let validY = value.y
+	string array[6] invalid
+	value.mapId = "east_asia"
+	invalid[0] = locations.encode()
+	value.mapId = "europe_west"
+	value.x = 999999.
+	invalid[1] = locations.encode()
+	value.x = validX
+	value.component += 10000
+	invalid[2] = locations.encode()
+	value.component -= 10000
+	value.id = "unknown_hero"
+	invalid[3] = locations.encode()
+	invalid[4] = "v1|" + validRecord + "|" + validRecord
+	invalid[5] = "v1" // Cannot omit the active main character.
+	for i = 0 to 5
+		let document = replaceCampaignField(before, "partyLocations", invalid[i])
+		let malformedPayload = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "malformed", document)
+		f.saves.writeTransactional("manual_01", malformedPayload)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+		f.saves.read("manual_01").assertEquals(malformedPayload)
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "valid").assertTrue()
+	let payload = f.saves.read("manual_01")
+	f.ports.arrivalAvailable = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.ports.memberX[1].assertEquals(validX)
+	f.ports.memberY[1].assertEquals(validY)
+	f.saves.read("manual_01").assertEquals(payload)
+	f.ports.arrivalAvailable = true
+	f.ports.blockOnePoint = true
+	f.ports.blockedX = validX
+	f.ports.blockedY = validY
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	let dx = f.ports.memberX[1] - validX
+	let dy = f.ports.memberY[1] - validY
+	(dx * dx + dy * dy > 0. and dx * dx + dy * dy <= 512. * 512.).assertTrue()
+	f.campaign.state.partyNavigation.componentAt(f.ports.memberX[1], f.ports.memberY[1]).assertEquals(f.campaign.state.partyNavigation.componentAt(validX, validY))
+	f.saves.read("manual_01").assertEquals(payload)
+	destroy locations
+
+@test function transferDoesNotMaterializeAbstractCompanionAssignedToDestination()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	let remote = source.campaign.state.rpg.heroes.heroes[0]
+	remote.recruited = true
+	remote.assignment = "field"
+	remote.regionId = "middle_east_india"
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "travel").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.activePlayers.assertEquals(1)
+	destination.ports.represented[0].assertFalse()
+	destination.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "local-only").assertTrue()
+	destination.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	destination.ports.activePlayers.assertEquals(1)
+	destination.ports.represented[0].assertFalse()
+	destination.campaign.state.rpg.heroes.heroes[0].assignment.assertEquals("field")
+	destination.campaign.state.rpg.heroes.heroes[0].regionId.assertEquals("middle_east_india")
+	// A checksummed arrival cannot enroll an abstract member whose saved
+	// assignment was never on the source map. Reject before changing that
+	// assignment, retaining the destination party and all source slots.
+	let before = destination.campaign.state.captureAuthoritativeState()
+	let transfer = destination.campaign.saves.codec.decodeMigrateAndValidate(source.saves.read("major_milestone"), "major_milestone")
+	let arrival = lastAuthorityValue(transfer, "partyLocations")
+	let travelers = parsePartyLocations("v1" + SubString(arrival, 7, StringLength(arrival)))
+	let local = travelers.entries[0]
+	travelers.add(new PartyLocation(remote.id, local.mapId, local.x, local.y, local.component, local.safeX, local.safeY))
+	let records = travelers.encode()
+	for attempt = 0 to 1
+		var arriving = "arrival" + SubString(records, 2, StringLength(records))
+		if attempt == 1
+			arriving = "arrival" // Missing membership cannot mean every local field row.
+		let candidate = replaceCampaignField(transfer, "partyLocations", arriving)
+		let invalid = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_02", SAVE_SLOT_MANUAL, 2, "nonlocal-traveler", candidate)
+		destination.saves.writeTransactional("manual_02", invalid).assertTrue()
+		let writes = destination.saves.writes
+		destination.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertFalse()
+		destination.campaign.state.captureAuthoritativeState().assertEquals(before)
+		destination.ports.activePlayers.assertEquals(1)
+		destination.ports.represented[0].assertFalse()
+		destination.saves.read("manual_02").assertEquals(invalid)
+		destination.saves.writes.assertEquals(writes)
+	destroy travelers

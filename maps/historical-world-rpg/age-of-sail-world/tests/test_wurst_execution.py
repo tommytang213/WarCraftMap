@@ -1,4 +1,6 @@
 import copy
+from contextlib import redirect_stderr
+import io
 import json
 import os
 from pathlib import Path
@@ -70,6 +72,23 @@ class WurstExecutionTests(unittest.TestCase):
             "boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
         }.issubset(discovered))
 
+    def test_required_suite_discovers_party_locations_and_every_migration_batch(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
+        self.assertTrue({
+            "legacyTransferSchemasOneAndTwoResolveGeneratedBoundary",
+            "legacyTransferSchemasThreeAndFourResolveGeneratedBoundary",
+            "transferSchemasFiveThroughSevenResolveGeneratedBoundary",
+            "coordinateLessSchemasOneAndTwoUseDeterministicFallback",
+            "coordinateLessSchemasThreeAndFourUseDeterministicFallback",
+            "coordinateLessSchemasFiveAndSixUseDeterministicFallback",
+            "currentPartyCoordinatesSurviveManualAutosaveAndRecoveryLoads",
+            "ordinaryDestinationMovementDoesNotReplayTransferArrival",
+            "lostRepresentationsRetainCommittedPositionsAndRemoteCompanionsStayAbstract",
+            "failedPartyReconstructionRetainsMovedMembersAuthorityAndStoredSaves",
+            "malformedAndBlockedPartyLocationsRejectWithoutRelocatingAuthority",
+            "transferDoesNotMaterializeAbstractCompanionAssignedToDestination",
+        }.issubset(discovered))
+
     def test_discovery_and_complete_results_bind_compiler_revision_and_inputs(self):
         report = self.run_suite()
         self.assertEqual(["wurst/Fixture.wurst:actual", "wurst/Fixture.wurst:second"],
@@ -79,22 +98,39 @@ class WurstExecutionTests(unittest.TestCase):
         self.assertIn("wurst/Fixture.wurst", report["inputs"])
 
     def test_assertion_exception_absence_truncation_incomplete_and_zero_fail_closed(self):
-        for mode in ("assertion", "exception", "absent", "truncated", "incomplete", "zero"):
-            with self.subTest(mode=mode), self.assertRaises(execution.WurstExecutionError):
+        for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):
+            with self.subTest(mode=mode), redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
                 self.run_suite(mode)
             report = json.loads((self.root / "evidence/results.json").read_text())
             self.assertEqual("fail", report["status"])
 
+    def test_failed_execution_emits_retained_transcript_for_disposable_ci_builds(self):
+        for mode in ("assertion", "exception", "timeout", "truncated", "incomplete"):
+            diagnostic = io.StringIO()
+            with self.subTest(mode=mode), redirect_stderr(diagnostic):
+                with self.assertRaises(execution.WurstExecutionError):
+                    self.run_suite(mode)
+            log = (self.root / "evidence/execution.log").read_text()
+            self.assertEqual(log, diagnostic.getvalue())
+            self.assertIn("actual..", diagnostic.getvalue())
+            self.assertEqual("fail", json.loads((self.root / "evidence/results.json").read_text())["status"])
+
+    def test_successful_execution_does_not_replay_transcript(self):
+        diagnostic = io.StringIO()
+        with redirect_stderr(diagnostic):
+            self.run_suite()
+        self.assertEqual("", diagnostic.getvalue())
+
     def test_missing_executable_and_empty_discovery_write_failed_evidence(self):
         for executable in (str(self.root / "missing-grill"), str(self.fake)):
-            with self.subTest(executable=executable), self.assertRaises(execution.WurstExecutionError):
+            with self.subTest(executable=executable), redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
                 execution.execute_tests(self.root, executable, self.root / "evidence", "a" * 40)
             self.assertEqual("fail", json.loads((self.root / "evidence/results.json").read_text())["status"])
             (self.root / "wurst/Fixture.wurst").write_text("package NoTests\n")
 
     def test_exit_code_and_compiler_identity_override_a_successful_transcript(self):
         for mode in ("returncode", "compiler"):
-            with self.subTest(mode=mode):
+            with self.subTest(mode=mode), redirect_stderr(io.StringIO()):
                 report = self.run_suite()
                 log = (self.root / "evidence/execution.log").read_text()
                 if mode == "returncode":
@@ -138,8 +174,8 @@ class ReleaseExecutionGateTests(unittest.TestCase):
         PackagingTests.setUp(self)
 
     def test_each_execution_failure_stops_map_and_release_artifact_creation(self):
-        for mode in ("assertion", "exception", "absent", "truncated", "incomplete", "zero"):
-            with self.subTest(mode=mode), patch.dict(os.environ, {"FAKE_WURST_RESULT": mode}):
+        for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):
+            with self.subTest(mode=mode), redirect_stderr(io.StringIO()), patch.dict(os.environ, {"FAKE_WURST_RESULT": mode}):
                 with self.assertRaisesRegex(maps.PackagingError, "Wurst execution"):
                     maps.build(self.project / "package.json", grill=str(self.fake))
                 commands = (self.project / "_build/commands.txt").read_text().splitlines()

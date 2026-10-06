@@ -123,7 +123,7 @@ def resolve(endpoint, position, movement=0, pathable=lambda x, y, movement: True
     return None if best is None else best[1:]
 
 
-def verify_packaged_navigation(endpoints, map_id, info, pathing):
+def verify_packaged_navigation(endpoints, map_id, info, pathing, party_navigation=None):
     """Re-prove the generated arrival corridors against the packaged WPM.
 
     A compiler or packaging step changing pathing must invalidate the proof,
@@ -148,3 +148,7 @@ def verify_packaged_navigation(endpoints, map_id, info, pathing):
         actual['mapId'] = map_id
         if actual != authored:
             raise ValueError(f'packaged pathing disagrees with boundary navigation: {key}')
+    if party_navigation is not None:
+        from party_locations import navigation
+        if party_navigation != navigation(width, height, cells, bounds, labels[0]):
+            raise ValueError('packaged pathing disagrees with party navigation')

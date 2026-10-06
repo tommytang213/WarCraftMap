@@ -1,0 +1,56 @@
+package PartyLocationTests
+
+import PartyLocations
+import BoundaryArrival
+
+class LocationPathing implements BoundaryPathing
+	int mode = 0
+	override function pathable(real x, real y, int movement) returns boolean
+		if mode == 0
+			return x != 320. or y != 320.
+		if mode == 1
+			return x == 64. and y == 64.
+		return false
+
+@test function partyLocationsRejectMalformedNumbersDuplicateIdsAndExtraFields()
+	(parsePartyLocations("v1|hero,map,1,2,1,1,2") != null).assertTrue()
+	(parsePartyLocations("v1|hero,map,nan,2,1,1,2") == null).assertTrue()
+	(parsePartyLocations("v1|hero,map,1junk,2,1,1,2") == null).assertTrue()
+	(parsePartyLocations("v1|hero,map,1,2,0,1,2") == null).assertTrue()
+	(parsePartyLocations("v1|hero,map,1,2,1,1,2|") == null).assertTrue()
+	(parsePartyLocations("v1|hero,map,1,2,1,1,2,extra") == null).assertTrue()
+	(parsePartyLocations("v1|hero,map,1,2,1,1,2|hero,map,4,5,1,4,5") == null).assertTrue()
+	locationNumber("Infinity").assertFalse()
+	locationNumber("9999999999999999999999999").assertFalse()
+	locationNumber("-").assertFalse()
+	locationNumber("1.2.3").assertFalse()
+	locationNumber("-123.456").assertTrue()
+
+@test function blockedPartyLocationUsesConnectedNearbyThenLastSafeOrRejects()
+	let nav = new PartyNavigation("map", 0., 0., 16, 16)
+	for row = 0 to 15
+		nav.rows[row] = "4:1,5:0,16:2,"
+	let value = new PartyLocation("hero", "map", 320., 320., 1, 64., 64.)
+	let pathing = new LocationPathing()
+	nav.resolve(value, pathing).assertTrue()
+	value.x.assertEquals(320.)
+	value.y.assertEquals(288.)
+	nav.componentAt(value.x, value.y).assertEquals(1)
+	// Block every nearby candidate, including the closer disconnected island.
+	value.x = 448.
+	value.y = 1408.
+	pathing.mode = 1
+	nav.resolve(value, pathing).assertTrue()
+	value.x.assertEquals(64.)
+	value.y.assertEquals(64.)
+	pathing.mode = 2
+	nav.resolve(value, pathing).assertFalse()
+	value.x.assertEquals(64.)
+	value.mapId = "wrong-map"
+	nav.resolve(value, pathing).assertFalse()
+	value.mapId = "map"
+	value.component = 2
+	nav.resolve(value, pathing).assertFalse()
+	value.component = 1
+	value.x = -1.
+	nav.resolve(value, pathing).assertFalse()
