@@ -728,6 +728,10 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
     if clean_first:
         clean(config)
     validate_scenario(base)
+    from integration_evidence import source_identity
+    from wurst_execution import source_revision
+    revision = source_revision(config.project, revision)
+    identity = source_identity(config.project, revision)
     world = validate_campaign(config)
     # The selector intentionally has a reduced graph. Execute the complete
     # generated scenario suite before producing any physical-map artifacts.
@@ -751,6 +755,8 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         # Tests already executed against the full scenario above. Keep test-only
         # imports of generated RPG records out of the minimal selector graph.
         compile_root = _assemble(map_config, map_root, generated, physical.terrain_ids, include_tests=False)
+        (compile_root / "map" / map_config.source_map.name / "runtime/build-identity.json").write_text(
+            json.dumps(identity, sort_keys=True) + "\n")
         if physical.bootstrap:
             # Compile a separate, bounded dependency graph for the campaign
             # chapter. Regional Bootstrap and ScenarioData packages are not
@@ -778,6 +784,8 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         built.append((physical, destination))
     _write_campaign(config.output, config, built)
     inspect_campaign(config, config.output)
+    if source_identity(config.project, revision) != identity:
+        raise PackagingError("authoritative sources changed during campaign build")
     print(f"campaign archive: {config.output}")
     return config.output
 

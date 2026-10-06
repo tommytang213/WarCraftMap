@@ -112,8 +112,20 @@ not execute physical-map transitions or native Warcraft saves:
 python3 tooling/release_blocker_audit.py
 ```
 
-Use `--write` only after resolving every reported campaign blocker. The command
-cannot close the gate through an allowlist or severity downgrade.
+Without execution and artifact inputs this command returns exit code 1, even
+when static readiness and save fixtures pass. Use `--write` to refresh the
+checked-in blocked snapshot; this cannot close the gate through an allowlist
+or severity downgrade. To evaluate a build, supply `--execution-dir`,
+`--campaign` and `--source-revision` as documented in `docs/TOOLCHAIN.md`.
+
+The execution runner traces production registration/adapter entries from
+`scenario/runtime-execution.json` inside passing tests. Acceptance verifies the
+transcript, pinned compiler, source revision and content hashes. Every required
+system must have complete entry coverage and exact built W3N/W3X verification
+before a player candidate can be published. Synthetic transcripts and marker
+fixtures in the Python regression suite test rejection and aggregation only;
+they are never release evidence. Native-client execution remains a separate
+explicit status.
 
 Native Warcraft save/load uses `python3 tooling/run_native_save_regression.py`.
 The default run executes the deterministic reconstruction oracle and reports a

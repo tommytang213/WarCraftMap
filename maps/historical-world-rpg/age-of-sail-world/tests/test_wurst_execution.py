@@ -187,6 +187,20 @@ class WurstExecutionTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(execution.WurstExecutionError):
                 execution.verify_evidence(report, log, "a" * 40)
 
+    def test_unexecuted_or_malformed_json_is_rejected_without_attribute_errors(self):
+        original, log = passing_evidence()
+        variants = ["pass", None, [], {}, {**original, "executionStatus": "not_run"}]
+        missing = copy.deepcopy(original)
+        del missing["executionStatus"]
+        variants.append(missing)
+        for key, values in (("compiler", ("pass", None, [])),
+                            ("expected", ("fixture", ["fixture"], [{"id": [], "line": 2}])),
+                            ("inputs", ("sha256", [], {"fixture": []}))):
+            variants.extend({**original, key: value} for value in values)
+        for report in variants:
+            with self.subTest(report=report), self.assertRaises(execution.WurstExecutionError):
+                execution.verify_evidence(report, log, "a" * 40)
+
 
 class ReleaseExecutionGateTests(unittest.TestCase):
     def setUp(self):
