@@ -18,6 +18,7 @@ import MilitarySettlementRuntime
 import ReligionRuntime
 import PlayablePiracy
 import PhysicalInteraction
+import PartyLocations
 
 /** Physical identity is distinct from map tracking and remote command view.
  * Loads and transitions cannot authorize interactions while state is staged. */
@@ -47,7 +48,7 @@ public interface CampaignRuntimeExtension
 
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 /** These values mirror the release-save manifest and are checked by the release gate. */
-public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 6
+public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 7
 public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
@@ -147,13 +148,27 @@ public function replaceCampaignField(string document, string key, string value) 
 		return SubString(document, 0, fieldStart) + marker + value
 	return SubString(document, 0, fieldStart) + marker + value + SubString(tail, finish, StringLength(tail))
 
+function withoutPartyLocations(string document) returns string
+	let marker = ";partyLocations="
+	let start = document.indexOf(marker)
+	if start < 0
+		return document
+	let tail = SubString(document, start + StringLength(marker), StringLength(document))
+	let finish = tail.indexOf(";")
+	if finish < 0
+		return SubString(document, 0, start)
+	return SubString(document, 0, start) + SubString(tail, finish, StringLength(tail))
+
 public interface CampaignPartyProjection
 	/** Retain the previous objects until commit. Rollback must not respawn them
 	 * through the projection operation that just reported failure. */
 	function beginLoad(WarcraftRpgRuntime rpg)
 	function rollbackLoad(WarcraftRpgRuntime rpg)
 	function commitLoad(WarcraftRpgRuntime rpg)
-	function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+	function present(WarcraftRpgRuntime rpg, int index) returns boolean
+	function x(WarcraftRpgRuntime rpg, int index) returns real
+	function y(WarcraftRpgRuntime rpg, int index) returns real
+	function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
 	function clear(WarcraftRpgRuntime rpg)
 
 public class WarcraftBoundaryPathing implements BoundaryPathing
@@ -187,14 +202,27 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
 			if previous[i] != null
 				compatRemoveUnit(previous[i])
 			previous[i] = null
-	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
-		rpg.reconstruct(Player(0), x, y, "player")
-		var expected = 0
-		for i = 0 to rpg.heroes.count - 1
-			let hero = rpg.heroes.heroes[i]
-			if hero.recruited and hero.assignment == "field" and not hero.incapacitated
-				expected++
-		return expected > 0 and rpg.heroes.activeCount() == IMinBJ(expected, rpg.heroes.activeLimit)
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		let target = rpg.heroes.projected[index]
+		return target != null and GetUnitTypeId(target) != 0
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return GetUnitX(rpg.heroes.projected[index])
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return GetUnitY(rpg.heroes.projected[index])
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
+		rpg.heroes.loseRuntimeObjects()
+		for i = 0 to locations.count - 1
+			let value = locations.entries[i]
+			let index = rpg.heroes.indexOf(value.id)
+			let target = compatCreateUnit(Player(0), rpg.heroes.heroes[index].unitTypeId, value.x, value.y, 0.)
+			rpg.heroes.projected[index] = target
+			if not present(rpg, index)
+				return false
+			// CreateUnit can nudge colliding spawns. These coordinates have already
+			// passed topology/native validation, so restore the recorded point.
+			compatSetUnitCoordinates(target, value.x, value.y)
+		rpg.reconcile("player")
+		return locations.count > 0 and rpg.heroes.activeCount() == locations.count
 	override function clear(WarcraftRpgRuntime rpg)
 		rpg.heroes.loseRuntimeObjects()
 
@@ -210,6 +238,8 @@ public class PlayableCampaignState implements CampaignStatePort
 	boolean loading = false
 	CampaignLoadCheckpoint checkpoint = null
 	CampaignPartyProjection party = null
+	PartyNavigation partyNavigation = null
+	string committedLocations = "v1"
 	PlayerCampaignIdentity identity = null
 	string loadedPhysicalMap = ""
 	OriginCatalog origins = null
@@ -293,7 +323,9 @@ public class PlayableCampaignState implements CampaignStatePort
 	function captureDomains(string document, boolean includeIdentity) returns string
 		if clock.advancing
 			return ""
-		var result = document
+		// Emit this domain in a canonical position even when activation retained
+		// it before the lazily captured country/RPG domains.
+		var result = withoutPartyLocations(document)
 		if includeIdentity and identity != null and identity.hasOrigin()
 			result = replaceCampaignField(result, "players", "origin:" + identity.originId() + ",allegiance:" + identity.allegianceId() + ",settlement:" + identity.settlementId())
 		if countries != null
@@ -308,7 +340,58 @@ public class PlayableCampaignState implements CampaignStatePort
 			result += ";piracy=" + piracy.captureAuthority()
 		if extension != null
 			result += ";trade=" + extension.capture()
+		var locations = "v1"
+		// A source map cannot sample coordinates for the destination checkpoint.
+		if pendingPartyArrival(lastAuthorityValue(document, "partyLocations")) and lastAuthorityValue(document, "map") != loadedPhysicalMap
+			locations = lastAuthorityValue(document, "partyLocations")
+		else if party != null and rpg != null
+			locations = capturePartyLocations(document)
+			if locations == ""
+				return ""
+		result = replaceCampaignField(result, "partyLocations", locations)
 		return replaceCampaignField(result, "clock", clock.captureState())
+	function localHero(RpgHero hero, string regionId) returns boolean
+		return fieldHeroAt(hero, loadedPhysicalMap, regionId)
+	function fieldHeroAt(RpgHero hero, string mapId, string regionId) returns boolean
+		return hero.recruited and hero.assignment == "field" and not hero.incapacitated and (hero.regionId == "" or hero.regionId == mapId or hero.regionId == regionId)
+	function capturePartyLocations(string document) returns string
+		let previous = parsePartyLocations(committedLocations)
+		let captured = new PartyLocationSet()
+		var valid = previous != null and partyNavigation != null and arrivalPathing != null
+		for i = 0 to rpg.heroes.count - 1
+			let hero = rpg.heroes.heroes[i]
+			if localHero(hero, lastAuthorityValue(document, "region"))
+				PartyLocation old = null
+				if previous != null
+					old = previous.get(hero.id)
+				if party.present(rpg, i) and partyNavigation != null and arrivalPathing != null
+					let x = party.x(rpg, i)
+					let y = party.y(rpg, i)
+					let component = partyNavigation.componentAt(x, y)
+					var safeX = x
+					var safeY = y
+					if not arrivalPathing.pathable(x, y, 0)
+						if old == null or old.mapId != loadedPhysicalMap or old.component != component
+							valid = false
+						else
+							safeX = old.safeX
+							safeY = old.safeY
+					let value = new PartyLocation(hero.id, loadedPhysicalMap, x, y, component, safeX, safeY)
+					valid = partyNavigation.accepts(value) and valid
+					captured.add(value)
+				else if old != null
+					// Representation loss cannot erase the last committed location.
+					captured.add(new PartyLocation(old.id, old.mapId, old.x, old.y, old.component, old.safeX, old.safeY))
+		var result = ""
+		if valid and captured.count > 0 and captured.count <= rpg.heroes.activeLimit
+			result = captured.encode()
+			committedLocations = result
+		else
+			lastDiagnostic = "local party positions could not be captured safely"
+		if previous != null
+			destroy previous
+		destroy captured
+		return result
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if loading
 			lastDiagnostic = "campaign reconstruction is already in progress"
@@ -317,8 +400,37 @@ public class PlayableCampaignState implements CampaignStatePort
 		if lastAuthorityValue(candidate, "boundary") == "" and (lastAuthorityValue(candidate, "transition") != "" or lastAuthorityValue(candidate, "arrival") != "")
 			lastDiagnostic = "saved transfer is missing its boundary"
 			return false
-		if lastAuthorityValue(candidate, "boundary") != "" and resolveTransfer(candidate) == null
+		let locations = lastAuthorityValue(candidate, "partyLocations")
+		if party != null and locations == "arrival"
+			lastDiagnostic = "pending arrival is missing its traveling party"
 			return false
+		if pendingPartyArrival(locations) and lastAuthorityValue(candidate, "boundary") == ""
+			lastDiagnostic = "pending arrival has no boundary"
+			return false
+		if (pendingPartyArrival(locations) or locations == "legacy") and lastAuthorityValue(candidate, "boundary") != "" and resolveTransfer(candidate) == null
+			return false
+		if locations != "arrival" and locations != "legacy"
+			var encoded = locations
+			if pendingPartyArrival(locations)
+				encoded = "v1" + SubString(locations, 7, StringLength(locations))
+			let parsed = parsePartyLocations(encoded)
+			if parsed == null
+				lastDiagnostic = "invalid party location records"
+				return false
+			var valid = true
+			for i = 0 to parsed.count - 1
+				let value = parsed.entries[i]
+				if rpg == null or rpg.heroes.get(value.id) == null
+					valid = false
+				else if pendingPartyArrival(locations)
+					if value.mapId != boundary(lastAuthorityValue(candidate, "boundary")).sourceMapId
+						valid = false
+				else if partyNavigation == null or not partyNavigation.accepts(value) or value.mapId != loadedPhysicalMap
+					valid = false
+			destroy parsed
+			if not valid
+				lastDiagnostic = "saved party location has unknown identity, map or navigation component"
+				return false
 		if not clock.validateState(lastAuthorityValue(candidate, "clock"))
 			lastDiagnostic = clock.diagnostic()
 			return false
@@ -462,20 +574,88 @@ public class PlayableCampaignState implements CampaignStatePort
 	function projectParty(string candidate) returns boolean
 		if rpg == null or militarySettlements == null or party == null
 			return false
-		// Stable boundary records and saved correspondence, never city objects,
-		// determine transferred placement. Origin startup remains authored below.
-		if lastAuthorityValue(candidate, "boundary") != ""
-			let route = resolveTransfer(candidate)
-			return route != null and party.project(rpg, route.destination.x, route.destination.y)
-		if origins != null
-			let origin = origins.find(playerAuthorityValue(candidate, "origin"))
-			if origin != null and origin.physicalMapId == loadedPhysicalMap and origin.settlementId == playerAuthorityValue(candidate, "settlement")
-				return party.project(rpg, origin.x, origin.y)
-		let found = militarySettlements.settlementIndex(playerAuthorityValue(candidate, "settlement"))
-		if found < 0
+		let saved = lastAuthorityValue(candidate, "partyLocations")
+		var locations = parsePartyLocations(saved)
+		if saved == "" or saved == "legacy" or pendingPartyArrival(saved)
+			// Only a new campaign, migrated coordinate-less save or pending
+			// transfer may use an anchor. Ordinary movement never replays it.
+			var x = 0.
+			var y = 0.
+			var sourceMapId = ""
+			if lastAuthorityValue(candidate, "boundary") != ""
+				let route = resolveTransfer(candidate)
+				if route == null
+					return false
+				x = route.destination.x
+				y = route.destination.y
+				sourceMapId = route.sourceMapId
+			else
+				OriginDefinition origin = null
+				if origins != null
+					origin = origins.find(playerAuthorityValue(candidate, "origin"))
+				if origin != null and origin.physicalMapId == loadedPhysicalMap and origin.settlementId == playerAuthorityValue(candidate, "settlement")
+					x = origin.x
+					y = origin.y
+				else
+					let found = militarySettlements.settlementIndex(playerAuthorityValue(candidate, "settlement"))
+					if found < 0 or militarySettlements.settlements[found].regionId != loadedPhysicalMap
+						return false
+					x = militarySettlements.settlements[found].x
+					y = militarySettlements.settlements[found].y
+			if partyNavigation == null
+				return false
+			locations = new PartyLocationSet()
+			PartyLocationSet travelers = null
+			if saved.startsWith("arrival|")
+				travelers = parsePartyLocations("v1" + SubString(saved, 7, StringLength(saved)))
+				if travelers == null
+					destroy locations
+					return false
+				// Check the restored source assignments before rebinding travelers.
+				// An arrival record cannot enroll an abstract remote field member.
+				for i = 0 to travelers.count - 1
+					let value = travelers.entries[i]
+					let hero = rpg.heroes.get(value.id)
+					if value.mapId != sourceMapId or hero == null or not fieldHeroAt(hero, sourceMapId, logicalRegionForPhysicalMap(sourceMapId))
+						lastDiagnostic = "pending arrival contains a nonlocal traveler"
+						destroy travelers
+						destroy locations
+						return false
+			for i = 0 to rpg.heroes.count - 1
+				let hero = rpg.heroes.heroes[i]
+				// Coordinate-less saves used reconstructField: every eligible field
+				// member (up to capacity) was local, regardless of the authored home
+				// region left in its RPG row. Preserve that deterministic legacy
+				// membership; governor/reserve/recovering assignments stay abstract.
+				if saved == "legacy" and hero.recruited and hero.assignment == "field" and not hero.incapacitated and locations.count < rpg.heroes.activeLimit
+					hero.regionId = ""
+				if travelers != null and travelers.get(hero.id) != null and hero.regionId != ""
+					hero.regionId = loadedPhysicalMap
+				if localHero(hero, lastAuthorityValue(candidate, "region")) and locations.count < rpg.heroes.activeLimit
+					if travelers == null or travelers.get(hero.id) != null
+						locations.add(new PartyLocation(hero.id, loadedPhysicalMap, x, y, partyNavigation.componentAt(x, y), x, y))
+			if travelers != null
+				let travelersValid = travelers.count == locations.count
+				destroy travelers
+				if not travelersValid
+					destroy locations
+					return false
+		if locations == null
 			return false
-		let settlement = militarySettlements.settlements[found]
-		return party.project(rpg, settlement.x, settlement.y)
+		var valid = locations.count > 0 and locations.count <= rpg.heroes.activeLimit and partyNavigation != null
+		for i = 0 to locations.count - 1
+			let value = locations.entries[i]
+			let hero = rpg.heroes.get(value.id)
+			if hero == null or not localHero(hero, lastAuthorityValue(candidate, "region")) or partyNavigation == null or not partyNavigation.resolve(value, arrivalPathing)
+				valid = false
+		if valid
+			valid = party.project(rpg, locations)
+		if valid
+			committedLocations = locations.encode()
+		else
+			lastDiagnostic = "local party location or reconstruction is unavailable"
+		destroy locations
+		return valid
 	override function activateAuthoritativeState(string candidate)
 		if checkpoint == null or staged != candidate
 			return
@@ -494,6 +674,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			authority = withoutCountryAuthority(staged)
 		else
 			authority = staged
+		if party != null
+			authority = replaceCampaignField(authority, "partyLocations", committedLocations)
 		staged = ""
 		clock.reconstructTimer()
 		loading = false
@@ -514,7 +696,9 @@ class CampaignLoadCheckpoint
 	int nextOffer = 1
 	PiracySnapshot piracyState = null
 	PlayerCampaignIdentity identityState = null
+	string partyLocations
 	construct(PlayableCampaignState state)
+		partyLocations = state.committedLocations
 		clockState = state.clock.captureState()
 		if state.rpg != null
 			rpgState = state.rpg.captureState()
@@ -533,6 +717,7 @@ class CampaignLoadCheckpoint
 			identityState = new PlayerCampaignIdentity()
 			identityState.restore(i.originId(), i.allegianceId(), i.physicalMapId(), i.regionalInstanceId(), i.settlementId())
 	function restore(PlayableCampaignState state) returns boolean
+		state.committedLocations = partyLocations
 		// Restore time before date-sensitive domain effects, retaining the timer.
 		var restored = state.clock.restoreState(clockState)
 		// Do not short-circuit: every domain must roll back even if one reports failure.
@@ -589,12 +774,30 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			lastDiagnostic = "save has missing, duplicate or invalid campaign clock authority"
 			return false
 		return true
+	function validateLocations(string document) returns boolean
+		let marker = ";partyLocations="
+		let first = document.indexOf(marker)
+		if first < 0 or SubString(document, first + StringLength(marker), StringLength(document)).indexOf(marker) >= 0
+			lastDiagnostic = "save has missing or duplicate party location authority"
+			return false
+		let value = lastAuthorityValue(document, "partyLocations")
+		if value == "legacy" or value == "arrival"
+			return true
+		var encoded = value
+		if pendingPartyArrival(value)
+			encoded = "v1" + SubString(value, 7, StringLength(value))
+		let parsed = parsePartyLocations(encoded)
+		if parsed == null
+			lastDiagnostic = "save has invalid party location authority"
+			return false
+		destroy parsed
+		return true
 	function configureMigrationDefaults(MilitarySettlementRuntime military, ReligionRuntime religion, PiracyRuntime piracy)
 		initialMilitary = military.snapshot()
 		initialReligion = religion.captureState()
 		initialPiracy = piracy.migrationAuthority()
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
-		if not validateClock(authoritativeState)
+		if not validateClock(authoritativeState) or not validateLocations(authoritativeState)
 			return ""
 		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, authoritativeState)
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
@@ -656,11 +859,16 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// Preserve any explicitly carried clock record, validating it below.
 		if sourceSchema < 6 and decoded.indexOf(";clock=") < 0
 			decoded += ";clock=" + initialClock
+		// Schema 7 separates current coordinates from unconsumed arrival intent.
+		// Older saves cannot recover discarded movement: use their old anchor
+		// exactly once, then capture stable member positions after reconstruction.
+		if sourceSchema < 7 and decoded.indexOf(";partyLocations=") < 0
+			decoded += ";partyLocations=legacy"
 		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
 		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
 			lastDiagnostic = "save is missing authority required by its schema"
 			return ""
-		if not validateClock(decoded)
+		if not validateClock(decoded) or not validateLocations(decoded)
 			return ""
 		lastDiagnostic = ""
 		return decoded
@@ -733,8 +941,15 @@ public class CampaignTravelRuntime
 		if not boundary.destination.resolve(arrival, 0, null)
 			lastDiagnostic = "no connected party arrival within boundary tolerance"
 			return false
+		var transferLocations = "arrival"
+		if state.party != null and state.rpg != null
+			let captured = state.capturePartyLocations(previous)
+			if captured == ""
+				lastDiagnostic = state.lastDiagnostic
+				return false
+			transferLocations += SubString(captured, 2, StringLength(captured))
 		state.beginTransition()
-		state.replaceAuthority(withoutTravelAuthority(previous) + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";boundary=" + boundary.id + ";position=" + arrival.toString() + ";transition=" + boundary.id + ";arrival=" + arrival.toString())
+		state.replaceAuthority(replaceCampaignField(withoutTravelAuthority(previous), "partyLocations", transferLocations) + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";boundary=" + boundary.id + ";position=" + arrival.toString() + ";transition=" + boundary.id + ";arrival=" + arrival.toString())
 		state.finishTransition()
 		if not saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
 			state.replaceAuthority(previous)

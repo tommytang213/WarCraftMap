@@ -35,7 +35,7 @@ python3 ../_shared/tooling/run_wurst_tests.py package.json
 
 `PlayableTradeTests.wurst` exercises store/commodity/origin FIFO provenance,
 uncosted cargo, split transfers and sales, integer rounding, transaction rejection
-and replay, and the production trade serializer inside campaign envelopes 1–6.
+and replay, and the production trade serializer inside campaign envelopes 1–7.
 Literal legacy fixtures cover every supported aggregate layout.
 `CampaignLoadTransactionTests.wurst` checks rollback with populated lots and
 earned merchant standing. The versioned contract and migration limitation are
@@ -179,7 +179,7 @@ cursors, changed generated schedules and timer reconstruction. `CampaignStartupT
 also advances the generated production clock through all slot types and independently
 constructed destination/return clocks, asserting time before party reconstruction
 and timer activation. `PlayableCampaignRuntimeTests` migrates and repeatedly resaves
-every supported live schema (1–6). These are interpreter lifecycle checks, not native
+every supported live schema (1–7). These are interpreter lifecycle checks, not native
 client launch evidence; release status remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
 
@@ -195,9 +195,9 @@ windows by stable ID with generated Wurst and JSON, and rejects malformed dates,
 reversed windows and invalid identities at generation time.
 
 Recruitment windows are generated definition data, not new save fields. Campaign
-schema 6 and RPG schema 2 remain unchanged, and ownership carried by older campaign
+schema 7 carries positions separately; RPG schema 2 remains unchanged, and ownership carried by older campaign
 envelopes still restores without a date eligibility check. The legacy empty `rpg=v1`
-domain initializes an eligible starting companion. Generation provenance advances to version 16.
+domain initializes an eligible starting companion. Generation provenance advances to version 17.
 The shared window predicate gates first recruitment only; existing ownership,
 assignments and progression survive the closing date.
 
@@ -212,3 +212,13 @@ recording port. Numerical coordinate comparisons allow 0.01 world units for
 Warcraft float rounding, separate from the declared navigation snap tolerance.
 `test_boundary_arrival.py` checks generated arrivals against materialized MPQ
 terrain/pathing on every physical map and rejects tampered packaged pathing.
+
+Party-location startup regressions move multiple members through recording native
+boundaries, then execute production manual, autosave and recovery save/load. They
+also cover movement after arrival, repeated reconstruction, lost representations,
+abstract companions, all coordinate-less legacy schemas, malformed or blocked
+locations, and partial projection failure with authority and storage rollback.
+Malformed arrivals cannot enroll remote field companions or omit traveler IDs.
+`PartyLocationTests.wurst` checks connected nearby and last-safe recovery without
+crossing disconnected land. Packaging compares the full party navigation raster
+with each physical map's playable bounds and archived pathing.

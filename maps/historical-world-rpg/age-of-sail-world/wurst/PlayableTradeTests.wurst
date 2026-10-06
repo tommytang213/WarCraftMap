@@ -335,7 +335,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(4)
 
 function tradeCampaignState(string tradeState,CampaignClock clock) returns string
-	return "v2;map=europe_west;region=europe;world=instance:west;players=origin:test,allegiance:test,settlement:port;quests=;discovery=port;orders=;trade="+tradeState+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
+	return "v2;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:test,allegiance:test,settlement:port;quests=;discovery=port;orders=;trade="+tradeState+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
 
 @test function populatedLotsRoundTripThroughProductionTradeAndCampaignCodec()
 	let r=lotRuntime()

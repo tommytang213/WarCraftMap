@@ -210,6 +210,9 @@ public class HeroRoster
 		if projected[i] == null or GetUnitTypeId(projected[i]) == 0
 			projected[i] = compatCreateUnit(owner, heroes[i].unitTypeId, x, y, 0.)
 		heroes[i].assignment = "field"
+		// Deployment is local; a previous remote assignment must not make the
+		// newly created representation appear to belong to its old region.
+		heroes[i].regionId = ""
 		return true
 	function assignRemote(string id, string assignment, string regionId) returns boolean
 		let i = indexOf(id)
@@ -679,6 +682,7 @@ public class WarcraftRpgRuntime
 		if main < 0
 			return false
 		heroes.heroes[main].assignment="field"
+		heroes.heroes[main].regionId=""
 		return true
 	function startNewCampaign(player owner, real x, real y) returns boolean
 		if not prepareNewCampaign()

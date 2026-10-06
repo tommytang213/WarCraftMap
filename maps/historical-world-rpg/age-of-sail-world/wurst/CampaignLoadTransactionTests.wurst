@@ -16,6 +16,8 @@ import WarcraftRpgProjections
 import WarcraftRegionalRuntime
 import MilitarySettlementRuntime
 import ReligionRuntime
+import PartyLocations
+import BoundaryArrival
 
 class LoadStorage implements CampaignSaveStorage
 	string array[16] keys
@@ -45,7 +47,7 @@ class LoadStorage implements CampaignSaveStorage
 
 /** Only the native boundaries are replaced. Record the complete live projection,
  * not just the number of times activation was requested. */
-class LoadPorts implements CampaignPartyProjection, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver
+class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMapLoader, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, CampaignLoadObserver
 	CampaignSaveManager manager = null
 	boolean failParty = false
 	boolean probe = false
@@ -53,6 +55,18 @@ class LoadPorts implements CampaignPartyProjection, PhysicalMapLoader, RpgProjec
 	int partyCalls = 0
 	string partyState = ""
 	string previousParty = ""
+	real partyX = 101.
+	real partyY = 202.
+	real previousX = 101.
+	real previousY = 202.
+	override function pathable(real x, real y, int movement) returns boolean
+		return true
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		return true
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return partyX
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return partyY
 	string equipment = ""
 	string guidance = ""
 	string knowledge = ""
@@ -101,14 +115,20 @@ class LoadPorts implements CampaignPartyProjection, PhysicalMapLoader, RpgProjec
 			manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
 	override function beginLoad(WarcraftRpgRuntime rpg)
 		previousParty = partyState
+		previousX = partyX
+		previousY = partyY
 	override function rollbackLoad(WarcraftRpgRuntime rpg)
 		partyState = previousParty
+		partyX = previousX
+		partyY = previousY
 		rpg.reconcile("player")
 	override function commitLoad(WarcraftRpgRuntime rpg)
 		previousParty = ""
-	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
 		partyCalls++
-		partyState = rpg.captureState() + R2S(x) + "," + R2S(y)
+		partyX = locations.entries[0].x
+		partyY = locations.entries[0].y
+		partyState = rpg.captureState() + locations.encode()
 		rpg.reconcile("player")
 		probeSave()
 		return not failParty
@@ -230,6 +250,10 @@ class LoadFixture
 		clock.setSpeed(1.125).assertTrue()
 		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
 		campaign.state.startupLocked = false
+		campaign.state.arrivalPathing = ports
+		campaign.state.partyNavigation = new PartyNavigation("europe_west", -1024., -1024., 16, 16)
+		for row = 0 to 15
+			campaign.state.partyNavigation.rows[row] = "16:1,"
 		campaign.origins.add("england", "England", "europe_west", "west.w3x", "west", "port")
 		campaign.origins.setPosition("england", 12., 34.)
 		campaign.identity.restore("england", "england", "europe_west", "west", "port")
@@ -283,7 +307,10 @@ class LoadFixture
 		extension.trade.registerStore(new TradeStore("cargo:ship", 50, 500))
 		extension.newCampaign("port")
 		campaign.registerExtension(extension)
-		ports.project(rpg, 101., 202.).assertTrue()
+		let locations = new PartyLocationSet()
+		locations.add(new PartyLocation("hero", "europe_west", 101., 202., 1, 101., 202.))
+		ports.project(rpg, locations).assertTrue()
+		destroy locations
 		ports.manager = campaign.saves
 		campaign.saves.setLoadObserver(ports)
 		campaign.maps.setCommandRegion("africa")
@@ -591,11 +618,17 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 	override function commitLoad(WarcraftRpgRuntime rpg)
 		ports.commitLoad(rpg)
 		previousIdentity = 0
-	override function project(WarcraftRpgRuntime rpg, real x, real y) returns boolean
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		return ports.present(rpg, index)
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return ports.x(rpg, index)
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return ports.y(rpg, index)
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
 		identity = nextIdentity
 		nextIdentity++
 		life = 100
-		return ports.project(rpg, x, y)
+		return ports.project(rpg, locations)
 	override function clear(WarcraftRpgRuntime rpg)
 		identity = 0
 		ports.clear(rpg)

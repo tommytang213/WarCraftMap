@@ -203,7 +203,7 @@ function exerciseGeneratedPrerequisites(string id,string first,string second,str
 
 function codecRestore(ResearchFixture fixture,string records,int schema)
 	let clock=new CampaignClock(1, 100, 1, 1.)
-	let prefix="v2;clock="+clock.initialState()+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let prefix="v2;partyLocations=v1;clock="+clock.initialState()+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
 	let document=prefix+records
 	let codec=new PlayableCampaignCodec(clock)
 	var payload=""

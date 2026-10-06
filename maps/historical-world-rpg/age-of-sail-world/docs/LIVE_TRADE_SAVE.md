@@ -1,7 +1,7 @@
 # Live trade provenance and save contract
 
 `PlayableTradeRuntime` writes trade domain version 2 (`v2:`). The campaign
-envelope remains version 6, supporting envelopes 1–6. This follows the existing
+envelope is version 7, supporting envelopes 1–7. This follows the existing
 independently versioned diplomacy and military domains. The headless JSON trade
 contract already contains attributable lots and remains unchanged.
 

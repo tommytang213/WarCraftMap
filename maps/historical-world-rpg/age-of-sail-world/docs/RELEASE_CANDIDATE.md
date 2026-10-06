@@ -7,7 +7,7 @@ Status: **blocked_pending_real_forsaken_kingdom_launch_smoke**
 The release pipeline builds every physical W3X twice and inspects the packaged W3N.
 Automated checks cover binary structure, physical-map identities, localized terrain
 and pathing, settlement and spawn representations, destination data and arrival
-transforms, and save schemas 1–6. Compiled script checks identify handoff calls and
+transforms, and save schemas 1–7. Compiled script checks identify handoff calls and
 registrations but do not execute them or prove control-flow reachability. Player QA
 is not required to produce this candidate.
 
@@ -19,10 +19,18 @@ is not required to produce this candidate.
 
 ## Save compatibility
 
-This candidate writes campaign save schema 6. It transactionally supports schema 1, 2,
-3, 4, 5, and 6 saves through the documented migration chain. Keep a copy of an older save
+This candidate writes campaign save schema 7. It transactionally supports schema 1, 2,
+3, 4, 5, 6, and 7 saves through the documented migration chain. Keep a copy of an older save
 until it has loaded and been saved successfully. Saves from a newer or modified build are
 not supported; a rejected save is never rewritten.
+
+Schema 7 preserves each locally represented party member's physical map and current
+coordinates in manual saves, autosaves and recovery checkpoints. A transfer arrival
+is consumed once; later saves restore subsequent movement. Schemas 1–6 omitted these
+coordinates. Their deterministic fallback is the saved boundary arrival, selected
+origin, or recorded local settlement. Movement discarded by those saves cannot be
+recovered. Blocked current locations require verified connected recovery; invalid
+locations reject the load without replacing the active campaign or stored save.
 
 Schema 6 preserves the live campaign date, fractional day, speed and scheduled-event
 cursor through manual saves, autosaves, recovery checkpoints and map travel. Schemas

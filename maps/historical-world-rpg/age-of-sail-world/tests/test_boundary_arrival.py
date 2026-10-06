@@ -14,9 +14,29 @@ from materialize_physical_map import materialize
 from package_wurst_map import generate, load_config
 from package_wurst_campaign import load_campaign_config, validate_campaign, _inspect_physical_map, PackagingError
 from warcraft_campaign import write_mpq, MpqReader
+from party_locations import navigation
+from boundary_arrival import components
 
 
 class BoundaryNavigationTests(unittest.TestCase):
+    def test_party_membership_rows_preserve_components_and_playable_margins(self):
+        cells = [1] * 1024
+        for y in range(32):
+            cells[y * 32 + 16] = 2
+        labels = components(32, 32, cells, (2, 3, 30, 29), 0)
+        data = navigation(32, 32, cells, (2, 3, 30, 29))
+        expanded = []
+        for row in data['rows']:
+            start = 0
+            for run in row.rstrip(',').split(','):
+                end, component = map(int, run.split(':'))
+                expanded.extend([component] * (end - start))
+                start = end
+            self.assertEqual(32, start)
+        self.assertEqual(labels, expanded)
+        self.assertEqual({0, 1, 2}, set(labels))
+        self.assertEqual((-2048., -2048.), (data['minX'], data['minY']))
+
     def test_blocked_land_snaps_nearest_within_tolerance_not_to_disconnected_island(self):
         width = height = 32
         cells = [1] * (width*height)
@@ -114,6 +134,16 @@ class GeneratedBoundaryArrivalTests(unittest.TestCase):
                 files = {p.relative_to(map_dir).as_posix(): p.read_bytes() for p in map_dir.rglob('*') if p.is_file()}
                 write_mpq(archive, files)
                 _inspect_physical_map(physical, archive)
+                # Location topology must be certified even when boundary
+                # metadata itself is intact (including maps without routes).
+                damaged_runtime = copy.deepcopy(runtime)
+                damaged_runtime['partyNavigation'][physical.id]['rows'][0] = '1:999,'
+                files['runtime/scenario-runtime.json'] = json.dumps(damaged_runtime).encode()
+                write_mpq(archive, files)
+                with self.assertRaisesRegex(PackagingError, 'party navigation'):
+                    _inspect_physical_map(physical, archive)
+                files['runtime/scenario-runtime.json'] = json.dumps(runtime).encode()
+                write_mpq(archive, files)
                 reader = MpqReader(archive)
                 wpm = reader.read('war3map.wpm')
                 pw, ph = struct.unpack_from('<II', wpm, 8)
