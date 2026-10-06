@@ -129,7 +129,10 @@ public class PiratePolityState
 	string name
 	string rulerTitle
 	string capitalSettlementId
-	string territoryIds
+	// Historical founding grant only. Current title/control belongs to military.
+	string foundingTerritoryIds
+	// Transient migration flag; v2 persists only the migrated history.
+	boolean legacyFoundingHistory=false
 	string recognition
 	construct(string ident,string government,string displayName,string title,string capital,string territories)
 		id=ident
@@ -137,15 +140,35 @@ public class PiratePolityState
 		name=displayName
 		rulerTitle=title
 		capitalSettlementId=capital
-		territoryIds=territories
+		foundingTerritoryIds=territories
 		recognition=""
+	function validFoundingHistory() returns boolean
+		if not pirateAtom(id) or not pirateAtom(capitalSettlementId) or foundingTerritoryIds==""
+			return false
+		var start=0
+		var seen=","
+		var count=0
+		var capitalFound=false
+		for i=0 to StringLength(foundingTerritoryIds)
+			if i==StringLength(foundingTerritoryIds) or SubString(foundingTerritoryIds,i,i+1)==","
+				let territory=SubString(foundingTerritoryIds,start,i)
+				if not pirateAtom(territory) or seen.indexOf(","+territory+",")>=0 or count>=1024
+					return false
+				seen+=territory+","
+				count++
+				capitalFound=capitalFound or territory==capitalSettlementId
+				start=i+1
+		return capitalFound
+
+function pirateAtom(string value) returns boolean
+	return value!="" and value.indexOf("|")<0 and value.indexOf("~")<0 and value.indexOf(",")<0 and value.indexOf(";")<0
 
 /** Port into the normal territory, sovereignty, government, economy,
  * diplomacy, war/peace, military, technology, taxation and AI authorities. */
 public interface PiratePolityAuthority
 	function foundIndependentPolity(PiratePolityState polity) returns boolean
-	/** Idempotently projects an already-founded polity into the ordinary
-	 * territory, diplomacy, military and economy authorities after load. */
+	/** Reconstruct identity/derived registrations only. Founding history never
+	 * grants current territory, changes allegiance, or resets resources. */
 	function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
 	function reconcileFoundedPolity(PiratePolityState polity) returns boolean
 	function setRecognition(string polityId,string countryId,string status)
@@ -415,7 +438,8 @@ public class PiracyRuntime
 		if not validAtom(id) or not validAtom(governmentForm) or configuredTitle=="" or name=="" or name.indexOf("|")>=0 or name.indexOf(";")>=0 or title!=configuredTitle or not validAtom(capital) or territories.indexOf("|")>=0 or territories.indexOf(";")>=0 or not servicesContain(territories,capital)
 			return "Durable controlled capital territory and government are required."
 		let candidate=new PiratePolityState(id,governmentForm,name,title,capital,territories)
-		if polityAuthority==null or not polityAuthority.foundIndependentPolity(candidate)
+		if not candidate.validFoundingHistory() or polityAuthority==null or not polityAuthority.foundIndependentPolity(candidate)
+			destroy candidate
 			return "Ordinary polity systems rejected founding; no state changed."
 		polity=candidate
 		state.polityId=id
@@ -434,7 +458,7 @@ public class PiracyRuntime
 	function restore(PiracySnapshot saved)
 		saved.applyTo(this)
 	function validAtom(string value) returns boolean
-		return value!="" and value.indexOf("|")<0 and value.indexOf("~")<0 and value.indexOf(",")<0 and value.indexOf(";")<0
+		return pirateAtom(value)
 	function validInteger(string value) returns boolean
 		return value!="" and S2I(value).toString()==value
 	function field(string document,string key) returns string
@@ -477,21 +501,32 @@ public class PiracyRuntime
 		var actions=""
 		for i=0 to processedCount-1
 			actions+=processedPrizeRecords[i]+"~"
-		var polityFields="|polity=|government=|name=|title=|capital=|territories=|recognition="
+		var polityFields="|polity=|government=|name=|title=|capital=|foundingTerritories=|recognition="
 		if polity!=null
-			polityFields="|polity="+polity.id+"|government="+polity.governmentFormId+"|name="+polity.name+"|title="+polity.rulerTitle+"|capital="+polity.capitalSettlementId+"|territories="+polity.territoryIds+"|recognition="+polity.recognition
+			polityFields="|polity="+polity.id+"|government="+polity.governmentFormId+"|name="+polity.name+"|title="+polity.rulerTitle+"|capital="+polity.capitalSettlementId+"|foundingTerritories="+polity.foundingTerritoryIds+"|recognition="+polity.recognition
 		var outlaw="0"
 		if state.outlaw
 			outlaw="1"
-		return "v1|notoriety="+state.notoriety.toString()+"|bounty="+state.bountyMinor.toString()+"|wealth="+state.piracyWealthMinor.toString()+"|prizes="+state.prizesTaken.toString()+"|outlaw="+outlaw+"|commissions="+commissionsEncoded+"|targets="+targets+"|havens="+havens+"|regions="+regions+"|actions="+actions+polityFields
+		return "v2|notoriety="+state.notoriety.toString()+"|bounty="+state.bountyMinor.toString()+"|wealth="+state.piracyWealthMinor.toString()+"|prizes="+state.prizesTaken.toString()+"|outlaw="+outlaw+"|commissions="+commissionsEncoded+"|targets="+targets+"|havens="+havens+"|regions="+regions+"|actions="+actions+polityFields
 	function migrationAuthority() returns string
 		let empty=new PiracyRuntime(rules)
 		return empty.captureAuthority()
 	function validateAuthority(string candidate) returns boolean
 		stagedRestore=null
-		if not candidate.startsWith("v1|") or candidate.indexOf("|actions=")<0 or candidate.indexOf("|commissions=")<0 or candidate.indexOf("|recognition=")<0
+		if (not candidate.startsWith("v1|") and not candidate.startsWith("v2|")) or candidate.indexOf("|actions=")<0 or candidate.indexOf("|commissions=")<0 or candidate.indexOf("|recognition=")<0
 			lastDiagnostic="Piracy authority is malformed."
 			return false
+		// v1's territories were the original grant, not an independently updated
+		// territorial authority. Migrate them to history, never replay that grant.
+		var territoryKey="foundingTerritories"
+		var forbiddenKey="territories"
+		if candidate.startsWith("v1|")
+			territoryKey="territories"
+			forbiddenKey="foundingTerritories"
+		if candidate.indexOf("|"+territoryKey+"=")<0 or candidate.indexOf("|"+forbiddenKey+"=")>=0
+			lastDiagnostic="Piracy founding history has incompatible fields."
+			return false
+		let territories=field(candidate,territoryKey)
 		let staged=new PiracyRuntime(rules)
 		for i=0 to state.governmentFormCount-1
 			staged.registerGovernmentForm(state.governmentFormIds[i],state.governmentTitles[i])
@@ -599,10 +634,14 @@ public class PiracyRuntime
 			return false
 		let polityId=field(candidate,"polity")
 		if polityId!=""
-			if not validAtom(polityId) or not validAtom(field(candidate,"government")) or field(candidate,"name")=="" or field(candidate,"name").indexOf("|")>=0 or field(candidate,"name").indexOf(";")>=0 or field(candidate,"title")=="" or field(candidate,"title").indexOf("|")>=0 or field(candidate,"title").indexOf(";")>=0 or not validAtom(field(candidate,"capital")) or field(candidate,"territories").indexOf("|")>=0 or field(candidate,"territories").indexOf(";")>=0 or not servicesContain(field(candidate,"territories"),field(candidate,"capital"))
+			if not validAtom(polityId) or not validAtom(field(candidate,"government")) or field(candidate,"name")=="" or field(candidate,"name").indexOf("|")>=0 or field(candidate,"name").indexOf(";")>=0 or field(candidate,"title")=="" or field(candidate,"title").indexOf("|")>=0 or field(candidate,"title").indexOf(";")>=0
 				lastDiagnostic="Founded pirate-polity authority is invalid."
 				return false
-			staged.polity=new PiratePolityState(polityId,field(candidate,"government"),field(candidate,"name"),field(candidate,"title"),field(candidate,"capital"),field(candidate,"territories"))
+			staged.polity=new PiratePolityState(polityId,field(candidate,"government"),field(candidate,"name"),field(candidate,"title"),field(candidate,"capital"),territories)
+			staged.polity.legacyFoundingHistory=candidate.startsWith("v1|")
+			if not staged.polity.validFoundingHistory()
+				lastDiagnostic="Piracy founding history is invalid or duplicated."
+				return false
 			let recognition=field(candidate,"recognition")
 			cursor=0
 			while cursor<StringLength(recognition)
@@ -621,7 +660,7 @@ public class PiracyRuntime
 				cursor+=finish+1
 			staged.polity.recognition=recognition
 			staged.state.polityId=polityId
-		else if field(candidate,"government")!="" or field(candidate,"capital")!="" or field(candidate,"territories")!="" or field(candidate,"recognition")!=""
+		else if field(candidate,"government")!="" or field(candidate,"capital")!="" or territories!="" or field(candidate,"recognition")!=""
 			lastDiagnostic="Orphaned pirate-polity authority is invalid."
 			return false
 		stagedRestore=staged

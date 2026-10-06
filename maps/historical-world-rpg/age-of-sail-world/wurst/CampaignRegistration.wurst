@@ -25,51 +25,65 @@ public class CampaignPiratePolityAuthority implements PiratePolityAuthority
 		identity=i
 		military=m
 	override function foundIndependentPolity(PiratePolityState polity) returns boolean
-		return reconcileFoundedPolity(polity)
+		// The individual player's controller is independent of government service.
+		// Validate the entire transaction, including all transfer prerequisites,
+		// before creating a country or touching any territory or allegiance.
+		if polity == null or not identity.hasOrigin() or polity.id == "player" or countries.polityIndex(polity.id) >= 0 or countries.polityCount >= 512 or military.controllerInUse(polity.id) or not validTerritories(polity, military, true)
+			return false
+		countries.registerPolity(polity.id, 0)
+		var start = 0
+		for i = 0 to StringLength(polity.foundingTerritoryIds)
+			if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+				military.transferSovereignty(SubString(polity.foundingTerritoryIds, start, i), polity.id)
+				start = i + 1
+		countries.discover(polity.id)
+		identity.changeAllegiance(polity.id)
+		return true
 	override function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
 		// Use the owning parser so legacy settlements and pair wars follow the
 		// same versioned migration as campaign validation and reconstruction.
 		let detached = military.parseSnapshot(militarySnapshot)
 		if detached == null
 			return false
-		let valid = validTerritories(polity, detached) and (countries.polityIndex(polity.id) >= 0 or countries.polityCount < 512)
+		let valid = validTerritories(polity, detached, false) and (countries.polityIndex(polity.id) >= 0 or countries.polityCount < 512)
 		detached.dispose()
 		return valid
-	function validTerritories(PiratePolityState polity, MilitarySettlementRuntime candidate) returns boolean
-		var cursor = 0
-		while cursor < StringLength(polity.territoryIds)
-			let tail = SubString(polity.territoryIds, cursor, StringLength(polity.territoryIds))
-			let comma = tail.indexOf(",")
-			var territory = tail
-			if comma >= 0
-				territory = SubString(tail, 0, comma)
-			if candidate.settlementIndex(territory) < 0
-				return false
-			if comma < 0
-				return true
-			cursor += comma + 1
-		return false
-	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
-		if not validTerritories(polity, military) or (countries.polityIndex(polity.id) < 0 and countries.polityCount >= 512)
+	function validTerritories(PiratePolityState polity, MilitarySettlementRuntime candidate, boolean founding) returns boolean
+		if polity == null or polity.id == "player" or not polity.validFoundingHistory()
 			return false
-		var cursor=0
-		while cursor<StringLength(polity.territoryIds)
-			let remainder=SubString(polity.territoryIds,cursor,StringLength(polity.territoryIds))
-			let comma=remainder.indexOf(",")
-			var territory=remainder
-			if comma>=0
-				territory=SubString(remainder,0,comma)
-			for i=0 to military.settlementCount-1
-				if military.settlements[i].id==territory
-					military.settlements[i].controllerId=polity.id
-			if comma<0
-				cursor=StringLength(polity.territoryIds)
-			else
-				cursor+=comma+1
+		var start = 0
+		var newOffices = 0
+		for i = 0 to StringLength(polity.foundingTerritoryIds)
+			if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+				let territory = SubString(polity.foundingTerritoryIds, start, i)
+				if candidate.settlementIndex(territory) < 0
+					return false
+				if founding
+					if not candidate.canTransferSovereignty(territory, "player")
+						return false
+				if founding or polity.legacyFoundingHistory
+					if candidate.forceIndex("core:" + territory) < 0
+						return false
+					if candidate.administratorIndex(territory) < 0
+						newOffices++
+				start = i + 1
+		return candidate.administratorCount + newOffices <= 1024
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		if not validTerritories(polity, military, false) or (countries.polityIndex(polity.id) < 0 and countries.polityCount >= 512)
+			return false
+		// Historical grants are not current territorial authority. Even a lost
+		// capital remains valid history. Preserve title, control and allegiance.
 		if countries.polityIndex(polity.id) < 0
 			countries.registerPolity(polity.id,0)
 		countries.discover(polity.id)
-		identity.changeAllegiance(polity.id)
+		if polity.legacyFoundingHistory
+			// Old founding changed only the settlement controller. Repair derived
+			// registrations from CURRENT control, never from the historical grant.
+			var start = 0
+			for i = 0 to StringLength(polity.foundingTerritoryIds)
+				if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+					military.reconcileSettlementRegistrations(SubString(polity.foundingTerritoryIds, start, i))
+					start = i + 1
 		return true
 	override function setRecognition(string polityId,string countryId,string status)
 		countries.discover(countryId)

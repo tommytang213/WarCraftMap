@@ -543,7 +543,12 @@ function originLifecycle(string origin, string mapId)
 	piracy.state.piracyWealthMinor = piracy.rules.foundingWealthMinor
 	piracy.state.prizesTaken = piracy.rules.foundingPrizes
 	let capital = military.settlements[0].id
+	let grantor = military.settlements[0].legalOwnerId
+	military.registerConflictMember("fixture-founding-title", grantor, 1).assertTrue()
+	military.registerConflictMember("fixture-founding-title", "player", 2).assertTrue()
+	military.commitPeace("fixture-founding-title", capital, "player").assertTrue()
 	piracy.foundPolity("fixture_free_polity", "free_republic", "Fixture Free Polity", "First Captain", capital, capital).startsWith("Independent polity founded").assertTrue()
+	military.replenishGarrison(capital, 17, 0, 0).assertTrue()
 	countries.treasury[countries.polityIndex("fixture_free_polity")] = 4321
 	f.campaign.state.piracy.state.notoriety = 37
 	f.campaign.state.piracy.state.prizesTaken = 2

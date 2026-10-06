@@ -634,6 +634,53 @@ public class MilitarySettlementRuntime
 			return false
 		let state = settlements[found]
 		return state.legalOwnerId == grantor and (state.controllerId == grantor or (state.controllerId == beneficiary and state.occupationConflictId == conflictId))
+	/** Personal control does not confer title to occupied foreign territory.
+	 * Voluntary sovereignty transfers require settled title and a durable core;
+	 * contested land must first resolve through the ordinary conflict authority. */
+	function canTransferSovereignty(string settlementId, string grantor) returns boolean
+		let found = settlementIndex(settlementId)
+		let core = forceIndex("core:" + settlementId)
+		if found < 0 or core < 0
+			return false
+		let state = settlements[found]
+		return state.controllerId == grantor and state.legalOwnerId == grantor and state.occupationConflictId == "" and not state.underAttack and forces[core].kind == FORCE_CITY_CORE and forces[core].controllerId == grantor and forces[core].active and forces[core].strength > 0
+	/** Commit only after the caller has validated the complete transaction. */
+	function transferSovereignty(string settlementId, string beneficiary)
+		let state = settlements[settlementIndex(settlementId)]
+		state.legalOwnerId = beneficiary
+		transferSettlement(settlementId, beneficiary)
+		state.occupationConflictId = ""
+	function controllerInUse(string controller) returns boolean
+		for i = 0 to forceCount - 1
+			if forces[i].controllerId == controller
+				return true
+		for i = 0 to settlementCount - 1
+			if settlements[i].controllerId == controller or settlements[i].legalOwnerId == controller
+				return true
+		for i = 0 to administratorCount - 1
+			if administrators[i].controllerId == controller
+				return true
+		for i = 0 to traditionCount - 1
+			if traditions[i].controllerId == controller
+				return true
+		for i = 0 to conflictCount - 1
+			if conflicts[i].side(controller) != 0
+				return true
+		return false
+	/** Legacy derived-registration repair. Never infer title, occupation or
+	 * control, refill defenses, revive losses, or restart a siege from history. */
+	function reconcileSettlementRegistrations(string settlementId)
+		let state = settlements[settlementIndex(settlementId)]
+		for i = 0 to forceCount - 1
+			let localForce = forces[i]
+			if localForce.id == "core:" + settlementId or hasPrefix(localForce.id, "defense:" + settlementId + ":") or (localForce.active and hasPrefix(localForce.id, "garrison:" + settlementId + ":"))
+				if localForce.controllerId != state.controllerId
+					localForce.controllerId = state.controllerId
+					adapter.removeRepresentation(localForce.id)
+					instantiate(localForce)
+		let office = administratorIndex(settlementId)
+		if office < 0 or administrators[office].controllerId != state.controllerId
+			appoint(settlementId, new AdministratorState("acting:" + settlementId + ":" + state.controllerId, "Local Deputy", "Acting Administrator", state.controllerId, state.regionId, settlementId, 50, 50, 40, 1))
 	/** Called after the complete treaty has been validated. No fallible work
 	 * remains between territorial reconciliation and settling the conflict. */
 	function commitPeace(string conflictId, string cededSettlementId, string beneficiary) returns boolean
@@ -647,9 +694,7 @@ public class MilitarySettlementRuntime
 		for i = 0 to settlementCount - 1
 			let state = settlements[i]
 			if state.id == cededSettlementId
-				state.legalOwnerId = beneficiary
-				transferSettlement(state.id, beneficiary)
-				state.occupationConflictId = ""
+				transferSovereignty(state.id, beneficiary)
 			else if state.occupationConflictId == conflictId
 				transferSettlement(state.id, state.legalOwnerId)
 				state.occupationConflictId = ""

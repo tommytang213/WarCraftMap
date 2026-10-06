@@ -1,5 +1,52 @@
 # Conflict and peace authority
 
+## Pirate-polity founding and reconstruction
+
+`found-free-polity` is a one-time transaction through the production piracy
+bridge. Progression comes from the piracy authority. Territorial rights come
+from the individual `player` controller, never from the submitted territory
+list or the player's government allegiance. Every requested settlement,
+including the capital, must have player control and legal title, no occupation
+or active siege, and an active, surviving authoritative city core. Foreign
+occupations must resolve through ordinary peace/cession before they can be
+incorporated. No Warcraft object is required for an abstract settlement.
+
+The bridge validates the entire list, capital membership, duplicate/invalid
+IDs, country and military identity collisions, player identity, and registry
+capacity before changing any authority. Valid grants use the settlement
+authority's sovereignty transfer, which also reconciles cores, defenses,
+garrisons and acting administration. Only this initial transaction changes the
+founder's allegiance.
+
+Piracy authority **v2** records `foundingTerritories` as history. Current legal
+ownership, control, occupation, losses and resources remain in their existing
+military and country domains. Reconstruction registers a missing country and
+derived discovery/recognition idempotently; it never transfers historical land,
+changes allegiance, or resets an existing treasury or material stock. A lost
+capital or loss of all founding settlements does not invalidate the identity.
+
+The explicit **v1 → v2 migration** reads the old `territories` field only as
+founding history. Because the old founding bridge could leave cores, defenses
+and administrators inconsistent, migration repairs those derived registrations
+from each settlement's **saved current controller**. It preserves legal title,
+occupation attribution, strength, supplies and inactive losses; it never guesses
+a territorial entitlement or grants disputed title. Saves with malformed history
+or missing referenced settlements reject before live mutation. The campaign
+envelope and military/country schema versions are unchanged, and existing
+campaign migrations remain supported.
+
+Both staging and reconstruction remain inside the campaign load transaction.
+Later domain or projection failure rolls back migration, identity registration,
+territory, resources, allegiance and projections together. Registered-command,
+capture/cession, repeated load, legacy-save and failure-injection regressions
+are in `CampaignLoadTransactionTests.wurst`; startup also establishes title
+through ordinary peace before founding.
+
+Release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+These checks require no incremental player QA.
+
+## Ordinary conflict and peace
+
 Political `activeConflicts` are registered by stable ID, with each original
 attacker and defender recorded in `MilitarySettlementRuntime`. Country
 negotiation, settlement attacks, and capture query that same registry. Only

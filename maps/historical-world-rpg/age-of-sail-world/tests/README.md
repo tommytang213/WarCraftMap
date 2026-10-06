@@ -224,6 +224,17 @@ and aborted staged loads also restore clock day, cursor, fraction and speed, ret
 the original timer, and restart it only on commit; startup failure/retry fixtures
 carry a changed clock through the recoverable handoff.
 
+Pirate founding regressions dispatch the registered command through the production
+bridge after earning progression through prize actions and acquiring title through
+ordinary capture/peace. Rejections compare complete authority and projections for
+unqualified captains, existing identities, government-controlled land, occupations,
+sieges, malformed or duplicate territories, and a destroyed core in the last territory.
+Valid founding checks settlement title/control, cores, defenses and administration.
+Repeated saves and loads retain later captures, cessions, acquisitions, allegiance,
+treasury and losses, including the loss of every founding settlement. Literal piracy
+v1 fixtures migrate to v2 founding history without granting disputed title; injected
+load failures roll back both reconstruction and migration.
+
 `CampaignTimelineTests.wurst` executes the production clock and campaign codec with
 recording listeners/timers: exact real round trips, simultaneous occurrences,
 fractional ticks, large jumps, deferred saves, malformed records, inconsistent

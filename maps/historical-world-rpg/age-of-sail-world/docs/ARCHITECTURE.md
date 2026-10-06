@@ -248,8 +248,12 @@ packaging validation do not establish native Warcraft launch success; that remai
 `CampaignSaveManager` guards manual, recovery and startup checkpoint loads. Before
 reconstruction, `PlayableCampaignState` validates RPG, military/settlement,
 religion, piracy, diplomacy/rewards, trade and clock records. Pirate-polity reconciliation
-checks territory against the candidate military snapshot and country validation
-includes the candidate's founded polity, without invoking live callbacks.
+checks historical settlement references against the candidate military snapshot;
+country validation includes the candidate's founded polity, without invoking live callbacks.
+Only the initial founding transaction grants territory. Reconstruction preserves current
+title, control, allegiance and country resources. Piracy v1 territory lists migrate to
+v2 founding history, with legacy derived registrations repaired from saved current
+control. See [Conflict and peace authority](CONFLICT_PEACE_AUTHORITY.md).
 
 Reconstruction retains a rollback checkpoint for every participating authority,
 including campaign time, ordinary country registry membership and player identity. Trade owns
