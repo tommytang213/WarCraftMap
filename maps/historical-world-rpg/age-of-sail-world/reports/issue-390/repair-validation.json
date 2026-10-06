@@ -1,0 +1,85 @@
+{
+  "before": {
+    "assertionFailures": 0,
+    "completedWithoutInterruption": true,
+    "discovered": 239,
+    "passed": 234,
+    "returnCode": 1,
+    "timeouts": [
+      "wurst/MilitaryCombatEventsTests.wurst:freshPhysicalRuntimeKeepsFractionalProtectionAndManualPause",
+      "wurst/WarcraftRpgRuntimeTests.wurst:generatedQuestsFourthBatchRoundTrips",
+      "wurst/WarcraftRpgRuntimeTests.wurst:generatedQuestsFifthBatchRoundTrips",
+      "wurst/WarcraftRpgRuntimeTests.wurst:generatedQuestsSixthBatchRoundTrips",
+      "wurst/WarcraftRpgRuntimeTests.wurst:generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress"
+    ]
+  },
+  "containerPolicy": "Both runs mount the worktree read-only and copy/build as wurstuser in container-private /tmp; no worktree ownership or permission changes and no host tooling changes.",
+  "issue": 390,
+  "packaging": {
+    "additionalMpqChecks": "Lua bootstrap markers, readable W3I/W3E/WPM, runtime source digest and every custom asset import.",
+    "bytes": 1874062,
+    "command": "./tooling/package_release.sh",
+    "customAssetImports": 16,
+    "returnCode": 0,
+    "scope": "Pinned typecheck, complete execution gate, Lua compilation, map assembly and archive inspection.",
+    "sha256": "bda31f4fc666f0e372f41082c27bdf1d00b4b1f484a60aff403ab28e9998fad9",
+    "status": "pass"
+  },
+  "pricingImplementationChanged": false,
+  "python": {
+    "automation": 67,
+    "distinctScenarioTests": 107,
+    "nativeSaveAndCampaignSaveStress": 14,
+    "packagingUnitTestScope": "Synthetic compiler fixtures; the real pinned suite and map package are recorded separately.",
+    "rerunPackagingAndExecutionGateIncludingHeapRegression": 46,
+    "status": "pass",
+    "targetedTradeEconomyProvenanceSaveCompatibilityAndPackaging": 92
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repair": "Default shared Wurst subprocesses to a 6 GiB heap; preserve explicit caller Java options without changing global settings, compiler identity, test discovery, or the 20-second test deadline.",
+  "repositoryValidation": "The outer worker runs the authoritative repository validation after this repair.",
+  "sourceRevision": "dd831f1f54b0796dec3b11d105bccdcdb0ae56eb",
+  "staticChecks": {
+    "europeGeography": "pass",
+    "gitDiffCheck": "pass",
+    "mapSource": "pass",
+    "world": "pass"
+  },
+  "status": "ready_for_repository_validation",
+  "uncompressedLogSha256": {
+    "repair-automation.log.gz": "056ba021c63a675d8afb07f96e024d08cf3156f92c252975f1cb906ce9532f10",
+    "repair-before-execution.log.gz": "5be8c193bd94a1199affa8fa42b85b84909c3b0a1b6aa91d284960c1e1f298ab",
+    "repair-before-results.json.gz": "8b1129e2ccad0d60419494e7027683da980790ab0f0494c502bbba0d83b3fa09",
+    "repair-execution.log.gz": "6fc0768f6d888c793f3e69e1a3721cdf8acf717796c7a759d5914af62eeb486a",
+    "repair-headless.log.gz": "2bd21e033465918c16a58859d0925f19e0de652d5d5a8fb35e97f17e6036169b",
+    "repair-packaging.log.gz": "f143349035cf5a84da601ae686df07cddfaaca7c0d0d94212fd05f4ad5b157e4",
+    "repair-results.json.gz": "ec3bbd8a2aa39f6ac7ef5752af5e3a96ecd129eda53659e442b742fdacdcf49c",
+    "repair-save-stress.log.gz": "9a322ab47fb466ef7101e9790cc6c2c5edcbb65d65d033ceaf7023076f452cc6",
+    "repair-tooling.log.gz": "581e0bc5011cf73ca3fe761d8d5ed4bfbee88fa40b1fc772d96759bb9258b046"
+  },
+  "validatedSourceSha256": {
+    "maps/historical-world-rpg/_shared/engine/trade.py": "220e47dfc15840fd674d54d6a4ee98cddebffabf7e33d82a31ba08eb9804b86d",
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_map.py": "c9c2e41d1dfd20d2a3b16f6340675463297254079b2d498a7ac1ee6b5a541896",
+    "maps/historical-world-rpg/_shared/tooling/wurst_execution.py": "9080a65e67b4cfca8dff147f475bcce733b937689901d6e81a269eb4354d031b",
+    "maps/historical-world-rpg/_shared/wurst/TradePricing.wurst": "6de7d51b51717e00c91454473a4dd88387afbefc6bd5221047246ebb8b687e12",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_wurst_execution.py": "ee12fc2c2b24a11fb2b2e9a0f43c2d41a2a99f5b8b1caca866d56a879181105f",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/PlayableTrade.wurst": "813377b1e8307c7136c25a66e645d78602f72c7c5a95906911a69c1447fc6234"
+  },
+  "worktreeChanges": "uncommitted",
+  "wurst": {
+    "command": "grill test",
+    "compilerMaxHeapBytes": 6442450944,
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "discovered": 239,
+    "errors": [],
+    "heapOption": "-Xmx6g",
+    "identicalCompilerInputsBeforeAndAfter": true,
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "inputSetSha256": "33129bbb2bda945473c8adaead1f740592842ff628b6641d5771306ae6182c55",
+    "passed": 239,
+    "returnCode": 0,
+    "sourcesMatchWorktree": true,
+    "status": "pass",
+    "testDeadlineSeconds": 20
+  }
+}

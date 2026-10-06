@@ -5,7 +5,7 @@ import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
 from datetime import date
 from dataclasses import dataclass
 from pathlib import Path
-from wurst_execution import WurstExecutionError, execute_tests, source_revision
+from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
 
 class PackagingError(RuntimeError): pass
 GENERATOR_VERSION = 17
@@ -605,7 +605,8 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
         if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: output changed: {name}")
 
 def _run(stage: str, command: list[str], cwd: Path) -> None:
-    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
+    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,
+                            env=toolchain_environment())
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
 
 def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:

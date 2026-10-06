@@ -20,7 +20,29 @@ recorded costs, progression and transaction history are preserved, including
 pre-fix acquisitions and legacy provenance migrations. Generated definition
 provenance advances to version 17. See [LIVE_TRADE_SAVE.md](../docs/LIVE_TRADE_SAVE.md).
 
-Validation on the uncommitted worktree based on
+Repository validation repair on checkpoint
+`dd831f1f54b0796dec3b11d105bccdcdb0ae56eb` preserves the pricing implementation.
+The ordinary packaging command reproduced **234/239** passing Wurst tests,
+with five timeouts and no assertion failures. The pinned JVM's automatic heap
+limit caused prolonged full-heap garbage collection. Shared execution and
+packaging now provide a process-local **6 GiB** default, preserving explicit
+caller Java options and leaving global settings and the test deadline unchanged.
+
+The same command in a fresh container passed **239/239** pinned Wurst tests,
+typecheck, Lua compilation and map packaging with identical compiler inputs.
+**107 distinct scenario Python tests** and **67 automation tests** passed,
+including the new heap propagation regression. Map/campaign packaging and
+execution-gate tests were rerun after the tooling change. MPQ checks also verified
+bootstrap markers, metadata/terrain/pathing, runtime source identity and all
+sixteen custom asset imports.
+
+Current evidence: [repair summary](issue-390/repair-validation.json),
+[baseline transcript](issue-390/repair-before-execution.log.gz),
+[passing pinned execution](issue-390/repair-results.json.gz),
+[passing transcript](issue-390/repair-execution.log.gz), and
+[normal packaging run](issue-390/repair-packaging.log.gz).
+
+Initial implementation validation on the uncommitted worktree based on
 `077e9dd7a2b3543e89a2b7c266a2ba344d596830`:
 
 - **239/239 pinned Wurst tests passed**, with the original 20-second per-test

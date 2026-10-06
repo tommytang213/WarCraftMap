@@ -23,6 +23,18 @@ class WurstExecutionError(RuntimeError):
     pass
 
 
+def toolchain_environment() -> dict[str, str]:
+    """Give the full generated suite enough heap without changing host settings.
+
+    The pinned JVM's automatic heap limit can exhaust memory during the complete
+    interpreter run. Prepend the validated limit so an explicit caller -Xmx in
+    JAVA_TOOL_OPTIONS still takes precedence. Grill's compiler child inherits it.
+    """
+    env = os.environ.copy()
+    env["JAVA_TOOL_OPTIONS"] = ("-Xmx6g " + env.get("JAVA_TOOL_OPTIONS", "")).strip()
+    return env
+
+
 def sha(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -127,7 +139,8 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
         report["inputs"] = inputs
         report["inputSetSha256"] = sha(canonical(inputs))
         result = subprocess.run([executable, "test"], cwd=compile_root,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                env=toolchain_environment())
         log = result.stdout
         report["returnCode"] = result.returncode
         rows, issues = parse_results(log, report["expected"])
