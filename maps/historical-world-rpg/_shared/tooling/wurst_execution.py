@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 PINNED_IMAGE = "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a"
 PINNED_COMPILER_SHA256 = "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
@@ -158,6 +159,11 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"Wurst execution: {report['succeeded']}/{report['discovered']} passed; evidence: {report_path}")
     if report["status"] != "pass":
+        # CI builds in disposable containers. Surface the actual failed test
+        # and interpreter diagnostic before their private evidence is removed.
+        # Keep the transcript/evidence and fail-closed result unchanged.
+        if log:
+            print(log, file=sys.stderr, end="" if log.endswith("\n") else "\n")
         raise WurstExecutionError("; ".join(report["errors"]) + f" (see {log_path})")
     return report
 

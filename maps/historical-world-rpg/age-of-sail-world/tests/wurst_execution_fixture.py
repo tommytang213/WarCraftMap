@@ -27,6 +27,8 @@ if sys.argv[1] == "test":
             print("FAILED assertion: Expected true, Actual false")
         elif mode == "exception":
             print("You encountered a bug in the interpreter: NullPointerException")
+        elif mode == "timeout":
+            print("FAILED - TIMEOUT")
         elif mode != "incomplete":
             print("\tOK!")
     if mode != "truncated":

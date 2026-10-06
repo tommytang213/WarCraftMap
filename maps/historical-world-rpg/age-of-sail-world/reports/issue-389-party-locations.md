@@ -80,6 +80,38 @@ quiet successful execution, and preservation of the original exit status. The
 pinned compiler, complete-suite gate, timeout and read-only source mount remain
 unchanged.
 
+PR #394's typecheck/build job and second release-candidate build each reported
+**226/228** passing Wurst tests. The first candidate build passed **228/228**.
+Those workflows did not expose their private interpreter transcripts before
+container removal, so the original failing tests and diagnostics are unavailable.
+An unchanged local run again passed **228/228** and canonical map packaging.
+
+The two slowest observed startup tests combined seven transfer schemas and six
+coordinate-less schemas under individual 20-second limits. Their schema matrices
+now run in smaller test cases, preserving every schema, assertion, production
+registration and load operation. This reduces timeout pressure without changing
+the pinned compiler, timeout, complete-suite gate, or production save/load code.
+Timeout pressure is a diagnosed risk; the original CI failure did not reproduce
+locally and its exact cause cannot be established from the retained CI logs.
+
+The shared Python execution gate now prints failed interpreter transcripts itself,
+so both GitHub workflows retain diagnostics regardless of their shell wrapper.
+Regression tests cover assertion failures, interpreter errors, timeouts, truncated
+results, quiet success and discovery of every party-location/migration test case.
+Failure evidence and rejection behavior remain intact.
+
+The repaired complete suite passed **232/232** pinned Wurst tests with the
+validation container limited to one CPU, followed by canonical Lua compilation,
+map assembly and archive inspection. All 60 current Wurst source files and the
+compiler options match the retained execution evidence. All **223 distinct Python
+checks** passed: 100 targeted, 53 packaging/release and 70 automation checks.
+The new schema batches took approximately 5.5–8.5 seconds in the progress samples;
+these are diagnostic observations, not a performance guarantee. See
+[ci-repair-validation.json](issue-389/ci-repair-validation.json) for commands,
+source hashes, original CI links and retained transcripts. The two-clean-build
+release-candidate gate was not rerun locally; the outer worker performs the
+authoritative repository validation.
+
 Release status remains **blocked_pending_real_forsaken_kingdom_launch_smoke**.
 No real-client launch/gameplay validation or player QA was performed. No commit,
 push, issue/PR modification, service installation or global tooling change was made.

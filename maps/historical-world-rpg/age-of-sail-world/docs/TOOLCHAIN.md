@@ -72,6 +72,11 @@ GitHub CI performs Wurst typechecking using the official/community Wurst Docker 
 
 CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
 
+The shared Wurst execution gate prints the retained interpreter transcript on
+failure, including failed test names and timeout or assertion diagnostics. This
+keeps failures reviewable when CI removes its private build container. Successful
+runs report the passing count and evidence path without replaying the transcript.
+
 The `Age of Sail campaign artifact` workflow runs the repository-controlled
 `./tooling/package_release_candidate.sh` command with an immutable Wurst container
 image, after source and world validation. It performs two clean campaign builds
