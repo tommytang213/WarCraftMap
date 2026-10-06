@@ -89,8 +89,12 @@ def quote(catalog: Mapping[str, Any], economy_catalog: Mapping[str, Any], econom
     """Return a deterministic quote from current stock and campaign conditions.
 
     Prices are recomputed for every transaction, so a displayed quote is never
-    authority.  Marginal saturation makes a large sale worth less than repeated
-    sales at unchanged prices would be.  All arithmetic is integer-only.
+    authority. Sum marginal prices on the traversed stock interval: the midpoint
+    of each indivisible quantity unit is rounded toward the upper stock endpoint
+    for BOTH directions. This is additive across partitions, including price
+    bounds and rounding steps. Rounding one midpoint for an entire order is not.
+    All arithmetic is integer-only. Quantity-to-currency conversion is rounded
+    only at final settlement, after the per-edge base-price and spread rounding.
     """
     if side not in {"buy", "sell"} or quantity_units < 1:
         raise TradeError("quote requires buy/sell and a positive quantity")
@@ -104,28 +108,45 @@ def quote(catalog: Mapping[str, Any], economy_catalog: Mapping[str, Any], econom
     stock = _quantity(_balance(economy_state, market["storeId"]), good_id)
     target = max(1, rule.get("targetStockUnits", {}).get(good_id, good["quantityUnitsPerDisplayUnit"] * 10))
     elasticity = good.get("priceElasticityPermille", 1000)
-    # Midpoint stock prices the whole atomic order and prevents order splitting.
-    midpoint = stock - quantity_units // 2 if side == "buy" else stock + quantity_units // 2
-    scarcity = max(-750, min(2000, (target - midpoint) * elasticity // target))
     condition = campaign or {}
-    disruption = sum(int(condition.get(k, 0)) for k in ("blockadePermille", "warPermille", "occupationPermille", "eventPermille"))
+    disruption = sum(int(condition.get(k, 0)) for k in ("blockadePermille", "warPermille", "occupationPermille", "eventPermille", "shortagePermille"))
     connectivity = int(condition.get("tradeConnectivityPermille", 1000))
     production = int(condition.get("productionPermille", 1000))
     consumption = int(condition.get("consumptionPermille", 1000))
     development = int(condition.get("technologyPermille", 0)) + int(condition.get("institutionPermille", 0))
-    pressure = 1000 + scarcity + disruption + (consumption - production) // 2 - (connectivity - 1000) // 3 - development
-    pressure = max(rule.get("priceFloorPermille", 350), min(rule.get("priceCeilingPermille", 4000), pressure))
-    unit = max(1, (good["basePriceMinor"] * pressure + 500) // 1000)
     spread = rule.get("spreadPermille", 80)
-    unit = max(1, unit * (1000 + spread if side == "buy" else 1000 - spread) // 1000)
     display_units = good["quantityUnitsPerDisplayUnit"]
-    # Buyers round up and sellers round down.  Splitting an order therefore
-    # never improves its total, closing the sub-minor-unit arbitrage loophole.
-    amount = ((unit * quantity_units + display_units - 1) // display_units
-              if side == "buy" else unit * quantity_units // display_units)
+    if elasticity < 0 or not 0 <= spread <= 1000 or display_units < 1:
+        raise TradeError("invalid marginal pricing configuration")
+    adjustment = disruption + (consumption - production) // 2 - (connectivity - 1000) // 3 - development
+
+    def marginal(upper_stock: int) -> tuple[int, int]:
+        scarcity = max(-750, min(2000, (target - upper_stock) * elasticity // target))
+        pressure = max(rule.get("priceFloorPermille", 350), min(rule.get("priceCeilingPermille", 4000), 1000 + scarcity + adjustment))
+        unit = max(1, (good["basePriceMinor"] * pressure + 500) // 1000)
+        return max(1, unit * (1000 + spread if side == "buy" else 1000 - spread) // 1000), pressure
+
+    low, high = (stock - quantity_units, stock) if side == "buy" else (stock, stock + quantity_units)
+    cursor, numerator = low + 1, 0
+    while cursor <= high:
+        unit, _ = marginal(cursor)
+        # Equal-price runs keep work bounded by the 2,751 scarcity bands, even
+        # for enormous orders. Prices are monotone for nonnegative elasticity.
+        left, right = cursor, high
+        while left < right:
+            middle = left + (right - left + 1) // 2
+            if marginal(middle)[0] == unit:
+                left = middle
+            else:
+                right = middle - 1
+        numerator += unit * (left - cursor + 1)
+        cursor = left + 1
+    amount = ((numerator + display_units - 1) // display_units
+              if side == "buy" else numerator // display_units)
     if amount < 1:
         raise TradeError("quantity is below the minimum currency settlement unit")
-    return {"unitPriceMinor": unit, "amountMinor": amount, "stockUnits": stock, "targetStockUnits": target, "pressurePermille": pressure}
+    # Informational average; amountMinor is the authoritative settlement.
+    return {"unitPriceMinor": numerator // quantity_units, "amountMinor": amount, "stockUnits": stock, "targetStockUnits": target, "pressurePermille": marginal(low + (quantity_units + 1) // 2)[1]}
 
 
 def inspect_market(catalog: Mapping[str, Any], economy_catalog: Mapping[str, Any], economy_state: Mapping[str, Any],

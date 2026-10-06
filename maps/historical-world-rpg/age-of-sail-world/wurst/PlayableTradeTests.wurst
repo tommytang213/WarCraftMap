@@ -24,11 +24,13 @@ class Presentation implements TradePresentation
 	let ui=new Presentation()
 	let calicut=new RuntimeMarket("calicut","Pepper",100,10000,10,8)
 	let london=new RuntimeMarket("london","Pepper",5,10000,30,25)
+	london.targetStock=100
 	let ship=new TradeStore("ship_hold",12,1000)
 	let warehouse=new TradeStore("london_warehouse",50,0)
 	let runtime = new PlayableTradeRuntime()
 	runtime.market = calicut
 	runtime.management.pauses = new ManagementScreenPauseController(new TradeTestPause(), false)
+	calicut.inspect().assertEquals("Pepper: 100 available; buy 10; sell 9; steady")
 	inspectMarket(null,runtime,ui)
 	// Without a bound physical authority, opening management shows guidance only.
 	ui.market.startsWith("Local trade|No eligible market selected.").assertTrue()
@@ -39,13 +41,13 @@ class Presentation implements TradePresentation
 	controller.moveCargo("unload",ship,warehouse,4).assertEquals("Cargo moved.")
 	controller.moveCargo("reload",warehouse,ship,4).assertEquals("Cargo moved.")
 	sellCargo(null,"sell_1",london,ship,10,2000,controller,ui)
-	// Commit quote: 30 base * 1000 stock pressure / 1000 = 30;
-	// sell spread floors 30 * 920 / 1000 to 27. Cost 100, proceeds 270.
-	ui.result.assertEquals("Sold 10 Pepper; realized P/L 170.")
+	// Marginal buy edges 91..100 cost 5*10+5*11=105. London edges
+	// 6..15 pay 3*53+3*52+4*51=519. Route rounding allocates 51*10-105.
+	ui.result.assertEquals("Sold 10 Pepper; realized P/L 414.")
 	ship.cargo.assertEquals(0)
-	ship.money.assertEquals(1170)
-	progress.realizedProfit.assertEquals(170)
-	progress.standing.assertEquals(340)
+	ship.money.assertEquals(1414)
+	progress.realizedProfit.assertEquals(414)
+	progress.standing.assertEquals(810)
 	progress.warehouseAccess().assertEquals(true)
 
 @test function runtimeRejectsCapacityAndDuplicateTransactions()
@@ -62,6 +64,7 @@ class Presentation implements TradePresentation
 	let controller=new PlayableTradeController(progress)
 	let source=new RuntimeMarket("source","Silk",100,10000,10,8)
 	let sink=new RuntimeMarket("sink","Silk",1,10000,30,25)
+	sink.targetStock=100
 	let ship=new TradeStore("ship",20,1000)
 	controller.buy("b1",source,ship,2)
 	controller.sell("s1",sink,ship,2,1000)
@@ -129,11 +132,11 @@ class Presentation implements TradePresentation
 	resumed.market.shortagePermille.assertEquals(300)
 	resumed.market.productionPermille.assertEquals(775)
 	resumed.market.consumptionPermille.assertEquals(1425)
-	// Source cost: 3 * 8 = 24. London disruption: 300 + (1425-775)/2
-	// = 625; buy floors 18*1625/1000 to 29; sell floors 29*.92 to 26.
-	resumed.progress.realizedProfit.assertEquals(18)
-	resumed.progress.standing.assertEquals(36)
-	resumed.hold.money.assertEquals(1002)
+	// Source cost 24; London sale edge 25: scarcity floor(-1000/24)=-42,
+	// disruption 625, pressure 1583; base rounds to 28, sell floors to 25.
+	resumed.progress.realizedProfit.assertEquals(17)
+	resumed.progress.standing.assertEquals(34)
+	resumed.hold.money.assertEquals(1001)
 	resumed.controller.provenance.costIn("cargo:test_ship","grain").assertEquals(16)
 	// An additional configured warehouse stays empty; selecting the saved hold
 	// must not apply its summary cargo to whichever store was selected before.
@@ -146,16 +149,16 @@ class Presentation implements TradePresentation
 @test function rejectionPreservesPricesHistoryCostBasisAndRetryIdentity()
 	let runtime=new PlayableTradeRuntime()
 	runtime.registerMarket(new RuntimeMarket("port","grain",10,100,10,9))
-	runtime.registerStore(new TradeStore("cargo:ship",3,50))
+	runtime.registerStore(new TradeStore("cargo:ship",3,60))
 	runtime.newCampaign("port")
 	runtime.controller.buy("buy",runtime.market,runtime.hold,2).assertEquals("Bought 2 grain.")
-	// Cached buy 10; current stock pressure 10/8 and shortage 200 => buy 15.
+	// Cost 10+11=21. At stock 8, shortage 200 gives the next buy price 15.
 	runtime.market.shortagePermille=200
 	let before=runtime.capture()
 	runtime.controller.buy("retry",runtime.market,runtime.hold,2).assertEquals("Cargo capacity is insufficient.")
 	runtime.capture().assertEquals(before)
 	runtime.controller.buy("retry",runtime.market,runtime.hold,1).assertEquals("Bought 1 grain.")
-	runtime.hold.money.assertEquals(15)
+	runtime.hold.money.assertEquals(24)
 	runtime.market.money=0
 	let poorMarket=runtime.capture()
 	runtime.controller.sell("sale",runtime.market,runtime.hold,1,1000).assertEquals("Market funds are insufficient.")
@@ -194,19 +197,19 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.buy("silk-b",r.markets[1],b,2)
 	r.controller.buy("grain-c",r.markets[2],c,2)
 	r.controller.buy("later-origin-a",r.markets[2],a,2)
-	// Independent prices: grain 3*10 and 2*20 in A, silk 2*30 in B,
-	// grain 2*20 in C. Sell B, then C, then the oldest acquisition in A.
-	r.controller.sell("silk-first",r.markets[4],b,2,1000).assertEquals("Sold 2 silk; realized P/L 124.")
-	r.controller.sell("grain-second",r.markets[3],c,1,1000).assertEquals("Sold 1 grain; realized P/L 72.")
-	r.controller.provenance.costIn(a.id,"grain").assertEquals(70)
+	// Independent acquisitions: A costs 30+43, B costs 64, C costs 42.
+	// Sink edges 101,102 pay 91+90; FIFO still consumes each original lot.
+	r.controller.sell("silk-first",r.markets[4],b,2,1000).assertEquals("Sold 2 silk; realized P/L 117.")
+	r.controller.sell("grain-second",r.markets[3],c,1,1000).assertEquals("Sold 1 grain; realized P/L 70.")
+	r.controller.provenance.costIn(a.id,"grain").assertEquals(73)
 	r.controller.provenance.costIn(b.id,"silk").assertEquals(0)
-	r.controller.provenance.costIn(c.id,"grain").assertEquals(20)
+	r.controller.provenance.costIn(c.id,"grain").assertEquals(21)
 	let standing=r.progress.standing
 	r.markets[0].shortagePermille=1000
 	r.controller.sell("old-origin",r.markets[0],a,1,1000).assertEquals("Sold 1 grain; realized P/L 8.")
 	// The later 'other' purchase must not rewrite the earlier 'port' origin.
 	r.progress.standing.assertEquals(standing)
-	r.controller.provenance.costIn(a.id,"grain").assertEquals(60)
+	r.controller.provenance.costIn(a.id,"grain").assertEquals(63)
 	r.controller.provenance.lots[0].origin.assertEquals("port")
 	r.controller.provenance.lots[0].quantity.assertEquals(2)
 	r.controller.provenance.lots[2].origin.assertEquals("other")
@@ -218,7 +221,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.buy("legitimate",r.markets[0],a,3)
 	b.cargo=2
 	b.goodId="grain"
-	r.controller.sell("unrelated",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 184.")
+	r.controller.sell("unrelated",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 181.")
 	r.progress.standing.assertEquals(0)
 	r.progress.completedRouteCount.assertEquals(0)
 	r.controller.provenance.quantityIn(a.id,"grain").assertEquals(3)
@@ -249,13 +252,13 @@ function lotRuntime() returns PlayableTradeRuntime
 	let withRemainders=r.capture()
 	r.reconstruct(withRemainders).assertTrue()
 	r.capture().assertEquals(withRemainders)
-	r.controller.sell("sell-a",r.markets[3],a,1,1000).assertEquals("Sold 1 grain; realized P/L 88.")
-	// Sink stock is now 101: floor(100*floor(100000/101)/1000)*.92 => 91.
-	r.controller.sell("sell-b1",r.markets[3],b,1,1000).assertEquals("Sold 1 grain; realized P/L 88.")
+	r.controller.sell("sell-a",r.markets[3],a,1,1000).assertEquals("Sold 1 grain; realized P/L 87.")
+	// Marginal sink edges 101,102,103 pay floor(99*.92), floor(98*.92),
+	// floor(97*.92) = 91,90,89. FIFO allocated costs remain 4,3,3.
+	r.controller.sell("sell-b1",r.markets[3],b,1,1000).assertEquals("Sold 1 grain; realized P/L 87.")
 	r.controller.provenance.costIn(b.id,"grain").assertEquals(3)
-	// Next price: floor(100*980/1000)*.92 => 90. Costs 4+3+3 = 10.
-	r.controller.sell("sell-b2",r.markets[3],b,1,1000).assertEquals("Sold 1 grain; realized P/L 87.")
-	r.progress.realizedProfit.assertEquals(263)
+	r.controller.sell("sell-b2",r.markets[3],b,1,1000).assertEquals("Sold 1 grain; realized P/L 86.")
+	r.progress.realizedProfit.assertEquals(260)
 	r.controller.provenance.count.assertEquals(0)
 	allocateCargoCost(2147483647,2,3).assertEquals(1431655764)
 	allocateCargoCost(2147483647,2147483646,2147483647).assertEquals(2147483646)
@@ -271,17 +274,17 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.provenance.add(a.id,"grain",3,1,"port")
 	r.controller.moveCargo("tiny-split",a,b,2)
 	r.controller.provenance.costIn(b.id,"grain").assertEquals(0)
-	r.controller.sell("tiny-sale",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 184.")
-	r.progress.standing.assertEquals(184)
+	r.controller.sell("tiny-sale",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 181.")
+	r.progress.standing.assertEquals(180)
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(1)
 	// One port-origin unit and two sink-origin units; the latter cannot
 	// inherit the former's route profit even when the whole sale is costed.
 	r.controller.buy("sink-origin",r.markets[3],a,2)
 	r.markets[3].shortagePermille=1000
-	// At stock 100 the sell quote is 184: port profit 184-1=183;
-	// the two same-market units earn no standing. Repetition divisor=1500.
+	// The three marginal proceeds total 546: port profit 546/3-1=181;
+	// the two same-market units earn no standing. Award floor(181/1.5)=120.
 	r.controller.sell("mixed-origins",r.markets[3],a,3,1000)
-	r.progress.standing.assertEquals(306)
+	r.progress.standing.assertEquals(300)
 	r.controller.provenance.count.assertEquals(0)
 
 @test function transfersKeepDestinationFifoAndRejectWithoutChangingProvenance()
@@ -301,8 +304,8 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.moveCargo("retry",a,b,1).assertEquals("Transaction already processed.")
 	r.controller.buy("retry",r.markets[0],a,1).assertEquals("Transaction already processed.")
 	r.capture().assertEquals(after)
-	// B's existing 20/unit lot is consumed ahead of the transferred 10/unit lot.
-	r.controller.sell("destination-fifo",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 144.")
+	// B's existing 42-cost lot is consumed ahead of the transferred 10-cost lot.
+	r.controller.sell("destination-fifo",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 139.")
 	r.controller.provenance.costIn(b.id,"grain").assertEquals(10)
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(20)
 	a.money=0
@@ -339,8 +342,8 @@ function lotRuntime() returns PlayableTradeRuntime
 	let saved=r.capture()
 	r.reconstruct(saved).assertTrue()
 	// Destination FIFO consumes its old 1/2 first, then 1/floor(10/3).
-	r.controller.sell("cross-sale",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 179.")
-	r.progress.standing.assertEquals(89)
+	r.controller.sell("cross-sale",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 176.")
+	r.progress.standing.assertEquals(87)
 	r.controller.provenance.costIn(b.id,"grain").assertEquals(10)
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(4)
 

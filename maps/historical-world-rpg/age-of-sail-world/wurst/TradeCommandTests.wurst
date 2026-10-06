@@ -74,7 +74,7 @@ class TradeCommandFixture
 		var kept=0
 		for i=0 to trade.marketCount-1
 			let value=trade.markets[i]
-			if (value.id=="lisbon" or value.id=="london") and (value.goodName=="grain" or value.goodName=="fish")
+			if (value.id=="lisbon" or value.id=="london") and (value.goodName=="grain" or value.goodName=="tools")
 				trade.markets[kept]=value
 				kept++
 			else
@@ -147,48 +147,56 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	(f.ports.output.indexOf("lisbon")>=0).assertTrue()
 	(f.ports.output.indexOf("london")<0).assertTrue()
 	f.dispatch("/trade commodities lisbon")
-	(f.ports.output.indexOf("grain")>=0 and f.ports.output.indexOf("fish")>=0).assertTrue()
-	f.selectPersonal()
+	(f.ports.output.indexOf("grain")>=0 and f.ports.output.indexOf("tools")>=0).assertTrue()
+	f.dispatch("/trade select lisbon tools")
+	f.dispatch("/trade store player_ship_hold")
 	f.dispatch("/trade buy 6")
-	f.ports.output.assertEquals("Bought 6 grain.")
+	f.ports.output.assertEquals("Bought 6 tools.")
 	f.dispatch("/trade stores")
 	(f.ports.output.indexOf("warehouse:lisbon")>=0 and f.ports.output.indexOf("cargo:english_patrol_ship")>=0).assertTrue()
 	f.dispatch("/trade move player_ship_hold warehouse:lisbon 2")
 	f.dispatch("/trade move player_ship_hold cargo:english_patrol_ship 4")
 	f.ports.output.assertEquals("Cargo moved.")
-	f.personal().money.assertEquals(856)
+	// Generated tools use 100 quantity units per display unit. Buy edges
+	// 85..90 sum to 895 minor units before scaling; the debit rounds up to 9.
+	f.personal().money.assertEquals(991)
 	f.warehouse().cargo.assertEquals(2)
 	f.ship().cargo.assertEquals(4)
-	f.trade.controller.provenance.costIn(f.ship().id,"grain").assertEquals(96)
-	f.trade.controller.provenance.costIn(f.warehouse().id,"grain").assertEquals(48)
-	f.dispatch("/trade select lisbon fish")
-	f.dispatch("/trade buy 3")
-	f.ports.output.assertEquals("Bought 3 fish.")
+	f.trade.controller.provenance.costIn(f.ship().id,"tools").assertEquals(6)
+	f.trade.controller.provenance.costIn(f.warehouse().id,"tools").assertEquals(3)
+	f.dispatch("/trade select lisbon grain")
+	f.dispatch("/trade buy 5")
+	f.ports.output.assertEquals("Bought 5 grain.")
 	f.reject("/trade move cargo:english_patrol_ship player_ship_hold 1")
 	f.ports.output.assertEquals("Cargo store contains another commodity.")
-	f.dispatch("/trade sell 3")
+	// Five grain units settle for 2 on purchase and 1 on resale; smaller
+	// sales may be below the supported minimum currency settlement.
+	f.dispatch("/trade sell 5")
+	f.ports.output.assertEquals("Sold 5 grain; realized P/L -1.")
 	f.personal().cargo.assertEquals(0)
-	f.personal().money.assertEquals(850)
+	f.personal().money.assertEquals(990)
 	f.dispatch("/trade close")
 	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)
 	// Only physical observation boundaries move; command/UI selections do not.
 	f.actors.moveTo(f.rpg.interactions.get("london"))
 	f.vessels.moveTo(f.rpg.interactions.get("london"))
 	f.reject("/trade buy 1")
-	f.dispatch("/trade select london grain")
+	f.dispatch("/trade select london tools")
 	f.dispatch("/trade store cargo:english_patrol_ship")
 	// A trusted shortage event changes the commit quote through its existing API.
 	f.trade.applyMarketModifiers("london",2000,false,false,0,0,1000,1000)
 	f.dispatch("/trade sell 2")
-	f.ports.output.assertEquals("Sold 2 grain; realized P/L 84.")
-	f.ship().money.assertEquals(132)
-	f.trade.progress.realizedProfit.assertEquals(78)
-	f.trade.progress.standing.assertEquals(184)
+	// The sale rounds 739/100 down to 7, consuming cost 3. Existing route
+	// progression allocates (7 div 2)*2-3 = 3 standing from that profit.
+	f.ports.output.assertEquals("Sold 2 tools; realized P/L 4.")
+	f.ship().money.assertEquals(7)
+	f.trade.progress.realizedProfit.assertEquals(3)
+	f.trade.progress.standing.assertEquals(103)
 	f.trade.progress.completedRouteCount.assertEquals(1)
 	f.dispatch("/trade move cargo:english_patrol_ship player_ship_hold 2")
 	f.dispatch("/trade store player_ship_hold")
 	f.personal().cargo.assertEquals(2)
-	f.trade.controller.provenance.costIn(f.personal().id,"grain").assertEquals(48)
+	f.trade.controller.provenance.costIn(f.personal().id,"tools").assertEquals(3)
 	f.warehouse().cargo.assertEquals(2)
 	f.trade.controller.processedCount.assertEquals(7)
 	f.trade.nextTransaction.assertEquals(8)
@@ -206,7 +214,7 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	restored.trade.controller.seen("runtime-move-7").assertTrue()
 	restored.reject("/trade sell 1")
 	restored.actors.moveTo(restored.rpg.interactions.get("london"))
-	restored.dispatch("/trade select london grain")
+	restored.dispatch("/trade select london tools")
 	restored.dispatch("/trade store player_ship_hold")
 	// A repeated request number after restore still meets the persisted replay
 	// barrier through command dispatch, even against a different market.
@@ -223,12 +231,12 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	f.reject("/trade select absent grain")
 	f.reject("/trade select london grain")
 	f.reject("/trade select lisbon missing")
-	f.trade.findMarket("lisbon","fish").discovered=false
-	f.reject("/trade select lisbon fish")
+	f.trade.findMarket("lisbon","tools").discovered=false
+	f.reject("/trade select lisbon tools")
 	f.dispatch("/trade commodities lisbon")
-	(f.ports.output.indexOf("fish")<0).assertTrue()
+	(f.ports.output.indexOf("tools")<0).assertTrue()
 	f.trade.findMarket("london","grain").discovered=false
-	f.trade.findMarket("london","fish").discovered=false
+	f.trade.findMarket("london","tools").discovered=false
 	f.actors.moveTo(f.rpg.interactions.get("london"))
 	f.dispatch("/trade markets")
 	(f.ports.output.indexOf("london")<0).assertTrue()

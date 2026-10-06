@@ -1,0 +1,271 @@
+package TradePricingTests
+import PlayableTrade
+import TradePricing
+import PlayableCampaignRuntime
+import CampaignTimeline
+import CampaignSaveManager
+
+function pricingRuntime(int stock,int target,int basePrice,int units,int spread) returns PlayableTradeRuntime
+	let runtime=new PlayableTradeRuntime()
+	let market=new RuntimeMarket("port","grain",stock,1000000,basePrice,basePrice)
+	market.targetStock=target
+	market.pricing.quantityUnitsPerDisplayUnit=units
+	market.pricing.spreadPermille=spread
+	runtime.registerMarket(market)
+	runtime.registerStore(new TradeStore("cargo:ship",1000,1000000))
+	runtime.newCampaign("port")
+	return runtime
+
+@test function generatedDefinitionsShareRulesWithoutSharingMarketAuthority()
+	let r=new PlayableTradeRuntime()
+	r.registerMarketProfile("a","grain",100,10000,10,1000,1000,0,1,1000,80,350,4000)
+	r.registerMarketProfile("b","grain",100,10000,30,1000,1000,0,1,1000,80,350,4000)
+	r.registerMarketProfile("spread","grain",100,10000,10,1000,1000,0,1,1000,0,350,4000)
+	r.registerMarketProfile("units","grain",100,10000,10,1000,1000,0,3,1000,80,350,4000)
+	r.registerMarketProfile("elasticity","grain",100,10000,10,1000,1000,0,1,0,80,350,4000)
+	r.registerMarketProfile("floor","grain",100,10000,10,1000,1000,0,1,1000,80,2000,4000)
+	r.registerMarketProfile("ceiling","grain",100,10000,10,1000,1000,0,1,1000,80,350,1000)
+	r.pricingDefinitions.count.assertEquals(6)
+	r.markets[0].quoteAmount(75,true).assertEquals(1080)
+	r.markets[2].quoteAmount(75,true).assertEquals(1030)
+	r.markets[3].quoteAmount(75,true).assertEquals(360)
+	r.markets[4].quoteAmount(75,true).assertEquals(750)
+	r.markets[5].quoteAmount(75,true).assertEquals(1575)
+	r.markets[6].quoteAmount(75,true).assertEquals(750)
+	r.registerStore(new TradeStore("cargo:a",100,10000))
+	r.newCampaign("a")
+	let other=r.markets[1].quoteAmount(75,true)
+	r.controller.buy("buy",r.market,r.hold,75).assertEquals("Bought 75 grain.")
+	r.markets[1].stock.assertEquals(100)
+	r.markets[1].quoteAmount(75,true).assertEquals(other)
+	let next=r.market.quoteAmount(1,true)
+	r.markets[1].shortagePermille=1000
+	(r.markets[1].quoteAmount(75,true)>other).assertTrue()
+	r.market.quoteAmount(1,true).assertEquals(next)
+
+@test function stock100Base10Quantity75RoundTripChargesMarginalPrices()
+	let r=pricingRuntime(100,100,10,1,80)
+	// Edges 100..26 have five base-10 prices, then ten each of base 11..17.
+	// Round base at +500/1000, then floor the configured 1080/920 spread:
+	// buy = 5*10 + 10*(11+12+14+15+16+17+18) = 1080;
+	// sell = 5*9 + 10*(10+11+11+12+13+14+15) = 905.
+	r.market.quoteAmount(75,true).assertEquals(1080)
+	r.controller.buy("buy",r.market,r.hold,75).assertEquals("Bought 75 grain.")
+	r.hold.money.assertEquals(998920)
+	r.market.money.assertEquals(1001080)
+	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(1080)
+	r.controller.provenance.lots[0].origin.assertEquals("port")
+	r.market.stock.assertEquals(25)
+	r.market.quoteAmount(75,false).assertEquals(905)
+	r.controller.sell("sell",r.market,r.hold,75,1000).assertEquals("Sold 75 grain; realized P/L -175.")
+	r.hold.money.assertEquals(999825)
+	(r.hold.money+r.market.money).assertEquals(2000000)
+	r.market.stock.assertEquals(100)
+	r.hold.cargo.assertEquals(0)
+	r.controller.provenance.count.assertEquals(0)
+	r.progress.realizedProfit.assertEquals(-175)
+	r.progress.standing.assertEquals(0)
+	let saved=r.capture()
+	r.controller.buy("buy",r.market,r.hold,75).assertEquals("Transaction already processed.")
+	r.controller.sell("sell",r.market,r.hold,75,1000).assertEquals("Transaction already processed.")
+	r.capture().assertEquals(saved)
+
+function order(PlayableTradeRuntime r,string id,int quantity,boolean buying)
+	if buying
+		r.controller.buy(id,r.market,r.hold,quantity).assertEquals("Bought "+quantity.toString()+" grain.")
+	else
+		r.controller.sell(id,r.market,r.hold,quantity,1000).startsWith("Sold "+quantity.toString()+" grain;").assertTrue()
+
+function partitionCycle(int stock,int target,int basePrice,int units,int spread,boolean reverse,int partition)
+	let r=pricingRuntime(stock,target,basePrice,units,spread)
+	if reverse
+		r.hold.cargo=75
+		r.hold.goodId="grain"
+	let initialCargo=r.hold.cargo
+	for cycle=0 to 3
+		let before=r.hold.money
+		for side=0 to 1
+			let buying=(side==0)!=reverse
+			let prefix=cycle.toString()+"-"+side.toString()+"-"
+			if side==partition
+				order(r,prefix+"whole",75,buying)
+			else
+				order(r,prefix+"a",1,buying)
+				order(r,prefix+"b",24,buying)
+				order(r,prefix+"c",17,buying)
+				order(r,prefix+"d",33,buying)
+		(r.hold.money<=before).assertTrue()
+		(r.hold.money+r.market.money).assertEquals(2000000)
+		r.market.stock.assertEquals(stock)
+		r.hold.cargo.assertEquals(initialCargo)
+		r.progress.standing.assertEquals(0)
+		// Replay remains rejected after any mixture of order sizes/directions.
+		let saved=r.capture()
+		var replay="0-0-a"
+		if partition==0
+			replay="0-0-whole"
+		r.controller.buy(replay,r.market,r.hold,1).assertEquals("Transaction already processed.")
+		r.capture().assertEquals(saved)
+
+@test function partitionsAndRepeatedCyclesAtZeroSpreadAreConservative()
+	for partition=0 to 1
+		partitionCycle(100,100,10,1,0,false,partition)
+		partitionCycle(100,100,10,1,0,true,partition)
+
+@test function partitionsAcrossClampsAndCurrencyRoundingAreConservative()
+	for partition=0 to 1
+		partitionCycle(200,100,540,100,80,false,partition)
+		partitionCycle(200,100,540,100,80,true,partition)
+		partitionCycle(100,500,400,7,125,false,partition)
+		partitionCycle(100,500,400,7,125,true,partition)
+
+@test function staleQuantityQuotesAndEveryRejectionPreserveCompleteAuthority()
+	let r=pricingRuntime(100,100,10,1,80)
+	r.hold.money=750
+	let before=r.capture()
+	r.controller.buy("retry",r.market,r.hold,75).assertEquals("Funds are insufficient.")
+	r.capture().assertEquals(before)
+	r.hold.money=1000000
+	r.hold.capacity=74
+	let small=r.capture()
+	r.controller.buy("retry",r.market,r.hold,75).assertEquals("Cargo capacity is insufficient.")
+	r.capture().assertEquals(small)
+	r.hold.capacity=1000
+	let noStock=r.capture()
+	r.controller.buy("retry",r.market,r.hold,101).assertEquals("Market stock is insufficient.")
+	r.capture().assertEquals(noStock)
+	// Both displayed prices and a previously displayed total are informational.
+	let quoted=r.market.quoteAmount(75,true)
+	r.market.shortagePermille=500
+	r.market.stock=80
+	r.market.buyUnitPrice=1
+	r.market.sellUnitPrice=99999
+	let beforeInspection=r.capture()
+	for i=0 to 1
+		r.market.inspect().assertEquals("grain: 80 available; buy 18; sell 15; rising")
+		r.capture().assertEquals(beforeInspection)
+	let actual=r.market.quoteAmount(75,true)
+	(actual>quoted).assertTrue()
+	r.controller.buy("retry",r.market,r.hold,75).assertEquals("Bought 75 grain.")
+	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(actual)
+	r.hold.money.assertEquals(1000000-actual)
+	r.market.money=0
+	let noFunds=r.capture()
+	r.controller.sell("sell-retry",r.market,r.hold,75,1000).assertEquals("Market funds are insufficient.")
+	r.capture().assertEquals(noFunds)
+	r.market.money=1000000
+	r.controller.sell("sell-retry",r.market,r.hold,75,1000).startsWith("Sold 75 grain;").assertTrue()
+	r.market.stock.assertEquals(80)
+	(r.hold.money<=1000000).assertTrue()
+
+@test function sameMarketResaleAfterEconomicChangeMayStillEarnCurrency()
+	let r=pricingRuntime(100,100,10,1,80)
+	r.controller.buy("buy",r.market,r.hold,75)
+	r.market.eventPermille=1500
+	r.controller.sell("sell",r.market,r.hold,75,1000).startsWith("Sold 75 grain;").assertTrue()
+	(r.hold.money>1000000).assertTrue()
+	(r.progress.realizedProfit>0).assertTrue()
+	r.progress.standing.assertEquals(0)
+
+@test function interleavedDirectionsAndSubMinorSalesPreserveConservation()
+	let r=pricingRuntime(100,100,10,1,0)
+	order(r,"a",75,true)
+	order(r,"b",24,false)
+	order(r,"c",10,true)
+	order(r,"d",17,false)
+	order(r,"e",3,true)
+	order(r,"f",47,false)
+	r.hold.cargo.assertEquals(0)
+	r.market.stock.assertEquals(100)
+	r.hold.money.assertEquals(1000000)
+	r.market.money.assertEquals(1000000)
+	let tiny=pricingRuntime(100,100,10,100,80)
+	order(tiny,"buy",1,true)
+	let before=tiny.capture()
+	tiny.controller.sell("small",tiny.market,tiny.hold,1,1000).assertEquals("Trade amount is outside the currency settlement range.")
+	tiny.capture().assertEquals(before)
+	tiny.controller.seen("small").assertFalse()
+
+@test function preFixV2AcquisitionsAndRewardsRetainTheirRecordedAmounts()
+	// Literal v2 save written by the old 750-cost transaction. Pricing is not a
+	// persisted field change and must not rewrite this actual historical cost.
+	let saved="v2:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10:cargo;ship:1000:cargo;ship,75,999250,1000,grain:grain:grain:cargo;ship,grain,75,750,port"
+	let r=pricingRuntime(100,100,10,1,80)
+	r.reconstruct(saved).assertTrue()
+	r.capture().assertEquals(saved)
+	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(750)
+	r.controller.buy("old-buy",r.market,r.hold,1).assertEquals("Transaction already processed.")
+	r.market.quoteAmount(75,false).assertEquals(905)
+	r.controller.sell("resale",r.market,r.hold,75,1000).assertEquals("Sold 75 grain; realized P/L 155.")
+	r.progress.standing.assertEquals(1234)
+	r.progress.realizedProfit.assertEquals(932)
+	r.progress.completedRouteCount.assertEquals(12)
+
+@test function pricingResumesWithPurchasedCostAndEarnedHistoryThroughEveryEnvelope()
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		let original=pricingRuntime(100,100,10,1,80)
+		original.progress.standing=1234
+		original.progress.realizedProfit=777
+		original.progress.completedRouteCount=12
+		original.controller.buy("purchase",original.market,original.hold,75)
+		let saved=original.capture()
+		let clock=new CampaignClock(1,100,1,1.)
+		let codec=new PlayableCampaignCodec(clock)
+		let authority="v2;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:test,allegiance:test,settlement:port;quests=;discovery=port;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
+		let payload=campaignSaveEnvelope(schema,"manual_01",SAVE_SLOT_MANUAL,1,"pricing",authority)
+		let restored=pricingRuntime(100,100,10,1,80)
+		let decoded=codec.decodeMigrateAndValidate(payload,"manual_01")
+		(decoded!="").assertTrue()
+		restored.reconstruct(lastAuthorityValue(decoded,"trade")).assertTrue()
+		restored.capture().assertEquals(saved)
+		restored.controller.buy("purchase",restored.market,restored.hold,75).assertEquals("Transaction already processed.")
+		restored.controller.provenance.costIn(restored.hold.id,"grain").assertEquals(1080)
+		original.controller.sell("return",original.market,original.hold,75,1000)
+		restored.controller.sell("return",restored.market,restored.hold,75,1000)
+		restored.capture().assertEquals(original.capture())
+		restored.progress.standing.assertEquals(1234)
+		restored.progress.realizedProfit.assertEquals(602)
+		restored.progress.completedRouteCount.assertEquals(12)
+
+@test function largeOrdersAndOverflowRejectionsCannotWrapCurrencyOrStock()
+	let r=pricingRuntime(100,100,10,1,80)
+	r.market.stock=2147483647
+	r.market.targetStock=2147483647
+	r.market.baseUnitPrice=1000
+	r.market.pricing.elasticityPermille=0
+	r.market.pricing.quantityUnitsPerDisplayUnit=1000
+	r.market.pricing.spreadPermille=0
+	// Raw numerator exceeds int, but exact scaled amount remains representable.
+	r.market.quoteAmount(2147483647,true).assertEquals(2147483647)
+	r.market.pricing.quantityUnitsPerDisplayUnit=1
+	r.market.quoteAmount(2147483647,true).assertEquals(-1)
+	r.market.stock=100
+	r.market.targetStock=100
+	r.market.baseUnitPrice=10
+	r.market.money=2147483647
+	let before=r.capture()
+	r.controller.buy("overflow",r.market,r.hold,1).assertEquals("Trade amount is outside the currency settlement range.")
+	r.capture().assertEquals(before)
+	r.hold.cargo=1
+	r.hold.goodId="grain"
+	r.market.stock=2147483647
+	let fullStock=r.capture()
+	r.controller.sell("overflow",r.market,r.hold,1,1000).assertEquals("Trade amount is outside the currency settlement range.")
+	r.capture().assertEquals(fullStock)
+
+@test function signedModifiersEmptyStockAndLargeFractionalPricesUseIntegerRounding()
+	tradeFloorDiv(-1,2).assertEquals(-1)
+	tradeFloorDiv(-3,2).assertEquals(-2)
+	tradeFloorDiv(3,2).assertEquals(1)
+	let r=pricingRuntime(0,100,10,1,80)
+	r.market.currentBuyUnitPrice().assertEquals(21)
+	r.market.quoteAmount(1,false).assertEquals(18)
+	r.controller.buy("empty",r.market,r.hold,1).assertEquals("Market stock is insufficient.")
+	r.market.stock=2147483647
+	r.market.targetStock=2147483647
+	r.market.baseUnitPrice=2147483647
+	r.market.pricing.elasticityPermille=0
+	r.market.pricing.quantityUnitsPerDisplayUnit=2147483647
+	r.market.pricing.spreadPermille=0
+	r.market.quoteAmount(1,true).assertEquals(1)
+	r.market.quoteAmount(2,true).assertEquals(2)

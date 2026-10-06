@@ -20,6 +20,13 @@ assertions, interpreter errors, empty discovery and incomplete output fail.
 Map and campaign packaging call the same gate before producing artifacts;
 campaign tests use full generated data before physical-map localization.
 
+These entry points give Grill and its compiler child a 6 GiB maximum Java heap
+through their subprocess environment. The pinned JVM's automatic limit is too
+small for the complete generated suite on some hosts. No global Java settings
+are changed. An explicit `-Xmx` in the caller's `JAVA_TOOL_OPTIONS` overrides this
+default; other caller options are preserved. The compiler pin, complete-suite
+requirement and interpreter's 20-second per-test deadline remain unchanged.
+
 `generate_regional_terrain.py` deterministically rasterizes scenario-owned regional geography. Registered terrain sources are hashed into build provenance, stale outputs are rejected, and normalized terrain inputs are packaged under `runtime/`.
 
 Planned and implemented tooling:

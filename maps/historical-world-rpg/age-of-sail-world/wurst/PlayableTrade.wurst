@@ -2,6 +2,7 @@ package PlayableTrade
 import CommandRouter
 import PlayableCampaignRuntime
 import CargoProvenance
+import TradePricing
 import ManagementScreenPauseController
 import LiveTradeAccess
 
@@ -33,6 +34,7 @@ public class TradeStore
 		return capacity-cargo
 
 public class RuntimeMarket
+	TradePricing pricing
 	string id
 	string goodName
 	int stock
@@ -51,6 +53,12 @@ public class RuntimeMarket
 	int eventPermille=0
 	int technologyPermille=0
 	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
+		pricing=new TradePricing()
+		initialize(marketId,displayedGood,initialStock,currencyMinor,buyPrice,sellPrice)
+	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice,TradePricing definition)
+		pricing=definition
+		initialize(marketId,displayedGood,initialStock,currencyMinor,buyPrice,sellPrice)
+	private function initialize(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
 		id=marketId
 		goodName=displayedGood
 		stock=initialStock
@@ -60,10 +68,10 @@ public class RuntimeMarket
 		previousUnitPrice=buyPrice
 		baseUnitPrice=buyPrice
 		targetStock=IMaxBJ(1,initialStock)
-	function trend() returns string
-		if buyUnitPrice>previousUnitPrice
+	function trend(int currentPrice) returns string
+		if currentPrice>previousUnitPrice
 			return "rising"
-		if buyUnitPrice<previousUnitPrice
+		if currentPrice<previousUnitPrice
 			return "falling"
 		return "steady"
 	function inspect() returns string
@@ -71,21 +79,27 @@ public class RuntimeMarket
 			return "No discovered commodities."
 		if blockaded or occupiedByHostile
 			return "Market access is restricted."
-		return goodName+": "+stock.toString()+" available; buy "+buyUnitPrice.toString()+"; sell "+sellUnitPrice.toString()+"; "+trend()
-	function currentBuyUnitPrice() returns int
-		// Integer-only version of the authoritative headless pressure model. Quotes
-		// are recomputed at commit time, so cached UI text cannot be exploited.
-		let disruption=shortagePermille+eventPermille+(consumptionPermille-productionPermille) div 2
-		var access=1000
+		// Render current quotes without rewriting persisted observations merely
+		// by opening a screen. Commit and economy updates record observations.
+		let currentBuy=currentBuyUnitPrice()
+		let currentSell=currentSellUnitPrice()
+		return goodName+": "+stock.toString()+" available; buy "+currentBuy.toString()+"; sell "+currentSell.toString()+"; "+trend(currentBuy)
+	function priceAdjustment() returns int
+		var adjustment=shortagePermille+eventPermille+tradeFloorDiv(consumptionPermille-productionPermille,2)-technologyPermille
 		if blockaded
-			access+=500
+			adjustment+=500
 		if occupiedByHostile
-			access+=400
-		let stockPressure=targetStock*1000 div IMaxBJ(targetStock div 4,stock)
-		let price=IMaxBJ(1,baseUnitPrice*stockPressure*(1000+disruption) div 1000000)
-		return IMaxBJ(1,price*access*(1000-technologyPermille) div 1000000)
+			adjustment+=400
+		return adjustment
+	function currentBuyUnitPrice() returns int
+		return pricing.unitPrice(stock,targetStock,baseUnitPrice,priceAdjustment(),true)
 	function currentSellUnitPrice() returns int
-		return IMaxBJ(1,currentBuyUnitPrice()*920 div 1000)
+		if stock==2147483647
+			// Informational price at the stock limit; commits reject overflow.
+			return pricing.unitPrice(stock,targetStock,baseUnitPrice,priceAdjustment(),false)
+		return pricing.unitPrice(stock+1,targetStock,baseUnitPrice,priceAdjustment(),false)
+	function quoteAmount(int quantity,boolean buying) returns int
+		return pricing.amount(stock,targetStock,baseUnitPrice,priceAdjustment(),quantity,buying)
 	function reprice()
 		previousUnitPrice=buyUnitPrice
 		buyUnitPrice=currentBuyUnitPrice()
@@ -133,9 +147,11 @@ public class PlayableTradeController
 			return "Commodity is not discovered."
 		if market.blockaded or market.occupiedByHostile
 			return "Market access is restricted."
-		let charge=market.currentBuyUnitPrice()*quantity
 		if market.stock<quantity
 			return "Market stock is insufficient."
+		let charge=market.quoteAmount(quantity,true)
+		if charge<1 or market.money>2147483647-charge
+			return "Trade amount is outside the currency settlement range."
 		if destination.money<charge
 			return "Funds are insufficient."
 		if destination.freeCapacity()<quantity
@@ -164,7 +180,9 @@ public class PlayableTradeController
 			return "Commodity is not discovered."
 		if market.blockaded or market.occupiedByHostile
 			return "Market access is restricted."
-		let proceeds=market.currentSellUnitPrice()*quantity
+		let proceeds=market.quoteAmount(quantity,false)
+		if proceeds<1 or source.money>2147483647-proceeds
+			return "Trade amount is outside the currency settlement range."
 		if market.money<proceeds
 			return "Market funds are insufficient."
 		market.reprice()
@@ -316,6 +334,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	boolean rollbackStoreSelected=false
 	string rollbackMarketControl=""
 	string rollbackStoreControl=""
+	TradePricingCatalog pricingDefinitions = new TradePricingCatalog()
 	ManagementScreenSession management = new ManagementScreenSession()
 	MerchantProgress progress = new MerchantProgress()
 	PlayableTradeController controller = new PlayableTradeController(progress)
@@ -364,8 +383,9 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		marketCount++
 		if value.id==settlementId and market.id==settlementId
 			market=value
-	function registerMarketProfile(string marketId,string goodId,int stock,int liquidity,int basePrice,int production,int consumption,int shortage)
-		let value=new RuntimeMarket(marketId,goodId,stock,liquidity,basePrice,IMaxBJ(1,basePrice*920 div 1000))
+	function registerMarketProfile(string marketId,string goodId,int stock,int liquidity,int basePrice,int production,int consumption,int shortage,int quantityUnits,int elasticity,int spread,int priceFloor,int priceCeiling)
+		let definition=pricingDefinitions.resolve(quantityUnits,elasticity,spread,priceFloor,priceCeiling)
+		let value=new RuntimeMarket(marketId,goodId,stock,liquidity,basePrice,basePrice,definition)
 		value.productionPermille=production
 		value.consumptionPermille=consumption
 		value.shortagePermille=shortage

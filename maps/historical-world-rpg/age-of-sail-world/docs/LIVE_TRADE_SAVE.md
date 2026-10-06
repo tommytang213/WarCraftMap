@@ -55,10 +55,54 @@ cargo quantity remains present with an unknown commodity rather than guessing
 an identity from the selected market. New purchases receive normal provenance.
 Resaving writes v2 and migration is idempotent. Source saves are not rewritten.
 
+Quantity-aware pricing does not change this wire format. The live domain stays
+at version 2 and the campaign envelope at version 7. Base prices, target stocks,
+quantity units, elasticity, spread and price bounds are generated definitions;
+generator provenance is version 18, including the trade access bindings. Current
+stock and persisted live modifiers determine every commit quote. Cached displayed
+prices never authorize a debit or payout, including after restoration. Opening a
+market computes fresh display prices without changing persisted observations or
+other authority.
+Existing acquisitions retain
+their actual recorded cost, even when the old pricing bug undercharged them;
+holdings, earned profit/standing, route history and replay IDs are not rewritten.
+
+`_shared/wurst/TradePricing.wurst` and `_shared/engine/trade.py::quote()` sum
+marginal prices over the stock interval traversed by an order. Each indivisible
+quantity unit uses its midpoint rounded toward the upper stock endpoint, on
+both buys and sells. Scarcity, condition modifiers, pressure bounds, base-price
+half-up rounding and spread are applied at each edge. Only the summed amount is
+converted from quantity units to minor currency: buys round up, sells round
+down; a sale below one minor unit is rejected. Equal-price intervals are grouped
+so work is bounded by the 2,751 scarcity bands rather than the quantity.
+
+This refines the former whole-order midpoint approximation: rounding or clamping
+one midpoint is not additive and can reward different partitions of the same
+stock movement. With marginal prices, every closed stock path traverses each
+edge equally in both directions, and its buy price is at least its sell price.
+Currency settlement rounding can only increase buy costs or reduce proceeds.
+No batching, reverse ordering or repeated cycle can create currency while the
+market's other authority is unchanged. Different markets and subsequent
+economic changes may still produce legitimate profit.
+
+For stock/target 100, base price 10 and spread 80, buying 75 costs 1,080 and
+returning them pays 905. The five base-10 edges and ten each at base 11 through
+17 independently give those totals after spread. New lots record 1,080 as the
+actual acquisition cost. Existing pre-fix lots retain their historical cost.
+
 `PlayableTradeTests.wurst` covers independent cost expectations, interleaved
 stores/goods/origins, partial transfers and sales, integer remainders, uncosted
 cargo, replay and rejection, malformed records, populated codec round trips,
 and all four legacy layouts in every supported campaign envelope.
+`TradePricingTests.wurst` adds the reported round trip, split/reversed/interleaved
+orders, unchanged-world repeated cycles, stale authority, atomic rejection,
+integer limits, economic-change profits, a literal pre-fix v2 save and purchase/
+resale through all seven supported campaign envelopes.
+`TradePricingVectorsTests.wurst` executes 71 live quote cases;
+`test_trade_pricing.py` checks their literal expected
+amounts against the headless contract and an independent rational per-edge
+oracle, plus deterministic randomized partitions. Packaging tests verify that
+every generated market receives the authored pricing definitions.
 `CampaignLoadTransactionTests.wurst` also injects failure after applying changed
 trade state and verifies populated lots, earned standing, other campaign domains,
 projections and source slots roll back together.

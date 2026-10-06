@@ -5,7 +5,7 @@ import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
 from datetime import date
 from dataclasses import dataclass
 from pathlib import Path
-from wurst_execution import WurstExecutionError, execute_tests, source_revision
+from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
 
 class PackagingError(RuntimeError): pass
 GENERATOR_VERSION = 18
@@ -478,6 +478,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         trade_records.append('\truntime.registerPersonalStore()')
         trade_stores.append(dict(id='player_ship_hold', kind='personal', authorityId='player', warehouseService=False))
         goods_catalog = json.loads(goods_path.read_text(encoding="utf-8"))
+        trade_defaults = json.loads((config.project / "scenario/economy/playable-trade.json").read_text(encoding="utf-8"))["marketDefaults"]
         goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
         for settlement in settlement_runtime:
             region, row = settlement_sources[settlement["id"]]
@@ -495,13 +496,14 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 good = goods[good_id]
                 stock = 320 if good_id in production else 180 if good_id in imports else 24 if good_id in shortages else 90
                 if row.get("port") and good_id in imports: stock = stock * 13 // 10
-                pressure = 1350 if good_id in shortages else 820 if good_id in production else 1000
-                buy = max(1, int(good["basePriceMinor"]) * pressure // 1000)
                 liquidity = max(1000, sum(max(1, int(goods[x]["basePriceMinor"])) * stock for x in basket if x in goods))
                 trade_records.append(
                     f'\truntime.registerMarketProfile("{ws(settlement["id"])}","{ws(good_id)}",'
-                    f'{stock},{liquidity},{buy},{1250 if good_id in production else 1000},'
-                    f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0})')
+                    f'{stock},{liquidity},{int(good["basePriceMinor"])},{1250 if good_id in production else 1000},'
+                    f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0},'
+                    f'{int(good["quantityUnitsPerDisplayUnit"])},{int(good.get("priceElasticityPermille", 1000))},'
+                    f'{int(trade_defaults["spreadPermille"])},{int(trade_defaults["priceFloorPermille"])},'
+                    f'{int(trade_defaults["priceCeilingPermille"])})')
             capacity = 24000 if "warehouse" in services else 120 if row.get("port") else 60
             service = "warehouse" in services
             trade_stores.append(dict(id=f'warehouse:{settlement["id"]}', kind='warehouse', authorityId=settlement['id'], warehouseService=service))
@@ -620,7 +622,8 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
         if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: output changed: {name}")
 
 def _run(stage: str, command: list[str], cwd: Path) -> None:
-    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True)
+    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,
+                            env=toolchain_environment())
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
 
 def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
