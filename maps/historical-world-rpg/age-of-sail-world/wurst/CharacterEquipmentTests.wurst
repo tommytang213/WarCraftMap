@@ -7,6 +7,8 @@ import WarcraftRegionalRuntime
 import CampaignSaveManager
 import CommandRouter
 import CampaignTimeline
+import ManagementScreenPauseController
+import ManagementCommandTests
 
 class EquipmentCommandOutput implements CommandOutput
 	string last = ""
@@ -38,6 +40,7 @@ class EquipmentFixture
 	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
 	EquipmentNatives natives = new EquipmentNatives()
 	construct()
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		addHero("alpha", "Alpha", 0)
 		addHero("beta", "Beta", 1)
 		addHero("gamma", "Gamma", 2)
@@ -133,13 +136,14 @@ class EquipmentFixture
 	commands.dispatch(null, "/equip gamma coat").assertTrue()
 	output.last.assertEquals("Requirements are not met here.")
 	commands.dispatch(null, "/inventory").assertTrue()
-	output.last.assertEquals(f.rpg.inventorySummary("alpha"))
+	output.last.startsWith(f.rpg.inventorySummary("alpha")+"\n").assertTrue()
+	(output.last.indexOf("/rpg-close") >= 0).assertTrue()
 	commands.dispatch(null, "/items beta").assertTrue()
-	output.last.assertEquals(f.rpg.inventorySummary("beta"))
+	output.last.startsWith(f.rpg.inventorySummary("beta")+"\n").assertTrue()
 	commands.dispatch(null, "/equipment gamma").assertTrue()
-	output.last.assertEquals(f.rpg.inventorySummary("gamma"))
+	output.last.startsWith(f.rpg.inventorySummary("gamma")+"\n").assertTrue()
 	commands.dispatch(null, "/inventory missing").assertTrue()
-	output.last.assertEquals("Choose a character with -inventory HERO.")
+	output.last.startsWith("Choose a character with /inventory HERO.\n").assertTrue()
 	commands.dispatch(null, "/inventory alpha beta").assertFalse()
 	output.last.assertEquals("Invalid arguments. Usage: /inventory [HERO]")
 	f.rpg.captureState().assertEquals(before)
@@ -151,6 +155,8 @@ class EquipmentFixture
 	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
 	f.natives.life[0].assertEquals(105)
 	f.natives.life[1].assertEquals(200)
+	commands.dispatch(null, "/rpg-close").assertTrue()
+	f.rpg.management.pauses.getModalOwnerCount().assertEquals(0)
 	installCampaignClock(previousClock)
 	destroy clock
 

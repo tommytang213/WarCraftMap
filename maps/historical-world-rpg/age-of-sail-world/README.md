@@ -22,3 +22,6 @@ A very long single-player global historical sandbox/RPG for Warcraft III.
 The player is expected to play near-final/full builds, not repeatedly test individual development features. Automated and developer-side validation is part of the project design.
 
 See `docs/DESIGN_LOCK.md` for agreed requirements.
+
+See [management commands](docs/MODAL_MANAGEMENT.md) for RPG and market
+open, switch, and close actions and their campaign pause lifecycle.

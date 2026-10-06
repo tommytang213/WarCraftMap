@@ -1,0 +1,299 @@
+package ManagementCommandTests
+
+import CommandRouter
+import WarcraftRpgRuntime
+import PlayableTrade
+import ManagementScreenPauseController
+import CampaignTimeline
+import CampaignTimelineTests
+import MilitaryCombatEvents
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import MapDiscoveryScreen
+import PlayableCampaignRuntime
+
+/** Only presentation, resources and native boundaries are replaced. */
+public class RecordingManagementPorts implements CommandOutput, TradePresentation, CampaignPauseRuntime, TechnologyEffectPort, ResearchCommandResources, CampaignTimelineListener, MapPresentationRuntime
+	string output = ""
+	string events = ""
+	int pauseWrites = 0
+	boolean paused = false
+	int currency = 1000
+	override function show(player recipient, string message)
+		output += message + "\n"
+	override function showMarket(player viewer, string marketId, string rows)
+		show(viewer, marketId + "\n" + rows)
+	override function showTradeResult(player viewer, string message)
+		show(viewer, message)
+	override function setCampaignPaused(boolean value)
+		paused = value
+		pauseWrites++
+	override function applyTechnology(string controllerId, string effectId, int magnitude)
+		skip
+	override function clearTechnologyLayer(string controllerId)
+		skip
+	override function controllerId(player sender) returns string
+		return "player"
+	override function year() returns int
+		return 1450
+	override function gold(player sender) returns int
+		return currency
+	override function setGold(player sender, int amount)
+		currency = amount
+	override function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
+		events += eventId + ":" + campaignDay.toString() + ";"
+	override function showWorldMap(string physicalRegionId, string commandRegionId)
+		skip
+	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
+		skip
+	override function focusExact(string locationId)
+		skip
+	override function focusSearchArea(string searchAreaId)
+		skip
+	override function hideMap()
+		skip
+
+public function managementCommands(WarcraftRpgRuntime rpg, PlayableTradeRuntime trade, ManagementScreenPauseController pauses, RecordingManagementPorts ports) returns CommandRegistry
+	rpg.management.pauses = pauses
+	trade.management.pauses = pauses
+	rpg.researchResources = ports
+	let commands = new CommandRegistry(false, 6, new CommandText(), ports)
+	commands.register("help", "commands", "help [page|command]", "Help", "Help", 0, 1, COMMAND_RELEASE, null).assertEquals("")
+	registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+	registerPlayableTradeCommands(commands, trade, ports).assertEquals("")
+	return commands
+
+class ManagementFixture
+	RecordingManagementPorts ports = new RecordingManagementPorts()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(ports, false)
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(ports)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	CampaignClock clock = new CampaignClock(1, 100, 1, 1.)
+	RecordingClockTimer timerPort = new RecordingClockTimer()
+	CommandRegistry commands
+	construct()
+		clock.addOccurrence("early", "alpha", 2, 1)
+		clock.addOccurrence("simultaneous", "beta", 2, 1)
+		clock.addOccurrence("later", "gamma", 5, 1)
+		clock.subscribe(ports)
+		installCampaignClock(clock, pauses)
+		clock.attachTimer(timerPort, 1.)
+		clock.advanceElapsed(.25).assertTrue()
+		rpg.heroes.clock = clock
+		let hero = new RpgHero("captain", "Captain", 'Hpal')
+		rpg.heroes.register(hero)
+		rpg.heroes.recruit(hero.id).assertTrue()
+		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "fine", 1, 5))
+		rpg.inventory.grant("coat").assertTrue()
+		rpg.journal.register(new RuntimeQuest("quest", "Voyage", "regional"))
+		rpg.technologies.register(new RuntimeTechnology("printing", "Printing", 1450, 100))
+		trade.newCampaign("port")
+		commands = managementCommands(rpg, trade, pauses, ports)
+	function dispatch(string command)
+		commands.dispatch(null, command).assertTrue()
+	function assertFrozen()
+		let before = clock.captureState()
+		let delivered = ports.events
+		timerPort.tick(50.)
+		clock.advanceTo(99).assertTrue()
+		clock.captureState().assertEquals(before)
+		ports.events.assertEquals(delivered)
+	function assertRunning()
+		pauses.getModalOwnerCount().assertEquals(0)
+		clock.isPaused().assertFalse()
+		pauses.isCampaignPaused().assertFalse()
+
+@test function everyRegisteredManagementViewOwnsPauseUntilItsDocumentedClose()
+	let f = new ManagementFixture()
+	string array[5] views
+	views[0] = "/roster"
+	views[1] = "/equipment captain"
+	views[2] = "/journal"
+	views[3] = "/technology"
+	views[4] = "/market inspect"
+	for i = 0 to 4
+		f.dispatch(views[i])
+		f.pauses.getModalOwnerCount().assertEquals(1)
+		f.ports.paused.assertTrue()
+		f.assertFrozen()
+		if i == 4
+			(f.ports.output.indexOf("/trade close") >= 0).assertTrue()
+			f.dispatch("/trade close")
+			f.dispatch("/market close")
+		else
+			(f.ports.output.indexOf("/rpg-close") >= 0).assertTrue()
+			f.dispatch("/rpg-close")
+			f.dispatch("/rpg-close")
+		f.assertRunning()
+	(f.ports.output.indexOf("Captain") >= 0).assertTrue()
+	(f.ports.output.indexOf("Coat") >= 0).assertTrue()
+	(f.ports.output.indexOf("Quest Journal") >= 0).assertTrue()
+	(f.ports.output.indexOf("Printing") >= 0).assertTrue()
+	f.ports.pauseWrites.assertEquals(10)
+	// Fractional time and the full simultaneous event batch resume exactly once.
+	f.timerPort.tick(.75)
+	f.clock.campaignDay().assertEquals(2)
+	f.ports.events.assertEquals("alpha:2;beta:2;")
+	f.timerPort.tick(3.)
+	f.ports.events.assertEquals("alpha:2;beta:2;gamma:5;")
+
+@test function reopeningAndSwitchingRetainOwnersWithoutUnpauseEdges()
+	let f = new ManagementFixture()
+	for i = 0 to 2
+		f.dispatch("/heroes")
+		f.dispatch("/items captain")
+		f.dispatch("/quests")
+		f.dispatch("/institutions")
+		f.pauses.getModalOwnerCount().assertEquals(1)
+	f.dispatch("/trade open")
+	f.dispatch("/trade inspect")
+	f.pauses.getModalOwnerCount().assertEquals(2)
+	f.ports.pauseWrites.assertEquals(1)
+	f.dispatch("/rpg-close")
+	f.dispatch("/rpg-close")
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	f.assertFrozen()
+	f.dispatch("/trade close")
+	f.assertRunning()
+	f.ports.pauseWrites.assertEquals(2)
+
+@test function manualPauseSurvivesAllManagementClosesAndLateClockBinding()
+	let f = new ManagementFixture()
+	f.pauses.setManuallyPaused(true)
+	f.dispatch("/roster")
+	f.dispatch("/trade open")
+	f.clock.bindManagementPause(f.pauses)
+	f.clock.bindManagementPause(f.pauses)
+	f.pauses.listenerCount.assertEquals(1)
+	f.pauses.setManuallyPaused(false)
+	f.dispatch("/trade close")
+	f.dispatch("/rpg-close")
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	f.pauses.isCampaignPaused().assertTrue()
+	f.ports.pauseWrites.assertEquals(1)
+	f.assertFrozen()
+	f.pauses.setManuallyPaused(false)
+	f.assertRunning()
+	let initial = new ManagementScreenPauseController(f.ports, true)
+	f.clock.bindManagementPause(initial)
+	let owner = initial.openModalManagementScreen()
+	owner.close()
+	f.clock.isPaused().assertTrue()
+	initial.setManuallyPaused(false)
+	f.clock.isPaused().assertFalse()
+
+@test function actionResultsHelpInvalidCommandsAndPassiveNotificationsDoNotOpenManagement()
+	let f = new ManagementFixture()
+	f.dispatch("/help equipment")
+	(f.ports.output.indexOf("/rpg-close") >= 0).assertTrue()
+	f.dispatch("/help market")
+	(f.ports.output.indexOf("/trade close") >= 0).assertTrue()
+	f.dispatch("/trade buy 1")
+	f.dispatch("/trade sell 1")
+	f.dispatch("/accept quest")
+	f.dispatch("/track quest")
+	f.dispatch("/research printing")
+	f.dispatch("/unequip captain chest")
+	f.dispatch("/trade unknown")
+	f.dispatch("/trade inspect extra")
+	f.commands.dispatch(null, "/roster extra").assertFalse()
+	f.commands.dispatch(null, "/trade").assertFalse()
+	f.ports.show(null, "Passive campaign notification.")
+	f.pauses.openPassiveUi()
+	f.assertRunning()
+	f.ports.pauseWrites.assertEquals(0)
+	f.dispatch("/inventory")
+	f.dispatch("/trade buy 1")
+	f.dispatch("/track quest")
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	f.dispatch("/rpg-close")
+
+@test function managementRegistrationReportsConflictsBeforeUnclosableRpgViews()
+	let f = new ManagementFixture()
+	let commands = new CommandRegistry(false, 6, new CommandText(), f.ports)
+	commands.register("rpg-close", "", "rpg-close", "Occupied", "Occupied", 0, 0, COMMAND_RELEASE, null).assertEquals("")
+	(registerRpgRuntimeCommands(commands, f.rpg).indexOf("rpg-close") >= 0).assertTrue()
+	(commands.find("roster") == null).assertTrue()
+	commands.register("market", "", "market", "Occupied", "Occupied", 0, 0, COMMAND_RELEASE, null).assertEquals("")
+	(registerPlayableTradeCommands(commands, f.trade, f.ports).indexOf("market") >= 0).assertTrue()
+	(commands.find("trade") == null).assertTrue()
+	f.assertRunning()
+
+@test function rpgAndMarketNestWithRegisteredMilitaryAndMapOwners()
+	let f = new ManagementFixture()
+	// Military's existing command owns the shared runtime singleton. Replace
+	// only its native pause output, keeping the production registration intact.
+	let shared = getManagementScreenPauseController()
+	let nativePause = shared.runtime
+	shared.runtime = f.ports
+	f.rpg.management.pauses = shared
+	f.trade.management.pauses = shared
+	f.clock.bindManagementPause(shared)
+	let military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	registerMilitarySettlementCommands(f.commands, military)
+	let maps = new MapDiscoveryScreenController(shared, f.ports, "europe", "europe")
+	registerCampaignMapCommand(f.commands, maps)
+	// Another management surface (e.g. country) retains its independent token.
+	let countryOwner = shared.openModalManagementScreen()
+	f.dispatch("/army army")
+	f.dispatch("/army army")
+	f.dispatch("/map world")
+	f.dispatch("/map europe")
+	f.dispatch("/roster")
+	f.dispatch("/trade open")
+	shared.getModalOwnerCount().assertEquals(5)
+	f.dispatch("/rpg-close")
+	f.dispatch("/trade close")
+	f.dispatch("/management-close")
+	f.dispatch("/management-close")
+	f.dispatch("/map close")
+	shared.getModalOwnerCount().assertEquals(1)
+	f.assertFrozen()
+	countryOwner.close()
+	shared.isCampaignPaused().assertFalse()
+	shared.getModalOwnerCount().assertEquals(0)
+	f.clock.bindManagementPause(f.pauses)
+	shared.runtime = nativePause
+
+class ManagementCombatNatives implements MilitaryCombatNatives
+	boolean armed = false
+	real elapsed = 0.
+	int serial = 0
+	override function install(MilitaryCombatEvents events, int generation)
+		skip
+	override function uninstall()
+		skip
+	override function armTimer(real seconds, int serial)
+		armed = true
+		elapsed = 0.
+		this.serial = serial
+	override function stopTimer()
+		armed = false
+	override function timerElapsed() returns real
+		return elapsed
+	override function heroRepresentationId(int index) returns int
+		return 0
+
+@test function registeredManagementCommandsSuspendAndResumeGameplayTimers()
+	let f = new ManagementFixture()
+	let military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	let natives = new ManagementCombatNatives()
+	let events = new MilitaryCombatEvents(military, new PlayerCampaignIdentity(), f.pauses, natives)
+	events.install()
+	natives.elapsed = .25
+	f.dispatch("/roster")
+	military.gameplaySeconds.assertEquals(.25)
+	natives.armed.assertFalse()
+	let stale = natives.serial
+	f.dispatch("/trade inspect")
+	natives.elapsed = 20.
+	events.onTimer(stale)
+	military.gameplaySeconds.assertEquals(.25)
+	f.dispatch("/rpg-close")
+	natives.armed.assertFalse()
+	f.dispatch("/trade close")
+	natives.armed.assertTrue()
+	natives.elapsed = .75
+	events.onTimer(natives.serial)
+	military.gameplaySeconds.assertEquals(1.)
+	events.stop()
