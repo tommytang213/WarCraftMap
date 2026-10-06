@@ -4,6 +4,7 @@ import ScenarioData
 import CampaignHandoff
 import PlayableCampaignRuntime
 import PlayableTrade
+import LiveTradeAccess
 import CommandRouter
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
@@ -140,6 +141,8 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	configureGeneratedRpg(rpg)
 	configureGeneratedInteractions(rpg.interactions)
 	rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)
+	trade.access = new LiveTradeAccess(campaign.state)
+	trade.access.cargoActors = new WarcraftTradeCargoActors(military)
 	rpg.setProjectionPort(projections)
 	campaign.state.setRpgRuntime(rpg)
 	military.setRpgRuntime(rpg)

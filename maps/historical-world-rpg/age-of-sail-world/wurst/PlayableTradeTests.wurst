@@ -30,8 +30,10 @@ class Presentation implements TradePresentation
 	let runtime = new PlayableTradeRuntime()
 	runtime.market = calicut
 	runtime.management.pauses = new ManagementScreenPauseController(new TradeTestPause(), false)
+	calicut.inspect().assertEquals("Pepper: 100 available; buy 10; sell 9; steady")
 	inspectMarket(null,runtime,ui)
-	ui.market.startsWith("calicut|Pepper: 100 available; buy 10; sell 9; steady").assertTrue()
+	// Without a bound physical authority, opening management shows guidance only.
+	ui.market.startsWith("Local trade|No eligible market selected.").assertTrue()
 	runtime.management.close()
 	buyCargo(null,"buy_1",calicut,ship,10,controller,ui)
 	ui.result.assertEquals("Bought 10 Pepper.")

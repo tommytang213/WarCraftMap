@@ -5,6 +5,16 @@ envelope is version 7, supporting envelopes 1–7. This follows the existing
 independently versioned diplomacy and military domains. The headless JSON trade
 contract already contains attributable lots and remains unchanged.
 
+Player selection, physical access and cargo-transfer commands are documented in
+[LIVE_TRADE_COMMANDS.md](LIVE_TRADE_COMMANDS.md). Generated access bindings reuse
+the saved military and merchant authorities; saved selections never confer access.
+Older saves that omit the now-registered personal hold receive a zero balance for
+that missing store before any saved record or legacy summary is applied.
+Summary-only generated saves retain the historical starting-settlement store
+(or the first generated store when no local store exists), including its capacity.
+Their destination does not depend on the current UI selection or the newly
+registered personal hold.
+
 `_shared/wurst/CargoProvenance.wurst` uses the FIFO rules from
 `_shared/engine/trade.py`. Each acquisition records its stable store ID,
 commodity ID, quantity, integer cost and original market ID. Sales consume only
@@ -46,12 +56,13 @@ an identity from the selected market. New purchases receive normal provenance.
 Resaving writes v2 and migration is idempotent. Source saves are not rewritten.
 
 Quantity-aware pricing does not change this wire format. The live domain stays
-at version 2 and the campaign envelope at version 6. Base prices, target stocks,
+at version 2 and the campaign envelope at version 7. Base prices, target stocks,
 quantity units, elasticity, spread and price bounds are generated definitions;
-generator provenance advances to version 17. Current stock and persisted live
-modifiers determine every commit quote. Cached displayed prices never authorize
-a debit or payout, including after restoration. Opening a market computes fresh
-display prices without changing persisted observations or other authority.
+generator provenance is version 18, including the trade access bindings. Current
+stock and persisted live modifiers determine every commit quote. Cached displayed
+prices never authorize a debit or payout, including after restoration. Opening a
+market computes fresh display prices without changing persisted observations or
+other authority.
 Existing acquisitions retain
 their actual recorded cost, even when the old pricing bug undercharged them;
 holdings, earned profit/standing, route history and replay IDs are not rewritten.
@@ -86,8 +97,9 @@ and all four legacy layouts in every supported campaign envelope.
 `TradePricingTests.wurst` adds the reported round trip, split/reversed/interleaved
 orders, unchanged-world repeated cycles, stale authority, atomic rejection,
 integer limits, economic-change profits, a literal pre-fix v2 save and purchase/
-resale through all six campaign envelopes. `TradePricingVectorsTests.wurst`
-executes 71 live quote cases; `test_trade_pricing.py` checks their literal expected
+resale through all seven supported campaign envelopes.
+`TradePricingVectorsTests.wurst` executes 71 live quote cases;
+`test_trade_pricing.py` checks their literal expected
 amounts against the headless contract and an independent rational per-edge
 oracle, plus deterministic randomized partitions. Packaging tests verify that
 every generated market receives the authored pricing definitions.
