@@ -29,7 +29,7 @@ Source-system flags must be booleans. Malformed real-client configuration,
 built-map metadata, and candidate configuration are rejected explicitly,
 including scalar JSON values that previously reached dictionary `.get` calls.
 
-## Executed verification
+## Initial implementation verification
 
 - `WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh` passed the world,
   geography and map-source validators, all 842 scenario/tooling tests and all 70
@@ -59,7 +59,7 @@ Logs and retained evidence are generated under
 Container validation mounted this worktree
 read-only and performed all build writes in container-private temporary storage.
 
-## Remaining release evidence
+## Initial remaining release evidence
 
 The executed suite supplies complete configured entry coverage for 12 of 20
 required systems. Administration, army/fleet control, city capture, country
@@ -72,3 +72,51 @@ verification has automated binary-fixture regression coverage, but that does not
 constitute verification of a releasable campaign. Warcraft III, native saves and
 the declared client journeys were not executed. Their status remains explicit;
 no player candidate was published.
+
+## PR 405 CI repair
+
+The failed campaign build ran all 278 Wurst tests successfully, then correctly
+rejected the candidate because eight systems lacked complete production-entry
+coverage in a passing test. The acceptance gate remains fail closed.
+
+The added command integration tests exercise origin selection through its durable
+handoff and regional startup, manual save/load through registered commands, and
+the timed autosave adapter. Country and reward commands now verify discovery,
+standing, resource debit, duplicate rejection and restored grant history using
+the production authority. Military tests dispatch the registered management
+commands and assert the state they display after orders, garrison expenditure,
+appointments, and capture through the production combat-event adapter.
+
+The coverage contract additionally requires command dispatch for origin,
+military and save integration, and the autosave scheduler for save integration.
+Source-only checked-in acceptance reports remain blocked; executable evidence
+and exact same-source campaign artifacts must still be supplied for a candidate.
+
+The repaired pinned run passed typechecking, all 273 tests in this isolated
+worktree, and the standalone map build. Rechecking the retained transcript
+against the current worktree confirms production coverage for all 20 required
+systems. The generated map embeds the matching source identity and contains no
+instrumentation probes. The save-command fixture supplies the native game-start
+timer that Blizzard initializes in the client but the interpreter leaves unset.
+
+`WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh` also passed the world,
+geography and map-source validators, all 845 scenario/tooling tests (including
+the fail-closed acceptance/publication regressions), and all 70 automation tests.
+The skip flag separates that repository run from the completed pinned Wurst
+typecheck/execution/build above; it does not waive Wurst validation. Its log is
+`_build/issue-398-validation/repository-checks.log`.
+
+This execution used source revision
+`ec5a9cdc29f464df90520d21201127d733ef0272` plus source-content SHA-256
+`e078e537affd693e9223a171e35214b36cc8ad3bed8a0cf48e010391227ef691`, binding the
+uncommitted repair as well as the base revision. Retained evidence is under
+`_build/issue-398-validation/pinned-evidence/`; `validation-summary.json` records
+the revalidation against this worktree. The container mounted source read-only,
+copied it as the build user to private temporary storage, and was removed after
+its results were retained.
+
+No full W3N/ZIP was rebuilt in this repair, and Warcraft III was not executed.
+Acceptance and the release blocker both correctly remain blocked when the new
+passing transcript is supplied without a matching campaign artifact. Full
+campaign packaging and upload verification remain CI checks, and the real-client
+journeys and native saves remain a separate unexecuted evidence level.

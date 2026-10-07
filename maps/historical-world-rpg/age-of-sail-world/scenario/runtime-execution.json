@@ -66,6 +66,10 @@
       "path": "wurst/CampaignSaveManager.wurst",
       "signature": "function load(int kind, int index) returns boolean"
     },
+    "autosave": {
+      "path": "wurst/CampaignAutosaveScheduler.wurst",
+      "signature": "function advance(real elapsed, string createdAt) returns boolean"
+    },
     "travel": {
       "path": "wurst/PlayableCampaignRuntime.wurst",
       "signature": "function transition(BoundaryCorrespondence boundary, real normalized, string createdAt) returns boolean"
@@ -142,6 +146,7 @@
     ],
     "origin_selection": [
       "origin_registration",
+      "dispatch",
       "handoff"
     ],
     "country_diplomacy": [
@@ -161,18 +166,22 @@
     ],
     "army_fleet_control": [
       "military_registration",
+      "dispatch",
       "order"
     ],
     "city_capture": [
       "military_registration",
+      "dispatch",
       "capture"
     ],
     "garrisons": [
       "military_registration",
+      "dispatch",
       "garrison"
     ],
     "administration": [
       "military_registration",
+      "dispatch",
       "appoint"
     ],
     "heroes": [
@@ -198,6 +207,8 @@
     ],
     "save_autosave_load": [
       "save_registration",
+      "dispatch",
+      "autosave",
       "save",
       "load"
     ],
