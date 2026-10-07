@@ -201,6 +201,18 @@ class ClosureTests(unittest.TestCase):
                     mutation.assert_not_called()
         self.assertEqual(worker.eligible_planned_issues([RELEASE], ROADMAP, {}), [])
 
+    def test_planned_launch_citations_do_not_claim_prerequisite_repairs(self):
+        launch = dict(RELEASE, body="Launch after REQ-0002.01 has executed production evidence.")
+        closure = self.closure(issues=[launch])
+        self.assertIn(KEY, closure.actionable)
+        self.assertEqual(closure.open_repairs, [])
+        self.assertEqual(worker.eligible_planned_issues([launch], ROADMAP, {}, closure), [])
+        clean = self.closure(findings=(), issues=[launch])
+        self.assertEqual(worker.eligible_planned_issues([launch], ROADMAP, {}, clean), [launch])
+        # Deferring an explicitly marked repair never exempts it from closure.
+        deferred = self.closure(findings=(), issues=[issue(prefix="planned")])
+        self.assertTrue(deferred.active)
+
     def test_dependency_repairs_precede_dependent_validation(self):
         data = bundle(findings=["REQ-0002.01", "DEP-save-travel"])
         report = data["reports"]["traceability"]["report"]
@@ -228,6 +240,25 @@ class ClosureTests(unittest.TestCase):
         self.assertIsNone(worker.select_issue([child], {"issues": {}}, 3, closure=closure))
         closure = self.closure(issues=[issue(410, keys=(OTHER,), state="CLOSED"), child])
         self.assertEqual(worker.select_issue([child], {"issues": {}}, 3, closure=closure), child)
+
+    def test_audit_dependencies_wait_for_open_prerequisite_repairs(self):
+        data = bundle(B, ["DEP-save-travel"])
+        data["reports"]["traceability"]["report"]["requirements"] = [{
+            "id": "REQ-0002.01", "text": "Production path", "status": "pass"}]
+        data["reports"]["traceability"]["report"]["dependencies"] = [{
+            "id": "DEP-save-travel", "requirements": ["REQ-0002.01"], "interaction": "save then travel"}]
+        parent, child = issue(), issue(411, keys=(DEPENDENT,))
+        # A clean audit alone does not finish outstanding repair work, including
+        # a PR whose linked issue has already been closed.
+        for issues, prs in (([parent], []), ([issue(state="CLOSED")], [
+                dict(issue(412, keys=()), closingIssuesReferences=[{"number": 410}])])):
+            with self.subTest(issues=issues, prs=prs):
+                closure = build_closure(data, B, issues, prs)
+                self.assertNotIn(DEPENDENT, closure.actionable)
+                self.assertFalse(closure.permits_issue(child))
+        closure = build_closure(data, B, [issue(state="CLOSED")], [issue(412, state="MERGED")])
+        self.assertIn(DEPENDENT, closure.actionable)
+        self.assertTrue(closure.permits_issue(child))
 
     def test_duplicate_blocker_in_one_plan_is_created_once(self):
         response = plan()
@@ -317,6 +348,22 @@ class ControllerTests(unittest.TestCase):
             self.assertFalse(worker.service_open_prs(self.config, state, allowed_issues={410}))
             gh.assert_not_called()
             mutation.assert_not_called()
+
+    def test_pr_service_obeys_issue_dependencies_and_design_decisions(self):
+        design = issue(410, keys=(OTHER,), prefix="needs-design")
+        dependent = issue(411)
+        dependent["body"] += "\nDepends on: #410"
+        missing = issue(412)
+        missing["body"] += "\nBlocked by: #999"
+        independent = issue(413, keys=("traceability:REQ-0004.01",))
+        closure = build_closure(bundle(findings=["REQ-0002.01", "REQ-0003.01", "REQ-0004.01"]),
+                                A, [design, dependent, missing, independent])
+        context = {"issues": closure.issues, "pull_requests": [], "closure": closure}
+        with mock.patch.object(worker, "make_config", return_value=self.config), \
+             mock.patch.object(worker, "planning_context", return_value=context), \
+             mock.patch.object(worker, "service_open_prs", return_value=True) as service:
+            self.assertEqual(worker.main([]), 0)
+        self.assertEqual(service.call_args.args[2], {413})
 
     def test_issue_body_file_preserves_newlines_and_literal_shell_text(self):
         item = {"title": "[agent-ready] A repair", "body": BODY + "\nLiteral `code` and $(text).", "question": ""}

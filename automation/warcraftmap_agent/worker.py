@@ -1209,8 +1209,12 @@ def main(argv: list[str] | None = None) -> int:
         closure = context["closure"]
         if closure.active:
             state.pop("planning_exhausted_for_blockers", None)
-        allowed_pr_issues = ({int(row["number"]) for row in context["issues"] if closure.permits_issue(row)}
-                             if closure.active else None)
+        closed_numbers = {int(item["number"]) for item in context["issues"] if not is_open(item)}
+        # PR recovery and merging must obey the same dependency/design gates
+        # as implementation selection; a ready PR cannot bypass a missing rule.
+        allowed_pr_issues = {int(row["number"]) for row in context["issues"]
+                             if READY.match(row["title"]) and closure.permits_issue(row)
+                             and issue_blocker_numbers(row) <= closed_numbers}
         if not args.dry_run and service_open_prs(config, state, allowed_pr_issues):
             # Next wake regenerates all audits on the post-merge main revision.
             save_state(state_path, state)
@@ -1228,7 +1232,6 @@ def main(argv: list[str] | None = None) -> int:
         refresh_validation_repair_bases(config, state)
         needs_design = [item for item in open_issues if NEEDS_DESIGN.match(item["title"])]
         design_numbers = {int(item["number"]) for item in needs_design}
-        closed_numbers = {int(item["number"]) for item in context["issues"] if not is_open(item)}
         # Dependencies on any open or inaccessible issue block execution, not
         # just needs-design issues. Audit prerequisites additionally gate closure.
         dependency_numbers = {number for item in issues for number in issue_blocker_numbers(item)} - closed_numbers

@@ -86,7 +86,8 @@ stable requirement/finding identity, with runtime findings shared across reports
 deduplicated. Missing global runtime execution is repaired before validating
 domains whose source checks pass; a package census waits for its final artifact.
 Traceability interaction repairs wait for their prerequisite obligations to pass
-a regenerated audit. Each generated issue records
+a regenerated audit and for prerequisite repair issues and PRs to close.
+Each generated issue records
 `Closure blocker: <identity>` and `Closure revision: <main SHA>`. These markers,
 legacy stable-ID references, linked PRs and normalized titles prevent duplicate
 work across open and closed history; history retrieval grows beyond the preview
@@ -100,7 +101,8 @@ as candidates. No optional content fills spare slots, and `exhausted` is rejecte
 while closure remains pending. Genuine material decisions become `[needs-design]`
 questions; independent blocker repairs continue. `Blocked by: #N` or
 `Depends on: #N` holds execution until the referenced issue is closed, including
-implementation dependencies. Audits are regenerated again on the new main
+implementation dependencies. PR recovery and merging obey the same dependency
+and design gates as issue selection. Audits are regenerated again on the new main
 revision after each repair merges.
 
 Once all reports are clean and generated repairs are closed, ordinary planning
@@ -119,6 +121,8 @@ repair history are rechecked before promotion. Promotion also requires every che
 authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
 the issue body is also a blocker until that referenced issue is closed. General
 `[planned]` issues without a recognizable `Phase N:` title remain untouched.
+Audit IDs cited in a planned reservation do not claim its prerequisite repairs;
+explicit `Closure blocker:` markers still hold closure if a repair is deferred.
 All three workflow prefixes normalize to the same logical title, so planned
 reservations suppress duplicate queue-refill issues. Dry-run mode reports each
 promotion that would occur but does not edit GitHub.

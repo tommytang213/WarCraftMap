@@ -127,6 +127,11 @@ class Closure:
             # Machine ownership is exact. Mentioning a prerequisite in prose
             # must not turn dependent work into its own prerequisite repair.
             return keys
+        if re.match(r"^\[planned\]\s+", entry.get("title") or "", re.IGNORECASE):
+            # A release reservation may cite the obligations it is waiting for.
+            # Treating those citations as ownership would prevent their repairs
+            # from being planned while the reservation itself cannot promote.
+            return set()
         text = (entry.get("title") or "") + "\n" + (entry.get("body") or "")
         # Also recognize pre-controller issues/PRs citing stable audit IDs.
         for ident in re.findall(r"\b(?:REQ|ROAD|DEP|RUNTIME|REPORT|CONTENT|INPUT)-[\w.-]+\b", text):
@@ -180,7 +185,7 @@ class Closure:
         return True
 
     def dependency_pending(self, key: str) -> bool:
-        if key in self.blockers:
+        if key in self.blockers or any(is_open(row) for row in self.owners(key)):
             return True
         # Absence from an unreadable/stale report is not prerequisite closure.
         report = key.split(":", 1)[0]
