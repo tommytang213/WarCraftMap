@@ -103,7 +103,23 @@ class GlobalVisualLanguageTests(unittest.TestCase):
     def setUp(self):
         self.path=ROOT/"scenario/visuals/country-unit-language.json"
         self.data=json.loads(self.path.read_text())
-        self.resolver=runtime.VisualResolver(self.data)
+        self.resolver=runtime.VisualResolver(self.data, document_format="age_of_sail_visual_language_v1")
+
+    def test_shared_resolver_accepts_scenario_format_without_changing_visual_rules(self):
+        generic = copy.deepcopy(self.data)
+        generic["format"] = "warcraftmap_visual_language_v1"
+        alternate = copy.deepcopy(self.data)
+        alternate["format"] = "alternate_visual_language_v1"
+        row = self.data["rosterAssignments"][0]
+        request = dict(polity_id=row["polityId"], archetype_id=row["archetypeId"], year=1820)
+        expected = self.resolver.resolve(**request)
+        self.assertEqual(expected, runtime.VisualResolver(generic).resolve(**request))
+        self.assertEqual(expected, runtime.VisualResolver(
+            alternate, document_format="alternate_visual_language_v1").resolve(**request))
+        with self.assertRaisesRegex(runtime.VisualLanguageError, "unsupported"):
+            runtime.VisualResolver(alternate)
+        with self.assertRaisesRegex(runtime.VisualLanguageError, "unsupported"):
+            runtime.VisualResolver(generic, document_format="age_of_sail_visual_language_v1")
 
     def test_scenario_data_and_snapshots_are_deterministic(self):
         self.assertEqual(builder.build(),self.data)

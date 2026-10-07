@@ -1,0 +1,53 @@
+{
+  "formatVersion": 2,
+  "projectRoot": ".",
+  "sourceMap": "map/Conformance.w3x",
+  "sourceManifest": "map/map-source.json",
+  "wurstSource": "wurst",
+  "scenario": {
+    "data": "scenario/world/world.json",
+    "validator": "../_shared/tooling/validate_world.py",
+    "wurstPackage": "ScenarioData",
+    "regionalTerrain": [
+      {
+        "id": "reed_west",
+        "source": "scenario/terrain/reed_west.json"
+      },
+      {
+        "id": "reed_east",
+        "source": "scenario/terrain/reed_east.json"
+      }
+    ],
+    "settlements": [
+      {
+        "source": "scenario/settlements/reed_west.json",
+        "geography": "scenario/geography/reed_west.json",
+        "regionId": "reed_west"
+      },
+      {
+        "source": "scenario/settlements/reed_east.json",
+        "geography": "scenario/geography/reed_east.json",
+        "regionId": "reed_east"
+      }
+    ],
+    "catalogues": {
+      "inventory": "scenario/inventory/items.json"
+    }
+  },
+  "outputDirectory": "_build/release",
+  "release": {
+    "fileName": "ReedStoneProbe",
+    "metadata": {
+      "name": "Reed and Stone: Framework Conformance",
+      "author": "WarCraftMap Project",
+      "scriptBackend": "lua",
+      "wc3Patch": "v3.0"
+    },
+    "cacheFile": "ReedStoneConformance.w3v",
+    "bootstrapMarkers": [
+      "Reed and Stone - framework conformance loaded.",
+      "WC3Compatibility: required Warcraft III",
+      "v3.0"
+    ]
+  }
+}

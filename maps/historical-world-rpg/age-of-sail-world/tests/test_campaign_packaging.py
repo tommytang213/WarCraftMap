@@ -280,8 +280,8 @@ class CampaignPackagingTests(unittest.TestCase):
         scenario = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
         self.assertIn("configureGeneratedOrigins", scenario)
         handoff = (self.project / "wurst/CampaignHandoff.wurst").read_text()
-        imports = {line.split()[1] for line in handoff.splitlines() if line.startswith("import ")}
-        self.assertEqual({"CommandRouter", "CampaignSaveManager", "WC3Compatibility"}, imports)
+        imports = {line.split()[-1] for line in handoff.splitlines() if line.startswith("import ")}
+        self.assertEqual({"CommandRouter", "CampaignSaveManager", "WC3Compatibility", "ScenarioSettings"}, imports)
         for token in ("registerSettlement", "registerMarket", "registerForce", "registerReward",
                       "registerHero", "registerQuest", "registerItem", "registerTechnology"):
             self.assertNotIn(token, scenario)
@@ -289,7 +289,7 @@ class CampaignPackagingTests(unittest.TestCase):
         shutil.copy2(self.project / "wurst-bootstrap/Bootstrap.wurst", compiled / "wurst/Bootstrap.wurst")
         _retain_bootstrap_dependencies(compiled)
         self.assertEqual({"Bootstrap.wurst", "ScenarioData.wurst", "CommandRouter.wurst",
-                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst"},
+                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst", "ScenarioSettings.wurst"},
                          {path.name for path in (compiled / "wurst").glob("*.wurst")})
 
     def test_origin_handoff_and_every_physical_map_region_are_explicit(self):
@@ -305,8 +305,13 @@ class CampaignPackagingTests(unittest.TestCase):
             package_path = next(item.package_path for item in campaign.maps if item.id == destination)
             self.assertIn(json.dumps(package_path), scenario)
         runtime = (self.project / "wurst/PlayableCampaignRuntime.wurst").read_text(encoding="utf-8")
+        from scenario_settings import write_settings
+        write_settings(self.project, generated)
+        settings = (generated / "ScenarioSettings.wurst").read_text()
         for physical in campaign.maps:
-            self.assertIn(f'mapId == "{physical.id}"', runtime)
+            if physical.logical_region_ids:
+                self.assertIn(f'mapId == "{physical.id}"', settings)
+                self.assertNotIn(f'mapId == "{physical.id}"', runtime)
         selector = (self.project / "wurst-bootstrap/Bootstrap.wurst").read_text()
         self.assertIn("new CampaignHandoff(", selector)
         self.assertNotIn("campaignStarted", runtime)

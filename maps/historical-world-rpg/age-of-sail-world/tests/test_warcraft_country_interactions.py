@@ -58,7 +58,10 @@ class WarcraftCountryInteractionGenerationTests(unittest.TestCase):
         project = Path(temporary.name)
         politics = project / "scenario/politics"
         politics.mkdir(parents=True)
-        (politics / "fixture-1450.json").write_text(json.dumps({"activeConflicts": conflicts}))
+        (politics / "conflicts.json").write_text(json.dumps({"activeConflicts": conflicts}))
+        (project / "package.json").write_text(json.dumps({
+            "scenario": {"politics": ["scenario/politics/conflicts.json"]},
+        }))
         config = replace(load_config(ROOT / "package.json"), project=project)
         world = {"polities": [{"id": p} for p in ("a", "b", "c")]}
         return _load_country_interaction_runtime_data(config, world)["conflicts"]

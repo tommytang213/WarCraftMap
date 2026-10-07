@@ -1,0 +1,940 @@
+package PlayableTrade
+import CommandRouter
+import PlayableCampaignRuntime
+import CargoProvenance
+import TradePricing
+import ManagementScreenPauseController
+import LiveTradeAccess
+
+public constant int LIVE_TRADE_SCHEMA_CURRENT = 2
+
+/** Warcraft runtime boundary for the authoritative campaign trade state.
+ * Handles and frames never own stock: adapters rebuild this model from stable
+ * save IDs and commit the returned state through the campaign-save manager. */
+public class TradeStore
+	string id
+	int capacity
+	int cargo=0
+	int money=0
+	string goodId=""
+	// Immutable generated bindings; balances and provenance remain in this store.
+	string accessKind=""
+	string accessId=""
+	boolean warehouseService=false
+	construct(string storeId,int capacityUnits,int currencyMinor)
+		id=storeId
+		capacity=capacityUnits
+		money=currencyMinor
+	function withAccess(string kind,string authorityId,boolean service) returns TradeStore
+		accessKind=kind
+		accessId=authorityId
+		warehouseService=service
+		return this
+	function freeCapacity() returns int
+		return capacity-cargo
+
+public class RuntimeMarket
+	TradePricing pricing
+	string id
+	string goodName
+	int stock
+	int money
+	int buyUnitPrice
+	int sellUnitPrice
+	int previousUnitPrice
+	int baseUnitPrice
+	int targetStock
+	boolean discovered=true
+	boolean blockaded=false
+	boolean occupiedByHostile=false
+	int productionPermille=1000
+	int consumptionPermille=1000
+	int shortagePermille=0
+	int eventPermille=0
+	int technologyPermille=0
+	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
+		pricing=new TradePricing()
+		initialize(marketId,displayedGood,initialStock,currencyMinor,buyPrice,sellPrice)
+	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice,TradePricing definition)
+		pricing=definition
+		initialize(marketId,displayedGood,initialStock,currencyMinor,buyPrice,sellPrice)
+	private function initialize(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
+		id=marketId
+		goodName=displayedGood
+		stock=initialStock
+		money=currencyMinor
+		buyUnitPrice=buyPrice
+		sellUnitPrice=sellPrice
+		previousUnitPrice=buyPrice
+		baseUnitPrice=buyPrice
+		targetStock=IMaxBJ(1,initialStock)
+	function trend(int currentPrice) returns string
+		if currentPrice>previousUnitPrice
+			return "rising"
+		if currentPrice<previousUnitPrice
+			return "falling"
+		return "steady"
+	function inspect() returns string
+		if not discovered
+			return "No discovered commodities."
+		if blockaded or occupiedByHostile
+			return "Market access is restricted."
+		// Render current quotes without rewriting persisted observations merely
+		// by opening a screen. Commit and economy updates record observations.
+		let currentBuy=currentBuyUnitPrice()
+		let currentSell=currentSellUnitPrice()
+		return goodName+": "+stock.toString()+" available; buy "+currentBuy.toString()+"; sell "+currentSell.toString()+"; "+trend(currentBuy)
+	function priceAdjustment() returns int
+		var adjustment=shortagePermille+eventPermille+tradeFloorDiv(consumptionPermille-productionPermille,2)-technologyPermille
+		if blockaded
+			adjustment+=500
+		if occupiedByHostile
+			adjustment+=400
+		return adjustment
+	function currentBuyUnitPrice() returns int
+		return pricing.unitPrice(stock,targetStock,baseUnitPrice,priceAdjustment(),true)
+	function currentSellUnitPrice() returns int
+		if stock==2147483647
+			// Informational price at the stock limit; commits reject overflow.
+			return pricing.unitPrice(stock,targetStock,baseUnitPrice,priceAdjustment(),false)
+		return pricing.unitPrice(stock+1,targetStock,baseUnitPrice,priceAdjustment(),false)
+	function quoteAmount(int quantity,boolean buying) returns int
+		return pricing.amount(stock,targetStock,baseUnitPrice,priceAdjustment(),quantity,buying)
+	function reprice()
+		previousUnitPrice=buyUnitPrice
+		buyUnitPrice=currentBuyUnitPrice()
+		sellUnitPrice=currentSellUnitPrice()
+
+public class MerchantProgress
+	int standing=0
+	int realizedProfit=0
+	int completedRouteCount=0
+	function warehouseAccess() returns boolean
+		return standing>=100
+	function marketIntelligence() returns boolean
+		return standing>=500
+
+public class PlayableTradeController
+	MerchantProgress progress
+	string array[4096] processed
+	int processedCount=0
+	CargoProvenance provenance = new CargoProvenance()
+	// Pre-v2 aggregate history cannot be attributed to stores or commodities.
+	// Preserve it for migration/accounting only; it never funds a new sale.
+	int legacyUnattributedCost=0
+	int legacyUnattributedQuantity=0
+	string legacyUnattributedOrigin=""
+	construct(MerchantProgress p)
+		progress=p
+	function seen(string transactionId) returns boolean
+		for i=0 to processedCount-1
+			if processed[i]==transactionId
+				return true
+		return false
+	function mark(string transactionId)
+		processed[processedCount]=transactionId
+		processedCount++
+	function buy(string transactionId,RuntimeMarket market,TradeStore destination,int quantity) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if processedCount>=4096
+			return "Transaction history is full."
+		if provenance.count>=CARGO_LOT_LIMIT
+			return "Cargo acquisition history is full."
+		if quantity<=0
+			return "Quantity must be positive."
+		if not market.discovered
+			return "Commodity is not discovered."
+		if market.blockaded or market.occupiedByHostile
+			return "Market access is restricted."
+		if market.stock<quantity
+			return "Market stock is insufficient."
+		let charge=market.quoteAmount(quantity,true)
+		if charge<1 or market.money>2147483647-charge
+			return "Trade amount is outside the currency settlement range."
+		if destination.money<charge
+			return "Funds are insufficient."
+		if destination.freeCapacity()<quantity
+			return "Cargo capacity is insufficient."
+		if destination.cargo>0 and destination.goodId!=market.goodName
+			return "Cargo store contains another commodity."
+		market.reprice()
+		market.stock-=quantity
+		market.money+=charge
+		destination.cargo+=quantity
+		destination.goodId=market.goodName
+		destination.money-=charge
+		provenance.add(destination.id,market.goodName,quantity,charge,market.id)
+		mark(transactionId)
+		return "Bought "+quantity.toString()+" "+market.goodName+"."
+	function sell(string transactionId,RuntimeMarket market,TradeStore source,int quantity,int difficultyPermille) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if processedCount>=4096
+			return "Transaction history is full."
+		if quantity<=0 or source.cargo<quantity
+			return "Cargo is insufficient."
+		if source.goodId!=market.goodName
+			return "Cargo commodity does not match this market."
+		if not market.discovered
+			return "Commodity is not discovered."
+		if market.blockaded or market.occupiedByHostile
+			return "Market access is restricted."
+		let proceeds=market.quoteAmount(quantity,false)
+		if proceeds<1 or source.money>2147483647-proceeds
+			return "Trade amount is outside the currency settlement range."
+		if market.money<proceeds
+			return "Market funds are insufficient."
+		market.reprice()
+		let allocation=provenance.consume(source.id,source.goodId,quantity,market.id)
+		market.stock+=quantity
+		market.money-=proceeds
+		source.cargo-=quantity
+		if source.cargo==0
+			source.goodId=""
+		source.money+=proceeds
+		let profit=proceeds-allocation.cost
+		progress.realizedProfit+=profit
+		// As in engine/trade.py, a partially uncosted sale earns no ordinary
+		// standing. Same-market lots cannot borrow another lot's route either.
+		let routeProfit=(proceeds div quantity)*allocation.routeQuantity-allocation.routeCost
+		if allocation.quantity==quantity and profit>0 and routeProfit>0
+			let divisor=1000+progress.completedRouteCount*500
+			progress.standing+=routeProfit*difficultyPermille div divisor
+			progress.completedRouteCount++
+		destroy allocation
+		mark(transactionId)
+		return "Sold "+quantity.toString()+" "+market.goodName+"; realized P/L "+profit.toString()+"."
+	function moveCargo(string transactionId,TradeStore source,TradeStore destination,int quantity) returns string
+		if seen(transactionId)
+			return "Transaction already processed."
+		if processedCount>=4096
+			return "Transaction history is full."
+		if source.id==destination.id
+			return "Cargo stores must differ."
+		if quantity<=0 or source.cargo<quantity
+			return "Cargo is insufficient."
+		if destination.freeCapacity()<quantity
+			return "Cargo capacity is insufficient."
+		if destination.cargo>0 and destination.goodId!=source.goodId
+			return "Cargo store contains another commodity."
+		if not provenance.canTransfer(source.id,source.goodId,quantity)
+			return "Cargo acquisition history is full."
+		provenance.transfer(source.id,destination.id,source.goodId,quantity)
+		source.cargo-=quantity
+		destination.cargo+=quantity
+		destination.goodId=source.goodId
+		if source.cargo==0
+			source.goodId=""
+		mark(transactionId)
+		return "Cargo moved."
+
+public interface TradePresentation
+	function showMarket(player viewer,string marketId,string rows)
+	function showTradeResult(player viewer,string message)
+
+public class WarcraftTradePresentation implements TradePresentation
+	override function showMarket(player viewer,string marketId,string rows)
+		DisplayTimedTextToPlayer(viewer,0.,0.,15.,"Market: "+marketId+"\n"+rows)
+	override function showTradeResult(player viewer,string message)
+		DisplayTimedTextToPlayer(viewer,0.,0.,10.,message)
+
+/** Adapter entry points used by settlement interaction frames and integration tests. */
+public function inspectMarket(player viewer,PlayableTradeRuntime runtime,TradePresentation presentation)
+	runtime.management.open("market")
+	var rows="No eligible market selected. Use /trade markets, then /trade select MARKET COMMODITY."
+	var title="Local trade"
+	if runtime.access != null and runtime.findMarket(runtime.market.id,runtime.market.goodName)==runtime.market and runtime.access.marketActor(viewer,runtime.market)>=0
+		title=runtime.market.id
+		rows=runtime.market.inspect()
+	presentation.showMarket(viewer,title,rows+"\nCampaign paused. Use /trade commodities MARKET, /trade stores, /trade store STORE, /trade buy QUANTITY, /trade sell QUANTITY, /trade move SOURCE DESTINATION QUANTITY, or /trade close. Other open management screens retain their pause.")
+public function buyCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,PlayableTradeController controller,TradePresentation presentation)
+	presentation.showTradeResult(viewer,controller.buy(transactionId,market,store,quantity))
+public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
+	presentation.showTradeResult(viewer,controller.sell(transactionId,market,store,quantity,difficultyPermille))
+
+function tradeField(string document,int wanted) returns string
+	var start=0
+	var field=0
+	for i=0 to StringLength(document)
+		if i==StringLength(document) or SubString(document,i,i+1)==":"
+			if field==wanted
+				return SubString(document,start,i)
+			field++
+			start=i+1
+	return ""
+
+function compactField(string document,int wanted) returns string
+	var start=0
+	var field=0
+	for i=0 to StringLength(document)
+		if i==StringLength(document) or SubString(document,i,i+1)==","
+			if field==wanted
+				return SubString(document,start,i)
+			field++
+			start=i+1
+	return ""
+
+/** Store IDs use a kind:id form. Keep that colon out of the legacy
+ * colon-delimited campaign extension document. Authored IDs are restricted to
+ * identifier characters, so semicolon is an unambiguous on-save substitute. */
+function tradeSafeId(string value) returns string
+	var result=""
+	for i=0 to StringLength(value)-1
+		let character=SubString(value,i,i+1)
+		if character==":"
+			result+=";"
+		else
+			result+=character
+	return result
+
+/** Authoritative stable-ID trade domain. Frames and command text only project it. */
+function tradeFieldCount(string document,string separator) returns int
+	var count=1
+	for i=0 to StringLength(document)-1
+		if SubString(document,i,i+1)==separator
+			count++
+	return count
+
+function tradeInteger(string value) returns boolean
+	// Check the range before S2I: both command input and saves are untrusted,
+	// and the pinned interpreter throws on integers outside the Warcraft range.
+	if value==""
+		return false
+	let negative=SubString(value,0,1)=="-"
+	var start=0
+	var lastDigit=7
+	if negative
+		start=1
+		lastDigit=8
+	let digits=StringLength(value)-start
+	if digits<1 or digits>10 or (digits>1 and SubString(value,start,start+1)=="0") or value=="-0"
+		return false
+	var total=0
+	for i=start to StringLength(value)-1
+		let digit="0123456789".indexOf(SubString(value,i,i+1))
+		if digit<0 or total < -214748364 or (total == -214748364 and digit>lastDigit)
+			return false
+		total=total*10-digit
+	return true
+
+function tradePayload(string document) returns string
+	if document.startsWith("v2:")
+		return SubString(document,3,StringLength(document))
+	return document
+
+public class PlayableTradeRuntime implements CampaignRuntimeExtension
+	LiveTradeAccess access=null
+	// Selections survive saves as views, never as cached authorization.
+	boolean marketSelected=false
+	boolean storeSelected=false
+	string marketControl=""
+	string storeControl=""
+	boolean rollbackMarketSelected=false
+	boolean rollbackStoreSelected=false
+	string rollbackMarketControl=""
+	string rollbackStoreControl=""
+	TradePricingCatalog pricingDefinitions = new TradePricingCatalog()
+	ManagementScreenSession management = new ManagementScreenSession()
+	MerchantProgress progress = new MerchantProgress()
+	PlayableTradeController controller = new PlayableTradeController(progress)
+	RuntimeMarket market = new RuntimeMarket("unconfigured","",0,0,1,1)
+	TradeStore hold = new TradeStore("player_ship_hold",30,1000)
+	RuntimeMarket array[8192] markets
+	TradeStore array[1024] stores
+	int marketCount=0
+	int storeCount=0
+	string settlementId = "starting_settlement"
+	int nextTransaction = 1
+	string rollbackState = ""
+	RuntimeMarket rollbackMarket = null
+	TradeStore rollbackHold = null
+	string rollbackMarketId = ""
+	override function beginLoad()
+		rollbackState=capture()
+		rollbackMarket=market
+		rollbackMarketId=market.id
+		rollbackHold=hold
+		rollbackMarketSelected=marketSelected
+		rollbackStoreSelected=storeSelected
+		rollbackMarketControl=marketControl
+		rollbackStoreControl=storeControl
+	override function rollbackLoad()
+		market=rollbackMarket
+		hold=rollbackHold
+		applyState(rollbackState)
+		market=rollbackMarket
+		market.id=rollbackMarketId
+		hold=rollbackHold
+		marketSelected=rollbackMarketSelected
+		storeSelected=rollbackStoreSelected
+		marketControl=rollbackMarketControl
+		storeControl=rollbackStoreControl
+		clearLoadCheckpoint()
+	override function commitLoad()
+		management.close()
+		clearLoadCheckpoint()
+	function clearLoadCheckpoint()
+		rollbackState=""
+		rollbackMarket=null
+		rollbackHold=null
+	function registerMarket(RuntimeMarket value)
+		markets[marketCount]=value
+		marketCount++
+		if value.id==settlementId and market.id==settlementId
+			market=value
+	function registerMarketProfile(string marketId,string goodId,int stock,int liquidity,int basePrice,int production,int consumption,int shortage,int quantityUnits,int elasticity,int spread,int priceFloor,int priceCeiling)
+		let definition=pricingDefinitions.resolve(quantityUnits,elasticity,spread,priceFloor,priceCeiling)
+		let value=new RuntimeMarket(marketId,goodId,stock,liquidity,basePrice,basePrice,definition)
+		value.productionPermille=production
+		value.consumptionPermille=consumption
+		value.shortagePermille=shortage
+		registerMarket(value)
+	function registerStore(TradeStore value)
+		stores[storeCount]=value
+		storeCount++
+		if storeCount==1 or value.id==hold.id
+			hold=value
+	function registerPersonalStore()
+		registerStore(hold.withAccess("personal","player",false))
+	function findMarket(string marketId,string goodId) returns RuntimeMarket
+		for i=0 to marketCount-1
+			if markets[i].id==marketId and markets[i].goodName==goodId
+				return markets[i]
+		return null
+	function findStore(string id) returns TradeStore
+		for i=0 to storeCount-1
+			if stores[i].id==id
+				return stores[i]
+		return null
+	function selectMarket(string marketId,string goodId) returns boolean
+		for i=0 to marketCount-1
+			if markets[i].id==marketId and markets[i].goodName==goodId
+				settlementId=marketId
+				market=markets[i]
+				return true
+		return false
+	function applyMarketModifiers(string marketId,int shortage,boolean blockade,boolean occupation,int eventModifier,int technologyModifier,int production,int consumption)
+		for i=0 to marketCount-1
+			if markets[i].id==marketId
+				markets[i].shortagePermille=shortage
+				markets[i].blockaded=blockade
+				markets[i].occupiedByHostile=occupation
+				markets[i].eventPermille=eventModifier
+				markets[i].technologyPermille=technologyModifier
+				markets[i].productionPermille=production
+				markets[i].consumptionPermille=consumption
+				markets[i].reprice()
+	function advanceEconomy()
+		for i=0 to marketCount-1
+			let delta=markets[i].targetStock*(markets[i].productionPermille-markets[i].consumptionPermille) div 10000
+			markets[i].stock=IMaxBJ(0,markets[i].stock+delta)
+			markets[i].reprice()
+	override function newCampaign(string startingSettlementId)
+		management.close()
+		marketSelected=false
+		storeSelected=false
+		progress = new MerchantProgress()
+		controller = new PlayableTradeController(progress)
+		settlementId = startingSettlementId
+		var selected=false
+		for i=0 to marketCount-1
+			if markets[i].id==startingSettlementId and not selected
+				market=markets[i]
+				selected=true
+		if not selected and marketCount==0
+			// Test/reusable scenarios may omit generated economy data. Release
+			// packaging rejects this condition for Age of Sail.
+			market=new RuntimeMarket(startingSettlementId,"Test cargo",100,10000,10,8)
+		var selectedStore=false
+		for i=0 to storeCount-1
+			if stores[i].accessKind=="personal" and not selectedStore
+				hold=stores[i]
+				selectedStore=true
+		if not selectedStore and storeCount>0
+			hold=stores[0]
+		nextTransaction = 1
+	override function capture() returns string
+		var history=""
+		for i=0 to controller.processedCount-1
+			if i>0
+				history+=","
+			history+=controller.processed[i]
+		var marketState=""
+		for i=0 to marketCount-1
+			if i>0
+				marketState+="~"
+			var blockade="0"
+			var occupation="0"
+			if markets[i].blockaded
+				blockade="1"
+			if markets[i].occupiedByHostile
+				occupation="1"
+			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation+","+markets[i].productionPermille.toString()+","+markets[i].consumptionPermille.toString()+","+markets[i].previousUnitPrice.toString()
+		var storeState=""
+		for i=0 to storeCount-1
+			if i>0
+				storeState+="~"
+			storeState+=tradeSafeId(stores[i].id)+","+stores[i].cargo.toString()+","+stores[i].money.toString()+","+stores[i].capacity.toString()+","+stores[i].goodId
+		var lotState=""
+		for i=0 to controller.provenance.count-1
+			if i>0
+				lotState+="~"
+			let lot=controller.provenance.lots[i]
+			lotState+=tradeSafeId(lot.storeId)+","+lot.goodId+","+lot.quantity.toString()+","+lot.cost.toString()+","+lot.origin
+		return "v"+LIVE_TRADE_SCHEMA_CURRENT.toString()+":"+settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.cargo.toString()+":"+hold.money.toString()+":"+controller.legacyUnattributedCost.toString()+":"+controller.legacyUnattributedQuantity.toString()+":"+controller.legacyUnattributedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+tradeSafeId(hold.id)+":"+hold.capacity.toString()+":"+storeState+":"+market.goodName+":"+hold.goodId+":"+lotState
+	/** Accept the original summary plus the additive market/store encodings.
+	 * Parse every record and reference before any stock, resource or view changes. */
+	override function validate(string saved) returns boolean
+		let document=tradePayload(saved)
+		let current=saved.startsWith("v2:")
+		if document==""
+			return not current
+		let fields=tradeFieldCount(document,":")
+		if (current and fields!=23) or (not current and fields!=16 and fields!=17 and fields!=19 and fields!=20) or tradeField(document,0)==""
+			return false
+		for i=1 to 14
+			if i!=10
+				let value=tradeField(document,i)
+				if not tradeInteger(value) or (i!=12 and S2I(value)<0)
+					return false
+		if S2I(tradeField(document,3))<1 or S2I(tradeField(document,4))<1 or S2I(tradeField(document,14))<1
+			return false
+		let history=tradeField(document,15)
+		if history!="" and (tradeFieldCount(history,",")>4096 or history.startsWith(",") or history.endsWith(",") or history.indexOf(",,")>=0)
+			return false
+		boolean array[8192] seenMarkets
+		let states=tradeField(document,16)
+		var start=0
+		while start<StringLength(states)
+			var finish=SubString(states,start,StringLength(states)).indexOf("~")
+			if finish<0
+				finish=StringLength(states)-start
+			let row=SubString(states,start,start+finish)
+			let columns=tradeFieldCount(row,",")
+			if columns!=11 and columns!=14
+				return false
+			var found=-1
+			for i=0 to marketCount-1
+				if markets[i].id==compactField(row,0) and markets[i].goodName==compactField(row,1)
+					found=i
+			if found<0 or seenMarkets[found]
+				return false
+			seenMarkets[found]=true
+			for i=2 to columns-1
+				let value=compactField(row,i)
+				if not tradeInteger(value) or (i!=6 and i!=7 and i!=8 and S2I(value)<0)
+					return false
+			if S2I(compactField(row,4))<1 or S2I(compactField(row,5))<1 or S2I(compactField(row,9))>1 or S2I(compactField(row,10))>1
+				return false
+			start+=finish+1
+		let savedHold=tradeField(document,17)
+		if savedHold!=""
+			var found=tradeSafeId(hold.id)==savedHold
+			for i=0 to storeCount-1
+				found=found or tradeSafeId(stores[i].id)==savedHold
+			if not found or not tradeInteger(tradeField(document,18)) or S2I(tradeField(document,18))<S2I(tradeField(document,6))
+				return false
+		boolean array[1024] seenStores
+		int array[1025] cargoByStore
+		string array[1025] goodByStore
+		cargoByStore[1024]=S2I(tradeField(document,6))
+		goodByStore[1024]=tradeField(document,21)
+		let storesState=tradeField(document,19)
+		start=0
+		while start<StringLength(storesState)
+			var finish=SubString(storesState,start,StringLength(storesState)).indexOf("~")
+			if finish<0
+				finish=StringLength(storesState)-start
+			let row=SubString(storesState,start,start+finish)
+			if tradeFieldCount(row,",")!=5
+				return false
+			var found=-1
+			for i=0 to storeCount-1
+				if tradeSafeId(stores[i].id)==compactField(row,0)
+					found=i
+			if found<0 or seenStores[found]
+				return false
+			seenStores[found]=true
+			for i=1 to 3
+				if not tradeInteger(compactField(row,i)) or S2I(compactField(row,i))<0
+					return false
+			if S2I(compactField(row,1))>S2I(compactField(row,3))
+				return false
+			cargoByStore[found]=S2I(compactField(row,1))
+			goodByStore[found]=compactField(row,4)
+			if current and compactField(row,0)==savedHold
+				if cargoByStore[found]!=cargoByStore[1024] or goodByStore[found]!=goodByStore[1024] or compactField(row,2)!=tradeField(document,7) or compactField(row,3)!=tradeField(document,18)
+					return false
+			start+=finish+1
+		if current
+			if savedHold==""
+				return false
+			let lotState=tradeField(document,22)
+			if lotState!="" and (tradeFieldCount(lotState,"~")>CARGO_LOT_LIMIT or lotState.endsWith("~"))
+				return false
+			start=0
+			while start<StringLength(lotState)
+				var finish=SubString(lotState,start,StringLength(lotState)).indexOf("~")
+				if finish<0
+					finish=StringLength(lotState)-start
+				let row=SubString(lotState,start,start+finish)
+				if tradeFieldCount(row,",")!=5 or compactField(row,1)=="" or compactField(row,4)==""
+					return false
+				if not tradeInteger(compactField(row,2)) or not tradeInteger(compactField(row,3)) or S2I(compactField(row,2))<1 or S2I(compactField(row,3))<0
+					return false
+				var found=-1
+				if compactField(row,0)==savedHold
+					found=1024
+				for i=0 to storeCount-1
+					if tradeSafeId(stores[i].id)==compactField(row,0)
+						if not seenStores[i]
+							return false
+						found=i
+				if found<0 or goodByStore[found]!=compactField(row,1) or S2I(compactField(row,2))>cargoByStore[found]
+					return false
+				// Subtraction rejects over-attribution without integer overflow.
+				cargoByStore[found]-=S2I(compactField(row,2))
+				var originKnown=marketCount==0 and compactField(row,4)==tradeField(document,0) and compactField(row,1)==tradeField(document,20)
+				for i=0 to marketCount-1
+					originKnown=originKnown or (markets[i].id==compactField(row,4) and markets[i].goodName==compactField(row,1))
+				if not originKnown
+					return false
+				start+=finish+1
+		return true
+	override function reconstruct(string document) returns boolean
+		if not validate(document)
+			return false
+		return applyState(document)
+	function applyState(string saved) returns boolean
+		let document=tradePayload(saved)
+		let current=saved.startsWith("v2:")
+		marketSelected=false
+		storeSelected=false
+		if document==""
+			return true
+		let restoredSettlement=tradeField(document,0)
+		if restoredSettlement==""
+			return false
+		// Resolve stable projections before applying legacy summary fields. The
+		// current view may point at a different market/store after reconstruction.
+		var foundMarket=false
+		for i=0 to marketCount-1
+			if markets[i].id==restoredSettlement and (not current or markets[i].goodName==tradeField(document,20))
+				market=markets[i]
+				foundMarket=true
+		// Legacy summary-only saves and settlements without a configured market
+		// use an isolated fallback, never rename an unrelated live market.
+		if not foundMarket
+			market=new RuntimeMarket(restoredSettlement,tradeField(document,20),0,0,1,1)
+		let savedHoldId=tradeField(document,17)
+		// Older generated saves did not register the default personal hold.
+		// An absent record must not introduce its new-campaign starting money.
+		// Saved records below overwrite this zero baseline, including v2 holds.
+		var hasPersonalStore=false
+		for i=0 to storeCount-1
+			if stores[i].accessKind=="personal"
+				hasPersonalStore=true
+				stores[i].cargo=0
+				stores[i].money=0
+				stores[i].goodId=""
+		if savedHoldId!=""
+			for i=0 to storeCount-1
+				if tradeSafeId(stores[i].id)==savedHoldId
+					hold=stores[i]
+		else if hasPersonalStore
+			// Summary-only generated saves used the starting settlement's store,
+			// falling back to the first generated store. Registering the personal
+			// hold must not redirect that balance or shrink its capacity, and the
+			// current UI selection must not determine a legacy load's destination.
+			TradeStore legacyHold=null
+			for i=0 to storeCount-1
+				if stores[i].accessKind!="personal" and legacyHold==null
+					legacyHold=stores[i]
+			for i=0 to storeCount-1
+				if stores[i].accessKind=="warehouse" and stores[i].accessId==restoredSettlement
+					legacyHold=stores[i]
+			if legacyHold!=null
+				hold=legacyHold
+		settlementId=restoredSettlement
+		market.id=restoredSettlement
+		market.stock=S2I(tradeField(document,1))
+		market.money=S2I(tradeField(document,2))
+		market.buyUnitPrice=S2I(tradeField(document,3))
+		market.sellUnitPrice=S2I(tradeField(document,4))
+		market.previousUnitPrice=S2I(tradeField(document,5))
+		hold.cargo=S2I(tradeField(document,6))
+		hold.money=S2I(tradeField(document,7))
+		hold.goodId=tradeField(document,21)
+		controller.legacyUnattributedCost=S2I(tradeField(document,8))
+		controller.legacyUnattributedQuantity=S2I(tradeField(document,9))
+		controller.legacyUnattributedOrigin=tradeField(document,10)
+		controller.provenance.clear()
+		progress.standing=S2I(tradeField(document,11))
+		progress.realizedProfit=S2I(tradeField(document,12))
+		progress.completedRouteCount=S2I(tradeField(document,13))
+		nextTransaction=S2I(tradeField(document,14))
+		controller.processedCount=0
+		let history=tradeField(document,15)
+		var start=0
+		for i=0 to StringLength(history)
+			if i==StringLength(history) or SubString(history,i,i+1)==","
+				if i>start
+					controller.processed[controller.processedCount]=SubString(history,start,i)
+					controller.processedCount++
+				start=i+1
+		let states=tradeField(document,16)
+		var recordStart=0
+		for i=0 to StringLength(states)
+			if i==StringLength(states) or SubString(states,i,i+1)=="~"
+				let record=SubString(states,recordStart,i)
+				for j=0 to marketCount-1
+					if markets[j].id==compactField(record,0) and markets[j].goodName==compactField(record,1)
+						markets[j].stock=S2I(compactField(record,2))
+						markets[j].money=S2I(compactField(record,3))
+						markets[j].buyUnitPrice=S2I(compactField(record,4))
+						markets[j].sellUnitPrice=S2I(compactField(record,5))
+						markets[j].shortagePermille=S2I(compactField(record,6))
+						markets[j].eventPermille=S2I(compactField(record,7))
+						markets[j].technologyPermille=S2I(compactField(record,8))
+						markets[j].blockaded=compactField(record,9)=="1"
+						markets[j].occupiedByHostile=compactField(record,10)=="1"
+						// Fields 11-13 were added after the first live-trade save
+						// format. Empty values retain generated defaults.
+						if compactField(record,11)!=""
+							markets[j].productionPermille=S2I(compactField(record,11))
+						if compactField(record,12)!=""
+							markets[j].consumptionPermille=S2I(compactField(record,12))
+						if compactField(record,13)!=""
+							markets[j].previousUnitPrice=S2I(compactField(record,13))
+				recordStart=i+1
+		if savedHoldId!=""
+			hold.capacity=S2I(tradeField(document,18))
+		let savedStores=tradeField(document,19)
+		recordStart=0
+		for i=0 to StringLength(savedStores)
+			if i==StringLength(savedStores) or SubString(savedStores,i,i+1)=="~"
+				let record=SubString(savedStores,recordStart,i)
+				for j=0 to storeCount-1
+					if tradeSafeId(stores[j].id)==compactField(record,0)
+						stores[j].cargo=S2I(compactField(record,1))
+						stores[j].money=S2I(compactField(record,2))
+						stores[j].capacity=S2I(compactField(record,3))
+						stores[j].goodId=compactField(record,4)
+				recordStart=i+1
+		// Only v2 carries attributable acquisitions. Never infer legacy lots
+		// from balances, the selected hold or the last aggregate origin.
+		let savedLots=tradeField(document,22)
+		recordStart=0
+		for i=0 to StringLength(savedLots)
+			if i==StringLength(savedLots) or SubString(savedLots,i,i+1)=="~"
+				let record=SubString(savedLots,recordStart,i)
+				if record!=""
+					var storeId=hold.id
+					for j=0 to storeCount-1
+						if tradeSafeId(stores[j].id)==compactField(record,0)
+							storeId=stores[j].id
+					controller.provenance.add(storeId,compactField(record,1),S2I(compactField(record,2)),S2I(compactField(record,3)),compactField(record,4))
+				recordStart=i+1
+		return true
+	function transactionId(string side) returns string
+		let result="runtime-"+side+"-"+nextTransaction.toString()
+		nextTransaction++
+		return result
+	function selectedActor(player sender) returns int
+		if access==null or not marketSelected or findMarket(market.id,market.goodName)!=market or marketControl!=access.control(market.id)
+			return -1
+		return access.marketActor(sender,market)
+	function commitSelection(player sender,int actor) returns boolean
+		return access!=null and access.commitActor(sender,market,actor) and marketControl==access.control(market.id)
+	function currentMarketControl() returns boolean
+		return access.marketPermitted(market) and marketControl==access.control(market.id)
+	function chooseMarket(player sender,string marketId,string goodId) returns string
+		let wanted=findMarket(marketId,goodId)
+		if access==null or wanted==null
+			return "Market or commodity is not available here."
+		let control=access.control(marketId)
+		let actor=access.marketActor(sender,wanted)
+		if not access.commitActor(sender,wanted,actor) or control!=access.control(marketId)
+			return "Market or commodity is not available here."
+		selectMarket(marketId,goodId)
+		marketSelected=true
+		marketControl=control
+		return "Selected "+marketId+": "+goodId+". Use /trade stores and /trade store STORE."
+	function chooseStore(player sender,string id) returns string
+		let wanted=findStore(id)
+		let actor=selectedActor(sender)
+		if actor<0 or wanted==null
+			return "Select a local market and an eligible cargo store."
+		let control=access.storeControl(wanted)
+		if not access.storePermitted(sender,wanted,market.id,progress) or not commitSelection(sender,actor) or not access.storePermitted(sender,wanted,market.id,progress) or control!=access.storeControl(wanted) or not currentMarketControl()
+			return "Cargo store is not available here."
+		hold=wanted
+		storeSelected=true
+		storeControl=control
+		return "Selected cargo store: "+hold.id+"."
+	function exchange(player sender,string side,int quantity) returns string
+		let actor=selectedActor(sender)
+		if actor<0 or not storeSelected or findStore(hold.id)!=hold
+			return "Trade selection is unavailable. Select a local market and cargo store again."
+		if not access.storePermitted(sender,hold,market.id,progress) or not commitSelection(sender,actor) or not access.storePermitted(sender,hold,market.id,progress) or storeControl!=access.storeControl(hold) or not currentMarketControl()
+			return "Trade selection is unavailable. Select a local market and cargo store again."
+		if nextTransaction>=2147483647
+			return "Transaction history is full."
+		let id="runtime-"+side+"-"+nextTransaction.toString()
+		let before=controller.processedCount
+		var result=""
+		if side=="buy"
+			result=controller.buy(id,market,hold,quantity)
+		else
+			result=controller.sell(id,market,hold,quantity,1000)
+		if controller.processedCount>before
+			nextTransaction++
+		return result
+	function transfer(player sender,string sourceId,string destinationId,int quantity) returns string
+		let actor=selectedActor(sender)
+		let source=findStore(sourceId)
+		let destination=findStore(destinationId)
+		if actor<0 or source==null or destination==null
+			return "Cargo transfer is not available here. Select a local market and eligible stores."
+		let sourceControl=access.storeControl(source)
+		let destinationControl=access.storeControl(destination)
+		if not access.storePermitted(sender,source,market.id,progress) or not access.storePermitted(sender,destination,market.id,progress) or not commitSelection(sender,actor) or not access.storePermitted(sender,source,market.id,progress) or not access.storePermitted(sender,destination,market.id,progress) or sourceControl!=access.storeControl(source) or destinationControl!=access.storeControl(destination) or not currentMarketControl()
+			return "Cargo transfer is not available here. Select a local market and eligible stores."
+		if nextTransaction>=2147483647
+			return "Transaction history is full."
+		let before=controller.processedCount
+		let result=controller.moveCargo("runtime-move-"+nextTransaction.toString(),source,destination,quantity)
+		if controller.processedCount>before
+			nextTransaction++
+		return result
+	function marketListings(player sender,int page) returns string
+		if access==null or access.state.rpg==null or access.state.rpg.interactions.catalog==null
+			return "No eligible markets here."
+		var rows=""
+		var count=0
+		let catalog=access.state.rpg.interactions.catalog
+		for i=0 to catalog.count-1
+			let point=catalog.locations[i]
+			if point.kind=="settlement" and access.localPoint(sender,point)
+				var eligible=false
+				for j=0 to marketCount-1
+					if markets[j].id==point.id and access.marketPermitted(markets[j])
+						eligible=true
+				if eligible
+					if count>=(page-1)*6 and count<page*6
+						rows+="\n"+point.id
+					count++
+		return tradePage(rows,count,page)+"\nUse /trade commodities MARKET [PAGE] and /trade select MARKET COMMODITY."
+	function commodityListings(player sender,string id,int page) returns string
+		var rows=""
+		var count=0
+		for i=0 to marketCount-1
+			let value=markets[i]
+			if value.id==id and access!=null and access.marketActor(sender,value)>=0
+				if count>=(page-1)*6 and count<page*6
+					rows+="\n"+value.inspect()
+				count++
+		return tradePage(rows,count,page)+"\nUse /trade select MARKET COMMODITY."
+	function storeListings(player sender,int page) returns string
+		let actor=selectedActor(sender)
+		if actor<0 or not commitSelection(sender,actor)
+			return "Select a local market first."
+		var rows=""
+		var count=0
+		for i=0 to storeCount-1
+			let value=stores[i]
+			if access.storePermitted(sender,value,market.id,progress)
+				if count>=(page-1)*6 and count<page*6
+					rows+="\n"+value.id+": "+value.cargo.toString()+"/"+value.capacity.toString()+" cargo; "+value.money.toString()+" currency"
+				count++
+		return tradePage(rows,count,page)+"\nUse /trade store STORE or /trade move SOURCE DESTINATION QUANTITY."
+
+function tradePage(string rows,int count,int page) returns string
+	if count==0
+		return "No eligible entries here."
+	let pages=(count+5) div 6
+	if page>pages
+		return "Page is unavailable."
+	return "Page "+page.toString()+"/"+pages.toString()+rows
+
+function tradeArgument(string arguments,int wanted) returns string
+	var start=0
+	var field=0
+	for i=0 to StringLength(arguments)
+		if i==StringLength(arguments) or SubString(arguments,i,i+1)==" "
+			if field==wanted
+				return SubString(arguments,start,i)
+			start=i+1
+			field++
+	return ""
+
+public class TradeCommand implements CommandHandler
+	PlayableTradeRuntime runtime
+	TradePresentation presentation
+	construct(PlayableTradeRuntime runtime,TradePresentation presentation)
+		this.runtime=runtime
+		this.presentation=presentation
+	override function execute(player sender,string arguments)
+		let action=tradeArgument(arguments,0)
+		let first=tradeArgument(arguments,1)
+		let second=tradeArgument(arguments,2)
+		let third=tradeArgument(arguments,3)
+		let count=countArguments(arguments)
+		if action=="inspect" or action=="open"
+			if count!=1
+				presentation.showTradeResult(sender,"Use /trade inspect or /trade open.")
+				return
+			inspectMarket(sender,runtime,presentation)
+		else if action=="close"
+			if count!=1
+				presentation.showTradeResult(sender,"Use /trade close.")
+				return
+			runtime.management.close()
+			presentation.showTradeResult(sender,"Market management closed.")
+		else if action=="select" and count==3
+			presentation.showTradeResult(sender,runtime.chooseMarket(sender,first,second))
+		else if action=="store" and count==2
+			presentation.showTradeResult(sender,runtime.chooseStore(sender,first))
+		else if (action=="buy" or action=="sell") and count==2
+			if not tradeInteger(first) or S2I(first)<=0
+				presentation.showTradeResult(sender,"Quantity must be a positive whole number.")
+				return
+			presentation.showTradeResult(sender,runtime.exchange(sender,action,S2I(first)))
+		else if action=="move" and count==4
+			if not tradeInteger(third) or S2I(third)<=0
+				presentation.showTradeResult(sender,"Quantity must be a positive whole number.")
+				return
+			presentation.showTradeResult(sender,runtime.transfer(sender,first,second,S2I(third)))
+		else if ((action=="markets" or action=="stores") and count<=2) or (action=="commodities" and count>=2 and count<=3)
+			var pageText=first
+			if action=="commodities"
+				pageText=second
+			var page=1
+			if pageText!=""
+				if not tradeInteger(pageText) or S2I(pageText)<1 or S2I(pageText)>1366
+					presentation.showTradeResult(sender,"Page must be a positive whole number within the catalogue.")
+					return
+				page=S2I(pageText)
+			var rows=""
+			if action=="markets"
+				rows=runtime.marketListings(sender,page)
+			else if action=="commodities"
+				rows=runtime.commodityListings(sender,first,page)
+			else
+				rows=runtime.storeListings(sender,page)
+			runtime.management.open("market")
+			presentation.showMarket(sender,"Local trade",rows+"\nCampaign paused. Use /trade close.")
+		else
+			presentation.showTradeResult(sender,"Use /trade markets, commodities MARKET, select MARKET COMMODITY, stores, store STORE, buy QUANTITY, sell QUANTITY, move SOURCE DESTINATION QUANTITY, inspect, or close.")
+
+public PlayableTradeRuntime playableTradeRuntime = null
+
+/** Registers the reachable settlement market for new games, resumed maps and loads. */
+public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns string
+	playableTradeRuntime = campaign.extension castTo PlayableTradeRuntime
+	return registerPlayableTradeCommands(commands,playableTradeRuntime,new WarcraftTradePresentation())
+
+/** Production registration with replaceable output for interpreter tests. */
+public function registerPlayableTradeCommands(CommandRegistry commands,PlayableTradeRuntime runtime,TradePresentation presentation) returns string
+	return commands.register("trade","market","trade <markets [PAGE]|commodities MARKET [PAGE]|select MARKET COMMODITY|stores [PAGE]|store STORE|move SOURCE DESTINATION QUANTITY|inspect|open|buy QUANTITY|sell QUANTITY|close>","Manage local trade; /trade close closes it.","Markets, commodities, stores and inspect/open pause until /trade close. Listings contain only eligible local targets. Select a market/commodity and cargo store before buying or selling. Move transfers between eligible stores at that settlement. Selection and transactions recheck physical presence, discovery and control. After loading, select again. Actions retain existing pause owners; other open screens and manual pause remain paused.",1,4,COMMAND_RELEASE,new TradeCommand(runtime,presentation))

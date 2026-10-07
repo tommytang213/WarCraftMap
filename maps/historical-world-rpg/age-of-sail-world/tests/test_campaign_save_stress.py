@@ -95,26 +95,26 @@ class CampaignSaveStressTests(unittest.TestCase):
         h=stress.Harness(worlds.generate_fixture(self.world_profiles["small_correctness"])); slot=saves.SaveSlot("manual",1)
         h.manager.save(slot,"valid"); old=stress._old_payload(h.storage.read(slot.stable_id),1); h.storage._slots[slot.stable_id]=old
         baseline=copy.deepcopy((h.world,h.players,h.runtime)); registry=saves.MigrationRegistry(); registry._migrations[1]=lambda d: d
-        with self.assertRaises(saves.IncompatibleSaveError): h.manager.__class__(build_version="phase7.1",scenario_id="age_of_sail",scenario_version="1",
+        with self.assertRaises(saves.IncompatibleSaveError): h.manager.__class__(build_version="phase7.1",scenario_id="persistence_stress",scenario_version="1",
             storage=h.storage,capture_state=lambda:(h.world,h.players),validate_state=lambda w,p:worlds.validate_fixture(w),
             reconstruct_runtime=h._reconstruct,activate_state=h._activate,is_save_safe=lambda:True,registry=registry).load(slot)
         self.assertEqual(old,h.storage.read(slot.stable_id)); self.assertEqual(baseline,(h.world,h.players,h.runtime))
 
     def test_cross_map_adapter_commit_and_envelope_failures_are_atomic(self):
         profile=self.world_profiles["small_correctness"]
-        h=stress.Harness(stress.complete_fixture(profile)); storage=transfers.MemoryTransferStorage(); active={"id":"atlantic"}
+        h=stress.Harness(stress.complete_fixture(profile)); storage=transfers.MemoryTransferStorage(); active={"id":"map_a"}
         def activate(map_id,state,_runtime): active.update(id=map_id); setattr(h,"world",copy.deepcopy(state))
         def manager(adapter):
-            return transfers.CrossMapTransferManager(scenario_id="age_of_sail",scenario_version="1",build_version="phase7.1",
+            return transfers.CrossMapTransferManager(scenario_id="persistence_stress",scenario_version="1",build_version="phase7.1",
                 campaign_schema=saves.CURRENT_SCHEMA_VERSION,manifest=transfers.PhysicalMapManifest(stress._manifest()),storage=storage,
                 capture_state=lambda:h.world,load_destination_content=stress._content,activate=activate,adapters=[adapter])
         good=manager(transfers.ReconstructionAdapter("authority",lambda state,content,assignment:len(state["entities"])))
-        good.transfer("atlantic","indian",{},"valid"); committed=storage.read_committed(); baseline=copy.deepcopy((h.world,active))
+        good.transfer("map_a","map_b",{},"valid"); committed=storage.read_committed(); baseline=copy.deepcopy((h.world,active))
         storage.fail_next_commit=True
-        with self.assertRaises(transfers.TransferStorageError): good.transfer("indian","pacific",{},"interrupted")
+        with self.assertRaises(transfers.TransferStorageError): good.transfer("map_b","map_c",{},"interrupted")
         self.assertEqual(committed,storage.read_committed()); self.assertEqual(baseline,(h.world,active))
         broken=manager(transfers.ReconstructionAdapter("broken",lambda *_:(_ for _ in ()).throw(RuntimeError("boom"))))
-        with self.assertRaises(transfers.ReconstructionError): broken.transfer("indian","pacific",{},"adapter-failure")
+        with self.assertRaises(transfers.ReconstructionError): broken.transfer("map_b","map_c",{},"adapter-failure")
         self.assertEqual(committed,storage.read_committed()); self.assertEqual(baseline,(h.world,active))
         for candidate in (committed[:-13],bytes(committed).replace(b'"checksum":"',b'"checksum":"0',1)):
             storage._committed=candidate
@@ -123,14 +123,14 @@ class CampaignSaveStressTests(unittest.TestCase):
 
     def test_cross_map_incompatibility_and_migration_failure_are_non_mutating(self):
         h=stress.Harness(stress.complete_fixture(self.world_profiles["small_correctness"]))
-        storage=transfers.MemoryTransferStorage(); active={"id":"atlantic"}
+        storage=transfers.MemoryTransferStorage(); active={"id":"map_a"}
         def activate(map_id,state,_runtime): active.update(id=map_id); setattr(h,"world",copy.deepcopy(state))
         def manager(**kwargs):
-            return transfers.CrossMapTransferManager(scenario_id="age_of_sail",scenario_version="1",build_version="phase7.1",
+            return transfers.CrossMapTransferManager(scenario_id="persistence_stress",scenario_version="1",build_version="phase7.1",
                 campaign_schema=saves.CURRENT_SCHEMA_VERSION,manifest=transfers.PhysicalMapManifest(stress._manifest()),storage=storage,
                 capture_state=lambda:h.world,load_destination_content=stress._content,activate=activate,
                 adapters=[transfers.ReconstructionAdapter("authority",lambda *_:None)],**kwargs)
-        current=manager(); current.transfer("atlantic","indian",{},"valid")
+        current=manager(); current.transfer("map_a","map_b",{},"valid")
         committed=storage.read_committed(); baseline=copy.deepcopy((h.world,active))
         for field,value in (("buildVersion","stale.0"),("scenario",{"id":"other_scenario","version":"1"})):
             document=json.loads(committed); document[field]=value

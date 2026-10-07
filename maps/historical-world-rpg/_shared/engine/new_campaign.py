@@ -31,7 +31,7 @@ class OriginPage:
 
 
 class NewCampaignOrigins:
-    """Validated view of the active 1450 polity and physical-map authority."""
+    """Validated view of the active starting polity and physical-map authority."""
 
     def __init__(self, polities: Iterable[Mapping[str, Any]],
                  settlements: Iterable[Mapping[str, Any]],
@@ -100,7 +100,7 @@ class NewCampaignOrigins:
     def resolve_start(self, polity_id: str) -> dict[str, str]:
         polity = self._polities.get(polity_id)
         if polity is None:
-            raise OriginSelectionError(f"inactive or missing 1450 polity ID {polity_id!r}")
+            raise OriginSelectionError(f"inactive or missing starting polity ID {polity_id!r}")
         owned = [row for row in self._settlements.values()
                  if row.get("legalOwnerPolityId") == polity_id]
         capital_id = polity.get("capitalSettlementId")
@@ -129,7 +129,7 @@ class NewCampaignOrigins:
 
     def change_allegiance(self, player_state: Mapping[str, Any], polity_id: str) -> dict[str, Any]:
         if polity_id not in self._polities:
-            raise OriginSelectionError(f"inactive or missing 1450 polity ID {polity_id!r}")
+            raise OriginSelectionError(f"inactive or missing starting polity ID {polity_id!r}")
         state = copy.deepcopy(dict(player_state))
         origin = state.get("originPolityId")
         if origin not in self._polities:
@@ -141,7 +141,7 @@ class NewCampaignOrigins:
         origin, allegiance = (player_state.get("originPolityId"),
                               player_state.get("currentAllegiancePolityId"))
         if origin not in self._polities or allegiance not in self._polities:
-            raise OriginSelectionError("player origin or current allegiance is not an active 1450 polity")
+            raise OriginSelectionError("player origin or current allegiance is not an active starting polity")
         expected = self.resolve_start(origin)
         if player_state.get("startingLocation") != expected:
             raise OriginSelectionError("player starting location does not match authoritative origin data")

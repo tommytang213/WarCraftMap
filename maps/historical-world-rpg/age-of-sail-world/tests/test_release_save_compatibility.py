@@ -19,6 +19,9 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manifest = release.load_manifest(MANIFEST)
+        cls.identity = dict(scenario_id=cls.manifest["scenario"]["id"],
+                            scenario_version=cls.manifest["scenario"]["version"],
+                            build_version=cls.manifest["release"])
         cls.fixtures = [release.expand_fixture(cls.manifest, item) for item in cls.manifest["fixtures"]]
 
     def test_matrix_is_derived_from_complete_registered_paths(self):
@@ -89,7 +92,7 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         cases.append(release.canonical(item))
         for candidate in cases:
             before = bytes(candidate)
-            status, message, loaded = release.classify_load(candidate)
+            status, message, loaded = release.classify_load(candidate, **self.identity)
             self.assertIn(status, {"corrupt", "unsupported"})
             self.assertLessEqual(len(message), 80)
             self.assertIsNone(loaded)
@@ -99,7 +102,7 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         raw = release.fixture_payload(self.fixtures[0]); before = bytes(raw)
         registry = saves.MigrationRegistry()
         registry._migrations[1] = lambda _d: (_ for _ in ()).throw(RuntimeError("private details"))
-        status, message, loaded = release.classify_load(raw, registry)
+        status, message, loaded = release.classify_load(raw, registry, **self.identity)
         self.assertEqual(("unsupported", release.DIAGNOSTICS["unsupported"], None), (status, message, loaded))
         self.assertEqual(before, raw)
 

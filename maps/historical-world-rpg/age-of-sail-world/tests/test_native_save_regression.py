@@ -15,18 +15,24 @@ import native_save_regression as regression  # noqa: E402
 
 class NativeSaveRegressionTests(unittest.TestCase):
     def test_repeated_load_reconstructs_authority_indexes_and_handles(self):
-        result = regression.run_headless_cycle(2, "fleet:vasco")
+        result = regression.run_headless_cycle(2, "fleet:sample_fleet")
         self.assertTrue(result["passed"], result["failures"])
         self.assertEqual(result["authoritativeDigestBefore"], result["authoritativeDigestAfter"])
         self.assertEqual([2, 3], result["runtimeGenerations"])
         self.assertTrue(result["transientHandlesRecreated"])
-        self.assertEqual(["fleet:vasco", "settlement:lisbon"], result["runtimeIndex"]["representedIds"])
+        self.assertEqual(["fleet:sample_fleet", "settlement:sample_port"], result["runtimeIndex"]["representedIds"])
         self.assertEqual(1, result["runtimeIndex"]["modalFrameCount"])
 
     def test_safe_and_unsafe_native_save_decisions(self):
         self.assertEqual("created", regression.save_decision(None))
         for transaction in regression.UNSAFE_TRANSACTIONS:
             self.assertEqual("deferred", regression.save_decision(transaction))
+
+    def test_representation_loss_must_target_an_existing_runtime_entity(self):
+        for entity_id in ("missing_fleet", "official:governor"):
+            with self.subTest(entity_id=entity_id):
+                with self.assertRaisesRegex(ValueError, "unknown represented entity"):
+                    regression.run_headless_cycle(2, entity_id)
 
     def test_unconfigured_runtime_is_an_explicit_successful_skip(self):
         environment = os.environ.copy()

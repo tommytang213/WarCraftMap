@@ -35,6 +35,8 @@ from warcraft_map_info import validate_w3i_structure
 from materialize_physical_map import MaterializationError, materialize
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+from scenario_inputs import catalogue_paths
+from validate_audio import validate as validate_audio
 from treasures import validate_catalog as validate_treasure_catalog  # noqa: E402
 
 STABLE_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
@@ -88,7 +90,7 @@ class CampaignConfig:
     maps: tuple[PhysicalMap, ...]
     audio_manifest_path: Path
     audio_profiles_path: Path
-    audio_validator_path: Path
+    audio_validator_path: Path | None
     boundaries: tuple[PhysicalBoundary, ...]
     boundary_manifest_path: Path
 
@@ -249,7 +251,7 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         tuple(maps),
         _inside(project, raw.get("audioManifest"), "audioManifest"),
         _inside(project, raw.get("audioProfiles"), "audioProfiles"),
-        _inside(project, raw.get("audioValidator"), "audioValidator"), tuple(boundaries), boundary_path,
+        _inside(project, raw["audioValidator"], "audioValidator") if raw.get("audioValidator") else None, tuple(boundaries), boundary_path,
     )
 
 
@@ -260,14 +262,17 @@ def validate_campaign(config: CampaignConfig) -> dict:
         presentation = json.loads(config.regional_assignments_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise PackagingError(f"campaign validation stage failed: {error}") from error
-    result = subprocess.run([sys.executable, str(config.audio_validator_path), "--check"], cwd=config.project, text=True, capture_output=True)
-    if result.returncode:
-        raise PackagingError("campaign audio validation stage failed: " + ((result.stderr or result.stdout).strip() or "validator failed"))
+    if config.audio_validator_path:
+        result = subprocess.run([sys.executable, str(config.audio_validator_path), "--check"], cwd=config.project, text=True, capture_output=True)
+        if result.returncode:
+            raise PackagingError("campaign audio validation stage failed: " + ((result.stderr or result.stdout).strip() or "validator failed"))
     try:
         world["audioManifest"] = json.loads(config.audio_manifest_path.read_text(encoding="utf-8"))
         world["audioProfiles"] = json.loads(config.audio_profiles_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise PackagingError(f"campaign audio validation stage failed: {error}") from error
+    profile_format = json.loads(config.manifest_path.read_text()).get("audioProfileFormat", "warcraftmap_audio_profiles_v1")
+    validate_audio(world["audioManifest"], world["audioProfiles"], config.project, profile_format=profile_format)
     regions = {item["id"] for item in world["regionalGeography"]["regions"]}
     instance_regions = presentation.get("regionalInstanceRegions", {})
     terrain_ids = {item[0] for item in base.regional_terrain}
@@ -292,13 +297,14 @@ def validate_campaign(config: CampaignConfig) -> dict:
     missing = required - set(assigned)
     if missing:
         raise PackagingError("campaign validation stage failed: unassigned required content: " + ", ".join(sorted(missing)))
-    treasure_path = config.project / "scenario/treasures/age-of-sail.json"
+    treasure_path = catalogue_paths(config.project).get("treasures")
     try:
-        treasure_catalog = json.loads(treasure_path.read_text(encoding="utf-8"))
-        validate_treasure_catalog(treasure_catalog, {
-            "regions": regions,
-            "regionalInstances": set(instance_regions),
-        })
+        treasure_catalog = json.loads(treasure_path.read_text(encoding="utf-8")) if treasure_path else {"candidateLocations": [], "treasures": []}
+        if treasure_path:
+            validate_treasure_catalog(treasure_catalog, {
+                "regions": regions,
+                "regionalInstances": set(instance_regions),
+            })
         physical_by_instance = {instance: item.id for item in config.maps for instance in item.regional_instance_ids}
         configured_physical_ids = {item.id for item in config.maps}
         for candidate in treasure_catalog["candidateLocations"]:
@@ -506,7 +512,10 @@ def _localize_runtime(config: CampaignConfig, world: dict, physical: PhysicalMap
     provenance["inputs"][str(config.regional_assignments_path.relative_to(config.project.parent))] = _sha(config.regional_assignments_path)
     provenance["inputs"][str(config.audio_manifest_path.relative_to(config.project.parent))] = _sha(config.audio_manifest_path)
     provenance["inputs"][str(config.audio_profiles_path.relative_to(config.project.parent))] = _sha(config.audio_profiles_path)
-    provenance["inputs"][str(config.audio_validator_path.relative_to(config.project.parent))] = _sha(config.audio_validator_path)
+    if config.audio_validator_path:
+        provenance["inputs"][str(config.audio_validator_path.relative_to(config.project.parent))] = _sha(config.audio_validator_path)
+    audio_code = Path(__file__).with_name("validate_audio.py")
+    provenance["inputs"]["@generator/validate_audio.py"] = _sha(audio_code)
     provenance["inputs"]["@generator/package_wurst_campaign.py"] = _sha(Path(__file__))
     provenance["inputs"]["@generator/materialize_physical_map.py"] = _sha(Path(__file__).with_name("materialize_physical_map.py"))
     provenance["outputs"][GENERATED_DATA] = _sha(runtime_path)
@@ -755,7 +764,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
             # Compile a separate, bounded dependency graph for the campaign
             # chapter. Regional Bootstrap and ScenarioData packages are not
             # merely hidden behind a runtime branch; they are absent.
-            source = config.project / "wurst-bootstrap/Bootstrap.wurst"
+            source = config.project.parent / "_shared/wurst-bootstrap/Bootstrap.wurst"
             target = compile_root / "wurst/Bootstrap.wurst"
             if not source.is_file():
                 raise PackagingError("bootstrap assembly stage failed: missing minimal Bootstrap.wurst")

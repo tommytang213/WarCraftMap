@@ -91,8 +91,8 @@ def normalized_authority(document: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def classify_load(raw: bytes | str, registry: campaign_save.MigrationRegistry | None = None,
-                  *, scenario_id: str = "age_of_sail_world", scenario_version: str = "1",
-                  build_version: str = "phase8.1") -> tuple[str, str, dict[str, Any] | None]:
+                  *, scenario_id: str, scenario_version: str,
+                  build_version: str) -> tuple[str, str, dict[str, Any] | None]:
     """Return bounded English status; never expose parser or migration internals."""
     try:
         source = json.loads(raw)
@@ -113,7 +113,11 @@ def classify_load(raw: bytes | str, registry: campaign_save.MigrationRegistry | 
 
 def validate_release_fixture(fixture: Mapping[str, Any], budgets: Mapping[str, Any]) -> dict[str, Any]:
     payload = fixture_payload(fixture)
-    started = time.perf_counter_ns(); status, _, loaded = classify_load(payload)
+    identity = fixture["document"]
+    started = time.perf_counter_ns()
+    status, _, loaded = classify_load(payload, scenario_id=identity["scenario"]["id"],
+                                     scenario_version=identity["scenario"]["version"],
+                                     build_version=identity["buildVersion"])
     elapsed_ms = (time.perf_counter_ns() - started) / 1e6
     if loaded is None or status not in {"compatible", "migrated"}:
         raise CompatibilityError("release fixture did not load")

@@ -34,9 +34,9 @@ def fixture_state() -> dict:
         "modalPause": {"paused": True, "ownerCount": 1, "pausedBeforeModal": False},
         "clock": {"campaignSeconds": 1450.0, "tickSeconds": 1.0},
         "entities": {
-            "settlement:lisbon": {"kind": "settlement", "owner": "portugal", "represented": True},
-            "fleet:vasco": {"kind": "fleet", "owner": "portugal", "represented": True},
-            "official:governor": {"kind": "character", "owner": "portugal", "represented": False},
+            "settlement:sample_port": {"kind": "settlement", "owner": "sample_polity", "represented": True},
+            "fleet:sample_fleet": {"kind": "fleet", "owner": "sample_polity", "represented": True},
+            "official:governor": {"kind": "character", "owner": "sample_polity", "represented": False},
         },
         "deliveredEvents": ["event:fixture:before-save"],
     }
@@ -90,8 +90,10 @@ def run_headless_cycle(loads: int = 2, missing_representation: str | None = None
     before = authoritative_projection(state)
     runtime = reconstruct(state)
     old_handles: set[str] = set(runtime.representations.values()) | set(runtime.timers.values()) | set(runtime.ui) | set(runtime.audio)
-    if missing_representation:
-        runtime.representations.pop(missing_representation, None)
+    if missing_representation is not None:
+        if missing_representation not in runtime.representations:
+            raise ValueError(f"unknown represented entity: {missing_representation}")
+        del runtime.representations[missing_representation]
     generations = []
     for _ in range(loads):
         runtime = reconstruct(state, runtime)

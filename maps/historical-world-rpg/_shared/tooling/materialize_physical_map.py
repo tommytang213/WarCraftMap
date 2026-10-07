@@ -12,6 +12,7 @@ import json
 import math
 import struct
 from pathlib import Path
+from scenario_inputs import settlement_sources
 
 FORMAT_VERSION = 1
 MAX_TERRAIN_CELLS = 256 * 256
@@ -150,7 +151,7 @@ def _unit(type_id: bytes, x: float, y: float, owner: int, creation: int) -> byte
 
 def _positions(project: Path) -> dict[str, dict]:
     result = {}
-    for path in sorted((project / "scenario/settlements").glob("*-1450.json")):
+    for path, _geography, _region in settlement_sources(project):
         for row in json.loads(path.read_text(encoding="utf-8")).get("settlements", []):
             result[row["id"]] = row
     return result

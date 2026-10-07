@@ -12,10 +12,12 @@ class SettlementVisualRuntime:
         self.assignments={x["settlementId"]:x for x in document["settlementAssignments"]}
         self.active={}
 
-    def resolve(self, settlement_id, *, controller_id, year=1450, growth="city", destroyed_roles=()):
+    def resolve(self, settlement_id, *, controller_id, year=None, growth="city", destroyed_roles=()):
         row=self.assignments.get(settlement_id)
         if row is None: raise SettlementVisualRuntimeError("unknown settlement")
         visual_set=self.sets[row["visualSetId"]]
+        if year is None:
+            year = min(x["fromYear"] for x in visual_set["periodVariants"])
         periods=[x for x in visual_set["periodVariants"] if x["fromYear"] <= year <= x["toYear"]]
         if not periods: raise SettlementVisualRuntimeError("unsupported visual period")
         if growth not in visual_set["densityVariants"]: raise SettlementVisualRuntimeError("unknown growth variant")

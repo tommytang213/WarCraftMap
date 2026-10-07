@@ -31,7 +31,7 @@ def _ids(rows, domain):
     return out
 
 
-def validate_catalog(data: Mapping[str, Any]) -> None:
+def validate_catalog(data: Mapping[str, Any], *, bulk_good_ids=()) -> None:
     if data.get("schemaVersion") != 1: raise PlayerItemError("player item schemaVersion must be 1")
     rarities = _ids(data.get("rarities", []), "rarities")
     if sorted(x["rank"] for x in rarities.values()) != list(range(len(rarities))):
@@ -41,7 +41,7 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
     merchants = _ids(data.get("merchantArchetypes", []), "merchantArchetypes")
     evidence = _ids(data.get("historicalEvidence", []), "historicalEvidence")
     items = _ids(data.get("items", []), "items")
-    bulk_goods = {"grain","fish","timber","iron","copper","salt","wine","wool","cloth","spices","sugar","tobacco","coffee","tea","silk","porcelain","slaves"}
+    bulk_goods = set(bulk_good_ids)
     stat_signatures = {}
     allowed_provenance = {"generic","regional","cultural","polity","profession","quest","set_piece","historical","legendary"}
     allowed_categories = {"equipment","consumable","tool","book_map","artifact"}
@@ -60,7 +60,7 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
             if identity in unique_identities: raise PlayerItemError(f"item {item_id}: duplicate unique identity {identity}")
             unique_identities.add(identity)
         req=item["requirements"]
-        if req.get("startYear",1450)>req.get("endYear",1820): raise PlayerItemError(f"item {item_id}: invalid era")
+        if req.get("startYear",1)>req.get("endYear",9999): raise PlayerItemError(f"item {item_id}: invalid era")
         enh=item["enhancement"]
         if not (isinstance(enh.get("maxRank"),int) and 0 <= enh["maxRank"] <= 10): raise PlayerItemError(f"item {item_id}: invalid enhancement bound")
         if not (isinstance(enh.get("maxRestoration"),int) and 0 <= enh["maxRestoration"] <= 5): raise PlayerItemError(f"item {item_id}: invalid restoration bound")
@@ -98,7 +98,7 @@ def validate_catalog(data: Mapping[str, Any]) -> None:
 
 def validate_catalog_references(data: Mapping[str,Any], references: Mapping[str,set[str]]) -> None:
     """Validate scenario-owned availability references without coupling the engine to files."""
-    validate_catalog(data)
+    validate_catalog(data, bulk_good_ids=references.get("goods", ()))
     mapping=(("regionIds","regions"),("cultureIds","cultures"),("controllerIds","controllers"),
              ("technologyIds","technologies"),("institutionIds","institutions"),
              ("questFlagIds","quests"),("eventFlagIds","events"))
@@ -117,7 +117,7 @@ def validate_catalog_references(data: Mapping[str,Any], references: Mapping[str,
 def _available(item, archetype_id, context):
     if not item["merchant"]["eligible"] or archetype_id not in item["merchant"]["archetypeIds"]: return False
     req=item["requirements"]; year=context["year"]
-    if not req.get("startYear",1450)<=year<=req.get("endYear",1820): return False
+    if not req.get("startYear",1)<=year<=req.get("endYear",9999): return False
     for key,ctx in (("technologyIds","technologyIds"),("institutionIds","institutionIds"),("eventFlagIds","eventFlagIds"),("questFlagIds","questFlagIds")):
         if not set(req.get(key,[])) <= set(context.get(ctx,[])): return False
     for key,ctx in (("regionIds","regionId"),("cultureIds","cultureId"),("controllerIds","controllerId"),("settlementIds","settlementId")):

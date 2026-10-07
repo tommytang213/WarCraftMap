@@ -43,4 +43,4 @@ class OriginPresentation implements OriginSelectionPresentation
 	subject.add("england", "Kingdom of England", "europe_west", "Maps/EuropeWest.w3x", "europe_atlantic_isles", "london")
 	subject.choose("missing_polity").assertEquals(false)
 	identity.hasOrigin().assertEquals(false)
-	view.error.assertEquals("That polity is not active in the authoritative 1450 world.")
+	view.error.assertEquals("That polity is not active in the authoritative starting world.")

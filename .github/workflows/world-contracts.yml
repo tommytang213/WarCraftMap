@@ -3,7 +3,7 @@ name: World data contracts
 on:
   push:
     paths:
-      - "maps/historical-world-rpg/_shared/contracts/**"
+      - "maps/historical-world-rpg/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
       - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
@@ -15,7 +15,7 @@ on:
       - ".github/workflows/world-contracts.yml"
   pull_request:
     paths:
-      - "maps/historical-world-rpg/_shared/contracts/**"
+      - "maps/historical-world-rpg/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
       - "maps/historical-world-rpg/_shared/tooling/validate_quest_events.py"
       - "maps/historical-world-rpg/age-of-sail-world/scenario/world/**"
@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Audit reusable framework boundary
+        run: python3 maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py
       - name: Validate world cross-references
         run: |
           python maps/historical-world-rpg/_shared/tooling/validate_world.py             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json

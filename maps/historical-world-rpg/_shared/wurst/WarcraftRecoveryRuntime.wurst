@@ -1,0 +1,106 @@
+package WarcraftRecoveryRuntime
+
+import UnstuckRecovery
+import WC3Compatibility
+
+/** Warcraft-facing registry. Stable IDs, not handles, are persisted. */
+public class WarcraftRecoveryAdapter implements RecoveryRuntime
+	string array[256] ids
+	unit array[256] handles
+	string array[256] regions
+	int count = 0
+	string array[24] mains
+	string array[24] relevantRegions
+
+	function indexOf(string id) returns int
+		for i = 0 to count - 1
+			if ids[i] == id
+				return i
+		return -1
+	function bind(string stableId, unit target, string regionId)
+		let existing = indexOf(stableId)
+		if existing >= 0
+			handles[existing] = target
+			regions[existing] = regionId
+		else
+			ids[count] = stableId
+			handles[count] = target
+			regions[count] = regionId
+			count++
+	function unbind(string stableId)
+		let found = indexOf(stableId)
+		if found >= 0
+			handles[found] = null
+	function setMainCharacter(player owner, string stableId)
+		mains[GetPlayerId(owner)] = stableId
+	function setRelevantRegion(player owner, string regionId)
+		relevantRegions[GetPlayerId(owner)] = regionId
+	function selectedUnitAt(player owner, int wanted) returns unit
+		let selectedUnits = CreateGroup()
+		GroupEnumUnitsSelected(selectedUnits, owner, null)
+		var found = 0
+		var result = FirstOfGroup(selectedUnits)
+		while result != null and found < wanted
+			GroupRemoveUnit(selectedUnits, result)
+			result = FirstOfGroup(selectedUnits)
+			found++
+		DestroyGroup(selectedUnits)
+		return result
+	override function selectedCount(player owner) returns int
+		let selectedUnits = CreateGroup()
+		GroupEnumUnitsSelected(selectedUnits, owner, null)
+		var result = 0
+		var next = FirstOfGroup(selectedUnits)
+		while next != null
+			result++
+			GroupRemoveUnit(selectedUnits, next)
+			next = FirstOfGroup(selectedUnits)
+		DestroyGroup(selectedUnits)
+		return result
+	override function selectedStableId(player owner, int wanted) returns string
+		let selectedUnit = selectedUnitAt(owner, wanted)
+		for i = 0 to count - 1
+			if handles[i] == selectedUnit
+				return ids[i]
+		// Non-registered selections are deliberately ineligible, never "empty".
+		return "__unregistered_selected_object__"
+	override function activeCount(player owner) returns int
+		return count
+	override function activeStableId(player owner, int index) returns string
+		return ids[index]
+	override function mainCharacterStableId(player owner) returns string
+		return mains[GetPlayerId(owner)]
+	override function isPresent(string stableId) returns boolean
+		let found = indexOf(stableId)
+		return found >= 0 and handles[found] != null and GetUnitTypeId(handles[found]) != 0
+	override function isPlayerControlled(string stableId, player owner) returns boolean
+		let found = indexOf(stableId)
+		return found >= 0 and handles[found] != null and GetOwningPlayer(handles[found]) == owner
+	override function currentRegion(string stableId) returns string
+		let found = indexOf(stableId)
+		if found < 0
+			return ""
+		return regions[found]
+	override function relevantRegion(player owner) returns string
+		return relevantRegions[GetPlayerId(owner)]
+	override function verifyDestination(string stableId, int movementClass, real x, real y) returns boolean
+		if not isPresent(stableId)
+			return false
+		if movementClass == MOVE_FLYING
+			return true
+		let walkable = not compatIsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY)
+		let floatable = not compatIsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY)
+		if movementClass == MOVE_LAND
+			return walkable
+		if movementClass == MOVE_NAVAL
+			return floatable
+		return movementClass == MOVE_AMPHIBIOUS and (walkable or floatable)
+	override function move(string stableId, real x, real y)
+		let found = indexOf(stableId)
+		if found >= 0 and handles[found] != null
+			compatTeleportUnit(handles[found], x, y)
+	override function feedback(player owner, string message)
+		DisplayTimedTextToPlayer(owner, 0., 0., 12., message)
+
+public WarcraftRecoveryAdapter recoveryRuntime = new WarcraftRecoveryAdapter()
+public UnstuckRecoveryService recoveryService = new UnstuckRecoveryService(recoveryRuntime)

@@ -8,14 +8,27 @@ The shared engine owns generic systems. The Age of Sail folder supplies scenario
 historical-world-rpg/
 ├── _shared/
 │   ├── engine/
-│   └── tooling/
-└── age-of-sail-world/
-    ├── docs/
+│   ├── tooling/
+│   ├── contracts/
+│   ├── wurst/
+│   ├── wurst-bootstrap/
+│   └── wurst-tests/
+├── age-of-sail-world/
+│   ├── docs/
+│   ├── scenario/
+│   ├── map/
+│   ├── src/
+│   └── tests/
+└── conformance-campaign/
     ├── scenario/
-    ├── map/
-    ├── src/
-    └── tests/
+    └── map/
 ```
+
+The production Wurst mechanisms and Warcraft adapters live in `_shared/wurst/`;
+the existing Age of Sail `wurst/` paths alias those canonical packages. The tiny
+content-only conformance campaign uses the same registration, execution tests
+and map/campaign packaging. See the [framework layer contract](../../_shared/README.md)
+for the boundary audit, content mutation check and precise layer responsibilities.
 
 ## Planned engine boundaries
 

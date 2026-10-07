@@ -67,7 +67,7 @@ function seedAuthoritativeFixture()
 	fixtureWrite("physicalMapId", "world-map")
 	fixtureWrite("modalPause", "true|1|false")
 	fixtureWrite("campaignClock", "1450.0|1.0")
-	fixtureWrite("entities", "fleet:vasco|official:governor|settlement:lisbon")
+	fixtureWrite("entities", "fleet:sample_fleet|official:governor|settlement:sample_port")
 	fixtureWrite("deliveredEvents", "event:fixture:before-save")
 	fixtureWrite("authoritativeDigest", "runner-must-canonicalize-and-compare")
 
@@ -99,7 +99,7 @@ public function nativeSaveRegressionAfterLoad() returns boolean
 	fixtureEventDeliveryCount++
 	fixtureWrite("runtimeGeneration", fixtureRuntimeGeneration.toString())
 	fixtureWrite("eventDeliveryCount", fixtureEventDeliveryCount.toString())
-	fixtureWrite("representedIds", "fleet:vasco|settlement:lisbon")
+	fixtureWrite("representedIds", "fleet:sample_fleet|settlement:sample_port")
 	fixtureWrite("timerIds", "autosave|campaign-clock")
 	fixtureWrite("modalFrameCount", "1")
 	fixtureWrite("transientHandlesRecreated", "true")
