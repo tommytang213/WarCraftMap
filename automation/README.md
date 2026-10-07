@@ -70,22 +70,52 @@ history. The updater exits before a fresh Python worker process starts, so code
 is never hot-reloaded. Set `WARCRAFTMAP_AGENT_CONTROLLER_BRANCH` only when the
 controller intentionally follows a branch other than the remote default.
 
-When fewer than three open `[agent-ready]` issues remain, the worker uses one
-budgeted Codex planning run to refill the small queue toward ten issues. Planning
-reads the roadmap, design lock, architecture, agent rules, repository state, all
-available issue history, and PR history. It creates implementation-sized issues
-in dependency order, rechecks issue and PR titles before every creation, and
-creates one `[needs-design]` question for an undocumented material decision, while
-continuing to plan only work that explicitly documents its independence from that
-decision. Existing ready work is skipped only when its body says `Blocked by: #N`
-or `Depends on: #N` for an open design blocker. A healthy queue causes no planning invocation; an
-exhausted roadmap exits cleanly. Planning and implementation remain sequential,
-so worker concurrency is still one.
+Every wake reads the release-blocker, runtime-acceptance and exhaustive
+requirement-traceability reports, plus complete open/closed issue and PR history.
+The scenario's `tooling/planning_audit.py` regenerates all three audits in memory
+on the current origin default-branch revision. It verifies available execution
+and campaign artifacts through the existing audits; it never treats saved PASS
+flags, closed issues or merged PRs as closure. Missing reports, failed audits,
+dirty/outdated controller checkouts and stale execution evidence keep the gate
+closed. The controller does not compile during planning or rewrite tracked
+reports. Compiler execution and packaging remain repair/validation work.
+
+While closure is pending, the worker selects and plans only blocker repairs,
+even when unrelated ready work fills the queue. Repeated symptoms are grouped by
+stable requirement/finding identity, with runtime findings shared across reports
+deduplicated. Missing global runtime execution is repaired before validating
+domains whose source checks pass; a package census waits for its final artifact.
+Traceability interaction repairs wait for their prerequisite obligations to pass
+a regenerated audit. Each generated issue records
+`Closure blocker: <identity>` and `Closure revision: <main SHA>`. These markers,
+legacy stable-ID references, linked PRs and normalized titles prevent duplicate
+work across open and closed history; history retrieval grows beyond the preview
+issue limit. A fresh failing audit after a merge allows a scoped follow-up on the
+new revision. Before creating each issue the controller checks history and main
+again. Open generated repairs continue to hold closure even if findings clear.
+
+Closure repairs are planned in batches of at most ten, with at most four closely
+related identities per issue. Only the unblocked, unrepresented frontier is sent
+as candidates. No optional content fills spare slots, and `exhausted` is rejected
+while closure remains pending. Genuine material decisions become `[needs-design]`
+questions; independent blocker repairs continue. `Blocked by: #N` or
+`Depends on: #N` holds execution until the referenced issue is closed, including
+implementation dependencies. Audits are regenerated again on the new main
+revision after each repair merges.
+
+Once all reports are clean and generated repairs are closed, ordinary planning
+resumes: when fewer than three independent `[agent-ready]` issues remain, one
+budgeted Codex planning run refills toward ten using the roadmap, design lock,
+architecture, agent rules and history. An exhausted roadmap then exits cleanly.
+Planning and implementation remain sequential, so worker concurrency is still one.
 
 Open `[planned] Phase N: ...` issues reserve future roadmap work. Before queue
 selection or replenishment, the worker promotes an eligible reservation in place
 by changing only its prefix to `[agent-ready]`; it never recreates the issue.
-Promotion requires every checkbox in the immediately preceding phase of the
+Promotion first requires a freshly regenerated zero-blocker closure state with
+no open repair issues or PRs. This holds all planned reservations, including
+release/launch issue #397, regardless of completed roadmap checkboxes. Main and
+repair history are rechecked before promotion. Promotion also requires every checkbox in the immediately preceding phase of the
 authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
 the issue body is also a blocker until that referenced issue is closed. General
 `[planned]` issues without a recognizable `Phase N:` title remain untouched.
