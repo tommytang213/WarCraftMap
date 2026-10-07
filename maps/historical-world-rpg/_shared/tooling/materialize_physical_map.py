@@ -31,7 +31,7 @@ def _resize_map_info(data: bytes, width: int, height: int) -> bytes:
     """
     try:
         version = struct.unpack_from("<i", data)[0]
-        if version not in (31, 33):
+        if version not in (31, 33, 39):
             raise MaterializationError(f"unsupported W3I resize layout: {version}")
         offset = 28  # version/save/editor/game-version tuple, then four strings
         for _ in range(4):
@@ -142,9 +142,9 @@ def _unit(type_id: bytes, x: float, y: float, owner: int, creation: int) -> byte
     out = bytearray(type_id + struct.pack("<i", 0))
     out += struct.pack("<fffffff", x, y, 0.0, 0.0, 1.0, 1.0, 1.0)
     out += struct.pack("<Bibbii", 0, owner, 0, 0, -1, -1)
-    out += struct.pack("<i", 0)                 # dropped item sets
+    out += struct.pack("<ii", -1, 0)           # no W3I item table; no dropped item sets
     out += struct.pack("<ifiiii", 0, 0.0, 1, 0, 0, 0)  # gold/target/hero stats
-    out += struct.pack("<iiiii", 0, 0, 0, 0, 0)  # inventory/abilities/random mode payload
+    out += struct.pack("<iii", 0, 0, -1)      # no inventory, abilities or randomization
     out += struct.pack("<iii", -1, -1, creation)
     return bytes(out)
 
@@ -239,6 +239,9 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
     width, height, cells, layouts = physical_layout(generated, physical)
     map_dir.joinpath("war3map.w3e").write_bytes(_w3e(width, height, cells, physical.id))
     map_dir.joinpath("war3map.wpm").write_bytes(_wpm(width, height, cells))
+    # SHD is one byte per pathing pixel. Retaining the 64x64 source shadow
+    # raster after resizing leaves the client with a truncated terrain resource.
+    map_dir.joinpath("war3map.shd").write_bytes(bytes(width * height * 16))
     info_path = map_dir / "war3map.w3i"
     info_path.write_bytes(_resize_map_info(info_path.read_bytes(), width, height))
     placed = settlement_placements(project, physical, runtime.get("settlementDefinitions", []), width, height, cells, layouts)

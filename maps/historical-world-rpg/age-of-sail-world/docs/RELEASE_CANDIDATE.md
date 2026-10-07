@@ -58,6 +58,23 @@ replacement bootstrap is selector-only and is guarded by compiled-artifact budge
 transition checks, but release remains blocked until that exact client passes Begin the
 Campaign, origin selection, and destination handoff smoke coverage.
 
+Issue #397 audits the actual Actions #704 payload from `5a324d7`, whose launch
+crash report is `102B765A-6BDF-44E4-BEFC-2E1C09280753`. Its compiled selector
+omits `InitBlizzard()` because the source main is empty. Regional placements
+also encode item-table ID 0 despite having no W3I item tables, and resized maps
+retain the bootstrap-sized shadow raster. The repair restores Blizzard
+initialization, writes complete non-random placement records with item-table
+sentinel -1, and regenerates shadows at the materialized terrain size. Final
+archive inspection checks these contracts and campaign member identities.
+
+These are reproducible packaging/startup defects, not a demonstrated native
+exception diagnosis. No exception address or call stack accompanies the report
+ID, and no retail client is available in the build environment. The exact cause
+of the reported immediate crash therefore remains unconfirmed. A green build
+does not close #397's crash-causality or real-client acceptance criteria.
+Do not request another player smoke until a materially new artifact passes
+integration, exhaustive requirement traceability and framework conformance.
+
 ## Historical diagnostic
 
 The superseded `phase8-rc2` artifact used a malformed private campaign-metadata layout

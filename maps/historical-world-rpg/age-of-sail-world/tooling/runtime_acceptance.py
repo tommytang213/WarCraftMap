@@ -286,6 +286,8 @@ def _compiled_call_evidence(text):
 
 def verify_compiled_script(script,path=MANIFEST):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace"); failures=[]
+ from warcraft_lua_startup import startup_failures
+ failures.extend(startup_failures(text))
  if len(raw)>MAX_COMPILED_LUA_BYTES: failures.append(f"compiled Lua exceeds {MAX_COMPILED_LUA_BYTES} byte budget")
  longest=max((len(x.encode()) for x in text.splitlines()),default=0)
  if longest>MAX_LUA_LINE_BYTES: failures.append(f"compiled Lua line exceeds {MAX_LUA_LINE_BYTES} byte budget")
@@ -303,7 +305,8 @@ def verify_compiled_script(script,path=MANIFEST):
 
 def verify_compiled_bootstrap(script):
  raw=script if isinstance(script,bytes) else script.encode(); text=raw.decode("utf-8",errors="replace")
- failures=[]
+ from warcraft_lua_startup import startup_failures
+ failures=startup_failures(text)
  calls,_=_compiled_call_evidence(text)
  text,_=_lua_code_and_strings(text)
  if len(raw)>MAX_BOOTSTRAP_LUA_BYTES: failures.append(f"bootstrap compiled Lua exceeds {MAX_BOOTSTRAP_LUA_BYTES} byte budget")
@@ -328,7 +331,7 @@ def _archive_read(path,name):
 
 def inspect_built_map(path,expected_map_id=None,bootstrap=None):
  try:
-  script=_archive_read(path,"war3map.lua"); w3e=_archive_read(path,"war3map.w3e"); wpm=_archive_read(path,"war3map.wpm"); units=_archive_read(path,"war3mapUnits.doo")
+  script=_archive_read(path,"war3map.lua"); w3e=_archive_read(path,"war3map.w3e"); wpm=_archive_read(path,"war3map.wpm"); units=_archive_read(path,"war3mapUnits.doo"); shadows=_archive_read(path,"war3map.shd")
   runtime=json.loads(_archive_read(path,"runtime/scenario-runtime.json")); physical=json.loads(_archive_read(path,"runtime/physical-map.json")); w3i=_archive_read(path,"war3map.w3i")
  except (KeyError,OSError,ValueError,json.JSONDecodeError) as error: raise RuntimeAcceptanceError(f"built map is missing or has invalid required content: {error}") from error
  if not isinstance(runtime,dict) or not isinstance(physical,dict) or not isinstance(runtime.get("ids",{}),dict):
@@ -342,9 +345,13 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
   if w3e[:8]!=b"W3E!"+struct.pack("<I",11) or not 1<=ground<=16 or not 0<=cliffs<=16 or len(cells)!=tw*th*7 or tw<3 or th<3: failures.append("terrain binary is malformed")
   if wpm[:8]!=b"MP3W\0\0\0\0" or (pw,ph)!=((tw-1)*4,(th-1)*4) or len(paths)!=pw*ph: failures.append("pathing binary does not match terrain")
   if units[:12]!=b"W3do"+struct.pack("<II",8,11) or objects<1 or b"sloc" not in units: failures.append("map has no valid player spawn representation")
+  if len(shadows)!=(tw-1)*(th-1)*16: failures.append("shadow raster does not match terrain")
   vertices={cells[i:i+7] for i in range(0,len(cells),7)}
   if bootstrap is not True and (len(vertices)<2 or len(set(paths))<2): failures.append("physical terrain/pathing is blank or placeholder-only")
  except struct.error: failures.append("terrain/pathing/object binary is truncated")
+ from warcraft_map_units import validate_units
+ try: validate_units(units)
+ except ValueError as error: failures.append(str(error))
  map_id=physical.get("physicalMapId")
  if expected_map_id is not None and map_id!=expected_map_id: failures.append(f"physical-map identity {map_id!r} does not match {expected_map_id!r}")
  if bootstrap is not None and physical.get("bootstrap") is not bool(bootstrap): failures.append("physical-map bootstrap identity is inconsistent")

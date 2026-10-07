@@ -565,9 +565,14 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
         reader = MpqReader(archive)
         metadata = parse_campaign_metadata(reader.read("war3campaign.w3f"))
         manifest = json.loads(reader.read("campaign-manifest.json"))
+        members = reader.members()
     except (OSError, KeyError, ValueError, json.JSONDecodeError) as error:
         raise PackagingError(f"campaign inspection stage failed: invalid Warcraft MPQ campaign: {error}") from error
     expected_chapters = [(item.chapter_title, item.package_path) for item in config.maps]
+    expected_members = {"war3campaign.w3f", "campaign-manifest.json",
+                        *(item.package_path.replace("\\", "/").lower() for item in config.maps)}
+    if set(members) - {"(listfile)", "(attributes)", "(signature)"} != expected_members:
+        raise PackagingError("campaign inspection stage failed: archive member set differs from configured campaign")
     if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
         raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
     expected_order = [("", path) for _, path in expected_chapters]
@@ -578,8 +583,12 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
         raise PackagingError("campaign inspection stage failed: first chapter is not the bootstrap map")
     if manifest.get("format") != CAMPAIGN_ARCHIVE_FORMAT or manifest.get("bootstrapMapId") != config.bootstrap_map_id:
         raise PackagingError("campaign inspection stage failed: campaign metadata is invalid")
-    if {item["id"] for item in manifest.get("maps", [])} != {item.id for item in config.maps}:
+    rows = manifest.get("maps", [])
+    if not isinstance(rows, list) or len(rows) != len(config.maps) or any(not isinstance(row, dict) for row in rows):
         raise PackagingError("campaign inspection stage failed: physical map IDs are incomplete")
+    for row, physical in zip(rows, config.maps):
+        if (row.get("id"), row.get("packagePath"), row.get("bootstrap")) != (physical.id, physical.package_path, physical.bootstrap):
+            raise PackagingError("campaign inspection stage failed: physical map identity/path/bootstrap differs from configuration")
     for item in manifest["maps"]:
         try:
             payload = reader.read(item["packagePath"])
@@ -615,6 +624,8 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
             read = reader.read
         w3i = read("war3map.w3i")
         w3e, wpm, units = read("war3map.w3e"), read("war3map.wpm"), read("war3mapUnits.doo")
+        from warcraft_map_units import validate_units
+        records = validate_units(units)
         runtime = json.loads(read(f"runtime/{GENERATED_DATA}"))
         manifest = json.loads(read("runtime/physical-map.json"))
         offset = 13
@@ -624,6 +635,8 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         width, height = terrain_width - 1, terrain_height - 1
         path_width, path_height = struct.unpack_from("<II", wpm, 8)
         object_count = struct.unpack_from("<I", units, 12)[0]
+        if object_count != len(records) or len(read("war3map.shd")) != width * height * 16:
+            raise ValueError("placement records or shadow raster do not match terrain")
         info = validate_w3i_structure(w3i)
         left, right, bottom, top = info["cameraComplements"]
         if (info["playableWidth"], info["playableHeight"]) != (width - left - right, height - bottom - top):

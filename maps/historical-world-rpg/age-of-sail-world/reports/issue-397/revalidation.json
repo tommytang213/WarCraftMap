@@ -1,0 +1,141 @@
+{
+  "format": "warcraftmap_issue397_revalidation_v1",
+  "issue": 397,
+  "implementationStatus": "ready_for_repository_validation",
+  "sourceIdentity": {
+    "sourceRevision": "b2e55a173518b875cfba2715e1f48b1881b4692e",
+    "sourceTreeSha256": "9d6a97b7f43c9c7b5b75a857e2dd9dda67b140cd638243ac2cb3ba2d5097d66c"
+  },
+  "worktreeChanges": "uncommitted",
+  "changesSinceInitialAudit": [
+    "Reject local/nested entry points and obvious initialization bypasses.",
+    "Lock unchanged artifact-704 fixtures by SHA-256.",
+    "Prove MPQ inspection uses archived Lua even when intermediate output disagrees."
+  ],
+  "validation": {
+    "repositoryChecks": {
+      "status": "pass",
+      "command": "WARCRAFTMAP_WURST_CHECK=skip ./automation/run_checks.sh",
+      "scenarioTests": 915,
+      "automationTests": 113,
+      "wurst": "Executed separately in the pinned container, twice, without skipping tests."
+    },
+    "pinnedWurst": {
+      "status": "pass",
+      "runs": 2,
+      "passedPerRun": 281,
+      "compiler": {
+        "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "sourceIdentityVerified": true
+    },
+    "campaignBuilds": {
+      "status": "pass",
+      "runs": 2,
+      "mapsPerRun": 17,
+      "sha256": [
+        "be96632d4d949d0c7e97b0477e728d4f5cd5b49badf2740283266b5eceee2bd1",
+        "be96632d4d949d0c7e97b0477e728d4f5cd5b49badf2740283266b5eceee2bd1"
+      ],
+      "normalizedDeterminism": "pass",
+      "wholeArchiveByteEquality": true
+    },
+    "individualMapInspection": {
+      "status": "pass",
+      "maps": 17,
+      "evidenceLevel": "static_archive_inspection_and_lua_5_3_syntax"
+    },
+    "independentMpqReader": {
+      "status": "pass",
+      "reader": "StormLib",
+      "version": "9.30-1",
+      "maps": 17,
+      "scope": "Byte-for-byte agreement for every decoded campaign/map member."
+    },
+    "frameworkConformance": {
+      "status": "pass",
+      "originalAndContentMutationBuilt": true,
+      "sharedSourcesUnchanged": true
+    },
+    "runtimeAcceptance": {
+      "status": "pass",
+      "scope": "Headless production integration and built-artifact inspection."
+    },
+    "releaseBlockerAudit": {
+      "status": "pass",
+      "scope": "Does not replace exhaustive traceability or native-client evidence."
+    },
+    "releaseCandidateVerification": {
+      "entryPoint": "package_release_candidate.build_release_candidate",
+      "driver": "revalidation-validate-candidate.py.gz",
+      "productionOutcome": "CandidatePublicationBlocked",
+      "equivalentCliExitCode": 3,
+      "driverExitCode": 0,
+      "publication": "blocked",
+      "playerZipPublished": false,
+      "traceabilityBlockers": 9165,
+      "traceabilityBlockerClasses": {
+        "unmapped": 638,
+        "mechanism-missing": 614,
+        "unreachable": 638,
+        "state-unmapped": 638,
+        "unpersisted": 1276,
+        "integration-missing": 2248,
+        "artifact-missing": 638,
+        "authority-missing": 527,
+        "test-only": 20,
+        "static-only": 5,
+        "dependency-uncovered": 49,
+        "census-mismatch": 1874
+      },
+      "executionErrors": []
+    },
+    "containerPolicy": "Only worktree bind mount was /source:ro. Source copied into private /tmp and builds run as wurstuser. Python, Lua and StormLib installed only inside the disposable container. Host-owned results copied out through a tar stream; no worktree ownership or permissions changed by a container."
+  },
+  "newDiagnosticArtifact": {
+    "repositoryRelativePath": "_build/issue-397/revalidation/results/campaign-2.w3n",
+    "sha256": "be96632d4d949d0c7e97b0477e728d4f5cd5b49badf2740283266b5eceee2bd1",
+    "bytes": 31436747,
+    "maps": 17,
+    "materiallyDifferentFrom704": true,
+    "status": "diagnostic_only_not_a_player_release",
+    "materialChangesVs704": [
+      "Blizzard initialization in compiled main",
+      "Complete regional placement records without missing item-table references",
+      "Terrain-sized shadow rasters"
+    ]
+  },
+  "release": {
+    "status": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+    "retailExecution": "not_run",
+    "nativeCrashCausality": "unconfirmed",
+    "playerSmokeRequested": false,
+    "requiredBeforePlayerSmoke": "Close integration and exhaustive traceability gaps, retain framework conformance, and produce a materially new verified candidate.",
+    "remainingNativeAcceptance": "Identify/confirm the reported native fault and pass Begin the Campaign, origin selection and destination handoff on the exact final candidate in Forsaken Kingdom 3.0.0.24268."
+  },
+  "evidence": {
+    "revalidation-container-policy.txt.gz": "a1e92933c684d47eb74f5f13fbec2d0156607c0b3dcd2abeb1b3c887acfdb1f9",
+    "revalidation-inspect-stormlib.py.gz": "a47697626806123955151916e22235bb207eab6a41f20571fe8d16747d6aa6b3",
+    "revalidation-pinned-validation.log.gz": "689209f5d0e8dc801f9788fefaa276be2b2927450ce7b58bc42d1e265f56696e",
+    "revalidation-repository-checks.log.gz": "e501fe39066b7912675d06fea66c5830144d10867c7875cb55a6fdb66db0bcd1",
+    "revalidation-final-stormlib.json.gz": "9e5c9249fa9e570dc8d34a18372895784544d43312617cb5e61543029ce3036c",
+    "revalidation-first-stormlib.json.gz": "bfbca68d5a41977a175e4f46e44e564126824a56a6245eee5927e2083980003f",
+    "revalidation-framework-conformance.json.gz": "bc156a514227fae0110742cb0e5bead05b36232b71dbcaedcadd41e74800938b",
+    "revalidation-map-inspection.json.gz": "aeb631dc1e2e2d14fabcf4e61f1688a26703664987f6c909f1f3ea9377e6b7b1",
+    "revalidation-prior-stormlib.json.gz": "3fa8aea64d76440c21df7fe3dc6c5f0a2045554fab4fcc5c55d9c39812c50209",
+    "revalidation-release-blocker.json.gz": "8113702a819248f766ad0cdadb32c6de14d2b72647f02b8e773786354b7b160d",
+    "revalidation-requirement-traceability.json.gz": "28be8cd1836f4b3d7d28d75d9a07bbe04fd5c422ee8f90b14ced5b1469877260",
+    "revalidation-runtime-acceptance.json.gz": "d464197031fd079a3f134bac70b6c25fe39d637366029a27fc95ad272d9ad1db",
+    "revalidation-summary.json.gz": "d5e4bcb16b55df5338b589d1938cf8ea9c81101cef1528043277bb44042517be",
+    "revalidation-wurst-1-execution.log.gz": "0bd7d3ff9813a2545bb78ac06575a81701289f96f77c5e5065573fa5ef8111e6",
+    "revalidation-wurst-1-results.json.gz": "b1094f3d857677ee18c8c57fdc1e8b7e39ac2781e6aed955833a0cbc8d44ee38",
+    "revalidation-wurst-2-execution.log.gz": "0bd7d3ff9813a2545bb78ac06575a81701289f96f77c5e5065573fa5ef8111e6",
+    "revalidation-wurst-2-results.json.gz": "b1094f3d857677ee18c8c57fdc1e8b7e39ac2781e6aed955833a0cbc8d44ee38",
+    "revalidation-validate-candidate.py.gz": "529b1f05c7ab96cdf96da36a5d88a6eb43a4b4726c40d975e7de5e7f8f65231b",
+    "revalidation-validate-container.sh.gz": "3b93572699254d6806bed31105b58a40d6ee990901328a5dce5e4e678d9fb1cf"
+  }
+}
