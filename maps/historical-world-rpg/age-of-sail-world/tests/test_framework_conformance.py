@@ -17,7 +17,7 @@ CATEGORY = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(CATEGORY / "_shared/tooling"))
 from audit_framework_boundary import audit
 from framework_conformance import mutate_content
-from package_wurst_map import _assemble, generate, load_config, verify_generated
+from package_wurst_map import _assemble, generate, load_config, run_execution_tests, verify_generated
 from package_wurst_campaign import (_localize_runtime, build_campaign, inspect_campaign,
                                     load_campaign_config, validate_campaign)
 from materialize_physical_map import materialize
@@ -26,6 +26,8 @@ from player_items import PlayerItemError, validate_catalog
 from scenario_inputs import catalogue_paths
 from test_campaign_packaging import FAKE_GRILL
 from wurst_execution_fixture import allow_synthetic_compiler
+from integration_evidence import verify_execution_coverage
+from requirement_traceability import execution_results
 
 
 def copy_category(destination):
@@ -36,6 +38,32 @@ def copy_category(destination):
 
 
 class FrameworkConformanceTests(unittest.TestCase):
+    def test_execution_evidence_accepts_shared_contract_and_instrumented_aliases(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            category = Path(tmp)
+            copy_category(category)
+            for name in ("age-of-sail-world", "conformance-campaign"):
+                with self.subTest(scenario=name):
+                    project = category / name
+                    fake = project / "fake-grill"
+                    fake.write_text(FAKE_GRILL)
+                    fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
+                    allow_synthetic_compiler(self, fake)
+                    report = run_execution_tests(load_config(project / "package.json"), str(fake))
+                    log = (project / "_build/wurst-tests/execution.log").read_bytes()
+                    revision = report["sourceRevision"]
+                    verify_execution_coverage(report, log, project, revision)
+                    results, errors = execution_results(project, report, log, revision)
+                    self.assertEqual([], errors)
+                    self.assertEqual({row["id"] for row in report["tests"]}, set(results))
+                    contract = category / "_shared/wurst-tests/FrameworkConformanceTests.wurst"
+                    original = contract.read_bytes()
+                    contract.write_bytes(original + b"\n// changed after execution\n")
+                    with self.assertRaisesRegex(ValueError, "source identity"):
+                        verify_execution_coverage(report, log, project, revision)
+                    self.assertTrue(execution_results(project, report, log, revision)[1])
+                    contract.write_bytes(original)
+
     def test_inventory_boundary_uses_each_scenarios_commodity_catalogue(self):
         for name in ("age-of-sail-world", "conformance-campaign"):
             with self.subTest(scenario=name):

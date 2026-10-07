@@ -10,7 +10,6 @@
     "reports/phase8-content-coverage.json",
     "reports/progression-coverage.json",
     "reports/release-settlement-audit.json",
-    "reports/runtime-acceptance.json",
     "reports/settlement-coverage-baseline.json",
     "reports/settlement-integration.json",
     "reports/vessel-progression-coverage.json",
@@ -47,9 +46,211 @@
     "suppressed_blocker",
     "missing_runtime_integration"
   ],
-  "disposition": "gate_closed",
-  "findings": [],
-  "format": "age_of_sail_release_blocker_report_v1",
+  "candidateReady": false,
+  "disposition": "release_blocked",
+  "evidenceLevels": {
+    "builtArtifact": {
+      "evidenceLevel": "built_artifact_verification",
+      "executionStatus": "not_run",
+      "failures": [
+        "same-revision built W3N/W3X verification is missing"
+      ],
+      "status": "fail"
+    },
+    "realClient": {
+      "declaredReleaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+      "evidenceLevel": "real_client_execution",
+      "executionStatus": "not_run",
+      "requiredForAutomatedCandidate": false,
+      "requiredHumanValidation": "Optional final real-client smoke: in Warcraft III 3.0 open Single Player -> Custom Campaigns, select Age of Sail: The World, and launch Begin the Campaign. This is tracked separately from automated implementation completion.",
+      "status": "not_run"
+    },
+    "runtimeIntegration": {
+      "evidenceLevel": "headless_runtime_integration",
+      "executionStatus": "not_run",
+      "failures": [
+        "required executable production-path evidence is missing"
+      ],
+      "status": "fail"
+    },
+    "sourceStatic": {
+      "evidenceLevel": "source_text_static_heuristic",
+      "executionStatus": "not_applicable",
+      "failures": [],
+      "status": "pass"
+    }
+  },
+  "findings": [
+    {
+      "class": "missing_runtime_integration",
+      "context": "runtime-acceptance",
+      "disposition": "unresolved",
+      "id": "RUNTIME-EVIDENCE-INCOMPLETE",
+      "message": "required integration executionStatus is not completed; required executable production-path evidence is missing; runtimeIntegration: required evidence does not pass; runtimeIntegration: execution is missing, not_run or stale; runtimeIntegration: verified logSha256 is missing or malformed; runtimeIntegration: verified inputSetSha256 is missing or malformed; same-revision built W3N/W3X verification is missing; builtArtifact: required evidence does not pass; builtArtifact: execution is missing, not_run or stale; builtArtifact: verified artifactSha256 is missing or malformed; campaign_launch: required production integration/release validation is incomplete; origin_selection: required production integration/release validation is incomplete; country_diplomacy: required production integration/release validation is incomplete; trade: required production integration/release validation is incomplete; army_fleet_control: required production integration/release validation is incomplete; city_capture: required production integration/release validation is incomplete; garrisons: required production integration/release validation is incomplete; administration: required production integration/release validation is incomplete; heroes: required production integration/release validation is incomplete; inventory_equipment: required production integration/release validation is incomplete; technology_institutions: required production integration/release validation is incomplete; quests_journal: required production integration/release validation is incomplete; treasures_discovery: required production integration/release validation is incomplete; save_autosave_load: required production integration/release validation is incomplete; cross_map_travel: required production integration/release validation is incomplete; world_map: required production integration/release validation is incomplete; remote_management: required production integration/release validation is incomplete; government_rewards: required production integration/release validation is incomplete; religion: required production integration/release validation is incomplete; piracy: required production integration/release validation is incomplete",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-ADMINISTRATION",
+      "message": "administration lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-ARMY-FLEET-CONTROL",
+      "message": "army_fleet_control lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-CAMPAIGN-LAUNCH",
+      "message": "campaign_launch lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-CITY-CAPTURE",
+      "message": "city_capture lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-COUNTRY-DIPLOMACY",
+      "message": "country_diplomacy lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-CROSS-MAP-TRAVEL",
+      "message": "cross_map_travel lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-GARRISONS",
+      "message": "garrisons lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-GOVERNMENT-REWARDS",
+      "message": "government_rewards lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-HEROES",
+      "message": "heroes lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-INVENTORY-EQUIPMENT",
+      "message": "inventory_equipment lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-ORIGIN-SELECTION",
+      "message": "origin_selection lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-PIRACY",
+      "message": "piracy lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-QUESTS-JOURNAL",
+      "message": "quests_journal lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-RELIGION",
+      "message": "religion lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-REMOTE-MANAGEMENT",
+      "message": "remote_management lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-SAVE-AUTOSAVE-LOAD",
+      "message": "save_autosave_load lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS",
+      "message": "technology_institutions lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TRADE",
+      "message": "trade lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-TREASURES-DISCOVERY",
+      "message": "treasures_discovery lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    },
+    {
+      "class": "missing_runtime_integration",
+      "context": "scenario/runtime-integration.json",
+      "disposition": "unresolved",
+      "id": "RUNTIME-MISSING-WORLD-MAP",
+      "message": "world_map lacks same-revision executed production integration and built-artifact verification",
+      "severity": "campaign_blocker"
+    }
+  ],
+  "format": "age_of_sail_release_blocker_report_v2",
   "gate": "No known campaign-blocking defects",
   "journeys": [
     {
@@ -176,11 +377,12 @@
   "knownLimitations": [],
   "releaseInputs": {
     "map/map-source.json": "ffb4ab642ac9179ec23e8fe559cc77987a9ae9e06789176dff5680d5fa370031",
-    "package.json": "0d503e20a0d09febc8352303da718992d447cc80cea5e5baea22b32cb1a83768",
+    "package.json": "8d5e8173ff79d259b05db06df68e32e7688f3290696bd54614cecee027aa93ee",
     "physical-maps.json": "7379766ffbfa80835c921231067e9644c6743d393ece2f0974b6c5d680ec9a8d",
     "scenario/compatibility/release-save-v1.json": "0bc7ec3db209aa2385765ce8af80e43a4eea2e506a22a092bef8d4cb711e9cda",
     "scenario/maps/world-map.json": "7336faae8315c4a703320b5d563d4656fc5d0ff995d70458c6a4091d7c80065c",
-    "scenario/runtime-integration.json": "a27232cdd75941863e179c4ddd07eb6867f522d0c333a9aa6138435be57a8a70",
+    "scenario/runtime-execution.json": "afd871b3f0361c6dc0cb9ed3ab904b32f89b6bb291f4a00d74b821d297bca04b",
+    "scenario/runtime-integration.json": "80ed3764a2afeea5ec2bff814e0143fac13914ced234865da9e6e1b6d024ddc4",
     "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
   },
   "releaseSaveCompatibility": {
@@ -209,15 +411,82 @@
     ]
   },
   "runtimeAcceptance": {
-    "evidenceLevel": "source_text_static_heuristic",
+    "candidateReady": false,
+    "evidenceLevel": "automated_release_acceptance",
+    "evidenceLevels": {
+      "builtArtifact": {
+        "evidenceLevel": "built_artifact_verification",
+        "executionStatus": "not_run",
+        "failures": [
+          "same-revision built W3N/W3X verification is missing"
+        ],
+        "status": "fail"
+      },
+      "realClient": {
+        "declaredReleaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+        "evidenceLevel": "real_client_execution",
+        "executionStatus": "not_run",
+        "requiredForAutomatedCandidate": false,
+        "requiredHumanValidation": "Optional final real-client smoke: in Warcraft III 3.0 open Single Player -> Custom Campaigns, select Age of Sail: The World, and launch Begin the Campaign. This is tracked separately from automated implementation completion.",
+        "status": "not_run"
+      },
+      "runtimeIntegration": {
+        "evidenceLevel": "headless_runtime_integration",
+        "executionStatus": "not_run",
+        "failures": [
+          "required executable production-path evidence is missing"
+        ],
+        "status": "fail"
+      },
+      "sourceStatic": {
+        "evidenceLevel": "source_text_static_heuristic",
+        "executionStatus": "not_applicable",
+        "failures": [],
+        "status": "pass"
+      }
+    },
     "executionStatus": "not_run",
-    "failures": [],
-    "format": "age_of_sail_runtime_acceptance_report_v2",
-    "releaseValidationAuthority": "built W3N/W3X artifact gate",
+    "failures": [
+      "required integration executionStatus is not completed",
+      "required executable production-path evidence is missing",
+      "runtimeIntegration: required evidence does not pass",
+      "runtimeIntegration: execution is missing, not_run or stale",
+      "runtimeIntegration: verified logSha256 is missing or malformed",
+      "runtimeIntegration: verified inputSetSha256 is missing or malformed",
+      "same-revision built W3N/W3X verification is missing",
+      "builtArtifact: required evidence does not pass",
+      "builtArtifact: execution is missing, not_run or stale",
+      "builtArtifact: verified artifactSha256 is missing or malformed",
+      "campaign_launch: required production integration/release validation is incomplete",
+      "origin_selection: required production integration/release validation is incomplete",
+      "country_diplomacy: required production integration/release validation is incomplete",
+      "trade: required production integration/release validation is incomplete",
+      "army_fleet_control: required production integration/release validation is incomplete",
+      "city_capture: required production integration/release validation is incomplete",
+      "garrisons: required production integration/release validation is incomplete",
+      "administration: required production integration/release validation is incomplete",
+      "heroes: required production integration/release validation is incomplete",
+      "inventory_equipment: required production integration/release validation is incomplete",
+      "technology_institutions: required production integration/release validation is incomplete",
+      "quests_journal: required production integration/release validation is incomplete",
+      "treasures_discovery: required production integration/release validation is incomplete",
+      "save_autosave_load: required production integration/release validation is incomplete",
+      "cross_map_travel: required production integration/release validation is incomplete",
+      "world_map: required production integration/release validation is incomplete",
+      "remote_management: required production integration/release validation is incomplete",
+      "government_rewards: required production integration/release validation is incomplete",
+      "religion: required production integration/release validation is incomplete",
+      "piracy: required production integration/release validation is incomplete"
+    ],
+    "format": "age_of_sail_runtime_acceptance_report_v3",
+    "releaseReady": false,
+    "releaseValidationAuthority": "same-revision production execution and exact built W3N/W3X inspection",
     "smokeJourneys": [
       "new-campaign-core-loops",
       "save-travel-remote-return"
     ],
+    "sourceRevision": null,
+    "sourceTreeSha256": null,
     "stages": [
       "dataComplete",
       "headlessSimulationComplete",
@@ -225,266 +494,446 @@
       "playerFacingComplete",
       "releaseValidated"
     ],
-    "status": "pass",
+    "status": "fail",
     "systems": [
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "campaign_launch",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "origin_selection",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "country_diplomacy",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "trade",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "army_fleet_control",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "city_capture",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "garrisons",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "administration",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "heroes",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "inventory_equipment",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "technology_institutions",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "quests_journal",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "treasures_discovery",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "save_autosave_load",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "cross_map_travel",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "world_map",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "remote_management",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "government_rewards",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "religion",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       },
       {
         "diagnostics": [],
+        "executedTests": [],
+        "executionStatus": "not_run",
         "id": "piracy",
         "releaseRequired": true,
         "simulationOnly": false,
-        "stages": {
+        "sourceChecks": {
           "dataComplete": true,
           "headlessSimulationComplete": true,
           "playerFacingComplete": true,
           "releaseValidated": false,
           "runtimeIntegrated": true
+        },
+        "stages": {
+          "dataComplete": true,
+          "headlessSimulationComplete": false,
+          "playerFacingComplete": false,
+          "releaseValidated": false,
+          "runtimeIntegrated": false
         }
       }
     ]
@@ -540,7 +989,9 @@
       }
     ]
   },
-  "status": "pass",
+  "sourceRevision": null,
+  "sourceTreeSha256": null,
+  "status": "fail",
   "taxonomy": [
     {
       "definition": "A reproducible failure that prevents starting, progressing, saving, loading, travelling, recovering, or completing otherwise reachable campaign content.",
@@ -567,5 +1018,5 @@
       "releaseBlocking": false
     }
   ],
-  "unresolvedCampaignBlockers": 0
+  "unresolvedCampaignBlockers": 21
 }

@@ -53,7 +53,7 @@ def passing_evidence(revision="a" * 40):
     log = b"Running tests\nRunning /test/wurst/Fixture.wurst:2 - fixture..\n\tOK!\nTests succeeded: 1/1\nFinished running tests\n"
     rows, issues = execution.parse_results(log.decode(), expected)
     inputs = {"wurst/Fixture.wurst": execution.sha(b"synthetic fixture")}
-    report = {"format": execution.FORMAT, "status": "pass", "returnCode": 0,
+    report = {"format": execution.FORMAT, "status": "pass", "returnCode": 0, "executionStatus": "completed",
               "sourceRevision": revision, "expected": expected, "tests": rows,
               "errors": issues, "discovered": 1, "succeeded": 1,
               "logSha256": execution.sha(log), "inputs": inputs,

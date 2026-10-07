@@ -1,0 +1,1053 @@
+[
+  {
+    "compare": "records",
+    "compiledIdPatterns": [
+      "\\bSettlementRuntimeState_new_SettlementRuntimeState\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bSettlementRuntimeState_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "settlements",
+    "partition": {
+      "mapField": "regionalInstanceIds",
+      "sourceField": "regionalInstanceId"
+    },
+    "runtime": {
+      "selector": "settlementDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "settlements"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledIdPattern": "\\b[\\w.]*registerPolityResources[\\w]*\\([^,\\n]+,\\s*{id}(?:\\s*,|\\s*\\))",
+    "distribution": "union",
+    "id": "polities",
+    "runtime": {
+      "selector": "polityDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "polities"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "distribution": "union",
+    "id": "provinces",
+    "runtime": {
+      "selector": "provinceDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "provinces"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledIdPattern": "\\b[\\w.]*registerMarketProfile[\\w]*\\([^,\\n]+,\\s*\"[^\"\\n]*\",\\s*{id}(?:\\s*,|\\s*\\))",
+    "id": "goods",
+    "runtime": {
+      "representation": "compiled-identities"
+    },
+    "sources": [
+      {
+        "path": "scenario/economy/global-goods.json",
+        "selector": "goods"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledIdPattern": "\\b[\\w.]*registerMarketProfile[\\w]*\\([^,\\n]+,\\s*{id}(?:\\s*,|\\s*\\))",
+    "id": "markets",
+    "runtime": {
+      "representation": "compiled-identities"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "settlements"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "military-variants",
+    "runtime": {
+      "selector": "militaryArchetypes"
+    },
+    "sources": [
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/foundation.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/europe-africa-middle-east-india.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/southeast-east-asia-pacific.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/americas-caribbean.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/naval-expansion.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/phase8-land-rosters.json",
+        "selector": "archetypes"
+      },
+      {
+        "exclude": {
+          "abstract": true
+        },
+        "path": "scenario/rosters/release-military-breadth.json",
+        "selector": "archetypes"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledIdPatterns": [
+      "\\bRpgHero_new_RpgHero\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRpgHero_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "heroes",
+    "runtime": {
+      "selector": "ids.characters"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "characters"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledIdPatterns": [
+      "\\bRpgItem_new_RpgItem\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRpgItem_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "items",
+    "runtime": {
+      "selector": "inventory.items"
+    },
+    "sources": [
+      {
+        "path": "scenario/inventory/player-use-catalog.json",
+        "selector": "items"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledIdPatterns": [
+      "\\bEquipmentSet_new_EquipmentSet\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bEquipmentSet_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "equipment-sets",
+    "runtime": {
+      "selector": "inventory.equipmentSets"
+    },
+    "sources": [
+      {
+        "path": "scenario/inventory/player-use-catalog.json",
+        "selector": "equipmentSets"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledCompanions": [
+      {
+        "path": "scenario/progression/catalog.json",
+        "selector": "institutions"
+      }
+    ],
+    "compiledIdPatterns": [
+      "\\bRuntimeTechnology_new_RuntimeTechnology\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeTechnology_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "technologies",
+    "runtime": {
+      "selector": "ids.technologies"
+    },
+    "sources": [
+      {
+        "path": "scenario/progression/catalog.json",
+        "selector": "technologies"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledCompanions": [
+      {
+        "path": "scenario/progression/catalog.json",
+        "selector": "technologies"
+      }
+    ],
+    "compiledIdPatterns": [
+      "\\bRuntimeTechnology_new_RuntimeTechnology\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeTechnology_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "institutions",
+    "runtime": {
+      "selector": "ids.institutions"
+    },
+    "sources": [
+      {
+        "path": "scenario/progression/catalog.json",
+        "selector": "institutions"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "compiledIdPatterns": [
+      "\\bRuntimeQuest_new_RuntimeQuest\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeQuest_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "campaign-quests",
+    "runtime": {
+      "representation": "compiled-identities"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "quests"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "personal-quests",
+    "runtime": {
+      "selector": "personalQuests"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "personalQuests"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "local-quest-families",
+    "runtime": {
+      "selector": "localQuestFamilies"
+    },
+    "sources": [
+      {
+        "path": "scenario/local-random-quests.json",
+        "selector": "families"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "id": "events",
+    "runtime": {
+      "selector": "events"
+    },
+    "sources": [
+      {
+        "path": "scenario/historical-events.json",
+        "selector": "events"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledIdPatterns": [
+      "\\bRuntimeFaith_new_RuntimeFaith\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeFaith_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "faiths",
+    "runtime": {
+      "selector": "religion.faiths"
+    },
+    "sources": [
+      {
+        "path": "scenario/religion.json",
+        "selector": "faiths"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "religion-policies",
+    "runtime": {
+      "selector": "religion.policies"
+    },
+    "sources": [
+      {
+        "path": "scenario/religion.json",
+        "selector": "policies"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "regions",
+    "runtime": {
+      "selector": "regionalGeography.regions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "regionalGeography.regions"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "id": "regional-instances",
+    "partition": {
+      "mapField": "regionalInstanceIds",
+      "sourceField": "id"
+    },
+    "runtime": {
+      "selector": "physicalMap.regionalInstanceIds"
+    },
+    "sources": [
+      {
+        "path": "scenario/geography/europe.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/africa.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/middle_east_india.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/southeast_asia.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/east_asia.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/americas_caribbean.json",
+        "selector": "instances"
+      },
+      {
+        "path": "scenario/geography/pacific.json",
+        "selector": "instances"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "id": "boundaries",
+    "partition": {
+      "mapField": "_self",
+      "sourceField": "sourceMapId"
+    },
+    "runtime": {
+      "selector": "physicalBoundaries"
+    },
+    "sources": [
+      {
+        "path": "scenario/maps/physical-boundaries.json",
+        "selector": "boundaries"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "routes",
+    "runtime": {
+      "selector": "regionalGeography.routes"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "regionalGeography.routes"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "navigation-zones",
+    "runtime": {
+      "selector": "navigationZones"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "navigationZones"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledIdPatterns": [
+      "\\bRuntimeTreasure_new_RuntimeTreasure\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeTreasure_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "distribution": "union",
+    "id": "treasures",
+    "runtime": {
+      "selector": "treasureDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/treasures/age-of-sail.json",
+        "selector": "treasures"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "treasure-locations",
+    "partition": {
+      "mapField": "regionalInstanceIds",
+      "sourceField": "regionalInstanceId"
+    },
+    "runtime": {
+      "selector": "treasureCandidateLocations"
+    },
+    "sources": [
+      {
+        "path": "scenario/treasures/age-of-sail.json",
+        "selector": "candidateLocations"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "merchant-archetypes",
+    "runtime": {
+      "selector": "inventory.merchantArchetypes"
+    },
+    "sources": [
+      {
+        "path": "scenario/inventory/player-use-catalog.json",
+        "selector": "merchantArchetypes"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "rarities",
+    "runtime": {
+      "selector": "inventory.rarities"
+    },
+    "sources": [
+      {
+        "path": "scenario/inventory/player-use-catalog.json",
+        "selector": "rarities"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "item-effects",
+    "runtime": {
+      "selector": "inventory.effects"
+    },
+    "sources": [
+      {
+        "path": "scenario/inventory/player-use-catalog.json",
+        "selector": "effects"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "military-traditions",
+    "runtime": {
+      "selector": "militaryTraditions"
+    },
+    "sources": [
+      {
+        "path": "scenario/military-traditions.json",
+        "selector": "traditions"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "defense-layouts",
+    "runtime": {
+      "selector": "defenseLayouts"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "defenseLayouts"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "city-cores",
+    "runtime": {
+      "selector": "cityCores"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "cityCores"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "ship-refits",
+    "runtime": {
+      "selector": "shipRefits"
+    },
+    "sources": [
+      {
+        "path": "scenario/naval/vessel-progression.json",
+        "selector": "refits"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "ship-milestones",
+    "runtime": {
+      "selector": "shipMilestones"
+    },
+    "sources": [
+      {
+        "path": "scenario/naval/vessel-progression.json",
+        "selector": "milestones"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "hero-abilities",
+    "runtime": {
+      "selector": "heroAbilities"
+    },
+    "sources": [
+      {
+        "path": "scenario/progression/hero-progression.json",
+        "selector": "abilities"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "hero-masteries",
+    "runtime": {
+      "selector": "heroMasteries"
+    },
+    "sources": [
+      {
+        "path": "scenario/progression/hero-progression.json",
+        "selector": "masteries"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "title-styles",
+    "runtime": {
+      "selector": "titleStyles"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "titleStyles"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "government-forms",
+    "runtime": {
+      "selector": "piracy.governmentForms"
+    },
+    "sources": [
+      {
+        "path": "scenario/naval/piracy.json",
+        "selector": "governmentForms"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "pirate-havens",
+    "runtime": {
+      "selector": "piracy.havens"
+    },
+    "sources": [
+      {
+        "path": "scenario/naval/piracy.json",
+        "selector": "havens"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "compiledCompanions": [
+      {
+        "idPrefix": "defense:",
+        "idSuffix": ":primary",
+        "path": "scenario/world/world.json",
+        "selector": "settlements"
+      }
+    ],
+    "compiledIdPatterns": [
+      "\\bRuntimeForce_new_RuntimeForce\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
+      "\\bRuntimeForce_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
+    ],
+    "id": "strategic-units",
+    "runtime": {
+      "selector": "strategicUnits"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "strategicUnits"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "armies",
+    "runtime": {
+      "selector": "armies"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "armies"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "fleets",
+    "runtime": {
+      "selector": "fleets"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "fleets"
+      }
+    ]
+  },
+  {
+    "compare": "ids",
+    "id": "government-profiles",
+    "runtime": {
+      "selector": "countryInteractionState.polities"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "polities"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "treaty-clauses",
+    "runtime": {
+      "idKey": "@key",
+      "selector": "treatyClauses"
+    },
+    "sources": [
+      {
+        "idKey": "@key",
+        "path": "scenario/diplomacy/treaty-clauses.json",
+        "selector": "clauses"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "merchant-standing-tiers",
+    "runtime": {
+      "selector": "merchantStandingTiers"
+    },
+    "sources": [
+      {
+        "path": "scenario/economy/playable-trade.json",
+        "selector": "reputationTiers"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "audio-assets",
+    "runtime": {
+      "selector": "audio.manifest.assets"
+    },
+    "sources": [
+      {
+        "path": "scenario/audio/manifest.json",
+        "selector": "assets"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "treasure-clues",
+    "runtime": {
+      "selector": "treasures.clues"
+    },
+    "sources": [
+      {
+        "path": "scenario/treasures/age-of-sail.json",
+        "selector": "clues"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "settlement-services",
+    "runtime": {
+      "selector": "settlementServiceDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "settlementServiceDefinitions"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "timeline-eras",
+    "runtime": {
+      "selector": "timeline.eras"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "timeline.eras"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "timeline-event-definitions",
+    "runtime": {
+      "selector": "timeline.eventDefinitions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "timeline.eventDefinitions"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "timeline-schedules",
+    "runtime": {
+      "selector": "timeline.schedules"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "timeline.schedules"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "navigation-safe-points",
+    "runtime": {
+      "selector": "navigationSafePoints"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "navigationSafePoints"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "initial-unit-navigation",
+    "runtime": {
+      "selector": "activeUnitNavigationStates"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "activeUnitNavigationStates"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "settlement-object-templates",
+    "runtime": {
+      "selector": "settlementObjectTemplates"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "settlementObjectTemplates"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "officers",
+    "runtime": {
+      "selector": "officers"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "officers"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "military-runtime-templates",
+    "runtime": {
+      "selector": "militaryRuntimeTemplates"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "militaryRuntimeTemplates"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "character-traits",
+    "runtime": {
+      "selector": "traits"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "traits"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "character-skills",
+    "runtime": {
+      "selector": "skills"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "skills"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "character-professions",
+    "runtime": {
+      "selector": "professions"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "professions"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "relationship-thresholds",
+    "runtime": {
+      "selector": "relationshipThresholds"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "relationshipThresholds"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "companion-relationships",
+    "runtime": {
+      "selector": "companionRelationships"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "companionRelationships"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "research-branches",
+    "runtime": {
+      "selector": "researchBranches"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "researchBranches"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "polity-research-state",
+    "runtime": {
+      "selector": "polityResearchStates"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "polityResearchStates"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "province-adoption-state",
+    "runtime": {
+      "selector": "provinceAdoptionStates"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "provinceAdoptionStates"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "title-grants",
+    "runtime": {
+      "selector": "titleGrants"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "titleGrants"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "distribution": "union",
+    "id": "territorial-holdings",
+    "runtime": {
+      "selector": "provinceHoldings"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "territorialHoldings"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "allegiances",
+    "runtime": {
+      "selector": "allegiances"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "allegiances"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "geographic-areas",
+    "runtime": {
+      "selector": "regionalGeography.areas"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "regionalGeography.areas"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "geographic-anchors",
+    "runtime": {
+      "selector": "regionalGeography.anchors"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "regionalGeography.anchors"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "logical-boundaries",
+    "runtime": {
+      "selector": "regionalGeography.boundaries"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "regionalGeography.boundaries"
+      }
+    ]
+  },
+  {
+    "compare": "records",
+    "id": "quest-locations",
+    "runtime": {
+      "selector": "questLocations"
+    },
+    "sources": [
+      {
+        "path": "scenario/world/world.json",
+        "selector": "questLocations"
+      }
+    ]
+  }
+]

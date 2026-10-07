@@ -55,20 +55,24 @@ def source_revision(project: Path, explicit: str | None = None) -> str:
     return value
 
 
-def discover(compile_root: Path) -> list[dict]:
+def discover(compile_root: Path, *, allow_empty: bool = False,
+             sources: dict[str, Path] | None = None) -> list[dict]:
     tests = []
+    if sources is None:
+        sources = {path.relative_to(compile_root).as_posix(): path
+                   for path in (compile_root / "wurst").rglob("*.wurst")}
     # Preserve newlines while removing comments, strings and rawcode literals.
     ignored = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
-    for path in sorted((compile_root / "wurst").rglob("*.wurst")):
+    for relative, path in sorted(sources.items()):
         code = ignored.sub(lambda m: re.sub(r"[^\n]", " ", m[0]), path.read_text())
         matches = list(re.finditer(r"@test\s+function\s+(\w+)\s*\(", code))
         if len(matches) != len(re.findall(r"@test\b", code)):
             raise WurstExecutionError(f"unrecognized test declaration in {path.name}")
         for match in matches:
-            tests.append({"id": path.relative_to(compile_root).as_posix() + ":" + match[1],
+            tests.append({"id": relative + ":" + match[1],
                           "line": code[:match.start()].count("\n") + 1})
     ids = [row["id"] for row in tests]
-    if not tests or len(ids) != len(set(ids)):
+    if (not tests and not allow_empty) or len(ids) != len(set(ids)):
         raise WurstExecutionError("Wurst test discovery is empty or contains duplicate tests")
     return tests
 
@@ -126,15 +130,23 @@ def input_hashes(compile_root: Path) -> dict[str, str]:
 
 
 def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
-                  revision: str | None = None) -> dict:
+                  revision: str | None = None, *, project: Path | None = None) -> dict:
     evidence_dir.mkdir(parents=True, exist_ok=True)
     log_path = evidence_dir / "execution.log"
     report_path = evidence_dir / "results.json"
     report = {"format": FORMAT, "status": "fail", "sourceRevision": "",
-              "expected": [], "tests": [], "errors": [], "command": [Path(executable).name, "test"]}
+              "expected": [], "tests": [], "errors": [], "command": [Path(executable).name, "test"],
+              "executionStatus": "not_run"}
     log = ""
+    originals = {}
     try:
         report["sourceRevision"] = source_revision(compile_root, revision)
+        if project is not None:
+            from integration_evidence import (source_identity, load_contract, instrument_tree,
+                                              observed_probes)
+            report["sourceIdentity"] = source_identity(project, report["sourceRevision"])
+            contract = load_contract(project)
+            originals = instrument_tree(compile_root, contract)
         report["expected"] = discover(compile_root)
         inputs = input_hashes(compile_root)
         report["inputs"] = inputs
@@ -143,6 +155,7 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                                 env=toolchain_environment())
         log = result.stdout
+        report["executionStatus"] = "completed"
         report["returnCode"] = result.returncode
         rows, issues = parse_results(log, report["expected"])
         report["tests"] = rows
@@ -162,8 +175,18 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
             raise WurstExecutionError("execution used a compiler different from the pinned toolchain")
         if input_hashes(compile_root) != inputs:
             raise WurstExecutionError("compiler inputs changed during execution")
-    except (OSError, WurstExecutionError) as error:
+        if project is not None:
+            if source_identity(project, report["sourceRevision"]) != report["sourceIdentity"]:
+                raise WurstExecutionError("authoritative sources changed during execution")
+            report["productionCoverage"] = {
+                "contractSha256": sha(canonical(contract)),
+                "tests": observed_probes(log, rows, contract),
+            }
+    except (OSError, ValueError, WurstExecutionError) as error:
         report["errors"].append(str(error))
+    finally:
+        for path, original in originals.items():
+            path.write_bytes(original)
     report["logSha256"] = sha(log.encode())
     report["discovered"] = len(report["expected"])
     report["succeeded"] = sum(row["status"] == "pass" for row in report["tests"])
@@ -183,15 +206,32 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
 
 def verify_evidence(report: dict, log: bytes, revision: str) -> None:
     """Recheck packaged evidence before upload; a saved 'pass' flag is not enough."""
+    if not isinstance(report, dict):
+        raise WurstExecutionError("Wurst execution evidence must be a JSON object")
     expected = report.get("expected", [])
-    rows, issues = parse_results(log.decode("utf-8"), expected)
     inputs = report.get("inputs", {})
+    compiler = report.get("compiler")
+    if (not isinstance(expected, list) or not expected or
+            any(not isinstance(row, dict) or not isinstance(row.get("id"), str) or
+                not row["id"] or type(row.get("line")) is not int or row["line"] < 1
+                for row in expected) or
+            not isinstance(inputs, dict) or not inputs or
+            any(not isinstance(name, str) or not isinstance(value, str) or
+                not re.fullmatch(r"[0-9a-f]{64}", value) for name, value in inputs.items()) or
+            not isinstance(compiler, dict) or not isinstance(log, bytes) or
+            not isinstance(revision, str)):
+        raise WurstExecutionError("malformed Wurst execution evidence")
+    try:
+        rows, issues = parse_results(log.decode("utf-8"), expected)
+    except UnicodeDecodeError as error:
+        raise WurstExecutionError("invalid Wurst execution transcript encoding") from error
     if (report.get("format") != FORMAT or report.get("status") != "pass" or
+            report.get("executionStatus") != "completed" or
             report.get("errors") != [] or report.get("returnCode") != 0 or
             report.get("sourceRevision") != revision or not re.fullmatch(r"[0-9a-f]{40}", revision) or
             report.get("logSha256") != sha(log) or not inputs or
             report.get("inputSetSha256") != sha(canonical(inputs)) or
-            report.get("compiler", {}).get("sha256") != PINNED_COMPILER_SHA256 or
+            compiler.get("sha256") != PINNED_COMPILER_SHA256 or
             report.get("discovered") != len(expected) or report.get("succeeded") != len(expected) or
             report.get("tests") != rows or issues):
         raise WurstExecutionError("missing, failed, incomplete or mismatched Wurst execution evidence")

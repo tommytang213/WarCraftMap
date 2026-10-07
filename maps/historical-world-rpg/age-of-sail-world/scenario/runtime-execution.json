@@ -1,0 +1,237 @@
+{
+  "format": "warcraftmap_execution_coverage_v1",
+  "scope": "Headless production entry coverage only. Each system requires all probes in one passing test. Native client effects and complete campaign itineraries remain unexecuted.",
+  "probes": {
+    "domains": {
+      "path": "wurst/CampaignRegistration.wurst",
+      "signature": "public function registerCampaignDomains(PlayableCampaignServices campaign, WarcraftRpgRuntime rpg, MilitarySettlementRuntime military, RpgProjectionPort projections) returns PlayableTradeRuntime"
+    },
+    "startup": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function startup() returns boolean"
+    },
+    "origin_registration": {
+      "path": "wurst/CommandRouter.wurst",
+      "signature": "public function registerOriginSelection(CommandRegistry commands, NewCampaignOriginController controller)"
+    },
+    "handoff": {
+      "path": "wurst/CampaignHandoff.wurst",
+      "signature": "override function commitSelection(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean"
+    },
+    "dispatch": {
+      "path": "wurst/CommandRouter.wurst",
+      "signature": "function dispatch(player sender,string input) returns boolean"
+    },
+    "country_registration": {
+      "path": "wurst/PlayableCountryInteractions.wurst",
+      "signature": "public function registerGovernmentRewards(CommandRegistry commands, CountryDiplomacyController controller)"
+    },
+    "trade_registration": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "public function registerPlayableTradeCommands(CommandRegistry commands,PlayableTradeRuntime runtime,TradePresentation presentation) returns string"
+    },
+    "military_registration": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "public function registerMilitarySettlementCommands(CommandRegistry commands, MilitarySettlementRuntime runtime)"
+    },
+    "rpg_registration": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime) returns string"
+    },
+    "recruit": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function recruit(string id) returns boolean"
+    },
+    "equip": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function equipItem(string heroId,string itemId,int year) returns boolean"
+    },
+    "research": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function research(string controllerId,string id,int year,int paid) returns boolean"
+    },
+    "quest": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function acceptQuest(string id) returns boolean"
+    },
+    "save_registration": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "public function registerCampaignSaveCommands(CommandRegistry commands, CampaignSaveManager saves)"
+    },
+    "save": {
+      "path": "wurst/CampaignSaveManager.wurst",
+      "signature": "function save(int kind, int index, string createdAt) returns boolean"
+    },
+    "load": {
+      "path": "wurst/CampaignSaveManager.wurst",
+      "signature": "function load(int kind, int index) returns boolean"
+    },
+    "autosave": {
+      "path": "wurst/CampaignAutosaveScheduler.wurst",
+      "signature": "function advance(real elapsed, string createdAt) returns boolean"
+    },
+    "travel": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function transition(BoundaryCorrespondence boundary, real normalized, string createdAt) returns boolean"
+    },
+    "map_registration": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps)"
+    },
+    "map_open": {
+      "path": "wurst/MapDiscoveryScreen.wurst",
+      "signature": "function openWorldMap()"
+    },
+    "region_registration": {
+      "path": "wurst/RemoteRegionManagement.wurst",
+      "signature": "public function registerRegionCommand(CommandRegistry registry, RegionSelector selector, CommandOutput output) returns string"
+    },
+    "region_select": {
+      "path": "wurst/RemoteRegionManagement.wurst",
+      "signature": "function select(player whichPlayer, string regionId) returns boolean"
+    },
+    "religion_registration": {
+      "path": "wurst/ReligionRuntime.wurst",
+      "signature": "public function registerReligion(CommandRegistry commands, ReligionRuntime runtime)"
+    },
+    "conversion": {
+      "path": "wurst/ReligionRuntime.wurst",
+      "signature": "function convert(string toFaithId) returns boolean"
+    },
+    "piracy_registration": {
+      "path": "wurst/PlayablePiracy.wurst",
+      "signature": "public function registerPiracy(CommandRegistry commands,PiracyRuntime runtime,PiracyPresentation presentation)"
+    },
+    "prize": {
+      "path": "wurst/PlayablePiracy.wurst",
+      "signature": "function previewPrize(player sender, PrizeRequest request, PrizeProposal expected) returns string"
+    },
+    "order": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean"
+    },
+    "capture": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function capture(string settlementId, string attackerId, real now) returns boolean"
+    },
+    "garrison": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function replenishGarrison(string settlementId, int amount, int manpowerCost, int supplyCost) returns boolean"
+    },
+    "appoint": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function appoint(string settlementId, AdministratorState administrator) returns string"
+    },
+    "country_open": {
+      "path": "wurst/CountryDiplomacyScreen.wurst",
+      "signature": "function openFromKnownCountry(string polityId) returns boolean"
+    },
+    "reward": {
+      "path": "wurst/PlayableCountryInteractions.wurst",
+      "signature": "override function requestGovernmentReward(string polityId, string rewardId) returns string"
+    },
+    "trade_command": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "override function execute(player sender,string arguments)"
+    },
+    "treasure": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function discover(string id, string locationId, PlayerInventory inventory) returns boolean"
+    }
+  },
+  "systems": {
+    "campaign_launch": [
+      "domains",
+      "startup"
+    ],
+    "origin_selection": [
+      "origin_registration",
+      "dispatch",
+      "handoff"
+    ],
+    "country_diplomacy": [
+      "country_registration",
+      "dispatch",
+      "country_open"
+    ],
+    "government_rewards": [
+      "country_registration",
+      "dispatch",
+      "reward"
+    ],
+    "trade": [
+      "trade_registration",
+      "dispatch",
+      "trade_command"
+    ],
+    "army_fleet_control": [
+      "military_registration",
+      "dispatch",
+      "order"
+    ],
+    "city_capture": [
+      "military_registration",
+      "dispatch",
+      "capture"
+    ],
+    "garrisons": [
+      "military_registration",
+      "dispatch",
+      "garrison"
+    ],
+    "administration": [
+      "military_registration",
+      "dispatch",
+      "appoint"
+    ],
+    "heroes": [
+      "rpg_registration",
+      "recruit"
+    ],
+    "inventory_equipment": [
+      "rpg_registration",
+      "equip"
+    ],
+    "technology_institutions": [
+      "rpg_registration",
+      "research"
+    ],
+    "quests_journal": [
+      "rpg_registration",
+      "quest"
+    ],
+    "treasures_discovery": [
+      "rpg_registration",
+      "dispatch",
+      "treasure"
+    ],
+    "save_autosave_load": [
+      "save_registration",
+      "dispatch",
+      "autosave",
+      "save",
+      "load"
+    ],
+    "cross_map_travel": [
+      "domains",
+      "startup",
+      "travel"
+    ],
+    "world_map": [
+      "map_registration",
+      "map_open"
+    ],
+    "remote_management": [
+      "region_registration",
+      "region_select"
+    ],
+    "religion": [
+      "religion_registration",
+      "conversion"
+    ],
+    "piracy": [
+      "piracy_registration",
+      "prize"
+    ]
+  }
+}

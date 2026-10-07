@@ -3,6 +3,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 import struct
 import shutil
@@ -15,6 +16,54 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 
 
 class RuntimeAcceptanceTests(unittest.TestCase):
+    def test_malformed_source_manifest_cannot_be_treated_as_readiness_evidence(self):
+        original = json.loads(runtime.MANIFEST.read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "manifest.json"
+            variants = ["pass", [], {**original, "systems": ["trade"]},
+                        {**original, "smokeJourneys": "pass"},
+                        {**original, "smokeJourneys": ["pass"]},
+                        {**original, "smokeJourneys": [{"id": "fixture", "systems": "trade"}]}]
+            for field in ("releaseRequired", "simulationOnly"):
+                for value in (None, "false", "true", 0, 1):
+                    changed = copy.deepcopy(original)
+                    changed["systems"][0][field] = value
+                    variants.append(changed)
+            for value in variants:
+                path.write_text(json.dumps(value))
+                with self.subTest(manifest=value), self.assertRaises(runtime.RuntimeAcceptanceError):
+                    runtime.audit_sources(path)
+        for item in ("pass", {"path": 1, "contains": ["trade"]},
+                     {"path": "wurst/PlayableTrade.wurst", "contains": "trade"}):
+            with self.subTest(item=item), self.assertRaises(runtime.RuntimeAcceptanceError):
+                runtime._evidence_ok([item], "fixture")
+
+    def test_malformed_real_client_configuration_is_rejected_without_attribute_error(self):
+        for value in ("pass", [], None):
+            with self.subTest(value=value), patch.object(runtime, "_read", return_value=json.dumps(value)):
+                with self.assertRaisesRegex(runtime.RuntimeAcceptanceError, "real-client release configuration"):
+                    runtime.audit_sources()
+
+    def test_malformed_built_map_metadata_is_rejected_without_attribute_error(self):
+        source = PROJECT / "map/AgeOfSailWorld.w3x"
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory) / "malformed.w3x"
+            cases = [(name, value) for name in ("runtime/scenario-runtime.json", "runtime/physical-map.json")
+                     for value in ("pass", [], None)]
+            cases.append(("runtime/scenario-runtime.json", {"ids": "pass"}))
+            for name, value in cases:
+                with self.subTest(name=name, value=value):
+                    metadata = {"runtime/scenario-runtime.json": {}, "runtime/physical-map.json": {}}
+                    metadata[name] = value
+                    with zipfile.ZipFile(fixture, "w") as archive:
+                        for binary in ("war3map.w3e", "war3map.wpm", "war3mapUnits.doo", "war3map.w3i"):
+                            archive.write(source / binary, binary)
+                        archive.writestr("war3map.lua", "function main() end")
+                        for member, document in metadata.items():
+                            archive.writestr(member, json.dumps(document))
+                    with self.assertRaisesRegex(runtime.RuntimeAcceptanceError, "metadata must be JSON objects"):
+                        runtime.inspect_built_map(fixture)
+
     def test_all_materialized_maps_pass_structure_including_bounded_encounters(self):
         # Exercise production generation/localization/materialization for every
         # configured map. Lua is a fixture: this is binary integration coverage,
@@ -29,6 +78,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
         from unittest.mock import patch
         campaign = load_campaign_config(PROJECT / "physical-maps.json")
         world = validate_campaign(campaign)
+        identity = runtime.source_identity(PROJECT, "a" * 40)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             authority = root / "authority"
@@ -45,6 +95,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                     shutil.copytree(physical.source_map, source)
                     materialize(PROJECT, source, generated, physical, data)
                     (source / "runtime/scenario-runtime.json").write_text(json.dumps(data))
+                    (source / "runtime/build-identity.json").write_text(json.dumps(identity))
                     script = ("function main() TimerStart() showPage() ChangeLevel(path, true) end"
                               if physical.bootstrap else self.executable_script())
                     (source / "war3map.lua").write_text(script)
@@ -95,12 +146,34 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             # origin destinations, assignments and the full transition set.
             archive = root / "campaign.w3n"
             _write_campaign(archive, campaign, built)
-            result = release.verify_campaign_runtime(archive, campaign)
+            with self.assertRaisesRegex(release.PackagingError, "requires a full source revision"):
+                release.verify_campaign_runtime(archive, campaign)
+            result = release.verify_campaign_runtime(archive, campaign, revision=identity["sourceRevision"],
+                                                     source_tree_sha256=identity["sourceTreeSha256"])
             self.assertEqual("pass", result["status"])
-            self.assertEqual("not_run", result["executionStatus"])
+            self.assertEqual("completed", result["executionStatus"])
+            self.assertEqual("not_run", result["runtimeExecutionStatus"])
+            self.assertEqual(identity["sourceRevision"], result["sourceRevision"])
             self.assertIn("compiled_text_static_heuristic", result["evidenceLevels"])
             self.assertEqual(len(campaign.maps), len(result["maps"]))
             self.assertEqual(len(campaign.boundaries), result["transitions"])
+            bound = result
+            self.assertEqual(release.sha(archive), bound["artifactSha256"])
+            self.assertTrue(all(row["sourceRevision"] == identity["sourceRevision"] for row in bound["maps"]))
+            self.assertEqual([release.sha(path) for _, path in built],
+                             [row["artifactSha256"] for row in bound["maps"]])
+            for revision, tree in (("b" * 40, identity["sourceTreeSha256"]), ("a" * 40, "0" * 64)):
+                with self.assertRaisesRegex(release.PackagingError, "artifact source identity mismatch"):
+                    release.verify_campaign_runtime(archive, campaign, revision=revision, source_tree_sha256=tree)
+            # Checking nested maps is insufficient if the campaign browser
+            # cannot read the W3N itself, even with intact revision metadata.
+            damaged = root / "damaged-campaign.w3n"
+            members = release.MpqReader(archive).members()
+            members["war3campaign.w3f"] = b"invalid campaign metadata"
+            write_mpq(damaged, members)
+            with self.assertRaisesRegex(release.PackagingError, "campaign inspection"):
+                release.verify_campaign_runtime(damaged, campaign, revision=identity["sourceRevision"],
+                                                source_tree_sha256=identity["sourceTreeSha256"])
             self.assertEqual(len(campaign.maps) + 2, len(release.normalized_campaign(archive, campaign)))
             # Run the real ZIP/upload verifiers on this binary integration
             # fixture, without claiming that its synthetic Lua was executed.
@@ -119,8 +192,10 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             candidate = root / "candidate.zip"
             from wurst_execution_fixture import passing_evidence
             wurst_report, wurst_log = passing_evidence(revision)
+            trace_fixture = {"fixture": "binary structure only; exhaustive traceability tested separately"}
             execution_payloads = {"Metadata/wurst-execution.json": release.canonical(wurst_report),
-                                  "Metadata/wurst-execution.log": wurst_log}
+                                  "Metadata/wurst-execution.log": wurst_log,
+                                  "Metadata/requirement-traceability.json": release.canonical(trace_fixture)}
             manifest["artifacts"] += [
                 {"kind": "execution-evidence", "archivePath": name,
                  "bytes": len(value), "sha256": release.sha_bytes(value)}
@@ -131,16 +206,15 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                 config["archive"]["manifestPath"]: release.canonical(manifest),
                 config["archive"]["provenancePath"]: release.canonical({
                     "format": release.PROVENANCE_FORMAT, "sourceRevision": revision,
-                    "gates": {"wurstExecution": "pass"}}),
+                    "gates": {"wurstExecution": "pass", "requirementTraceability": "pass"}}),
             })
             evidence = root / "artifact-evidence.json"
-            with patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,
+            with patch.object(release.traceability, "validate_final", return_value=trace_fixture), \
+                 patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,
                                            "--evidence", str(evidence)]):
-                self.assertEqual(0, upload.main())
-            recorded = json.loads(evidence.read_text())
-            self.assertEqual(release.sha(candidate), recorded["sha256"])
-            self.assertEqual(candidate.stat().st_size, recorded["bytes"])
-            self.assertEqual(revision, recorded["sourceRevision"])
+                with self.assertRaisesRegex(release.PackagingError, "automated candidate acceptance failed"):
+                    upload.main()
+            self.assertFalse(evidence.exists())
             # An intact campaign does not excuse a false nested-map checksum
             # in the surrounding release manifest.
             manifest["artifacts"][1]["sha256"] = "0" * 64
@@ -248,23 +322,25 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                          "cross_map_travel", "world_map", "remote_management",
                          "government_rewards", "religion", "piracy"} <= ids)
         self.assertEqual(list(runtime.STAGES), report["stages"])
-        self.assertEqual("pass", report["status"])
-        self.assertEqual("source_text_static_heuristic", report["evidenceLevel"])
+        self.assertEqual("fail", report["status"])
+        self.assertFalse(report["candidateReady"])
+        self.assertEqual("pass", report["evidenceLevels"]["sourceStatic"]["status"])
         self.assertEqual("not_run", report["executionStatus"])
 
     def test_trade_has_real_runtime_entry_and_release_evidence(self):
         report = runtime.audit_sources()
         trade = next(row for row in report["systems"] if row["id"] == "trade")
-        self.assertTrue(all(trade["stages"][stage] for stage in runtime.STAGES[:-1]))
+        self.assertTrue(all(trade["sourceChecks"][stage] for stage in runtime.STAGES[:-1]))
+        self.assertFalse(trade["stages"]["runtimeIntegrated"])
         self.assertFalse(trade["stages"]["releaseValidated"])
         self.assertEqual([], trade["diagnostics"])
-        self.assertFalse(any(message.startswith("trade:") for message in report["failures"]))
+        self.assertTrue(any(message.startswith("trade:") for message in report["failures"]))
 
     def test_country_diplomacy_and_government_rewards_use_real_release_entry_points(self):
         report = runtime.audit_sources()
         rows = {row["id"]: row for row in report["systems"]}
         for system_id in ("country_diplomacy", "government_rewards"):
-            self.assertTrue(all(rows[system_id]["stages"][stage]
+            self.assertTrue(all(rows[system_id]["sourceChecks"][stage]
                                 for stage in runtime.STAGES[:-1]))
             self.assertFalse(rows[system_id]["stages"]["releaseValidated"])
             self.assertEqual([], rows[system_id]["diagnostics"])

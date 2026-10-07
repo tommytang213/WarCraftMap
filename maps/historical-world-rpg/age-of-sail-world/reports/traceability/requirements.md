@@ -1,0 +1,8152 @@
+# Requirement-to-production traceability
+
+Candidate ready: **False**; blockers: **7366**.
+
+Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
+
+| Requirement | Classification | Authority | Blockers |
+|---|---|---|---|
+| REQ-0001.01 | mechanism | This file records requirements already agreed with the player. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0001.02 | mechanism | They are defaults unless deliberately revised later. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0002.01 | combination | Single-player. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0003.01 | combination | Target the latest Warcraft III. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0004.01 | content | Primary language: English. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0005.01 | content | Global Age of Sail / early-modern historical sandbox, roughly 1450-1820. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0006.01 | combination | Campaign is intentionally extremely long; content and systems should support 100+ hour play rather than a normal WC3 map session. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0007.01 | combination | The player is an individual inside a living world, not an abstract country. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0008.01 | mechanism | Engine and scenario content are separate. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0009.01 | mechanism | A future historical timeline/location should reuse the same systems and swap scenario data, terrain, units, technology, events, quests and assets. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0010.01 | mechanism | Avoid Age-of-Sail-specific assumptions in shared modules. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0011.01 | combination | Countries/polities contain provinces/states/regions and settlements. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0012.01 | combination | Administrative naming may differ by culture while exposing understandable generic equivalents where useful. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0013.01 | combination | Ownership, control, occupation, governance and sovereignty are distinct concepts. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0014.01 | combination | Provinces and cities can change hands through war. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0015.01 | combination | Settlements can grow and world state can evolve over time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0016.01 | combination | AI territorial warfare uses a hybrid doctrine: historical ambitions, rivalries, claims, strategic pressures, and regional interests bias otherwise state-driven strategic decisions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0017.01 | combination | Historical pressures are scenario data and modifiers, not scripts. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0017.02 | combination | They may raise or lower the attractiveness of wars, objectives, alliances, rivalries, or peace terms, but must not force a war or guarantee a historical outcome when current campaign state no longer supports it. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0018.01 | combination | State-driven evaluation remains authoritative. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0018.02 | combination | AI polities should consider current ownership/control, claims, border and maritime access, settlement and trade-route value, military and naval strength, manpower/supply, treasury and economy, war exhaustion, diplomacy, alliances, threats, terrain, technology, institutions, and other relevant campaign state before choosing war or peace. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0019.01 | combination | War goals should be limited and explicit where practical: recover or press claims, seize strategic ports or provinces, protect trade or allies, weaken a rival, secure access, suppress rebellion, or pursue broader expansion when conditions justify it. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0019.02 | combination | AI should not default to indiscriminate total conquest merely because a target is weaker. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0020.01 | combination | Peace evaluation should reflect the war's goals, achieved control, relative strength, losses, exhaustion, economic cost, alliance situation, and continuing strategic risk. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0020.02 | combination | Terms should be proportionate to plausible objectives and campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0021.01 | combination | Historical biases must weaken, disappear, or redirect when alternate-history divergence removes their basis. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0021.02 | combination | A polity should not pursue an obsolete historical rivalry or objective forever after the relevant territory, government, alliance, route, or strategic condition has materially changed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0022.01 | combination | AI polities use the same authoritative ownership, control, diplomacy, war, military, economy, technology, tradition, save/persistence, and cross-map systems as other campaign actors. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0022.02 | combination | Doctrine chooses actions; it does not bypass those systems. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0023.01 | combination | Decisions must be deterministic from authoritative campaign state plus the campaign's deterministic random source where tie-breaking or bounded variation is useful, so uninterrupted and resumed simulations remain equivalent and testable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0024.01 | combination | Historical weighting and state-driven utility coefficients belong in scenario/configuration data rather than hardcoded Age-of-Sail assumptions in shared engine code. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0025.01 | combination | The goal is a recognizable historical strategic texture without railroading the campaign: plausible historical pressures should be visible, while sufficiently changed world state should produce correspondingly different AI behavior. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0026.01 | content | The 1450 campaign start should resemble the historically meaningful settlement and political geography of the era rather than assigning an arbitrary equal number of cities to every polity. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0026.02 | content | Large, urbanized, maritime, commercially dense, or administratively complex states should receive correspondingly broader settlement coverage; tiny, nomadic, decentralized, island, or sparsely urbanized polities may legitimately have fewer or differently structured centers. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0027.01 | content | Major capitals, ports, fortified towns, trade centers, provincial/regional seats, historically important cities, and locations needed for routes, events, characters, quests, and warfare should be authored at approximately their real locations and associated with the appropriate 1450 polity/province/control situation. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0027.02 | content | Minor villages and communities may remain abstract when representing them physically would add little gameplay value. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0028.01 | content | As a release-scale planning target, the global authored settlement catalogue should be on the order of 800-1,200 meaningful settlements, with additional minor communities allowed in abstract state. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0028.02 | content | This is a density target, not a quota: historical geography, map readability, and gameplay relevance take priority over forcing every polity to an equal count. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0029.01 | combination | Release-scale progression should target roughly 180-250 technologies and 20-30 institutions/reforms across the 1450-1820 span, with meaningful branch depth and era progression rather than long empty gaps. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0030.01 | combination | Historical/conditional authored event coverage should target roughly 200-300 significant event definitions, with dynamic systems able to produce many more campaign event instances from current world state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0031.01 | combination | Quest content should target roughly 400-600 authored campaign/regional/personal/polity/event-linked quests and chains plus a substantial independent catalogue of settlement-local random side-quest families. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0031.02 | combination | Local random quests are not the same system as event, campaign, country/polity, personal, or historical quests. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0032.01 | combination | Military content should target roughly 350-500+ player-facing land/naval types or meaningful variants across common, regional/cultural, polity-specific, elite, era/technology, merchant, transport, specialist, and warship layers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0032.02 | combination | Shared runtime templates remain encouraged where mechanics overlap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0033.01 | combination | Player-usable RPG inventory should target roughly 300-500 ordinary equipment/consumable/tool items, 100+ unique/historical/legendary items, and about 50-80 authored equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0033.02 | combination | Bulk trade goods are a separate economic catalogue and do not substitute for usable RPG inventory. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0034.01 | content | Named historical/recruitable hero coverage should target roughly 100-150+ authored characters across regions and eras, with generated officials and minor characters supplementing rather than replacing authored major figures. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0035.01 | combination | These ranges are release-planning targets rather than hard ceilings. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0035.02 | combination | The final content audit should flag clearly thin regions, eras, major powers, gameplay roles, store inventories, progression branches, or quest/event density even if a global raw-count minimum is technically met. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0036.01 | combination | Large technology trees with multiple branches. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0037.01 | combination | Technology availability/cost changes with historical time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0038.01 | combination | Ahead-of-time technology is possible, not absolutely forbidden; extreme early research should be exceptionally expensive/difficult. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0039.01 | combination | Technologies can have cross-tree prerequisites. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0040.01 | combination | Institutions/technology adoption can diffuse unevenly through provinces. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0041.01 | combination | Countries can have unique/special units and other distinct content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0042.01 | combination | Origin/current allegiance matters and governments reward contribution. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0043.01 | combination | Rewards can include money, equipment, privileges, special access, titles/peerage and land. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0044.01 | combination | Allegiance may change; the active government's reward track becomes the relevant one after changing allegiance, subject to reputation/history rules. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0045.01 | combination | Titles use culturally appropriate names plus a generic tier in parentheses for clarity. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0046.01 | combination | A sovereign normally grants ranks below its own sovereign tier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0047.01 | combination | Empire-tier rulers may grant subordinate king-tier titles/realms where appropriate; this does not make the player the imperial sovereign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0048.01 | combination | Land holding, control, sovereignty, autonomy and tax obligations are separate. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0049.01 | combination | Independent sovereign land has no overlord tax, but still has normal administration/upkeep costs. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0050.01 | combination | Economic production, consumption, availability, and pricing are primarily settlement-level rather than a single fixed goods list shared by an entire region. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0051.01 | combination | A region's climate, geography, resources, institutions, trade access, and historical economy should influence what its settlements tend to produce or demand, but settlements within the same region should still differ meaningfully. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0052.01 | combination | Individual cities and ports may have distinct local specialties, industries, raw materials, manufactured goods, luxury goods, food surpluses, shortages, import dependencies, and trade-service roles according to historical/geographic context and gameplay value. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0053.01 | combination | Major trade centers and ports may stock many goods they do not produce locally because trade routes, shipping, caravans, warehouses, and merchant activity bring them in. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0054.01 | combination | A settlement should not be limited to only its signature production good. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0054.02 | combination | Signature goods indicate comparative advantage or notable local production, while ordinary local consumption and traded inventory may cover a much broader set. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0055.01 | combination | Supply, demand, production capacity, war, blockade, occupation, seasonal or historical events, technology, infrastructure, and trade connectivity may change local stock and prices over time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0056.01 | combination | Nearby settlements may share some common staple goods while differing in quantities, prices, specialties, imports, and shortages. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0056.02 | combination | Avoid making every city unique merely for the sake of uniqueness when shared geography genuinely supports similar production. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0057.01 | combination | Regional content data should therefore define settlement-specific economic profiles and use region-level rules as modifiers/defaults rather than as the authoritative complete market inventory. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0058.01 | combination | The current small economy catalog is prototype content and must not be interpreted as the intended final breadth of goods. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0059.01 | combination | Settlement commodity markets are player-facing projections of authoritative campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0059.02 | combination | Every quote uses current local stock, supply/demand pressure, production and consumption, imports and connectivity, shortages, war, blockade, occupation, technology, institutions, and active event/quest modifiers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0059.03 | combination | A UI quote is informational and is recalculated when a transaction commits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0060.01 | combination | Buying and selling are atomic conserved exchanges of cargo and currency. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0060.02 | combination | Cargo must enter an eligible authoritative personal, ship, fleet, warehouse, army, or other explicitly supported store and must respect that store's capacity and commodity compatibility. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0060.03 | combination | Warcraft items, units, frames, and cached price text are representations, never the authority. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0061.01 | combination | Market UI shows the commodity, available quantity, current buy/sell price, recent observed trend, and known realized or projected profit/loss. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0061.02 | combination | Exact information and disruption causes are limited to what the player has discovered or unlocked; the UI must not leak undiscovered markets or hidden campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0062.01 | combination | Stock movement changes the next quote and large orders use marginal/midpoint pressure. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0062.02 | combination | Transaction IDs, persisted market observations, deterministic integer pricing, bounded price floors/ceilings, and campaign-time-driven updates prevent duplicate trades, stale-price arbitrage, save/load rerolls, and unbounded refresh farming. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0063.01 | combination | Merchant standing is a dedicated persistent player progression value, separate from polity, settlement, country, faction, and character reputation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0063.02 | combination | It rewards legitimate realized trade profit, volume, route distance/difficulty, diversity, reliability, contracts, and rare cargo only through data-authored contributions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0064.01 | combination | Repeating the same commodity/route receives diminishing standing, and cargo without a recorded legitimate cost basis may be sold but cannot generate ordinary profit-based standing. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0064.02 | combination | Splitting an order, reopening the UI, changing maps, or reloading a save must not reset saturation, repetition, transaction, or cost-basis history. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0065.01 | combination | Data-defined standing tiers may unlock merchant introductions and specialists, larger or major contracts, warehouse/services access, better market information, convoy opportunities, trade-network privileges, and financing only when a scenario implements authoritative debt and repayment. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0065.02 | combination | Standing never silently grants unsupported credit or bypasses government access, war, blockade, technology, institutional, quest, or cultural requirements. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0066.01 | combination | Market stock/history, cargo stores and cost basis, processed transaction IDs, route/repetition history, realized profit, merchant standing, and unlocked benefits persist in campaign saves and across physical-map transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0066.02 | combination | Quests, exploration, ships/fleets, governments, wars, historical events, technologies, and institutions integrate through stable IDs and explicit modifiers rather than hardcoded Age of Sail content in the shared trade engine. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0067.01 | combination | Named recruitable characters have skills, traits, quests and relationships. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0068.01 | combination | Loyalty/relationship thresholds can produce buffs/debuffs and special content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0069.01 | combination | A high-investment permanent loyalty state such as Oathbound is supported. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0070.01 | combination | Relationships between companions may create synergies or friction. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0071.01 | combination | Equipment uses separate, explicit dimensions for power and identity rather than collapsing everything into one rarity label. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0072.01 | combination | Every player-usable equipment item has a player-facing item level / power level for quick comparison. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0072.02 | combination | The intended long-campaign scale supports item levels up to roughly the same order as hero progression (target level cap 300), while scenario data may use narrower bands for specific eras or categories. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0073.01 | combination | Item level represents the item's overall stat/effect budget and is primarily a comparison aid, not an absolute statement that a higher-level item is always better for every build. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0074.01 | combination | Rarity/quality is a separate field and should communicate affix/effect complexity, craftsmanship, scarcity, and ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0074.02 | combination | Use a clear ordered ladder such as Common, Fine, Superior, Rare, Epic, Legendary, and Relic/Artifact, with exact labels kept data-driven. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0075.01 | combination | Identity/provenance is also separate from rarity: generic, regional/cultural, polity-specific, profession/specialist, quest reward, equipment-set piece, unique historical item, legendary/relic, or other authored identity may coexist with any appropriate power level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0076.01 | combination | Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0076.02 | combination | Historical/unique items remain persistent singular identities unless explicitly authored otherwise. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0077.01 | combination | Equipment comparison UI should show item level, rarity, major stats/effects, equipment-set membership, requirements, and green/red deltas against the currently equipped item. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0077.02 | combination | Build-specific abilities, resistances, passives, set thresholds, and conditional effects must remain visible so a lower-level specialized item can rationally outperform a higher-level generic one. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0078.01 | combination | Equipment may support bounded enhancement/refinement where appropriate, but enhancement must not erase historical/technological gating or make every old item converge into the same endgame stat block. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0079.01 | combination | Player-facing stores distinguish bulk trade goods from usable RPG inventory. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0079.02 | combination | Settlement merchant types may include general merchants, armourers/weaponsmiths, gunsmiths, tailors/outfitters, apothecaries, booksellers/cartographers, horse dealers, military suppliers, relic/artifact merchants, ship chandlers, and dockyards, with inventory generated from authoritative local context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0080.01 | combination | Ships are persistent individual vessels. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0080.02 | combination | Two vessels of the same archetype may diverge through installed equipment/refits, crew quality, experience/veterancy, captain/admiral effects, damage/maintenance state, and historical service. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0081.01 | combination | Ship equipment/refit categories may include armament, hull, rigging/sails, navigation, cargo/logistics, crew/marines, protection/safety, flagship/command facilities, and other historically/plausibly appropriate systems. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0082.01 | combination | Refit availability is constrained by hull compatibility, campaign year, technology/institutions, polity/region, dockyard capability, resources, money, and other authoritative state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0083.01 | combination | Individual ships accumulate persistent experience from meaningful service such as battles, victories, voyages, storms, exploration, trade/escort operations, and other scenario-defined accomplishments. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0084.01 | combination | Ship experience provides continuous, player-visible improvement rather than bonuses so tiny that normal play cannot perceive them. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0084.02 | combination | Early meaningful service should produce a noticeable few-percent improvement; established veteran ships should commonly reach roughly 10-20% effective improvement in relevant areas, while exceptionally long-lived elite/legendary vessels may reach roughly 25-40% combined improvement across selected relevant stats/effects. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0085.01 | combination | Experience bonuses are distributed by role/history rather than multiplying every stat equally. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0085.02 | combination | A veteran gunnery ship may improve reload/accuracy/broadside discipline, while an exploration vessel may improve navigation, storm handling, range, supply efficiency, or maneuvering. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0086.01 | combination | Continuous veterancy uses diminishing returns or similarly bounded scaling so an ancient obsolete hull does not overpower a vastly superior later design merely through age. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0086.02 | combination | Hull, technology, equipment, and era remain the primary power envelope. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0087.01 | combination | Milestones such as Experienced, Veteran, Elite, Famous, and Legendary layer distinctive traits, passives, or specialization choices on top of continuous scaling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0088.01 | combination | Persistent vessel history may record battles, defeated ships, voyages, storms survived, distance sailed, ports visited, discoveries, commanders served under, and other notable service for gameplay, traits, naming, and player attachment. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0089.01 | combination | Recruited named heroes persist after their historical initial-availability window closes; the historical window gates first availability/recruitment rather than removing an already recruited hero. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0090.01 | combination | Recruited heroes must not disappear merely because the historical death/end date is reached. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0090.02 | combination | Once recruited, they belong to the campaign's alternate-history state unless removed by an explicit gameplay rule chosen for that campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0091.01 | combination | The target named-hero level cap is 300 for the long campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0091.02 | combination | Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0092.01 | combination | Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0093.01 | combination | Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0094.01 | combination | The recruited strategic hero roster has no arbitrary gameplay cap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0094.02 | combination | Physical co-location is a runtime/performance concern separate from ownership; the initial target for simultaneously instantiated player-side heroes in one active field group is at least 32, and may be raised after performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0095.01 | combination | Recruited heroes may instead serve as governors, advisers, army commanders, fleet commanders, specialists, or other remote assignments while retaining one authoritative physical location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0096.01 | combination | Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0097.01 | mechanism | Do not use native WC3 food as the strategic ownership cap. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0098.01 | mechanism | Strategic armies/fleets may represent many soldiers/ships without spawning every represented entity simultaneously. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0099.01 | mechanism | Economic/logistical cost is the intended practical limiter. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0100.01 | mechanism | Summoned units need no special city-damage exception beyond normal rules. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0101.01 | combination | The ordinary military roster should be predominantly historically grounded for each polity and period, with deliberate gameplay-friendly variance where it improves fun, readability, balance, or faction identity. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0102.01 | combination | Historical progression matters: unit types, weapons, formations, ships, and battlefield roles should broadly fit the campaign date and technology state rather than appearing arbitrarily centuries early. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0103.01 | combination | Slight alternate-history divergence is allowed through technology, exceptional national development, player actions, rare content, and balance adjustments; this is not a museum-level simulation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0104.01 | combination | Every meaningful combat unit type should have a distinct gameplay identity rather than being only a renamed stat variant. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0104.02 | combination | Different types may be distinguished by passive traits, active abilities, auras, formations, weapon behavior, morale or discipline effects, movement rules, resistances, buffs, debuffs, counters, logistics traits, terrain roles, boarding/siege roles, or other scenario-appropriate mechanics. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0105.01 | combination | Not every unit needs every category of mechanic. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0105.02 | combination | Prefer a small number of clear, meaningful traits or abilities per type over ability clutter. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0106.01 | combination | National/special units may exaggerate real historical strengths for gameplay while remaining recognizable as historically inspired. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0107.01 | combination | Marines, naval infantry, boarding troops, and other historically appropriate specialist roles are supported where relevant. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0108.01 | combination | Named/recruitable heroes may use substantially stronger RPG or supernatural mechanics than ordinary units while the surrounding world and normal military roster remain predominantly historical. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0109.01 | combination | Hero abilities may include persistent mana-powered protection such as a personal Mana Shield that can extend to friendly units within selectable preset ranges. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0109.02 | combination | Such group protection uses the hero as the shared mana source, can remain active without a fixed duration while mana is available, and may support self-only and multiple group-range modes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0110.01 | combination | Final military content uses layered roster composition rather than requiring every polity to duplicate every ordinary role. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0111.01 | combination | Common/global archetypes cover roles that genuinely transfer across regions or are useful as shared mechanical bases. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0112.01 | combination | Regional/cultural families provide historically appropriate local identities, equipment, formations, ship traditions, and ordinary troops. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0113.01 | combination | Polity-specific variants provide meaningful national/state identity where history or gameplay justifies it. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0114.01 | combination | Elite, guard, specialist, famous, and otherwise unique formations sit above those shared layers where appropriate. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0115.01 | combination | Major powers and long-lived militarily important polities should have broader multi-era rosters than minor polities. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0115.02 | combination | Minor polities may rely primarily on regional/common families while still receiving distinctive units, modifiers, traditions, or specialists when justified. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0116.01 | combination | A polity roster is resolved from the authoritative controller/polity, region or culture, campaign date, technology, institutions, reforms, resources, military traditions, and other scenario requirements. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0116.02 | combination | Calendar date alone must not grant units whose enabling development has not occurred. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0117.01 | combination | Unit availability, obsolescence, upgrades, and replacement chains should visibly represent military evolution across the 1450-1820 campaign instead of leaving one early-game signature unit to represent a polity for centuries. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0118.01 | combination | Settlement garrisons, AI armies, recruitable military units, and other ordinary forces should consume the same authoritative roster families so city defenders do not become a disconnected parallel unit catalogue. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0119.01 | combination | Naval content is equal in importance to land content for the Age of Sail scenario. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0119.02 | combination | Reusable hull/runtime families should support a substantially broader player-facing catalogue of regional, polity-specific, merchant, transport, patrol, raiding, boarding, and warship variants across multiple eras. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0120.01 | combination | Shared hulls or runtime templates may back several historically distinct player-facing vessels when their mechanics genuinely overlap; visual identity, armament, stats, abilities, requirements, role, and availability may still differ. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0121.01 | combination | Roster breadth must be judged across regions, polities, roles, and eras rather than by a raw global archetype count. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0122.01 | combination | Political/administrative office is distinct from legal ownership, territorial holding, control, sovereignty, and title/land ownership. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0122.02 | combination | Appointing a character to govern a settlement or province does not by itself transfer the settlement away from the player/controller. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0123.01 | combination | Every authoritative settlement normally has an administrator or equivalent office holder. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0123.02 | combination | The player-facing title should use a culturally and historically appropriate term where practical while exposing a clear generic role such as Administrator or Governor. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0124.01 | combination | Historically important or well-attested officials may be authored named characters. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0124.02 | combination | Otherwise the campaign deterministically generates a culturally appropriate persistent minor official with a plausible personal name, origin, skills, traits, loyalty, age/lifespan data, allegiance, and office identity. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0124.03 | combination | Do not expose runtime-style labels such as `Governor_017` to the player. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0125.01 | combination | Generated officials are lightweight authoritative characters, not anonymous Warcraft units. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0125.02 | combination | Their identity remains stable across save/load, map transitions, reconstruction, and inactive-region simulation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0126.01 | combination | A settlement acquired or captured by the player/controller automatically receives an acting/local administrator if no eligible explicit appointment exists. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0126.02 | combination | The player is never forced through a blocking appointment dialog merely to keep a newly acquired settlement functional. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0127.01 | combination | The player may replace the automatic administrator with an eligible recruited hero, historical character, generated official, noble/title holder, or other valid character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0127.02 | combination | The player retains normal settlement management authority after delegating administration. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0128.01 | combination | Administrative jurisdiction may cover one settlement or, for sufficiently capable/high-ranking offices, multiple settlements or an entire province/region. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0128.02 | combination | Administrative capacity, rank, skills, government structure, distance, unrest, integration, institutions, technology, and similar factors may affect efficiency. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0129.01 | combination | A character has one authoritative physical location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0129.02 | combination | Administrative jurisdiction over multiple settlements never creates authoritative clones. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0129.03 | combination | A governor travelling with the player may continue to provide permitted remote administrative effects, but cannot simultaneously appear as the same physical combatant in another city. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0130.01 | combination | Add a scenario-neutral Administration/Governance skill or equivalent administrative rating rather than forcing unrelated skills to represent general civil administration. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0130.02 | combination | Other existing skills may provide secondary office effects where relevant. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0131.01 | combination | Administrator effects may derive from Administration/Governance, Command, Engineering, Tradecraft, Diplomacy, Scholarship, traits, profession, title/rank, local conditions, government form, and scenario modifiers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0131.02 | combination | Different strengths should produce meaningfully different economic, construction, unrest, institution, supply, garrison, defense, or recovery outcomes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0132.01 | combination | Appointment, promotion, tenure, demotion, dismissal, dispossession, and other office changes may affect character loyalty and relationships. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0132.02 | combination | Rewards must depend on meaningful prestige/responsibility change and history so repeatedly appointing/dismissing the same character cannot farm loyalty. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0133.01 | combination | Oathbound remains the permanent high-loyalty state: ordinary negative office consequences cannot reduce an Oathbound character's loyalty. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0134.01 | combination | Removing a sufficiently disloyal, powerful, locally supported, or militarily entrenched administrator may create refusal, defection, mutiny, rebellion, separatism, or related events according to explicit authoritative conditions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0134.02 | combination | Risky removal must present a useful warning rather than surprise the player with an unexplained settlement loss. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0135.01 | combination | Office state, jurisdiction, appointment history, administrative effects, succession/replacement state, and any rebellion consequences are authoritative campaign data and persist across saves and physical-map transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0136.01 | combination | Major polities should eventually have appropriate ruler/sovereign or collective-governance representation in addition to settlement administrators. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0136.02 | combination | Decentralized or collective political structures must not be forced into a fake singular monarch solely to satisfy the office system. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0137.01 | combination | The same office framework may support settlement administrators, provincial governors, sovereign/ruler roles, army commanders, and fleet commanders while keeping the responsibilities and gameplay effects of each office distinct. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0138.01 | combination | Every governed settlement exposes its administrator clearly through the settlement/government UI, including name, culturally appropriate office title, loyalty where knowable, relevant skills/traits, jurisdiction, residence/physical location, capacity/efficiency, and major active effects. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0139.01 | combination | Each settlement has a recognizable government/administration interaction point or equivalent presentation appropriate to its visual set. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0139.02 | combination | If the administrator is physically resident and locally instantiated, their actual character representation may appear there with a clear name/title treatment. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0140.01 | combination | If the appointed administrator is physically elsewhere, do not instantiate a duplicate of that character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0140.02 | combination | A deterministic deputy/local official or abstract office representation may stand in locally and should be identified as acting on behalf of the absent administrator where appropriate. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0141.01 | combination | Settlement defenders are authoritative local-defense/garrison state, not free player army units. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0141.02 | combination | When physically instantiated they use a dedicated allied/AI defense controller and are not directly commandable by the player even when defending a player-controlled settlement. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0142.01 | combination | Players must not be able to exploit settlement defenders as free expeditionary troops, cargo, equipment sources, disposable recruitment, or permanent field armies. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0143.01 | combination | A settlement under attack instantiates its currently available garrison/local-defense force. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0143.02 | combination | If combat remains active, additional reinforcement waves may spawn after data-driven intervals only while authoritative reserve/manpower/supply remains available. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0144.01 | combination | Reinforcement waves are bounded by persistent garrison strength, reserves, manpower, supply, buildings, policies, and other authoritative limits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0144.02 | combination | A settlement must never produce infinite defenders merely because an attack remains in progress. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0145.01 | combination | Garrison casualties and resource expenditure persist back into authoritative state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0145.02 | combination | After a data-driven combat-quiet period, unnecessary runtime defenders may despawn and the surviving force is represented abstractly again; defenders must not instantly reset to full strength. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0146.01 | combination | Garrison replenishment outside combat follows explicit campaign rules and consumes appropriate time/resources/manpower rather than occurring as a free runtime respawn. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0147.01 | combination | Defender composition and strength may change over the campaign according to controlling polity, region/culture, campaign date, technology, institutions, reforms, available resources, settlement class, fortifications, buildings, military traditions, administrator skills/traits, wealth/manpower, unrest, recent conquest, and other scenario data. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0148.01 | combination | Technology and institutional progress may unlock different defender types, improved equipment, additional specialists/artillery, larger or better-organized reserves, stronger fortifications, or other qualitative changes; defender progression is not limited to flat stat scaling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0149.01 | combination | Administrator Command, Administration/Governance, Engineering, Tradecraft and other relevant abilities may improve organization, reserve readiness, morale, fortification repair, supply, reinforcement cadence, or similar bounded defense effects, but cannot create manpower or unavailable technology from nothing. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0150.01 | combination | A resident administrator/commander may join the AI-controlled settlement defense as their actual character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0150.02 | combination | An absent administrator does not appear as a combat clone; a deputy/local commander handles local defense instead. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0151.01 | combination | Existing City Core capture and defensive-layout reconstruction rules remain authoritative. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0151.02 | combination | The local-defense system extends those rules rather than replacing the ownership/control/capture model. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0152.01 | combination | Player-controlled forces and AI-controlled polities maintain independent persistent military-tradition progression rather than sharing one global combat-experience value. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0153.01 | combination | Traditions are controller-scoped and category-specific. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0153.02 | combination | Scenario data may define tracks such as infantry, cavalry, artillery, naval, marine/boarding, siege, or other appropriate military categories without hardcoding those names into the shared engine. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0154.02 | combination | Enemy kills are a primary supported source; scenario/balance data may also award weighted experience for other meaningful combat contribution so the system is not tied only to literal last-hit ownership. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0155.01 | combination | Tradition progression benefits all currently controlled units that qualify for that tradition category, including units represented abstractly while another physical map is active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0156.01 | combination | Tradition belongs to the controller, not permanently to the individual unit. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0157.01 | combination | The core numerical tradition bonus is continuous and experience-proportional rather than a discrete level table. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0158.02 | combination | Long-running player and AI controllers may continue improving as they accumulate valid experience across the campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0158.03 | combination | Balance should come from experience rates, coefficients, opposing progression, costs, counters, and scenario tuning rather than an arbitrary cap that makes further combat experience worthless. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0159.01 | combination | Milestone thresholds may unlock additional category-wide buffs, passive effects, doctrines, formations, morale/discipline mechanics, logistics advantages, or other qualitative rewards once the controller reaches the required tradition experience. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0160.01 | combination | Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0160.02 | combination | Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0161.01 | combination | Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0165.01 | combination | AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0166.01 | combination | Religion is a reusable, scenario-neutral system. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0166.02 | combination | Faith traditions, denominations, reforms, schisms, syncretic and local traditions, their relationships, labels, influence curves, and benefit profiles are scenario data; the engine contains no closed list of religions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0167.01 | combination | Personal faith/affiliations, polity-supported faiths, government tolerance or persecution policy, settlement/province population composition, institutions, and global influence are separate authoritative domains. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0167.02 | combination | A character may be non-aligned or carry weighted affiliations; a polity may support multiple or no faiths; a mixed region is not collapsed into its largest community. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0168.01 | combination | Current influence is recomputed from authoritative population shares, active centers and institutions, government support, prestige, and persistent event effects. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0168.02 | combination | Alternate-history rise, decline, reform, and suppression therefore alter effects dynamically instead of preserving a frozen historical starting score. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0169.01 | combination | A main character's passive benefits combine two independent inputs: personal investment/progression and current campaign influence. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0169.02 | combination | Both axes use deterministic integer diminishing-return curves, and each scenario-authored attribute has a hard cap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0169.03 | combination | Benefit profiles are narrow and thematic, never blanket statistical superiority. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0170.01 | combination | Conversion is an atomic campaign action with an explicit cost, deterministic sequence, campaign time, prior/new faith, and reputation consequences. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0170.02 | combination | Its history is authoritative and cannot be rerolled by loading or changing maps. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0171.01 | combination | The system exposes stable context (personal faith, government support, local share, policy, institutional state) to quests, events, diplomacy, offices, settlement unrest/stability, recruitment, and content availability. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0171.02 | combination | Those systems decide their scenario-authored outcomes; | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0171.03 | combination | Warcraft objects are not authority. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0172.01 | combination | Faith state, regional composition, policies, institutions, influence inputs, conversion history, and derived-effect inputs persist across saves and physical-map transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0172.02 | combination | Runtime modifiers and the religion overview are reconstructed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0172.03 | combination | The overview names each benefit and cap and explains the current personal-investment and campaign-influence inputs. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0173.01 | combination | Deterministic tests cover mixed regions, rise and decline, alternate-history divergence, conversion history, independent scaling axes, diminishing caps, and 1450-1820 save/resume equivalence. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0174.01 | combination | Civilian facilities are invulnerable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0175.01 | combination | Military defenses are destructible. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0176.01 | combination | Each capturable settlement has an authoritative City Core/capture structure. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0177.01 | combination | Destruction of the valid enemy City Core during a legal conflict triggers capture. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0178.01 | combination | On capture, controller changes, old military defenses are cleaned up, and the city's predefined defensive layout respawns at its original locations under the new controller. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0179.01 | combination | New defenses receive exactly 5 seconds of post-capture immunity/capture cooldown to prevent immediate hostile survivor/third-party recapture loops. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0180.01 | combination | City functionality must not become irrecoverably broken because an object was unexpectedly destroyed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0181.01 | combination | Persistent city state is authoritative; | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0181.02 | combination | Warcraft object instances are representations of that state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0182.01 | mechanism | Native Warcraft save/load must be regression-tested and must not intentionally be broken. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0183.01 | mechanism | Separate versioned campaign persistence is required for long-term compatibility. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0185.01 | mechanism | Manual save slots. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0186.01 | mechanism | Separate session-start and major-milestone recovery checkpoints. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0187.01 | mechanism | Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0188.01 | mechanism | Save data includes format/build/scenario version metadata and integrity checks. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0189.01 | mechanism | Save-format changes require migrations whenever practical. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0190.01 | mechanism | Failed/incompatible loads must not overwrite the original save. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0191.01 | mechanism | `/unstuck` applies to selected eligible mobile units. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0192.01 | mechanism | If no eligible selection exists because nothing is selected, it may recover the main character. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0193.01 | mechanism | Mixed selections move eligible mobile units and skip structures. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0194.01 | mechanism | If only ineligible objects such as buildings are selected, report the issue and do not silently move something else. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0195.01 | mechanism | Buildings, walls, towers, city cores, destructibles and dummy/system units must never be moved by `/unstuck`. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0196.01 | mechanism | Recovery must be connectivity-aware, not merely pathability-aware. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0197.01 | mechanism | Ships must not be moved into isolated/decorative lakes or disconnected water. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0198.01 | mechanism | Land units must not be moved onto unreachable/disconnected land. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0199.01 | mechanism | Track last-known-safe position/navigation zone for important active units. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0200.01 | mechanism | Prefer nearby reachable safe position, then verified last-safe position, then a valid connected recovery anchor. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0201.01 | mechanism | If safety cannot be proven, fail without moving the unit. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0202.01 | mechanism | `/unstuck all` may operate on physically active player-controlled mobile units in the current relevant region, never abstract world entities. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0203.01 | mechanism | `/help` lists player commands. | artifact-missing, static-only, test-only |
+| REQ-0204.01 | mechanism | Help is paged: `/help 2`, `/help 3`, etc. | artifact-missing, static-only, test-only |
+| REQ-0205.01 | mechanism | Topic help is supported, e.g. | artifact-missing, static-only, test-only |
+| REQ-0205.02 | mechanism | `/help unstuck`. | artifact-missing, static-only, test-only |
+| REQ-0206.01 | mechanism | Invalid page numbers produce a clear message. | artifact-missing, static-only, test-only |
+| REQ-0207.01 | mechanism | Release builds hide internal developer/debug commands. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0208.01 | mechanism | A player-facing `/god` command is provided so native `whosyourdaddy` is unnecessary for recovery. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0209.01 | mechanism | `/god` applies to all player-controlled runtime entities, not only the main character. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0209.02 | mechanism | This includes player-controlled heroes/companions, ordinary units, summons, ships, structures, and any other controllable Warcraft runtime objects. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0210.01 | mechanism | While `/god` is enabled, newly created, spawned, acquired, or otherwise transferred player-controlled runtime entities inherit the same protection automatically. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0211.01 | mechanism | `/god` toggles the mode; | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0211.02 | mechanism | `/god on` and `/god off` are idempotent explicit forms. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0212.01 | mechanism | The mode is a session/recovery convenience rather than campaign progression. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0212.02 | mechanism | It is excluded from custom campaign persistence and defaults to OFF for a new session and after loading campaign state. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0213.01 | mechanism | If protected runtime objects are reconstructed while `/god` remains enabled in the same active session, protection is reapplied to their replacements. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0214.01 | mechanism | Command feedback must clearly report whether player-wide god mode is ON or OFF. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0215.01 | mechanism | The campaign is single-player, so opening a modal management screen pauses the entire campaign simulation. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0216.01 | mechanism | While a modal management screen is open, campaign time progression, strategic AI actions, combat/travel simulation, economy ticks, and event progression are paused. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0217.01 | mechanism | Inventory/equipment, character/companion management, technology, economy/trade management, titles/land/government, fleet/army management, journal/encyclopedia, and full strategic-management/map screens are modal for this policy unless deliberately reclassified later. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0218.01 | mechanism | Passive/non-modal UI such as HUD panels, tooltips, notifications/toasts, and small informational overlays does not pause the campaign. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0219.01 | mechanism | Nested/modal screen transitions keep the campaign paused until the final modal management screen closes. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0220.01 | mechanism | Closing a management screen must restore the pause state that existed before the first modal management screen opened; it must not unpause a game that the player had already manually paused. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0221.01 | combination | The purpose of regional partitioning is to make the playable world physically larger than Warcraft III's single-map terrain ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0221.02 | combination | The full world must therefore not be packed into one physical `.w3x`. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0222.01 | combination | A logical world region is backed by one or more separate physical Warcraft map files/submaps. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0222.02 | combination | Each physical map receives its own terrain-size budget, and a large logical region such as Europe may use multiple physical maps when needed for geographic scale, density, or performance. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0223.01 | combination | The current single `AgeOfSailWorld.w3x` remains only a bootstrap/runtime-validation map while the multi-map campaign pipeline is implemented; it is not the intended final container for all world terrain. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0224.01 | combination | Crossing a valid land or sea boundary saves/commits authoritative campaign state, changes to the geographically adjacent physical map, and reconstructs the player and other locally relevant runtime representations at the corresponding entry boundary. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0225.01 | combination | Regional adjacency follows real-world geography and compass direction. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0225.02 | combination | For example, leaving Europe westward across the Atlantic leads toward eastern North America; leaving Europe eastward leads toward Asia/Middle East rather than America. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0226.01 | combination | Ordinary geographic transitions should be edge-to-edge rather than requiring the player to enter an arbitrary trigger circle: reaching a valid shared map boundary transfers to the corresponding boundary of the adjacent physical map. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0227.01 | combination | Preserve the player's position along the shared boundary using a normalized/correspondence coordinate rather than assuming identical raw Warcraft coordinates. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0227.02 | combination | For example, crossing 37% of the way along one map's west edge should normally place the player about 37% of the way along the geographically corresponding east edge of the destination map; reverse or transform the coordinate where edge orientation/geographic projection requires it. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0228.01 | combination | If neighboring maps deliberately use identical aligned edge scales, the raw coordinate may remain effectively unchanged (for example source y=100 -> destination y=100). | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0229.01 | combination | Boundary arrival may snap only as much as necessary to the nearest valid connected land/water/pathable entry point, avoiding cliffs, blocked terrain, decorative water, or other invalid spawn positions while retaining the intended geographic correspondence. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0230.01 | combination | Long-distance ocean travel may use direct region-to-region routes with campaign-time advancement and encounter/event hooks rather than requiring enormous continuously rendered oceans. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0230.02 | combination | Dedicated ocean/encounter maps may be used where gameplay benefits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0231.01 | combination | Each physical map uses gameplay-compressed geography while preserving recognizable coastlines, relative direction, major geographic relationships, settlement ordering, and important travel routes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0231.02 | combination | Empty distance may be compressed, but splitting into maps should be preferred over crushing an entire continent into an implausibly small area merely to fit one map. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0232.01 | combination | Regions/maps not currently loaded remain authoritative abstract campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0232.02 | combination | Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0233.01 | combination | Cross-map transitions must preserve authoritative character, unit, party, fleet, quest, inventory, settlement, diplomacy, economy, technology, and campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0233.02 | combination | Transient Warcraft objects are reconstructed from stable IDs/state after a map loads. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0234.01 | combination | Revisiting a previously visited physical map should restore/reconstruct its authoritative changed state rather than reset conquered cities, destroyed/rebuilt defenses, moved armies, completed quests, market state, or other persistent campaign changes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0235.01 | combination | Prefer versioned authoritative campaign-state serialization/reconstruction over depending on opaque raw Warcraft map-save state as the sole source of truth. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0235.02 | combination | Native campaign/game-cache or map-transition facilities may be used as transport/bootstrap mechanisms where reliable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0236.01 | combination | Transition boundaries, physical-map IDs, adjacency, entry points, and map-package paths must be explicit scenario data so geography/navigation remains reusable and testable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0237.01 | content | Regional terrain should be derived from real-world geography and then scaled down for Warcraft play. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0237.02 | content | Real-world location, compass direction, relative placement, coastline shape, major distance relationships, and connectivity are the starting point rather than hand-authored fantasy layouts. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0238.01 | content | Use a broadly consistent base scale within and between neighboring regions, with controlled local distortion only where Warcraft object scale, readability, pathing, performance, or gameplay spacing requires it. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0239.01 | content | Important locations must remain geographically sensible relative to one another. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0239.02 | content | A city, port, river, island, mountain range, strait, or neighboring polity should not be moved to a contradictory side of another feature merely to fill space. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0240.01 | combination | Divide Europe into as many regional instances as are needed to preserve the chosen geographic scale and performance budget. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0240.02 | combination | Region boundaries should follow practical low-density, maritime, mountain, or other natural seams where possible rather than being forced to match modern national borders. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0241.01 | content | Europe uses the political situation at the 1450 campaign start as its historical baseline. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0241.02 | content | Include major sovereign and de-facto polities plus smaller states that materially affect warfare, diplomacy, trade, quests, or regional identity. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0241.03 | content | Extremely fine political fragmentation may be simplified for terrain readability, but historically important entities should remain representable in authoritative scenario state. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0242.01 | content | Provinces/states should use historically meaningful regional or administrative groupings where practical, merging only when the real subdivision is too fine to produce useful Warcraft gameplay. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0243.01 | content | Settlement coverage should prioritize capitals, major ports, major trade centers, strategically important fortified towns, and locations needed for historical events, characters, quests, or travel. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0243.02 | content | The map is not required to include every real village. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0244.01 | combination | Port coverage should include historically/gameplay-significant coastal and river ports needed for naval movement, trade, exploration, diplomacy, and regional transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0245.01 | content | Preserve recognizable major coastlines, islands, rivers, mountain systems, straits, and other navigation-defining terrain. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0245.02 | content | Small-scale terrain detail and border wiggles may be generalized. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0246.01 | combination | Political borders should broadly match the selected historical baseline at campaign start, then evolve through the normal ownership/control/war systems rather than remaining visually or logically fixed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0247.01 | content | The same real-geography-first scaling rule is the default for every later Phase 5 world region, including Africa, the Middle East/India, Southeast Asia, East Asia, the Americas/Caribbean, and the Pacific. | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0248.01 | mechanism | Do not request a new player design decision merely to repeat the same regional-scope questions for each continent. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0248.02 | mechanism | Region boundaries, compression, included polities, provinces, settlements, ports, terrain, borders, and travel connections should be derived from these locked rules, historical/geographic evidence, gameplay relevance, and performance budgets. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0249.01 | mechanism | Region-specific historical features such as trans-Saharan routes, Indian Ocean trade, major straits, island chains, caravan corridors, or similar geography are implementation/research details under this rule, not separate player design blockers unless they expose a genuinely new gameplay choice not covered here. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0250.01 | mechanism | Create a new regional `needs-design` blocker only when a materially new player-facing design choice cannot be resolved from the existing design lock, historical/geographic evidence, or established performance constraints. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0251.01 | combination | Campaign treasures and secrets use a hybrid deterministic model. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0252.01 | combination | Historically meaningful or unique treasures keep fixed authored identity, historical/geographic context, and an appropriate fixed anchor region or location family. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0252.02 | combination | They must not be randomized into historically implausible parts of the world. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0253.01 | combination | Within that historical anchor, the exact valid hiding place may vary deterministically per campaign among authored/geographically valid candidates. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0253.02 | combination | Secondary loot, guards, encounters, hazards, or supporting rewards may also vary deterministically. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0254.01 | combination | Generic caches, pirate hoards, wreck salvage, hidden stores, ruins, and similar non-unique secrets may vary more freely, but still only within scenario-appropriate regions, terrain, navigation zones, and content pools. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0255.01 | combination | Deterministic variation is derived from persistent campaign seed/state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0255.02 | combination | Reloading, changing physical maps, revisiting a region, or restoring a save must not reroll a treasure's resolved location, reward variant, encounter, or discovery state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0256.01 | combination | Once a treasure/secret is resolved for a campaign, its authoritative result persists across saves, cross-map transitions, reconstruction, and inactive-region simulation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0257.01 | combination | Discovery may progress through hidden, region-only, approximate search-area, narrowed search-area, and exact-known states using the existing discovery/map/quest knowledge model. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0258.01 | combination | Clues and search areas must always refer to the campaign's actual resolved treasure location and must never reveal information more precise than the player has earned. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0259.01 | combination | A historically unique artifact normally keeps its unique identity/reward while its exact hiding place and secondary rewards may vary. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0259.02 | combination | Generic treasure rewards may be selected from deterministic, scenario-defined pools. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0260.01 | combination | Treasure placement must validate accessibility, terrain/navigation compatibility, physical-map assignment, duplicate/exclusive placement rules, and conflict with settlements or other reserved content before campaign state is committed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0261.01 | combination | Treasure generation must be reproducible from the same campaign seed and authoritative inputs for testing, migration, and recovery. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0262.01 | combination | Government contribution rewards are polity-owned profiles, never one global reward table copied to every country. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0262.02 | combination | Profile coverage is mandatory for every active polity and may define its own culturally and politically appropriate money, equipment, office, privilege, access, title, land, favor, reputation, promise, and military or naval support tracks. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0263.01 | combination | A profile's 1450 means are only its starting fallback. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0263.02 | combination | Every offer is resolved again from authoritative campaign state, including liquid treasury, economic and trade strength, controlled territory, war exhaustion and strategic urgency, military/naval condition, technology and institutions, ruler/government state, player reputation and favor, current allegiance, immutable origin, prior service, contribution type/magnitude, scarcity, and already-granted history. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0264.01 | combination | Collapse cannot mint cash, equipment, units, titles, offices, or land that the polity cannot fund, supply, authorize, or control. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0264.02 | combination | Weak states remain attractive through their own affordable favors, privileges, access, exemptions, offices, promises, claims, and honors; alternate-history prosperity or expansion raises practical capacity rather than preserving a historical poverty ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0265.01 | combination | Origin and current allegiance are separate fields. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0265.02 | combination | Allegiance controls ordinary service eligibility; origin is consulted only by explicitly authored history-sensitive rewards and never silently substitutes for allegiance. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0266.01 | combination | Contribution source keys and grant keys are persistent and unique. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0266.02 | combination | Reward-track progress, consumed uniqueness/scarcity, and full grant history survive save/load and map transitions; title/office/land grants are non-repeatable and land must be under current polity control when offered and again when the transaction commits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0267.01 | combination | Explicit exceptional story/quest rewards may bypass ordinary affordability only through an authored override. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0267.02 | combination | Such overrides still obey stable identity, uniqueness, historical justification, and authoritative grant persistence. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0268.01 | combination | Settlement-local random side quests are a distinct quest category. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0268.02 | combination | They must not be conflated with campaign quests, historical/event quests, country/polity quests, personal hero quests, scripted regional chains, treasures, or other authored story content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0269.01 | combination | Local random quests come from authored quest families/variants and are deterministically selected for settlements from campaign seed plus the settlement's starting/local context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0269.02 | combination | They are not free-form dynamically generated narrative and must retain authored objectives, dialogue/description structures, reward rules, failure rules, and validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0270.01 | combination | At campaign start, every ordinary playable settlement should normally expose at least one local random side quest. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0270.02 | combination | Sparse/remote locations may have only one or a very small pool, while larger, wealthier, denser, more connected, administratively important, militarily important, or commercially active settlements should support more simultaneous local quest opportunities. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0271.01 | combination | Quest-slot density should follow settlement role and starting state rather than a flat quota. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0271.02 | combination | As an initial balancing shape: remote outposts/anchorages commonly expose about 1; small settlements about 1-2; ordinary towns about 2-4; major cities/ports about 4-7; and major capitals/metropolises about 6-10. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0271.03 | combination | These are tuning ranges, not mandatory exact counts. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0272.01 | combination | Eligible local quest families depend on contextual tags such as settlement size/roles, polity/culture, economy and shortages, local production/trade, port/river/frontier status, nearby terrain/routes, administration, garrison/defense, crime/unrest, religion/culture where represented, professions/services, technology/era, and other authored starting/local state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0272.02 | combination | A fishing-port quest pool should not be interchangeable with an inland court or frontier fort. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0273.01 | combination | Random selection is deterministic and persistent. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0273.02 | combination | Save/load, map transitions, reopening a quest board, or re-entering a settlement must not reroll offers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0273.03 | combination | Completed/failed/expired local quests may be replaced later only through explicit data-driven refill/cooldown rules. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0274.01 | combination | Repetition must be bounded and varied. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0274.02 | combination | The same quest family may appear in multiple suitable settlements, but objectives, target locations, actors, quantities, risks, rewards, and authored variants should provide enough variation that the world does not read as one cloned noticeboard. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0275.01 | combination | Local random quests may award money/currency, ordinary or rare equipment, region/culture/polity-appropriate equipment, consumables, materials/cargo, experience, skill/mastery progress, settlement reputation, polity/country reputation or favor, faction/profession reputation, access/services/discounts, information/discovery, and other scenario-defined rewards. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0276.01 | combination | A local quest that materially helps a settlement, polity, army/fleet, trade network, or government may also apply a proportional authoritative world-state benefit where fictionally and mechanically appropriate, such as improved local prosperity, supply/readiness, garrison recovery, trade throughput, stability, reduced unrest, temporary polity modifiers, treasury/resources, diplomatic goodwill, or similar bounded effects. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0277.01 | combination | Country/polity benefits are consequences of what the quest actually accomplished, not an automatic extra reward on every local errand. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0277.02 | combination | Helping a polity should normally improve the player's standing with it; larger strategic benefits require correspondingly relevant objectives. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0278.01 | combination | Unique historical items, singular relics, major titles, permanent polity-scale modifiers, and other exceptional rewards must obey uniqueness and authored-gating rules and must not enter a repeatable/random reward table merely because they have an item/reward ID. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0279.01 | combination | Reward value scales with difficulty, travel/time, danger, scarcity, settlement/polity means, relationship, era, and strategic significance. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0279.02 | combination | Repeatable/local-random content must include anti-farming rules so deterministic rerolls or trivial loops cannot print money, reputation, equipment, or permanent country buffs. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0280.01 | combination | Local quest state remains authoritative even while its physical map is inactive. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0280.02 | combination | Accepting, completing, failing, expiring, or replacing a local quest must preserve stable IDs and deterministic reconstruction across save/load and map transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0281.01 | combination | The quest journal must retain stable-ID location context for quest givers, turn-in locations, objectives, relevant settlements, regions, and other known destinations so the player is not required to remember where a quest originated. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0282.01 | combination | Quest entries should provide a direct `Show on Map` / `Track` action where a meaningful destination exists. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0283.01 | combination | Showing a quest on the map should open or focus the appropriate world/region map context, select the relevant region and settlement/location, and visibly mark the destination. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0284.01 | combination | For cross-region objectives, the helper should show a useful route breadcrumb through known region transitions from the player's current physical region to the destination, e.g. current region -> ocean/adjacent region -> target region -> target settlement. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0285.01 | combination | When the player reaches the destination region, the helper may provide a local marker, minimap ping, or directional indicator toward the known quest location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0286.01 | combination | Returning to a quest giver or turn-in point must be supported explicitly; completed objectives should still retain their return destination until the quest is actually turned in. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0287.01 | combination | Visiting a settlement or accepting a quest there is sufficient to record that settlement as known for later navigation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0288.01 | combination | Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0288.02 | combination | A quest may reveal an exact destination, only a region, an approximate search area, or no marker at all according to its scenario data. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0289.01 | combination | Approximate quest knowledge should be visualized as a bounded search area rather than a false precise point. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0289.02 | combination | For example, a clue such as "somewhere in the Amazon" may highlight or ping a large circle/region covering the plausible search area. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0290.01 | combination | Search areas may shrink, move, split, or become an exact marker as the player obtains better clues, explores, talks to characters, finds maps, or completes intermediate objectives. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0291.01 | combination | The displayed uncertainty area is informational and should reflect only the precision of the clues actually known to the player. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0292.01 | combination | Previously discovered exact locations may be shown precisely even when a later quest clue is broader. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0292.02 | combination | If the player has already visited or otherwise explicitly discovered the specific settlement, landmark, ruin, dungeon, port, or other destination and that knowledge is recorded in campaign state, the quest/map helper may use the exact known marker instead of downgrading it to a broad search area. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0293.01 | combination | Revealing general fog-of-war or exploring a region does not automatically identify every hidden point of interest inside it; precise quest markers require that the destination itself is known or has been explicitly revealed by the quest/clue. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0294.01 | combination | The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0295.01 | combination | Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0296.01 | combination | The player can manage owned or authorized holdings in other regions without physically traveling there. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0297.01 | combination | Remote regional access supports both management and active command. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0297.02 | combination | Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0298.01 | combination | Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0299.01 | combination | Remote regional management is modal and follows the existing campaign pause policy. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0300.01 | combination | If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0300.02 | combination | The main character's authoritative location remains unchanged unless the character actually travels. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0301.01 | combination | The player's main character keeps a separate physical-region/map location from the current command/view region. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0301.02 | combination | Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0302.01 | combination | Multiple regions may contain player-owned troops and holdings at the same campaign time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0302.02 | combination | Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0303.01 | combination | Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0304.01 | combination | The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0305.01 | combination | Remote management shows only campaign information the player is already authorized to know. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0306.01 | combination | The player remains an individual. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0306.02 | combination | A country screen is reachable from a known country, its known ruler/government, map context, or a relevant quest; every entry path applies the same persistent discovery filter. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0307.01 | combination | The screen reports the current relation and war state, whether the player currently serves the polity, immutable-origin/history relevance, reputation, favor and service standing, known government, active wars, discovered partners, territorial disputes/occupations, and currently eligible government interactions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0307.02 | combination | Unknown rulers, partners, wars, territory, and clauses are not inferred merely because they exist in authoritative simulation state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0308.01 | combination | Serving, allegiance changes, rewards, privileges/access, and negotiations are eligibility-checked at commit time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0308.02 | combination | Origin never changes with allegiance. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0308.03 | combination | Reward and access grants remain subject to their owning authoritative systems. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0309.01 | combination | An active war involving the player or the polity they represent exposes a proper offer/response flow. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0309.02 | combination | Every offer names its conflict, parties, explicit terms, creation/expiry time, and initiator. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0309.03 | combination | AI governments may create offers through the same validation and persistence boundary as the player. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0310.01 | combination | Territory terms identify province/settlement, grantor, and beneficiary. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0310.02 | combination | The grantor must legally own the territory and must either control it or be ceding it to its current wartime occupier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0310.03 | combination | Every occupation is resolved explicitly at peace: named cessions transfer title and control; otherwise occupied territory returns to its legal owner. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0310.04 | combination | Territory state, not a Warcraft object, is final. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0311.01 | combination | Treaty clauses are scenario data. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0311.02 | combination | The shared initial vocabulary covers territory, immediate payment/reparations, temporary tribute, recognition or independence, vassalage/overlordship, trade and military access, ceasefire, non-aggression, and alliance. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0311.03 | combination | Scenario extensions use stable clause IDs and the same authority checks. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0311.04 | combination | A government cannot cede territory it does not own, spend funds absent from its treasury without an authored debt mechanism, or grant a capability it lacks. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0312.01 | combination | AI acceptance uses current war goals/balance, occupations, relative strength, casualties, exhaustion, economic cost and treasury pressure, allies, ongoing threat, strategic risk, diplomatic history, reputation, and the practical value/cost of terms. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0312.02 | combination | Historical pressure is a bounded bias only and never overrides authoritative alternate-history state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0313.01 | combination | Player explanations contain at most three plain-language reasons, never raw coefficients. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0313.02 | combination | Territory, sovereignty/independence, vassalage, and payments require an explicit confirmation before acceptance commits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0314.01 | combination | Pending, accepted, rejected, and expired offers; treaties and their clauses; cooldowns; discoveries; government rights; standing; territorial results; and diplomatic history use stable IDs and persist across save/load and map transitions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0314.02 | combination | Warcraft screens and handles are projections and are never saved. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0315.01 | combination | Boarding, plunder, cargo seizure, ransom/prisoner disposition, vessel capture, scuttling, and coastal raids commit through one authoritative prize action. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0315.02 | combination | Physical Warcraft units are representations only; stable action/target IDs, cargo, proceeds, vessel disposition, victims, and consequences persist. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0316.01 | combination | A target must be eligible and the war/crime authority must validate the act. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0316.02 | combination | Replayed action IDs return the original result, while per-target exhaustion prevents repeat farming. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0316.03 | combination | Rewards, bounties, cooldowns, risk, and pressure are scenario data and use integer authoritative values. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0317.01 | combination | Pirate notoriety/outlaw status is separate from country standing and merchant reputation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0317.02 | combination | A currently valid letter of marque makes attacks on its named targets lawful privateering, changes issuer/victim relations and rewards, and creates less notoriety. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0317.03 | combination | Commissions have explicit issue/expiry/revocation state; attacks outside them are piracy and may turn the captain outlaw. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0318.01 | combination | Havens expose data-defined fences, black markets, smugglers, repairs, refits, recruitment, contracts, treasure, and intelligence subject to notoriety and access rules. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0318.02 | combination | They do not mint duplicate cargo or bypass the economy. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0319.01 | combination | Sustained piracy raises bounded regional shipping risk, prices, convoying, escorts, patrols, port restrictions, bounties, diplomatic pressure, anti-piracy expeditions, and quest/event pressure. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0319.02 | combination | Pressure decays rather than permanently ratcheting, so suppression or collapse restores trade conditions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0320.01 | combination | A qualified outlaw captain with sufficient notoriety, accumulated prize wealth, prize history, and a durable controlled capital may explicitly found an independent polity. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0320.02 | combination | Government form, state name, and ruler/collective title are scenario data; republic, confederacy, kingdom, and future forms share the same transition and no ideology is hardcoded in the reusable engine. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0321.01 | combination | The founded polity is substantive, not a label: its stable polity and territory records are handed to the ordinary sovereignty, settlement, government/office, economy, diplomacy, war/peace, military, technology, taxation/upkeep, AI, and reconstruction systems. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0321.02 | combination | Other countries persist hostility, non-recognition, tolerance, recognition, trade/embargo, alliance, or vassal status according to campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0322.01 | combination | Commissions, notoriety, bounties, haven standing, exhausted targets, regional pressure, prize history, polity territory, government form, and recognition are versioned campaign state and must reconstruct without Warcraft handles. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0323.01 | mechanism | Performance is a design constraint throughout content production, not a cleanup task deferred until final integration. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0324.01 | mechanism | Global campaign entities should remain authoritative abstract data whenever possible; only locally relevant armies, fleets, characters, settlements, effects, and other representations should become active Warcraft objects. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0325.01 | mechanism | Avoid frame-rate polling for strategic systems. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0325.02 | mechanism | Prefer event-driven processing and coarse campaign-time ticks appropriate to each system. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0326.01 | mechanism | Expensive Warcraft operations such as pathfinding, large unit-group scans, frequent timers, effects, AI orders, and handle creation must be limited to locally relevant gameplay where practical. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0327.01 | mechanism | Phase 5 must include synthetic stress tests before the world is fully populated, including large abstract military/state counts, large character/relationship sets, large settlement/economy sets, accelerated campaign simulation, large saves, and a maximum-reasonable local battle. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0328.01 | mechanism | Performance tests should establish measurable budgets for simulation-step time, visible hitching, save/load time, active-object counts, and local-battle frame rate before full-world content production makes regressions expensive. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0329.01 | mechanism | Development hardware must not be treated as the minimum-performance target; engine-side scalability matters even when a powerful development PC can brute-force a workload. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0330.01 | mechanism | The player is not expected to act as incremental QA. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0331.01 | mechanism | Prefer automated tests, simulations, static validation, debug tooling and developer-side testing. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0332.01 | mechanism | Player involvement during development should be limited mainly to design decisions. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0333.01 | mechanism | Serious player testing is expected near a feature-complete/full release candidate. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0001.01 | mechanism | The player should not be pulled into repetitive feature testing. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0001.02 | mechanism | Development gates are organized around automated/developer-side verification and a near-final player acceptance playthrough. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0002.01 | mechanism | Repository initialized | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0003.01 | mechanism | Category/map folder structure established | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0004.01 | mechanism | Agreed design constraints recorded | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0005.01 | mechanism | Pin Warcraft/Wurst project patch target to `v3.0` | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0006.01 | mechanism | Select Lua backend | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0007.01 | mechanism | Add initial Wurst project configuration/bootstrap package | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0008.01 | mechanism | Add CI typecheck workflow | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0009.01 | mechanism | First Wurst CI typecheck passed | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0010.01 | mechanism | Commit/create the clean source map folder | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0011.01 | mechanism | Establish reproducible source-map -> release `.w3x` packaging | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0012.01 | mechanism | Add full CI build artifact after the source map exists | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0013.01 | mechanism | Stable ID conventions | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0014.01 | mechanism | Initial polity/province/settlement data contract | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0015.01 | mechanism | Ownership/control represented separately in starting world data | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0016.01 | mechanism | Unit/army/fleet model | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0017.01 | mechanism | Character/loyalty/relationship model | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0018.01 | mechanism | Technology/institution graph schema | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0019.01 | mechanism | Title/land/vassal model | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0020.01 | mechanism | Save schema + migration registry | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0021.01 | mechanism | Personal inventory, equipment, and tiered backpack contract | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0022.01 | mechanism | Navigation-zone/safe-position model | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0023.01 | mechanism | Initial world data validator | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0024.01 | mechanism | Duplicate/missing world-reference detection | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0025.01 | mechanism | Technology cycle/reachability checks | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0026.01 | mechanism | Quest/event reference checks | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0027.01 | mechanism | Economy invariant tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0028.01 | mechanism | Save round-trip tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0029.01 | mechanism | Save migration tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0030.01 | mechanism | Inventory routing, validation, and over-capacity recovery tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0031.01 | mechanism | Navigation graph/connectivity validation and recovery-policy tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0032.01 | mechanism | Long timeline simulation harness | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0033.01 | combination | Latest-WC3 compatibility module | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0034.01 | mechanism | Map build pipeline | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0035.01 | combination | Command router + paged /help | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0036.01 | combination | UI pause policy for management screens | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0037.01 | combination | Campaign save manager | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0038.01 | combination | 15-slot rolling autosave scheduler | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0039.01 | combination | /unstuck + last-safe-position system | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0040.01 | combination | Player-only emergency invulnerability command | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0041.01 | combination | Countries/polities | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0042.01 | combination | Provinces/states | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0043.01 | combination | Settlements | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0044.01 | combination | Timeline/eras | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0045.01 | combination | Technology/institutions | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0046.01 | combination | Economy/trade | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0047.01 | combination | Diplomacy/war | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0049.01 | combination | City capture/rebuild | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0050.01 | combination | Titles/land/taxation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0051.01 | combination | Characters/relationships | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0053.01 | combination | Equipment set definitions and partial/full threshold-bonus resolution | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0055.01 | mechanism | Early performance stress harness and provisional budgets | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0056.01 | mechanism | Synthetic large-world simulation tests before full content population | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0057.01 | mechanism | Maximum-reasonable local battle performance test | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0058.01 | combination | Global geography/navigation topology | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0059.01 | combination | Multi-map campaign packaging and per-region/subregion physical map build pipeline | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0060.01 | combination | Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0061.01 | combination | Regional instance activation, boundary transitions, and cross-map/cross-region travel | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0062.01 | combination | Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0063.01 | combination | World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0064.01 | combination | Custom quest journal and quest-to-map tracking integration | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0065.01 | combination | Europe | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0066.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0067.01 | combination | 1450 political baseline (polities, provinces, sovereignty, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0068.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0069.01 | combination | Settlements and playable content | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0070.01 | combination | Africa | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0071.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0072.01 | combination | 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0073.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0074.01 | combination | Settlements and playable content | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0075.01 | combination | Middle East / India | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0076.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0077.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0078.01 | combination | 1450 political baseline (polities, provinces, sovereignty, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0079.01 | combination | Southeast Asia | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0080.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0081.01 | combination | 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0082.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0083.01 | combination | 1450 political baseline and authoritative settlement content | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0084.01 | combination | Ports, trade routes, transitions, economy profiles, and abstract activation data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0085.01 | combination | East Asia | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0086.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0087.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0088.01 | combination | 1450 political baseline (polities, provinces, sovereignty, tributary relationships, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0089.01 | combination | Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0090.01 | combination | Americas / Caribbean | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0091.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0092.01 | combination | 1450 political baseline (polities, provinces, confederated and decentralized authority, diplomacy, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0093.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0094.01 | combination | 1450 political baseline (polities, provinces, sovereignty, relationships, and conflicts) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0095.01 | combination | Priority settlements, ports, trade routes, transitions, economy profiles, and abstract activation data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0096.01 | combination | Pacific | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0097.01 | combination | Regional instances and geographic reference data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0098.01 | combination | 1450 political baseline (island polities, chiefdoms, confederated and decentralized communities, diplomacy, and political-center exceptions) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0099.01 | combination | Authoritative terrain generation and land/naval/amphibious/flying navigation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0100.01 | combination | 1450 political authority, priority settlements, ports, routes, transitions, economies, and abstract activation data | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0101.01 | combination | Historical tech/event timeline | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0102.01 | combination | Country-specific units/content | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0103.01 | combination | Recruitable characters | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0104.01 | combination | Regional and long-chain quests | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0105.01 | combination | Treasures/secrets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0106.01 | mechanism | Status: complete. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0106.02 | mechanism | All Phase 6 integration gates are recorded in the deterministic asset audit. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0107.01 | combination | Stock/Reforged asset catalogue and historical-fit matrix | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0108.01 | combination | Country/unit visual language | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0109.01 | combination | Settlement/building visual sets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0110.01 | combination | Custom icons/textures where needed | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0111.01 | combination | Custom 3D models where stock assets are insufficient | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0112.01 | combination | Sound/music/ambient pass | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0113.01 | combination | Placeholder-removal audit | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0114.01 | mechanism | Multi-century simulation soak tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0115.01 | mechanism | Finalize performance budgets against full-world content | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0116.01 | combination | Economy balancing | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0117.01 | combination | AI territorial warfare | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0118.01 | mechanism | Save/load stress testing | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0119.01 | mechanism | Native WC3 save/load regression | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0120.01 | mechanism | City/world integrity recovery tests | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0121.01 | mechanism | The first serious player test target: a substantially complete game intended to be played normally rather than as feature-by-feature QA. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0121.02 | mechanism | Phase 8 is a substantial content-completion pass, not merely final polish of the Phase 5 first-pass catalogues. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0122.01 | combination | Full content pass | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0123.01 | combination | Expand the land-unit roster into layered common, regional/cultural, polity-specific, era/technology, and elite/unique content with meaningful upgrade/replacement progression. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0124.01 | combination | Expand the naval roster with regional ship families, polity-specific vessels, merchant/transport/warship roles, era/technology progression, and meaningful variants built on reusable hull/runtime families. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0125.01 | combination | Implement settlement administration and political-office appointments, including deterministic culturally appropriate minor officials, player appointments, administrative capacity, loyalty consequences, and office/history persistence. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0126.01 | combination | Implement dynamic AI settlement garrisons and local-defense simulation: AI-controlled defenders, authoritative reserve/manpower state, bounded reinforcement waves, post-combat despawn/reconstruction, and technology/polity/region/administrator-driven composition. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0127.01 | combination | Expand historical rulers, commanders, admirals, recruitable characters, generated officials, personal quests, relationships, and office/command assignments. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0128.01 | combination | Expand the prototype goods catalogue into the authored settlement-level global commodity/trade set with production, consumption, availability, pricing, logistics, and regional differentiation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0129.01 | combination | Expand technology/institution progression and historical/conditional event coverage across 1450–1820. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0131.01 | combination | Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0132.01 | combination | Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0133.01 | combination | Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0134.01 | combination | Implement persistent individual ship equipment/refits, crew/veterancy/history progression, and meaningful continuous ship-experience bonuses with role-specific milestone traits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0135.01 | combination | Expand named historical/recruitable heroes toward release-scale regional/era coverage and implement long-campaign hero progression to level 300 with deep skill/mastery/personal progression, unlimited recruited roster, and a high local field-group target subject to performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0136.01 | combination | Expand progression breadth toward roughly 180-250 technologies and 20-30 institutions/reforms across the full 1450-1820 timeline. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0137.01 | combination | Expand historical/conditional event breadth toward roughly 200-300 authored events with dynamic world-state-driven event instances. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0138.01 | combination | Expand world quest density toward roughly 400-600 authored campaign/regional/personal/polity/event-linked quests/chains plus a separate release-scale settlement-local random side-quest catalogue. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0138.02 | combination | Every ordinary playable settlement should normally expose at least one local random quest at campaign start, with more simultaneous opportunities in larger/wealthier/more connected cities; selection, persistence, rewards, and anti-farming rules follow the locked settlement-local quest design. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0139.01 | combination | Expand player-facing land/naval military breadth toward roughly 350-500+ meaningful types/variants while preserving shared runtime templates where appropriate. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0140.01 | combination | Re-run the final content-breadth audit against the release-scale density targets above; coverage presence alone is not sufficient to pass. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0141.01 | mechanism | Release save compatibility | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0142.01 | mechanism | No known campaign-blocking defects | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0143.01 | content | Recovery tooling documented | artifact-missing, authority-missing, integration-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0144.01 | combination | RC build packaged | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+
+## Cross-system dependencies
+
+- DEP-combat-settlement-ownership: Legal combat and City Core destruction update settlement control and reconstruct defenses. — fail (REQ-0177.01, REQ-0178.01)
+- DEP-diplomacy-war: Diplomacy/war authority validates capture and resolves occupations at negotiated peace. — fail (REQ-0177.01, REQ-0310.03)
+- DEP-trade-cargo: Atomic transactions conserve currency and capacity-limited cargo. — fail (REQ-0060.01, REQ-0060.02)
+- DEP-piracy-diplomacy: Prize legality, commissions and polity recognition share war/diplomacy authority. — fail (REQ-0316.01, REQ-0317.02)
+- DEP-clock-events-recruitment: Campaign clock and event/recruitment windows preserve resumed progression. — fail (REQ-0089.01, REQ-0090.01, REQ-0030.01, ROAD-0044.01)
+- DEP-travel-save-load: Boundary commit and revisiting a map reconstruct all persistent campaign domains. — fail (REQ-0224.01, REQ-0234.01)
+- DEP-governance-defenders: Office effects and current development bound garrison composition/resources. — fail (REQ-0149.01, REQ-0147.01)
+- DEP-ui-modal-pause: Nested UI pauses clock, AI, combat, travel, economy and events and restores prior pause. — fail (REQ-0216.01, REQ-0220.01)
+- DEP-religion-context: Religion context gates quests, diplomacy, offices, unrest and recruitment. — fail (REQ-0171.01, REQ-0172.01)
+- DEP-technology-rosters: Research/institution state gates roster resolution and defender upgrades. — fail (REQ-0116.01, REQ-0148.01)
+- DEP-offices-loyalty: Appointment history prevents loyalty farming and respects Oathbound. — fail (REQ-0132.01, REQ-0133.01)
+- DEP-treasure-discovery-quests: Persisted treasure resolution anchors clues without leaking hidden locations. — fail (REQ-0258.01, REQ-0288.01)
+- DEP-quests-economy-rewards: Local quests commit bounded world benefits and reject repeatable unique rewards. — fail (REQ-0276.01, REQ-0278.01)
+- DEP-allegiance-government-rewards: Current allegiance and immutable origin gate affordable nonrepeatable rewards. — fail (REQ-0265.01, REQ-0266.01)
+- DEP-remote-location-orders: Remote command preserves character physical identity and ongoing orders. — fail (REQ-0298.01, REQ-0303.01)
+- DEP-tradition-controller-transfer: Controller transfer reapplies traditions to active and abstract forces. — fail (REQ-0156.02, REQ-0164.01)
+- DEP-hero-defeat-recovery: Hero defeat preserves investment and physical assignment uniqueness. — fail (REQ-0096.01, REQ-0095.01)
+- DEP-trade-war-clock: War/blockade, events and campaign time affect quotes without stale/replay arbitrage. — fail (REQ-0059.02, REQ-0062.02)
+- DEP-piracy-new-polity: Founded polity enters sovereignty, government, economy, war, AI and reconstruction. — fail (REQ-0321.01, REQ-0322.01)
+- DEP-equipment-technology-trade: Equipment availability and comparison use local economy and development gates. — fail (REQ-0076.01, REQ-0077.01)
+- DEP-ship-progression-logistics: Individual refits/veterancy preserve vessel identity and resource gates. — fail (REQ-0080.01, REQ-0082.01)
+- DEP-ai-history-state: Historical pressure remains subordinate to authoritative current state and deterministic persistence. — fail (REQ-0017.01, REQ-0023.01)
+- DEP-clock-research: Campaign date modifies research cost without bypassing prerequisites or institutions. — fail (REQ-0037.01, REQ-0038.01, REQ-0039.01)
+- DEP-garrison-capture: Combat consumes garrison authority and City Core capture reconstructs the new controller defense. — fail (REQ-0145.01, REQ-0151.01, REQ-0178.01)
+- DEP-garrison-rosters: Garrisons and field armies consume the same controller and development gated roster. — fail (REQ-0118.01, REQ-0147.01)
+- DEP-garrison-economy-clock: Reinforcement and replenishment consume persistent manpower, supply and campaign time. — fail (REQ-0143.02, REQ-0144.01, REQ-0146.01)
+- DEP-capture-administration: Acquisition installs an eligible acting administrator without changing legal ownership through office assignment. — fail (REQ-0122.02, REQ-0126.01, REQ-0178.01)
+- DEP-administration-physical-identity: Remote offices and local defense share the character physical location without cloning. — fail (REQ-0129.03, REQ-0140.01, REQ-0150.02)
+- DEP-administration-rebellion: Removing an entrenched official uses loyalty, military, territory and event authority with warning. — fail (REQ-0134.01, REQ-0134.02, REQ-0135.01)
+- DEP-combat-tradition: Legal combat credits controller-specific tradition and reapplies modifiers to active and abstract forces. — fail (REQ-0154.01, REQ-0155.01, REQ-0156.02)
+- DEP-autosave-transition: Autosave defers unsafe state changes and boundary travel commits before reconstruction. — fail (REQ-0187.01, REQ-0224.01, REQ-0233.01)
+- DEP-recovery-navigation: Unstuck uses active entity identity and connected navigation zones without moving abstract units. — fail (REQ-0196.01, REQ-0199.01, REQ-0200.01, REQ-0202.01)
+- DEP-god-controller-reconstruction: Recovery protection follows acquired player objects and same-session reconstruction but resets on campaign load. — fail (REQ-0210.01, REQ-0212.02, REQ-0213.01)
+- DEP-modal-ai: Opening and closing modal screens suspends and restores strategic AI processing. — fail (REQ-0216.01, REQ-0219.01, REQ-0022.01)
+- DEP-modal-trade-clock: Modal trade UI suspends economy and event ticks without resetting transaction history. — fail (REQ-0216.01, REQ-0062.02, REQ-0064.02)
+- DEP-modal-remote-orders: Remote management pauses local and strategic simulation while preserving orders and character location. — fail (REQ-0299.01, REQ-0303.01, REQ-0220.01)
+- DEP-religion-population-events: Population, institutions, polity policy and persisted events drive religion influence. — fail (REQ-0167.01, REQ-0168.01, REQ-0172.01)
+- DEP-religion-conversion-reputation: Conversion atomically updates time, faith, cost and reputation without save/load rerolls. — fail (REQ-0170.01, REQ-0170.02)
+- DEP-discovery-country-ui: Known country entry paths apply one discovery filter to government, wars, partners and treaty information. — fail (REQ-0306.02, REQ-0307.02, REQ-0288.01)
+- DEP-peace-territory-treasury: Peace commits only legally owned territory and affordable payments through owning authorities. — fail (REQ-0310.02, REQ-0311.04, REQ-0313.02)
+- DEP-treasure-unique-rewards: Discovery resolves persistent unique rewards without repeatable quest farming. — fail (REQ-0255.01, REQ-0259.01, REQ-0278.01)
+- DEP-local-quests-context: Quest-family eligibility uses settlement economy, offices, garrison and faith context. — fail (REQ-0272.01, REQ-0131.02, REQ-0171.01)
+- DEP-local-quests-clock-save: Offer refill, failure and expiry use campaign time and stable state on inactive maps. — fail (REQ-0273.02, REQ-0273.03, REQ-0280.01)
+- DEP-government-reward-resources: Government rewards check current resources and territorial control at offer and commit. — fail (REQ-0264.01, REQ-0266.02, REQ-0308.03)
+- DEP-piracy-trade-pressure: Prize actions, haven cargo and decaying regional risk affect markets without minting goods. — fail (REQ-0315.01, REQ-0318.02, REQ-0319.01, REQ-0060.01)
+- DEP-ship-command-experience: Individual vessel progression combines captain effects, combat and voyage history with controller tradition. — fail (REQ-0080.02, REQ-0083.01, REQ-0155.01)
+- DEP-hero-office-progression: Heroes retain invested progression, loyalty and physical identity across remote command and civil offices. — fail (REQ-0092.01, REQ-0095.01, REQ-0137.01)
+- DEP-quest-map-travel: Quest route and return assistance uses earned knowledge without teleporting or changing physical location. — fail (REQ-0284.01, REQ-0286.01, REQ-0295.01)
+- DEP-inactive-world-simulation: Unloaded regions retain economy, armies, wars, events and changed settlement state on reconstruction. — fail (REQ-0232.01, REQ-0234.01, REQ-0302.02)
+
+## Packaged content census
+
+Counts are unique stable IDs; per-map assignments, missing/extra/changed IDs and compiled survival are detailed in JSON.
+
+| Catalogue | Source | Packaged union | Status |
+|---|---:|---:|---|
+| settlements | 827 | None | fail |
+| polities | 230 | None | fail |
+| provinces | 281 | None | fail |
+| goods | 90 | None | fail |
+| markets | 827 | None | fail |
+| military-variants | 472 | None | fail |
+| heroes | 107 | None | fail |
+| items | 468 | None | fail |
+| equipment-sets | 51 | None | fail |
+| technologies | 181 | None | fail |
+| institutions | 25 | None | fail |
+| campaign-quests | 304 | None | fail |
+| personal-quests | 107 | None | fail |
+| local-quest-families | 16 | None | fail |
+| events | 204 | None | fail |
+| faiths | 7 | None | fail |
+| religion-policies | 3 | None | fail |
+| regions | 7 | None | fail |
+| regional-instances | 50 | None | fail |
+| boundaries | 34 | None | fail |
+| routes | 5 | None | fail |
+| navigation-zones | 95 | None | fail |
+| treasures | 28 | None | fail |
+| treasure-locations | 35 | None | fail |
+| merchant-archetypes | 11 | None | fail |
+| rarities | 7 | None | fail |
+| item-effects | 78 | None | fail |
+| military-traditions | 2 | None | fail |
+| defense-layouts | 792 | None | fail |
+| city-cores | 792 | None | fail |
+| ship-refits | 11 | None | fail |
+| ship-milestones | 5 | None | fail |
+| hero-abilities | 6 | None | fail |
+| hero-masteries | 6 | None | fail |
+| title-styles | 231 | None | fail |
+| government-forms | 3 | None | fail |
+| pirate-havens | 2 | None | fail |
+| strategic-units | 2 | None | fail |
+| armies | 1 | None | fail |
+| fleets | 1 | None | fail |
+| government-profiles | 230 | None | fail |
+| treaty-clauses | 10 | None | fail |
+| merchant-standing-tiers | 3 | None | fail |
+| audio-assets | 17 | None | fail |
+| treasure-clues | 4 | None | fail |
+| settlement-services | 9 | None | fail |
+| timeline-eras | 1 | None | fail |
+| timeline-event-definitions | 204 | None | fail |
+| timeline-schedules | 204 | None | fail |
+| navigation-safe-points | 3 | None | fail |
+| initial-unit-navigation | 1 | None | fail |
+| settlement-object-templates | 5 | None | fail |
+| officers | 2 | None | fail |
+| military-runtime-templates | 2 | None | fail |
+| character-traits | 6 | None | fail |
+| character-skills | 7 | None | fail |
+| character-professions | 6 | None | fail |
+| relationship-thresholds | 3 | None | fail |
+| companion-relationships | 10 | None | fail |
+| research-branches | 12 | None | fail |
+| polity-research-state | 230 | None | fail |
+| province-adoption-state | 281 | None | fail |
+| title-grants | 230 | None | fail |
+| territorial-holdings | 281 | None | fail |
+| allegiances | 12 | None | fail |
+| geographic-areas | 7 | None | fail |
+| geographic-anchors | 19 | None | fail |
+| logical-boundaries | 6 | None | fail |
+| quest-locations | 20 | None | fail |
+
+## Final artifact byte composition
+
+No final W3N supplied. Byte composition and packaged evidence are unavailable; publication is blocked.
+
+## Blockers
+
+- artifact [artifact-missing]: exact final W3N has not been supplied
+- REQ-0001.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0001.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0001.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0001.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0001.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0001.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0001.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0001.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0001.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0001.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0001.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0001.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0001.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0001.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0001.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0001.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0001.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0001.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0002.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0002.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0002.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0002.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0002.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0002.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0002.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0002.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0002.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0002.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0002.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0002.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0003.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0003.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0003.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0003.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0003.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0003.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0003.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0003.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0003.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0003.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0003.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0003.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0004.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0004.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0004.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0004.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0004.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0004.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0004.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0004.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0004.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0005.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0005.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0005.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0005.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0005.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0005.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0005.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0005.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0005.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0006.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0006.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0006.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0006.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0006.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0006.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0006.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0006.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0006.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0006.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0006.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0006.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0007.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0007.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0007.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0007.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0007.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0007.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0007.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0007.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0007.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0007.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0007.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0007.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0008.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0008.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0008.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0008.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0008.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0008.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0008.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0008.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0008.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0009.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0009.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0009.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0009.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0009.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0009.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0009.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0009.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0009.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0010.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0010.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0010.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0010.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0010.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0010.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0010.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0010.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0010.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0011.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0011.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0011.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0011.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0011.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0011.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0011.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0011.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0011.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0011.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0011.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0011.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0012.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0012.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0012.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0012.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0012.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0012.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0012.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0012.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0012.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0012.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0012.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0012.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0013.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0013.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0013.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0013.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0013.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0013.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0013.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0013.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0013.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0013.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0013.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0013.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0014.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0014.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0014.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0014.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0014.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0014.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0014.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0014.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0014.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0014.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0014.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0014.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0015.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0015.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0015.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0015.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0015.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0015.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0015.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0015.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0015.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0015.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0015.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0015.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0016.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0016.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0016.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0016.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0016.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0016.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0016.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0016.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0016.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0016.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0016.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0016.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0017.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0017.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0017.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0017.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0017.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0017.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0017.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0017.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0017.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0017.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0017.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0017.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0017.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0017.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0017.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0017.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0017.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0017.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0017.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0017.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0017.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0017.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0017.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0017.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0018.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0018.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0018.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0018.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0018.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0018.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0018.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0018.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0018.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0018.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0018.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0018.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0018.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0018.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0018.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0018.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0018.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0018.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0018.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0018.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0018.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0018.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0018.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0018.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0019.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0019.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0019.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0019.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0019.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0019.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0019.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0019.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0019.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0019.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0019.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0019.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0019.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0019.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0019.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0019.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0019.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0019.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0019.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0019.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0019.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0019.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0019.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0019.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0020.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0020.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0020.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0020.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0020.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0020.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0020.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0020.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0020.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0020.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0020.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0020.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0020.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0020.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0020.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0020.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0020.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0020.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0020.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0020.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0020.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0020.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0020.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0020.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0021.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0021.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0021.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0021.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0021.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0021.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0021.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0021.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0021.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0021.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0021.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0021.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0021.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0021.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0021.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0021.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0021.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0021.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0021.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0021.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0021.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0021.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0021.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0021.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0022.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0022.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0022.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0022.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0022.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0022.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0022.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0022.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0022.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0022.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0022.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0022.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0022.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0022.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0022.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0022.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0022.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0022.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0022.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0022.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0022.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0022.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0022.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0022.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0023.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0023.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0023.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0023.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0023.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0023.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0023.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0023.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0023.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0023.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0023.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0023.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0024.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0024.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0024.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0024.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0024.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0024.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0024.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0024.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0024.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0024.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0024.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0024.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0025.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0025.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0025.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0025.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0025.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0025.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0025.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0025.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0025.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0025.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0025.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0025.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0026.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0026.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0026.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0026.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0026.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0026.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0026.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0026.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0026.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0026.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0026.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0026.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0026.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0026.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0026.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0026.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0026.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0026.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0027.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0027.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0027.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0027.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0027.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0027.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0027.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0027.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0027.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0027.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0027.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0027.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0027.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0027.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0027.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0027.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0027.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0027.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0028.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0028.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0028.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0028.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0028.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0028.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0028.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0028.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0028.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0028.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0028.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0028.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0028.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0028.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0028.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0028.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0028.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0028.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0029.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0029.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0029.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0029.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0029.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0029.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0029.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0029.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0029.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0029.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0030.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0030.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0030.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0030.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0030.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0030.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0030.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0030.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0030.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0030.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0030.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0030.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0031.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0031.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0031.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0031.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0031.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0031.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0031.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0031.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0031.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0031.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0031.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0031.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0031.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0031.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0031.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0031.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0031.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0031.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0031.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0031.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0031.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0031.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0031.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0031.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0032.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0032.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0032.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0032.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0032.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0032.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0032.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0032.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0032.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0032.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0032.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0032.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0032.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0032.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0032.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0032.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0032.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0032.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0032.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0032.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0033.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0033.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0033.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0033.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0033.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0033.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0033.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0033.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0033.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0033.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0033.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0033.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0033.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0033.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0033.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0033.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0033.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0033.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0033.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0033.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0033.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0033.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0033.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0033.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0034.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0034.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0034.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0034.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0034.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0034.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0034.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0034.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0034.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0035.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0035.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0035.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0035.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0035.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0035.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0035.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0035.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0035.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0035.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0035.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0035.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0035.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0035.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0035.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0035.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0035.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0035.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0035.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0035.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0036.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0036.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0036.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0036.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0036.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0036.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0036.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0036.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0036.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0036.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0036.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0036.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0037.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0037.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0037.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0037.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0037.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0037.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0037.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0037.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0037.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0037.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0037.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0037.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0038.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0038.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0038.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0038.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0038.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0038.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0038.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0038.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0038.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0038.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0038.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0038.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0039.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0039.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0039.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0039.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0039.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0039.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0039.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0039.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0039.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0039.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0039.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0039.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0040.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0040.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0040.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0040.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0040.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0040.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0040.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0040.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0040.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0040.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0040.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0040.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0041.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0041.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0041.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0041.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0041.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0041.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0041.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0041.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0041.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0041.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0041.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0041.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0042.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0042.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0042.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0042.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0042.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0042.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0042.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0042.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0042.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0042.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0042.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0042.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0043.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0043.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0043.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0043.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0043.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0043.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0043.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0043.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0043.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0043.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0043.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0043.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0044.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0044.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0044.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0044.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0044.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0044.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0044.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0044.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0044.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0044.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0044.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0044.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0045.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0045.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0045.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0045.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0045.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0045.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0045.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0045.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0045.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0045.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0045.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0045.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0046.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0046.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0046.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0046.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0046.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0046.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0046.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0046.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0046.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0046.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0046.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0046.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0047.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0047.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0047.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0047.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0047.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0047.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0047.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0047.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0047.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0047.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0047.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0047.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0048.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0048.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0048.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0048.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0048.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0048.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0048.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0048.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0048.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0048.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0048.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0048.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0049.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0049.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0049.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0049.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0049.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0049.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0049.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0049.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0049.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0049.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0049.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0049.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0050.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0050.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0050.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0050.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0050.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0050.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0050.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0050.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0050.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0050.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0050.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0050.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0051.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0051.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0051.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0051.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0051.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0051.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0051.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0051.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0051.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0051.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0051.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0051.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0052.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0052.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0052.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0052.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0052.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0052.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0052.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0052.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0052.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0052.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0052.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0052.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0053.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0053.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0053.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0053.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0053.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0053.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0053.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0053.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0053.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0053.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0053.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0053.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0054.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0054.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0054.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0054.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0054.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0054.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0054.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0054.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0054.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0054.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0054.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0054.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0054.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0054.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0054.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0054.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0054.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0054.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0054.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0054.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0054.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0054.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0054.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0054.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0055.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0055.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0055.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0055.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0055.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0055.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0055.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0055.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0055.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0055.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0055.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0055.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0056.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0056.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0056.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0056.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0056.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0056.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0056.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0056.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0056.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0056.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0056.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0056.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0056.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0056.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0056.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0056.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0056.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0056.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0056.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0056.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0056.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0056.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0056.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0056.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0057.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0057.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0057.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0057.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0057.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0057.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0057.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0057.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0057.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0057.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0057.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0057.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0058.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0058.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0058.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0058.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0058.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0058.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0058.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0058.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0058.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0058.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0058.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0058.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0059.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0059.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0059.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0059.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0059.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0059.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0059.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0059.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0059.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0059.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0059.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0059.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0059.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0059.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0059.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0059.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0059.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0059.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0059.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0059.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0059.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0059.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0059.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0059.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0059.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0059.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0059.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0059.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0059.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0059.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0059.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0059.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0059.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0059.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0059.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0059.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0060.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0060.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0060.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0060.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0060.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0060.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0060.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0060.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0060.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0060.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0060.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0060.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0060.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0060.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0060.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0060.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0060.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0060.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0060.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0060.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0060.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0060.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0060.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0060.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0060.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0060.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0060.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0060.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0060.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0060.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0060.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0060.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0060.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0060.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0060.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0060.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0061.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0061.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0061.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0061.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0061.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0061.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0061.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0061.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0061.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0061.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0061.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0061.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0061.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0061.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0061.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0061.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0061.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0061.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0061.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0061.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0061.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0061.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0061.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0061.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0062.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0062.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0062.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0062.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0062.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0062.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0062.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0062.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0062.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0062.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0062.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0062.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0062.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0062.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0062.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0062.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0062.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0062.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0062.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0062.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0062.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0062.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0062.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0062.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0063.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0063.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0063.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0063.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0063.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0063.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0063.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0063.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0063.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0063.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0063.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0063.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0063.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0063.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0063.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0063.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0063.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0063.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0063.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0063.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0063.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0063.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0063.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0063.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0064.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0064.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0064.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0064.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0064.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0064.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0064.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0064.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0064.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0064.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0064.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0064.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0064.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0064.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0064.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0064.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0064.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0064.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0064.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0064.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0064.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0064.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0064.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0064.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0065.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0065.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0065.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0065.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0065.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0065.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0065.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0065.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0065.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0065.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0065.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0065.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0065.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0065.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0065.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0065.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0065.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0065.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0065.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0065.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0065.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0065.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0065.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0065.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0066.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0066.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0066.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0066.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0066.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0066.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0066.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0066.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0066.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0066.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0066.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0066.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0066.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0066.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0066.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0066.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0066.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0066.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0066.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0066.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0066.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0066.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0066.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0066.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0067.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0067.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0067.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0067.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0067.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0067.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0067.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0067.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0067.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0067.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0067.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0067.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0068.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0068.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0068.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0068.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0068.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0068.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0068.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0068.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0068.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0068.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0068.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0068.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0069.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0069.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0069.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0069.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0069.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0069.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0069.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0069.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0069.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0069.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0069.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0069.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0070.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0070.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0070.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0070.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0070.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0070.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0070.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0070.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0070.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0070.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0070.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0070.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0071.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0071.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0071.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0071.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0071.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0071.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0071.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0071.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0071.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0071.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0071.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0071.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0072.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0072.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0072.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0072.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0072.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0072.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0072.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0072.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0072.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0072.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0072.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0072.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0072.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0072.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0072.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0072.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0072.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0072.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0072.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0072.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0072.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0072.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0072.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0072.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0073.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0073.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0073.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0073.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0073.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0073.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0073.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0073.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0073.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0073.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0073.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0073.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0074.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0074.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0074.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0074.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0074.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0074.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0074.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0074.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0074.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0074.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0074.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0074.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0074.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0074.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0074.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0074.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0074.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0074.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0074.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0074.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0074.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0074.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0074.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0074.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0075.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0075.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0075.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0075.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0075.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0075.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0075.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0075.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0075.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0075.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0075.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0075.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0076.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0076.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0076.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0076.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0076.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0076.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0076.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0076.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0076.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0076.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0076.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0076.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0076.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0076.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0076.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0076.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0076.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0076.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0076.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0076.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0076.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0076.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0076.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0076.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0077.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0077.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0077.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0077.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0077.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0077.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0077.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0077.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0077.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0077.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0077.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0077.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0077.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0077.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0077.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0077.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0077.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0077.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0077.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0077.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0077.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0077.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0077.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0077.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0078.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0078.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0078.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0078.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0078.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0078.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0078.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0078.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0078.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0078.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0078.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0078.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0079.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0079.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0079.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0079.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0079.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0079.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0079.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0079.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0079.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0079.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0079.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0079.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0079.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0079.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0079.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0079.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0079.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0079.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0079.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0079.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0079.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0079.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0079.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0079.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0080.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0080.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0080.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0080.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0080.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0080.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0080.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0080.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0080.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0080.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0080.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0080.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0080.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0080.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0080.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0080.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0080.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0080.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0080.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0080.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0080.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0080.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0080.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0080.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0081.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0081.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0081.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0081.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0081.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0081.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0081.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0081.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0081.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0081.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0081.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0081.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0082.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0082.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0082.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0082.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0082.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0082.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0082.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0082.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0082.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0082.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0082.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0082.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0083.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0083.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0083.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0083.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0083.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0083.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0083.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0083.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0083.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0083.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0083.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0083.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0084.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0084.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0084.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0084.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0084.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0084.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0084.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0084.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0084.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0084.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0084.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0084.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0084.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0084.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0084.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0084.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0084.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0084.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0084.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0084.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0084.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0084.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0084.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0084.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0085.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0085.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0085.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0085.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0085.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0085.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0085.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0085.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0085.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0085.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0085.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0085.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0085.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0085.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0085.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0085.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0085.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0085.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0085.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0085.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0085.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0085.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0085.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0085.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0086.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0086.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0086.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0086.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0086.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0086.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0086.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0086.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0086.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0086.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0086.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0086.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0086.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0086.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0086.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0086.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0086.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0086.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0086.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0086.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0086.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0086.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0086.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0086.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0087.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0087.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0087.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0087.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0087.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0087.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0087.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0087.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0087.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0087.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0087.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0087.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0088.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0088.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0088.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0088.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0088.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0088.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0088.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0088.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0088.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0088.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0088.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0088.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0089.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0089.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0089.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0089.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0089.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0089.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0089.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0089.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0089.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0089.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0089.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0089.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0090.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0090.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0090.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0090.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0090.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0090.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0090.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0090.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0090.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0090.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0090.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0090.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0090.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0090.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0090.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0090.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0090.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0090.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0090.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0090.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0090.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0090.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0090.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0090.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0091.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0091.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0091.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0091.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0091.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0091.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0091.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0091.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0091.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0091.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0091.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0091.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0091.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0091.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0091.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0091.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0091.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0091.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0091.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0091.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0091.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0091.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0091.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0091.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0092.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0092.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0092.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0092.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0092.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0092.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0092.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0092.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0092.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0092.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0092.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0092.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0093.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0093.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0093.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0093.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0093.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0093.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0093.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0093.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0093.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0093.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0093.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0093.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0094.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0094.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0094.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0094.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0094.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0094.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0094.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0094.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0094.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0094.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0094.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0094.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0094.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0094.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0094.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0094.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0094.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0094.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0094.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0094.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0094.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0094.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0094.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0094.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0095.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0095.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0095.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0095.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0095.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0095.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0095.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0095.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0095.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0095.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0095.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0095.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0096.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0096.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0096.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0096.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0096.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0096.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0096.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0096.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0096.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0096.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0096.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0096.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0097.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0097.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0097.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0097.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0097.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0097.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0097.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0097.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0097.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0097.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0097.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0098.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0098.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0098.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0098.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0098.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0098.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0098.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0098.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0098.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0098.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0098.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0099.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0099.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0099.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0099.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0099.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0099.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0099.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0099.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0099.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0099.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0099.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0100.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0100.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0100.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0100.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0100.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0100.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0100.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0100.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0100.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0100.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0100.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0101.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0101.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0101.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0101.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0101.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0101.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0101.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0101.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0101.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0101.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0101.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0101.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0102.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0102.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0102.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0102.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0102.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0102.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0102.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0102.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0102.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0102.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0102.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0102.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0103.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0103.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0103.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0103.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0103.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0103.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0103.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0103.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0103.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0103.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0103.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0103.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0104.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0104.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0104.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0104.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0104.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0104.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0104.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0104.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0104.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0104.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0104.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0104.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0104.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0104.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0104.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0104.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0104.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0104.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0104.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0104.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0104.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0104.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0104.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0104.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0105.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0105.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0105.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0105.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0105.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0105.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0105.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0105.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0105.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0105.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0105.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0105.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0105.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0105.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0105.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0105.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0105.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0105.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0105.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0105.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0105.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0105.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0105.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0105.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0106.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0106.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0106.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0106.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0106.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0106.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0106.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0106.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0106.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0106.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0106.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0106.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0107.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0107.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0107.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0107.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0107.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0107.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0107.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0107.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0107.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0107.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0107.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0107.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0108.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0108.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0108.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0108.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0108.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0108.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0108.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0108.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0108.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0108.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0108.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0108.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0109.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0109.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0109.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0109.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0109.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0109.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0109.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0109.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0109.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0109.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0109.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0109.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0109.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0109.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0109.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0109.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0109.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0109.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0109.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0109.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0109.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0109.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0109.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0109.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0110.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0110.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0110.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0110.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0110.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0110.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0110.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0110.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0110.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0110.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0110.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0110.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0111.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0111.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0111.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0111.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0111.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0111.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0111.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0111.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0111.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0111.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0111.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0111.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0112.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0112.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0112.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0112.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0112.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0112.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0112.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0112.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0112.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0112.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0112.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0112.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0113.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0113.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0113.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0113.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0113.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0113.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0113.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0113.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0113.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0113.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0113.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0113.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0114.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0114.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0114.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0114.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0114.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0114.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0114.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0114.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0114.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0114.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0114.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0114.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0115.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0115.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0115.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0115.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0115.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0115.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0115.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0115.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0115.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0115.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0115.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0115.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0115.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0115.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0115.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0115.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0115.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0115.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0115.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0115.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0115.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0115.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0115.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0115.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0116.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0116.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0116.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0116.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0116.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0116.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0116.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0116.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0116.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0116.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0116.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0116.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0116.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0116.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0116.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0116.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0116.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0116.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0116.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0116.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0116.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0116.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0116.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0116.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0117.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0117.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0117.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0117.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0117.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0117.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0117.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0117.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0117.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0117.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0117.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0117.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0118.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0118.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0118.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0118.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0118.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0118.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0118.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0118.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0118.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0118.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0118.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0118.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0119.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0119.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0119.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0119.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0119.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0119.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0119.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0119.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0119.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0119.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0119.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0119.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0119.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0119.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0119.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0119.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0119.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0119.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0119.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0119.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0119.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0119.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0119.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0119.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0120.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0120.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0120.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0120.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0120.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0120.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0120.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0120.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0120.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0120.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0120.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0120.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0121.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0121.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0121.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0121.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0121.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0121.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0121.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0121.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0121.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0121.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0121.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0121.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0122.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0122.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0122.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0122.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0122.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0122.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0122.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0122.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0122.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0122.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0122.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0122.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0122.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0122.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0122.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0122.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0122.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0122.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0122.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0122.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0122.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0122.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0122.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0122.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0123.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0123.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0123.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0123.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0123.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0123.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0123.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0123.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0123.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0123.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0123.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0123.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0123.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0123.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0123.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0123.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0123.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0123.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0123.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0123.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0123.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0123.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0123.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0123.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0124.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0124.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0124.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0124.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0124.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0124.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0124.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0124.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0124.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0124.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0124.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0124.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0124.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0124.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0124.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0124.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0124.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0124.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0124.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0124.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0124.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0124.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0124.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0124.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0124.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0124.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0124.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0124.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0124.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0124.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0124.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0124.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0124.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0124.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0124.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0124.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0125.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0125.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0125.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0125.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0125.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0125.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0125.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0125.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0125.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0125.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0125.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0125.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0125.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0125.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0125.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0125.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0125.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0125.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0125.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0125.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0125.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0125.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0125.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0125.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0126.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0126.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0126.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0126.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0126.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0126.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0126.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0126.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0126.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0126.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0126.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0126.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0126.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0126.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0126.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0126.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0126.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0126.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0126.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0126.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0126.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0126.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0126.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0126.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0127.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0127.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0127.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0127.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0127.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0127.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0127.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0127.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0127.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0127.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0127.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0127.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0127.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0127.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0127.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0127.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0127.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0127.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0127.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0127.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0127.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0127.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0127.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0127.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0128.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0128.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0128.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0128.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0128.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0128.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0128.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0128.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0128.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0128.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0128.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0128.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0128.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0128.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0128.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0128.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0128.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0128.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0128.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0128.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0128.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0128.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0128.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0128.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0129.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0129.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0129.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0129.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0129.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0129.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0129.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0129.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0129.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0129.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0129.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0129.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0129.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0129.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0129.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0129.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0129.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0129.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0129.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0129.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0129.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0129.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0129.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0129.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0129.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0129.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0129.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0129.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0129.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0129.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0129.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0129.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0129.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0129.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0129.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0129.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0130.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0130.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0130.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0130.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0130.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0130.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0130.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0130.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0130.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0130.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0130.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0130.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0130.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0130.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0130.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0130.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0130.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0130.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0130.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0130.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0130.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0130.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0130.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0130.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0131.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0131.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0131.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0131.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0131.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0131.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0131.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0131.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0131.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0131.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0131.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0131.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0131.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0131.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0131.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0131.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0131.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0131.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0131.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0131.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0131.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0131.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0131.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0131.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0132.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0132.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0132.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0132.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0132.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0132.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0132.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0132.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0132.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0132.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0132.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0132.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0132.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0132.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0132.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0132.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0132.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0132.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0132.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0132.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0132.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0132.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0132.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0132.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0133.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0133.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0133.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0133.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0133.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0133.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0133.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0133.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0133.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0133.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0133.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0133.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0134.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0134.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0134.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0134.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0134.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0134.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0134.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0134.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0134.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0134.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0134.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0134.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0134.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0134.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0134.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0134.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0134.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0134.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0134.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0134.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0134.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0134.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0134.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0134.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0135.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0135.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0135.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0135.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0135.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0135.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0135.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0135.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0135.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0135.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0135.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0135.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0136.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0136.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0136.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0136.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0136.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0136.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0136.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0136.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0136.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0136.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0136.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0136.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0136.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0136.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0136.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0136.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0136.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0136.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0136.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0136.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0136.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0136.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0136.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0136.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0137.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0137.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0137.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0137.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0137.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0137.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0137.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0137.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0137.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0137.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0137.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0137.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0138.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0138.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0138.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0138.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0138.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0138.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0138.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0138.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0138.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0138.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0138.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0138.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0139.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0139.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0139.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0139.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0139.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0139.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0139.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0139.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0139.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0139.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0139.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0139.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0139.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0139.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0139.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0139.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0139.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0139.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0139.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0139.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0139.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0139.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0139.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0139.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0140.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0140.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0140.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0140.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0140.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0140.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0140.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0140.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0140.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0140.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0140.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0140.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0140.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0140.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0140.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0140.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0140.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0140.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0140.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0140.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0140.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0140.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0140.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0140.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0141.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0141.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0141.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0141.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0141.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0141.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0141.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0141.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0141.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0141.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0141.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0141.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0141.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0141.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0141.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0141.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0141.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0141.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0141.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0141.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0141.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0141.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0141.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0141.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0142.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0142.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0142.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0142.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0142.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0142.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0142.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0142.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0142.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0142.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0142.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0142.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0143.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0143.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0143.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0143.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0143.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0143.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0143.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0143.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0143.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0143.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0143.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0143.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0143.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0143.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0143.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0143.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0143.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0143.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0143.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0143.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0143.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0143.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0143.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0143.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0144.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0144.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0144.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0144.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0144.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0144.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0144.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0144.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0144.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0144.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0144.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0144.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0144.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0144.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0144.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0144.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0144.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0144.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0144.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0144.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0144.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0144.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0144.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0144.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0145.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0145.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0145.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0145.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0145.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0145.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0145.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0145.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0145.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0145.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0145.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0145.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0145.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0145.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0145.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0145.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0145.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0145.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0145.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0145.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0145.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0145.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0145.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0145.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0146.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0146.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0146.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0146.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0146.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0146.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0146.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0146.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0146.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0146.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0146.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0146.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0147.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0147.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0147.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0147.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0147.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0147.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0147.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0147.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0147.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0147.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0147.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0147.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0148.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0148.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0148.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0148.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0148.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0148.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0148.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0148.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0148.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0148.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0148.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0148.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0149.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0149.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0149.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0149.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0149.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0149.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0149.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0149.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0149.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0149.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0149.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0149.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0150.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0150.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0150.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0150.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0150.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0150.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0150.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0150.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0150.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0150.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0150.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0150.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0150.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0150.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0150.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0150.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0150.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0150.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0150.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0150.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0150.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0150.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0150.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0150.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0151.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0151.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0151.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0151.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0151.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0151.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0151.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0151.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0151.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0151.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0151.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0151.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0151.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0151.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0151.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0151.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0151.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0151.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0151.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0151.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0151.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0151.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0151.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0151.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0152.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0152.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0152.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0152.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0152.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0152.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0152.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0152.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0152.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0152.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0152.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0152.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0153.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0153.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0153.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0153.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0153.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0153.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0153.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0153.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0153.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0153.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0153.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0153.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0153.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0153.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0153.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0153.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0153.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0153.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0153.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0153.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0153.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0153.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0153.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0153.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0154.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0154.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0154.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0154.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0154.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0154.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0154.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0154.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0154.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0154.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0154.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0154.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0154.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0154.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0154.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0154.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0154.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0154.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0154.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0154.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0154.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0154.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0154.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0154.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0155.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0155.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0155.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0155.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0155.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0155.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0155.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0155.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0155.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0155.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0155.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0155.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0155.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0155.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0155.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0155.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0155.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0155.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0155.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0155.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0155.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0155.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0155.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0155.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0156.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0156.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0156.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0156.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0156.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0156.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0156.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0156.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0156.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0156.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0156.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0156.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0156.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0156.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0156.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0156.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0156.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0156.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0156.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0156.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0156.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0156.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0156.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0156.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0157.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0157.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0157.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0157.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0157.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0157.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0157.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0157.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0157.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0157.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0157.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0157.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0157.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0157.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0157.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0157.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0157.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0157.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0157.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0157.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0157.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0157.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0157.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0157.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0158.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0158.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0158.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0158.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0158.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0158.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0158.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0158.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0158.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0158.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0158.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0158.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0158.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0158.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0158.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0158.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0158.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0158.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0158.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0158.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0158.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0158.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0158.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0158.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0158.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0158.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0158.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0158.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0158.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0158.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0158.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0158.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0158.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0158.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0158.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0158.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0159.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0159.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0159.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0159.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0159.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0159.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0159.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0159.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0159.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0159.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0159.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0159.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0160.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0160.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0160.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0160.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0160.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0160.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0160.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0160.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0160.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0160.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0160.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0160.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0160.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0160.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0160.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0160.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0160.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0160.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0160.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0160.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0160.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0160.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0160.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0160.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0161.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0161.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0161.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0161.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0161.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0161.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0161.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0161.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0161.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0161.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0161.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0161.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0162.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0162.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0162.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0162.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0162.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0162.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0162.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0162.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0162.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0162.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0162.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0162.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0163.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0163.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0163.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0163.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0163.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0163.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0163.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0163.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0163.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0163.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0163.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0163.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0163.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0163.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0163.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0163.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0163.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0163.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0163.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0163.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0163.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0163.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0163.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0163.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0164.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0164.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0164.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0164.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0164.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0164.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0164.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0164.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0164.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0164.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0164.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0164.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0165.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0165.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0165.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0165.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0165.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0165.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0165.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0165.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0165.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0165.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0165.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0165.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0166.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0166.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0166.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0166.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0166.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0166.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0166.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0166.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0166.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0166.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0166.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0166.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0166.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0166.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0166.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0166.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0166.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0166.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0166.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0166.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0166.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0166.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0166.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0166.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0167.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0167.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0167.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0167.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0167.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0167.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0167.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0167.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0167.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0167.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0167.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0167.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0167.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0167.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0167.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0167.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0167.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0167.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0167.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0167.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0167.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0167.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0167.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0167.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0168.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0168.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0168.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0168.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0168.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0168.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0168.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0168.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0168.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0168.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0168.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0168.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0168.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0168.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0168.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0168.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0168.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0168.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0168.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0168.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0168.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0168.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0168.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0168.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0169.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0169.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0169.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0169.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0169.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0169.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0169.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0169.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0169.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0169.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0169.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0169.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0169.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0169.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0169.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0169.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0169.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0169.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0169.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0169.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0169.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0169.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0169.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0169.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0169.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0169.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0169.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0169.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0169.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0169.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0169.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0169.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0169.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0169.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0169.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0169.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0170.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0170.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0170.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0170.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0170.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0170.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0170.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0170.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0170.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0170.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0170.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0170.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0170.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0170.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0170.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0170.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0170.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0170.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0170.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0170.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0170.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0170.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0170.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0170.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0171.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0171.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0171.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0171.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0171.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0171.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0171.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0171.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0171.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0171.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0171.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0171.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0171.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0171.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0171.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0171.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0171.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0171.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0171.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0171.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0171.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0171.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0171.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0171.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0171.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0171.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0171.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0171.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0171.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0171.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0171.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0171.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0171.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0171.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0171.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0171.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0172.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0172.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0172.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0172.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0172.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0172.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0172.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0172.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0172.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0172.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0172.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0172.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0172.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0172.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0172.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0172.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0172.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0172.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0172.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0172.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0172.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0172.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0172.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0172.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0172.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0172.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0172.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0172.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0172.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0172.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0172.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0172.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0172.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0172.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0172.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0172.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0173.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0173.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0173.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0173.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0173.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0173.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0173.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0173.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0173.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0173.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0173.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0173.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0174.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0174.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0174.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0174.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0174.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0174.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0174.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0174.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0174.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0174.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0174.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0174.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0175.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0175.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0175.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0175.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0175.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0175.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0175.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0175.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0175.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0175.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0175.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0175.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0176.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0176.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0176.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0176.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0176.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0176.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0176.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0176.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0176.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0176.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0176.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0176.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0177.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0177.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0177.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0177.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0177.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0177.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0177.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0177.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0177.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0177.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0177.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0177.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0178.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0178.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0178.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0178.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0178.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0178.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0178.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0178.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0178.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0178.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0178.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0178.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0179.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0179.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0179.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0179.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0179.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0179.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0179.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0179.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0179.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0179.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0179.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0179.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0180.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0180.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0180.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0180.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0180.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0180.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0180.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0180.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0180.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0180.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0180.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0180.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0181.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0181.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0181.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0181.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0181.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0181.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0181.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0181.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0181.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0181.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0181.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0181.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0181.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0181.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0181.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0181.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0181.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0181.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0181.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0181.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0181.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0181.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0181.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0181.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0182.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0182.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0182.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0182.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0182.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0182.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0182.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0182.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0182.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0182.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0182.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0183.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0183.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0183.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0183.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0183.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0183.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0183.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0183.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0183.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0183.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0183.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0184.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0184.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0184.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0184.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0184.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0184.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0184.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0184.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0184.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0184.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0184.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0185.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0185.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0185.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0185.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0185.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0185.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0185.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0185.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0185.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0185.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0185.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0186.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0186.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0186.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0186.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0186.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0186.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0186.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0186.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0186.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0186.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0186.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0187.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0187.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0187.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0187.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0187.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0187.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0187.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0187.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0187.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0187.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0187.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0188.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0188.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0188.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0188.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0188.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0188.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0188.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0188.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0188.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0188.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0188.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0189.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0189.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0189.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0189.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0189.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0189.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0189.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0189.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0189.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0189.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0189.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0190.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0190.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0190.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0190.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0190.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0190.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0190.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0190.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0190.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0190.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0190.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0191.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0191.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0191.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0191.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0191.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0191.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0191.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0191.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0191.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0191.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0191.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0192.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0192.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0192.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0192.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0192.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0192.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0192.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0192.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0192.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0192.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0192.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0193.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0193.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0193.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0193.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0193.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0193.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0193.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0193.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0193.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0193.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0193.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0194.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0194.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0194.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0194.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0194.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0194.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0194.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0194.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0194.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0194.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0194.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0195.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0195.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0195.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0195.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0195.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0195.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0195.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0195.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0195.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0195.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0195.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0196.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0196.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0196.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0196.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0196.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0196.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0196.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0196.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0196.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0196.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0196.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0197.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0197.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0197.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0197.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0197.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0197.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0197.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0197.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0197.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0197.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0197.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0198.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0198.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0198.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0198.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0198.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0198.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0198.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0198.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0198.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0198.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0198.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0199.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0199.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0199.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0199.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0199.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0199.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0199.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0199.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0199.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0199.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0199.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0200.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0200.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0200.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0200.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0200.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0200.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0200.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0200.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0200.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0200.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0200.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0201.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0201.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0201.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0201.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0201.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0201.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0201.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0201.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0201.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0201.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0201.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0202.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0202.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0202.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0202.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0202.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0202.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0202.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0202.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0202.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0202.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0202.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0203.01 [test-only]: success: current executable production-adapter evidence is absent
+- REQ-0203.01 [test-only]: failure: current executable production-adapter evidence is absent
+- REQ-0203.01 [test-only]: stale: current executable production-adapter evidence is absent
+- REQ-0203.01 [test-only]: replay: current executable production-adapter evidence is absent
+- REQ-0203.01 [static-only]: source references cannot establish executed integration
+- REQ-0203.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0204.01 [test-only]: success: current executable production-adapter evidence is absent
+- REQ-0204.01 [test-only]: failure: current executable production-adapter evidence is absent
+- REQ-0204.01 [test-only]: stale: current executable production-adapter evidence is absent
+- REQ-0204.01 [test-only]: replay: current executable production-adapter evidence is absent
+- REQ-0204.01 [static-only]: source references cannot establish executed integration
+- REQ-0204.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0205.01 [test-only]: success: current executable production-adapter evidence is absent
+- REQ-0205.01 [test-only]: failure: current executable production-adapter evidence is absent
+- REQ-0205.01 [test-only]: stale: current executable production-adapter evidence is absent
+- REQ-0205.01 [test-only]: replay: current executable production-adapter evidence is absent
+- REQ-0205.01 [static-only]: source references cannot establish executed integration
+- REQ-0205.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0205.02 [test-only]: success: current executable production-adapter evidence is absent
+- REQ-0205.02 [test-only]: failure: current executable production-adapter evidence is absent
+- REQ-0205.02 [test-only]: stale: current executable production-adapter evidence is absent
+- REQ-0205.02 [test-only]: replay: current executable production-adapter evidence is absent
+- REQ-0205.02 [static-only]: source references cannot establish executed integration
+- REQ-0205.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0206.01 [test-only]: success: current executable production-adapter evidence is absent
+- REQ-0206.01 [test-only]: failure: current executable production-adapter evidence is absent
+- REQ-0206.01 [test-only]: stale: current executable production-adapter evidence is absent
+- REQ-0206.01 [test-only]: replay: current executable production-adapter evidence is absent
+- REQ-0206.01 [static-only]: source references cannot establish executed integration
+- REQ-0206.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0207.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0207.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0207.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0207.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0207.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0207.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0207.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0207.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0207.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0207.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0207.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0208.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0208.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0208.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0208.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0208.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0208.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0208.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0208.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0208.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0208.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0208.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0209.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0209.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0209.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0209.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0209.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0209.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0209.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0209.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0209.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0209.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0209.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0209.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0209.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0209.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0209.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0209.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0209.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0209.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0209.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0209.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0209.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0209.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0210.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0210.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0210.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0210.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0210.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0210.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0210.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0210.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0210.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0210.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0210.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0211.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0211.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0211.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0211.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0211.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0211.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0211.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0211.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0211.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0211.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0211.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0211.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0211.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0211.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0211.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0211.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0211.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0211.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0211.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0211.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0211.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0211.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0212.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0212.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0212.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0212.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0212.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0212.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0212.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0212.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0212.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0212.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0212.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0212.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0212.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0212.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0212.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0212.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0212.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0212.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0212.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0212.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0212.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0212.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0213.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0213.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0213.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0213.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0213.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0213.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0213.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0213.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0213.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0213.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0213.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0214.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0214.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0214.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0214.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0214.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0214.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0214.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0214.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0214.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0214.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0214.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0215.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0215.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0215.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0215.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0215.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0215.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0215.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0215.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0215.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0215.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0215.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0216.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0216.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0216.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0216.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0216.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0216.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0216.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0216.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0216.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0216.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0216.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0217.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0217.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0217.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0217.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0217.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0217.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0217.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0217.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0217.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0217.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0217.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0218.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0218.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0218.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0218.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0218.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0218.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0218.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0218.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0218.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0218.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0218.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0219.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0219.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0219.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0219.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0219.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0219.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0219.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0219.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0219.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0219.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0219.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0220.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0220.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0220.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0220.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0220.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0220.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0220.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0220.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0220.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0220.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0220.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0221.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0221.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0221.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0221.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0221.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0221.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0221.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0221.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0221.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0221.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0221.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0221.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0221.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0221.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0221.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0221.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0221.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0221.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0221.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0221.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0221.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0221.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0221.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0221.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0222.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0222.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0222.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0222.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0222.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0222.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0222.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0222.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0222.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0222.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0222.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0222.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0222.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0222.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0222.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0222.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0222.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0222.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0222.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0222.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0222.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0222.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0222.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0222.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0223.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0223.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0223.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0223.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0223.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0223.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0223.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0223.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0223.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0223.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0223.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0223.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0224.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0224.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0224.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0224.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0224.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0224.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0224.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0224.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0224.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0224.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0224.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0224.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0225.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0225.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0225.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0225.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0225.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0225.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0225.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0225.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0225.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0225.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0225.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0225.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0225.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0225.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0225.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0225.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0225.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0225.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0225.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0225.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0225.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0225.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0225.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0225.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0226.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0226.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0226.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0226.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0226.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0226.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0226.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0226.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0226.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0226.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0226.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0226.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0227.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0227.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0227.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0227.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0227.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0227.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0227.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0227.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0227.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0227.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0227.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0227.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0227.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0227.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0227.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0227.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0227.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0227.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0227.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0227.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0227.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0227.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0227.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0227.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0228.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0228.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0228.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0228.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0228.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0228.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0228.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0228.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0228.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0228.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0228.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0228.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0229.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0229.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0229.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0229.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0229.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0229.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0229.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0229.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0229.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0229.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0229.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0229.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0230.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0230.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0230.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0230.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0230.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0230.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0230.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0230.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0230.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0230.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0230.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0230.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0230.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0230.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0230.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0230.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0230.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0230.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0230.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0230.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0230.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0230.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0230.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0230.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0231.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0231.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0231.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0231.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0231.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0231.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0231.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0231.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0231.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0231.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0231.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0231.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0231.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0231.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0231.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0231.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0231.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0231.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0231.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0231.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0231.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0231.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0231.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0231.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0232.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0232.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0232.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0232.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0232.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0232.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0232.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0232.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0232.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0232.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0232.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0232.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0232.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0232.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0232.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0232.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0232.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0232.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0232.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0232.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0232.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0232.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0232.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0232.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0233.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0233.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0233.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0233.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0233.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0233.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0233.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0233.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0233.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0233.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0233.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0233.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0233.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0233.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0233.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0233.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0233.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0233.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0233.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0233.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0233.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0233.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0233.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0233.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0234.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0234.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0234.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0234.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0234.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0234.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0234.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0234.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0234.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0234.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0234.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0234.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0235.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0235.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0235.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0235.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0235.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0235.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0235.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0235.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0235.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0235.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0235.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0235.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0235.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0235.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0235.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0235.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0235.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0235.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0235.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0235.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0235.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0235.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0235.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0235.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0236.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0236.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0236.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0236.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0236.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0236.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0236.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0236.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0236.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0236.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0236.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0236.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0237.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0237.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0237.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0237.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0237.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0237.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0237.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0237.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0237.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0237.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0237.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0237.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0237.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0237.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0237.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0237.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0237.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0237.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0238.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0238.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0238.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0238.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0238.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0238.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0238.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0238.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0238.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0239.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0239.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0239.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0239.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0239.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0239.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0239.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0239.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0239.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0239.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0239.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0239.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0239.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0239.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0239.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0239.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0239.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0239.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0240.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0240.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0240.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0240.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0240.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0240.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0240.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0240.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0240.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0240.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0240.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0240.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0240.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0240.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0240.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0240.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0240.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0240.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0240.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0240.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0241.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0241.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0241.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0241.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0241.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0241.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0241.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0241.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0241.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0241.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0241.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0241.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0241.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0241.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0241.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0241.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0241.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0241.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0241.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0241.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0241.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0241.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0241.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0241.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0241.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0241.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0241.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0242.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0242.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0242.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0242.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0242.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0242.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0242.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0242.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0242.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0243.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0243.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0243.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0243.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0243.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0243.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0243.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0243.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0243.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0243.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0243.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0243.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0243.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0243.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0243.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0243.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0243.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0243.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0244.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0244.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0244.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0244.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0244.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0244.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0244.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0244.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0244.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0244.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0245.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0245.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0245.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0245.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0245.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0245.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0245.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0245.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0245.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0245.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0245.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0245.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0245.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0245.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0245.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0245.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0245.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0245.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0246.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0246.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0246.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0246.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0246.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0246.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0246.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0246.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0246.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0246.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0246.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0246.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0247.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0247.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0247.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0247.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0247.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0247.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0247.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0247.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0247.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0248.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0248.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0248.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0248.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0248.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0248.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0248.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0248.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0248.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0248.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0248.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0248.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0248.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0248.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0248.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0248.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0248.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0248.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0249.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0249.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0249.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0249.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0249.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0249.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0249.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0249.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0249.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0250.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0250.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0250.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0250.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0250.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0250.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0250.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0250.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0250.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0251.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0251.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0251.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0251.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0251.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0251.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0251.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0251.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0251.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0251.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0251.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0251.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0252.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0252.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0252.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0252.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0252.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0252.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0252.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0252.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0252.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0252.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0252.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0252.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0252.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0252.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0252.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0252.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0252.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0252.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0252.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0252.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0252.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0252.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0252.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0252.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0253.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0253.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0253.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0253.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0253.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0253.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0253.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0253.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0253.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0253.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0253.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0253.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0253.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0253.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0253.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0253.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0253.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0253.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0253.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0253.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0253.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0253.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0253.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0253.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0254.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0254.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0254.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0254.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0254.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0254.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0254.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0254.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0254.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0254.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0254.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0254.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0255.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0255.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0255.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0255.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0255.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0255.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0255.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0255.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0255.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0255.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0255.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0255.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0255.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0255.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0255.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0255.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0255.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0255.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0255.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0255.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0255.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0255.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0255.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0255.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0256.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0256.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0256.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0256.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0256.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0256.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0256.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0256.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0256.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0256.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0256.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0256.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0257.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0257.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0257.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0257.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0257.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0257.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0257.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0257.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0257.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0257.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0257.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0257.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0258.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0258.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0258.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0258.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0258.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0258.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0258.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0258.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0258.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0258.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0258.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0258.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0259.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0259.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0259.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0259.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0259.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0259.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0259.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0259.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0259.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0259.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0259.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0259.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0259.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0259.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0259.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0259.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0259.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0259.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0259.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0259.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0259.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0259.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0259.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0259.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0260.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0260.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0260.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0260.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0260.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0260.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0260.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0260.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0260.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0260.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0260.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0260.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0261.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0261.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0261.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0261.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0261.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0261.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0261.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0261.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0261.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0261.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0261.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0261.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0262.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0262.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0262.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0262.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0262.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0262.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0262.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0262.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0262.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0262.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0262.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0262.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0262.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0262.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0262.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0262.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0262.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0262.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0262.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0262.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0262.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0262.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0262.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0262.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0263.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0263.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0263.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0263.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0263.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0263.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0263.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0263.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0263.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0263.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0263.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0263.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0263.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0263.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0263.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0263.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0263.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0263.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0263.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0263.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0263.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0263.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0263.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0263.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0264.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0264.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0264.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0264.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0264.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0264.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0264.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0264.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0264.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0264.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0264.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0264.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0264.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0264.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0264.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0264.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0264.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0264.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0264.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0264.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0264.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0264.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0264.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0264.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0265.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0265.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0265.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0265.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0265.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0265.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0265.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0265.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0265.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0265.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0265.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0265.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0265.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0265.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0265.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0265.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0265.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0265.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0265.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0265.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0265.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0265.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0265.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0265.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0266.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0266.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0266.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0266.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0266.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0266.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0266.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0266.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0266.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0266.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0266.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0266.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0266.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0266.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0266.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0266.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0266.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0266.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0266.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0266.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0266.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0266.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0266.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0266.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0267.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0267.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0267.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0267.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0267.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0267.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0267.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0267.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0267.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0267.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0267.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0267.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0267.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0267.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0267.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0267.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0267.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0267.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0267.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0267.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0267.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0267.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0267.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0267.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0268.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0268.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0268.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0268.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0268.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0268.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0268.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0268.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0268.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0268.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0268.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0268.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0268.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0268.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0268.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0268.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0268.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0268.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0268.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0268.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0268.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0268.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0268.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0268.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0269.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0269.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0269.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0269.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0269.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0269.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0269.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0269.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0269.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0269.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0269.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0269.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0269.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0269.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0269.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0269.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0269.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0269.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0269.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0269.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0269.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0269.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0269.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0269.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0270.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0270.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0270.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0270.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0270.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0270.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0270.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0270.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0270.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0270.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0270.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0270.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0270.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0270.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0270.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0270.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0270.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0270.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0270.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0270.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0270.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0270.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0270.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0270.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0271.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0271.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0271.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0271.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0271.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0271.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0271.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0271.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0271.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0271.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0271.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0271.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0271.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0271.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0271.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0271.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0271.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0271.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0271.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0271.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0271.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0271.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0271.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0271.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0271.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0271.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0271.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0271.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0271.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0271.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0271.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0271.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0271.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0271.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0271.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0271.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0272.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0272.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0272.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0272.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0272.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0272.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0272.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0272.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0272.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0272.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0272.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0272.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0272.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0272.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0272.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0272.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0272.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0272.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0272.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0272.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0272.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0272.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0272.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0272.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0273.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0273.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0273.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0273.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0273.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0273.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0273.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0273.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0273.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0273.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0273.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0273.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0273.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0273.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0273.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0273.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0273.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0273.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0273.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0273.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0273.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0273.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0273.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0273.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0273.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0273.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0273.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0273.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0273.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0273.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0273.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0273.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0273.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0273.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0273.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0273.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0274.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0274.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0274.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0274.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0274.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0274.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0274.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0274.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0274.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0274.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0274.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0274.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0274.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0274.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0274.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0274.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0274.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0274.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0274.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0274.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0274.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0274.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0274.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0274.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0275.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0275.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0275.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0275.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0275.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0275.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0275.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0275.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0275.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0275.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0275.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0275.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0276.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0276.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0276.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0276.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0276.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0276.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0276.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0276.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0276.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0276.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0276.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0276.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0277.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0277.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0277.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0277.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0277.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0277.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0277.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0277.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0277.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0277.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0277.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0277.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0277.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0277.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0277.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0277.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0277.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0277.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0277.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0277.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0277.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0277.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0277.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0277.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0278.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0278.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0278.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0278.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0278.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0278.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0278.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0278.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0278.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0278.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0278.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0278.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0279.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0279.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0279.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0279.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0279.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0279.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0279.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0279.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0279.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0279.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0279.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0279.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0279.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0279.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0279.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0279.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0279.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0279.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0279.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0279.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0279.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0279.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0279.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0279.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0280.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0280.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0280.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0280.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0280.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0280.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0280.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0280.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0280.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0280.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0280.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0280.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0280.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0280.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0280.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0280.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0280.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0280.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0280.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0280.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0280.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0280.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0280.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0280.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0281.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0281.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0281.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0281.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0281.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0281.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0281.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0281.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0281.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0281.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0281.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0281.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0282.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0282.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0282.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0282.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0282.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0282.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0282.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0282.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0282.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0282.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0282.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0282.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0283.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0283.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0283.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0283.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0283.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0283.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0283.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0283.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0283.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0283.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0283.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0283.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0284.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0284.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0284.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0284.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0284.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0284.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0284.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0284.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0284.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0284.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0284.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0284.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0285.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0285.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0285.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0285.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0285.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0285.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0285.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0285.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0285.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0285.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0285.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0285.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0286.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0286.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0286.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0286.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0286.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0286.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0286.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0286.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0286.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0286.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0286.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0286.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0287.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0287.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0287.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0287.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0287.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0287.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0287.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0287.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0287.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0287.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0287.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0287.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0288.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0288.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0288.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0288.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0288.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0288.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0288.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0288.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0288.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0288.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0288.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0288.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0288.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0288.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0288.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0288.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0288.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0288.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0288.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0288.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0288.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0288.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0288.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0288.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0289.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0289.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0289.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0289.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0289.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0289.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0289.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0289.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0289.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0289.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0289.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0289.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0289.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0289.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0289.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0289.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0289.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0289.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0289.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0289.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0289.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0289.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0289.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0289.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0290.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0290.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0290.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0290.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0290.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0290.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0290.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0290.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0290.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0290.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0290.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0290.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0291.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0291.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0291.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0291.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0291.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0291.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0291.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0291.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0291.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0291.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0291.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0291.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0292.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0292.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0292.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0292.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0292.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0292.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0292.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0292.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0292.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0292.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0292.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0292.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0292.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0292.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0292.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0292.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0292.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0292.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0292.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0292.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0292.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0292.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0292.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0292.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0293.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0293.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0293.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0293.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0293.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0293.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0293.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0293.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0293.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0293.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0293.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0293.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0294.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0294.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0294.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0294.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0294.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0294.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0294.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0294.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0294.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0294.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0294.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0294.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0295.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0295.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0295.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0295.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0295.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0295.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0295.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0295.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0295.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0295.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0295.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0295.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0296.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0296.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0296.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0296.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0296.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0296.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0296.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0296.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0296.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0296.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0296.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0296.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0297.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0297.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0297.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0297.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0297.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0297.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0297.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0297.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0297.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0297.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0297.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0297.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0297.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0297.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0297.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0297.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0297.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0297.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0297.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0297.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0297.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0297.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0297.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0297.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0298.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0298.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0298.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0298.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0298.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0298.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0298.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0298.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0298.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0298.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0298.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0298.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0299.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0299.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0299.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0299.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0299.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0299.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0299.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0299.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0299.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0299.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0299.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0299.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0300.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0300.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0300.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0300.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0300.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0300.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0300.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0300.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0300.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0300.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0300.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0300.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0300.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0300.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0300.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0300.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0300.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0300.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0300.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0300.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0300.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0300.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0300.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0300.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0301.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0301.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0301.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0301.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0301.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0301.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0301.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0301.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0301.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0301.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0301.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0301.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0301.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0301.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0301.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0301.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0301.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0301.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0301.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0301.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0301.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0301.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0301.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0301.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0302.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0302.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0302.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0302.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0302.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0302.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0302.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0302.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0302.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0302.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0302.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0302.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0302.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0302.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0302.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0302.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0302.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0302.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0302.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0302.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0302.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0302.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0302.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0302.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0303.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0303.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0303.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0303.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0303.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0303.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0303.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0303.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0303.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0303.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0303.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0303.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0304.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0304.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0304.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0304.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0304.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0304.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0304.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0304.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0304.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0304.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0304.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0304.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0305.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0305.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0305.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0305.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0305.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0305.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0305.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0305.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0305.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0305.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0305.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0305.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0306.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0306.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0306.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0306.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0306.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0306.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0306.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0306.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0306.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0306.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0306.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0306.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0306.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0306.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0306.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0306.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0306.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0306.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0306.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0306.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0306.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0306.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0306.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0306.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0307.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0307.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0307.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0307.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0307.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0307.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0307.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0307.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0307.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0307.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0307.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0307.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0307.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0307.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0307.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0307.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0307.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0307.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0307.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0307.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0307.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0307.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0307.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0307.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0308.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0308.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0308.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0308.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0308.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0308.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0308.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0308.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0308.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0308.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0308.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0308.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0308.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0308.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0308.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0308.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0308.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0308.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0308.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0308.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0308.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0308.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0308.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0308.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0308.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0308.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0308.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0308.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0308.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0308.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0308.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0308.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0308.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0308.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0308.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0308.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0309.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0309.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0309.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0309.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0309.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0309.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0309.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0309.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0309.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0309.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0309.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0309.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0309.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0309.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0309.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0309.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0309.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0309.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0309.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0309.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0309.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0309.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0309.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0309.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0309.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0309.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0309.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0309.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0309.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0309.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0309.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0309.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0309.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0309.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0309.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0309.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0310.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0310.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0310.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0310.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0310.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0310.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0310.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0310.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0310.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0310.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0310.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0310.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0310.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0310.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0310.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0310.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0310.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0310.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0310.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0310.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0310.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0310.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0310.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0310.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0310.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0310.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0310.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0310.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0310.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0310.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0310.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0310.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0310.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0310.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0310.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0310.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0310.04 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0310.04 [authority-missing]: scenario content authority is absent or stale
+- REQ-0310.04 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0310.04 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0310.04 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0310.04 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0310.04 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0310.04 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0310.04 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0310.04 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0310.04 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0310.04 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0311.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0311.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0311.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0311.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0311.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0311.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0311.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0311.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0311.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0311.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0311.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0311.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0311.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0311.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0311.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0311.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0311.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0311.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0311.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0311.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0311.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0311.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0311.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0311.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0311.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0311.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0311.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0311.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0311.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0311.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0311.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0311.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0311.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0311.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0311.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0311.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0311.04 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0311.04 [authority-missing]: scenario content authority is absent or stale
+- REQ-0311.04 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0311.04 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0311.04 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0311.04 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0311.04 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0311.04 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0311.04 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0311.04 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0311.04 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0311.04 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0312.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0312.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0312.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0312.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0312.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0312.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0312.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0312.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0312.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0312.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0312.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0312.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0312.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0312.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0312.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0312.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0312.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0312.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0312.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0312.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0312.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0312.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0312.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0312.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0313.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0313.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0313.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0313.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0313.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0313.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0313.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0313.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0313.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0313.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0313.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0313.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0313.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0313.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0313.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0313.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0313.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0313.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0313.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0313.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0313.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0313.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0313.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0313.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0314.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0314.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0314.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0314.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0314.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0314.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0314.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0314.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0314.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0314.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0314.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0314.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0314.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0314.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0314.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0314.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0314.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0314.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0314.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0314.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0314.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0314.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0314.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0314.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0315.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0315.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0315.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0315.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0315.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0315.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0315.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0315.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0315.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0315.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0315.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0315.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0315.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0315.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0315.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0315.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0315.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0315.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0315.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0315.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0315.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0315.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0315.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0315.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0316.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0316.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0316.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0316.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0316.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0316.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0316.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0316.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0316.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0316.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0316.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0316.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0316.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0316.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0316.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0316.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0316.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0316.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0316.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0316.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0316.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0316.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0316.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0316.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0316.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0316.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0316.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0316.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0316.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0316.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0316.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0316.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0316.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0316.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0316.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0316.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0317.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0317.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0317.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0317.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0317.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0317.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0317.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0317.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0317.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0317.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0317.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0317.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0317.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0317.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0317.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0317.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0317.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0317.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0317.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0317.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0317.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0317.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0317.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0317.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0317.03 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0317.03 [authority-missing]: scenario content authority is absent or stale
+- REQ-0317.03 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0317.03 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0317.03 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0317.03 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0317.03 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0317.03 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0317.03 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0317.03 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0317.03 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0317.03 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0318.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0318.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0318.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0318.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0318.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0318.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0318.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0318.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0318.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0318.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0318.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0318.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0318.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0318.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0318.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0318.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0318.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0318.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0318.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0318.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0318.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0318.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0318.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0318.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0319.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0319.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0319.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0319.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0319.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0319.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0319.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0319.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0319.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0319.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0319.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0319.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0319.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0319.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0319.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0319.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0319.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0319.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0319.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0319.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0319.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0319.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0319.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0319.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0320.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0320.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0320.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0320.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0320.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0320.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0320.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0320.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0320.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0320.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0320.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0320.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0320.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0320.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0320.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0320.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0320.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0320.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0320.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0320.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0320.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0320.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0320.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0320.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0321.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0321.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0321.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0321.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0321.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0321.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0321.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0321.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0321.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0321.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0321.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0321.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0321.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0321.02 [authority-missing]: scenario content authority is absent or stale
+- REQ-0321.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0321.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0321.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0321.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0321.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0321.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0321.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0321.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0321.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0321.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0322.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0322.01 [authority-missing]: scenario content authority is absent or stale
+- REQ-0322.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0322.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0322.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0322.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0322.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0322.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0322.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0322.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0322.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0322.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0323.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0323.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0323.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0323.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0323.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0323.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0323.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0323.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0323.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0324.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0324.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0324.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0324.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0324.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0324.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0324.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0324.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0324.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0324.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0324.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0325.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0325.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0325.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0325.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0325.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0325.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0325.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0325.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0325.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0325.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0325.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0325.02 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0325.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0325.02 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0325.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0325.02 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0325.02 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0325.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0325.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0325.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0325.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0325.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0326.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0326.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0326.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0326.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0326.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0326.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0326.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0326.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0326.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- REQ-0326.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0326.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0327.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0327.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0327.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0327.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0327.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0327.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0327.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0327.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0327.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0328.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0328.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0328.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0328.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0328.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0328.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0328.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0328.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0328.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0329.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0329.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0329.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0329.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0329.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0329.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0329.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0329.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0329.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0330.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0330.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0330.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0330.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0330.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0330.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0330.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0330.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0330.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0331.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0331.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0331.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0331.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0331.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0331.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0331.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0331.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0331.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0332.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0332.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0332.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0332.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0332.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0332.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0332.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0332.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0332.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0333.01 [unmapped]: no explicit requirement-to-production mapping
+- REQ-0333.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- REQ-0333.01 [unreachable]: production entry/registration/call chain is absent or stale
+- REQ-0333.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- REQ-0333.01 [unpersisted]: persistence behavior/path is absent or stale
+- REQ-0333.01 [unpersisted]: transition behavior/path is absent or stale
+- REQ-0333.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- REQ-0333.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- REQ-0333.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0001.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0001.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0001.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0001.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0001.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0001.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0001.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0001.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0001.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0001.02 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0001.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0001.02 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0001.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0001.02 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0001.02 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0001.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0001.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0001.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0002.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0002.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0002.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0002.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0002.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0002.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0002.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0002.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0002.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0003.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0003.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0003.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0003.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0003.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0003.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0003.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0003.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0003.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0004.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0004.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0004.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0004.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0004.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0004.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0004.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0004.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0004.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0005.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0005.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0005.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0005.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0005.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0005.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0005.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0005.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0005.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0006.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0006.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0006.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0006.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0006.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0006.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0006.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0006.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0006.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0007.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0007.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0007.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0007.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0007.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0007.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0007.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0007.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0007.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0008.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0008.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0008.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0008.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0008.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0008.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0008.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0008.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0008.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0009.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0009.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0009.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0009.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0009.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0009.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0009.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0009.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0009.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0010.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0010.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0010.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0010.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0010.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0010.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0010.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0010.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0010.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0011.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0011.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0011.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0011.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0011.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0011.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0011.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0011.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0011.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0012.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0012.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0012.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0012.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0012.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0012.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0012.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0012.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0012.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0013.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0013.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0013.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0013.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0013.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0013.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0013.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0013.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0013.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0014.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0014.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0014.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0014.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0014.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0014.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0014.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0014.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0014.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0015.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0015.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0015.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0015.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0015.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0015.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0015.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0015.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0015.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0016.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0016.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0016.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0016.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0016.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0016.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0016.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0016.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0016.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0017.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0017.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0017.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0017.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0017.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0017.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0017.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0017.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0017.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0018.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0018.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0018.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0018.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0018.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0018.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0018.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0018.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0018.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0019.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0019.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0019.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0019.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0019.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0019.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0019.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0019.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0019.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0020.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0020.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0020.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0020.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0020.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0020.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0020.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0020.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0020.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0021.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0021.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0021.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0021.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0021.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0021.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0021.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0021.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0021.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0022.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0022.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0022.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0022.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0022.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0022.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0022.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0022.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0022.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0023.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0023.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0023.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0023.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0023.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0023.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0023.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0023.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0023.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0024.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0024.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0024.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0024.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0024.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0024.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0024.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0024.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0024.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0025.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0025.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0025.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0025.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0025.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0025.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0025.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0025.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0025.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0026.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0026.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0026.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0026.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0026.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0026.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0026.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0026.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0026.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0027.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0027.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0027.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0027.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0027.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0027.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0027.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0027.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0027.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0028.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0028.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0028.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0028.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0028.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0028.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0028.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0028.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0028.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0029.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0029.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0029.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0029.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0029.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0029.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0029.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0029.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0029.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0030.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0030.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0030.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0030.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0030.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0030.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0030.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0030.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0030.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0031.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0031.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0031.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0031.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0031.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0031.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0031.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0031.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0031.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0032.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0032.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0032.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0032.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0032.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0032.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0032.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0032.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0032.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0033.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0033.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0033.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0033.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0033.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0033.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0033.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0033.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0033.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0033.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0033.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0033.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0034.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0034.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0034.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0034.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0034.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0034.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0034.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0034.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0034.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0035.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0035.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0035.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0035.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0035.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0035.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0035.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0035.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0035.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0035.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0035.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0035.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0036.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0036.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0036.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0036.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0036.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0036.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0036.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0036.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0036.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0036.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0036.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0036.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0037.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0037.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0037.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0037.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0037.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0037.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0037.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0037.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0037.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0037.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0037.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0037.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0038.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0038.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0038.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0038.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0038.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0038.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0038.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0038.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0038.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0038.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0038.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0038.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0039.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0039.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0039.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0039.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0039.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0039.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0039.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0039.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0039.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0039.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0039.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0039.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0040.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0040.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0040.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0040.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0040.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0040.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0040.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0040.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0040.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0040.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0040.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0040.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0041.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0041.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0041.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0041.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0041.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0041.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0041.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0041.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0041.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0041.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0041.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0041.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0042.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0042.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0042.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0042.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0042.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0042.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0042.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0042.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0042.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0042.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0042.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0042.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0043.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0043.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0043.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0043.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0043.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0043.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0043.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0043.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0043.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0043.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0043.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0043.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0044.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0044.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0044.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0044.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0044.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0044.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0044.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0044.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0044.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0044.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0044.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0044.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0045.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0045.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0045.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0045.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0045.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0045.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0045.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0045.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0045.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0045.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0045.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0045.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0046.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0046.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0046.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0046.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0046.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0046.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0046.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0046.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0046.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0046.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0046.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0046.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0047.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0047.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0047.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0047.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0047.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0047.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0047.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0047.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0047.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0047.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0047.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0047.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0048.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0048.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0048.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0048.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0048.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0048.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0048.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0048.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0048.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0048.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0048.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0048.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0049.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0049.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0049.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0049.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0049.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0049.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0049.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0049.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0049.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0049.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0049.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0049.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0050.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0050.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0050.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0050.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0050.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0050.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0050.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0050.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0050.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0050.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0050.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0050.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0051.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0051.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0051.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0051.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0051.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0051.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0051.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0051.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0051.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0051.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0051.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0051.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0052.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0052.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0052.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0052.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0052.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0052.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0052.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0052.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0052.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0052.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0052.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0052.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0053.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0053.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0053.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0053.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0053.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0053.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0053.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0053.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0053.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0053.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0053.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0053.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0054.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0054.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0054.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0054.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0054.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0054.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0054.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0054.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0054.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0054.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0054.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0054.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0055.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0055.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0055.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0055.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0055.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0055.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0055.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0055.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0055.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0056.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0056.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0056.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0056.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0056.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0056.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0056.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0056.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0056.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0057.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0057.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0057.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0057.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0057.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0057.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0057.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0057.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0057.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0058.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0058.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0058.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0058.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0058.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0058.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0058.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0058.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0058.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0058.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0059.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0059.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0059.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0059.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0059.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0059.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0059.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0059.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0059.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0059.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0060.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0060.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0060.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0060.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0060.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0060.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0060.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0060.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0060.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0060.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0061.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0061.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0061.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0061.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0061.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0061.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0061.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0061.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0061.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0061.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0062.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0062.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0062.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0062.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0062.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0062.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0062.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0062.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0062.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0062.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0063.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0063.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0063.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0063.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0063.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0063.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0063.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0063.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0063.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0063.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0064.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0064.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0064.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0064.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0064.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0064.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0064.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0064.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0064.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0064.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0065.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0065.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0065.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0065.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0065.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0065.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0065.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0065.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0065.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0065.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0066.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0066.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0066.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0066.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0066.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0066.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0066.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0066.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0066.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0066.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0067.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0067.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0067.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0067.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0067.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0067.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0067.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0067.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0067.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0067.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0068.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0068.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0068.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0068.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0068.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0068.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0068.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0068.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0068.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0068.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0069.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0069.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0069.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0069.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0069.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0069.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0069.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0069.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0069.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0069.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0070.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0070.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0070.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0070.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0070.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0070.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0070.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0070.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0070.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0070.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0071.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0071.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0071.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0071.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0071.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0071.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0071.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0071.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0071.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0071.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0072.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0072.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0072.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0072.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0072.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0072.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0072.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0072.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0072.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0072.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0073.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0073.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0073.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0073.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0073.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0073.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0073.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0073.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0073.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0073.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0074.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0074.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0074.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0074.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0074.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0074.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0074.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0074.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0074.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0074.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0075.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0075.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0075.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0075.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0075.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0075.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0075.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0075.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0075.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0075.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0076.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0076.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0076.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0076.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0076.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0076.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0076.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0076.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0076.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0076.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0077.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0077.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0077.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0077.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0077.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0077.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0077.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0077.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0077.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0077.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0078.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0078.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0078.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0078.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0078.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0078.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0078.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0078.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0078.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0078.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0079.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0079.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0079.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0079.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0079.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0079.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0079.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0079.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0079.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0079.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0080.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0080.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0080.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0080.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0080.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0080.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0080.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0080.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0080.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0080.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0081.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0081.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0081.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0081.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0081.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0081.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0081.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0081.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0081.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0081.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0082.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0082.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0082.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0082.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0082.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0082.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0082.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0082.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0082.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0082.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0083.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0083.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0083.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0083.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0083.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0083.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0083.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0083.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0083.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0083.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0084.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0084.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0084.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0084.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0084.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0084.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0084.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0084.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0084.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0084.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0085.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0085.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0085.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0085.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0085.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0085.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0085.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0085.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0085.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0085.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0086.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0086.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0086.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0086.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0086.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0086.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0086.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0086.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0086.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0086.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0087.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0087.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0087.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0087.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0087.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0087.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0087.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0087.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0087.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0087.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0088.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0088.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0088.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0088.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0088.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0088.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0088.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0088.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0088.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0088.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0089.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0089.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0089.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0089.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0089.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0089.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0089.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0089.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0089.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0089.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0090.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0090.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0090.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0090.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0090.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0090.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0090.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0090.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0090.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0090.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0091.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0091.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0091.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0091.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0091.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0091.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0091.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0091.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0091.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0091.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0092.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0092.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0092.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0092.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0092.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0092.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0092.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0092.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0092.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0092.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0093.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0093.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0093.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0093.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0093.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0093.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0093.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0093.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0093.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0093.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0094.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0094.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0094.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0094.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0094.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0094.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0094.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0094.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0094.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0094.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0095.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0095.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0095.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0095.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0095.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0095.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0095.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0095.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0095.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0095.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0096.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0096.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0096.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0096.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0096.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0096.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0096.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0096.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0096.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0096.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0097.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0097.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0097.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0097.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0097.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0097.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0097.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0097.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0097.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0097.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0098.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0098.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0098.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0098.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0098.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0098.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0098.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0098.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0098.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0098.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0099.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0099.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0099.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0099.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0099.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0099.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0099.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0099.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0099.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0099.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0100.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0100.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0100.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0100.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0100.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0100.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0100.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0100.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0100.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0100.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0101.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0101.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0101.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0101.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0101.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0101.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0101.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0101.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0101.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0101.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0101.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0101.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0102.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0102.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0102.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0102.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0102.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0102.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0102.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0102.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0102.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0102.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0102.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0102.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0103.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0103.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0103.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0103.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0103.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0103.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0103.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0103.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0103.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0103.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0103.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0103.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0104.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0104.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0104.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0104.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0104.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0104.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0104.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0104.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0104.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0104.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0104.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0104.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0105.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0105.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0105.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0105.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0105.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0105.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0105.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0105.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0105.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0105.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0105.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0105.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0106.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0106.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0106.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0106.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0106.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0106.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0106.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0106.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0106.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0106.02 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0106.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0106.02 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0106.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0106.02 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0106.02 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0106.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0106.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0106.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0107.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0107.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0107.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0107.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0107.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0107.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0107.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0107.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0107.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0107.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0108.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0108.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0108.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0108.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0108.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0108.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0108.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0108.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0108.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0108.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0109.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0109.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0109.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0109.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0109.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0109.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0109.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0109.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0109.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0109.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0110.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0110.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0110.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0110.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0110.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0110.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0110.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0110.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0110.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0110.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0111.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0111.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0111.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0111.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0111.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0111.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0111.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0111.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0111.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0111.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0112.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0112.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0112.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0112.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0112.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0112.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0112.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0112.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0112.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0112.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0113.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0113.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0113.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0113.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0113.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0113.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0113.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0113.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0113.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0113.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0114.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0114.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0114.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0114.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0114.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0114.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0114.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0114.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0114.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0115.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0115.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0115.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0115.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0115.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0115.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0115.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0115.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0115.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0116.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0116.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0116.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0116.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0116.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0116.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0116.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0116.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0116.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0116.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0116.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0116.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0117.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0117.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0117.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0117.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0117.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0117.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0117.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0117.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0117.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0117.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0117.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0117.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0118.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0118.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0118.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0118.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0118.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0118.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0118.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0118.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0118.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0119.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0119.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0119.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0119.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0119.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0119.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0119.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0119.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0119.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0120.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0120.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0120.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0120.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0120.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0120.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0120.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0120.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0120.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0121.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0121.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0121.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0121.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0121.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0121.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0121.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0121.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0121.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0121.02 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0121.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0121.02 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0121.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0121.02 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0121.02 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0121.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0121.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0121.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0122.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0122.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0122.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0122.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0122.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0122.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0122.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0122.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0122.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0122.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0123.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0123.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0123.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0123.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0123.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0123.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0123.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0123.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0123.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0123.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0123.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0123.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0124.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0124.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0124.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0124.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0124.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0124.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0124.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0124.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0124.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0124.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0124.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0124.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0125.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0125.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0125.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0125.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0125.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0125.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0125.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0125.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0125.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0125.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0125.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0125.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0126.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0126.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0126.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0126.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0126.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0126.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0126.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0126.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0126.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0126.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0126.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0126.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0127.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0127.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0127.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0127.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0127.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0127.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0127.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0127.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0127.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0127.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0127.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0127.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0128.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0128.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0128.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0128.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0128.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0128.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0128.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0128.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0128.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0128.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0128.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0128.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0129.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0129.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0129.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0129.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0129.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0129.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0129.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0129.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0129.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0129.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0129.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0129.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0130.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0130.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0130.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0130.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0130.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0130.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0130.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0130.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0130.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0130.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0130.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0130.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0131.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0131.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0131.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0131.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0131.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0131.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0131.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0131.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0131.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0131.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0132.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0132.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0132.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0132.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0132.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0132.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0132.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0132.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0132.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0132.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0133.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0133.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0133.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0133.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0133.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0133.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0133.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0133.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0133.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0133.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0133.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0133.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0134.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0134.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0134.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0134.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0134.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0134.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0134.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0134.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0134.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0134.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0134.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0134.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0135.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0135.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0135.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0135.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0135.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0135.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0135.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0135.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0135.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0135.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0135.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0135.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0136.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0136.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0136.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0136.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0136.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0136.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0136.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0136.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0136.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0136.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0137.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0137.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0137.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0137.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0137.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0137.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0137.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0137.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0137.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0137.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0137.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0137.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0138.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0138.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0138.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0138.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0138.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0138.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0138.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0138.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0138.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0138.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0138.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0138.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0138.02 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0138.02 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0138.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0138.02 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0138.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0138.02 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0138.02 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0138.02 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0138.02 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0138.02 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0138.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0138.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0139.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0139.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0139.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0139.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0139.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0139.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0139.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0139.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0139.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0139.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0139.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0139.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0140.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0140.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0140.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0140.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0140.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0140.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0140.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0140.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0140.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0140.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0141.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0141.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0141.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0141.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0141.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0141.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0141.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0141.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0141.01 [integration-missing]: stale: current executable production-adapter evidence is absent
+- ROAD-0141.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0141.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0142.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0142.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0142.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0142.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0142.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0142.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0142.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0142.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0142.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0143.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0143.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0143.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0143.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0143.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0143.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0143.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0143.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0143.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- ROAD-0144.01 [unmapped]: no explicit requirement-to-production mapping
+- ROAD-0144.01 [authority-missing]: scenario content authority is absent or stale
+- ROAD-0144.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
+- ROAD-0144.01 [unreachable]: production entry/registration/call chain is absent or stale
+- ROAD-0144.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
+- ROAD-0144.01 [unpersisted]: persistence behavior/path is absent or stale
+- ROAD-0144.01 [unpersisted]: transition behavior/path is absent or stale
+- ROAD-0144.01 [integration-missing]: success: current executable production-adapter evidence is absent
+- ROAD-0144.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0144.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- DEP-combat-settlement-ownership [dependency-uncovered]: Legal combat and City Core destruction update settlement control and reconstruct defenses.
+- DEP-diplomacy-war [dependency-uncovered]: Diplomacy/war authority validates capture and resolves occupations at negotiated peace.
+- DEP-trade-cargo [dependency-uncovered]: Atomic transactions conserve currency and capacity-limited cargo.
+- DEP-piracy-diplomacy [dependency-uncovered]: Prize legality, commissions and polity recognition share war/diplomacy authority.
+- DEP-clock-events-recruitment [dependency-uncovered]: Campaign clock and event/recruitment windows preserve resumed progression.
+- DEP-travel-save-load [dependency-uncovered]: Boundary commit and revisiting a map reconstruct all persistent campaign domains.
+- DEP-governance-defenders [dependency-uncovered]: Office effects and current development bound garrison composition/resources.
+- DEP-ui-modal-pause [dependency-uncovered]: Nested UI pauses clock, AI, combat, travel, economy and events and restores prior pause.
+- DEP-religion-context [dependency-uncovered]: Religion context gates quests, diplomacy, offices, unrest and recruitment.
+- DEP-technology-rosters [dependency-uncovered]: Research/institution state gates roster resolution and defender upgrades.
+- DEP-offices-loyalty [dependency-uncovered]: Appointment history prevents loyalty farming and respects Oathbound.
+- DEP-treasure-discovery-quests [dependency-uncovered]: Persisted treasure resolution anchors clues without leaking hidden locations.
+- DEP-quests-economy-rewards [dependency-uncovered]: Local quests commit bounded world benefits and reject repeatable unique rewards.
+- DEP-allegiance-government-rewards [dependency-uncovered]: Current allegiance and immutable origin gate affordable nonrepeatable rewards.
+- DEP-remote-location-orders [dependency-uncovered]: Remote command preserves character physical identity and ongoing orders.
+- DEP-tradition-controller-transfer [dependency-uncovered]: Controller transfer reapplies traditions to active and abstract forces.
+- DEP-hero-defeat-recovery [dependency-uncovered]: Hero defeat preserves investment and physical assignment uniqueness.
+- DEP-trade-war-clock [dependency-uncovered]: War/blockade, events and campaign time affect quotes without stale/replay arbitrage.
+- DEP-piracy-new-polity [dependency-uncovered]: Founded polity enters sovereignty, government, economy, war, AI and reconstruction.
+- DEP-equipment-technology-trade [dependency-uncovered]: Equipment availability and comparison use local economy and development gates.
+- DEP-ship-progression-logistics [dependency-uncovered]: Individual refits/veterancy preserve vessel identity and resource gates.
+- DEP-ai-history-state [dependency-uncovered]: Historical pressure remains subordinate to authoritative current state and deterministic persistence.
+- DEP-clock-research [dependency-uncovered]: Campaign date modifies research cost without bypassing prerequisites or institutions.
+- DEP-garrison-capture [dependency-uncovered]: Combat consumes garrison authority and City Core capture reconstructs the new controller defense.
+- DEP-garrison-rosters [dependency-uncovered]: Garrisons and field armies consume the same controller and development gated roster.
+- DEP-garrison-economy-clock [dependency-uncovered]: Reinforcement and replenishment consume persistent manpower, supply and campaign time.
+- DEP-capture-administration [dependency-uncovered]: Acquisition installs an eligible acting administrator without changing legal ownership through office assignment.
+- DEP-administration-physical-identity [dependency-uncovered]: Remote offices and local defense share the character physical location without cloning.
+- DEP-administration-rebellion [dependency-uncovered]: Removing an entrenched official uses loyalty, military, territory and event authority with warning.
+- DEP-combat-tradition [dependency-uncovered]: Legal combat credits controller-specific tradition and reapplies modifiers to active and abstract forces.
+- DEP-autosave-transition [dependency-uncovered]: Autosave defers unsafe state changes and boundary travel commits before reconstruction.
+- DEP-recovery-navigation [dependency-uncovered]: Unstuck uses active entity identity and connected navigation zones without moving abstract units.
+- DEP-god-controller-reconstruction [dependency-uncovered]: Recovery protection follows acquired player objects and same-session reconstruction but resets on campaign load.
+- DEP-modal-ai [dependency-uncovered]: Opening and closing modal screens suspends and restores strategic AI processing.
+- DEP-modal-trade-clock [dependency-uncovered]: Modal trade UI suspends economy and event ticks without resetting transaction history.
+- DEP-modal-remote-orders [dependency-uncovered]: Remote management pauses local and strategic simulation while preserving orders and character location.
+- DEP-religion-population-events [dependency-uncovered]: Population, institutions, polity policy and persisted events drive religion influence.
+- DEP-religion-conversion-reputation [dependency-uncovered]: Conversion atomically updates time, faith, cost and reputation without save/load rerolls.
+- DEP-discovery-country-ui [dependency-uncovered]: Known country entry paths apply one discovery filter to government, wars, partners and treaty information.
+- DEP-peace-territory-treasury [dependency-uncovered]: Peace commits only legally owned territory and affordable payments through owning authorities.
+- DEP-treasure-unique-rewards [dependency-uncovered]: Discovery resolves persistent unique rewards without repeatable quest farming.
+- DEP-local-quests-context [dependency-uncovered]: Quest-family eligibility uses settlement economy, offices, garrison and faith context.
+- DEP-local-quests-clock-save [dependency-uncovered]: Offer refill, failure and expiry use campaign time and stable state on inactive maps.
+- DEP-government-reward-resources [dependency-uncovered]: Government rewards check current resources and territorial control at offer and commit.
+- DEP-piracy-trade-pressure [dependency-uncovered]: Prize actions, haven cargo and decaying regional risk affect markets without minting goods.
+- DEP-ship-command-experience [dependency-uncovered]: Individual vessel progression combines captain effects, combat and voyage history with controller tradition.
+- DEP-hero-office-progression [dependency-uncovered]: Heroes retain invested progression, loyalty and physical identity across remote command and civil offices.
+- DEP-quest-map-travel [dependency-uncovered]: Quest route and return assistance uses earned knowledge without teleporting or changing physical location.
+- DEP-inactive-world-simulation [dependency-uncovered]: Unloaded regions retain economy, armies, wars, events and changed settlement state on reconstruction.
+- catalogues [census-mismatch]: settlements: final runtime payload not inspected
+- catalogues [census-mismatch]: polities: final runtime payload not inspected
+- catalogues [census-mismatch]: provinces: final runtime payload not inspected
+- catalogues [census-mismatch]: goods: final runtime payload not inspected
+- catalogues [census-mismatch]: markets: final runtime payload not inspected
+- catalogues [census-mismatch]: military-variants: final runtime payload not inspected
+- catalogues [census-mismatch]: heroes: final runtime payload not inspected
+- catalogues [census-mismatch]: items: final runtime payload not inspected
+- catalogues [census-mismatch]: equipment-sets: final runtime payload not inspected
+- catalogues [census-mismatch]: technologies: final runtime payload not inspected
+- catalogues [census-mismatch]: institutions: final runtime payload not inspected
+- catalogues [census-mismatch]: campaign-quests: final runtime payload not inspected
+- catalogues [census-mismatch]: personal-quests: final runtime payload not inspected
+- catalogues [census-mismatch]: local-quest-families: final runtime payload not inspected
+- catalogues [census-mismatch]: events: final runtime payload not inspected
+- catalogues [census-mismatch]: faiths: final runtime payload not inspected
+- catalogues [census-mismatch]: religion-policies: final runtime payload not inspected
+- catalogues [census-mismatch]: regions: final runtime payload not inspected
+- catalogues [census-mismatch]: regional-instances: final runtime payload not inspected
+- catalogues [census-mismatch]: boundaries: final runtime payload not inspected
+- catalogues [census-mismatch]: routes: final runtime payload not inspected
+- catalogues [census-mismatch]: navigation-zones: final runtime payload not inspected
+- catalogues [census-mismatch]: treasures: final runtime payload not inspected
+- catalogues [census-mismatch]: treasure-locations: final runtime payload not inspected
+- catalogues [census-mismatch]: merchant-archetypes: final runtime payload not inspected
+- catalogues [census-mismatch]: rarities: final runtime payload not inspected
+- catalogues [census-mismatch]: item-effects: final runtime payload not inspected
+- catalogues [census-mismatch]: military-traditions: final runtime payload not inspected
+- catalogues [census-mismatch]: defense-layouts: final runtime payload not inspected
+- catalogues [census-mismatch]: city-cores: final runtime payload not inspected
+- catalogues [census-mismatch]: ship-refits: final runtime payload not inspected
+- catalogues [census-mismatch]: ship-milestones: final runtime payload not inspected
+- catalogues [census-mismatch]: hero-abilities: final runtime payload not inspected
+- catalogues [census-mismatch]: hero-masteries: final runtime payload not inspected
+- catalogues [census-mismatch]: title-styles: final runtime payload not inspected
+- catalogues [census-mismatch]: government-forms: final runtime payload not inspected
+- catalogues [census-mismatch]: pirate-havens: final runtime payload not inspected
+- catalogues [census-mismatch]: strategic-units: final runtime payload not inspected
+- catalogues [census-mismatch]: armies: final runtime payload not inspected
+- catalogues [census-mismatch]: fleets: final runtime payload not inspected
+- catalogues [census-mismatch]: government-profiles: final runtime payload not inspected
+- catalogues [census-mismatch]: treaty-clauses: final runtime payload not inspected
+- catalogues [census-mismatch]: merchant-standing-tiers: final runtime payload not inspected
+- catalogues [census-mismatch]: audio-assets: final runtime payload not inspected
+- catalogues [census-mismatch]: treasure-clues: final runtime payload not inspected
+- catalogues [census-mismatch]: settlement-services: final runtime payload not inspected
+- catalogues [census-mismatch]: timeline-eras: final runtime payload not inspected
+- catalogues [census-mismatch]: timeline-event-definitions: final runtime payload not inspected
+- catalogues [census-mismatch]: timeline-schedules: final runtime payload not inspected
+- catalogues [census-mismatch]: navigation-safe-points: final runtime payload not inspected
+- catalogues [census-mismatch]: initial-unit-navigation: final runtime payload not inspected
+- catalogues [census-mismatch]: settlement-object-templates: final runtime payload not inspected
+- catalogues [census-mismatch]: officers: final runtime payload not inspected
+- catalogues [census-mismatch]: military-runtime-templates: final runtime payload not inspected
+- catalogues [census-mismatch]: character-traits: final runtime payload not inspected
+- catalogues [census-mismatch]: character-skills: final runtime payload not inspected
+- catalogues [census-mismatch]: character-professions: final runtime payload not inspected
+- catalogues [census-mismatch]: relationship-thresholds: final runtime payload not inspected
+- catalogues [census-mismatch]: companion-relationships: final runtime payload not inspected
+- catalogues [census-mismatch]: research-branches: final runtime payload not inspected
+- catalogues [census-mismatch]: polity-research-state: final runtime payload not inspected
+- catalogues [census-mismatch]: province-adoption-state: final runtime payload not inspected
+- catalogues [census-mismatch]: title-grants: final runtime payload not inspected
+- catalogues [census-mismatch]: territorial-holdings: final runtime payload not inspected
+- catalogues [census-mismatch]: allegiances: final runtime payload not inspected
+- catalogues [census-mismatch]: geographic-areas: final runtime payload not inspected
+- catalogues [census-mismatch]: geographic-anchors: final runtime payload not inspected
+- catalogues [census-mismatch]: logical-boundaries: final runtime payload not inspected
+- catalogues [census-mismatch]: quest-locations: final runtime payload not inspected

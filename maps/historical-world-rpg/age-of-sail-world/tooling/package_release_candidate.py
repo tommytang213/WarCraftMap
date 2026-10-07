@@ -28,13 +28,20 @@ from package_wurst_campaign import build_campaign, inspect_campaign, load_campai
 from warcraft_campaign import MpqReader  # noqa: E402
 from package_wurst_map import GENERATOR_VERSION, PackagingError  # noqa: E402
 from wurst_execution import WurstExecutionError, verify_evidence  # noqa: E402
+from integration_evidence import source_identity  # noqa: E402
 import release_save_compatibility  # noqa: E402
 import runtime_acceptance  # noqa: E402
+import requirement_traceability_audit as traceability  # noqa: E402
 
 FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
 PROVENANCE_FORMAT = "warcraftmap_rc_build_provenance_v1"
 CONFIG = PROJECT / "scenario/release/phase9-rc1.json"
+PUBLICATION_BLOCKED_EXIT = 3
+
+
+class CandidatePublicationBlocked(PackagingError):
+    """A validated final build has reported traceability gaps; no ZIP is published."""
 
 
 def sha_bytes(value: bytes) -> str:
@@ -54,14 +61,20 @@ def load_release_config(path: Path = CONFIG) -> dict:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise PackagingError(f"RC configuration stage failed: {error}") from error
-    if data.get("format") != FORMAT or data.get("formatVersion") != 1:
+    if not isinstance(data, dict) or data.get("format") != FORMAT or data.get("formatVersion") != 1:
         raise PackagingError(f"RC configuration stage failed: expected {FORMAT} formatVersion 1")
+    for key in ("requiredGates", "archive", "runtimeTarget", "audit"):
+        if not isinstance(data.get(key), dict):
+            raise PackagingError(f"RC configuration stage failed: {key} must be a JSON object")
     rcid = data.get("releaseCandidateId")
     if not isinstance(rcid, str) or not re.fullmatch(r"[a-z0-9][a-z0-9.-]*", rcid):
         raise PackagingError("RC configuration stage failed: unsafe releaseCandidateId")
     for key in ("campaignManifest", "saveCompatibility"):
-        _source_path(data[key], key)
-    for relative in data.get("releaseDocuments", []):
+        _source_path(data.get(key), key)
+    documents = data.get("releaseDocuments")
+    if not isinstance(documents, list):
+        raise PackagingError("RC configuration stage failed: releaseDocuments must be a list")
+    for relative in documents:
         _source_path(relative, "releaseDocuments")
     archive = data.get("archive", {})
     for key in ("fileName", "campaignPath", "manifestPath", "provenancePath"):
@@ -90,7 +103,7 @@ def _safe_archive_path(value: str) -> bool:
 
 def source_revision(explicit: str | None = None) -> str:
     if explicit:
-        if not re.fullmatch(r"[0-9a-f]{7,64}", explicit.lower()):
+        if not re.fullmatch(r"[0-9a-f]{40}", explicit.lower()):
             raise PackagingError("provenance stage failed: source revision must be a hexadecimal VCS revision")
         return explicit.lower()
     env = os.environ.get("SOURCE_REVISION") or os.environ.get("GITHUB_SHA")
@@ -143,7 +156,7 @@ def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     if gates.get("zeroCampaignBlockers") is not True:
         raise PackagingError("gate stage failed: zero-campaign-blocker gate is not complete")
     runtime = runtime_acceptance.audit_sources()
-    if runtime["status"] != "pass":
+    if runtime["evidenceLevels"]["sourceStatic"]["status"] != "pass":
         raise PackagingError("gate stage failed: player-facing runtime acceptance failed: " +
                              "; ".join(runtime["failures"]))
     coverage = json.loads(_source_path(gates["phase8Content"], "phase8Content").read_text())
@@ -152,9 +165,6 @@ def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     runtime_report = json.loads(_source_path(gates["runtimeAcceptance"], "runtimeAcceptance").read_text())
     if runtime_report != runtime:
         raise PackagingError("gate stage failed: runtime-acceptance report is stale")
-    blocker_report = json.loads(_source_path(gates["releaseBlocker"], "releaseBlocker").read_text())
-    if blocker_report.get("status") != "pass" or blocker_report.get("unresolvedCampaignBlockers") != 0:
-        raise PackagingError("gate stage failed: release-blocker audit does not pass")
     compatibility = json.loads(_source_path(gates["releaseSaveCompatibility"], "releaseSaveCompatibility").read_text())
     recovery = json.loads(_source_path(gates["recoveryDocumentation"], "recoveryDocumentation").read_text())
     current = compatibility.get("matrix", {}).get("campaign", {}).get("current")
@@ -171,9 +181,9 @@ def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     _run_gate("tooling/validate_recovery_documentation.py")
     _run_gate("tooling/check_final_performance_budgets.py", "--profile", "development")
     _run_gate("tooling/check_final_performance_budgets.py", "--profile", "minimum_target")
-    # Re-execute the headless soak and production save-fixture paths, and check
-    # report freshness. Declared itineraries do not establish route execution.
-    _run_gate("tooling/release_blocker_audit.py")
+    # The integration/blocker gate runs after building, with the interpreter
+    # transcript and the exact campaign. A checked-in source-only report cannot
+    # authorize publication, even when its static checks all pass.
     executable_manifest = release_save_compatibility.load_manifest(PROJECT / config["saveCompatibility"])
     fixture_results = [release_save_compatibility.validate_release_fixture(
         release_save_compatibility.expand_fixture(executable_manifest, fixture), executable_manifest["budgets"]
@@ -247,7 +257,14 @@ def _campaign_rows(campaign_path: Path, campaign_config) -> list[dict]:
     return rows
 
 
-def verify_campaign_runtime(campaign_path: Path, campaign_config) -> dict:
+def verify_campaign_runtime(campaign_path: Path, campaign_config, *, revision=None, source_tree_sha256=None) -> dict:
+    # Inspect the campaign browser metadata and nested checksums as well as
+    # its maps. Runtime acceptance can invoke this outside the ZIP packager.
+    if (not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision) or
+            not isinstance(source_tree_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", source_tree_sha256)):
+        raise PackagingError("artifact verification requires a full source revision and source-content digest")
+    before = sha(campaign_path)
+    inspect_campaign(campaign_config, campaign_path)
     campaign = MpqReader(campaign_path)
     inspected = []
     configured = {item.id: item for item in campaign_config.maps}
@@ -267,6 +284,12 @@ def verify_campaign_runtime(campaign_path: Path, campaign_config) -> dict:
                 raise PackagingError(f"runtime acceptance stage failed [{physical.id}]: " +
                                      "; ".join(result["failures"]))
             inspected.append(result)
+            result["artifactSha256"] = sha_bytes(payload)
+            result["sourceRevision"] = revision
+            identity = json.loads(runtime_acceptance._archive_read(Path(nested_file.name), "runtime/build-identity.json"))
+            if identity != {"sourceRevision": revision, "sourceTreeSha256": source_tree_sha256}:
+                raise PackagingError(f"artifact source identity mismatch [{physical.id}]")
+            result["sourceTreeSha256"] = source_tree_sha256
             runtime = json.loads(runtime_acceptance._archive_read(Path(nested_file.name), "runtime/scenario-runtime.json"))
             physical_manifest = json.loads(runtime_acceptance._archive_read(Path(nested_file.name), "runtime/physical-map.json"))
             physical_runtime = runtime.get("physicalMap", {})
@@ -311,9 +334,14 @@ def verify_campaign_runtime(campaign_path: Path, campaign_config) -> dict:
     configured_boundaries = {item.id for item in campaign_config.boundaries}
     if boundary_ids != configured_boundaries:
         raise PackagingError("runtime acceptance stage failed: packaged transition set differs from physical-boundaries.json")
-    return {"status": "pass", "maps": inspected, "origins": len(all_origins or []),
+    if sha(campaign_path) != before:
+        raise PackagingError("campaign artifact changed during verification")
+    return {"status": "pass", "maps": inspected, "origins": len(all_origins or []), "failures": [],
+            "evidenceLevel": "built_artifact_verification",
             "evidenceLevels": ["binary_structure", "packaged_data_consistency", "compiled_text_static_heuristic"],
-            "executionStatus": "not_run",
+            "executionStatus": "completed", "runtimeExecutionStatus": "not_run",
+            "sourceRevision": revision, "sourceTreeSha256": source_tree_sha256,
+            "artifactSha256": before,
             "transitions": len(boundary_ids), "systems": sorted(runtime_acceptance.MANDATORY_SYSTEMS)}
 
 
@@ -349,16 +377,38 @@ def verify_release_archive(path: Path, config: dict) -> None:
         raise PackagingError("release inspection stage failed: unreadable ZIP")
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
-        manifest = json.loads(archive.read(config["archive"]["manifestPath"]))
-        provenance = json.loads(archive.read(config["archive"]["provenancePath"]))
+        def metadata(name):
+            try:
+                value = json.loads(archive.read(name))
+            except (KeyError, ValueError) as error:
+                raise PackagingError(f"release inspection stage failed: missing or invalid metadata: {name}") from error
+            if not isinstance(value, dict):
+                raise PackagingError(f"release inspection stage failed: metadata must be a JSON object: {name}")
+            return value
+
+        manifest = metadata(config["archive"]["manifestPath"])
+        provenance = metadata(config["archive"]["provenancePath"])
         if manifest.get("format") != MANIFEST_FORMAT or provenance.get("format") != PROVENANCE_FORMAT:
             raise PackagingError("release inspection stage failed: metadata format mismatch")
-        if manifest["releaseCandidateId"] != config["releaseCandidateId"]:
+        if manifest.get("releaseCandidateId") != config["releaseCandidateId"]:
             raise PackagingError("release inspection stage failed: RC identifier mismatch")
-        if manifest.get("sourceRevision") != provenance.get("sourceRevision"):
+        revision = provenance.get("sourceRevision")
+        if (not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision) or
+                manifest.get("sourceRevision") != revision):
             raise PackagingError("release inspection stage failed: source revision mismatch")
-        if manifest.get("schemaCompatibility", {}).get("supportedSaveSchemas") != release_save_compatibility.compatibility_matrix()["campaign"]["supportedSources"]:
+        compatibility = manifest.get("schemaCompatibility")
+        if (not isinstance(compatibility, dict) or
+                compatibility.get("supportedSaveSchemas") != release_save_compatibility.compatibility_matrix()["campaign"]["supportedSources"]):
             raise PackagingError("release inspection stage failed: save-schema contract mismatch")
+        artifacts = manifest.get("artifacts")
+        if (not isinstance(artifacts, list) or not artifacts or any(
+                not isinstance(row, dict) or not isinstance(row.get("kind"), str) or
+                not isinstance(row.get("archivePath"), str) or not _safe_archive_path(row["archivePath"]) or
+                type(row.get("bytes")) is not int or row["bytes"] < 0 or
+                not isinstance(row.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) or
+                (row["kind"] == "physical-map" and not isinstance(row.get("mapId"), str))
+                for row in artifacts)):
+            raise PackagingError("release inspection stage failed: malformed artifact metadata")
         payload_rows = [item for item in manifest["artifacts"] if item["kind"] != "physical-map"]
         listed = {item["archivePath"]: item for item in payload_rows}
         metadata_names = {config["archive"]["manifestPath"], config["archive"]["provenancePath"]}
@@ -377,40 +427,99 @@ def verify_release_archive(path: Path, config: dict) -> None:
             campaign_config = load_campaign_config(PROJECT / config["campaignManifest"])
             inspect_campaign(campaign_config, Path(campaign_file.name))
             # Recheck the extracted upload payload, not only the pre-ZIP build.
-            verify_campaign_runtime(Path(campaign_file.name), campaign_config)
+            identity = source_identity(PROJECT, revision)
+            verify_campaign_runtime(Path(campaign_file.name), campaign_config, revision=revision,
+                                    source_tree_sha256=identity["sourceTreeSha256"])
             actual_maps = _campaign_rows(Path(campaign_file.name), campaign_config)
-        recorded_maps = [item for item in manifest["artifacts"] if item["kind"] == "physical-map"]
-        if sorted(recorded_maps, key=lambda row: row["mapId"]) != sorted(actual_maps, key=lambda row: row["mapId"]):
-            raise PackagingError("release inspection stage failed: physical-map metadata/checksums differ from the uploaded campaign")
-        try:
-            execution = json.loads(archive.read("Metadata/wurst-execution.json"))
-            verify_evidence(execution, archive.read("Metadata/wurst-execution.log"), provenance["sourceRevision"])
-            if provenance.get("gates", {}).get("wurstExecution") != "pass":
-                raise WurstExecutionError("release provenance omits required execution gate")
-        except (KeyError, ValueError, WurstExecutionError) as error:
-            raise PackagingError(f"release inspection stage failed: Wurst execution evidence: {error}") from error
+            recorded_maps = [item for item in manifest["artifacts"] if item["kind"] == "physical-map"]
+            if sorted(recorded_maps, key=lambda row: row["mapId"]) != sorted(actual_maps, key=lambda row: row["mapId"]):
+                raise PackagingError("release inspection stage failed: physical-map metadata/checksums differ from the uploaded campaign")
+            # Keep the extracted W3N alive through acceptance revalidation.
+            try:
+                execution = json.loads(archive.read("Metadata/wurst-execution.json"))
+                execution_log = archive.read("Metadata/wurst-execution.log")
+                verify_evidence(execution, execution_log, provenance["sourceRevision"])
+                gates = provenance.get("gates")
+                if not isinstance(gates, dict) or gates.get("wurstExecution") != "pass":
+                    raise WurstExecutionError("release provenance omits required execution gate")
+            except (KeyError, ValueError, WurstExecutionError) as error:
+                raise PackagingError(f"release inspection stage failed: Wurst execution evidence: {error}") from error
+            current = runtime_acceptance.audit_acceptance(
+                execution=execution, execution_log=execution_log, revision=provenance["sourceRevision"],
+                campaign=Path(campaign_file.name))
+            require_candidate_ready(current)
+            for gate in ("runtimeAcceptance", "packagedArtifactVerification", "zeroCampaignBlockers"):
+                if gates.get(gate) != "pass":
+                    raise PackagingError(f"release inspection stage failed: required {gate} gate is incomplete")
+            try:
+                recorded_runtime = json.loads(archive.read("Metadata/runtime-acceptance.json"))
+                recorded_blocker = json.loads(archive.read("Metadata/release-blocker-audit.json"))
+            except (KeyError, ValueError) as error:
+                raise PackagingError("release inspection stage failed: acceptance evidence is missing or invalid") from error
+            if (recorded_runtime != current or
+                    manifest.get("artifactValidation") != current["evidenceLevels"]["builtArtifact"] or
+                    provenance.get("sourceIdentity") != source_identity(PROJECT, provenance["sourceRevision"])):
+                raise PackagingError("release inspection stage failed: stale or incomplete acceptance evidence")
+            from release_blocker_audit import build_report
+            blocker = build_report(execution=execution, execution_log=execution_log,
+                                   revision=provenance["sourceRevision"], campaign=Path(campaign_file.name))
+            if blocker["status"] != "pass" or not blocker["candidateReady"] or recorded_blocker != blocker:
+                raise PackagingError("release inspection stage failed: release blocker evidence does not pass")
+
+            # Recompute from the exact W3N extracted from the upload ZIP. A saved
+            # passing flag, source-tree census or checksummed-but-stale report is
+            # insufficient to authorize publication.
+            try:
+                trace_report = traceability.validate_final(
+                    Path(campaign_file.name), execution, execution_log, provenance["sourceRevision"])
+                if (json.loads(archive.read("Metadata/requirement-traceability.json")) != trace_report or
+                        gates.get("requirementTraceability") != "pass"):
+                    raise ValueError("stale or missing requirement traceability evidence")
+            except (KeyError, ValueError) as error:
+                raise PackagingError(f"release inspection stage failed: {error}") from error
+
+
+def require_candidate_ready(report):
+    try:
+        runtime_acceptance.finalize(report)
+    except runtime_acceptance.RuntimeAcceptanceError as error:
+        raise PackagingError(f"automated candidate acceptance failed: {error}") from error
+    if report["status"] != "pass" or not report["candidateReady"]:
+        raise PackagingError("automated candidate acceptance failed: " + "; ".join(report["failures"]))
 
 
 def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None, revision: str | None = None) -> Path:
     config = load_release_config(config_path)
+    # Do not leave a previous candidate at the publication path after a failed
+    # attempt. Diagnostic W3N packaging remains available independently.
+    clean(config_path)
+    for suffix in (".json", ".md"):
+        (PROJECT / "_build/release/requirement-traceability").with_suffix(suffix).unlink(missing_ok=True)
+    source_trace = traceability.build_report()
+    traceability.write_report(source_trace, PROJECT / "_build/requirement-traceability-source")
+    if any(row["class"] in {"authority-drift", "invalid-mapping"} for row in source_trace["blockers"]):
+        raise PackagingError("requirement traceability inventory is incomplete or invalid")
+    try:
+        return _build_release_candidate(config, grill, revision)
+    finally:
+        # Both campaign builds clean _build. Restore this attempt's source
+        # diagnostics even when compilation fails before a final W3N exists.
+        traceability.write_report(source_trace, PROJECT / "_build/requirement-traceability-source")
+
+
+def _build_release_candidate(config: dict, grill: str | None, revision: str | None) -> Path:
     compatibility, coverage, runtime_report, fixture_results = validate_gates(config)
     campaign_manifest = PROJECT / config["campaignManifest"]
     campaign_config = load_campaign_config(campaign_manifest)
     inputs = authoritative_hashes()
     revision = source_revision(revision)
+    identity = source_identity(PROJECT, revision)
 
     with tempfile.TemporaryDirectory(prefix="aos-rc-") as temporary:
         first_path = Path(temporary) / "first.w3n"
         shutil.copyfile(build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision), first_path)
         first_normalized = normalized_campaign(first_path, campaign_config)
         second = build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision)
-        second_normalized = normalized_campaign(second, campaign_config)
-        artifact_validation = verify_campaign_runtime(second, campaign_config)
-        if first_normalized != second_normalized:
-            difference = sorted(set(first_normalized) | set(second_normalized))
-            difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
-            raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
-
         campaign_bytes = second.read_bytes()
         execution_dir = PROJECT / "_build/wurst-tests"
         try:
@@ -419,11 +528,40 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             verify_evidence(json.loads(execution_bytes), execution_log, revision)
         except (OSError, ValueError, WurstExecutionError) as error:
             raise PackagingError(f"Wurst execution stage failed: {error}") from error
+        trace_report = traceability.audit_final(second, json.loads(execution_bytes), execution_log, revision)
+        # Retain the exhaustive final-artifact report before narrower legacy
+        # checks can stop this attempt on their first missing system marker.
+        second_normalized = normalized_campaign(second, campaign_config)
+        if first_normalized != second_normalized:
+            difference = sorted(set(first_normalized) | set(second_normalized))
+            difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
+            raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
+        # A blocked publication is an expected audit result, but must never
+        # disguise a broken build, stale execution or invalid inventory in CI.
+        if trace_report["executionErrors"] or any(
+                row["class"] in {"authority-drift", "invalid-mapping"} for row in trace_report["blockers"]):
+            raise PackagingError("requirement traceability inventory or execution evidence is invalid")
+        runtime_report = runtime_acceptance.audit_acceptance(
+            execution=json.loads(execution_bytes), execution_log=execution_log, revision=revision, campaign=second)
+        require_candidate_ready(runtime_report)
+        artifact_validation = runtime_report["evidenceLevels"]["builtArtifact"]
+        from release_blocker_audit import build_report
+        blocker_report = build_report(execution=json.loads(execution_bytes), execution_log=execution_log,
+                                      revision=revision, campaign=second)
+        if blocker_report["status"] != "pass" or not blocker_report["candidateReady"]:
+            raise PackagingError("gate stage failed: release-blocker audit does not pass")
+        if source_identity(PROJECT, revision) != identity:
+            raise PackagingError("authoritative sources changed during candidate build")
+        try:
+            traceability.trace.require_ready(trace_report)
+        except ValueError as error:
+            raise CandidatePublicationBlocked(str(error)) from error
         target = config["runtimeTarget"]
         save = compatibility["matrix"]
         provenance = {
             "format": PROVENANCE_FORMAT, "formatVersion": 1,
             "releaseCandidateId": config["releaseCandidateId"], "sourceRevision": revision,
+            "sourceIdentity": identity,
             "scenarioVersion": config["scenarioVersion"],
             "scenarioSchemaVersion": json.loads((PROJECT / "scenario/world/world.json").read_text())["schemaVersion"],
             "saveSchemaVersion": save["campaign"]["current"],
@@ -441,9 +579,14 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime_report["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "not_run_separate_manual_smoke"},
         }
         provenance["gates"]["wurstExecution"] = "pass"
+        provenance["gates"]["requirementTraceability"] = "pass"
         payloads = {config["archive"]["campaignPath"]: campaign_bytes,
                     "Metadata/wurst-execution.json": execution_bytes,
-                    "Metadata/wurst-execution.log": execution_log}
+                    "Metadata/wurst-execution.log": execution_log,
+                    "Metadata/requirement-traceability.json": canonical(trace_report),
+                    "Metadata/requirement-traceability.md": traceability.trace.render_markdown(trace_report).encode(),
+                    "Metadata/runtime-acceptance.json": canonical(runtime_report),
+                    "Metadata/release-blocker-audit.json": canonical(blocker_report)}
         for relative in config["releaseDocuments"]:
             payloads[f"Documentation/{Path(relative).name}"] = (PROJECT / relative).read_bytes()
         rows = [{"filename": PurePosixPath(name).name, "archivePath": name, "kind": "campaign" if name.endswith(".w3n") else "documentation", "bytes": len(value), "sha256": sha_bytes(value)} for name, value in sorted(payloads.items())]
@@ -467,10 +610,19 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         payloads[config["archive"]["provenancePath"]] = canonical(provenance)
         audit_payloads(payloads, config)
         output = PROJECT / "_build/release" / config["archive"]["fileName"]
-        _write_zip(output, payloads)
-    verify_release_archive(output, config)
+        publish_verified_archive(output, payloads, config)
     print(f"release candidate: {output}")
     return output
+
+
+def publish_verified_archive(output: Path, payloads: dict[str, bytes], config: dict) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # Verify the completed ZIP before atomically exposing the publication path.
+    with tempfile.TemporaryDirectory(prefix=".candidate-", dir=output.parent) as directory:
+        pending = Path(directory) / "candidate.zip"
+        _write_zip(pending, payloads)
+        verify_release_archive(pending, config)
+        pending.replace(output)
 
 
 def clean(config_path: Path = CONFIG) -> None:
@@ -488,6 +640,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         clean() if args.command == "clean" else build_release_candidate(grill=args.grill, revision=args.source_revision)
+    except CandidatePublicationBlocked as error:
+        print(f"release candidate publication blocked: {error}", file=sys.stderr)
+        return PUBLICATION_BLOCKED_EXIT
     except (PackagingError, OSError, KeyError, ValueError, zipfile.BadZipFile) as error:
         print(f"release candidate packaging failed: {error}", file=sys.stderr)
         return 1
