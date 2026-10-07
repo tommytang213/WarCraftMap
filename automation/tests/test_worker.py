@@ -3,6 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+from automation.warcraftmap_agent.closure import Closure
+
+CLEAN_CLOSURE = Closure("a" * 40, True, {})
 
 from automation.warcraftmap_agent.worker import (
     Config,
@@ -441,8 +444,8 @@ class WorkerTests(unittest.TestCase):
         issue = {"number": 8, "title": "[planned] Phase 8: release", "body": ""}
         incomplete = "## Phase 7 — Integration\n\n- [x] done\n- [ ] pending\n\n## Phase 8 — RC\n- [ ] release\n"
         complete = incomplete.replace("- [ ] pending", "- [x] pending")
-        self.assertEqual(eligible_planned_issues([issue], incomplete, {}), [])
-        self.assertEqual(eligible_planned_issues([issue], complete, {}), [issue])
+        self.assertEqual(eligible_planned_issues([issue], incomplete, {}, CLEAN_CLOSURE), [])
+        self.assertEqual(eligible_planned_issues([issue], complete, {}, CLEAN_CLOSURE), [issue])
 
     def test_all_planned_dependencies_block_until_closed(self):
         issue = {
@@ -451,9 +454,9 @@ class WorkerTests(unittest.TestCase):
         }
         roadmap = "## Phase 7 — Integration\n- [x] done\n\n## Phase 8 — RC\n- [ ] release\n"
         self.assertEqual(planned_dependency_numbers(issue), {224, 225})
-        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "OPEN", 225: "CLOSED"}), [])
-        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "OPEN"}), [])
-        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "CLOSED"}), [issue])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "OPEN", 225: "CLOSED"}, CLEAN_CLOSURE), [])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "OPEN"}, CLEAN_CLOSURE), [])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {224: "CLOSED", 225: "CLOSED"}, CLEAN_CLOSURE), [issue])
 
     def test_dry_run_reports_eligibility_without_mutation_and_promotion_is_idempotent(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -468,18 +471,21 @@ class WorkerTests(unittest.TestCase):
             issue = {"number": 8, "title": "[planned] Phase 8: release", "body": "", "url": "u", "createdAt": "c"}
             with mock.patch("automation.warcraftmap_agent.worker.list_planned_issues", return_value=[issue]), \
                  mock.patch("automation.warcraftmap_agent.worker.run") as mutation:
-                self.assertEqual(promote_planned_issues(config, dry_run=True), [issue])
+                self.assertEqual(promote_planned_issues(config, dry_run=True, closure=CLEAN_CLOSURE), [issue])
                 mutation.assert_not_called()
             with mock.patch("automation.warcraftmap_agent.worker.list_planned_issues", side_effect=[[issue], []]), \
+                 mock.patch("automation.warcraftmap_agent.worker.list_history", return_value=[]), \
+                 mock.patch("automation.warcraftmap_agent.worker.default_branch", return_value="main"), \
+                 mock.patch("automation.warcraftmap_agent.worker.remote_branch_oid", return_value=CLEAN_CLOSURE.revision), \
                  mock.patch("automation.warcraftmap_agent.worker.run") as mutation:
-                self.assertEqual(promote_planned_issues(config), [issue])
-                self.assertEqual(promote_planned_issues(config), [])
+                self.assertEqual(promote_planned_issues(config, closure=CLEAN_CLOSURE), [issue])
+                self.assertEqual(promote_planned_issues(config, closure=CLEAN_CLOSURE), [])
                 mutation.assert_called_once()
 
     def test_general_planned_issue_is_not_promoted(self):
         issue = {"number": 9, "title": "[planned] General cleanup", "body": ""}
         roadmap = "## Phase 7 — Integration\n- [x] done\n"
-        self.assertEqual(eligible_planned_issues([issue], roadmap, {}), [])
+        self.assertEqual(eligible_planned_issues([issue], roadmap, {}, CLEAN_CLOSURE), [])
 
     def test_plan_preserves_phase_and_dependency_order(self):
         plan = {

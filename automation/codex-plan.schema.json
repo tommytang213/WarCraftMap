@@ -12,12 +12,13 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["kind", "title", "body", "question"],
+        "required": ["kind", "title", "body", "question", "blocker_keys"],
         "properties": {
           "kind": {"enum": ["agent-ready", "needs-design"]},
           "title": {"type": "string", "minLength": 1},
           "body": {"type": "string"},
-          "question": {"type": "string"}
+          "question": {"type": "string"},
+          "blocker_keys": {"type": "array", "items": {"type": "string"}, "maxItems": 4, "uniqueItems": true}
         }
       }
     }

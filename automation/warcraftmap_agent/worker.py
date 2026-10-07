@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .budget import budget_available, recent_runs, usage_summary
+from .closure import Closure, REPORTS, build_closure, is_open, marked_keys
 
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
@@ -263,8 +264,12 @@ def planned_dependency_numbers(issue: dict[str, Any]) -> set[int]:
 
 def eligible_planned_issues(
     planned: list[dict[str, Any]], roadmap: str, dependency_states: dict[int, str],
+    closure: Closure | None = None,
 ) -> list[dict[str, Any]]:
     """Find reservations whose preceding phase and explicit dependencies are complete."""
+    # Roadmap checkboxes and closed issues never substitute for release evidence.
+    if closure is None or closure.active:
+        return []
     eligible = []
     for issue in planned:
         phase = planned_issue_phase(issue)
@@ -277,8 +282,13 @@ def eligible_planned_issues(
     return eligible
 
 
-def promote_planned_issues(config: Config, dry_run: bool = False) -> list[dict[str, Any]]:
+def promote_planned_issues(config: Config, dry_run: bool = False, closure: Closure | None = None) -> list[dict[str, Any]]:
     """Promote eligible existing issues in place and return those issues."""
+    if closure is None:
+        context = planning_context(config)
+        closure = context["closure"]
+    if closure.active:
+        return []
     planned = list_planned_issues(config)
     dependency_states: dict[int, str] = {}
     for number in sorted({number for issue in planned for number in planned_dependency_numbers(issue)}):
@@ -289,13 +299,22 @@ def promote_planned_issues(config: Config, dry_run: bool = False) -> list[dict[s
             # An inaccessible or invalid dependency is not evidence that it is complete.
             dependency_states[number] = "OPEN"
     eligible = eligible_planned_issues(
-        planned, roadmap_path(config.repo_root).read_text(encoding="utf-8"), dependency_states,
+        planned, roadmap_path(config.repo_root).read_text(encoding="utf-8"), dependency_states, closure,
     )
-    if not dry_run:
-        for issue in eligible:
-            title = PLANNED.sub("", issue["title"]).strip()
-            run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[agent-ready] {title}"], cwd=config.repo_root)
-    return eligible
+    if dry_run:
+        return eligible
+    promoted = []
+    for issue in eligible:
+        latest = Closure(closure.revision, closure.fresh, closure.blockers,
+                         list_history(config, "issue"), list_history(config, "pr"), closure.reports)
+        # History refreshes and preceding promotions take time. Recheck main
+        # after those operations for every mutation, not once for the batch.
+        if latest.active or remote_branch_oid(config.repo_root, default_branch(config.repo_root)) != closure.revision:
+            break
+        title = PLANNED.sub("", issue["title"]).strip()
+        run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[agent-ready] {title}"], cwd=config.repo_root)
+        promoted.append(issue)
+    return promoted
 
 
 def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> int:
@@ -338,23 +357,47 @@ def normalized_question(question: str) -> str:
 def prepare_plan_items(
     plan: dict[str, Any], existing_titles: list[str], limit: int,
     existing_questions: list[str] | None = None,
+    closure: Closure | None = None,
 ) -> list[dict[str, str]]:
     """Validate/deduplicate a planner result while preserving roadmap order."""
     if plan.get("outcome") == "exhausted":
+        if closure is not None and closure.active:
+            raise ValueError("exhausted is forbidden while release closure is unresolved")
         return []
     seen = {normalized_work_title(title) for title in existing_titles}
     seen_questions = {normalized_question(question) for question in (existing_questions or []) if question}
     prepared: list[dict[str, str]] = []
     design_seen = False
+    claimed: set[str] = set()
     for raw in plan.get("issues", []):
         if len(prepared) >= limit:
             break
         kind = raw.get("kind")
+        keys = set(raw.get("blocker_keys", []))
+        if closure is not None and closure.active:
+            if not keys or not keys <= set(closure.actionable[:limit]):
+                raise ValueError("closure plans must address actionable blockers before optional expansion")
+            if len(keys) > 4:
+                raise ValueError("split closure work into implementation-sized repairs (at most four blocker identities)")
+            if keys & claimed:
+                continue
+        elif keys:
+            raise ValueError("plan names blockers absent from the current closure queue")
         clean_title = READY.sub("", NEEDS_DESIGN.sub("", PLANNED.sub("", str(raw.get("title", "")).strip()))).strip()
         key = normalized_work_title(clean_title)
         if not clean_title or not key or key in seen:
             continue
         seen.add(key)
+        body = re.sub(r"(?m)^Closure (?:blocker|revision):[^\n]*\n?", "", str(raw.get("body", ""))).strip()
+        if keys and closure is not None:
+            body += "\n\n## Closure findings\n\n"
+            for blocker_key in sorted(keys):
+                finding = closure.blockers[blocker_key]
+                body += f"- {blocker_key}: {finding.title}\n"
+                body += "  Audits: " + ", ".join(finding.reports) + "\n"
+            body += "\n\n" + "\n".join(f"Closure blocker: {key}" for key in sorted(keys))
+            body += f"\nClosure revision: {closure.revision}\n\n"
+            body += "After merge, regenerate release-blocker, runtime-acceptance and requirement-traceability audits on the new main revision. A closed issue or merged PR does not establish blocker closure.\n"
         if kind == "needs-design":
             question = str(raw.get("question", "")).strip()
             if not question or question.count("?") != 1:
@@ -364,34 +407,85 @@ def prepare_plan_items(
                 continue
             seen_questions.add(question_key)
             design_seen = True
-            prepared.append({"title": f"[needs-design] {clean_title}", "body": str(raw.get("body", "")).strip() + "\n\n## Decision required\n\n" + question, "question": question})
+            prepared.append({"title": f"[needs-design] {clean_title}", "body": body + "\n\n## Decision required\n\n" + question, "question": question})
+            claimed.update(keys)
             continue
         if kind != "agent-ready":
             raise ValueError(f"unsupported planned issue kind: {kind!r}")
-        body = str(raw.get("body", "")).strip()
         if design_seen and "independent of" not in body.casefold():
             continue
         if "acceptance criteria" not in body.casefold() or "automated validation" not in body.casefold():
             raise ValueError("agent-ready plan items require acceptance criteria and automated validation")
         prepared.append({"title": f"[agent-ready] {clean_title}", "body": body, "question": ""})
+        claimed.update(keys)
     return prepared
+
+
+def list_history(config: Config, kind: str) -> list[dict[str, Any]]:
+    """Read complete history, growing gh's limit until no entries are omitted."""
+    fields = "number,title,body,state,url,createdAt,closedAt"
+    if kind == "pr":
+        fields += ",mergedAt,mergeCommit,closingIssuesReferences"
+    limit = max(config.issue_limit, 100)
+    while True:
+        rows = gh_json(config.repo_root, [kind, "list", "--state", "all", "--limit", str(limit), "--json", fields])
+        if len(rows) < limit:
+            return rows
+        limit *= 2
+
+
+def read_closure(config: Config, issues: list[dict], prs: list[dict]) -> Closure:
+    project = roadmap_path(config.repo_root).parent.parent
+    bundle: dict[str, Any] = {"reports": {}}
+    # Read saved findings even if regeneration cannot run. Missing/old PASS
+    # reports cannot authorize ordinary planning or release promotion.
+    for name, relative in REPORTS.items():
+        try:
+            bundle["reports"][name] = {"recorded": json.loads((project / relative).read_text())}
+        except (OSError, ValueError):
+            bundle["reports"][name] = {}
+    revision = remote_branch_oid(config.repo_root, default_branch(config.repo_root))
+    head = run(["git", "rev-parse", "HEAD"], cwd=config.repo_root).stdout.strip()
+    status = run(["git", "status", "--porcelain"], cwd=config.repo_root).stdout.strip()
+    current = bool(revision) and revision == head and not status
+    if current:
+        try:
+            generated = run([sys.executable, str(project / "tooling/planning_audit.py"),
+                             "--source-revision", revision], cwd=config.repo_root, timeout=300)
+            bundle = json.loads(generated.stdout)
+        except (RuntimeError, ValueError, OSError, subprocess.TimeoutExpired) as exc:
+            for report in bundle["reports"].values():
+                report["error"] = f"audit regeneration failed: {exc}"
+        # A merge or checkout change during the audits invalidates closure.
+        current = (remote_branch_oid(config.repo_root, default_branch(config.repo_root)) == revision and
+                   run(["git", "rev-parse", "HEAD"], cwd=config.repo_root).stdout.strip() == revision and
+                   not run(["git", "status", "--porcelain"], cwd=config.repo_root).stdout.strip())
+    return build_closure(bundle, revision, issues, prs, checkout_current=current)
 
 
 def planning_context(config: Config) -> dict[str, Any]:
     """Collect issue/PR history used with the authoritative repository files."""
-    issues = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,state,url,createdAt,closedAt"])
-    prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,state,url,createdAt,mergedAt,closedAt"])
+    issues = list_history(config, "issue")
+    prs = list_history(config, "pr")
+    closure = read_closure(config, issues, prs)
     history = run(["git", "log", "--oneline", "--decorate", "-100"], cwd=config.repo_root).stdout
     status = run(["git", "status", "--short"], cwd=config.repo_root).stdout
-    return {"issues": issues, "pull_requests": prs, "git_history": history, "git_status": status}
+    return {"issues": issues, "pull_requests": prs, "git_history": history, "git_status": status, "closure": closure}
 
 
 def planning_prompt(context: dict[str, Any], requested: int) -> str:
+    context = dict(context)
+    closure = context.get("closure")
+    context["closure"] = closure.planning_view(requested) if closure is not None else None
     return f"""Plan the next implementation-sized GitHub issues for WarCraftMap.
 
-Read ROADMAP.md, DESIGN_LOCK.md, ARCHITECTURE.md, AGENTS.md, and the current repository before planning. Treat those files and the GitHub/repository history below as authoritative. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
+FIRST read the release-blocker, runtime-acceptance and requirement-traceability reports and the freshly regenerated closure findings below, plus open/closed issue and PR history. These findings are the authoritative closure queue, ahead of ROADMAP.md checkboxes or optional content expansion. Read DESIGN_LOCK.md, ARCHITECTURE.md and AGENTS.md for implementation constraints.
 
-Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue planning unrelated roadmap work, and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. Do not create repeated per-region needs-design questions for geography/content scope when DESIGN_LOCK.md already provides a reusable global rule; derive region-specific boundaries, compression, historical coverage, settlements, routes, terrain, and borders from the locked rules plus historical/geographic evidence and performance constraints. Ask the player only for a genuinely new material gameplay/design choice that cannot be resolved from those authorities. If no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
+When closure.active is true, return only implementation-sized repairs for the supplied closure candidates, with their exact identities in blocker_keys. Group at most four closely related identities per issue. Preserve dependencies; blocked findings become candidates only after their prerequisites pass a fresh audit. Do not refill with optional content to meet queue depth. Never return exhausted while closure is active, even when all repairs are already represented or need design. Return planned with no issues in that case. Closed work whose finding persists on a freshly audited new main revision needs a scoped follow-up referencing the previous issue/PR; never repeat the original implementation claim. A merged PR alone is not evidence of closure. Planned release/launch work (including #397) must wait for a freshly regenerated zero-blocker state and closed repair issues.
+
+Only when closure.active is false, resume ordinary roadmap/content planning, using an empty blocker_keys list. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
+
+Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue independent blocker repairs (or roadmap work once closure is clean), and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. Do not create repeated per-region needs-design questions for geography/content scope when DESIGN_LOCK.md already provides a reusable global rule; derive region-specific boundaries, compression, historical coverage, settlements, routes, terrain, and borders from the locked rules plus historical/geographic evidence and performance constraints. Ask the player only for a genuinely new material gameplay/design choice that cannot be resolved from those authorities. Only if closure is clean and no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
 
 GitHub and repository history:
 {json.dumps(context, sort_keys=True)}
@@ -453,11 +547,18 @@ def notify_design_blocker(config: Config, issue: dict[str, Any], question: str) 
         raise RuntimeError(f"design notification failed ({result.returncode}): {detail}")
 
 
-def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
+def create_plan_issues(config: Config, items: list[dict[str, str]], closure: Closure | None = None) -> int:
     created = 0
     for item in items:
-        current = gh_json(config.repo_root, ["issue", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "number,title,body,url,state"] )
-        prs = gh_json(config.repo_root, ["pr", "list", "--state", "all", "--limit", str(config.issue_limit), "--json", "title"] )
+        current = list_history(config, "issue")
+        prs = list_history(config, "pr")
+        if closure is not None:
+            if remote_branch_oid(config.repo_root, default_branch(config.repo_root)) != closure.revision:
+                raise ValueError("main advanced during planning; regenerate audits before creating work")
+            latest = Closure(closure.revision, closure.fresh, closure.blockers, current, prs, closure.reports)
+            keys = marked_keys(item)
+            if latest.active and (not keys or any(key not in latest.actionable for key in keys)):
+                continue
         existing = {normalized_work_title(entry["title"]) for entry in [*current, *prs]}
         if normalized_work_title(item["title"]) in existing:
             continue
@@ -470,7 +571,10 @@ def create_plan_issues(config: Config, items: list[dict[str, str]]) -> int:
             }
             if question_key and question_key in historical_questions:
                 continue
-        result = run(["gh", "issue", "create", "--title", item["title"], "--body", item["body"]], cwd=config.repo_root)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8") as body_file:
+            body_file.write(item["body"])
+            body_file.flush()
+            result = run(["gh", "issue", "create", "--title", item["title"], "--body-file", body_file.name], cwd=config.repo_root)
         created += 1
         if NEEDS_DESIGN.match(item["title"]):
             url = result.stdout.strip().splitlines()[-1]
@@ -532,10 +636,16 @@ def select_issue(
     max_validation_repair_attempts: int = 5,
     max_ci_repair_attempts: int = 5,
     max_conflict_attempts: int = 5,
+    closure: Closure | None = None,
 ) -> dict[str, Any] | None:
     blockers = open_design_numbers or set()
+    if closure is not None:
+        closed = {int(row["number"]) for row in closure.issues if not is_open(row)}
+        blockers = blockers | {number for issue in issues for number in issue_blocker_numbers(issue) if number not in closed}
     for issue in issues:
         if not READY.match(str(issue.get("title", ""))):
+            continue
+        if closure is not None and not closure.permits_issue(issue):
             continue
         if issue_blocker_numbers(issue) & blockers:
             continue
@@ -983,9 +1093,11 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
         record.pop("cleanup_errors", None)
 
 
-def service_open_prs(config: Config, state: dict[str, Any]) -> bool:
+def service_open_prs(config: Config, state: dict[str, Any], allowed_issues: set[int] | None = None) -> bool:
     """Merge or recover one tracked open PR per worker invocation."""
     for number, record in state["issues"].items():
+        if allowed_issues is not None and int(number) not in allowed_issues:
+            continue
         pr = record.get("pr")
         if not pr:
             continue
@@ -1093,29 +1205,55 @@ def main(argv: list[str] | None = None) -> int:
         state_path = config.state_dir / "state.json"
         state = load_state(state_path)
         state["runs"] = recent_runs(state["runs"], utcnow())
-        promoted = promote_planned_issues(config, dry_run=args.dry_run)
+        # Audit and inspect full history on every wake, including a healthy queue
+        # and cached design exhaustion. Optional work must not bypass closure.
+        context = planning_context(config)
+        closure = context["closure"]
+        if closure.active:
+            state.pop("planning_exhausted_for_blockers", None)
+        closed_numbers = {int(item["number"]) for item in context["issues"] if not is_open(item)}
+        # PR recovery and merging must obey the same dependency/design gates
+        # as implementation selection; a ready PR cannot bypass a missing rule.
+        allowed_pr_issues = {int(row["number"]) for row in context["issues"]
+                             if READY.match(row["title"]) and closure.permits_issue(row)
+                             and issue_blocker_numbers(row) <= closed_numbers}
+        if not args.dry_run and service_open_prs(config, state, allowed_pr_issues):
+            # Next wake regenerates all audits on the post-merge main revision.
+            save_state(state_path, state)
+            return 0
+        promoted = promote_planned_issues(config, dry_run=args.dry_run, closure=closure)
         if args.dry_run:
             for issue in promoted:
                 print(f"planned promotion: would make #{issue['number']} [agent-ready] {PLANNED.sub('', issue['title']).strip()}")
-        issues = list_issues(config)
+        if promoted and not args.dry_run:
+            context["issues"] = list_history(config, "issue")
+        open_issues = [item for item in context["issues"] if is_open(item)]
+        issues = sorted((item for item in open_issues if READY.match(item["title"])),
+                        key=lambda item: (item["createdAt"], item["number"]))
         reconcile_ready_issue_states(issues, state)
         refresh_validation_repair_bases(config, state)
-        needs_design = list_needs_design_issues(config)
+        needs_design = [item for item in open_issues if NEEDS_DESIGN.match(item["title"])]
         design_numbers = {int(item["number"]) for item in needs_design}
+        # Dependencies on any open or inaccessible issue block execution, not
+        # just needs-design issues. Audit prerequisites additionally gate closure.
+        dependency_numbers = {number for item in issues for number in issue_blocker_numbers(item)} - closed_numbers
         selected = select_issue(
-            issues, state, config.max_attempts, design_numbers,
+            issues, state, config.max_attempts, dependency_numbers,
             config.max_validation_repair_attempts,
-            config.max_ci_repair_attempts, config.max_conflict_attempts,
+            config.max_ci_repair_attempts, config.max_conflict_attempts, closure,
         )
-        independent_ready_count = sum(not (issue_blocker_numbers(issue) & design_numbers) for issue in issues)
-        refill_count = queue_refill_count(independent_ready_count, bool(needs_design))
-        if design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
+        independent_ready_count = sum(not (issue_blocker_numbers(issue) & dependency_numbers) for issue in issues)
+        refill_count = (min(QUEUE_TARGET, len(closure.actionable)) if closure.active else
+                        queue_refill_count(independent_ready_count, bool(needs_design)))
+        if not closure.active and design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
             refill_count = 0
         if args.dry_run:
             if selected:
                 print(f"next task: #{selected['number']} {selected['title']} ({selected['url']})")
             elif refill_count:
-                print(f"queue low: would plan up to {refill_count} issue(s) to reach {QUEUE_TARGET}")
+                print(f"would plan up to {refill_count} {'closure repair' if closure.active else 'roadmap'} issue(s)")
+            elif closure.active:
+                print("release closure pending: repairs, dependencies or fresh audit evidence remain unresolved")
             elif needs_design:
                 blocker = needs_design[0]
                 print(f"no independent work; design blocked: #{blocker['number']} {blocker['title']} ({blocker['url']})")
@@ -1130,9 +1268,6 @@ def main(argv: list[str] | None = None) -> int:
                 config.max_weekly_runs,
             )
             print(reason)
-            return 0
-        if service_open_prs(config, state):
-            save_state(state_path, state)
             return 0
         # Never let queue replenishment pre-empt implementation work that is
         # already ready and independent of any open design blocker.
@@ -1156,13 +1291,16 @@ def main(argv: list[str] | None = None) -> int:
             state["runs"].append(run_entry)
             save_state(state_path, state)
             try:
-                context = planning_context(config)
                 plan = invoke_planner(config, context, refill_count, run_entry)
                 existing_titles = [item["title"] for item in context["issues"]]
                 existing_titles.extend(item["title"] for item in context["pull_requests"])
                 existing_questions = [question for item in context["issues"] if (question := decision_question(item.get("body") or ""))]
-                items = prepare_plan_items(plan, existing_titles, refill_count, existing_questions)
-                created = create_plan_issues(config, items)
+                items = prepare_plan_items(plan, existing_titles, refill_count, existing_questions, closure)
+                if plan.get("outcome") == "exhausted":
+                    latest = planning_context(config)["closure"]
+                    if latest.revision != closure.revision or latest.active:
+                        raise ValueError("closure changed during planning; exhausted cannot be accepted")
+                created = create_plan_issues(config, items, closure)
                 if plan.get("outcome") == "exhausted":
                     state["planning_exhausted_for_blockers"] = sorted(design_numbers)
                     print("roadmap exhausted; no further planned work remains")
@@ -1174,13 +1312,13 @@ def main(argv: list[str] | None = None) -> int:
             save_state(state_path, state)
             return 0
         selected = select_issue(
-            issues, state, config.max_attempts, design_numbers,
+            issues, state, config.max_attempts, dependency_numbers,
             config.max_validation_repair_attempts,
-            config.max_ci_repair_attempts, config.max_conflict_attempts,
+            config.max_ci_repair_attempts, config.max_conflict_attempts, closure,
         )
         if not selected:
             save_state(state_path, state)
-            print("no eligible [agent-ready] issue")
+            print("release closure pending; no unblocked repair is ready" if closure.active else "no eligible [agent-ready] issue")
             return 0
         available, reason = budget_available(
             state["runs"],
