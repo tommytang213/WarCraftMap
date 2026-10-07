@@ -1,0 +1,152 @@
+package CampaignRegistration
+
+import ScenarioData
+import CampaignHandoff
+import PlayableCampaignRuntime
+import PlayableTrade
+import LiveTradeAccess
+import CommandRouter
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import PlayableCountryInteractions
+import ReligionRuntime
+import PlayablePiracy
+import CampaignPiracyAuthority
+
+/** Founding bridge into the same campaign authorities used by normal states.
+ * Captured settlement/force records remain the military and territorial source
+ * of truth; the country runtime supplies treasury, diplomacy and war/peace. */
+public class CampaignPiratePolityAuthority implements PiratePolityAuthority
+	PlayableCountryInteractionRuntime countries
+	PlayerCampaignIdentity identity
+	MilitarySettlementRuntime military
+	construct(PlayableCountryInteractionRuntime c,PlayerCampaignIdentity i,MilitarySettlementRuntime m)
+		countries=c
+		identity=i
+		military=m
+	override function foundIndependentPolity(PiratePolityState polity) returns boolean
+		// The individual player's controller is independent of government service.
+		// Validate the entire transaction, including all transfer prerequisites,
+		// before creating a country or touching any territory or allegiance.
+		if polity == null or not identity.hasOrigin() or polity.id == "player" or countries.polityIndex(polity.id) >= 0 or countries.polityCount >= 512 or military.controllerInUse(polity.id) or not validTerritories(polity, military, true)
+			return false
+		countries.registerPolity(polity.id, 0)
+		var start = 0
+		for i = 0 to StringLength(polity.foundingTerritoryIds)
+			if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+				military.transferSovereignty(SubString(polity.foundingTerritoryIds, start, i), polity.id)
+				start = i + 1
+		countries.discover(polity.id)
+		identity.changeAllegiance(polity.id)
+		return true
+	override function validateReconciliation(PiratePolityState polity, string militarySnapshot) returns boolean
+		// Use the owning parser so legacy settlements and pair wars follow the
+		// same versioned migration as campaign validation and reconstruction.
+		let detached = military.parseSnapshot(militarySnapshot)
+		if detached == null
+			return false
+		let valid = validTerritories(polity, detached, false) and (countries.polityIndex(polity.id) >= 0 or countries.polityCount < 512)
+		detached.dispose()
+		return valid
+	function validTerritories(PiratePolityState polity, MilitarySettlementRuntime candidate, boolean founding) returns boolean
+		if polity == null or polity.id == "player" or not polity.validFoundingHistory()
+			return false
+		var start = 0
+		var newOffices = 0
+		for i = 0 to StringLength(polity.foundingTerritoryIds)
+			if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+				let territory = SubString(polity.foundingTerritoryIds, start, i)
+				if candidate.settlementIndex(territory) < 0
+					return false
+				if founding
+					if not candidate.canTransferSovereignty(territory, "player")
+						return false
+				if founding or polity.legacyFoundingHistory
+					if candidate.forceIndex("core:" + territory) < 0
+						return false
+					if candidate.administratorIndex(territory) < 0
+						newOffices++
+				start = i + 1
+		return candidate.administratorCount + newOffices <= 1024
+	override function reconcileFoundedPolity(PiratePolityState polity) returns boolean
+		if not validTerritories(polity, military, false) or (countries.polityIndex(polity.id) < 0 and countries.polityCount >= 512)
+			return false
+		// Historical grants are not current territorial authority. Even a lost
+		// capital remains valid history. Preserve title, control and allegiance.
+		if countries.polityIndex(polity.id) < 0
+			countries.registerPolity(polity.id,0)
+		countries.discover(polity.id)
+		if polity.legacyFoundingHistory
+			// Old founding changed only the settlement controller. Repair derived
+			// registrations from CURRENT control, never from the historical grant.
+			var start = 0
+			for i = 0 to StringLength(polity.foundingTerritoryIds)
+				if i == StringLength(polity.foundingTerritoryIds) or SubString(polity.foundingTerritoryIds, i, i + 1) == ","
+					military.reconcileSettlementRegistrations(SubString(polity.foundingTerritoryIds, start, i))
+					start = i + 1
+		return true
+	override function setRecognition(string polityId,string countryId,string status)
+		countries.discover(countryId)
+
+/** Commits peace into the persistent military/settlement authority.  Territory
+ * clauses use cede:settlement_id:grantor_polity_id:beneficiary_polity_id; the
+ * country screen remains only a projection over this state. */
+public class CampaignCountryPeaceAuthority implements CountryPeaceAuthority
+	MilitarySettlementRuntime military
+	construct(MilitarySettlementRuntime military)
+		this.military = military
+	override function commitPeace(string conflictId, string terms) returns boolean
+		let conflict = military.conflictIndex(conflictId)
+		if conflict < 0 or military.conflicts[conflict].settled
+			return false
+		if terms.startsWith("cede:")
+			let remainder = SubString(terms, 5, StringLength(terms))
+			let first = remainder.indexOf(":")
+			if first <= 0
+				return false
+			let parties = SubString(remainder, first + 1, StringLength(remainder))
+			let second = parties.indexOf(":")
+			if second <= 0
+				return false
+			let settlementId = SubString(remainder, 0, first)
+			let grantor = SubString(parties, 0, second)
+			let beneficiary = SubString(parties, second + 1, StringLength(parties))
+			if not military.canCede(conflictId, settlementId, grantor, beneficiary)
+				return false
+			return military.commitPeace(conflictId, settlementId, beneficiary)
+		if terms == "ceasefire"
+			return military.commitPeace(conflictId, "", "")
+		return false
+
+
+/** Production registration order, also executed by the startup regressions.
+ * No loads or new-campaign callbacks may run inside this phase. */
+public function registerCampaignDomains(PlayableCampaignServices campaign, WarcraftRpgRuntime rpg, MilitarySettlementRuntime military, RpgProjectionPort projections) returns PlayableTradeRuntime
+	if campaign.registered
+		return campaign.extension castTo PlayableTradeRuntime
+	configureGeneratedReligion(campaign.state.religion)
+	configureGeneratedPiracy(campaign.state.piracy)
+	configureGeneratedCountryInteractions(campaign.countries)
+	let trade = new PlayableTradeRuntime()
+	configureGeneratedTrade(trade)
+	campaign.registerExtension(trade)
+	configureMilitarySettlementScenario(military)
+	campaign.state.setMilitarySettlementRuntime(military)
+	campaign.countries.setMilitaryAuthority(military)
+	// Choose the actual projection slice without creating default objects yet.
+	military.activeRegionId = campaign.physicalMapId
+	campaign.countries.setPeaceAuthority(new CampaignCountryPeaceAuthority(military))
+	campaign.state.piracy.setPolityAuthority(new CampaignPiratePolityAuthority(campaign.countries, campaign.identity, military))
+	campaign.state.piracy.setActionAuthority(new CampaignPiracyActionAuthority(campaign.state,military,trade))
+	configureGeneratedRpg(rpg)
+	configureGeneratedInteractions(rpg.interactions)
+	rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)
+	trade.access = new LiveTradeAccess(campaign.state)
+	trade.access.cargoActors = new WarcraftTradeCargoActors(military)
+	rpg.setProjectionPort(projections)
+	campaign.state.setRpgRuntime(rpg)
+	military.setRpgRuntime(rpg)
+	configureGeneratedOrigins(campaign.origins)
+	configureGeneratedArrivals(campaign.state)
+	campaign.finishRegistration()
+	return trade

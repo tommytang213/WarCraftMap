@@ -52,8 +52,10 @@ class RequiredWurstChecksTests(unittest.TestCase):
         self.assertIn("frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a", arguments)
         script = arguments[-1]
         self.assertIn("tar -C /tmp/historical-world-rpg/age-of-sail-world -xf -", script)
+        self.assertIn("tar -C /tmp/historical-world-rpg/conformance-campaign -xf -", script)
         self.assertIn("chown -R wurstuser:wurstuser /tmp/historical-world-rpg", script)
         self.assertIn('su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"', script)
+        self.assertIn("python3 _shared/tooling/validate_framework_fixture.py conformance-campaign", script)
         self.assertNotIn("grill install wurstscript", script)
         self.assertNotIn("chown -R wurstuser:wurstuser /source", script)
 
@@ -61,21 +63,29 @@ class RequiredWurstChecksTests(unittest.TestCase):
         result = self.run_checks(37)
         self.assertEqual(37, result.returncode, result.stdout + result.stderr)
 
-    def container_packaging_result(self, status, transcript):
+    def container_packaging_result(self, status, transcript, *, fixture_status=None, fixture_logs=None):
         self.run_checks(0)
         arguments = json.loads((self.root / "docker.json").read_text())
         # Execute the real packaging/diagnostic shell block with a recording su
         # boundary; dependency installation and source copying are separate.
         script = arguments[-1].split("validation_status=0", 1)[1]
-        container_project = self.root / "container-project"
+        container_category = self.root / "container"
+        container_project = container_category / "age-of-sail-world"
         log = container_project / "_build/wurst-tests/execution.log"
         log.parent.mkdir(parents=True)
         if transcript is not None:
             log.write_text(transcript)
-        self.executable("su", f"#!/bin/sh\nexit {status}\n")
+        for relative, contents in (fixture_logs or {}).items():
+            fixture_log = container_category / "conformance-campaign" / relative
+            fixture_log.parent.mkdir(parents=True, exist_ok=True)
+            fixture_log.write_text(contents)
+        if fixture_status is None:
+            fixture_status = status
+        self.executable("su", f"#!{sys.executable}\nimport sys\n"
+                        f"sys.exit({fixture_status} if 'validate_framework_fixture.py' in sys.argv[-1] else {status})\n")
         (self.bin / "cat").symlink_to(shutil.which("cat"))
         script = "validation_status=0" + script.replace(
-            "/tmp/historical-world-rpg/age-of-sail-world", str(container_project))
+            "/tmp/historical-world-rpg", str(container_category))
         return subprocess.run(["/bin/sh", "-eu", "-c", script], env=self.env,
                               capture_output=True, text=True)
 
@@ -89,6 +99,19 @@ class RequiredWurstChecksTests(unittest.TestCase):
         result = self.container_packaging_result(29, None)
         self.assertEqual(29, result.returncode, result.stdout + result.stderr)
         self.assertEqual("", result.stdout + result.stderr)
+
+    def assert_fixture_failure_diagnostic(self, relative):
+        transcript = f"{relative}: FAILED - TIMEOUT\n"
+        result = self.container_packaging_result(
+            0, None, fixture_status=41, fixture_logs={relative: transcript})
+        self.assertEqual(41, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(transcript, result.stdout)
+
+    def test_fixture_failure_propagates_and_preserves_execution_log(self):
+        self.assert_fixture_failure_diagnostic("_build/wurst-tests/execution.log")
+
+    def test_mutation_failure_propagates_and_preserves_execution_log(self):
+        self.assert_fixture_failure_diagnostic("_build/mutation/campaign/_build/wurst-tests/execution.log")
 
     def test_container_success_does_not_replay_execution_log(self):
         result = self.container_packaging_result(0, "Tests succeeded: 228/228\n")

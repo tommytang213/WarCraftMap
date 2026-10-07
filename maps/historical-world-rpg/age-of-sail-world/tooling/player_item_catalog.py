@@ -28,6 +28,7 @@ def scenario_references():
         for path in paths: result.update(_all_ids(json.loads((ROOT/path).read_text())))
         return result
     return {
+      "goods":ids("scenario/economy/global-goods.json"),
       "regions":set(REGIONS),
       "cultures":{"portuguese","english","scottish","french","german","italian","maghrebi","sahelian","ethiopian","swahili","ottoman","persian","rajput","deccani"},
       "controllers":ids("scenario/politics/europe-1450.json","scenario/politics/africa-1450.json","scenario/politics/middle-east-india-1450.json")|{"mysore_kingdom"},
@@ -38,7 +39,7 @@ def scenario_references():
       "settlements":ids("scenario/settlements/europe-1450.json","scenario/settlements/africa-1450.json","scenario/settlements/middle-east-india-1450.json")}
 
 def build_report(data):
-    player_items.validate_catalog(data); items=data["items"]
+    player_items.validate_catalog(data, bulk_good_ids=scenario_references()["goods"]); items=data["items"]
     by_region=Counter(); by_subregion=Counter(); by_era=Counter(); by_arch=Counter(); by_slot=Counter(); by_level=Counter(); by_prov=Counter(); by_set=Counter(); by_rarity=Counter(); by_category=Counter(); by_unique=Counter(); by_source=Counter(); by_role=Counter(); by_historical=Counter()
     for item in items:
         regions=item["requirements"].get("regionIds",REGIONS)

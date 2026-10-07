@@ -55,17 +55,21 @@ def source_revision(project: Path, explicit: str | None = None) -> str:
     return value
 
 
-def discover(compile_root: Path, *, allow_empty: bool = False) -> list[dict]:
+def discover(compile_root: Path, *, allow_empty: bool = False,
+             sources: dict[str, Path] | None = None) -> list[dict]:
     tests = []
+    if sources is None:
+        sources = {path.relative_to(compile_root).as_posix(): path
+                   for path in (compile_root / "wurst").rglob("*.wurst")}
     # Preserve newlines while removing comments, strings and rawcode literals.
     ignored = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
-    for path in sorted((compile_root / "wurst").rglob("*.wurst")):
+    for relative, path in sorted(sources.items()):
         code = ignored.sub(lambda m: re.sub(r"[^\n]", " ", m[0]), path.read_text())
         matches = list(re.finditer(r"@test\s+function\s+(\w+)\s*\(", code))
         if len(matches) != len(re.findall(r"@test\b", code)):
             raise WurstExecutionError(f"unrecognized test declaration in {path.name}")
         for match in matches:
-            tests.append({"id": path.relative_to(compile_root).as_posix() + ":" + match[1],
+            tests.append({"id": relative + ":" + match[1],
                           "line": code[:match.start()].count("\n") + 1})
     ids = [row["id"] for row in tests]
     if (not tests and not allow_empty) or len(ids) != len(set(ids)):

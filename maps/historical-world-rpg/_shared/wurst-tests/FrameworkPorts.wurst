@@ -1,0 +1,205 @@
+package FrameworkPorts
+import CampaignSaveManager
+import CampaignHandoff
+import BoundaryArrival
+import CampaignTimeline
+import CommandRouter
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import ReligionRuntime
+import PartyLocations
+import PhysicalInteraction
+
+public class StartupStorage implements CampaignSaveStorage
+	string array[32] keys
+	string array[32] values
+	int count = 0
+	int writes = 0
+	string failKey = ""
+	function find(string key) returns int
+		for i = 0 to count - 1
+			if keys[i] == key
+				return i
+		return -1
+	override function contains(string key) returns boolean
+		return find(key) >= 0
+	override function read(string key) returns string
+		let i = find(key)
+		if i < 0
+			return ""
+		return values[i]
+	override function writeTransactional(string key, string value) returns boolean
+		if failKey == key
+			failKey = ""
+			return false
+		var i = find(key)
+		if i < 0
+			i = count
+			keys[i] = key
+			count++
+		values[i] = value
+		writes++
+		return true
+	override function diagnostic() returns string
+		return "injected commit failure"
+
+/** Only native/UI/storage boundaries are recorded. Authority, generated
+ * registrations, selector writer, startup consumer and codec are production. */
+public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, CampaignPartyProjection, RpgProjectionPort, TechnologyEffectPort, ReligionModifierPort, MilitarySettlementAdapter, OriginSelectionPresentation, InteractionActors, CampaignTimelineListener
+	CampaignClock clock
+	string expectedClock = ""
+	PlayerCampaignIdentity selectorIdentity
+	StartupStorage handoff
+	int loads = 0
+	int spawns = 0
+	int activePlayers = 0
+	real x = 0.
+	real y = 0.
+	string destination = ""
+	boolean failProjection = false
+	boolean failAfterFirstMember = false
+	boolean closed = false
+	boolean arrivalAvailable = true
+	boolean blockOnePoint = false
+	real blockedX = 0.
+	real blockedY = 0.
+	int savedPlayers = 0
+	real savedX = 0.
+	real savedY = 0.
+	real array[2048] memberX
+	real array[2048] memberY
+	boolean array[2048] represented
+	real array[2048] previousX
+	real array[2048] previousY
+	boolean array[2048] previousRepresented
+	override function pathable(real x, real y, int movement) returns boolean
+		return arrivalAvailable and (not blockOnePoint or x != blockedX or y != blockedY)
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			previousX[i] = memberX[i]
+			previousY[i] = memberY[i]
+			previousRepresented[i] = represented[i]
+		savedPlayers = activePlayers
+		savedX = x
+		savedY = y
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			memberX[i] = previousX[i]
+			memberY[i] = previousY[i]
+			represented[i] = previousRepresented[i]
+		activePlayers = savedPlayers
+		x = savedX
+		y = savedY
+		rpg.reconcile("player")
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		skip
+	override function load(string path)
+		selectorIdentity.hasOrigin().assertTrue()
+		handoff.contains(HANDOFF_REQUEST).assertTrue()
+		destination = path
+		loads++
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		return represented[index]
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return memberX[index]
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return memberY[index]
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
+		if expectedClock != ""
+			clock.captureState().assertEquals(expectedClock)
+		(rpg.heroes.count > 0 and rpg.inventory.definitionCount > 0 and rpg.projections != null).assertTrue()
+		if failProjection
+			return false
+		this.x = locations.entries[0].x
+		this.y = locations.entries[0].y
+		for i = 0 to rpg.heroes.count - 1
+			represented[i] = false
+		for i = 0 to locations.count - 1
+			let value = locations.entries[i]
+			let index = rpg.heroes.indexOf(value.id)
+			represented[index] = true
+			memberX[index] = value.x
+			memberY[index] = value.y
+			if failAfterFirstMember
+				return false
+		activePlayers = locations.count
+		spawns++
+		rpg.reconcile("player")
+		return activePlayers > 0
+	override function clear(WarcraftRpgRuntime rpg)
+		activePlayers = 0
+		for i = 0 to rpg.heroes.count - 1
+			represented[i] = false
+	override function beginPartyLoad()
+		skip
+	override function rollbackPartyLoad()
+		skip
+	override function commitPartyLoad()
+		skip
+	override function clearEquipmentLayer()
+		skip
+	override function applyEquipment(string heroId, string itemId, int power)
+		skip
+	override function applyEquipmentSet(string heroId,string setId, int power)
+		skip
+	override function clearGuidanceLayer()
+		skip
+	override function applyQuestGuidance(string questId, string precision, string regionId, string destinationId)
+		skip
+	override function clearTreasureKnowledgeLayer()
+		skip
+	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered)
+		skip
+	override function applyTechnology(string controllerId, string effectId, int magnitude)
+		skip
+	override function clearTechnologyLayer(string controllerId)
+		skip
+	override function clearReligionModifiers(string characterId)
+		skip
+	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)
+		skip
+	override function beginLoad()
+		skip
+	override function rollbackLoad()
+		skip
+	override function commitLoad()
+		skip
+	override function playerForController(string controllerId, boolean localDefense) returns player
+		return Player(0)
+	override function createRepresentation(RuntimeForce runtimeForce, player owner) returns unit
+		return null
+	override function forceIdForRepresentation(int representation) returns string
+		return ""
+	override function representationId(string stableId) returns int
+		return 0
+	override function removeRepresentation(string stableId)
+		skip
+	override function changeRepresentationOwner(string stableId, player owner)
+		skip
+	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+		skip
+	override function protectRepresentation(string stableId, boolean shouldProtect)
+		skip
+	override function showManagement(player viewer, string heading, string body)
+		skip
+	override function show(string heading, string rows, int page, int pages)
+		skip
+	override function showError(string message)
+		skip
+	override function close()
+		closed = true
+
+	int events = 0
+	string lastEvent = ""
+	override function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
+		events++
+		lastEvent = eventId
+	override function present(int actor, player owner) returns boolean
+		return represented[actor]
+	override function x(int actor) returns real
+		return memberX[actor]
+	override function y(int actor) returns real
+		return memberY[actor]
+	override function movement(int actor) returns int
+		return 0

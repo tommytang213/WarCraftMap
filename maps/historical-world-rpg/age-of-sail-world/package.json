@@ -15,13 +15,89 @@
       "builder": "tooling/build_custom_2d.py"
     },
     "regionalTerrain": [
-      {"id": "europe", "source": "scenario/terrain/europe.json"},
-      {"id": "africa", "source": "scenario/terrain/africa.json"},
-      {"id": "middle_east_india", "source": "scenario/terrain/middle-east-india.json"},
-      {"id": "southeast_asia", "source": "scenario/terrain/southeast-asia.json"},
-      {"id": "east_asia", "source": "scenario/terrain/east-asia.json"},
-      {"id": "americas_caribbean", "source": "scenario/terrain/americas-caribbean.json"},
-      {"id": "pacific", "source": "scenario/terrain/pacific.json"}
+      {
+        "id": "europe",
+        "source": "scenario/terrain/europe.json"
+      },
+      {
+        "id": "africa",
+        "source": "scenario/terrain/africa.json"
+      },
+      {
+        "id": "middle_east_india",
+        "source": "scenario/terrain/middle-east-india.json"
+      },
+      {
+        "id": "southeast_asia",
+        "source": "scenario/terrain/southeast-asia.json"
+      },
+      {
+        "id": "east_asia",
+        "source": "scenario/terrain/east-asia.json"
+      },
+      {
+        "id": "americas_caribbean",
+        "source": "scenario/terrain/americas-caribbean.json"
+      },
+      {
+        "id": "pacific",
+        "source": "scenario/terrain/pacific.json"
+      }
+    ],
+    "settlements": [
+      {
+        "source": "scenario/settlements/africa-1450.json",
+        "geography": "scenario/geography/africa.json",
+        "regionId": "africa"
+      },
+      {
+        "source": "scenario/settlements/americas-caribbean-1450.json",
+        "geography": "scenario/geography/americas_caribbean.json",
+        "regionId": "americas-caribbean"
+      },
+      {
+        "source": "scenario/settlements/east-asia-1450.json",
+        "geography": "scenario/geography/east_asia.json",
+        "regionId": "east-asia"
+      },
+      {
+        "source": "scenario/settlements/europe-1450.json",
+        "geography": "scenario/geography/europe.json",
+        "regionId": "europe"
+      },
+      {
+        "source": "scenario/settlements/middle-east-india-1450.json",
+        "geography": "scenario/geography/middle_east_india.json",
+        "regionId": "middle-east-india"
+      },
+      {
+        "source": "scenario/settlements/pacific-1450.json",
+        "geography": "scenario/geography/pacific.json",
+        "regionId": "pacific"
+      },
+      {
+        "source": "scenario/settlements/southeast-asia-1450.json",
+        "geography": "scenario/geography/southeast_asia.json",
+        "regionId": "southeast-asia"
+      }
+    ],
+    "catalogues": {
+      "inventory": "scenario/inventory/player-use-catalog.json",
+      "treasures": "scenario/treasures/age-of-sail.json",
+      "religion": "scenario/religion.json",
+      "piracy": "scenario/naval/piracy.json"
+    },
+    "initiallyKnownRegionIds": [
+      "europe"
+    ],
+    "politics": [
+      "scenario/politics/africa-1450.json",
+      "scenario/politics/americas-caribbean-1450.json",
+      "scenario/politics/east-asia-1450.json",
+      "scenario/politics/europe-1450.json",
+      "scenario/politics/middle-east-india-1450.json",
+      "scenario/politics/pacific-1450.json",
+      "scenario/politics/southeast-asia-1450.json"
     ]
   },
   "outputDirectory": "_build/release",
@@ -37,6 +113,7 @@
       "Age of Sail: The World - development bootstrap loaded.",
       "WC3Compatibility: required Warcraft III",
       "v3.0"
-    ]
+    ],
+    "cacheFile": "AgeOfSailCampaign.w3v"
   }
 }

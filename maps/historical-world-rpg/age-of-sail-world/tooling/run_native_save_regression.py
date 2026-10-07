@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--require-runtime", action="store_true")
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
-    oracle = regression.run_headless_cycle(config["loads"], "fleet:vasco")
+    oracle = regression.run_headless_cycle(config["loads"], "fleet:sample_fleet")
     decisions = {str(item): regression.save_decision(item) for item in config["safeTransactions"] + config["unsafeTransactions"]}
     if not oracle["passed"]:
         emit({"status": "failure", "kind": "headless_oracle_failure", "oracle": oracle}, args.output)

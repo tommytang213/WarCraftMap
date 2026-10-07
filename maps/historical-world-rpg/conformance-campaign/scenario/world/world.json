@@ -1,0 +1,409 @@
+{
+  "quests": [
+    {
+      "id": "reed_delivery",
+      "title": "A Short Delivery",
+      "summary": "Visit the local board and return.",
+      "initialStageId": "reed_deliver",
+      "stages": [
+        {
+          "id": "reed_deliver",
+          "title": "Deliver",
+          "objectiveIds": [
+            "reed_visit"
+          ],
+          "nextStageIds": []
+        }
+      ],
+      "objectives": [
+        {
+          "id": "reed_visit",
+          "description": "Visit the board.",
+          "conditionId": "visit_location",
+          "entityRefs": [
+            {
+              "kind": "settlement",
+              "id": "reed_harbor"
+            }
+          ]
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": [],
+      "journal": {
+        "giver": {
+          "kind": "settlement",
+          "id": "reed_harbor"
+        },
+        "turnIn": {
+          "kind": "settlement",
+          "id": "reed_harbor"
+        },
+        "destinations": {
+          "reed_visit": {
+            "precision": "exact",
+            "regionId": "reed_west",
+            "locationId": "reed_board"
+          }
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "reed_market_day",
+      "title": "Market Day",
+      "repeatable": false,
+      "triggers": [
+        {
+          "id": "reed_due",
+          "conditionId": "campaign_date",
+          "entityRefs": []
+        }
+      ],
+      "prerequisites": [],
+      "outcomes": []
+    }
+  ],
+  "navigationZones": [],
+  "navigationSafePoints": [],
+  "activeUnitNavigationStates": [],
+  "polities": [
+    {
+      "id": "reed_union",
+      "name": "Reed Union",
+      "adjective": "West",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Steward",
+      "capitalSettlementId": "reed_harbor",
+      "provinceIds": [
+        "reed_harbor_district"
+      ]
+    },
+    {
+      "id": "stone_union",
+      "name": "Stone Union",
+      "adjective": "East",
+      "sovereignTier": "duke",
+      "nativeSovereignTitle": "Steward",
+      "capitalSettlementId": "stone_station",
+      "provinceIds": [
+        "stone_station_district"
+      ]
+    }
+  ],
+  "provinces": [
+    {
+      "id": "reed_harbor_district",
+      "name": "Reed Harbor District",
+      "administrativeType": "district",
+      "legalOwnerPolityId": "reed_union",
+      "controllerPolityId": "reed_union",
+      "settlementIds": [
+        "reed_harbor"
+      ]
+    },
+    {
+      "id": "stone_station_district",
+      "name": "Stone Station District",
+      "administrativeType": "district",
+      "legalOwnerPolityId": "stone_union",
+      "controllerPolityId": "stone_union",
+      "settlementIds": [
+        "stone_station"
+      ]
+    }
+  ],
+  "settlementServiceDefinitions": [
+    {
+      "id": "market",
+      "name": "Market"
+    },
+    {
+      "id": "quest_hub",
+      "name": "Quest Board"
+    }
+  ],
+  "settlementObjectTemplates": [
+    {
+      "id": "reed_core_template",
+      "kind": "city_core"
+    },
+    {
+      "id": "reed_defense_template",
+      "kind": "defense"
+    }
+  ],
+  "cityCores": [
+    {
+      "id": "reed_harbor_core",
+      "objectTemplateId": "reed_core_template"
+    },
+    {
+      "id": "stone_station_core",
+      "objectTemplateId": "reed_core_template"
+    }
+  ],
+  "defenseLayouts": [
+    {
+      "id": "reed_harbor_defense",
+      "objectTemplateIds": [
+        "reed_defense_template"
+      ]
+    },
+    {
+      "id": "stone_station_defense",
+      "objectTemplateIds": [
+        "reed_defense_template"
+      ]
+    }
+  ],
+  "settlements": [
+    {
+      "id": "reed_harbor",
+      "name": "Reed Harbor",
+      "kind": "town",
+      "provinceId": "reed_harbor_district",
+      "legalOwnerPolityId": "reed_union",
+      "controllerPolityId": "reed_union",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "reed_harbor_core",
+      "defenseLayoutId": "reed_harbor_defense",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "reed_west_field"
+    },
+    {
+      "id": "stone_station",
+      "name": "Stone Station",
+      "kind": "town",
+      "provinceId": "stone_station_district",
+      "legalOwnerPolityId": "stone_union",
+      "controllerPolityId": "stone_union",
+      "capturable": true,
+      "civilianFacilitiesInvulnerable": true,
+      "cityCoreId": "stone_station_core",
+      "defenseLayoutId": "stone_station_defense",
+      "serviceIds": [
+        "market",
+        "quest_hub"
+      ],
+      "regionalInstanceId": "reed_east_field"
+    }
+  ],
+  "officers": [],
+  "strategicUnits": [],
+  "armies": [],
+  "fleets": [],
+  "traits": [
+    {
+      "id": "reed_patient",
+      "name": "Patient",
+      "description": "A patient courier."
+    }
+  ],
+  "skills": [
+    {
+      "id": "reed_pathfinding",
+      "name": "Pathfinding",
+      "description": "Knows local paths."
+    }
+  ],
+  "professions": [
+    {
+      "id": "reed_courier",
+      "name": "Courier",
+      "description": "Carries messages."
+    }
+  ],
+  "personalQuests": [],
+  "characters": [
+    {
+      "id": "reed_runner",
+      "displayName": "Reed Runner",
+      "biography": "An invented courier for framework validation.",
+      "traitIds": [
+        "reed_patient"
+      ],
+      "skills": [
+        {
+          "skillId": "reed_pathfinding",
+          "rating": 25
+        }
+      ],
+      "professionIds": [
+        "reed_courier"
+      ],
+      "personalQuestIds": [],
+      "loyalty": {
+        "score": 60,
+        "permanentState": "none"
+      },
+      "allegiancePolityId": "reed_union",
+      "recruited": false,
+      "availabilityWindow": {
+        "startDate": "0900-01-01",
+        "endDate": "0901-12-31"
+      }
+    }
+  ],
+  "relationshipThresholds": [],
+  "companionRelationships": [],
+  "researchBranches": [],
+  "technologies": [],
+  "institutions": [],
+  "polityResearchStates": [
+    {
+      "id": "reed_union_research",
+      "polityId": "reed_union",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    },
+    {
+      "id": "stone_union_research",
+      "polityId": "stone_union",
+      "completedTechnologyIds": [],
+      "establishedInstitutionIds": [],
+      "researchProgress": []
+    }
+  ],
+  "provinceAdoptionStates": [
+    {
+      "id": "reed_harbor_district_adoption",
+      "provinceId": "reed_harbor_district",
+      "adoption": []
+    },
+    {
+      "id": "stone_station_district_adoption",
+      "provinceId": "stone_station_district",
+      "adoption": []
+    }
+  ],
+  "titleStyles": [],
+  "titleGrants": [],
+  "territorialHoldings": [],
+  "allegiances": [],
+  "questLocations": [
+    {
+      "id": "reed_board",
+      "regionId": "reed_west",
+      "settlementId": "reed_harbor",
+      "position": {
+        "x": 32,
+        "y": 32
+      }
+    }
+  ],
+  "schemaVersion": 9,
+  "timeline": {
+    "calendar": "proleptic_gregorian",
+    "startDate": "0900-01-01",
+    "endDate": "0901-12-31",
+    "initialDate": "0900-01-01",
+    "eras": [
+      {
+        "id": "reed_era",
+        "name": "Reed Era",
+        "startDate": "0900-01-01",
+        "endDate": "0901-12-31"
+      }
+    ],
+    "eventDefinitions": [
+      {
+        "id": "reed_market_day"
+      }
+    ],
+    "schedules": [
+      {
+        "id": "reed_market_schedule",
+        "eventId": "reed_market_day",
+        "firstDate": "0900-01-02",
+        "priority": 1
+      }
+    ]
+  },
+  "regionalGeography": {
+    "regions": [
+      {
+        "id": "reed_west",
+        "name": "West Reach",
+        "orientation": "north_up"
+      },
+      {
+        "id": "reed_east",
+        "name": "East Reach",
+        "orientation": "north_up"
+      }
+    ],
+    "areas": [
+      {
+        "id": "reed_west_area",
+        "regionId": "reed_west",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 64,
+          "maxY": 64
+        }
+      },
+      {
+        "id": "reed_east_area",
+        "regionId": "reed_east",
+        "bounds": {
+          "minX": 0,
+          "minY": 0,
+          "maxX": 64,
+          "maxY": 64
+        }
+      }
+    ],
+    "anchors": [
+      {
+        "id": "reed_west_anchor",
+        "regionId": "reed_west",
+        "areaId": "reed_west_area",
+        "position": {
+          "x": 32,
+          "y": 32
+        },
+        "movementClasses": [
+          "land"
+        ]
+      },
+      {
+        "id": "reed_east_anchor",
+        "regionId": "reed_east",
+        "areaId": "reed_east_area",
+        "position": {
+          "x": 32,
+          "y": 32
+        },
+        "movementClasses": [
+          "land"
+        ]
+      }
+    ],
+    "boundaries": [
+      {
+        "id": "reed_land_link",
+        "from": {
+          "regionId": "reed_west",
+          "anchorId": "reed_west_anchor"
+        },
+        "to": {
+          "regionId": "reed_east",
+          "anchorId": "reed_east_anchor"
+        },
+        "movementClasses": [
+          "land"
+        ],
+        "directed": false
+      }
+    ],
+    "routes": []
+  }
+}

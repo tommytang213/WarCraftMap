@@ -1,0 +1,40 @@
+{
+  "format": "warcraftmap_physical_boundaries_v1",
+  "formatVersion": 1,
+  "boundaries": [
+    {
+      "id": "reed_west_crossing",
+      "sourceMapId": "reed_west",
+      "destinationMapId": "reed_east",
+      "destinationRegionId": "reed_east",
+      "sourceEdge": "east",
+      "sourceInterval": [
+        0.2,
+        0.8
+      ],
+      "arrivalTransform": {
+        "reverse": false,
+        "scale": 1.0,
+        "offset": 0.0
+      },
+      "requiresDiscovery": false
+    },
+    {
+      "id": "reed_east_crossing",
+      "sourceMapId": "reed_east",
+      "destinationMapId": "reed_west",
+      "destinationRegionId": "reed_west",
+      "sourceEdge": "west",
+      "sourceInterval": [
+        0.2,
+        0.8
+      ],
+      "arrivalTransform": {
+        "reverse": false,
+        "scale": 1.0,
+        "offset": 0.0
+      },
+      "requiresDiscovery": false
+    }
+  ]
+}

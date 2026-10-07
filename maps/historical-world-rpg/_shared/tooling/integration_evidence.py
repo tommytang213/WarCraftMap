@@ -133,6 +133,22 @@ def observed_probes(log: str, tests: list[dict], contract: dict) -> dict:
     return observed
 
 
+def execution_sources(project: Path) -> dict[str, Path]:
+    """Authored inputs in the flattened namespace used by map assembly."""
+    sources = {path.relative_to(project).as_posix(): path
+               for path in (project / "wurst").rglob("*.wurst")}
+    shared = project.parent / "_shared"
+    for path in (shared / "wurst").glob("*.wurst"):
+        relative = "wurst/" + path.name
+        if relative in sources and sources[relative].read_bytes() != path.read_bytes():
+            raise ValueError(f"ambiguous compiled source: {relative}")
+        sources[relative] = path
+    for path in (shared / "wurst-tests").glob("*.wurst"):
+        if path.name != "FrameworkConformanceTests.wurst" or (project / "conformance.json").is_file():
+            sources["wurst/" + path.name] = path
+    return sources
+
+
 def verify_execution_coverage(report: dict, log: bytes, project: Path, revision: str) -> dict:
     from wurst_execution import verify_evidence, discover
     verify_evidence(report, log, revision)
@@ -145,21 +161,18 @@ def verify_execution_coverage(report: dict, log: bytes, project: Path, revision:
     coverage = report.get("productionCoverage", {})
     if not isinstance(coverage, dict) or coverage.get("contractSha256") != digest(canonical(contract)):
         raise ValueError("missing or stale production coverage contract")
-    if report.get("expected") != discover(project):
+    sources = execution_sources(project)
+    if report.get("expected") != discover(project, sources=sources):
         raise ValueError("execution discovery does not match current source tests")
     # Bind observed probe IDs to the instrumented production code actually
     # supplied to the interpreter, not to caller-declared coverage metadata.
-    for source in sorted((project / "wurst").rglob("*.wurst")):
-        relative = source.relative_to(project).as_posix()
+    for relative, source in sorted(sources.items()):
         if "WCM_PROBE:" in source.read_text():
             raise ValueError("reserved execution probe marker appears in uninstrumented source")
         probes = {name: spec for name, spec in contract["probes"].items() if spec["path"] == relative}
         expected = digest(instrument(source.read_text(), probes).encode() if probes else source.read_bytes())
         if report.get("inputs", {}).get(relative) != expected:
             raise ValueError(f"production probe input mismatch: {relative}")
-    for source in sorted((project.parent / "_shared/wurst").glob("*.wurst")):
-        if report["inputs"].get("wurst/" + source.name) != digest(source.read_bytes()):
-            raise ValueError(f"shared production input mismatch: {source.name}")
     # Grill rewrites wurst.build during dependency installation (YAML ordering
     # and dependency URL capitalization). The source identity binds the authored
     # config; the runner separately hashes the normalized interpreter input.

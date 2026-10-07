@@ -5,10 +5,11 @@ import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
 from datetime import date
 from dataclasses import dataclass
 from pathlib import Path
+from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 18
+GENERATOR_VERSION = 19
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -70,15 +71,8 @@ def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict
     if not integration_by_id:
         playable_ids = set(world_by_id)
     result = []
-    for path in sorted((config.project / "scenario/settlements").glob("*-1450.json")):
+    for path, geography_path, _region in settlement_sources(config.project):
         source = json.loads(path.read_text(encoding="utf-8"))
-        stem = path.name.removesuffix("-1450.json")
-        geography_path = next((item for item in (
-            config.project / f"scenario/geography/{stem.replace('-', '_')}.json",
-            config.project / f"scenario/geography/{stem}.json",
-        ) if item.is_file()), None)
-        if geography_path is None:
-            raise PackagingError(f"generation: no geography authority for {path.name}")
         geography = json.loads(geography_path.read_text(encoding="utf-8"))
         instances = {row["id"]: row for row in geography.get("instances", [])}
         for authored in source.get("settlements", []):
@@ -142,7 +136,7 @@ def _load_country_interaction_runtime_data(config: BuildConfig, world: dict) -> 
     research = {row["polityId"]: row for row in world.get("polityResearchStates", [])}
     conflicts = []
     conflict_by_id = {}
-    politics_paths = sorted((config.project / "scenario/politics").glob("*-1450.json"))
+    politics_paths = [content_path(config.project, path) for path in configuration(config.project)["scenario"].get("politics", [])]
     for path in politics_paths:
         source = json.loads(path.read_text(encoding="utf-8"))
         for conflict in source.get("activeConflicts", []):
@@ -274,18 +268,18 @@ def generate(config: BuildConfig, generated: Path) -> None:
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
     # hand-written Wurst.
-    catalogue_paths = {
-        "inventory": config.project / "scenario/inventory/player-use-catalog.json",
-        "treasures": config.project / "scenario/treasures/age-of-sail.json",
-        "religion": config.project / "scenario/religion.json",
-        "piracy": config.project / "scenario/naval/piracy.json",
-    }
+    paths = catalogue_paths(config.project)
     catalogues = {}
-    for catalogue_id, catalogue_path in catalogue_paths.items():
+    for catalogue_id, catalogue_path in paths.items():
         if catalogue_path.is_file():
             try: catalogues[catalogue_id] = json.loads(catalogue_path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError) as error: raise _fail("generation", f"{catalogue_id}: {error}") from error
             runtime[catalogue_id] = catalogues[catalogue_id]
+    if "inventory" in catalogues:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+        from player_items import validate_catalog
+        goods = json.loads((config.project / "scenario/economy/global-goods.json").read_text())
+        validate_catalog(catalogues["inventory"], bulk_good_ids={row["id"] for row in goods["goods"]})
     if config.custom_2d_source:
         custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
         runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
@@ -436,7 +430,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         religion_lines.append(f'\truntime.registerFaith(faith{index})')
     initial = religion.get("initialState", {})
     character = next(iter(initial.get("characters", [])), {})
-    religion_lines.append(f'\truntime.characterId="{ws(character.get("characterId", "player_captain"))}"')
+    religion_lines.append(f'\truntime.characterId="{ws(character.get("characterId", "player"))}"')
     religion_lines.append(f'\truntime.setCharacterFaith("{ws(character.get("primaryFaithId") or "")}",{int(character.get("personalInvestment", 0))})')
     for row in religion.get("conversionRules", []):
         religion_lines.append(f'\truntime.registerConversion(new ReligionConversionRule("{ws(row.get("fromFaithId") or "")}","{ws(row["toFaithId"])}",{int(row["costUnits"])},{int(row["cooldownTicks"])},{int(row.get("newInvestment", 0))},"{ws(row["reputationConsequences"])}"))')
@@ -467,11 +461,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
     trade_records = []
     trade_stores = []
     goods_path = config.project / "scenario/economy/global-goods.json"
-    settlement_sources = {}
-    for path in sorted((config.project / "scenario/settlements").glob("*-1450.json")):
-        region = path.name.removesuffix("-1450.json")
+    authored_sources = {}
+    for path, _geography, region in settlement_sources(config.project):
         for row in json.loads(path.read_text(encoding="utf-8")).get("settlements", []):
-            settlement_sources[row["id"]] = (region, row)
+            authored_sources[row["id"]] = (region, row)
     if goods_path.is_file():
         # Keep the existing personal hold instead of implicitly granting the
         # first generated warehouse. Bindings are definitions, not save grants.
@@ -481,7 +474,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         trade_defaults = json.loads((config.project / "scenario/economy/playable-trade.json").read_text(encoding="utf-8"))["marketDefaults"]
         goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
         for settlement in settlement_runtime:
-            region, row = settlement_sources[settlement["id"]]
+            region, row = authored_sources[settlement["id"]]
             economy_identity = row.get("economy", {})
             production = economy_identity.get("production", row.get("productionRefs", []))
             imports = economy_identity.get("imports", row.get("importRefs", []))
@@ -573,10 +566,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *(path for _, path in config.regional_terrain),
         *terrain_authorities,
         *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
-        *(path for path in catalogue_paths.values() if path.is_file()),
+        *(path for path in paths.values() if path.is_file()),
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
         *(path for path in country_runtime["sources"] if path.is_file()),
-        *(config.project / "scenario/settlements").glob("*-1450.json"),
+        *(path for source, geography, _region in settlement_sources(config.project) for path in (source, geography)),
         *(config.project / "scenario/geography").glob("*.json"),
         *(path for path in (
             config.project / "scenario/integration/release-scale-settlements.json",
@@ -590,6 +583,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
             config.project / "scenario/maps/physical-boundaries.json",
         ) if path.is_file()),
         *(config.project.parent / '_shared/wurst').glob('*.wurst'),
+        *(config.project.parent / '_shared/wurst-bootstrap').glob('*.wurst'),
+        Path(__file__).with_name("scenario_inputs.py"),
+        Path(__file__).with_name("scenario_settings.py"),
     )
     inputs = {}
     for path in input_paths:
@@ -624,7 +620,7 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
 def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,
                             env=toolchain_environment())
-    if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stderr or result.stdout).strip()}")
+    if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stdout + result.stderr).strip()}")
 
 def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
     compile_root = root / "compile"
@@ -632,7 +628,19 @@ def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tup
     shutil.copytree(config.wurst_source, compile_root / "wurst",
                     ignore=None if include_tests else shutil.ignore_patterns("*Tests.wurst"))
     for source in (config.project.parent / '_shared/wurst').glob('*.wurst'):
-        shutil.copy2(source, compile_root / 'wurst' / source.name)
+        target = compile_root / 'wurst' / source.name
+        if target.exists() and target.read_bytes() != source.read_bytes():
+            raise PackagingError(f"assembly: scenario forks shared package {source.name}")
+        shutil.copy2(source, target)
+    from scenario_settings import write_settings
+    write_settings(config.project, compile_root / "wurst")
+    if include_tests:
+        for source in (config.project.parent / "_shared/wurst-tests").glob("*.wurst"):
+            if source.name != "FrameworkConformanceTests.wurst" or (config.project / "conformance.json").is_file():
+                shutil.copy2(source, compile_root / "wurst" / source.name)
+    if include_tests and (config.project / "conformance.json").is_file():
+        from framework_conformance import assemble_contract
+        assemble_contract(config.project, compile_root / "wurst")
     shutil.copy2(config.project / "wurst.build", compile_root / "wurst.build")
     if (config.project / "wurst_run.args").is_file():
         shutil.copy2(config.project / "wurst_run.args", compile_root / "wurst_run.args")

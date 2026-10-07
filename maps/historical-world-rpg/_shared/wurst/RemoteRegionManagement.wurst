@@ -1,0 +1,109 @@
+package RemoteRegionManagement
+import CommandRouter
+import ManagementScreenPauseController
+
+public interface RegionAccessPolicy
+	function regionExists(string regionId) returns boolean
+	function regionIsKnown(player whichPlayer, string regionId) returns boolean
+	function mayCommandRegion(player whichPlayer, string regionId) returns boolean
+
+/** Adapter for transient Warcraft objects and camera/control context. */
+public interface RegionCommandRuntime
+	function snapshotRuntime() returns string
+	function restoreRuntime(string snapshot)
+	function retireCommandRegion(string regionId)
+	function reconstructCommandRegion(player whichPlayer, string regionId) returns boolean
+	function focusCommandRegion(player whichPlayer, string regionId)
+	function diagnostic() returns string
+
+/** Scenario-neutral coordinator. Command/view state is intentionally not saved. */
+public class RegionSelector
+	RegionAccessPolicy access
+	RegionCommandRuntime runtime
+	ManagementScreenPauseController pauseController
+	string physicalRegionId
+	string commandRegionId
+	ModalManagementScreen modal = null
+	string lastMessage = ""
+	construct(RegionAccessPolicy access, RegionCommandRuntime runtime, string physicalRegionId)
+		this.access = access
+		this.runtime = runtime
+		this.physicalRegionId = physicalRegionId
+		commandRegionId = physicalRegionId
+		pauseController = getManagementScreenPauseController()
+	construct(RegionAccessPolicy access, RegionCommandRuntime runtime, string physicalRegionId, ManagementScreenPauseController pauseController)
+		this.access = access
+		this.runtime = runtime
+		this.physicalRegionId = physicalRegionId
+		commandRegionId = physicalRegionId
+		this.pauseController = pauseController
+	function getPhysicalRegionId() returns string
+		return physicalRegionId
+	function getCommandRegionId() returns string
+		return commandRegionId
+	function isRemote() returns boolean
+		return physicalRegionId != commandRegionId
+	function diagnostic() returns string
+		return lastMessage
+	/** Travel integration hook; strategic relocation remains outside this UI service. */
+	function setPhysicalRegionId(string regionId)
+		physicalRegionId = regionId
+		if modal == null
+			commandRegionId = regionId
+	function select(player whichPlayer, string regionId) returns boolean
+		if not access.regionExists(regionId)
+			lastMessage = "Unknown region: " + regionId + "."
+			return false
+		// Knowledge comes first so authorization cannot reveal hidden regions.
+		if not access.regionIsKnown(whichPlayer, regionId)
+			lastMessage = "Region is not known: " + regionId + "."
+			return false
+		if regionId != physicalRegionId and not access.mayCommandRegion(whichPlayer, regionId)
+			lastMessage = "You are not authorized to manage region: " + regionId + "."
+			return false
+		if regionId == commandRegionId
+			lastMessage = "Already managing " + regionId + "."
+			return true
+		let previous = runtime.snapshotRuntime()
+		let previousRegion = commandRegionId
+		var acquired = false
+		if modal == null and regionId != physicalRegionId
+			modal = pauseController.openModalManagementScreen()
+			acquired = true
+		runtime.retireCommandRegion(previousRegion)
+		if not runtime.reconstructCommandRegion(whichPlayer, regionId)
+			runtime.restoreRuntime(previous)
+			commandRegionId = previousRegion
+			if acquired
+				modal.close()
+				modal = null
+			lastMessage = "Could not open region " + regionId + ": " + runtime.diagnostic()
+			return false
+		runtime.focusCommandRegion(whichPlayer, regionId)
+		commandRegionId = regionId
+		if regionId == physicalRegionId and modal != null
+			modal.close()
+			modal = null
+			lastMessage = "Returned command view to " + physicalRegionId + ". No strategic entity was moved."
+		else
+			lastMessage = "Managing " + regionId + ". Your party remains in " + physicalRegionId + "."
+		return true
+	function returnToPhysicalRegion(player whichPlayer) returns boolean
+		return select(whichPlayer, physicalRegionId)
+
+public class RegionCommand implements CommandHandler
+	RegionSelector selector
+	CommandOutput output
+	construct(RegionSelector selector, CommandOutput output)
+		this.selector = selector
+		this.output = output
+	override function execute(player sender, string arguments)
+		let wanted = StringCase(arguments, false)
+		if wanted == "return" or wanted == "home" or wanted == "physical"
+			selector.returnToPhysicalRegion(sender)
+		else
+			selector.select(sender, wanted)
+		output.show(sender, selector.diagnostic())
+
+public function registerRegionCommand(CommandRegistry registry, RegionSelector selector, CommandOutput output) returns string
+	return registry.register("region", "regions", "region <region-id|return>", "Manage an authorized region remotely.", "Switch camera and command context without moving your character, party, army, or fleet. Use 'return' to restore the physical region view.", 1, 1, COMMAND_RELEASE, new RegionCommand(selector, output))

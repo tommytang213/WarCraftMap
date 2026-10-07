@@ -1,0 +1,49 @@
+{
+  "format": "warcraftmap_audio_manifest_v1",
+  "formatVersion": 1,
+  "categories": [
+    {
+      "id": "reed_ui",
+      "kind": "ui",
+      "priority": 90,
+      "maximumConcurrent": 2,
+      "cooldownMs": 120,
+      "fadeInMs": 0,
+      "fadeOutMs": 50,
+      "interrupt": "same_or_lower"
+    }
+  ],
+  "assets": [
+    {
+      "id": "reed_confirm",
+      "categoryId": "reed_ui",
+      "source": "stock",
+      "locator": "Sound\\Interface\\MouseClick1.wav",
+      "technical": {
+        "format": "warcraft_stock",
+        "durationMs": 180,
+        "sampleRateHz": 22050,
+        "channels": 1,
+        "loop": false,
+        "integratedLufs": -24,
+        "peakDbfs": -5,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "sha256": null
+      },
+      "historicalFit": "Neutral interface confirmation for the invented conformance setting.",
+      "provenance": "Blizzard Warcraft III 3.0 game data",
+      "license": "warcraft_iii_game_data",
+      "attribution": "Blizzard Entertainment",
+      "intendedUse": "Management UI confirmation"
+    }
+  ],
+  "budgets": {
+    "maximumImportedBytes": 0,
+    "maximumDecodedBytes": 0,
+    "maximumActiveChannels": 1
+  },
+  "fallbacks": {
+    "reed_ui": "reed_confirm"
+  }
+}

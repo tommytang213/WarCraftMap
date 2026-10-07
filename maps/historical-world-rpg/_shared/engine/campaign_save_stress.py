@@ -87,7 +87,7 @@ class Harness:
         self.world, self.players = copy.deepcopy(fixture), {"main": {"characterId": "character_000000", "money": 1000}}
         self.runtime, self.safe = {}, True
         self.storage = saves.MemorySaveStorage()
-        self.manager = saves.CampaignSaveManager(build_version="phase7.1", scenario_id="age_of_sail",
+        self.manager = saves.CampaignSaveManager(build_version="phase7.1", scenario_id="persistence_stress",
             scenario_version="1", storage=self.storage, capture_state=lambda: (self.world, self.players),
             validate_state=lambda w, p: world.validate_fixture(w), reconstruct_runtime=self._reconstruct,
             activate_state=self._activate, is_save_safe=lambda: self.safe)
@@ -111,9 +111,9 @@ def _old_payload(raw, version):
 
 def _manifest():
     return {"format":"warcraftmap_physical_maps_v1","formatVersion":1,"physicalMaps":[
-        {"id":"atlantic","packagePath":"Maps/Atlantic.w3x","assignments":{"logicalRegionIds":["atlantic"],"regionalInstanceIds":["atlantic"],"generatedTerrainIds":[]}},
-        {"id":"indian","packagePath":"Maps/Indian.w3x","assignments":{"logicalRegionIds":["indian"],"regionalInstanceIds":["indian"],"generatedTerrainIds":[]}},
-        {"id":"pacific","packagePath":"Maps/Pacific.w3x","assignments":{"logicalRegionIds":["pacific"],"regionalInstanceIds":["pacific"],"generatedTerrainIds":[]}}]}
+        {"id":"map_a","packagePath":"Maps/MapA.w3x","assignments":{"logicalRegionIds":["map_a"],"regionalInstanceIds":["map_a"],"generatedTerrainIds":[]}},
+        {"id":"map_b","packagePath":"Maps/MapB.w3x","assignments":{"logicalRegionIds":["map_b"],"regionalInstanceIds":["map_b"],"generatedTerrainIds":[]}},
+        {"id":"map_c","packagePath":"Maps/MapC.w3x","assignments":{"logicalRegionIds":["map_c"],"regionalInstanceIds":["map_c"],"generatedTerrainIds":[]}}]}
 
 
 def _content(map_id):
@@ -194,17 +194,17 @@ def run(profile_name, config, world_profile):
     path_hashes["migrated"] = normalized_hash({"world": migration_harness.world,
                                                 "players": migration_harness.players})
     # Real transfer envelopes repeatedly visit all maps while carrying full authority.
-    transfer_storage=transfers.MemoryTransferStorage(); active={"id":"atlantic"}
+    transfer_storage=transfers.MemoryTransferStorage(); active={"id":"map_a"}
     def activate_transfer(map_id, state, _runtime):
         active.update(id=map_id)
         h.world = copy.deepcopy(state["world"])
         h.players = copy.deepcopy(state["players"])
 
-    tm=transfers.CrossMapTransferManager(scenario_id="age_of_sail",scenario_version="1",build_version="phase7.1",
+    tm=transfers.CrossMapTransferManager(scenario_id="persistence_stress",scenario_version="1",build_version="phase7.1",
         campaign_schema=saves.CURRENT_SCHEMA_VERSION,manifest=transfers.PhysicalMapManifest(_manifest()),storage=transfer_storage,
         capture_state=lambda:{"world":h.world,"players":h.players},load_destination_content=_content,activate=activate_transfer,
         adapters=[transfers.ReconstructionAdapter("authority_index",lambda s,c,a:tuple(sorted(s["world"].get("entities",{}))))])
-    maps=("atlantic","indian","pacific")
+    maps=("map_a","map_b","map_c")
     for i in range(config["mapRevisits"]): tm.transfer(active["id"],maps[(i+1)%3],{"boundaryId":f"boundary_{i:03d}"},f"stress-{i:03d}")
     resumed,destination=tm.resume()
     if normalized_hash(resumed)!=normalized_hash(final_authority) or destination!=active["id"]: raise AssertionError("cross-map reconstruction drift")

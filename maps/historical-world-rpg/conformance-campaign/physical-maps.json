@@ -1,0 +1,82 @@
+{
+  "format": "warcraftmap_physical_maps_v1",
+  "formatVersion": 1,
+  "mapBuildConfig": "package.json",
+  "regionalAssignments": "scenario/maps/assignments.json",
+  "boundaryManifest": "scenario/maps/physical-boundaries.json",
+  "audioManifest": "scenario/audio/manifest.json",
+  "audioProfiles": "scenario/audio/profiles.json",
+  "outputDirectory": "_build/release",
+  "campaign": {
+    "id": "reed_conformance",
+    "fileName": "ReedConformance",
+    "name": "Reed and Stone: Framework Conformance",
+    "description": "A tiny content-only framework conformance campaign.",
+    "bootstrapMapId": "reed_selector"
+  },
+  "physicalMaps": [
+    {
+      "id": "reed_selector",
+      "sourceMap": "map/Conformance.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/reed_selector.w3x",
+      "chapterTitle": "Reed Selector",
+      "bootstrap": true,
+      "assignments": {
+        "logicalRegionIds": [],
+        "regionalInstanceIds": [],
+        "generatedTerrainIds": []
+      },
+      "terrainBudget": {
+        "maximumCells": 4096,
+        "maximumOutputBytes": 1048576
+      }
+    },
+    {
+      "id": "reed_west",
+      "sourceMap": "map/Conformance.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/reed_west.w3x",
+      "chapterTitle": "Reed West",
+      "bootstrap": false,
+      "assignments": {
+        "logicalRegionIds": [
+          "reed_west"
+        ],
+        "regionalInstanceIds": [
+          "reed_west_field"
+        ],
+        "generatedTerrainIds": [
+          "reed_west"
+        ]
+      },
+      "terrainBudget": {
+        "maximumCells": 4096,
+        "maximumOutputBytes": 1048576
+      }
+    },
+    {
+      "id": "reed_east",
+      "sourceMap": "map/Conformance.w3x",
+      "sourceManifest": "map/map-source.json",
+      "packagePath": "Maps/reed_east.w3x",
+      "chapterTitle": "Reed East",
+      "bootstrap": false,
+      "assignments": {
+        "logicalRegionIds": [
+          "reed_east"
+        ],
+        "regionalInstanceIds": [
+          "reed_east_field"
+        ],
+        "generatedTerrainIds": [
+          "reed_east"
+        ]
+      },
+      "terrainBudget": {
+        "maximumCells": 4096,
+        "maximumOutputBytes": 1048576
+      }
+    }
+  ]
+}

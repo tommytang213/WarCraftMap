@@ -17,7 +17,7 @@ import zlib
 
 from warcraft_campaign import MpqReader, _hash
 from wurst_execution import discover, verify_evidence, WurstExecutionError
-from integration_evidence import instrument, load_contract, verify_execution_coverage
+from integration_evidence import execution_sources, instrument, load_contract, verify_execution_coverage
 
 FORMAT = "warcraftmap_requirement_traceability_v1"
 MARKER = re.compile(r"<!-- req:([A-Z]+-\d+) -->")
@@ -167,17 +167,15 @@ def execution_results(project, evidence, transcript, revision):
         # _assemble copies shared Wurst packages into the scenario's compile
         # namespace. Checking only files that still exist under project misses
         # deleted/new sources and every shared package.
-        sources = {path.relative_to(project).as_posix(): path
-                   for path in (project / "wurst").rglob("*.wurst")}
-        for path in (project.parent / "_shared/wurst").glob("*.wurst"):
-            key = "wurst/" + path.name
-            if key in sources and sources[key].read_bytes() != path.read_bytes():
-                raise WurstExecutionError(f"ambiguous compiled source: {key}")
-            sources[key] = path
+        sources = execution_sources(project)
         recorded = {key for key in evidence["inputs"] if key.startswith("wurst/") and key.endswith(".wurst")}
-        # ScenarioData is generated in the isolated compiler tree. It is the
-        # only generated Wurst input; its packaged records have a separate census.
-        if recorded - {"wurst/ScenarioData.wurst"} != set(sources) - {"wurst/ScenarioData.wurst"}:
+        # Content/settings and conformance vectors are generated in the isolated
+        # compiler tree. The source identity binds their authored configuration;
+        # packaged scenario records also have a separate census.
+        generated = {"wurst/ScenarioData.wurst", "wurst/ScenarioSettings.wurst"}
+        if (project / "conformance.json").is_file():
+            generated.add("wurst/ConformanceData.wurst")
+        if recorded - generated != set(sources) - generated:
             raise WurstExecutionError("execution Wurst source set differs from current production/test inputs")
         for key, path in sources.items():
             probes = {name: spec for name, spec in contract["probes"].items() if spec["path"] == key}
@@ -187,9 +185,7 @@ def execution_results(project, evidence, transcript, revision):
         # Discovery cannot be reduced in an otherwise self-consistent evidence
         # file. Re-discover current tests, including any shared test packages.
         expected = {row["id"]: row["line"] for row in evidence["expected"]}
-        current = {row["id"]: row["line"] for row in discover(project)}
-        current.update({row["id"]: row["line"]
-                        for row in discover(project.parent / "_shared", allow_empty=True)})
+        current = {row["id"]: row["line"] for row in discover(project, sources=sources)}
         for key, line in current.items():
             if expected.get(key) != line:
                 raise WurstExecutionError(f"current test absent from execution: {key}")

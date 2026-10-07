@@ -9,8 +9,9 @@ class VisualLanguageError(ValueError):
 
 
 class VisualResolver:
-    def __init__(self, document, active_object_budget=256):
-        if document.get("format") != "age_of_sail_visual_language_v1":
+    def __init__(self, document, active_object_budget=256, *,
+                 document_format="warcraftmap_visual_language_v1"):
+        if document.get("format") != document_format:
             raise VisualLanguageError("unsupported visual-language document")
         self.document = copy.deepcopy(document)
         self.families = {x["id"]: x for x in document["families"]}
