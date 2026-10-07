@@ -152,6 +152,31 @@ completed content/save/recovery/blocker gates, audits the payload, and writes
 English player documentation, a checksummed artifact manifest, and reproducible
 build provenance. `./tooling/package_release_candidate.sh clean` removes that ZIP.
 
+Acceptance has four separate levels: source/static readiness, executed headless
+production integration, built-artifact verification, and real-client status.
+`runtime_acceptance.py --write` and `release_blocker_audit.py --write` without
+execution/artifact inputs write honest blocked snapshots and return exit code 1.
+This is the expected source-only state, not a request for incremental player QA.
+
+The pinned interpreter runner inserts configured entry probes only into its
+temporary Wurst assembly, records hits inside passing tests, and restores the
+original sources before building. `scenario/runtime-execution.json` specifies
+the production registration/adapter entries each required system must exercise
+within one passing test. Uncovered entries remain blockers. Merely declaring a
+probe or finding its function/test name does not supply execution evidence.
+
+To evaluate a built campaign, supply `--execution-dir _build/wurst-tests`,
+`--campaign _build/release/AgeOfSailWorldCampaign.w3n` and a full
+`--source-revision` to either acceptance tool. Evidence binds the revision and
+source-content digest, including dirty source changes. Each built map embeds
+that identity; inspection records the exact campaign and nested-map hashes.
+The RC packager and copied-ZIP upload verifier recompute acceptance from these
+inputs. They block publication on incomplete/failing integration or artifact
+evidence, regardless of saved PASS flags. The final ZIP includes the execution
+transcript and both acceptance reports. Automated candidate readiness never
+claims that Warcraft III or the declared campaign itineraries were executed;
+real-client launch/save/travel validation remains explicitly separate.
+
 Failures name their stage (`inputs`, `scenario validation`, `generation`,
 `provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
 

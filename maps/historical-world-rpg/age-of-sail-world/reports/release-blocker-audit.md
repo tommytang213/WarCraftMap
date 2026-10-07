@@ -1,8 +1,8 @@
 # Phase 9 release-blocker audit
 
-Result: **PASS**
+Result: **FAIL**
 
-Unresolved campaign blockers: **0**
+Unresolved campaign blockers: **21**
 
 ## Severity taxonomy
 
@@ -24,39 +24,61 @@ Each row executes save serialization/loading and schema-3 migration. Regions, ma
 
 ## Player-facing runtime acceptance
 
-These stages record source evidence, including test references; they do not establish Lua execution or control-flow reachability.
+Static readiness, executed production integration, built-artifact inspection and real-client status are separate. Source/test names and declared itineraries cannot satisfy integration. Missing same-revision execution or artifact evidence blocks this gate.
 
 | System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |
 |---|---:|---:|---:|---:|---:|
-| `campaign_launch` | yes | yes | yes | yes | no |
-| `origin_selection` | yes | yes | yes | yes | no |
-| `country_diplomacy` | yes | yes | yes | yes | no |
-| `trade` | yes | yes | yes | yes | no |
-| `army_fleet_control` | yes | yes | yes | yes | no |
-| `city_capture` | yes | yes | yes | yes | no |
-| `garrisons` | yes | yes | yes | yes | no |
-| `administration` | yes | yes | yes | yes | no |
-| `heroes` | yes | yes | yes | yes | no |
-| `inventory_equipment` | yes | yes | yes | yes | no |
-| `technology_institutions` | yes | yes | yes | yes | no |
-| `quests_journal` | yes | yes | yes | yes | no |
-| `treasures_discovery` | yes | yes | yes | yes | no |
-| `save_autosave_load` | yes | yes | yes | yes | no |
-| `cross_map_travel` | yes | yes | yes | yes | no |
-| `world_map` | yes | yes | yes | yes | no |
-| `remote_management` | yes | yes | yes | yes | no |
-| `government_rewards` | yes | yes | yes | yes | no |
-| `religion` | yes | yes | yes | yes | no |
-| `piracy` | yes | yes | yes | yes | no |
+| `campaign_launch` | yes | no | no | no | no |
+| `origin_selection` | yes | no | no | no | no |
+| `country_diplomacy` | yes | no | no | no | no |
+| `trade` | yes | no | no | no | no |
+| `army_fleet_control` | yes | no | no | no | no |
+| `city_capture` | yes | no | no | no | no |
+| `garrisons` | yes | no | no | no | no |
+| `administration` | yes | no | no | no | no |
+| `heroes` | yes | no | no | no | no |
+| `inventory_equipment` | yes | no | no | no | no |
+| `technology_institutions` | yes | no | no | no | no |
+| `quests_journal` | yes | no | no | no | no |
+| `treasures_discovery` | yes | no | no | no | no |
+| `save_autosave_load` | yes | no | no | no | no |
+| `cross_map_travel` | yes | no | no | no | no |
+| `world_map` | yes | no | no | no | no |
+| `remote_management` | yes | no | no | no | no |
+| `government_rewards` | yes | no | no | no | no |
+| `religion` | yes | no | no | no | no |
+| `piracy` | yes | no | no | no | no |
 
 ## Findings
 
-No unresolved or accepted defects were found.
+| Stable ID | Severity | Class | Context | Disposition |
+|---|---|---|---|---|
+| `RUNTIME-EVIDENCE-INCOMPLETE` | campaign_blocker | missing_runtime_integration | runtime-acceptance | unresolved |
+| `RUNTIME-MISSING-ADMINISTRATION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-ARMY-FLEET-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-CAMPAIGN-LAUNCH` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-CITY-CAPTURE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-COUNTRY-DIPLOMACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-CROSS-MAP-TRAVEL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-GARRISONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-GOVERNMENT-REWARDS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-HEROES` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-ORIGIN-SELECTION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-PIRACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-RELIGION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-REMOTE-MANAGEMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-SAVE-AUTOSAVE-LOAD` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-TREASURES-DISCOVERY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
+| `RUNTIME-MISSING-WORLD-MAP` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence
 
-- 32 tracked validation reports
-- 7 hashed release inputs
+- 31 tracked validation reports
+- 8 hashed release inputs
 - 7 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
 - Journey rows execute campaign-save round trips and migration; their route/system coverage is declared metadata.

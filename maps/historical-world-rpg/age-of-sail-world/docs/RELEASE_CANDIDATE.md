@@ -3,7 +3,13 @@
 Release candidate: **phase9-rc1 (launch-crash remediation; not promoted)**
 Required runtime: **Warcraft III 3.0, single player, Lua campaign**
 
-Status: **blocked_pending_real_forsaken_kingdom_launch_smoke**
+Status: **blocked_pending_automated_integration_and_real_forsaken_kingdom_launch_smoke**
+Player-test publication requires same-revision production-path execution and
+verification of the exact built campaign and every nested map. The checked-in
+source-only runtime and release-blocker reports intentionally fail while that
+evidence is absent. A passing general test suite, static registrations, or declared
+journey coverage cannot promote a candidate.
+
 The release pipeline builds every physical W3X twice and inspects the packaged W3N.
 Automated checks cover binary structure, physical-map identities, localized terrain
 and pathing, settlement and spawn representations, destination data and arrival

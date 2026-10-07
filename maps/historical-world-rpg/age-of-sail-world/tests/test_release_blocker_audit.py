@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
 TOOL = PROJECT / "tooling/release_blocker_audit.py"
@@ -19,18 +20,19 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def setUpClass(cls):
         cls.report = audit.build_report()
 
-    def test_gate_passes_when_sources_are_ready_for_built_artifact_validation(self):
+    def test_source_readiness_cannot_pass_the_release_gate(self):
         self.assertEqual(cls_json(self.report), cls_json(audit.build_report()))
-        self.assertEqual("pass", self.report["status"])
-        self.assertEqual(0, self.report["unresolvedCampaignBlockers"])
-        self.assertEqual("gate_closed", self.report["disposition"])
+        self.assertEqual("fail", self.report["status"])
+        self.assertFalse(self.report["candidateReady"])
+        self.assertGreater(self.report["unresolvedCampaignBlockers"], 0)
+        self.assertEqual("release_blocked", self.report["disposition"])
         runtime = self.report["runtimeAcceptance"]
-        self.assertEqual("pass", runtime["status"])
+        self.assertEqual("fail", runtime["status"])
         by_id = {row["id"]: row for row in runtime["systems"]}
-        self.assertTrue(all(by_id["trade"]["stages"][stage]
+        self.assertTrue(all(by_id["trade"]["sourceChecks"][stage]
                             for stage in audit.runtime_acceptance.STAGES[:-1]))
         self.assertFalse(by_id["trade"]["stages"]["releaseValidated"])
-        self.assertEqual("built W3N/W3X artifact gate",
+        self.assertEqual("same-revision production execution and exact built W3N/W3X inspection",
                          runtime["releaseValidationAuthority"])
 
     def test_taxonomy_explicitly_blocks_campaign_failures_and_unclassified_critical_failures(self):
@@ -83,6 +85,47 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
             self.assertEqual("not_run", journey["nativeSaveExecutionStatus"])
         self.assertIn("not executed by this audit", audit.render_markdown(self.report))
 
+    def test_blocker_aggregation_requires_complete_integration_and_artifact_evidence(self):
+        # Synthetic aggregation protocol only; never emitted as release evidence.
+        complete = copy.deepcopy(self.report["runtimeAcceptance"])
+        identity = {"sourceRevision": "a" * 40, "sourceTreeSha256": "b" * 64}
+        complete.update(identity, executionStatus="completed")
+        for name in ("runtimeIntegration", "builtArtifact"):
+            complete["evidenceLevels"][name].update(identity, status="pass", executionStatus="completed", failures=[])
+        complete["evidenceLevels"]["runtimeIntegration"].update(logSha256="c" * 64, inputSetSha256="d" * 64)
+        complete["evidenceLevels"]["builtArtifact"]["artifactSha256"] = "e" * 64
+        for row in complete["systems"]:
+            row.update(executionStatus="completed", executedTests=["synthetic fixture"])
+            row["stages"].update({stage: True for stage in audit.runtime_acceptance.STAGES})
+        for mode in ("complete", "not_run", "missing", "stale", "declared", "releaseValidated=false",
+                     "omitted-system", "exempted-system"):
+            current = copy.deepcopy(complete)
+            if mode == "not_run":
+                current["evidenceLevels"]["runtimeIntegration"]["executionStatus"] = "not_run"
+            elif mode == "missing":
+                del current["evidenceLevels"]["runtimeIntegration"]
+            elif mode == "stale":
+                current["evidenceLevels"]["builtArtifact"]["sourceRevision"] = "c" * 40
+            elif mode == "declared":
+                current["evidenceLevels"]["runtimeIntegration"]["evidenceLevel"] = "declared_journey_metadata"
+            elif mode == "releaseValidated=false":
+                current["systems"][0]["stages"]["releaseValidated"] = False
+            elif mode == "omitted-system":
+                current["systems"].pop()
+            elif mode == "exempted-system":
+                current["systems"][0]["releaseRequired"] = False
+            audit.runtime_acceptance.finalize(current)
+            with self.subTest(mode=mode), \
+                 patch.object(audit, "_audit_reports", return_value=([], [])), \
+                 patch.object(audit, "_audit_inputs", return_value=({}, [])), \
+                 patch.object(audit, "_audit_release_save_compatibility", return_value=self.report["releaseSaveCompatibility"]), \
+                 patch.object(audit, "_run_journeys", return_value=(self.report["journeys"], self.report["soak"])), \
+                 patch.object(audit.runtime_acceptance, "audit_acceptance", return_value=current):
+                report = audit.build_report()
+                self.assertEqual(mode == "complete", report["candidateReady"])
+                self.assertEqual("pass" if mode == "complete" else "fail", report["status"])
+                self.assertEqual("not_run", report["evidenceLevels"]["realClient"]["executionStatus"])
+
     def test_unknown_critical_class_cannot_escape_unclassified_gate(self):
         finding = audit._finding("INJECT-UNKNOWN-CRITICAL", "start_failure", "fixture/unknown",
                                  "unknown failure")
@@ -96,10 +139,10 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
     def test_checked_in_machine_and_human_reports_are_current(self):
         completed = subprocess.run([sys.executable, str(TOOL)], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
-        self.assertEqual(0, completed.returncode, completed.stderr or completed.stdout)
+        self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
         summary = json.loads(completed.stdout)
-        self.assertEqual("pass", summary["status"])
-        self.assertEqual(0, summary["unresolvedCampaignBlockers"])
+        self.assertEqual("fail", summary["status"])
+        self.assertGreater(summary["unresolvedCampaignBlockers"], 0)
         human = (PROJECT / "reports/release-blocker-audit.md").read_text()
         self.assertIn("JOURNEY-ALTERNATE-HISTORY", human)
         self.assertIn("Player-facing runtime acceptance", human)

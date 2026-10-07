@@ -704,23 +704,30 @@ def run_execution_tests(config: BuildConfig, executable: str, revision: str | No
     compile_root = _assemble(config, root, generated)
     _run("Wurst test dependency installation", [executable, "install"], compile_root)
     try:
-        return execute_tests(compile_root, executable, root, source_revision(config.project, revision))
+        return execute_tests(compile_root, executable, root, source_revision(config.project, revision), project=config.project)
     except WurstExecutionError as error:
         raise _fail("Wurst execution", error) from error
 
 def build(config_path: Path, grill: str | None = None, clean_first: bool = True) -> Path:
     config = load_config(config_path); executable = validate_inputs(config, grill)
     if clean_first: clean(config)
+    from integration_evidence import source_identity
+    revision = source_revision(config.project)
+    identity = source_identity(config.project, revision)
     validate_scenario(config); root = config.project / "_build"; generated = root / "generated"
     generate(config, generated); verify_generated(config, generated); compile_root = _assemble(config, root, generated)
+    (compile_root / "map" / config.source_map.name / "runtime/build-identity.json").write_text(
+        json.dumps(identity, sort_keys=True) + "\n")
     _run("Wurst dependency installation", [executable, "install"], compile_root)
     _run("Wurst compilation", [executable, "typecheck"], compile_root)
     try:
-        execute_tests(compile_root, executable, root / "wurst-tests", source_revision(config.project))
+        execute_tests(compile_root, executable, root / "wurst-tests", revision, project=config.project)
     except WurstExecutionError as error:
         raise _fail("Wurst execution", error) from error
     _run("map assembly", [executable, "build", str(Path("map") / config.source_map.name)], compile_root)
     archive = _find_archive(compile_root / "_build"); _inspect(config, archive, compile_root)
+    if source_identity(config.project, revision) != identity:
+        raise _fail("provenance", "authoritative sources changed during map build")
     config.output.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(archive, config.output)
     print(f"release archive: {config.output}"); return config.output
 
