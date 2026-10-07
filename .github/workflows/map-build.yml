@@ -31,8 +31,10 @@ jobs:
           python3 maps/historical-world-rpg/_shared/tooling/validate_world.py \
             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
+          python3 maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py --check
 
       - name: Execute complete Wurst suite and package with pinned compiler
+        id: candidate
         run: |
           artifact_dir="$RUNNER_TEMP/age-of-sail-release"
           mkdir -p "$artifact_dir"
@@ -52,16 +54,53 @@ jobs:
               apt-get install -y --no-install-recommends python3
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
-              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release_candidate.sh --source-revision $SOURCE_REVISION"
+              candidate_status=0
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release_candidate.sh --source-revision $SOURCE_REVISION" || candidate_status=$?
+              mkdir -p /out/diagnostics
+              for report in /tmp/workspace/$MAP_PROJECT/_build/release/requirement-traceability.* /tmp/workspace/$MAP_PROJECT/_build/requirement-traceability-source.*; do
+                if [ -f "$report" ]; then cp "$report" /out/diagnostics/; fi
+              done
+              # Exit 3 means the completed build passed validation but the
+              # final traceability report blocks publication. Keep diagnostics
+              # without producing or uploading any player candidate files.
+              if [ "$candidate_status" -eq 3 ]; then
+                test -s /out/diagnostics/requirement-traceability.json
+                test -s /out/diagnostics/requirement-traceability.md
+                test ! -e "/tmp/workspace/$RELEASE_ARTIFACT"
+                echo blocked > /out/candidate-status
+                exit 0
+              fi
+              if [ "$candidate_status" -ne 0 ]; then exit "$candidate_status"; fi
               cp "/tmp/workspace/$RELEASE_ARTIFACT" /out/AgeOfSailWorld-phase9-rc1.zip
               cd "/tmp/workspace/$MAP_PROJECT"
               python3 tooling/verify_ci_release_artifact.py \
                 "/out/AgeOfSailWorld-phase9-rc1.zip" \
                 --source-revision "$SOURCE_REVISION" \
                 --evidence "/out/artifact-evidence.json"
+              echo ready > /out/candidate-status
             '
 
+          case "$(cat "$artifact_dir/candidate-status")" in
+            ready) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
+            blocked)
+              echo "ready=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::Candidate publication blocked by requirement traceability; see the diagnostics artifact."
+              echo "**Candidate publication: blocked.** Validation completed, but the final W3N traceability audit contains release blockers. No player candidate was published. See the age-of-sail-requirement-diagnostics artifact for the complete report." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *) echo "Invalid candidate publication status" >&2; exit 1 ;;
+          esac
+
+      - name: Retain requirement diagnostics even when publication is blocked
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: age-of-sail-requirement-diagnostics-${{ github.run_number }}
+          path: ${{ runner.temp }}/age-of-sail-release/diagnostics
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Create versioned player files
+        if: steps.candidate.outputs.ready == 'true'
         run: |
           artifact_dir="$RUNNER_TEMP/age-of-sail-release"
           canonical_zip="$artifact_dir/AgeOfSailWorld-phase9-rc1.zip"
@@ -85,6 +124,7 @@ jobs:
           printf '%s\n' "$build_version" > "$artifact_dir/BUILD_VERSION.txt"
 
       - name: Confirm verified release payload and evidence
+        if: steps.candidate.outputs.ready == 'true'
         run: |
           artifact_dir="$RUNNER_TEMP/age-of-sail-release"
           short_sha="${GITHUB_SHA::7}"
@@ -95,6 +135,7 @@ jobs:
           test -s "$artifact_dir/BUILD_VERSION.txt"
 
       - name: Upload Age of Sail campaign
+        if: steps.candidate.outputs.ready == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-world-release-candidate-${{ env.RELEASE_VERSION_PREFIX }}.${{ github.run_number }}

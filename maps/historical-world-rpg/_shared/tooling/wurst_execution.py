@@ -55,7 +55,7 @@ def source_revision(project: Path, explicit: str | None = None) -> str:
     return value
 
 
-def discover(compile_root: Path) -> list[dict]:
+def discover(compile_root: Path, *, allow_empty: bool = False) -> list[dict]:
     tests = []
     # Preserve newlines while removing comments, strings and rawcode literals.
     ignored = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
@@ -68,7 +68,7 @@ def discover(compile_root: Path) -> list[dict]:
             tests.append({"id": path.relative_to(compile_root).as_posix() + ":" + match[1],
                           "line": code[:match.start()].count("\n") + 1})
     ids = [row["id"] for row in tests]
-    if not tests or len(ids) != len(set(ids)):
+    if (not tests and not allow_empty) or len(ids) != len(set(ids)):
         raise WurstExecutionError("Wurst test discovery is empty or contains duplicate tests")
     return tests
 

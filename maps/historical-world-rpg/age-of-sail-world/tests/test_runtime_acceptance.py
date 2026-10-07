@@ -192,8 +192,10 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             candidate = root / "candidate.zip"
             from wurst_execution_fixture import passing_evidence
             wurst_report, wurst_log = passing_evidence(revision)
+            trace_fixture = {"fixture": "binary structure only; exhaustive traceability tested separately"}
             execution_payloads = {"Metadata/wurst-execution.json": release.canonical(wurst_report),
-                                  "Metadata/wurst-execution.log": wurst_log}
+                                  "Metadata/wurst-execution.log": wurst_log,
+                                  "Metadata/requirement-traceability.json": release.canonical(trace_fixture)}
             manifest["artifacts"] += [
                 {"kind": "execution-evidence", "archivePath": name,
                  "bytes": len(value), "sha256": release.sha_bytes(value)}
@@ -204,10 +206,11 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                 config["archive"]["manifestPath"]: release.canonical(manifest),
                 config["archive"]["provenancePath"]: release.canonical({
                     "format": release.PROVENANCE_FORMAT, "sourceRevision": revision,
-                    "gates": {"wurstExecution": "pass"}}),
+                    "gates": {"wurstExecution": "pass", "requirementTraceability": "pass"}}),
             })
             evidence = root / "artifact-evidence.json"
-            with patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,
+            with patch.object(release.traceability, "validate_final", return_value=trace_fixture), \
+                 patch.object(sys, "argv", ["verify", str(candidate), "--source-revision", revision,
                                            "--evidence", str(evidence)]):
                 with self.assertRaisesRegex(release.PackagingError, "automated candidate acceptance failed"):
                     upload.main()

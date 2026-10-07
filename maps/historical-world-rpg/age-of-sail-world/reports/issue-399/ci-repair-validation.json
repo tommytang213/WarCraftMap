@@ -1,0 +1,133 @@
+{
+  "candidateValidation": {
+    "buildDirectory": "container-private /tmp/issue399",
+    "builds": 2,
+    "candidateZipProduced": false,
+    "command": "./tooling/package_release_candidate.sh --source-revision f38b3c8742af8ea2e99760ca17d8daf6a27bd1b5",
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "containerRemoved": true,
+    "currentWurstSourceVerification": "pass",
+    "determinism": "pass",
+    "exitCode": 3,
+    "mapsPerBuild": 17,
+    "packagedRuntimeValidation": "pass",
+    "sourceBindMount": "read-only",
+    "wurstTestsPassedPerBuild": 278
+  },
+  "ciFailure": {
+    "cause": "Known requirement publication blockers were returned as generic build failures.",
+    "pullRequest": 406,
+    "runs": [
+      37559815721,
+      37559823786
+    ]
+  },
+  "evidence": {
+    "ci-repair-candidate-build.log.gz": "8c12eb449173d51cde68b79d088da9cbadf930b0c2eb016db011591388fd59ae",
+    "ci-repair-repository-checks.log.gz": "a202e324a342509ac6aad6f86ea65c7490920c5cfa1edf19687830fb843bbac5",
+    "ci-repair-traceability-tests.log.gz": "f994d6ba81a67b7b2c622fba80a4ab7dc867c3732c8e65c3f2024d4696217ba5",
+    "ci-repair-workflow-tests.log.gz": "d6862d6cb696fa9ef90574d5a178941f913bf43709420b55ac49d07de82ab3a3",
+    "ci-repair-wurst-execution.log.gz": "a6490d6e877c8c80f3bee7a99b81cae7a2b12f4053d805aea148ba99c1659460",
+    "ci-repair-wurst-results.json.gz": "397486bc0fa50309c67420701570b4c9772a06c7b746a4e5889644febb0a8461",
+    "final-requirement-traceability.json.gz": "defd2caa7545ec762f2d6c9be75d3b86e39772b6bf415078c0b136a281672cc8",
+    "final-requirement-traceability.md.gz": "5257026af3803ae0c6ee9e692ed1dd2854e65872cedc8d1bc7c871cd1391b0bc",
+    "revalidation-pinned-build.log.gz": "989d08e719be2462a0f8f7984c19153a983d743d9d9e63544c3267d7eadb572e",
+    "revalidation-repository-checks.log.gz": "5ce3c049333e183e8e29773964481a4790593de0061987195bb65e41de663b5c",
+    "revalidation-wurst-execution.log.gz": "013b0618c0317d7ee63118e07e9eead8b82a56d841c095f0ec2fc00f9f60adc0",
+    "revalidation-wurst-results.json.gz": "5b3f176289809ec0b4de167fa06b8c3cc959f15753d8e07d8ba15890d3d462a8"
+  },
+  "exactFinalArtifact": {
+    "bytes": 31389519,
+    "nestedDecodedCategories": {
+      "archive_metadata": 38063,
+      "campaign_metadata": 0,
+      "compiled_lua": 159749784,
+      "embedded_maps": 0,
+      "imported_assets": 6286005,
+      "map_metadata": 1123139,
+      "object_data": 131993,
+      "other": 0,
+      "pathing": 3211536,
+      "runtime_data": 45532767,
+      "terrain": 1430412
+    },
+    "sha256": "5f165310314b851b1ebdd39005a8944463e2e037e9dec49881b2f1323ba94d86"
+  },
+  "focusedChecks": {
+    "traceabilityTestsPassed": 45,
+    "workflowTestsPassed": 9
+  },
+  "format": "warcraftmap_issue_399_ci_repair_validation_v1",
+  "regeneratedReportsMatchingExistingSnapshots": [
+    "final-requirement-traceability.json.gz",
+    "final-requirement-traceability.md.gz"
+  ],
+  "repositoryChecks": {
+    "automationTestsPassed": 70,
+    "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+    "exitCode": 0,
+    "note": "Pinned Wurst execution and typechecks ran separately through the complete two-build candidate command.",
+    "scenarioTestsPassed": 874
+  },
+  "revalidation": {
+    "failedRunsConfirmed": [
+      37559815721,
+      37559823786
+    ],
+    "finalArtifactCensus": {
+      "artifactSha256": "5f165310314b851b1ebdd39005a8944463e2e037e9dec49881b2f1323ba94d86",
+      "blockerCount": 9165,
+      "candidateReady": false,
+      "executionErrors": [],
+      "jsonAndMarkdownMatchSnapshots": true,
+      "sourceRevision": "f38b3c8742af8ea2e99760ca17d8daf6a27bd1b5"
+    },
+    "pinnedWurst": {
+      "buildDirectory": "container-private /tmp/issue399",
+      "command": "./tooling/package_release.sh",
+      "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "containerRemoved": true,
+      "currentWurstSourceVerification": "pass",
+      "executionTestsPassed": 278,
+      "exitCode": 0,
+      "mapBuild": "pass",
+      "sourceBindMount": "read-only",
+      "typecheck": "pass"
+    },
+    "pullRequestChecksInspected": 406,
+    "repositoryChecks": {
+      "automationTestSeconds": 0.612,
+      "automationTestsPassed": 70,
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "exitCode": 0,
+      "note": "Pinned Wurst typecheck, all 278 execution tests, and diagnostic map packaging passed separately in the read-only-source container.",
+      "scenarioTestSeconds": 1315.17,
+      "scenarioTestsPassed": 874
+    }
+  },
+  "sourceRevision": "f38b3c8742af8ea2e99760ca17d8daf6a27bd1b5",
+  "traceability": {
+    "blockerClasses": {
+      "artifact-missing": 638,
+      "authority-missing": 527,
+      "census-mismatch": 1874,
+      "dependency-uncovered": 49,
+      "integration-missing": 2248,
+      "mechanism-missing": 614,
+      "state-unmapped": 638,
+      "static-only": 5,
+      "test-only": 20,
+      "unmapped": 638,
+      "unpersisted": 1276,
+      "unreachable": 638
+    },
+    "blockerCount": 9165,
+    "candidateReady": false,
+    "catalogues": 69,
+    "crossSystemDependencies": 49,
+    "executionErrors": [],
+    "note": "Blockers enumerate evidence gaps, not distinct gameplay defects. They remain release-blocking.",
+    "requirements": 643
+  },
+  "worktreeChangesUncommitted": true
+}

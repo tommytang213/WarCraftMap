@@ -10,6 +10,12 @@ source-only runtime and release-blocker reports intentionally fail while that
 evidence is absent. A passing general test suite, static registrations, or declared
 journey coverage cannot promote a candidate.
 
+Publication also requires zero blockers in the exhaustive
+[requirement traceability report](../reports/traceability/requirements.md).
+That gate currently reports unresolved requirement mappings and missing
+production/artifact evidence. See [the traceability contract](REQUIREMENT_TRACEABILITY.md)
+for final-W3N catalogue census, byte composition and execution requirements.
+
 The release pipeline builds every physical W3X twice and inspects the packaged W3N.
 Automated checks cover binary structure, physical-map identities, localized terrain
 and pathing, settlement and spawn representations, destination data and arrival

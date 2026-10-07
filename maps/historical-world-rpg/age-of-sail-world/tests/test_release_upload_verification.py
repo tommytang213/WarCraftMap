@@ -161,16 +161,19 @@ class ReleaseUploadTests(unittest.TestCase):
             row['stages'].update({stage: True for stage in release.runtime_acceptance.STAGES})
         release.runtime_acceptance.finalize(current)
         blocker = {'status': 'pass', 'candidateReady': True}
+        trace_fixture = {'fixture': 'traceability gate tested separately'}
         report, log = passing_evidence()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             path, config, campaign = self.fixture(root)
             for mode in ('complete', 'missing', 'releaseValidated=false', 'stale-artifact',
-                         'not-run-gate', 'missing-gate', 'stale-integration'):
+                         'not-run-gate', 'missing-gate', 'stale-integration',
+                         'missing-traceability', 'stale-traceability', 'missing-traceability-gate'):
                 with self.subTest(mode=mode):
                     recorded = copy.deepcopy(current)
                     gates = {name: 'pass' for name in ('wurstExecution', 'runtimeAcceptance',
-                                                     'packagedArtifactVerification', 'zeroCampaignBlockers')}
+                                                     'packagedArtifactVerification', 'zeroCampaignBlockers',
+                                                     'requirementTraceability')}
                     if mode == 'releaseValidated=false':
                         recorded['systems'][0]['stages']['releaseValidated'] = False
                     if mode == 'stale-integration':
@@ -179,10 +182,15 @@ class ReleaseUploadTests(unittest.TestCase):
                         gates['runtimeAcceptance'] = 'not_run'
                     if mode == 'missing-gate':
                         del gates['packagedArtifactVerification']
+                    if mode == 'missing-traceability-gate':
+                        del gates['requirementTraceability']
                     payloads = {config['archive']['campaignPath']: campaign,
                                 'Metadata/wurst-execution.json': release.canonical(report),
                                 'Metadata/wurst-execution.log': log,
                                 'Metadata/release-blocker-audit.json': release.canonical(blocker)}
+                    if mode != 'missing-traceability':
+                        payloads['Metadata/requirement-traceability.json'] = release.canonical(
+                            {'stale': True} if mode == 'stale-traceability' else trace_fixture)
                     if mode != 'missing':
                         payloads['Metadata/runtime-acceptance.json'] = release.canonical(recorded)
                     artifact = copy.deepcopy(current['evidenceLevels']['builtArtifact'])
@@ -208,6 +216,7 @@ class ReleaseUploadTests(unittest.TestCase):
                          patch.object(release, '_campaign_rows', return_value=[]), \
                          patch.object(release, 'source_identity', return_value=identity), \
                          patch.object(release.runtime_acceptance, 'audit_acceptance', return_value=copy.deepcopy(current)), \
+                         patch.object(release.traceability, 'validate_final', return_value=trace_fixture), \
                          patch('release_blocker_audit.build_report', return_value=blocker):
                         if mode == 'complete':
                             release.verify_release_archive(path, config)
@@ -245,7 +254,9 @@ class ReleaseUploadTests(unittest.TestCase):
                     report['logSha256'] = hashlib.sha256(log).hexdigest()
                     if mode == 'malformed-json':
                         report = 'pass'
-                    payloads = {config['archive']['campaignPath']: campaign}
+                    trace_fixture = {'fixture': 'traceability gate tested separately'}
+                    payloads = {config['archive']['campaignPath']: campaign,
+                                'Metadata/requirement-traceability.json': release.canonical(trace_fixture)}
                     if mode != 'missing-execution':
                         payloads['Metadata/wurst-execution.json'] = release.canonical(report)
                         payloads['Metadata/wurst-execution.log'] = log
@@ -257,7 +268,7 @@ class ReleaseUploadTests(unittest.TestCase):
                     payloads[config['archive']['manifestPath']] = release.canonical(manifest)
                     payloads[config['archive']['provenancePath']] = release.canonical({
                         'format': release.PROVENANCE_FORMAT, 'sourceRevision': 'a' * 40,
-                        'gates': {'wurstExecution': 'pass'}})
+                        'gates': {'wurstExecution': 'pass', 'requirementTraceability': 'pass'}})
                     release._write_zip(path, payloads)
                     arguments = ['verify', str(path), '--source-revision', 'a' * 40, '--evidence', str(evidence)]
                     # Structural gates intentionally succeed; exercise the real
@@ -265,6 +276,7 @@ class ReleaseUploadTests(unittest.TestCase):
                     with patch.object(release, 'load_campaign_config', return_value=SimpleNamespace(maps=[])), \
                          patch.object(release, 'inspect_campaign'), \
                          patch.object(release, 'verify_campaign_runtime'), \
+                         patch.object(release.traceability, 'validate_final', return_value=trace_fixture), \
                          patch.object(release, '_campaign_rows', return_value=[]), \
                          patch.object(sys, 'argv', arguments):
                         if mode == 'pass':
