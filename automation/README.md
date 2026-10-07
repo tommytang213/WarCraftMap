@@ -116,9 +116,10 @@ selection or replenishment, the worker promotes an eligible reservation in place
 by changing only its prefix to `[agent-ready]`; it never recreates the issue.
 Promotion first requires a freshly regenerated zero-blocker closure state with
 no open repair issues or PRs. This holds all planned reservations, including
-release/launch issue #397, regardless of completed roadmap checkboxes. Main and
-repair history are rechecked before promotion. Promotion also requires every checkbox in the immediately preceding phase of the
-authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
+release/launch issue #397, regardless of completed roadmap checkboxes. Repair
+history and then main are rechecked before each promotion, including within a
+batch. Promotion also requires every checkbox in the immediately preceding phase
+of the authoritative `docs/ROADMAP.md` to be complete. Every `Depends on: #N` line in
 the issue body is also a blocker until that referenced issue is closed. General
 `[planned]` issues without a recognizable `Phase N:` title remain untouched.
 Audit IDs cited in a planned reservation do not claim its prerequisite repairs;

@@ -342,6 +342,46 @@ class ControllerTests(unittest.TestCase):
             self.assertEqual(worker.promote_planned_issues(self.config, closure=build_closure(bundle(), A)), [])
             mutation.assert_not_called()
 
+    def test_merge_during_history_refresh_keeps_release_planned(self):
+        revision = A
+
+        def history(config, kind):
+            nonlocal revision
+            if kind == "pr":
+                revision = B
+            return []
+
+        with mock.patch.object(worker, "list_history", side_effect=history), \
+             mock.patch.object(worker, "default_branch", return_value="main"), \
+             mock.patch.object(worker, "remote_branch_oid", side_effect=lambda *_: revision), \
+             mock.patch.object(worker, "list_planned_issues", return_value=[RELEASE]), \
+             mock.patch.object(worker, "run") as mutation:
+            self.assertEqual(worker.promote_planned_issues(self.config, closure=build_closure(bundle(), A)), [])
+            mutation.assert_not_called()
+
+    def test_each_promotion_requires_current_main_and_closed_repairs(self):
+        reservations = [dict(RELEASE, number=396), RELEASE]
+        for change in ("merge", "new_repair"):
+            revision = A
+            repairs = []
+
+            def promote(*args, **kwargs):
+                nonlocal revision, repairs
+                if change == "merge":
+                    revision = B
+                else:
+                    repairs = [issue()]
+
+            with self.subTest(change=change), \
+                 mock.patch.object(worker, "list_history", side_effect=lambda _, kind: repairs if kind == "issue" else []), \
+                 mock.patch.object(worker, "default_branch", return_value="main"), \
+                 mock.patch.object(worker, "remote_branch_oid", side_effect=lambda *_: revision), \
+                 mock.patch.object(worker, "list_planned_issues", return_value=reservations), \
+                 mock.patch.object(worker, "run", side_effect=promote) as mutation:
+                self.assertEqual(worker.promote_planned_issues(self.config, closure=build_closure(bundle(), A)), reservations[:1])
+                mutation.assert_called_once()
+                self.assertEqual(mutation.call_args.args[0][3], "396")
+
     def test_pr_service_skips_optional_expansion_during_closure(self):
         state = {"issues": {"10": {"status": "pr_open", "pr": 20}}}
         with mock.patch.object(worker, "gh_json") as gh, mock.patch.object(worker, "run") as mutation:

@@ -301,18 +301,20 @@ def promote_planned_issues(config: Config, dry_run: bool = False, closure: Closu
     eligible = eligible_planned_issues(
         planned, roadmap_path(config.repo_root).read_text(encoding="utf-8"), dependency_states, closure,
     )
-    if not dry_run:
-        if eligible:
-            if remote_branch_oid(config.repo_root, default_branch(config.repo_root)) != closure.revision:
-                return []
-            latest = Closure(closure.revision, closure.fresh, closure.blockers,
-                             list_history(config, "issue"), list_history(config, "pr"), closure.reports)
-            if latest.active:
-                return []
-        for issue in eligible:
-            title = PLANNED.sub("", issue["title"]).strip()
-            run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[agent-ready] {title}"], cwd=config.repo_root)
-    return eligible
+    if dry_run:
+        return eligible
+    promoted = []
+    for issue in eligible:
+        latest = Closure(closure.revision, closure.fresh, closure.blockers,
+                         list_history(config, "issue"), list_history(config, "pr"), closure.reports)
+        # History refreshes and preceding promotions take time. Recheck main
+        # after those operations for every mutation, not once for the batch.
+        if latest.active or remote_branch_oid(config.repo_root, default_branch(config.repo_root)) != closure.revision:
+            break
+        title = PLANNED.sub("", issue["title"]).strip()
+        run(["gh", "issue", "edit", str(issue["number"]), "--title", f"[agent-ready] {title}"], cwd=config.repo_root)
+        promoted.append(issue)
+    return promoted
 
 
 def queue_refill_count(open_ready_count: int, design_blocked: bool = False) -> int:
