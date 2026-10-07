@@ -17,6 +17,7 @@ import zlib
 
 from warcraft_campaign import MpqReader, _hash
 from wurst_execution import discover, verify_evidence, WurstExecutionError
+from integration_evidence import instrument, load_contract, verify_execution_coverage
 
 FORMAT = "warcraftmap_requirement_traceability_v1"
 MARKER = re.compile(r"<!-- req:([A-Z]+-\d+) -->")
@@ -157,6 +158,12 @@ def execution_results(project, evidence, transcript, revision):
         return {}, ["current pinned Wurst execution evidence is absent"]
     try:
         verify_evidence(evidence, transcript, revision)
+        contract = load_contract(project) if (project / "package.json").is_file() else {"probes": {}}
+        if contract["probes"]:
+            # The runner hashes disposable probe-instrumented inputs. Validate
+            # their source identity/contract before reproducing those bytes;
+            # probe coverage never substitutes for requirement-specific receipts.
+            verify_execution_coverage(evidence, transcript, project, revision)
         # _assemble copies shared Wurst packages into the scenario's compile
         # namespace. Checking only files that still exist under project misses
         # deleted/new sources and every shared package.
@@ -173,7 +180,9 @@ def execution_results(project, evidence, transcript, revision):
         if recorded - {"wurst/ScenarioData.wurst"} != set(sources) - {"wurst/ScenarioData.wurst"}:
             raise WurstExecutionError("execution Wurst source set differs from current production/test inputs")
         for key, path in sources.items():
-            if evidence["inputs"].get(key) != sha(path.read_bytes()):
+            probes = {name: spec for name, spec in contract["probes"].items() if spec["path"] == key}
+            compiled = instrument(path.read_text(), probes).encode() if probes else path.read_bytes()
+            if evidence["inputs"].get(key) != sha(compiled):
                 raise WurstExecutionError(f"stale execution source: {key}")
         # Discovery cannot be reduced in an otherwise self-consistent evidence
         # file. Re-discover current tests, including any shared test packages.
@@ -197,7 +206,7 @@ def execution_results(project, evidence, transcript, revision):
             # by verify_evidence; build target/provenance validation owns the
             # source configuration. Never compare normalized bytes to the raw
             # source file and reject a valid pinned run as stale.
-            if relative == "wurst.build":
+            if relative == "wurst.build" or relative in sources:
                 continue
             # Compile-only generated/library inputs are bound by the existing
             # Wurst gate. Every local production/test input must also be current.

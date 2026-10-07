@@ -1,13 +1,80 @@
 {
-  "evidenceLevel": "source_text_static_heuristic",
+  "candidateReady": false,
+  "evidenceLevel": "automated_release_acceptance",
+  "evidenceLevels": {
+    "builtArtifact": {
+      "evidenceLevel": "built_artifact_verification",
+      "executionStatus": "not_run",
+      "failures": [
+        "same-revision built W3N/W3X verification is missing"
+      ],
+      "status": "fail"
+    },
+    "realClient": {
+      "declaredReleaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+      "evidenceLevel": "real_client_execution",
+      "executionStatus": "not_run",
+      "requiredForAutomatedCandidate": false,
+      "requiredHumanValidation": "Optional final real-client smoke: in Warcraft III 3.0 open Single Player -> Custom Campaigns, select Age of Sail: The World, and launch Begin the Campaign. This is tracked separately from automated implementation completion.",
+      "status": "not_run"
+    },
+    "runtimeIntegration": {
+      "evidenceLevel": "headless_runtime_integration",
+      "executionStatus": "not_run",
+      "failures": [
+        "required executable production-path evidence is missing"
+      ],
+      "status": "fail"
+    },
+    "sourceStatic": {
+      "evidenceLevel": "source_text_static_heuristic",
+      "executionStatus": "not_applicable",
+      "failures": [],
+      "status": "pass"
+    }
+  },
   "executionStatus": "not_run",
-  "failures": [],
-  "format": "age_of_sail_runtime_acceptance_report_v2",
-  "releaseValidationAuthority": "built W3N/W3X artifact gate",
+  "failures": [
+    "required integration executionStatus is not completed",
+    "required executable production-path evidence is missing",
+    "runtimeIntegration: required evidence does not pass",
+    "runtimeIntegration: execution is missing, not_run or stale",
+    "runtimeIntegration: verified logSha256 is missing or malformed",
+    "runtimeIntegration: verified inputSetSha256 is missing or malformed",
+    "same-revision built W3N/W3X verification is missing",
+    "builtArtifact: required evidence does not pass",
+    "builtArtifact: execution is missing, not_run or stale",
+    "builtArtifact: verified artifactSha256 is missing or malformed",
+    "campaign_launch: required production integration/release validation is incomplete",
+    "origin_selection: required production integration/release validation is incomplete",
+    "country_diplomacy: required production integration/release validation is incomplete",
+    "trade: required production integration/release validation is incomplete",
+    "army_fleet_control: required production integration/release validation is incomplete",
+    "city_capture: required production integration/release validation is incomplete",
+    "garrisons: required production integration/release validation is incomplete",
+    "administration: required production integration/release validation is incomplete",
+    "heroes: required production integration/release validation is incomplete",
+    "inventory_equipment: required production integration/release validation is incomplete",
+    "technology_institutions: required production integration/release validation is incomplete",
+    "quests_journal: required production integration/release validation is incomplete",
+    "treasures_discovery: required production integration/release validation is incomplete",
+    "save_autosave_load: required production integration/release validation is incomplete",
+    "cross_map_travel: required production integration/release validation is incomplete",
+    "world_map: required production integration/release validation is incomplete",
+    "remote_management: required production integration/release validation is incomplete",
+    "government_rewards: required production integration/release validation is incomplete",
+    "religion: required production integration/release validation is incomplete",
+    "piracy: required production integration/release validation is incomplete"
+  ],
+  "format": "age_of_sail_runtime_acceptance_report_v3",
+  "releaseReady": false,
+  "releaseValidationAuthority": "same-revision production execution and exact built W3N/W3X inspection",
   "smokeJourneys": [
     "new-campaign-core-loops",
     "save-travel-remote-return"
   ],
+  "sourceRevision": null,
+  "sourceTreeSha256": null,
   "stages": [
     "dataComplete",
     "headlessSimulationComplete",
@@ -15,266 +82,446 @@
     "playerFacingComplete",
     "releaseValidated"
   ],
-  "status": "pass",
+  "status": "fail",
   "systems": [
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "campaign_launch",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "origin_selection",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "country_diplomacy",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "trade",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "army_fleet_control",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "city_capture",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "garrisons",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "administration",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "heroes",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "inventory_equipment",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "technology_institutions",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "quests_journal",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "treasures_discovery",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "save_autosave_load",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "cross_map_travel",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "world_map",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "remote_management",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "government_rewards",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "religion",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     },
     {
       "diagnostics": [],
+      "executedTests": [],
+      "executionStatus": "not_run",
       "id": "piracy",
       "releaseRequired": true,
       "simulationOnly": false,
-      "stages": {
+      "sourceChecks": {
         "dataComplete": true,
         "headlessSimulationComplete": true,
         "playerFacingComplete": true,
         "releaseValidated": false,
         "runtimeIntegrated": true
+      },
+      "stages": {
+        "dataComplete": true,
+        "headlessSimulationComplete": false,
+        "playerFacingComplete": false,
+        "releaseValidated": false,
+        "runtimeIntegrated": false
       }
     }
   ]

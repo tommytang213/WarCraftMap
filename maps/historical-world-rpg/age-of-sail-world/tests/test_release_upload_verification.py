@@ -1,5 +1,6 @@
 """Final payload checks are independent of pre-packaging validation results."""
 import hashlib
+import copy
 import json
 from pathlib import Path
 import struct
@@ -132,6 +133,97 @@ class ReleaseNormalizationTests(unittest.TestCase):
 
 
 class ReleaseUploadTests(unittest.TestCase):
+    def test_malformed_candidate_configuration_is_rejected_without_attribute_error(self):
+        original = json.loads(release.CONFIG.read_text())
+        variants = ["pass", [], None]
+        variants += [{**original, key: value}
+                     for key in ("requiredGates", "archive", "runtimeTarget", "audit", "releaseDocuments")
+                     for value in ("pass", None)]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "release.json"
+            for config in variants:
+                path.write_text(json.dumps(config))
+                with self.subTest(config=config), self.assertRaisesRegex(release.PackagingError, "RC configuration stage failed"):
+                    release.load_release_config(path)
+
+    def test_copied_archive_requires_exact_acceptance_and_completed_publication_gates(self):
+        from wurst_execution_fixture import passing_evidence
+        identity = {'sourceRevision': 'a' * 40, 'sourceTreeSha256': 'b' * 64}
+        current = release.runtime_acceptance.audit_sources()
+        current.update(identity)
+        current['executionStatus'] = 'completed'
+        for level in ('runtimeIntegration', 'builtArtifact'):
+            current['evidenceLevels'][level].update(identity, status='pass', executionStatus='completed', failures=[])
+        current['evidenceLevels']['runtimeIntegration'].update(logSha256='c' * 64, inputSetSha256='d' * 64)
+        current['evidenceLevels']['builtArtifact']['artifactSha256'] = 'e' * 64
+        for row in current['systems']:
+            row.update(executionStatus='completed', executedTests=['synthetic protocol fixture'])
+            row['stages'].update({stage: True for stage in release.runtime_acceptance.STAGES})
+        release.runtime_acceptance.finalize(current)
+        blocker = {'status': 'pass', 'candidateReady': True}
+        trace_fixture = {'fixture': 'traceability gate tested separately'}
+        report, log = passing_evidence()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path, config, campaign = self.fixture(root)
+            for mode in ('complete', 'missing', 'releaseValidated=false', 'stale-artifact',
+                         'not-run-gate', 'missing-gate', 'stale-integration',
+                         'missing-traceability', 'stale-traceability', 'missing-traceability-gate'):
+                with self.subTest(mode=mode):
+                    recorded = copy.deepcopy(current)
+                    gates = {name: 'pass' for name in ('wurstExecution', 'runtimeAcceptance',
+                                                     'packagedArtifactVerification', 'zeroCampaignBlockers',
+                                                     'requirementTraceability')}
+                    if mode == 'releaseValidated=false':
+                        recorded['systems'][0]['stages']['releaseValidated'] = False
+                    if mode == 'stale-integration':
+                        recorded['evidenceLevels']['runtimeIntegration']['sourceRevision'] = 'c' * 40
+                    if mode == 'not-run-gate':
+                        gates['runtimeAcceptance'] = 'not_run'
+                    if mode == 'missing-gate':
+                        del gates['packagedArtifactVerification']
+                    if mode == 'missing-traceability-gate':
+                        del gates['requirementTraceability']
+                    payloads = {config['archive']['campaignPath']: campaign,
+                                'Metadata/wurst-execution.json': release.canonical(report),
+                                'Metadata/wurst-execution.log': log,
+                                'Metadata/release-blocker-audit.json': release.canonical(blocker)}
+                    if mode != 'missing-traceability':
+                        payloads['Metadata/requirement-traceability.json'] = release.canonical(
+                            {'stale': True} if mode == 'stale-traceability' else trace_fixture)
+                    if mode != 'missing':
+                        payloads['Metadata/runtime-acceptance.json'] = release.canonical(recorded)
+                    artifact = copy.deepcopy(current['evidenceLevels']['builtArtifact'])
+                    if mode == 'stale-artifact':
+                        artifact['sourceRevision'] = 'c' * 40
+                    manifest = {'format': release.MANIFEST_FORMAT,
+                                'releaseCandidateId': config['releaseCandidateId'],
+                                'sourceRevision': identity['sourceRevision'],
+                                'schemaCompatibility': {'supportedSaveSchemas': [1, 2, 3, 4, 5, 6, 7]},
+                                'artifactValidation': artifact,
+                                'artifacts': [{'kind': 'payload', 'archivePath': name, 'bytes': len(value),
+                                               'sha256': release.sha_bytes(value)} for name, value in payloads.items()]}
+                    payloads[config['archive']['manifestPath']] = release.canonical(manifest)
+                    payloads[config['archive']['provenancePath']] = release.canonical({
+                        'format': release.PROVENANCE_FORMAT, 'sourceRevision': identity['sourceRevision'],
+                        'sourceIdentity': identity, 'gates': gates})
+                    release._write_zip(path, payloads)
+                    # Each expensive verifier has separate production tests;
+                    # here exercise the final publication comparison boundary.
+                    with patch.object(release, 'load_campaign_config'), \
+                         patch.object(release, 'inspect_campaign'), \
+                         patch.object(release, 'verify_campaign_runtime'), \
+                         patch.object(release, '_campaign_rows', return_value=[]), \
+                         patch.object(release, 'source_identity', return_value=identity), \
+                         patch.object(release.runtime_acceptance, 'audit_acceptance', return_value=copy.deepcopy(current)), \
+                         patch.object(release.traceability, 'validate_final', return_value=trace_fixture), \
+                         patch('release_blocker_audit.build_report', return_value=blocker):
+                        if mode == 'complete':
+                            release.verify_release_archive(path, config)
+                        else:
+                            with self.assertRaises(release.PackagingError):
+                                release.verify_release_archive(path, config)
+
     def test_execution_failures_block_upload_even_with_checksum_valid_packaging(self):
         from wurst_execution_fixture import passing_evidence
         with tempfile.TemporaryDirectory() as directory:
@@ -140,7 +232,8 @@ class ReleaseUploadTests(unittest.TestCase):
             evidence = root / 'upload-evidence.json'
             with zipfile.ZipFile(path) as archive:
                 initial_manifest = json.loads(archive.read(config['archive']['manifestPath']))
-            for mode in ('pass', 'assertion', 'exception', 'absent-tool', 'missing-execution', 'incomplete', 'zero'):
+            for mode in ('pass', 'assertion', 'exception', 'absent-tool', 'missing-execution',
+                         'incomplete', 'zero', 'not-run', 'missing-status', 'malformed-json'):
                 with self.subTest(mode=mode):
                     report, log = passing_evidence()
                     if mode == 'assertion':
@@ -154,7 +247,13 @@ class ReleaseUploadTests(unittest.TestCase):
                     elif mode == 'zero':
                         report.update(expected=[], tests=[], discovered=0, succeeded=0)
                         log = b'Running tests\nTests succeeded: 0/0\nFinished running tests\n'
+                    elif mode == 'not-run':
+                        report['executionStatus'] = 'not_run'
+                    elif mode == 'missing-status':
+                        del report['executionStatus']
                     report['logSha256'] = hashlib.sha256(log).hexdigest()
+                    if mode == 'malformed-json':
+                        report = 'pass'
                     trace_fixture = {'fixture': 'traceability gate tested separately'}
                     payloads = {config['archive']['campaignPath']: campaign,
                                 'Metadata/requirement-traceability.json': release.canonical(trace_fixture)}
@@ -181,30 +280,42 @@ class ReleaseUploadTests(unittest.TestCase):
                          patch.object(release, '_campaign_rows', return_value=[]), \
                          patch.object(sys, 'argv', arguments):
                         if mode == 'pass':
-                            self.assertEqual(0, upload.main())
-                            self.assertTrue(evidence.exists())
-                            evidence.unlink()
+                            # A passing unrelated suite is not production-path
+                            # integration, even with consistent ZIP checksums.
+                            with self.assertRaisesRegex(release.PackagingError, 'automated candidate acceptance failed'):
+                                upload.main()
+                            self.assertFalse(evidence.exists())
                         else:
                             with self.assertRaisesRegex(release.PackagingError, 'Wurst execution evidence'):
                                 upload.main()
                             self.assertFalse(evidence.exists())
 
-    def test_current_headless_failure_blocks_packaging_despite_passing_saved_report(self):
-        config = release.load_release_config()
-        saved = json.loads((release.PROJECT / config['requiredGates']['releaseBlocker']).read_text())
-        self.assertEqual('pass', saved['status'])
+    def test_source_only_gate_cannot_authorize_candidate_publication(self):
+        report = release.runtime_acceptance.audit_sources()
+        # A caller cannot promote source metadata by changing only PASS flags.
+        report.update(status='pass', candidateReady=True)
+        with self.assertRaisesRegex(release.PackagingError, 'automated candidate acceptance failed'):
+            release.require_candidate_ready(report)
 
-        def reject_journey(*arguments):
-            if arguments == ('tooling/release_blocker_audit.py',):
-                raise release.PackagingError('headless campaign journey failed')
-
-        with patch.object(release, '_run_gate', side_effect=reject_journey), \
-             patch.object(release, 'build_campaign') as build, \
-             patch.object(release, '_write_zip') as publish:
-            with self.assertRaisesRegex(release.PackagingError, 'headless campaign journey failed'):
-                release.build_release_candidate(revision='a' * 40)
-            build.assert_not_called()
-            publish.assert_not_called()
+    def test_malformed_publication_metadata_fails_with_a_gate_diagnostic(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, config, _ = self.fixture(Path(directory))
+            with zipfile.ZipFile(path) as archive:
+                original = {name: archive.read(name) for name in archive.namelist()}
+            manifest_name = config['archive']['manifestPath']
+            provenance_name = config['archive']['provenancePath']
+            manifest = json.loads(original[manifest_name])
+            variants = [(name, value) for name in (manifest_name, provenance_name)
+                        for value in ('pass', [], None)]
+            variants += [(manifest_name, {**manifest, field: value})
+                         for field, value in (('schemaCompatibility', 'pass'),
+                                              ('artifacts', 'pass'), ('artifacts', ['pass']),
+                                              ('artifacts', [{}]), ('sourceRevision', None))]
+            for name, value in variants:
+                with self.subTest(name=name, value=value):
+                    release._write_zip(path, {**original, name: release.canonical(value)})
+                    with self.assertRaisesRegex(release.PackagingError, 'release inspection stage failed'):
+                        release.verify_release_archive(path, config)
 
     def test_provenance_includes_selector_compiler_options_and_shared_tooling(self):
         inputs = release.authoritative_hashes()
@@ -237,8 +348,10 @@ class ReleaseUploadTests(unittest.TestCase):
     def test_final_archive_rechecks_extracted_runtime_despite_matching_checksums(self):
         with tempfile.TemporaryDirectory() as directory:
             path, config, campaign = self.fixture(Path(directory))
-            def reject(extracted, campaign_config):
+            def reject(extracted, campaign_config, **identity):
                 self.assertEqual(campaign, extracted.read_bytes())
+                self.assertEqual('a' * 40, identity['revision'])
+                self.assertEqual(64, len(identity['source_tree_sha256']))
                 raise release.PackagingError('invalid nested map structure')
             with patch.object(release, 'load_campaign_config', return_value=SimpleNamespace(maps=[])), \
                  patch.object(release, 'inspect_campaign'), \

@@ -21,7 +21,7 @@ import runtime_acceptance
 CONFIG = PROJECT / "scenario/release-blocker-gate.json"
 REPORT_JSON = PROJECT / "reports/release-blocker-audit.json"
 REPORT_MD = PROJECT / "reports/release-blocker-audit.md"
-REPORT_FORMAT = "age_of_sail_release_blocker_report_v1"
+REPORT_FORMAT = "age_of_sail_release_blocker_report_v2"
 STABLE_ID = re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$")
 BLOCKING_MARKERS = re.compile(r"\b(?:TODO|TBD|FIXME)\b|placeholder that blocks", re.I)
 
@@ -48,7 +48,7 @@ def _finding(stable_id, blocker_class, context, message, severity="campaign_bloc
 def _audit_reports(config):
     findings, audited = [], []
     paths = sorted({p for pattern in config["reportGlobs"] for p in PROJECT.glob(pattern)
-                    if p.is_file() and p not in {REPORT_JSON}})
+                    if p.is_file() and p not in {REPORT_JSON, runtime_acceptance.REPORT_JSON}})
     for path in paths:
         relative = path.relative_to(PROJECT).as_posix()
         data = _load(path)
@@ -186,7 +186,7 @@ def date_year(value):
         raise GateError(f"invalid campaign date {value!r}")
 
 
-def build_report(*, injected_findings=()):
+def build_report(*, injected_findings=(), execution=None, execution_log=None, revision=None, campaign=None):
     config = _load(CONFIG)
     taxonomy = {row["id"]: row for row in config["taxonomy"]}
     if "campaign_blocker" not in taxonomy or "critical_unclassified" not in taxonomy:
@@ -195,16 +195,22 @@ def build_report(*, injected_findings=()):
     inputs, input_findings = _audit_inputs(config)
     save_compatibility = _audit_release_save_compatibility(config)
     journeys, soak = _run_journeys(config)
-    runtime = runtime_acceptance.audit_sources()
+    # Recompute from the transcript and exact artifact. Saved PASS flags and
+    # caller-declared journey/system coverage cannot authorize this gate.
+    runtime = runtime_acceptance.audit_acceptance(execution=execution, execution_log=execution_log,
+                                                  revision=revision, campaign=campaign)
     runtime_findings = []
     for row in runtime["systems"]:
-        # Source audit establishes readiness only. The RC packager separately
-        # inspects compiled Lua and every built W3X before promotion.
-        if row["releaseRequired"] and not row["stages"]["playerFacingComplete"]:
+        if row["releaseRequired"] and (not row["stages"]["releaseValidated"] or
+                                       not row["stages"]["runtimeIntegrated"] or
+                                       row.get("executionStatus") != "completed"):
             token = row["id"].upper().replace("_", "-")
             runtime_findings.append(_finding(f"RUNTIME-MISSING-{token}", "missing_runtime_integration",
                                              "scenario/runtime-integration.json",
-                                             f"{row['id']} is not player-facing in production sources"))
+                                             f"{row['id']} lacks same-revision executed production integration and built-artifact verification"))
+    if runtime["status"] != "pass" or not runtime["candidateReady"]:
+        runtime_findings.append(_finding("RUNTIME-EVIDENCE-INCOMPLETE", "missing_runtime_integration",
+                                         "runtime-acceptance", "; ".join(runtime["failures"])))
     findings = sorted([*report_findings, *input_findings, *runtime_findings,
                        *injected_findings], key=lambda x: x["id"])
     for finding in findings:
@@ -221,6 +227,9 @@ def build_report(*, injected_findings=()):
                                        "known limitation is not explicitly non-blocking and bounded",
                                        "critical_unclassified"))
     return {"format": REPORT_FORMAT, "status": "pass" if not unresolved else "fail",
+            "candidateReady": not unresolved and runtime["candidateReady"],
+            "sourceRevision": runtime["sourceRevision"], "sourceTreeSha256": runtime["sourceTreeSha256"],
+            "evidenceLevels": runtime["evidenceLevels"],
             "gate": "No known campaign-blocking defects", "taxonomy": config["taxonomy"],
             "blockerClasses": config["blockerClasses"], "releaseInputs": inputs,
             "auditedReports": audited, "journeys": journeys,
@@ -246,7 +255,7 @@ def render_markdown(report):
     for row in report["journeys"]:
         lines.append(f"| `{row['id']}` | {row['branch']} | {row['seed']} | {len(row['regions'])} | {len(row['physicalMaps'])} | {row['status']} |")
     lines += ["", "## Player-facing runtime acceptance", "",
-              "These stages record source evidence, including test references; they do not establish Lua execution or control-flow reachability.", "",
+              "Static readiness, executed production integration, built-artifact inspection and real-client status are separate. Source/test names and declared itineraries cannot satisfy integration. Missing same-revision execution or artifact evidence blocks this gate.", "",
               "| System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |",
               "|---|---:|---:|---:|---:|---:|"]
     for row in report["runtimeAcceptance"]["systems"]:
@@ -272,8 +281,18 @@ def render_markdown(report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--execution-dir", type=Path)
+    parser.add_argument("--campaign", type=Path)
+    parser.add_argument("--source-revision")
     args = parser.parse_args(argv)
-    report = build_report()
+    execution = log = None
+    if args.execution_dir:
+        try:
+            execution = json.loads((args.execution_dir / "results.json").read_text())
+            log = (args.execution_dir / "execution.log").read_bytes()
+        except (OSError, ValueError):
+            execution = {}
+    report = build_report(execution=execution, execution_log=log, revision=args.source_revision, campaign=args.campaign)
     encoded = json.dumps(report, indent=2, sort_keys=True) + "\n"
     human = render_markdown(report)
     if args.write:

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Source/compiled-text heuristics and binary structure checks for campaigns."""
+"""Fail-closed acceptance with separate static, execution, artifact and client levels."""
 from __future__ import annotations
 import argparse, hashlib, json, re, struct, sys, zipfile
 from pathlib import Path
 
 PROJECT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(PROJECT/"tooling"))
+sys.path.insert(0,str(PROJECT.parent/"_shared/tooling"))
+from integration_evidence import source_identity, verify_execution_coverage
+from wurst_execution import WurstExecutionError, source_revision
 from forsaken_kingdom_map import MapInfoError, validate_w3i_structure
 MANIFEST=PROJECT/"scenario/runtime-integration.json"
 REPORT_JSON=PROJECT/"reports/runtime-acceptance.json"; REPORT_MD=PROJECT/"reports/runtime-acceptance.md"
@@ -50,7 +53,11 @@ def _evidence_ok(items,label):
  if not isinstance(items,list) or not items: raise RuntimeAcceptanceError(f"{label} requires evidence")
  failures=[]
  for item in items:
-  if not isinstance(item,dict) or set(item)!={"path","contains"} or not item["contains"]: raise RuntimeAcceptanceError(f"{label} has malformed evidence")
+  if (not isinstance(item,dict) or set(item)!={"path","contains"} or
+      not isinstance(item["path"],str) or not item["path"] or
+      not isinstance(item["contains"],list) or not item["contains"] or
+      any(not isinstance(token,str) or not token for token in item["contains"])):
+   raise RuntimeAcceptanceError(f"{label} has malformed evidence")
   try: text=_read(item["path"])
   except RuntimeAcceptanceError as error: failures.append(str(error)); continue
   missing=[token for token in item["contains"] if token not in text]
@@ -60,13 +67,25 @@ def _evidence_ok(items,label):
 def load_manifest(path=MANIFEST):
  try: data=json.loads(path.read_text(encoding="utf-8"))
  except (OSError,json.JSONDecodeError) as error: raise RuntimeAcceptanceError(f"cannot read runtime integration manifest: {error}") from error
- if data.get("format")!=FORMAT or data.get("formatVersion")!=1: raise RuntimeAcceptanceError("unsupported runtime integration manifest")
- systems=data.get("systems"); ids=[x.get("id") for x in systems or []]
- if not systems or len(ids)!=len(set(ids)) or any(not isinstance(x,str) or not x for x in ids): raise RuntimeAcceptanceError("runtime integration system IDs must be unique non-empty strings")
+ if not isinstance(data,dict) or data.get("format")!=FORMAT or data.get("formatVersion")!=1: raise RuntimeAcceptanceError("unsupported runtime integration manifest")
+ systems=data.get("systems")
+ if not isinstance(systems,list) or any(not isinstance(x,dict) for x in systems): raise RuntimeAcceptanceError("runtime integration systems must be JSON objects")
+ if any(type(row.get(field)) is not bool for row in systems for field in ("releaseRequired","simulationOnly")):
+  raise RuntimeAcceptanceError("runtime integration releaseRequired and simulationOnly must be booleans")
+ ids=[x.get("id") for x in systems]
+ if not systems or any(not isinstance(x,str) or not x for x in ids) or len(ids)!=len(set(ids)): raise RuntimeAcceptanceError("runtime integration system IDs must be unique non-empty strings")
+ journeys=data.get("smokeJourneys")
+ if (not isinstance(journeys,list) or any(not isinstance(row,dict) or
+     not isinstance(row.get("id"),str) or not row["id"] or
+     not isinstance(row.get("systems"),list) or
+     any(not isinstance(system,str) for system in row["systems"]) for row in journeys)):
+  raise RuntimeAcceptanceError("runtime smoke journeys must be JSON objects with IDs and system lists")
  return data
 
 def audit_sources(path=MANIFEST):
  manifest=load_manifest(path); rows=[]; failures=[]
+ client=json.loads(_read("scenario/release/phase9-rc1.json"))
+ if not isinstance(client,dict): raise RuntimeAcceptanceError("real-client release configuration must be a JSON object")
  for system in manifest["systems"]:
   required=system.get("releaseRequired") is True; simulation=system.get("simulationOnly") is True
   if required and simulation: raise RuntimeAcceptanceError(f"{system['id']}: required system cannot be simulation-only")
@@ -77,9 +96,12 @@ def audit_sources(path=MANIFEST):
   verified,missing=_evidence_ok(system.get("runtimeVerification"),f"{system['id']}.runtimeVerification"); diagnostics+=missing
   checks["runtimeIntegrated"] &= persistence and checks["dataComplete"] and checks["headlessSimulationComplete"]
   checks["playerFacingComplete"] &= checks["runtimeIntegrated"]
-  checks["releaseValidated"]=False # only a built artifact may promote this
+  checks["releaseValidated"]=False
   if required and (not checks["playerFacingComplete"] or not verified): failures.append(f"{system['id']}: source runtime readiness is incomplete")
-  rows.append({"id":system["id"],"releaseRequired":required,"simulationOnly":simulation,"stages":checks,"diagnostics":diagnostics})
+  rows.append({"id":system["id"],"releaseRequired":required,"simulationOnly":simulation,
+               "sourceChecks":dict(checks),"stages":{**checks,"headlessSimulationComplete":False,
+               "runtimeIntegrated":False,"playerFacingComplete":False},"diagnostics":diagnostics,
+               "executionStatus":"not_run","executedTests":[]})
  required_ids={x["id"] for x in manifest["systems"] if x.get("releaseRequired") is True}
  omitted=sorted(MANDATORY_SYSTEMS-required_ids)
  if omitted: failures.append(f"release-required systems are omitted or exempted: {omitted}")
@@ -91,15 +113,133 @@ def audit_sources(path=MANIFEST):
   if not ok: failures+=missing
  uncovered=sorted(required_ids-covered)
  if uncovered: failures.append(f"runtime smoke journeys omit required systems: {uncovered}")
- return {"format":"age_of_sail_runtime_acceptance_report_v2","status":"pass" if not failures else "fail","stages":list(STAGES),"systems":rows,"failures":failures,"evidenceLevel":"source_text_static_heuristic","executionStatus":"not_run","releaseValidationAuthority":"built W3N/W3X artifact gate","smokeJourneys":[x["id"] for x in manifest.get("smokeJourneys",[])]}
+ report={"format":"age_of_sail_runtime_acceptance_report_v3","stages":list(STAGES),"systems":rows,
+         "sourceRevision":None,"sourceTreeSha256":None,
+         "evidenceLevel":"automated_release_acceptance","executionStatus":"not_run",
+         "releaseValidationAuthority":"same-revision production execution and exact built W3N/W3X inspection",
+         "evidenceLevels":{
+          "sourceStatic":{"status":"pass" if not failures else "fail","evidenceLevel":"source_text_static_heuristic","executionStatus":"not_applicable","failures":failures},
+          "runtimeIntegration":{"status":"fail","evidenceLevel":"headless_runtime_integration","executionStatus":"not_run","failures":["required executable production-path evidence is missing"]},
+          "builtArtifact":{"status":"fail","evidenceLevel":"built_artifact_verification","executionStatus":"not_run","failures":["same-revision built W3N/W3X verification is missing"]},
+          "realClient":{"status":"not_run","evidenceLevel":"real_client_execution","executionStatus":"not_run","requiredForAutomatedCandidate":False,
+                        "declaredReleaseStatus":client.get("releaseStatus"),"requiredHumanValidation":client.get("requiredHumanValidation")}},
+         "smokeJourneys":[x["id"] for x in manifest.get("smokeJourneys",[])]}
+ return finalize(report)
+
+
+def finalize(report):
+ if not isinstance(report,dict): raise RuntimeAcceptanceError("runtime acceptance report must be a JSON object")
+ failures=[]
+ levels=report.get("evidenceLevels")
+ if not isinstance(levels,dict): levels={}
+ if report.get("executionStatus")!="completed":
+  failures.append("required integration executionStatus is not completed")
+ revision=report.get("sourceRevision"); tree=report.get("sourceTreeSha256")
+ identity_valid=isinstance(revision,str) and bool(re.fullmatch(r"[0-9a-f]{40}",revision)) and isinstance(tree,str) and bool(re.fullmatch(r"[0-9a-f]{64}",tree))
+ for level in ("sourceStatic","runtimeIntegration","builtArtifact"):
+  evidence=levels.get(level)
+  if not isinstance(evidence,dict):
+   failures.append(f"{level}: required evidence is missing or malformed")
+   continue
+  diagnostics=evidence.get("failures")
+  if not isinstance(diagnostics,list) or any(not isinstance(x,str) for x in diagnostics):
+   failures.append(f"{level}: malformed evidence failures")
+  else: failures.extend(diagnostics)
+  if evidence.get("status")!="pass": failures.append(f"{level}: required evidence does not pass")
+  if level!="sourceStatic" and (evidence.get("executionStatus")!="completed" or
+      not identity_valid or evidence.get("sourceRevision")!=revision or evidence.get("sourceTreeSha256")!=tree):
+   failures.append(f"{level}: execution is missing, not_run or stale")
+  expected_level={"runtimeIntegration":"headless_runtime_integration","builtArtifact":"built_artifact_verification"}.get(level)
+  if expected_level and evidence.get("evidenceLevel")!=expected_level:
+   failures.append(f"{level}: declared/static metadata cannot replace executable evidence")
+  for field in {"runtimeIntegration":("logSha256","inputSetSha256"),
+                "builtArtifact":("artifactSha256",)}.get(level,()):
+   if not isinstance(evidence.get(field),str) or not re.fullmatch(r"[0-9a-f]{64}",evidence[field]):
+    failures.append(f"{level}: verified {field} is missing or malformed")
+ systems=report.get("systems")
+ if not isinstance(systems,list) or not systems:
+  failures.append("required system evidence is missing or malformed")
+  systems=[]
+ required_ids=set(); seen=set()
+ for row in systems:
+  if not isinstance(row,dict) or not isinstance(row.get("id"),str) or not row["id"] or type(row.get("releaseRequired")) is not bool or not isinstance(row.get("stages"),dict):
+   failures.append("required system evidence is malformed")
+   continue
+  if row["id"] in seen: failures.append(f"{row['id']}: duplicate system evidence")
+  seen.add(row["id"])
+  if row["releaseRequired"]: required_ids.add(row["id"])
+  tests=row.get("executedTests")
+  tests_valid=isinstance(tests,list) and bool(tests) and all(isinstance(x,str) and x for x in tests)
+  if row["releaseRequired"] and (row.get("executionStatus")!="completed" or not tests_valid or
+      row.get("simulationOnly") is not False or any(row["stages"].get(stage) is not True for stage in STAGES)):
+   failures.append(f"{row['id']}: required production integration/release validation is incomplete")
+ omitted=sorted(MANDATORY_SYSTEMS-required_ids)
+ if omitted: failures.append(f"release-required system evidence is missing or exempted: {omitted}")
+ client=levels.get("realClient")
+ if not isinstance(client,dict) or not client.get("executionStatus"):
+  failures.append("real-client execution status must be explicit, even when not_run")
+ report["failures"]=failures
+ report["status"]="fail" if failures else "pass"
+ report["candidateReady"]=not failures
+ report["releaseReady"]=not failures and isinstance(client,dict) and client.get("status")=="pass" and client.get("executionStatus")=="completed" and client.get("sourceRevision")==revision and client.get("sourceTreeSha256")==tree
+ return report
+
+
+def audit_acceptance(path=MANIFEST, *, execution=None, execution_log=None, revision=None, campaign=None):
+ report=audit_sources(path)
+ if execution is None and campaign is None: return report
+ try:
+  revision=source_revision(PROJECT,revision)
+  identity=source_identity(PROJECT,revision)
+ except (ValueError,WurstExecutionError) as error:
+  report["evidenceLevels"]["runtimeIntegration"]["failures"].append(str(error))
+  return finalize(report)
+ report.update(identity)
+ if execution is not None:
+  level=report["evidenceLevels"]["runtimeIntegration"]
+  level.update(identity)
+  try:
+   coverage=verify_execution_coverage(execution,execution_log or b"",PROJECT,revision)
+   level.update(status="pass",executionStatus="completed",failures=[],
+                logSha256=execution["logSha256"],inputSetSha256=execution["inputSetSha256"])
+   report["executionStatus"]="completed"
+   for row in report["systems"]:
+    tests=coverage.get(row["id"],[])
+    row["executedTests"]=tests
+    row["executionStatus"]="completed" if tests else "not_run"
+    ready=bool(tests) and row["sourceChecks"]["playerFacingComplete"]
+    row["stages"].update(headlessSimulationComplete=bool(tests),runtimeIntegrated=ready,playerFacingComplete=ready)
+    if row["releaseRequired"] and not ready:
+     level["failures"].append(f"{row['id']}: no passing test exercised all required production entry points")
+   if level["failures"]: level["status"]="fail"
+  except (OSError,ValueError,KeyError,TypeError,AttributeError,WurstExecutionError) as error:
+   level.update(status="fail",executionStatus="invalid",failures=[str(error)])
+ if campaign is not None:
+  try:
+   from package_release_candidate import verify_campaign_runtime, load_campaign_config
+   artifact=verify_campaign_runtime(Path(campaign),load_campaign_config(PROJECT/"physical-maps.json"),
+                                    revision=revision,source_tree_sha256=identity["sourceTreeSha256"])
+   report["evidenceLevels"]["builtArtifact"]=artifact
+   for row in report["systems"]:
+    row["stages"]["releaseValidated"]=row["stages"]["runtimeIntegrated"] and artifact["status"]=="pass"
+  except (OSError,ValueError,RuntimeError,KeyError,TypeError,AttributeError) as error:
+   report["evidenceLevels"]["builtArtifact"].update(status="fail",executionStatus="invalid",failures=[str(error)])
+ if source_identity(PROJECT,revision)!=identity:
+  report["evidenceLevels"]["runtimeIntegration"].update(status="fail",failures=["source changed during acceptance"])
+ return finalize(report)
 
 def render_markdown(report):
- lines=["# Playable runtime acceptance","",f"Result: **{report['status'].upper()}**","","Each stage below records source text found, including references to tests; this audit does not execute those tests or establish control-flow reachability. Built W3N/W3X structure and compiled-text checks are separate from real-client smoke.","","| System | Data | Headless | Runtime | Player-facing | Release validated |","|---|---:|---:|---:|---:|---:|"]
+ lines=["# Playable runtime acceptance","",f"Result: **{report['status'].upper()}**", "",f"Automated candidate ready: **{str(report['candidateReady']).lower()}**", "",
+        "Source markers establish static readiness only. Production integration requires passing executable tests with production-entry traces for the same revision and source contents. Artifact verification inspects the exact built bytes; it does not execute Warcraft III.","",
+        "| Evidence level | Status | Execution |","|---|---|---|"]
+ for name,level in report["evidenceLevels"].items(): lines.append(f"| {name} | {level['status']} | {level['executionStatus']} |")
+ lines += ["",f"Real-client release status: `{report['evidenceLevels']['realClient']['declaredReleaseStatus']}`."]
+ lines += ["","| System | Data | Headless | Runtime | Player-facing | Release validated |","|---|---:|---:|---:|---:|---:|"]
  for row in report["systems"]:
-  stage=row["stages"]; mark=lambda key:"yes" if stage[key] else "artifact gate"
+  stage=row["stages"]; mark=lambda key:"yes" if stage[key] else "no"
   lines.append(f"| `{row['id']}` | {mark('dataComplete')} | {mark('headlessSimulationComplete')} | {mark('runtimeIntegrated')} | {mark('playerFacingComplete')} | {mark('releaseValidated')} |")
  lines += ["","## Declared smoke journeys (source references only)",""]+[f"- `{x}`" for x in report["smokeJourneys"]]+["","## Failures",""]
- lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["No unresolved source-readiness failures. The RC packager supplies the built-artifact gate; real-client smoke is tracked separately."]
+ lines += [f"- {x}" for x in report["failures"]] if report["failures"] else ["Automated integration and artifact checks passed. Real-client status is tracked separately."]
  return "\n".join(lines)+"\n"
 
 def _lua_code_and_strings(script, string_tokens=False):
@@ -191,6 +331,8 @@ def inspect_built_map(path,expected_map_id=None,bootstrap=None):
   script=_archive_read(path,"war3map.lua"); w3e=_archive_read(path,"war3map.w3e"); wpm=_archive_read(path,"war3map.wpm"); units=_archive_read(path,"war3mapUnits.doo")
   runtime=json.loads(_archive_read(path,"runtime/scenario-runtime.json")); physical=json.loads(_archive_read(path,"runtime/physical-map.json")); w3i=_archive_read(path,"war3map.w3i")
  except (KeyError,OSError,ValueError,json.JSONDecodeError) as error: raise RuntimeAcceptanceError(f"built map is missing or has invalid required content: {error}") from error
+ if not isinstance(runtime,dict) or not isinstance(physical,dict) or not isinstance(runtime.get("ids",{}),dict):
+  raise RuntimeAcceptanceError("built map runtime and physical metadata must be JSON objects")
  compiled=verify_compiled_bootstrap(script) if bootstrap is True else verify_compiled_script(script)
  failures=list(compiled["failures"]); tw=th=objects=0
  try:
@@ -234,7 +376,15 @@ def verify_campaign_maps(maps):
  return {"status":"pass" if not failures else "fail","failures":failures,"maps":rows}
 
 def main(argv=None):
- parser=argparse.ArgumentParser(description=__doc__); parser.add_argument("--write",action="store_true"); args=parser.parse_args(argv); report=audit_sources()
+ parser=argparse.ArgumentParser(description=__doc__); parser.add_argument("--write",action="store_true")
+ parser.add_argument("--execution-dir",type=Path); parser.add_argument("--campaign",type=Path); parser.add_argument("--source-revision")
+ args=parser.parse_args(argv)
+ execution=log=None
+ if args.execution_dir:
+  try:
+   execution=json.loads((args.execution_dir/"results.json").read_text()); log=(args.execution_dir/"execution.log").read_bytes()
+  except (OSError,ValueError): execution={}
+ report=audit_acceptance(execution=execution,execution_log=log,revision=args.source_revision,campaign=args.campaign)
  encoded=json.dumps(report,indent=2,sort_keys=True)+"\n"; human=render_markdown(report)
  if args.write: REPORT_JSON.parent.mkdir(parents=True,exist_ok=True); REPORT_JSON.write_text(encoded); REPORT_MD.write_text(human)
  elif not REPORT_JSON.is_file() or REPORT_JSON.read_text()!=encoded or not REPORT_MD.is_file() or REPORT_MD.read_text()!=human: raise RuntimeAcceptanceError("runtime-acceptance reports are missing or stale; run with --write")

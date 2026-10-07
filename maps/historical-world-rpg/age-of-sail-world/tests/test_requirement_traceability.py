@@ -20,6 +20,7 @@ sys.path.insert(0, str(PROJECT.parent / "_shared/tooling"))
 import requirement_traceability as trace
 import requirement_traceability_audit as scenario
 import package_release_candidate as release
+import integration_evidence as integration
 import wurst_execution as execution
 from warcraft_campaign import write_mpq
 
@@ -86,6 +87,7 @@ class TraceabilityTests(unittest.TestCase):
         tests, errors = execution.parse_results(log.decode(), expected)
         inputs = {f"wurst/{name}": execution.sha((self.project / "wurst" / name).read_bytes()) for name in ("Adapter.wurst", "Fixture.wurst")}
         report = {"format": execution.FORMAT, "status": "pass", "sourceRevision": "a"*40, "returnCode": 0,
+                  "executionStatus": "completed",
                   "expected": expected, "tests": tests, "errors": errors, "inputs": inputs,
                   "inputSetSha256": execution.sha(execution.canonical(inputs)), "logSha256": execution.sha(log),
                   "compiler": {"sha256": execution.PINNED_COMPILER_SHA256}, "discovered": 1, "succeeded": 1}
@@ -107,6 +109,21 @@ class TraceabilityTests(unittest.TestCase):
     def report(self):
         return trace.audit(self.project, self.ledger, self.mappings, self.specs, self.maps, artifact=self.artifact,
                            evidence=self.evidence, transcript=self.transcript, revision="a"*40)
+
+    def runtime_evidence(self):
+        """Synthetic acceptance lets these tests isolate the traceability gate."""
+        identity = integration.source_identity(self.project, "a"*40)
+        report = release.runtime_acceptance.audit_sources()
+        report.update(identity, executionStatus="completed")
+        for level in ("runtimeIntegration", "builtArtifact"):
+            report["evidenceLevels"][level].update(identity, status="pass", executionStatus="completed", failures=[])
+        report["evidenceLevels"]["runtimeIntegration"].update(
+            logSha256=self.evidence["logSha256"], inputSetSha256=self.evidence["inputSetSha256"])
+        report["evidenceLevels"]["builtArtifact"]["artifactSha256"] = trace.sha(self.artifact.read_bytes())
+        for row in report["systems"]:
+            row.update(executionStatus="completed", executedTests=["synthetic protocol fixture"])
+            row["stages"].update({stage: True for stage in release.runtime_acceptance.STAGES})
+        return release.runtime_acceptance.finalize(report)
 
     def assertBlocked(self, category):
         report = self.report()
@@ -188,6 +205,38 @@ class TraceabilityTests(unittest.TestCase):
         path.write_text(path.read_text() + '// changed after execution\n')
         self.assertBlocked("integration-missing")
         self.evidence["status"] = "fail"
+        self.assertBlocked("integration-missing")
+
+    def test_instrumented_execution_preserves_traceability_and_rejects_stale_inputs(self):
+        contract = {"format": "warcraftmap_execution_coverage_v1", "probes": {
+            "register": {"path": "wurst/Adapter.wurst", "signature": "public function install()"}},
+            "systems": {"action": ["register"]}}
+        (self.project / "package.json").write_text(json.dumps({"executionCoverage": "coverage.json"}))
+        (self.project / "coverage.json").write_text(json.dumps(contract))
+        self.transcript = self.transcript.replace(b'fixture..\n', b'fixture..\nWCM_PROBE:register\n')
+        tests, errors = execution.parse_results(self.transcript.decode(), self.evidence["expected"])
+        source = self.project / "wurst/Adapter.wurst"
+        self.evidence["inputs"]["wurst/Adapter.wurst"] = trace.sha(
+            integration.instrument(source.read_text(), contract["probes"]).encode())
+        self.evidence.update(tests=tests, errors=errors, logSha256=trace.sha(self.transcript),
+                             inputSetSha256=trace.sha(execution.canonical(self.evidence["inputs"])),
+                             sourceIdentity=integration.source_identity(self.project, "a"*40),
+                             productionCoverage={"contractSha256": trace.sha(integration.canonical(contract)),
+                                                 "tests": integration.observed_probes(self.transcript.decode(), tests, contract)})
+        self.assertEqual([], self.report()["executionErrors"])
+        self.assertEqual("pass", self.report()["status"])
+        original = copy.deepcopy(self.evidence)
+        for field in ("sourceIdentity", "productionCoverage"):
+            self.evidence = copy.deepcopy(original)
+            del self.evidence[field]
+            with self.subTest(field=field):
+                self.assertBlocked("integration-missing")
+        self.evidence = copy.deepcopy(original)
+        self.evidence["inputs"]["wurst/Adapter.wurst"] = trace.sha(source.read_bytes())
+        self.evidence["inputSetSha256"] = trace.sha(execution.canonical(self.evidence["inputs"]))
+        self.assertBlocked("integration-missing")
+        self.evidence = original
+        source.write_text(source.read_text() + "// edited after execution\n")
         self.assertBlocked("integration-missing")
 
     def test_added_or_deleted_production_source_invalidates_execution(self):
@@ -396,18 +445,25 @@ class TraceabilityTests(unittest.TestCase):
     def test_upload_recomputes_census_from_exact_extracted_w3n(self):
         config = release.load_release_config()
         trace_report = self.report()
+        runtime_report = self.runtime_evidence()
+        identity = integration.source_identity(self.project, "a"*40)
+        blocker_report = {"status": "pass", "candidateReady": True}
         payloads = {config["archive"]["campaignPath"]: self.artifact.read_bytes(),
                     "Metadata/wurst-execution.json": release.canonical(self.evidence),
                     "Metadata/wurst-execution.log": self.transcript,
+                    "Metadata/runtime-acceptance.json": release.canonical(runtime_report),
+                    "Metadata/release-blocker-audit.json": release.canonical(blocker_report),
                     "Metadata/requirement-traceability.json": release.canonical(trace_report)}
         manifest = {"format": release.MANIFEST_FORMAT, "releaseCandidateId": config["releaseCandidateId"],
                     "sourceRevision": "a"*40, "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5, 6, 7]},
+                    "artifactValidation": runtime_report["evidenceLevels"]["builtArtifact"],
                     "artifacts": [{"kind": "campaign" if name.endswith(".w3n") else "evidence", "archivePath": name,
                                    "bytes": len(value), "sha256": trace.sha(value)} for name, value in payloads.items()]}
         payloads[config["archive"]["manifestPath"]] = release.canonical(manifest)
         payloads[config["archive"]["provenancePath"]] = release.canonical({
-            "format": release.PROVENANCE_FORMAT, "sourceRevision": "a"*40,
-            "gates": {"wurstExecution": "pass", "requirementTraceability": "pass"}})
+            "format": release.PROVENANCE_FORMAT, "sourceRevision": "a"*40, "sourceIdentity": identity,
+            "gates": {name: "pass" for name in ("wurstExecution", "requirementTraceability", "runtimeAcceptance",
+                                                "packagedArtifactVerification", "zeroCampaignBlockers")}})
         uploaded = self.project / "candidate.zip"
         release._write_zip(uploaded, payloads)
 
@@ -423,6 +479,9 @@ class TraceabilityTests(unittest.TestCase):
         with patch.object(release, "load_campaign_config", return_value=SimpleNamespace(maps=[])), \
              patch.object(release, "inspect_campaign"), patch.object(release, "verify_campaign_runtime"), \
              patch.object(release, "_campaign_rows", return_value=[]), \
+             patch.object(release, "source_identity", return_value=identity), \
+             patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report), \
+             patch("release_blocker_audit.build_report", return_value=blocker_report), \
              patch.object(scenario, "validate_final", side_effect=validate) as gate:
             release.verify_release_archive(uploaded, config)
             gate.assert_called_once()
@@ -442,6 +501,7 @@ class TraceabilityTests(unittest.TestCase):
         output.parent.mkdir()
         output.write_bytes(b"stale candidate")
         self.catalogue.write_text('[{"id":"port"},{"id":"missing-city"}]')
+        runtime_report = self.runtime_evidence()
 
         def current_report(artifact=None, evidence=None, transcript=None, revision=""):
             if artifact is not None:
@@ -457,17 +517,26 @@ class TraceabilityTests(unittest.TestCase):
              patch.object(release, "authoritative_hashes", return_value={}), \
              patch.object(release, "build_campaign", return_value=self.artifact), \
              patch.object(release, "normalized_campaign", return_value={}), \
-             patch.object(release, "verify_campaign_runtime", return_value={}) as legacy, \
+             patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report) as acceptance, \
+             patch("release_blocker_audit.build_report", return_value={"status": "pass", "candidateReady": True}) as blocker, \
              patch.object(release, "_write_zip") as publish:
             with self.assertRaisesRegex(release.CandidatePublicationBlocked, "traceability blocks candidate publication"):
                 release.build_release_candidate(revision="a"*40)
             publish.assert_not_called()
-            legacy.assert_called_once()
+            acceptance.assert_called_once_with(execution=self.evidence, execution_log=self.transcript,
+                                               revision="a"*40, campaign=self.artifact)
             # A known traceability gap must not conceal independent build or
             # evidence regressions behind CI's expected publication status.
-            legacy.side_effect = release.PackagingError("broken packaged runtime")
+            for level in ("runtimeIntegration", "builtArtifact"):
+                invalid = copy.deepcopy(runtime_report)
+                invalid["evidenceLevels"][level]["status"] = "fail"
+                acceptance.return_value = invalid
+                with self.subTest(level=level):
+                    self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            acceptance.return_value = runtime_report
+            blocker.return_value = {"status": "fail", "candidateReady": False}
             self.assertEqual(1, release.main(["--source-revision", "a"*40]))
-            legacy.side_effect = None
+            blocker.return_value = {"status": "pass", "candidateReady": True}
             with patch.object(release, "normalized_campaign", side_effect=[{"map": "first"}, {"map": "changed"}]):
                 self.assertEqual(1, release.main(["--source-revision", "a"*40]))
             self.assertEqual(3, release.main(["--source-revision", "a"*40]))

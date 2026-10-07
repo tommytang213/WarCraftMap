@@ -1,14 +1,21 @@
 package MilitarySettlementRuntimeTests
 
 import MilitarySettlementRuntime
+import CommandRouter
+import ManagementScreenPauseController
 import Wurstunit
 
-public class RecordingMilitaryAdapter implements MilitarySettlementAdapter
+public class RecordingMilitaryAdapter implements MilitarySettlementAdapter, CommandOutput, CampaignPauseRuntime
 	string created = ""
 	string removed = ""
 	string protectedId = ""
 	int tradition = 0
 	int appliedAbility = 0
+	string management = ""
+	override function show(player viewer, string message)
+		management = message
+	override function setCampaignPaused(boolean paused)
+		skip
 	override function beginLoad()
 		skip
 	override function rollbackLoad()
@@ -39,7 +46,24 @@ public class RecordingMilitaryAdapter implements MilitarySettlementAdapter
 		else
 			protectedId += "released:" + stableId + "|"
 	override function showManagement(player viewer, string heading, string body)
-		skip
+		management = body
+
+/** Register the actual management commands against the authority under test.
+ * Only Warcraft presentation and the native pause effect are recorded. */
+public class MilitaryCommandFixture
+	CommandRegistry commands
+	CampaignPauseRuntime previousPause
+	construct(MilitarySettlementRuntime runtime, RecordingMilitaryAdapter adapter)
+		let pauses = getManagementScreenPauseController()
+		previousPause = pauses.runtime
+		pauses.runtime = adapter
+		commands = new CommandRegistry(false, 8, new CommandText(), adapter)
+		registerMilitarySettlementCommands(commands, runtime)
+	function show(string command)
+		commands.dispatch(null, command).assertTrue()
+		commands.dispatch(null, "/management-close").assertTrue()
+	function close()
+		getManagementScreenPauseController().runtime = previousPause
 
 function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRuntime
 	let runtime = new MilitarySettlementRuntime(adapter)
@@ -81,6 +105,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 @test function garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly()
 	let adapter = new RecordingMilitaryAdapter()
 	let runtime = fixture(adapter)
+	let registered = new MilitaryCommandFixture(runtime, adapter)
 	runtime.activateRegion("europe")
 	runtime.setWar("england", "france", true)
 	runtime.beginSettlementAttack("london", "france", 1.).assertTrue()
@@ -95,18 +120,31 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	adapter.removed.contains("garrison:london:1|").assertTrue()
 	runtime.replenishGarrison("london", 4, 4, 4).assertTrue()
 	runtime.settlements[0].garrisonStrength.assertEquals(28)
+	registered.show("/settlement london")
+	adapter.management.contains("Garrison: 28/30 | Reserves: 14 | Manpower: 36 | Supply: 36").assertTrue()
+	registered.close()
 
 @test function governorReplacementWarnsAndNeverImpliesPhysicalClone()
 	let adapter = new RecordingMilitaryAdapter()
 	let runtime = fixture(adapter)
+	let registered = new MilitaryCommandFixture(runtime, adapter)
 	let old = new AdministratorState("official:old", "Anne Ward", "Governor", "england", "africa", "london", 20, 60, 40, 2)
 	runtime.appoint("london", old).assertEquals("Administrator appointed.")
 	runtime.managementSummary("london").contains("absent; represented by a local deputy").assertTrue()
 	runtime.managementSummary("london").contains("may trigger refusal").assertTrue()
+	registered.show("/administration london")
+	adapter.management.contains("Anne Ward").assertTrue()
+	adapter.management.contains("absent; represented by a local deputy").assertTrue()
+	adapter.management.contains("may trigger refusal").assertTrue()
 	let replacement = new AdministratorState("official:new", "Thomas Hawkins", "Mayor", "england", "europe", "london", 70, 75, 55, 3)
 	runtime.appoint("london", replacement).assertEquals("Administrator appointed.")
 	old.loyalty.assertEquals(15)
 	runtime.managementSummary("london").contains("Thomas Hawkins").assertTrue()
+	registered.show("/administration london")
+	adapter.management.contains("Thomas Hawkins").assertTrue()
+	adapter.management.contains("Anne Ward").assertFalse()
+	adapter.created.assertEquals("")
+	registered.close()
 
 @test function inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority()
 	let adapter = new RecordingMilitaryAdapter()
@@ -135,6 +173,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 @test function snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration()
 	let firstAdapter = new RecordingMilitaryAdapter()
 	let runtime = fixture(firstAdapter)
+	let registered = new MilitaryCommandFixture(runtime, firstAdapter)
 	let army = new RuntimeForce("army:one", "england", "europe", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 10., 10.)
 	let fleet = new RuntimeForce("fleet:channel", "england", "europe", "naval", FORCE_FLEET, 'hfoo', 50, 30, 20., 20.)
 	runtime.registerForce(army)
@@ -145,6 +184,10 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	runtime.issueOrder("fleet:channel", "sail", 700., 800.).assertTrue()
 	runtime.recordLoss("army:one", 11)
 	runtime.recordLoss("fleet:channel", 7)
+	registered.show("/army army:one")
+	firstAdapter.management.contains("Strength: 29/40").assertTrue()
+	registered.show("/fleet fleet:channel")
+	firstAdapter.management.contains("Strength: 43/50").assertTrue()
 	runtime.beginSettlementAttack("london", "france", 10.).assertTrue()
 	runtime.tick(10.)
 	runtime.recordGarrisonLoss("london", "garrison:london:10", 6, 11.)
@@ -165,6 +208,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	restored.settlements[0].nextWaveAt.assertEquals(20.)
 	restored.administrators[0].characterId.assertEquals("official:ward")
 	restored.managementSummary("london").contains("absent; represented by a local deputy").assertTrue()
+	registered.close()
 
 @test function changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority()
 	let adapter = new RecordingMilitaryAdapter()
