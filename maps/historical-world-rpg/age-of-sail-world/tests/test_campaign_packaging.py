@@ -35,7 +35,7 @@ if sys.argv[1] == "build":
     out = root / "_build"; out.mkdir(parents=True, exist_ok=True)
     generated = (root / "wurst/ScenarioData.wurst").read_text()
     bootstrap = (root / "wurst/Bootstrap.wurst").read_text()
-    lua = "Age of Sail: The World - development bootstrap loaded.\nWC3Compatibility: required Warcraft III v3.0\n" + generated + bootstrap
+    lua = "function config() end\nfunction main() InitBlizzard() end\nAge of Sail: The World - development bootstrap loaded.\nWC3Compatibility: required Warcraft III v3.0\n" + generated + bootstrap
     with zipfile.ZipFile(out / "tool-output.w3x", "w") as archive:
         for path in sorted(source.rglob("*")):
             if path.is_file(): archive.write(path, path.relative_to(source).as_posix())
@@ -50,7 +50,7 @@ class CampaignPackagingTests(unittest.TestCase):
         source = self.project / "map/AgeOfSailWorld.w3x"
         broken = self.project / "broken-bootstrap.w3x"
         files = {name: (source / name).read_bytes()
-                 for name in ("war3map.w3i", "war3map.w3e", "war3map.wpm", "war3mapUnits.doo")}
+                 for name in ("war3map.w3i", "war3map.w3e", "war3map.wpm", "war3mapUnits.doo", "war3map.shd")}
         files["runtime/scenario-runtime.json"] = json.dumps({"settlementDefinitions": []})
         files["runtime/physical-map.json"] = json.dumps({
                 "physicalMapId": physical.id,

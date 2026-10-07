@@ -687,9 +687,19 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
             except (KeyError, json.JSONDecodeError, UnicodeDecodeError) as error:
                 raise _fail("archive inspection", f"invalid generated runtime provenance: {error}") from error
     else:
-        candidates = list(compile_root.rglob("war3map.lua")) + list(compile_root.rglob("*_compiled.lua")) + list(compile_root.rglob("output.lua"))
-        if candidates: lua = max(candidates, key=lambda p: p.stat().st_mtime_ns).read_text(encoding="utf-8", errors="replace")
+        # The archive is authoritative. A successful intermediate Lua file
+        # cannot establish what the client will actually load.
+        from warcraft_campaign import MpqReader
+        try:
+            reader = MpqReader(archive)
+            lua = reader.read("war3map.lua").decode("utf-8")
+            packaged_source_sha = json.loads(reader.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
+        except (KeyError, ValueError, UnicodeError) as error:
+            raise _fail("archive inspection", f"invalid packaged Lua/runtime: {error}") from error
     if not lua: raise _fail("archive inspection", "generated Lua runtime code is missing")
+    from warcraft_lua_startup import startup_failures
+    startup = startup_failures(lua)
+    if startup: raise _fail("archive inspection", "; ".join(startup))
     absent = [marker for marker in config.bootstrap_markers if marker not in lua]
     if absent: raise _fail("archive inspection", "Lua is missing marker(s): " + ", ".join(absent))
     # ScenarioData used to retain a megabyte-scale JSON string solely because

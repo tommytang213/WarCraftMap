@@ -7,9 +7,11 @@
 - Lua as the generated Warcraft scripting backend.
 - Wurst project patch target: `v3.0`.
 - Current bootstrap/source-controlled folder-map input at `map/AgeOfSailWorld.w3x/`; the final world target is a multi-map single-player custom-campaign package so each regional/subregional physical map receives its own terrain budget.
-- Browser-parsed map metadata is locked to W3I v33 with embedded game version
-  `3.0.0.24268`; source and packaged maps are parsed by
-  `tooling/forsaken_kingdom_map.py`, not accepted from the patch label alone.
+- The authored folder map uses the legacy W3I v33 layout with embedded game
+  version `3.0.0.24268`; the pinned compiler emits v31. Neither is an extracted
+  current-client format fixture. The independently sourced War3Net 3.0.0 map
+  uses v39, including HUD, extended fog, water and player-HUD fields. The shared
+  parser covers all three layouts; a version label does not prove playability.
 
 ## Why Wurst + Lua
 
@@ -106,6 +108,14 @@ evidence. The RC gate separately executes the headless soak and campaign-save
 fixtures. Declared journey itineraries are metadata, not evidence of executing
 physical-map transitions or native Warcraft saves. None of these checks
 establishes successful real-client execution.
+
+The map's source `main` must call `InitBlizzard()` before Wurst package
+initializers. Wurst retains the source main body; it does not supply the missing
+Blizzard initialization for an empty stub. Packaging reads the final MPQ's Lua
+and rejects missing, misplaced or conditional initialization. These checks are
+static. Complete placement records and the terrain-sized shadow raster are
+also inspected, including in the selector. Fixtures extracted from artifact
+#704 retain the missing initialization and invalid regional item-table reference.
 
 ## Runtime map pipeline
 
