@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 import struct
 
-SUPPORTED_W3I_FORMATS = frozenset((31, 33))
+SUPPORTED_W3I_FORMATS = frozenset((31, 33, 39))
 
 
 class MapInfoError(ValueError):
@@ -54,7 +54,7 @@ class _Reader:
 
 
 def parse_w3i(data: bytes) -> dict:
-    """Parse v31/v33 metadata; reject unsupported tails instead of ignoring them."""
+    """Parse legacy and Forsaken Kingdom layouts without inferring playability."""
     r = _Reader(data)
     version, saves, editor = r.integer(), r.integer(), r.integer()
     if version not in SUPPORTED_W3I_FORMATS:
@@ -69,17 +69,27 @@ def parse_w3i(data: bytes) -> dict:
     if playable_width < 1 or playable_height < 1:
         raise MapInfoError("war3map.w3i has invalid playable dimensions")
     flags = r.integer(); r.skip(1)
-    r.integer(); r.string(); r.string(); r.string(); r.string(); r.integer()
+    r.integer()
+    race_hud = r.integer() if version >= 39 else None
+    r.string(); r.string(); r.string(); r.string(); r.integer()
     r.string(); r.string(); r.string(); r.string()
-    r.integer(); r.floats(3); r.skip(4 + 4); r.string(); r.skip(1 + 4)
+    r.integer(); r.floats(3); r.skip(4)
+    if version >= 39:
+        r.floats(5); r.integer()  # extended fog and draw-over-sky
+    r.skip(4); r.string(); r.skip(1 + 4)
     script_language, graphics, game_data = r.integer(), r.integer(), r.integer()
     camera_zoom = (r.integer(), r.integer(), r.integer()) if version >= 32 else None
+    if version >= 39:
+        r.skip(40)  # HD water parameters/override color and alpha-tile minimap color
     player_count = r.integer()
     if player_count < 1 or player_count > 24:
         raise MapInfoError(f"war3map.w3i has invalid player count {player_count}")
     players = []
     for _ in range(player_count):
-        slot, controller, race, fixed = (r.integer() for _ in range(4))
+        slot, controller, race = (r.integer() for _ in range(3))
+        if version >= 39:
+            r.integer()  # player HUD/race skin, preceding the flags
+        fixed = r.integer()
         player_name = r.string()
         position = r.floats(2)
         priorities = tuple(r.integer() & 0xffffffff for _ in range(4))

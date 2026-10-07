@@ -1,0 +1,165 @@
+{
+  "format": "warcraftmap_issue397_launch_audit_v1",
+  "issue": 397,
+  "status": "crash_causality_unconfirmed",
+  "worktreeChanges": "uncommitted",
+  "validatedSourceIdentity": {
+    "sourceRevision": "b2e55a173518b875cfba2715e1f48b1881b4692e",
+    "sourceTreeSha256": "5e109ff408989cd11ae4014b9c6a4d91719be7409d4e8c810e154fd1815a3f80"
+  },
+  "originalReproduction": {
+    "actionsRunNumber": 704,
+    "actionsRunId": 37427137021,
+    "actionsUrl": "https://github.com/tommytang213/WarCraftMap/actions/runs/37427137021",
+    "sourceRevision": "5a324d75424d03f5eb1694954ac00b093d78754e",
+    "campaignSha256": "c8c0d14414402bd28a51d3d3f946b9a408020d67687b8258063443c64c9588d1",
+    "client": "Warcraft III Forsaken Kingdom 3.0.0.24268",
+    "entry": "Single Player -> Custom Campaigns -> Age of Sail: The World -> Begin the Campaign",
+    "blizzardReportId": "102B765A-6BDF-44E4-BEFC-2E1C09280753",
+    "exceptionAddressAndCallStack": "not_provided",
+    "nativeCrashCause": "unconfirmed; the report ID alone cannot identify the faulting operation"
+  },
+  "repairedContracts": [
+    {
+      "contract": "Blizzard initialization before Wurst package initializers",
+      "affectedArtifact704Maps": 17,
+      "defect": "Empty authored main survives compilation; the final Lua main omits InitBlizzard.",
+      "repair": "Call InitBlizzard in the source main of both consumers; inspect the actual archived Lua for a single direct main call before package initialization.",
+      "regression": "Unchanged artifact-704-bootstrap.lua.gz is rejected; comment, string, conditional, helper, wrong-phase and wrong-order substitutes fail."
+    },
+    {
+      "contract": "Complete v8/11 placement records without references to absent W3I item tables",
+      "affectedArtifact704Maps": 16,
+      "defect": "The regional writer omitted MapItemTableId; an extra random payload word concealed shifted fields from length/header checks.",
+      "repair": "Write item-table sentinel -1, an explicit dropped-set count, and RandomUnitDataMode.None (-1); parse every field through the final creation number.",
+      "regression": "Unchanged artifact-704-europe-units.doo.gz is rejected for item-table ID 0 in a map without item tables."
+    },
+    {
+      "contract": "Terrain-sized shadow raster",
+      "affectedArtifact704Maps": 9,
+      "defect": "Resized regional maps retained the 65536-byte bootstrap shadow resource.",
+      "repair": "Generate width * height * 16 shadow bytes during materialization; inspect the exact packaged resource.",
+      "regression": "Replacing the materialized Europe West shadow raster with the old bootstrap size fails runtime artifact acceptance."
+    }
+  ],
+  "audit": {
+    "evidenceLevel": "static_archive_inspection_and_headless_execution",
+    "campaignMetadata": "W3F v3, RequiresExpansion flag 2, one visible Begin the Campaign button, 17 resolving map paths; no defect found in these fields.",
+    "archiveMembers": "Complete MPQ member enumeration; configured map identity, path, bootstrap role, ordering and payload checksum are checked.",
+    "handoff": "The artifact-704 selector contains a direct ChangeLevel(mapPath, true) call; current compiled handoff and packaged destination consistency checks pass.",
+    "mapInfo": "Authored input uses v33; the pinned compiler emits v31. The independently sourced 3.0.0.24268 fixture uses v39. The structural parser now covers v39, including HUD, extended fog, water and player HUD fields. Version labels are not client-compatibility proof.",
+    "referenceWidgetLayout": "The independent current-client reference uses widget v13/9; authored and compiled maps use legacy v8/11. This difference alone does not establish incompatibility.",
+    "independentFormatReference": "https://github.com/Drake53/War3Net/tree/18e88f0e1f67e6b16870dcbcd827740275fe2173",
+    "randomizationEnumReference": "https://github.com/Drake53/War3Net/blob/18e88f0e1f67e6b16870dcbcd827740275fe2173/src/War3Net.Build.Core/Widget/RandomUnitDataMode.cs",
+    "causalityLimit": "Regional resource defects affect regional archives and do not establish the cause of an immediate selector launch crash. Missing Blizzard initialization is a verified startup omission, but its role in the reported native exception is unconfirmed."
+  },
+  "validation": {
+    "repositoryChecks": {
+      "status": "pass",
+      "command": "WARCRAFTMAP_WURST_CHECK=skip ./automation/run_checks.sh",
+      "scenarioTests": 914,
+      "automationTests": 113,
+      "wurstNote": "The Wurst branch was skipped only in this host command; both complete pinned real executions and all map builds ran separately below."
+    },
+    "pinnedWurst": {
+      "status": "pass",
+      "runs": 2,
+      "discoveredPerRun": 281,
+      "passedPerRun": 281,
+      "compiledMapsPerRun": 17,
+      "compiler": {
+        "executionImage": null,
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "observedContainerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a"
+    },
+    "frameworkConformance": {
+      "status": "pass",
+      "originalTests": 2,
+      "mutatedTests": 2,
+      "result": "Both fixture campaigns built with unchanged shared framework sources."
+    },
+    "independentArchiveAndLuaSyntax": {
+      "status": "pass",
+      "maps": 17,
+      "luaVersion": "5.3",
+      "executionScope": "Syntax only; retail Warcraft not executed."
+    },
+    "runtimeAcceptance": {
+      "status": "pass",
+      "systems": 20,
+      "evidence": "first-runtime-acceptance.json.gz",
+      "artifactBinding": "The first and second complete W3Ns are byte-identical, and both executions have the current source identity."
+    },
+    "releaseBlockerAudit": {
+      "status": "pass",
+      "evidence": "first-release-blocker-audit.json.gz",
+      "scope": "Does not replace the separate exhaustive requirement traceability or native-client gates."
+    },
+    "releaseCandidateVerification": {
+      "command": "./tooling/package_release_candidate.sh",
+      "exitCode": 3,
+      "status": "publication_blocked",
+      "normalizedDeterminism": "pass",
+      "wholeArchiveByteEquality": "pass",
+      "traceabilityBlockers": 9165,
+      "traceabilityBlockerClasses": {
+        "unmapped": 638,
+        "mechanism-missing": 614,
+        "unreachable": 638,
+        "state-unmapped": 638,
+        "unpersisted": 1276,
+        "integration-missing": 2248,
+        "artifact-missing": 638,
+        "authority-missing": 527,
+        "test-only": 20,
+        "static-only": 5,
+        "dependency-uncovered": 49,
+        "census-mismatch": 1874
+      },
+      "executionErrors": [],
+      "playerZipPublished": false
+    },
+    "containerPolicy": "Worktree mounted read-only at /source; source copied to private /tmp and builds run as wurstuser. Python and Lua installed only in disposable containers. No host tooling or worktree permissions changed."
+  },
+  "newDiagnosticArtifact": {
+    "repositoryRelativePath": "_build/issue-397/AgeOfSailWorldCampaign.w3n",
+    "sha256": "68802c4631baf4ba4c390083e678cdf6c8f82bcd60bde1691f47055ce795695c",
+    "bytes": 31436713,
+    "maps": 17,
+    "materiallyDifferentFrom704": true,
+    "bootstrapLuaBytes": 275033,
+    "status": "diagnostic_only_not_a_player_release"
+  },
+  "release": {
+    "status": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+    "retailExecution": "not_run",
+    "playerSmokeRequested": false,
+    "requiredBeforeAnotherPlayerSmoke": "Close integration and exhaustive traceability gaps, retain framework conformance, and produce a materially new verified candidate.",
+    "remainingIssue397Acceptance": "Identify the actual native fault from existing crash diagnostics; a successful final real-client launch smoke is still required for release."
+  },
+  "evidence": {
+    "artifact-704-audit.json.gz": "91f82fe37a56ee4b9cad272f53dfd8582b19ae5723cb23ad238b0533e8845c79",
+    "container-image-and-mounts.txt.gz": "361a835f773dd953ec385d58f46dd2c2253b455b938928348bf1d726b31a9a11",
+    "final-campaign-inspection.json.gz": "1937d1faa384c0d6779cc4cb7ac02700d6294a182e76d6e7dd1550e416c543a2",
+    "final-requirement-traceability.json.gz": "01b903a8c4d03c8202c7fdd91d71962f76b0e44e1cfb34eed6b6f31468cfd5e1",
+    "first-campaign-inspection.json.gz": "1937d1faa384c0d6779cc4cb7ac02700d6294a182e76d6e7dd1550e416c543a2",
+    "first-maps-lua-syntax.json.gz": "acfcc3bf0352a8b6d6e438b99e685ded387430defbe473a7e43cb46082aed69f",
+    "first-maps-validation.json.gz": "b61f872219a6136a97e8a307947203f6ad58ee0225251525f8f9a0c3aa20adc6",
+    "first-release-blocker-audit.json.gz": "08b14d1bd740fb004cb66bc7d90aa6c45217185a79b841d857293e98c4fa5fe4",
+    "first-runtime-acceptance.json.gz": "9e16437031d1441f3fa56a1eacd461e45d84053579644d282947b6a69dcb33e0",
+    "framework-conformance.json.gz": "1f0391f202280c8a1aa0533bad9dbbc411691b261e6b57e8f00f3f1fb14b2789",
+    "pinned-candidate-final.log.gz": "95808678964c6ecb2c538cd1a650acb073b2b760ad74a09014f56b26bc867ae6",
+    "pinned-framework.log.gz": "6d84785990f3fb74f8c38b5621ae0ad3041c2d2a1b4d90dd142618b5ea0c40e3",
+    "repository-checks.log.gz": "cb369a8fd4bd0c6bee8069a921dd1da1a133c960037e916dd6a7dc1ec8cf7b5d",
+    "wurst-final-execution.log.gz": "0bd7d3ff9813a2545bb78ac06575a81701289f96f77c5e5065573fa5ef8111e6",
+    "wurst-final-results.json.gz": "6f9fbc0e90f2de1a2af6afddfc48325579e9d02604ddc245937ce2ed28a100e2",
+    "wurst-first-execution.log.gz": "0bd7d3ff9813a2545bb78ac06575a81701289f96f77c5e5065573fa5ef8111e6",
+    "wurst-first-results.json.gz": "6f9fbc0e90f2de1a2af6afddfc48325579e9d02604ddc245937ce2ed28a100e2"
+  },
+  "implementationStatus": "ready_for_repository_validation",
+  "latestValidation": "revalidation.json"
+}
