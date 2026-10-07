@@ -1,0 +1,84 @@
+{
+  "authorityTextPreserved": true,
+  "campaignBuild": {
+    "buildDirectory": "container-private /tmp",
+    "containerRemoved": true,
+    "mapsTypecheckedAndPackaged": 17,
+    "sourceBindMount": "read-only",
+    "status": "pass"
+  },
+  "candidateGate": {
+    "blockerClasses": {
+      "artifact-missing": 638,
+      "authority-missing": 527,
+      "census-mismatch": 1874,
+      "dependency-uncovered": 49,
+      "integration-missing": 2248,
+      "mechanism-missing": 614,
+      "state-unmapped": 638,
+      "static-only": 5,
+      "test-only": 20,
+      "unmapped": 638,
+      "unpersisted": 1276,
+      "unreachable": 638
+    },
+    "blockerCount": 9165,
+    "candidateReady": false,
+    "note": "Counts enumerate evidence gaps, not 9165 distinct gameplay defects. No candidate ZIP was published. The report is a historical validation snapshot; every new candidate regenerates its own report.",
+    "status": "blocked_as_required"
+  },
+  "catalogues": 69,
+  "crossSystemDependencies": 49,
+  "evidence": {
+    "final-requirement-traceability.json.gz": "defd2caa7545ec762f2d6c9be75d3b86e39772b6bf415078c0b136a281672cc8",
+    "final-requirement-traceability.md.gz": "5257026af3803ae0c6ee9e692ed1dd2854e65872cedc8d1bc7c871cd1391b0bc",
+    "focused-checks.log.gz": "d85e44200f2506f4132ed0b72ecb05e93d5cfa218b6e289243738c692423e2d9",
+    "pinned-campaign-build.log.gz": "30cc873f2bb797ef0c6ff483c9ac4766f1765537d7314611ae5c093de24fdab6",
+    "repository-checks.log.gz": "f750b59072aa3af505d0b7c96c48af3d4d74e115c78e247bba4edfb876fe2f10",
+    "wurst-execution.log.gz": "1145343dcf41b179d458dc8b8bbe6099a734f2e1e81002b0d434a48a9cd51f77",
+    "wurst-results.json.gz": "9f9c53168fb6fce0db50dd6630ef916e62e2c787d5c251fb1a567b10a8623617"
+  },
+  "exactFinalArtifact": {
+    "bytes": 31389519,
+    "nestedDecodedCategories": {
+      "archive_metadata": 38063,
+      "campaign_metadata": 0,
+      "compiled_lua": 159749784,
+      "embedded_maps": 0,
+      "imported_assets": 6286005,
+      "map_metadata": 1123139,
+      "object_data": 131993,
+      "other": 0,
+      "pathing": 3211536,
+      "runtime_data": 45532767,
+      "terrain": 1430412
+    },
+    "sha256": "5f165310314b851b1ebdd39005a8944463e2e037e9dec49881b2f1323ba94d86"
+  },
+  "finalFocusedChecks": {
+    "modules": [
+      "test_requirement_traceability",
+      "test_ci_artifact",
+      "test_release_upload_verification",
+      "test_runtime_acceptance"
+    ],
+    "testsPassed": 81
+  },
+  "format": "warcraftmap_issue_399_validation_v1",
+  "pinnedWurst": {
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "executionErrors": [],
+    "inputSetSha256": "cea1efa1822a652337cecb670f54c2f0f540e13c0a89d76c833c03dd3414d1ea",
+    "testsPassed": 278,
+    "transcriptSha256": "d1f740778aa0c40fa1e265e1d1029cc9c0727638c569a6aebdaf6c83c5f35289"
+  },
+  "repositoryChecks": {
+    "automationTestsPassed": 70,
+    "command": "bash automation/run_checks.sh",
+    "note": "All source/headless tests passed. The wrapper Docker fallback lacked sandbox socket access; the same pinned toolchain was validated separately with authorization and a read-only source mount.",
+    "scenarioTestsPassed": 854,
+    "wrapperExitCode": 1
+  },
+  "requirements": 643,
+  "sourceRevision": "208d676eae0d1436c062a12ea34fcb21329b922d"
+}

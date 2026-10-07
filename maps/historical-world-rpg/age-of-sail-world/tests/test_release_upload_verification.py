@@ -155,7 +155,9 @@ class ReleaseUploadTests(unittest.TestCase):
                         report.update(expected=[], tests=[], discovered=0, succeeded=0)
                         log = b'Running tests\nTests succeeded: 0/0\nFinished running tests\n'
                     report['logSha256'] = hashlib.sha256(log).hexdigest()
-                    payloads = {config['archive']['campaignPath']: campaign}
+                    trace_fixture = {'fixture': 'traceability gate tested separately'}
+                    payloads = {config['archive']['campaignPath']: campaign,
+                                'Metadata/requirement-traceability.json': release.canonical(trace_fixture)}
                     if mode != 'missing-execution':
                         payloads['Metadata/wurst-execution.json'] = release.canonical(report)
                         payloads['Metadata/wurst-execution.log'] = log
@@ -167,7 +169,7 @@ class ReleaseUploadTests(unittest.TestCase):
                     payloads[config['archive']['manifestPath']] = release.canonical(manifest)
                     payloads[config['archive']['provenancePath']] = release.canonical({
                         'format': release.PROVENANCE_FORMAT, 'sourceRevision': 'a' * 40,
-                        'gates': {'wurstExecution': 'pass'}})
+                        'gates': {'wurstExecution': 'pass', 'requirementTraceability': 'pass'}})
                     release._write_zip(path, payloads)
                     arguments = ['verify', str(path), '--source-revision', 'a' * 40, '--evidence', str(evidence)]
                     # Structural gates intentionally succeed; exercise the real
@@ -175,6 +177,7 @@ class ReleaseUploadTests(unittest.TestCase):
                     with patch.object(release, 'load_campaign_config', return_value=SimpleNamespace(maps=[])), \
                          patch.object(release, 'inspect_campaign'), \
                          patch.object(release, 'verify_campaign_runtime'), \
+                         patch.object(release.traceability, 'validate_final', return_value=trace_fixture), \
                          patch.object(release, '_campaign_rows', return_value=[]), \
                          patch.object(sys, 'argv', arguments):
                         if mode == 'pass':

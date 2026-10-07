@@ -30,6 +30,7 @@ from package_wurst_map import GENERATOR_VERSION, PackagingError  # noqa: E402
 from wurst_execution import WurstExecutionError, verify_evidence  # noqa: E402
 import release_save_compatibility  # noqa: E402
 import runtime_acceptance  # noqa: E402
+import requirement_traceability_audit as traceability  # noqa: E402
 
 FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
@@ -389,10 +390,43 @@ def verify_release_archive(path: Path, config: dict) -> None:
                 raise WurstExecutionError("release provenance omits required execution gate")
         except (KeyError, ValueError, WurstExecutionError) as error:
             raise PackagingError(f"release inspection stage failed: Wurst execution evidence: {error}") from error
+        # Recompute from the exact W3N extracted from the upload ZIP. A saved
+        # passing flag, source-tree census or checksummed-but-stale report is
+        # insufficient to authorize publication.
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".w3n") as final_campaign:
+                final_campaign.write(campaign_bytes)
+                final_campaign.flush()
+                trace_report = traceability.validate_final(
+                    Path(final_campaign.name), execution, archive.read("Metadata/wurst-execution.log"),
+                    provenance["sourceRevision"])
+            if (json.loads(archive.read("Metadata/requirement-traceability.json")) != trace_report or
+                    provenance.get("gates", {}).get("requirementTraceability") != "pass"):
+                raise ValueError("stale or missing requirement traceability evidence")
+        except (KeyError, ValueError) as error:
+            raise PackagingError(f"release inspection stage failed: {error}") from error
 
 
 def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None, revision: str | None = None) -> Path:
     config = load_release_config(config_path)
+    # Do not leave a previous candidate at the publication path after a failed
+    # attempt. Diagnostic W3N packaging remains available independently.
+    clean(config_path)
+    for suffix in (".json", ".md"):
+        (PROJECT / "_build/release/requirement-traceability").with_suffix(suffix).unlink(missing_ok=True)
+    source_trace = traceability.build_report()
+    traceability.write_report(source_trace, PROJECT / "_build/requirement-traceability-source")
+    if any(row["class"] in {"authority-drift", "invalid-mapping"} for row in source_trace["blockers"]):
+        raise PackagingError("requirement traceability inventory is incomplete or invalid")
+    try:
+        return _build_release_candidate(config, grill, revision)
+    finally:
+        # Both campaign builds clean _build. Restore this attempt's source
+        # diagnostics even when compilation fails before a final W3N exists.
+        traceability.write_report(source_trace, PROJECT / "_build/requirement-traceability-source")
+
+
+def _build_release_candidate(config: dict, grill: str | None, revision: str | None) -> Path:
     compatibility, coverage, runtime_report, fixture_results = validate_gates(config)
     campaign_manifest = PROJECT / config["campaignManifest"]
     campaign_config = load_campaign_config(campaign_manifest)
@@ -404,13 +438,6 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         shutil.copyfile(build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision), first_path)
         first_normalized = normalized_campaign(first_path, campaign_config)
         second = build_campaign(campaign_manifest, grill=grill, clean_first=True, revision=revision)
-        second_normalized = normalized_campaign(second, campaign_config)
-        artifact_validation = verify_campaign_runtime(second, campaign_config)
-        if first_normalized != second_normalized:
-            difference = sorted(set(first_normalized) | set(second_normalized))
-            difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
-            raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
-
         campaign_bytes = second.read_bytes()
         execution_dir = PROJECT / "_build/wurst-tests"
         try:
@@ -419,6 +446,18 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             verify_evidence(json.loads(execution_bytes), execution_log, revision)
         except (OSError, ValueError, WurstExecutionError) as error:
             raise PackagingError(f"Wurst execution stage failed: {error}") from error
+        try:
+            trace_report = traceability.validate_final(second, json.loads(execution_bytes), execution_log, revision)
+        except ValueError as error:
+            raise PackagingError(str(error)) from error
+        # Retain the exhaustive final-artifact report before narrower legacy
+        # checks can stop this attempt on their first missing system marker.
+        second_normalized = normalized_campaign(second, campaign_config)
+        artifact_validation = verify_campaign_runtime(second, campaign_config)
+        if first_normalized != second_normalized:
+            difference = sorted(set(first_normalized) | set(second_normalized))
+            difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
+            raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
         target = config["runtimeTarget"]
         save = compatibility["matrix"]
         provenance = {
@@ -441,9 +480,12 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
             "gates": {"phase8Content": coverage["status"], "runtimeAcceptance": runtime_report["status"], "releaseSaveCompatibility": "pass", "recoveryDocumentation": "pass", "licenseAndAssetProvenance": "pass", "finalBudgets": "pass", "zeroCampaignBlockers": "pass", "packagedArtifactVerification": "pass", "humanLaunchSmokeTest": "not_run_separate_manual_smoke"},
         }
         provenance["gates"]["wurstExecution"] = "pass"
+        provenance["gates"]["requirementTraceability"] = "pass"
         payloads = {config["archive"]["campaignPath"]: campaign_bytes,
                     "Metadata/wurst-execution.json": execution_bytes,
-                    "Metadata/wurst-execution.log": execution_log}
+                    "Metadata/wurst-execution.log": execution_log,
+                    "Metadata/requirement-traceability.json": canonical(trace_report),
+                    "Metadata/requirement-traceability.md": traceability.trace.render_markdown(trace_report).encode()}
         for relative in config["releaseDocuments"]:
             payloads[f"Documentation/{Path(relative).name}"] = (PROJECT / relative).read_bytes()
         rows = [{"filename": PurePosixPath(name).name, "archivePath": name, "kind": "campaign" if name.endswith(".w3n") else "documentation", "bytes": len(value), "sha256": sha_bytes(value)} for name, value in sorted(payloads.items())]
@@ -467,10 +509,19 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
         payloads[config["archive"]["provenancePath"]] = canonical(provenance)
         audit_payloads(payloads, config)
         output = PROJECT / "_build/release" / config["archive"]["fileName"]
-        _write_zip(output, payloads)
-    verify_release_archive(output, config)
+        publish_verified_archive(output, payloads, config)
     print(f"release candidate: {output}")
     return output
+
+
+def publish_verified_archive(output: Path, payloads: dict[str, bytes], config: dict) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # Verify the completed ZIP before atomically exposing the publication path.
+    with tempfile.TemporaryDirectory(prefix=".candidate-", dir=output.parent) as directory:
+        pending = Path(directory) / "candidate.zip"
+        _write_zip(pending, payloads)
+        verify_release_archive(pending, config)
+        pending.replace(output)
 
 
 def clean(config_path: Path = CONFIG) -> None:

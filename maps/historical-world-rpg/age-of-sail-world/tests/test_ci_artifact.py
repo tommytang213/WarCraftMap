@@ -45,7 +45,20 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertIn('path: ${{ runner.temp }}/age-of-sail-release', self.workflow)
         self.assertIn('set -eu', self.workflow)
         self.assertNotIn('continue-on-error:', self.workflow)
-        self.assertNotIn('always()', self.workflow)
+        player_upload = self.workflow.split('- name: Upload Age of Sail campaign', 1)[1]
+        self.assertNotIn('always()', player_upload)
+
+    def test_failed_requirement_gate_retains_only_diagnostics_and_stops_publication(self):
+        diagnostics = self.workflow.split('- name: Retain requirement diagnostics', 1)[1].split('- name:', 1)[0]
+        self.assertIn('if: always()', diagnostics)
+        self.assertIn('path: ${{ runner.temp }}/age-of-sail-release/diagnostics', diagnostics)
+        self.assertNotIn('.w3n', diagnostics)
+        self.assertNotIn('.zip', diagnostics)
+        stop = self.workflow.index('if [ "$candidate_status" -ne 0 ]; then exit "$candidate_status"; fi')
+        copy = self.workflow.index('cp "/tmp/workspace/$RELEASE_ARTIFACT"')
+        self.assertLess(stop, copy)
+        self.assertIn('requirement-traceability.*', self.workflow)
+        self.assertIn('requirement_traceability_audit.py --check', self.workflow)
 
     def test_container_builds_do_not_mutate_repository_bind_mounts(self):
         for workflow in (self.workflow, self.typecheck_workflow):
