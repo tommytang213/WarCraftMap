@@ -25,6 +25,16 @@ preserved issue worktree, asks Codex to resolve only genuine conflicts while
 retaining both work streams, validates, and pushes the repaired branch. The timer
 may wake hourly, but exhausted workers exit before Codex.
 
+If merging main during a pre-PR validation repair creates unmerged paths, the
+worker switches to conflict repair before launching Codex and charges only the
+conflict budget. The original validation diagnostic is retained separately as
+`validation_failure` across retries; existing records initialize it from
+`last_failure`. Unresolved merges are never checkpointed, validated, or published.
+Once the index has no unmerged paths, the worker resumes the validation lane and
+runs repository checks automatically after Codex reports completion. Any further
+validation repair uses its remaining validation budget. Exhausted conflict
+budgets preserve the worktree and diagnostic in an explicit `failed` state.
+
 After GitHub confirms a PR is merged, the worker removes its clean issue
 worktree, then its local agent branch, and separately tries to delete the remote
 agent branch. Dirty worktrees are preserved. Cleanup errors are logged and
