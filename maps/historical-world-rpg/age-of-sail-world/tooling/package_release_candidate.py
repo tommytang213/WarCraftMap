@@ -36,6 +36,11 @@ FORMAT = "warcraftmap_release_candidate_v1"
 MANIFEST_FORMAT = "warcraftmap_rc_artifact_manifest_v1"
 PROVENANCE_FORMAT = "warcraftmap_rc_build_provenance_v1"
 CONFIG = PROJECT / "scenario/release/phase9-rc1.json"
+PUBLICATION_BLOCKED_EXIT = 3
+
+
+class CandidatePublicationBlocked(PackagingError):
+    """A validated final build has reported traceability gaps; no ZIP is published."""
 
 
 def sha_bytes(value: bytes) -> str:
@@ -446,10 +451,7 @@ def _build_release_candidate(config: dict, grill: str | None, revision: str | No
             verify_evidence(json.loads(execution_bytes), execution_log, revision)
         except (OSError, ValueError, WurstExecutionError) as error:
             raise PackagingError(f"Wurst execution stage failed: {error}") from error
-        try:
-            trace_report = traceability.validate_final(second, json.loads(execution_bytes), execution_log, revision)
-        except ValueError as error:
-            raise PackagingError(str(error)) from error
+        trace_report = traceability.audit_final(second, json.loads(execution_bytes), execution_log, revision)
         # Retain the exhaustive final-artifact report before narrower legacy
         # checks can stop this attempt on their first missing system marker.
         second_normalized = normalized_campaign(second, campaign_config)
@@ -458,6 +460,15 @@ def _build_release_candidate(config: dict, grill: str | None, revision: str | No
             difference = sorted(set(first_normalized) | set(second_normalized))
             difference = [x for x in difference if first_normalized.get(x) != second_normalized.get(x)]
             raise PackagingError("determinism stage failed: normalized campaign differs: " + ", ".join(difference))
+        # A blocked publication is an expected audit result, but must never
+        # disguise a broken build, stale execution or invalid inventory in CI.
+        if trace_report["executionErrors"] or any(
+                row["class"] in {"authority-drift", "invalid-mapping"} for row in trace_report["blockers"]):
+            raise PackagingError("requirement traceability inventory or execution evidence is invalid")
+        try:
+            traceability.trace.require_ready(trace_report)
+        except ValueError as error:
+            raise CandidatePublicationBlocked(str(error)) from error
         target = config["runtimeTarget"]
         save = compatibility["matrix"]
         provenance = {
@@ -539,6 +550,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         clean() if args.command == "clean" else build_release_candidate(grill=args.grill, revision=args.source_revision)
+    except CandidatePublicationBlocked as error:
+        print(f"release candidate publication blocked: {error}", file=sys.stderr)
+        return PUBLICATION_BLOCKED_EXIT
     except (PackagingError, OSError, KeyError, ValueError, zipfile.BadZipFile) as error:
         print(f"release candidate packaging failed: {error}", file=sys.stderr)
         return 1

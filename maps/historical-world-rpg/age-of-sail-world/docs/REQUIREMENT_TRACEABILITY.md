@@ -191,7 +191,15 @@ An old candidate ZIP is removed before a new attempt.
 Source diagnostics survive compiler cleanup/failure, old final-artifact reports
 are cleared, and a new ZIP reaches its publication path only after verification.
 CI retains these reports in a separate diagnostics artifact even when the gate
-rejects publication; player ZIP/W3N upload steps remain conditional on success.
+rejects publication. The RC command exits **3** only after both builds, pinned
+Wurst execution, determinism and packaged-runtime validation succeed and the
+final report still contains publication blockers. CI records this as
+`ready=false`, retains diagnostics, displays the publication block in its job
+summary and skips every player ZIP/W3N publication step. Build failures, invalid
+inventories, stale execution and other errors still fail CI (exit **1**); CLI
+argument errors use exit **2**. Exit **0** from an RC build means a verified
+candidate ZIP was produced, and only that result can enable the player upload.
+No blocker is waived or converted to a pass.
 
 A successful candidate includes the complete report as metadata. Before upload,
 the verifier repeats the audit on the W3N extracted from that ZIP and requires

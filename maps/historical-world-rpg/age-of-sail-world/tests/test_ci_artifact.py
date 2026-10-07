@@ -1,4 +1,8 @@
 import re
+import os
+import subprocess
+import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -47,6 +51,10 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertNotIn('continue-on-error:', self.workflow)
         player_upload = self.workflow.split('- name: Upload Age of Sail campaign', 1)[1]
         self.assertNotIn('always()', player_upload)
+        for step in ('Create versioned player files', 'Confirm verified release payload and evidence',
+                     'Upload Age of Sail campaign'):
+            body = self.workflow.split('- name: ' + step, 1)[1].split('- name:', 1)[0]
+            self.assertIn("if: steps.candidate.outputs.ready == 'true'", body)
 
     def test_failed_requirement_gate_retains_only_diagnostics_and_stops_publication(self):
         diagnostics = self.workflow.split('- name: Retain requirement diagnostics', 1)[1].split('- name:', 1)[0]
@@ -59,6 +67,77 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertLess(stop, copy)
         self.assertIn('requirement-traceability.*', self.workflow)
         self.assertIn('requirement_traceability_audit.py --check', self.workflow)
+
+    def test_candidate_shell_only_exposes_a_verified_ready_archive(self):
+        # Execute the workflow's actual publication branch. Only the expensive
+        # build and separate upload verifier are stubbed; report copying, exit
+        # handling, status output and candidate copying use real temporary files.
+        container = textwrap.dedent(self.workflow.split('              candidate_status=0', 1)[1]
+                                   .split("\n            '\n", 1)[0])
+        container = 'candidate_status=0\n' + container
+        host = textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]
+                              .split('\n      - name:', 1)[0])
+        host = 'case "$(cat ' + host
+        cases = [(0, 0, True, True, 'ready'), (3, 0, True, False, 'blocked'),
+                 (1, 0, True, False, None), (2, 0, True, False, None),
+                 (99, 0, True, False, None), (0, 1, True, True, None),
+                 (3, 0, False, False, None), (3, 0, True, True, None)]
+        for build_exit, verify_exit, reports, candidate, expected in cases:
+            with self.subTest(build=build_exit, verifier=verify_exit, reports=reports, candidate=candidate), \
+                 tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                project = root / 'workspace/campaign'
+                release_dir = project / '_build/release'
+                release_dir.mkdir(parents=True)
+                out = root / 'out'
+                out.mkdir()
+                if reports:
+                    for suffix in ('.json', '.md'):
+                        (release_dir / ('requirement-traceability' + suffix)).write_text('current diagnostics')
+                if candidate:
+                    (release_dir / 'candidate.zip').write_bytes(b'verifier input')
+                script = container.replace('/tmp/workspace', str(root / 'workspace')).replace('/out', str(out))
+                environment = {**os.environ, 'MAP_PROJECT': 'campaign',
+                               'RELEASE_ARTIFACT': 'campaign/_build/release/candidate.zip',
+                               'SOURCE_REVISION': 'a'*40, 'BUILD_EXIT': str(build_exit),
+                               'VERIFY_EXIT': str(verify_exit), 'VERIFIED': str(out / 'verified')}
+                result = subprocess.run(['sh', '-ec',
+                                         'su() { return "$BUILD_EXIT"; }\n'
+                                         'python3() { echo invoked > "$VERIFIED"; return "$VERIFY_EXIT"; }\n' + script],
+                                        env=environment, text=True, capture_output=True)
+                status = out / 'candidate-status'
+                self.assertEqual(expected is not None, result.returncode == 0, result.stderr)
+                self.assertEqual(expected is not None, status.exists())
+                self.assertEqual(build_exit == 0, (out / 'verified').exists())
+                self.assertEqual(build_exit == 0, (out / 'AgeOfSailWorld-phase9-rc1.zip').exists())
+                if reports:
+                    self.assertTrue((out / 'diagnostics/requirement-traceability.json').exists())
+                if expected:
+                    self.assertEqual(expected, status.read_text().strip())
+                    output = out / 'github-output'
+                    summary = out / 'github-summary'
+                    host_result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True,
+                                                 env={**environment, 'artifact_dir': str(out), 'GITHUB_OUTPUT': str(output),
+                                                      'GITHUB_STEP_SUMMARY': str(summary)})
+                    self.assertEqual(0, host_result.returncode, host_result.stderr)
+                    self.assertEqual('ready=' + ('true' if expected == 'ready' else 'false') + '\n', output.read_text())
+                    if expected == 'blocked':
+                        self.assertIn('Candidate publication: blocked', summary.read_text())
+                        self.assertIn('No player candidate was published', summary.read_text())
+
+    def test_missing_or_unknown_publication_status_fails_ci(self):
+        host = 'case "$(cat ' + textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]
+                                              .split('\n      - name:', 1)[0])
+        for status in (None, '', 'unknown', 'ready\nblocked'):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                if status is not None:
+                    (root / 'candidate-status').write_text(status)
+                output = root / 'github-output'
+                result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True,
+                                        env={**os.environ, 'artifact_dir': str(root), 'GITHUB_OUTPUT': str(output)})
+                self.assertNotEqual(0, result.returncode)
+                self.assertFalse(output.exists())
 
     def test_container_builds_do_not_mutate_repository_bind_mounts(self):
         for workflow in (self.workflow, self.typecheck_workflow):

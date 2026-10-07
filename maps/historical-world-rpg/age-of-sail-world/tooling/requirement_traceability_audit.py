@@ -33,10 +33,15 @@ def write_report(report, base=REPORT):
     base.with_suffix(".md").write_text(trace.render_markdown(report))
 
 
-def validate_final(artifact, evidence, transcript, revision):
+def audit_final(artifact, evidence, transcript, revision):
     report = build_report(artifact, evidence, transcript, revision)
     # Always retain the complete census/byte composition, including failed RCs.
     write_report(report, PROJECT / "_build/release/requirement-traceability")
+    return report
+
+
+def validate_final(artifact, evidence, transcript, revision):
+    report = audit_final(artifact, evidence, transcript, revision)
     trace.require_ready(report)
     return report
 

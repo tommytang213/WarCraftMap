@@ -459,12 +459,43 @@ class TraceabilityTests(unittest.TestCase):
              patch.object(release, "normalized_campaign", return_value={}), \
              patch.object(release, "verify_campaign_runtime", return_value={}) as legacy, \
              patch.object(release, "_write_zip") as publish:
-            with self.assertRaisesRegex(release.PackagingError, "traceability blocks candidate publication"):
+            with self.assertRaisesRegex(release.CandidatePublicationBlocked, "traceability blocks candidate publication"):
                 release.build_release_candidate(revision="a"*40)
             publish.assert_not_called()
-            legacy.assert_not_called()
+            legacy.assert_called_once()
+            # A known traceability gap must not conceal independent build or
+            # evidence regressions behind CI's expected publication status.
+            legacy.side_effect = release.PackagingError("broken packaged runtime")
+            self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            legacy.side_effect = None
+            with patch.object(release, "normalized_campaign", side_effect=[{"map": "first"}, {"map": "changed"}]):
+                self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            self.assertEqual(3, release.main(["--source-revision", "a"*40]))
+            self.assertTrue((output.parent / "requirement-traceability.json").is_file())
+            with patch.object(scenario, "audit_final", return_value={
+                    **self.report(), "executionErrors": ["stale execution source"]}):
+                self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            for blocker_class in ("authority-drift", "invalid-mapping"):
+                invalid = self.report()
+                invalid["blockers"].append({"id": "authority", "class": blocker_class, "message": "invalid inventory"})
+                with self.subTest(blocker=blocker_class), patch.object(scenario, "audit_final", return_value=invalid):
+                    self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            # Exit 3 also requires current, readable execution evidence and
+            # successfully retained diagnostics, even with known content gaps.
+            with patch.object(scenario, "audit_final", side_effect=OSError("cannot retain diagnostics")):
+                self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            (evidence_dir / "results.json").unlink()
+            self.assertEqual(1, release.main(["--source-revision", "a"*40]))
+            publish.assert_not_called()
         self.assertFalse(output.exists())
-        self.assertTrue((output.parent / "requirement-traceability.json").is_file())
+
+    def test_candidate_cli_distinguishes_success_and_unexpected_errors(self):
+        with patch.object(release, "build_release_candidate", return_value=self.project / "candidate.zip"):
+            self.assertEqual(0, release.main([]))
+        for error in (release.PackagingError("compiler failed"), OSError("disk full"),
+                      ValueError("malformed report"), KeyError("missing evidence")):
+            with self.subTest(error=error), patch.object(release, "build_release_candidate", side_effect=error):
+                self.assertEqual(1, release.main([]))
 
     def test_compiler_cleanup_failure_preserves_current_source_diagnostics_only(self):
         config = release.load_release_config()
