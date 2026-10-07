@@ -587,6 +587,7 @@ def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, 
         record["conflict_attempts"] = 0
         record.pop("last_failure", None)
         record.pop("repair_kind", None)
+        record.pop("validation_failure", None)
         record.pop("ci_base_oid", None)
         record.pop("conflict_base_oid", None)
 
@@ -633,12 +634,14 @@ def default_branch(repo: Path) -> str:
     ).stdout.strip()
 
 
-def codex_prompt(issue: dict[str, Any], repair_context: str) -> str:
+def codex_prompt(issue: dict[str, Any], repair_context: str, *, repair_kind: str = "") -> str:
     conflict_instructions = ""
-    if repair_context.startswith("Merge conflict repair required:"):
+    if repair_kind == "merge_conflict" or (
+        not repair_kind and repair_context.startswith("Merge conflict repair required:")
+    ):
         conflict_instructions = """
 
-This is an integration repair. Current main has already been merged into this worktree and may have left unmerged paths. Resolve only actual merge conflicts, preserving the completed work from both main and the issue branch. Do not discard or broadly rewrite either work stream. After resolving the conflicts, make only the minimal integration changes needed for repository validation."""
+This is an integration repair. Current main has already been merged into this worktree and may have left unmerged paths. Resolve only actual merge conflicts, preserving the completed work from both main and the issue branch. Do not discard or broadly rewrite either work stream. Stage each resolved path with git add so no unmerged paths remain; do not commit. After the merge is clean, continue any previous validation repair included in the failure context and make only the minimal integration/validation changes needed for repository validation."""
     return f"""Implement GitHub issue #{issue['number']} in this isolated WarCraftMap worktree.
 
 Title: {issue['title']}
@@ -776,7 +779,7 @@ def invoke_codex(
     timed_out = False
     try:
         stdout, _ = process.communicate(
-            codex_prompt(issue, record.get("last_failure", "")),
+            codex_prompt(issue, record.get("last_failure", ""), repair_kind=repair_kind(record)),
             timeout=config.timeout_minutes * 60,
         )
     except subprocess.TimeoutExpired:
@@ -819,25 +822,33 @@ def run_checks(config: Config, worktree: Path) -> None:
 def prepare_validation_repair(config: Config, worktree: Path, issue_number: int) -> tuple[str, list[str]]:
     """Checkpoint dirty issue work, then merge current main before retrying validation."""
     run(["git", "fetch", "origin"], cwd=worktree)
-    status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
-    if status.strip():
-        run(["git", "add", "-A"], cwd=worktree)
-        run(["git", "commit", "-m", f"Checkpoint issue #{issue_number} before validation repair"], cwd=worktree)
     branch = default_branch(config.repo_root)
     upstream = f"origin/{branch}"
     base_oid = remote_branch_oid(config.repo_root, branch)
     merge_head = run(["git", "rev-parse", "--verify", "--quiet", "MERGE_HEAD"], cwd=worktree, check=False)
     if merge_head.returncode not in {0, 1}:
         raise RuntimeError(f"could not inspect merge state (git exited {merge_head.returncode})")
-    if merge_head.returncode == 1:
-        merge = run(["git", "merge", "--no-edit", upstream], cwd=worktree, check=False)
-        if merge.returncode:
-            conflicts = run(["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree).stdout.splitlines()
-            if not conflicts:
-                detail = (merge.stderr or merge.stdout).strip()
-                raise RuntimeError(f"could not merge {upstream}: {detail}")
-    conflicts = run(["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree).stdout.splitlines()
+    conflicts = unmerged_paths(worktree)
+    if conflicts:
+        # Legacy validation records can already contain an unfinished merge.
+        # Never checkpoint its conflict markers or partially resolved index.
+        return merge_head.stdout.strip() or base_oid, conflicts
+    status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
+    if status.strip() or merge_head.returncode == 0:
+        run(["git", "add", "-A"], cwd=worktree)
+        run(["git", "commit", "-m", f"Checkpoint issue #{issue_number} before validation repair"], cwd=worktree)
+    merge = run(["git", "merge", "--no-edit", upstream], cwd=worktree, check=False)
+    conflicts = unmerged_paths(worktree)
+    if merge.returncode and not conflicts:
+        detail = (merge.stderr or merge.stdout).strip()
+        raise RuntimeError(f"could not merge {upstream}: {detail}")
     return base_oid, conflicts
+
+
+def unmerged_paths(worktree: Path) -> list[str]:
+    return run(
+        ["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree
+    ).stdout.splitlines()
 
 
 def prepare_merge_conflict_repair(config: Config, worktree: Path) -> list[str]:
@@ -852,15 +863,57 @@ def prepare_merge_conflict_repair(config: Config, worktree: Path) -> list[str]:
         upstream = f"origin/{default_branch(config.repo_root)}"
         merge = run(["git", "merge", "--no-edit", upstream], cwd=worktree, check=False)
         if merge.returncode:
-            conflicts = run(
-                ["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree
-            ).stdout.splitlines()
+            conflicts = unmerged_paths(worktree)
             if not conflicts:
                 detail = (merge.stderr or merge.stdout).strip()
                 raise RuntimeError(f"could not merge {upstream}: {detail}")
-    return run(
-        ["git", "diff", "--name-only", "--diff-filter=U"], cwd=worktree
-    ).stdout.splitlines()
+    return unmerged_paths(worktree)
+
+
+def resume_validation_repair(record: dict[str, Any], conflicts: list[str]) -> None:
+    """Resume the suspended validation lane only after the index is resolved."""
+    if (
+        not conflicts and repair_kind(record) == "merge_conflict"
+        and not record.get("pr") and "validation_failure" in record
+    ):
+        record["repair_kind"] = "validation"
+
+
+def prepare_repair(config: Config, worktree: Path, issue_number: int, record: dict[str, Any]) -> None:
+    """Determine the actual repair lane before charging a Codex attempt."""
+    kind = repair_kind(record)
+    if kind == "validation":
+        # Kept separately because last_failure is replaced by Codex errors and
+        # conflict diagnostics on subsequent worker invocations.
+        record.setdefault("validation_failure", str(record.get("last_failure") or ""))
+        base_oid, conflicts = prepare_validation_repair(config, worktree, issue_number)
+        record["validation_base_oid"] = base_oid
+        record["repair_kind"] = "merge_conflict" if conflicts else "validation"
+    elif kind == "merge_conflict":
+        conflicts = prepare_merge_conflict_repair(config, worktree)
+        resume_validation_repair(record, conflicts)
+    else:
+        return
+
+    if record["repair_kind"] == "merge_conflict":
+        record["last_failure"] = (
+            "Merge conflict repair required: current main was merged into the issue "
+            "worktree; resolve only these unmerged paths while preserving both work "
+            f"streams: {', '.join(conflicts) if conflicts else '(none remain)'}"
+        )
+        if "validation_failure" in record:
+            record["last_failure"] += (
+                "\nResolve the merge first, then continue the validation repair. "
+                "Previous validation failure:\n" + record["validation_failure"]
+            )
+    else:
+        record["last_failure"] = (
+            "Repository validation repair required: current main was merged into this "
+            "pre-PR worktree before retrying. No unmerged paths remain. "
+            "Preserve the issue implementation and current main changes, and resolve "
+            "only integration/validation problems. Previous validation failure:\n"
+            + record["validation_failure"]
+        )
 
 
 def push_existing_pr_repair(worktree: Path, issue_number: int, pr: int) -> None:
@@ -1199,42 +1252,38 @@ def main(argv: list[str] | None = None) -> int:
         kind = repair_kind(record)
         if kind and not record.get("repair_kind"):
             record["repair_kind"] = kind
-        attempt_key, attempts, _limit = attempt_budget(
-            record, config.max_attempts, config.max_validation_repair_attempts,
-            config.max_ci_repair_attempts, config.max_conflict_attempts,
-        )
-        record[attempt_key] = attempts + 1
-        record["status"] = "working"
-        run_entry = {
-            "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
-            "tokens": None,
-            "telemetry": "pending",
-            "issue": selected["number"],
-            "model": config.model,
-        }
-        state["runs"].append(run_entry)
-        # Charge the emergency run cap before launch, including crashes/timeouts.
-        save_state(state_path, state)
         try:
-            if record.get("repair_kind") == "merge_conflict":
-                conflicts = prepare_merge_conflict_repair(config, worktree)
-                record["last_failure"] = (
-                    "Merge conflict repair required: current main was merged into the issue "
-                    f"worktree; resolve only these unmerged paths while preserving both work "
-                    f"streams: { ', '.join(conflicts) if conflicts else '(none remain)'}"
-                )
-            elif record.get("repair_kind") == "validation":
-                previous_failure = str(record.get("last_failure") or "")
-                base_oid, conflicts = prepare_validation_repair(config, worktree, selected["number"])
-                record["validation_base_oid"] = base_oid
-                record["last_failure"] = (
-                    "Repository validation repair required: current main was merged into this "
-                    "pre-PR worktree before retrying. "
-                    f"Unmerged paths: {', '.join(conflicts) if conflicts else '(none)'}. "
-                    "Preserve the issue implementation and resolve only integration/validation "
-                    "problems. Previous validation failure:\n" + previous_failure[-3000:]
-                )
-            result = invoke_codex(config, worktree, selected, record, run_entry)
+            prepare_repair(config, worktree, selected["number"], record)
+            # Merging main can switch lanes. Check and charge the resulting
+            # budget, never the validation budget that led us to this merge.
+            attempt_key, attempts, limit = attempt_budget(
+                record, config.max_attempts, config.max_validation_repair_attempts,
+                config.max_ci_repair_attempts, config.max_conflict_attempts,
+            )
+            if attempts >= limit:
+                raise RuntimeError("No repair attempts remain before Codex launch.")
+            record[attempt_key] = attempts + 1
+            record["status"] = "working"
+            run_entry = {
+                "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
+                "tokens": None,
+                "telemetry": "pending",
+                "issue": selected["number"],
+                "model": config.model,
+            }
+            state["runs"].append(run_entry)
+            # Persist the lane and charge the run cap before launch, including
+            # crashes/timeouts. Preparation without a launch consumes neither.
+            save_state(state_path, state)
+            conflicts: list[str] = []
+            try:
+                result = invoke_codex(config, worktree, selected, record, run_entry)
+            finally:
+                if record.get("repair_kind") == "merge_conflict":
+                    conflicts = unmerged_paths(worktree)
+                    # A timeout/blocker after resolving the merge must not
+                    # strand validation behind an exhausted conflict budget.
+                    resume_validation_repair(record, conflicts)
             # Persist token telemetry before validation/PR work.
             save_state(state_path, state)
             if result["outcome"] == "needs_design":
@@ -1244,11 +1293,17 @@ def main(argv: list[str] | None = None) -> int:
                 detail = (result.get("summary") or result.get("question") or "technical blocker").strip()
                 raise RuntimeError(f"Codex implementation blocked: {detail}")
             else:
+                if conflicts:
+                    raise RuntimeError(
+                        "Merge conflict repair required: unmerged paths remain after Codex: "
+                        + ", ".join(conflicts)
+                    )
                 try:
                     run_checks(config, worktree)
-                except Exception:
+                except Exception as exc:
                     if not record.get("pr"):
                         record["repair_kind"] = "validation"
+                        record["validation_failure"] = str(exc)[-4000:]
                         branch_name = default_branch(config.repo_root)
                         base_oid = remote_branch_oid(config.repo_root, branch_name)
                         if base_oid:
@@ -1263,6 +1318,7 @@ def main(argv: list[str] | None = None) -> int:
                     record["status"] = "pr_open"
                 record.pop("last_failure", None)
                 record.pop("repair_kind", None)
+                record.pop("validation_failure", None)
         except Exception as exc:
             attempt_key, attempts, limit = attempt_budget(
                 record, config.max_attempts, config.max_validation_repair_attempts,
@@ -1270,6 +1326,12 @@ def main(argv: list[str] | None = None) -> int:
             )
             record["status"] = "failed" if attempts >= limit else "repair"
             record["last_failure"] = str(exc)[-4000:]
+            if attempts >= limit:
+                lane = {
+                    "validation": "validation-repair", "ci": "CI-repair",
+                    "merge_conflict": "conflict-repair",
+                }.get(repair_kind(record), "implementation")
+                record["last_failure"] += f"\nThe {lane} attempt limit ({limit}) is exhausted."
             print(f"attempt failed: {exc}", file=sys.stderr)
         save_state(state_path, state)
         return 0
