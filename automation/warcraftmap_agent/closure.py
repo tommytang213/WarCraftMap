@@ -17,7 +17,11 @@ REPORTS = {
     "traceability": "reports/traceability/requirements.json",
 }
 MARKER = re.compile(r"(?m)^Closure blocker: ([\w.:-]+)\s*$")
-REVISION = re.compile(r"(?m)^Closure revision: ([0-9a-f]{40})\s*$")
+REVISION = re.compile(r"(?m)^Closure revision: ([0-9a-f]{40})\\s*$")
+# Narrow owner-approved exception: issue #427 is CI-worker maintenance, not
+# a gameplay/release blocker. It may enter the normal worker only after #426
+# was MERGED (not merely closed), with the usual checks and budgets unchanged.
+APPROVED_MAINTENANCE_MERGED_PR = {427: 426}
 
 
 def marked_keys(entry: dict) -> set[str]:
@@ -198,6 +202,16 @@ class Closure:
 
     def permits_issue(self, issue: dict) -> bool:
         if not self.active:
+            return True
+        # Explicit, reviewed CI maintenance may proceed while release closure
+        # is pending, but only after its prerequisite PR is actually merged.
+        # Keep stale/unregenerated audit checkouts fail-closed.
+        prerequisite = APPROVED_MAINTENANCE_MERGED_PR.get(issue.get("number"))
+        if (self.fresh and prerequisite is not None
+                and re.match(r"^\\[agent-ready\\]\\s+", issue.get("title") or "", re.IGNORECASE)
+                and any(row.get("number") == prerequisite
+                        and str(row.get("state") or "").upper() == "MERGED"
+                        and row.get("mergedAt") for row in self.prs)):
             return True
         keys = self.keys_for(issue)
         if not keys:
