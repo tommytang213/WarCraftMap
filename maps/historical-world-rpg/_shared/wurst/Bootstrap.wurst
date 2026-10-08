@@ -94,6 +94,12 @@ function initializeRegionalCampaign()
 		registerOriginSelection(commands, bootstrapOriginSelection)
 	else if not campaign.startup()
 		print("Campaign startup stopped: " + campaign.diagnostic() + " Existing recovery saves have been retained.")
+		// Keep a recovery entry even when gameplay activation failed. A retry
+		// reloads through the normal registration/startup path before timers or
+		// gameplay commands become available.
+		let recoveryCommands = createCommandRegistry(false)
+		registerCampaignSaveCommands(recoveryCommands, campaign)
+		installCommandRegistry(recoveryCommands)
 		return
 	if campaign.started
 		militarySettlementRuntime.activateRegion(PHYSICAL_MAP_ID)

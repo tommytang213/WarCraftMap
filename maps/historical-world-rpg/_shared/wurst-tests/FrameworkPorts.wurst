@@ -95,8 +95,15 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 	override function commitLoad(WarcraftRpgRuntime rpg)
 		skip
 	override function load(string path)
-		selectorIdentity.hasOrigin().assertTrue()
-		handoff.contains(HANDOFF_REQUEST).assertTrue()
+		if handoff.contains(CAMPAIGN_RECOVERY_REQUEST)
+			// Recovery must be durable before the physical loader is invoked and
+			// must not require (or start) a fresh origin selection.
+			let request = decodeCampaignRecoveryRequest(handoff.read(CAMPAIGN_RECOVERY_REQUEST))
+			(request != null).assertTrue()
+			path.assertEquals(scenarioPhysicalMapPath(request.mapId))
+		else
+			selectorIdentity.hasOrigin().assertTrue()
+			handoff.contains(HANDOFF_REQUEST).assertTrue()
 		destination = path
 		loads++
 	override function present(WarcraftRpgRuntime rpg, int index) returns boolean

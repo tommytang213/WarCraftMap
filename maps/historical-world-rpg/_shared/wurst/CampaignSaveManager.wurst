@@ -7,6 +7,38 @@ public constant int SAVE_SLOT_SESSION_START = 2
 public constant int SAVE_SLOT_MAJOR_MILESTONE = 3
 public constant int CAMPAIGN_AUTOSAVE_SLOT_COUNT = 15
 
+/** Canonical positive decimal only: S2I alone accepts prefixes and overflows. */
+public function campaignSlotNumber(string value) returns int
+	if value == "" or StringLength(value) > 10 or SubString(value, 0, 1) == "0"
+		return 0
+	var number = 0
+	for i = 0 to StringLength(value) - 1
+		let digit = "0123456789".indexOf(SubString(value, i, i + 1))
+		if digit < 0 or number > 214748364 or (number == 214748364 and digit > 7)
+			return 0
+		number = number * 10 + digit
+	return number
+
+public class CampaignSlotSelection
+	int kind = -1
+	int index = 0
+	construct(string arguments)
+		if arguments == "session_start"
+			kind = SAVE_SLOT_SESSION_START
+		else if arguments == "major_milestone"
+			kind = SAVE_SLOT_MAJOR_MILESTONE
+		else
+			var number = arguments
+			kind = SAVE_SLOT_MANUAL
+			if arguments.startsWith("manual ")
+				number = SubString(arguments, 7, StringLength(arguments))
+			else if arguments.startsWith("autosave ")
+				kind = SAVE_SLOT_AUTOSAVE
+				number = SubString(arguments, 9, StringLength(arguments))
+			index = campaignSlotNumber(number)
+	function slotId() returns string
+		return campaignSlotId(kind, index)
+
 public interface CampaignSaveStorage
 	function contains(string slotId) returns boolean
 	function read(string slotId) returns string

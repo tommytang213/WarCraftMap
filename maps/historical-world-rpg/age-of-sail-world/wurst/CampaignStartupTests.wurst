@@ -176,7 +176,7 @@ function originLifecycle(string origin, string mapId)
 	f.campaign.startup().assertTrue()
 	f.campaign.identity.originId().assertEquals("england")
 	f.handoff.readRequest().status.assertEquals("consumed")
-	registerCampaignSaveCommands(commands, f.campaign.saves)
+	registerCampaignSaveCommands(commands, f.campaign)
 	// Blizzard initializes this native timer at client startup. The interpreter
 	// does not run that initialization, so supply the same boundary explicitly.
 	let previousTimer = bj_gameStartedTimer

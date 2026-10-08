@@ -20,6 +20,7 @@ def write_settings(project, destination):
     selector = physical_maps["campaign"]["bootstrapMapId"] if physical_maps else ""
     lines = ["package ScenarioSettings", "",
              "public constant string CAMPAIGN_CACHE_FILE = " + json.dumps(cache),
+             "public constant string SCENARIO_CAMPAIGN_ID = " + json.dumps(physical_maps["campaign"]["id"] if physical_maps else cache),
              "public constant string SCENARIO_BOOTSTRAP_MAP_ID = " + json.dumps(selector),
              "public constant string SCENARIO_BOOTSTRAP_MESSAGE = " + json.dumps(release["bootstrapMarkers"][0]),
              "", "public function scenarioRegionCount() returns int", f"\treturn {len(regions)}",
@@ -35,5 +36,15 @@ def write_settings(project, destination):
             logical = physical["assignments"]["logicalRegionIds"]
             if logical:
                 lines += ["\tif mapId == " + json.dumps(physical["id"]), "\t\treturn " + json.dumps(logical[0])]
+    lines += ['\treturn ""', ""]
+    # Recovery can target any packaged regional map, including maps without an
+    # origin or a boundary adjacent to the currently loaded map. Never use a
+    # path supplied by a saved document as loader input.
+    lines += ["public function scenarioPhysicalMapPath(string mapId) returns string"]
+    if physical_maps:
+        for physical in physical_maps["physicalMaps"]:
+            if physical["assignments"]["logicalRegionIds"] and not physical.get("bootstrap", False):
+                lines += ["\tif mapId == " + json.dumps(physical["id"]),
+                          "\t\treturn " + json.dumps(physical["packagePath"])]
     lines += ['\treturn ""', ""]
     (destination / "ScenarioSettings.wurst").write_text("\n".join(lines))
