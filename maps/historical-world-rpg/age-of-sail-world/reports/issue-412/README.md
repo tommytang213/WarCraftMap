@@ -58,3 +58,26 @@ The native-save reconstruction oracle runs headlessly; the native client runner
 is unavailable. The separate automation worker suite has existing GitHub-context
 fixture errors, retained in its log. No player QA was requested or performed.
 Release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+Validation repair after merging main preserves the recovery implementation and
+regenerates both conflicted traceability reports from the combined mappings.
+The merged installed-help fixture now registers `PlayableCampaignServices`,
+checks the fourth page introduced by `/saves`, and verifies recovery-aware
+`/load` help. Its Python gate fixture selects the six help obligations explicitly
+so the three recovery mappings remain independently tested. Main's worker-fixture
+repair also prevents unintended GitHub calls in temporary local repositories.
+
+`repair-validation.json` and the `repair-*` logs record validation of this merged
+tree; the original `validation.json` remains historical evidence. Run
+`verify-repair-evidence.py` after a campaign build to verify both the recovery and
+merged help obligations against the exact diagnostic artifact, while retaining
+the complete publication-blocker report.
+
+The repair build passed all 312 pinned Wurst tests and packaged 17 physical maps.
+Both conformance campaigns passed with unchanged shared sources. All nine scoped
+obligations pass against the rebuilt artifact; its full report retains 9,096
+publication blockers. All 129 automation tests and 33 focused save/recovery tests
+passed. The 921-case Python run loaded the old help fixture before its repair:
+920 cases passed and its sole failure was the old `6 != 9` mapping-count assertion.
+All five tests in that corrected module passed on the scoped rerun. No further
+production changes or player testing were needed.

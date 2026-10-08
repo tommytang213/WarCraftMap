@@ -1,0 +1,163 @@
+{
+  "automationPython": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+    "status": "pass",
+    "testsPassed": 129
+  },
+  "campaignPackaging": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "buildDirectory": "container-private /tmp/recovery-campaign",
+    "buildUser": "wurstuser",
+    "bytes": 31728201,
+    "containerRemoved": true,
+    "physicalMapsTypecheckedCompiledAndInspected": 17,
+    "sha256": "b0cabe9484310a45de3f42825ceb03e87bc09c74c261876ee397d1b951180f6c",
+    "sourceBindMount": "read-only",
+    "status": "pass"
+  },
+  "conflictsRemaining": [],
+  "evidence": {
+    "repair-automation-tests.log.gz": "77b76aa804271bfd0d9337a073c24f7af9a92af3471706180662095add8d452c",
+    "repair-container-mounts.json": "2831bc71e92ab40c6230c57e6a116580c156354d95c52821cbf96c7eeb14d748",
+    "repair-container-setup.log.gz": "fb13d2c50f7353f6cffbd256a1cc0fb7d36854daebcc365fc7fd56c54d9bb845",
+    "repair-framework-mutated-execution.log.gz": "c487353a9da175ff651cfaa5b59755d531e1e2e9863f9a9e100d5d3fb05e7033",
+    "repair-framework-mutated-results.json.gz": "97d2c2fdd92e7b8bc6508c966d4dbf7954cc54df7eca96e20b235812d690c725",
+    "repair-framework-original-execution.log.gz": "8a62dce5e0ca49cacaf2bd677eff246855afb5b09fd0b6c9c3f9b677d055f248",
+    "repair-framework-original-results.json.gz": "37c1db101742f08b3865b8676673b5807e023885e6b78c0e915a6efdb2bef5b8",
+    "repair-framework-report.json.gz": "98006f4fae3a26d88af1775967938d2ae75b9d2e57e778f531524b06e044bf26",
+    "repair-framework.log.gz": "27d379e581efac8fb37ec9452f8c8f3ecf4d54e489eb5b5c2308272caa8d9b48",
+    "repair-help-tests.log.gz": "0fd1876d0d563fb68131a10ded26c4965c5770d291bae39a94a0fd5db7879cc9",
+    "repair-initial-pinned-campaign.log.gz": "d78f2869eb63129858300c2d22267adee1ddeb40ab02cc41d8112c4ea9613cca",
+    "repair-pinned-campaign.log.gz": "04950a141db6c8fe9a27fb47a75f1b329ac79f89a052b67e474df3b40cf982c3",
+    "repair-repository-checks.log.gz": "80c4389cc76be7d1cabfb8eb978d0982ec8f27706569c263aa93a9bdfcb48f82",
+    "repair-requirement-traceability.json.gz": "d7684795ab04753024920ffa7675b2a931bb0e4f41634700ee7cf4a302bf6694",
+    "repair-requirement-traceability.md.gz": "9884be280c19526e6c41dc51287156facc7e2d8022613561e6494e09578bf3b5",
+    "repair-runtime-acceptance.json.gz": "cbb5641bf378dbc19c2b7fb1b25f83b9e0c8b786062c83268a471c48b6551c25",
+    "repair-save-compatibility.log.gz": "161b3fe13183f63c62b0cfd817f6a90b613f087ce908a95b7c83b3939ea0ee73",
+    "repair-scoped-evidence.json.gz": "1fbd0f302d05d81504119c8d73d153fbf21523f9b0fbce661e0a092a414ef06e",
+    "repair-scoped-evidence.log.gz": "7059a4a2a26624e2cc6f6cc424efd4b651e507f4120a0e2c0034226e1eb205e3",
+    "repair-source-traceability.log.gz": "45883df43a2d323e89b0b6cabff9eb413ce5def793047545afdd4daef72f073d",
+    "repair-wurst-execution.log.gz": "1baba9066b003dc353ff57654f0c218ad629be57f34dc478a771b3043eea7360",
+    "repair-wurst-results.json.gz": "15ba47941f049e70a83a929939d23381124938faa0d084edf6e843a23e6c6512",
+    "verify-repair-evidence.py": "d654ab3792bd6ba9e5276a72166ee4fb4eccf1b0281328db92a5e968a77dc18a"
+  },
+  "format": "warcraftmap_issue_412_validation_repair_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "mergedMainRevision": "44c5bdab104ffabf4c803f30703a16d693a89f51",
+  "pinnedWurst": {
+    "command": "sh reports/issue-412/validate.sh campaign (container-private copy)",
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "currentSourceIdentityAndProductionCoverageVerified": true,
+    "initialAttempt": "The initial merged fixture passed CampaignSaveManager to the new PlayableCampaignServices registration API. Compilation correctly rejected it; the fixture was repaired before the passing run.",
+    "inputSetSha256": "3ce64d7da07bd3f729c221e78f85d04395d01c5e58a3a48a9b71c98476004ab4",
+    "status": "pass",
+    "targetedPackages": {
+      "CampaignLoadTransactionTests.wurst": 22,
+      "CampaignRecoveryTests.wurst": 27,
+      "CampaignStartupTests.wurst": 48,
+      "InstalledCommandHelpTests.wurst": 4,
+      "PartyLocationTests.wurst": 2
+    },
+    "testsDiscovered": 312,
+    "testsPassed": 312,
+    "transcriptSha256": "56e097bcea2ebd826e5557126fe3a9e47eb57df533b9f8d441cbf02a7c4062dc"
+  },
+  "productionRecoveryImplementationChanged": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repairScope": [
+    "Regenerate both conflicted traceability reports from the combined recovery and help mappings.",
+    "Adapt the merged help fixture to PlayableCampaignServices, the fourth help page, and recovery load metadata.",
+    "Scope the help-only Python gate fixture to its six obligations while preserving all nine production mappings.",
+    "Retain main's worker fixture repair that isolates local tests from GitHub."
+  ],
+  "restrictions": {
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false,
+    "repositoryCommitsOrPushes": false,
+    "worktreePermissionChanges": false,
+    "writableSourceContainerMounts": false
+  },
+  "saveCompatibility": {
+    "modules": [
+      "test_campaign_save",
+      "test_campaign_save_manager",
+      "test_autosave_scheduler",
+      "test_release_save_compatibility",
+      "test_native_save_regression",
+      "test_recovery_documentation"
+    ],
+    "realClientExecuted": false,
+    "schemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "status": "pass",
+    "testsPassed": 33
+  },
+  "scenarioPython": {
+    "command": "TMPDIR=<worktree>/maps/historical-world-rpg/age-of-sail-world/_build/issue-412/repair-tmp WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+    "failure": "test_installed_command_help: old fixture expected six total mappings, but the merged catalogue contains nine.",
+    "initialExitCode": 1,
+    "initialFailures": 1,
+    "initialTestsPassed": 920,
+    "resolution": "The full run imported the old fixture before its edit. The corrected fixture scopes its six help obligations explicitly; all five tests in that module pass on the separate rerun. The other 920 tests passed in the full run.",
+    "scopedRetestCommand": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_installed_command_help.py",
+    "scopedRetestTestsPassed": 5,
+    "status": "pass_after_scoped_retest",
+    "testsRun": 921
+  },
+  "scopedTraceability": {
+    "artifactSha256": "b0cabe9484310a45de3f42825ceb03e87bc09c74c261876ee397d1b951180f6c",
+    "candidateReady": false,
+    "command": "python3 reports/issue-412/verify-repair-evidence.py",
+    "mergedHelpRequirements": [
+      "REQ-0203.01",
+      "REQ-0204.01",
+      "REQ-0205.01",
+      "REQ-0205.02",
+      "REQ-0206.01",
+      "REQ-0207.01"
+    ],
+    "receipts": 36,
+    "recoveryRequirements": [
+      "REQ-0185.01",
+      "REQ-0186.01",
+      "REQ-0190.01"
+    ],
+    "remainingPublicationBlockers": 9096,
+    "scopedBlockers": [],
+    "status": "pass"
+  },
+  "sharedFramework": {
+    "command": "sh reports/issue-412/validate.sh framework (container-private copy)",
+    "currentSharedSourceHashesVerified": 157,
+    "mapsPackagedPerCampaign": 3,
+    "mutatedArchiveSha256": "b292e59cf75f10deef0a0e99d04f9eef543836448e1efd5430b18cd83d9ba846",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "c77e76f8517d131cc740e95c671615481ab5284426b59a9030d9b8d7ced09f2d",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceChecks": {
+    "diffWhitespace": true,
+    "frameworkBoundary": true,
+    "recoveryDocumentation": true,
+    "requirementReportFresh": true,
+    "status": "pass",
+    "worldAndMapValidation": true
+  },
+  "sourceRevision": "d442e0060c436cf7f6b0e78522d79723b152d854",
+  "sourceTreeSha256": "0a11ae0a3df9ef209c9df029d69357233242e4d64860c36c324ddd1cecfb673d"
+}

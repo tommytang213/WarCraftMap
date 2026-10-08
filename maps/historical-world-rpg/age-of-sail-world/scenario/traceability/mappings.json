@@ -796,7 +796,8 @@
       "artifact": {
         "callPatterns": [
           "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
-          "\\bTriggerAddAction\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
           "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
         ],
         "mapIds": [
@@ -809,20 +810,43 @@
         "path": [
           {
             "contains": [
-              "installCommandRegistry"
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
             ],
             "path": "wurst/Bootstrap.wurst",
             "symbol": "initializeRegionalCampaign"
           },
           {
             "contains": [
-              "active.dispatch(GetTriggerPlayer(),GetEventPlayerChatString())"
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "routeChat"
           },
           {
             "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
               "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
@@ -831,15 +855,15 @@
         ],
         "registration": {
           "contains": [
-            "TriggerRegisterPlayerChatEvent",
-            "TriggerAddAction(listener,function routeChat)"
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "installCommandRegistry"
         },
-        "testInvocation": ".dispatch(null,\"/help"
+        "testInvocation": "f.chat.deliver("
       },
-      "gap": "Existing test constructs a local registry. It does not install/drive the native chat registration; retain as test-only until a production adapter integration fixture exists.",
       "mechanism": [
         {
           "contains": [
@@ -848,24 +872,48 @@
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
         }
       ],
       "persistence": {
         "mode": "read-only",
-        "reason": "Help is derived from the installed command registry and does not modify campaign state.",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
         "references": [
           {
             "contains": [
+              "output.show(sender",
               "helpPage(sender"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
           }
         ]
       },
       "state": {
-        "mutation": "dispatch -> help -> helpPage -> output.show; no campaign mutation",
-        "outcome": "`/help` lists player commands.",
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "/help lists registered release commands.",
         "owner": "CommandRegistry / CommandOutput (read-only presentation)",
         "references": [
           {
@@ -882,47 +930,117 @@
       "tests": {
         "failure": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0203.01"
+          }
         },
         "replay": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0203.01"
+          }
         },
         "stale": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0203.01"
+          }
         },
         "success": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0203.01"
+          }
         }
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Map startup recreates the command registry before installing the chat listener.",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
         "references": [
           {
             "contains": [
-              "new CommandRegistry"
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
             ],
             "path": "wurst/CommandRouter.wurst",
-            "symbol": "createCommandRegistry"
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
           }
         ]
       }
@@ -931,7 +1049,8 @@
       "artifact": {
         "callPatterns": [
           "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
-          "\\bTriggerAddAction\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
           "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
         ],
         "mapIds": [
@@ -944,20 +1063,43 @@
         "path": [
           {
             "contains": [
-              "installCommandRegistry"
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
             ],
             "path": "wurst/Bootstrap.wurst",
             "symbol": "initializeRegionalCampaign"
           },
           {
             "contains": [
-              "active.dispatch(GetTriggerPlayer(),GetEventPlayerChatString())"
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "routeChat"
           },
           {
             "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
               "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
@@ -966,15 +1108,15 @@
         ],
         "registration": {
           "contains": [
-            "TriggerRegisterPlayerChatEvent",
-            "TriggerAddAction(listener,function routeChat)"
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "installCommandRegistry"
         },
-        "testInvocation": ".dispatch(null,\"/help"
+        "testInvocation": "f.chat.deliver("
       },
-      "gap": "Existing test constructs a local registry. It does not install/drive the native chat registration; retain as test-only until a production adapter integration fixture exists.",
       "mechanism": [
         {
           "contains": [
@@ -983,24 +1125,48 @@
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
         }
       ],
       "persistence": {
         "mode": "read-only",
-        "reason": "Help is derived from the installed command registry and does not modify campaign state.",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
         "references": [
           {
             "contains": [
+              "output.show(sender",
               "helpPage(sender"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
           }
         ]
       },
       "state": {
-        "mutation": "dispatch -> help -> helpPage -> output.show; no campaign mutation",
-        "outcome": "Help is paged: `/help 2`, `/help 3`, etc.",
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "/help 2 and /commands 3 select bounded pages.",
         "owner": "CommandRegistry / CommandOutput (read-only presentation)",
         "references": [
           {
@@ -1017,47 +1183,117 @@
       "tests": {
         "failure": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0204.01"
+          }
         },
         "replay": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0204.01"
+          }
         },
         "stale": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0204.01"
+          }
         },
         "success": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0204.01"
+          }
         }
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Map startup recreates the command registry before installing the chat listener.",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
         "references": [
           {
             "contains": [
-              "new CommandRegistry"
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
             ],
             "path": "wurst/CommandRouter.wurst",
-            "symbol": "createCommandRegistry"
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
           }
         ]
       }
@@ -1066,7 +1302,8 @@
       "artifact": {
         "callPatterns": [
           "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
-          "\\bTriggerAddAction\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
           "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
         ],
         "mapIds": [
@@ -1079,20 +1316,43 @@
         "path": [
           {
             "contains": [
-              "installCommandRegistry"
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
             ],
             "path": "wurst/Bootstrap.wurst",
             "symbol": "initializeRegionalCampaign"
           },
           {
             "contains": [
-              "active.dispatch(GetTriggerPlayer(),GetEventPlayerChatString())"
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "routeChat"
           },
           {
             "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
               "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
@@ -1101,15 +1361,15 @@
         ],
         "registration": {
           "contains": [
-            "TriggerRegisterPlayerChatEvent",
-            "TriggerAddAction(listener,function routeChat)"
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "installCommandRegistry"
         },
-        "testInvocation": ".dispatch(null,\"/help"
+        "testInvocation": "f.chat.deliver("
       },
-      "gap": "Existing test constructs a local registry. It does not install/drive the native chat registration; retain as test-only until a production adapter integration fixture exists.",
       "mechanism": [
         {
           "contains": [
@@ -1118,24 +1378,48 @@
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
         }
       ],
       "persistence": {
         "mode": "read-only",
-        "reason": "Help is derived from the installed command registry and does not modify campaign state.",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
         "references": [
           {
             "contains": [
+              "output.show(sender",
               "helpPage(sender"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
           }
         ]
       },
       "state": {
-        "mutation": "dispatch -> help -> helpPage -> output.show; no campaign mutation",
-        "outcome": "Topic help is supported, e.g.",
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "Topic names and production aliases resolve to the same metadata.",
         "owner": "CommandRegistry / CommandOutput (read-only presentation)",
         "references": [
           {
@@ -1152,47 +1436,117 @@
       "tests": {
         "failure": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.01"
+          }
         },
         "replay": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.01"
+          }
         },
         "stale": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.01"
+          }
         },
         "success": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.01"
+          }
         }
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Map startup recreates the command registry before installing the chat listener.",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
         "references": [
           {
             "contains": [
-              "new CommandRegistry"
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
             ],
             "path": "wurst/CommandRouter.wurst",
-            "symbol": "createCommandRegistry"
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
           }
         ]
       }
@@ -1201,7 +1555,8 @@
       "artifact": {
         "callPatterns": [
           "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
-          "\\bTriggerAddAction\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
           "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
         ],
         "mapIds": [
@@ -1214,20 +1569,43 @@
         "path": [
           {
             "contains": [
-              "installCommandRegistry"
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
             ],
             "path": "wurst/Bootstrap.wurst",
             "symbol": "initializeRegionalCampaign"
           },
           {
             "contains": [
-              "active.dispatch(GetTriggerPlayer(),GetEventPlayerChatString())"
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "routeChat"
           },
           {
             "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
               "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
@@ -1236,15 +1614,15 @@
         ],
         "registration": {
           "contains": [
-            "TriggerRegisterPlayerChatEvent",
-            "TriggerAddAction(listener,function routeChat)"
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "installCommandRegistry"
         },
-        "testInvocation": ".dispatch(null,\"/help"
+        "testInvocation": "f.chat.deliver("
       },
-      "gap": "Existing test constructs a local registry. It does not install/drive the native chat registration; retain as test-only until a production adapter integration fixture exists.",
       "mechanism": [
         {
           "contains": [
@@ -1253,24 +1631,48 @@
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
         }
       ],
       "persistence": {
         "mode": "read-only",
-        "reason": "Help is derived from the installed command registry and does not modify campaign state.",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
         "references": [
           {
             "contains": [
+              "output.show(sender",
               "helpPage(sender"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
           }
         ]
       },
       "state": {
-        "mutation": "dispatch -> help -> helpPage -> output.show; no campaign mutation",
-        "outcome": "`/help unstuck`.",
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "/help unstuck explains the production recovery command without executing it.",
         "owner": "CommandRegistry / CommandOutput (read-only presentation)",
         "references": [
           {
@@ -1287,47 +1689,117 @@
       "tests": {
         "failure": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.02"
+          }
         },
         "replay": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.02"
+          }
         },
         "stale": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.02"
+          }
         },
         "success": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0205.02"
+          }
         }
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Map startup recreates the command registry before installing the chat listener.",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
         "references": [
           {
             "contains": [
-              "new CommandRegistry"
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
             ],
             "path": "wurst/CommandRouter.wurst",
-            "symbol": "createCommandRegistry"
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
           }
         ]
       }
@@ -1336,7 +1808,8 @@
       "artifact": {
         "callPatterns": [
           "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
-          "\\bTriggerAddAction\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
           "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
         ],
         "mapIds": [
@@ -1349,20 +1822,43 @@
         "path": [
           {
             "contains": [
-              "installCommandRegistry"
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
             ],
             "path": "wurst/Bootstrap.wurst",
             "symbol": "initializeRegionalCampaign"
           },
           {
             "contains": [
-              "active.dispatch(GetTriggerPlayer(),GetEventPlayerChatString())"
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "routeChat"
           },
           {
             "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
               "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
@@ -1371,15 +1867,15 @@
         ],
         "registration": {
           "contains": [
-            "TriggerRegisterPlayerChatEvent",
-            "TriggerAddAction(listener,function routeChat)"
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "installCommandRegistry"
         },
-        "testInvocation": ".dispatch(null,\"/help"
+        "testInvocation": "f.chat.deliver("
       },
-      "gap": "Existing test constructs a local registry. It does not install/drive the native chat registration; retain as test-only until a production adapter integration fixture exists.",
       "mechanism": [
         {
           "contains": [
@@ -1388,24 +1884,48 @@
           ],
           "path": "wurst/CommandRouter.wurst",
           "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
         }
       ],
       "persistence": {
         "mode": "read-only",
-        "reason": "Help is derived from the installed command registry and does not modify campaign state.",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
         "references": [
           {
             "contains": [
+              "output.show(sender",
               "helpPage(sender"
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
           }
         ]
       },
       "state": {
-        "mutation": "dispatch -> help -> helpPage -> output.show; no campaign mutation",
-        "outcome": "Invalid page numbers produce a clear message.",
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "Zero, negative, oversized and out-of-range pages produce the English bounds message.",
         "owner": "CommandRegistry / CommandOutput (read-only presentation)",
         "references": [
           {
@@ -1422,47 +1942,370 @@
       "tests": {
         "failure": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0206.01"
+          }
         },
         "replay": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0206.01"
+          }
         },
         "stale": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0206.01"
+          }
         },
         "success": {
           "assertions": [
-            "output.last.assertEquals("
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
           ],
           "entryPoint": "wc3-chat-help",
-          "id": "wurst/CommandRouterTests.wurst:pagingTopicsAndMalformedHelp",
-          "level": "internal"
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0206.01"
+          }
         }
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Map startup recreates the command registry before installing the chat listener.",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
         "references": [
           {
             "contains": [
-              "new CommandRegistry"
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
+          }
+        ]
+      }
+    },
+    "REQ-0207.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\bTriggerRegisterPlayerChatEvent\\s*\\(",
+          "\\bTriggerAddAction\\s*\\([^\\n]*routeChat",
+          "\\bDestroyTrigger\\s*\\(",
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"help\""
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "entry": {
+        "id": "wc3-chat-help",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "createCommandRegistry(false)",
+              "registerUnstuckCommand(commands, recoveryService)",
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "installCommandRegistry(registry,new WarcraftCommandChatNatives())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "signature": "public function installCommandRegistry(CommandRegistry registry)",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "TriggerRegisterPlayerChatEvent(listener,sender,prefix,exact)",
+              "return GetTriggeringTrigger()",
+              "return GetTriggerPlayer()",
+              "return GetEventPlayerChatString()",
+              "DestroyTrigger(listener)"
+            ],
+            "path": "wurst/CommandRouter.wurst"
+          },
+          {
+            "contains": [
+              "chatNatives.eventListener()==chatListener",
+              "active.dispatch(chatNatives.eventPlayer(),chatNatives.eventText())"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "routeChat"
+          },
+          {
+            "contains": [
+              "new CommandRegistry(debug,6,new CommandText(),output)",
+              "registry.register(\"help\""
             ],
             "path": "wurst/CommandRouter.wurst",
             "symbol": "createCommandRegistry"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "uninstallCommandRegistry()",
+            "natives.registerChat(chatListener,Player(i),\"/\",false)",
+            "TriggerAddAction(chatListener,function routeChat)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "installCommandRegistry"
+        },
+        "testInvocation": "f.chat.deliver("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "c.name==\"help\"",
+            "help(sender,a)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "dispatch"
+        },
+        {
+          "contains": [
+            "text.malformedHelp",
+            "helpPage(sender",
+            "not visible(c)"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "help"
+        },
+        {
+          "contains": [
+            "c.visibility==COMMAND_RELEASE or debug"
+          ],
+          "path": "wurst/CommandRouter.wurst",
+          "symbol": "visible"
+        }
+      ],
+      "persistence": {
+        "mode": "read-only",
+        "reason": "Help reads installed command metadata and emits presentation only. Complete authoritative campaign snapshots and storage write counts remain unchanged, including rejection and replay. No save fields or schema migration are needed.",
+        "references": [
+          {
+            "contains": [
+              "output.show(sender",
+              "helpPage(sender"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "help"
+          },
+          {
+            "contains": [
+              "output.show(sender,message)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "helpPage"
+          }
+        ]
+      },
+      "state": {
+        "mutation": "installed trigger action -> routeChat -> dispatch -> help -> CommandOutput.show; authoritative campaign and storage unchanged",
+        "outcome": "Release help omits developer/internal commands and rejects their names and aliases; obsolete debug listeners cannot reveal them.",
+        "owner": "CommandRegistry / CommandOutput (read-only presentation)",
+        "references": [
+          {
+            "contains": [
+              "c.name==\"help\"",
+              "help(sender,a)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "dispatch"
+          }
+        ],
+        "rejection": "unknown topic, malformed arguments and pages outside 1..pages rejected with English feedback"
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
+          ],
+          "entryPoint": "wc3-chat-help",
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0207.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.unchanged()",
+            "reconstructed.last.assertEquals(",
+            "f.output.calls.assertEquals("
+          ],
+          "entryPoint": "wc3-chat-help",
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0207.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
+          ],
+          "entryPoint": "wc3-chat-help",
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0207.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.unchanged()",
+            "f.output.last.assertEquals(",
+            "f.output.calls.assertEquals("
+          ],
+          "entryPoint": "wc3-chat-help",
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "wc3-chat-help",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "transition"
+            ],
+            "requirement": "REQ-0207.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Each map/session installs freshly registered metadata. Replacement retires the previous listener and stale trigger context cannot dispatch; help output and visibility are derived again without campaign mutation.",
+        "references": [
+          {
+            "contains": [
+              "uninstallCommandRegistry()",
+              "chatListener=CreateTrigger()"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "installCommandRegistry"
+          },
+          {
+            "contains": [
+              "active=null",
+              "chatListener=null",
+              "natives.retire(obsolete)"
+            ],
+            "path": "wurst/CommandRouter.wurst",
+            "symbol": "uninstallCommandRegistry"
           }
         ]
       }
