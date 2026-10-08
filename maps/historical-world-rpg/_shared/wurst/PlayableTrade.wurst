@@ -6,7 +6,7 @@ import TradePricing
 import ManagementScreenPauseController
 import LiveTradeAccess
 
-public constant int LIVE_TRADE_SCHEMA_CURRENT = 2
+public constant int LIVE_TRADE_SCHEMA_CURRENT = 3
 
 /** Warcraft runtime boundary for the authoritative campaign trade state.
  * Handles and frames never own stock: adapters rebuild this model from stable
@@ -21,15 +21,24 @@ public class TradeStore
 	string accessKind=""
 	string accessId=""
 	boolean warehouseService=false
+	int initialCapacity
+	int initialMoney
 	construct(string storeId,int capacityUnits,int currencyMinor)
 		id=storeId
 		capacity=capacityUnits
 		money=currencyMinor
+		initialCapacity=capacityUnits
+		initialMoney=currencyMinor
 	function withAccess(string kind,string authorityId,boolean service) returns TradeStore
 		accessKind=kind
 		accessId=authorityId
 		warehouseService=service
 		return this
+	function resetDefinition()
+		capacity=initialCapacity
+		money=initialMoney
+		cargo=0
+		goodId=""
 	function freeCapacity() returns int
 		return capacity-cargo
 
@@ -52,6 +61,12 @@ public class RuntimeMarket
 	int shortagePermille=0
 	int eventPermille=0
 	int technologyPermille=0
+	int initialMoney
+	int initialStock
+	int initialProduction=1000
+	int initialConsumption=1000
+	int initialShortage=0
+	boolean initialDiscovered=true
 	construct(string marketId,string displayedGood,int initialStock,int currencyMinor,int buyPrice,int sellPrice)
 		pricing=new TradePricing()
 		initialize(marketId,displayedGood,initialStock,currencyMinor,buyPrice,sellPrice)
@@ -67,7 +82,23 @@ public class RuntimeMarket
 		sellUnitPrice=sellPrice
 		previousUnitPrice=buyPrice
 		baseUnitPrice=buyPrice
+		this.initialStock=initialStock
+		initialMoney=currencyMinor
 		targetStock=IMaxBJ(1,initialStock)
+	function resetDefinition()
+		stock=initialStock
+		money=initialMoney
+		buyUnitPrice=baseUnitPrice
+		sellUnitPrice=baseUnitPrice
+		previousUnitPrice=baseUnitPrice
+		productionPermille=initialProduction
+		consumptionPermille=initialConsumption
+		shortagePermille=initialShortage
+		eventPermille=0
+		technologyPermille=0
+		discovered=initialDiscovered
+		blockaded=false
+		occupiedByHostile=false
 	function trend(int currentPrice) returns string
 		if currentPrice>previousUnitPrice
 			return "rising"
@@ -319,7 +350,7 @@ function tradeInteger(string value) returns boolean
 	return true
 
 function tradePayload(string document) returns string
-	if document.startsWith("v2:")
+	if (document.startsWith("v2:") or document.startsWith("v3:"))
 		return SubString(document,3,StringLength(document))
 	return document
 
@@ -340,7 +371,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	PlayableTradeController controller = new PlayableTradeController(progress)
 	RuntimeMarket market = new RuntimeMarket("unconfigured","",0,0,1,1)
 	TradeStore hold = new TradeStore("player_ship_hold",30,1000)
-	RuntimeMarket array[8192] markets
+	RuntimeMarket array[16384] markets
 	TradeStore array[1024] stores
 	int marketCount=0
 	int storeCount=0
@@ -379,6 +410,10 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		rollbackMarket=null
 		rollbackHold=null
 	function registerMarket(RuntimeMarket value)
+		value.initialProduction=value.productionPermille
+		value.initialConsumption=value.consumptionPermille
+		value.initialShortage=value.shortagePermille
+		value.initialDiscovered=value.discovered
 		markets[marketCount]=value
 		marketCount++
 		if value.id==settlementId and market.id==settlementId
@@ -470,7 +505,10 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				blockade="1"
 			if markets[i].occupiedByHostile
 				occupation="1"
-			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation+","+markets[i].productionPermille.toString()+","+markets[i].consumptionPermille.toString()+","+markets[i].previousUnitPrice.toString()
+			var discovery="0"
+			if markets[i].discovered
+				discovery="1"
+			marketState+=markets[i].id+","+markets[i].goodName+","+markets[i].stock.toString()+","+markets[i].money.toString()+","+markets[i].buyUnitPrice.toString()+","+markets[i].sellUnitPrice.toString()+","+markets[i].shortagePermille.toString()+","+markets[i].eventPermille.toString()+","+markets[i].technologyPermille.toString()+","+blockade+","+occupation+","+markets[i].productionPermille.toString()+","+markets[i].consumptionPermille.toString()+","+markets[i].previousUnitPrice.toString()+","+discovery
 		var storeState=""
 		for i=0 to storeCount-1
 			if i>0
@@ -487,7 +525,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	 * Parse every record and reference before any stock, resource or view changes. */
 	override function validate(string saved) returns boolean
 		let document=tradePayload(saved)
-		let current=saved.startsWith("v2:")
+		let current=(saved.startsWith("v2:") or saved.startsWith("v3:"))
 		if document==""
 			return not current
 		let fields=tradeFieldCount(document,":")
@@ -503,7 +541,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		let history=tradeField(document,15)
 		if history!="" and (tradeFieldCount(history,",")>4096 or history.startsWith(",") or history.endsWith(",") or history.indexOf(",,")>=0)
 			return false
-		boolean array[8192] seenMarkets
+		boolean array[16384] seenMarkets
 		let states=tradeField(document,16)
 		var start=0
 		while start<StringLength(states)
@@ -512,7 +550,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				finish=StringLength(states)-start
 			let row=SubString(states,start,start+finish)
 			let columns=tradeFieldCount(row,",")
-			if columns!=11 and columns!=14
+			if (saved.startsWith("v3:") and columns!=15) or (not saved.startsWith("v3:") and columns!=11 and columns!=14)
 				return false
 			var found=-1
 			for i=0 to marketCount-1
@@ -521,6 +559,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 			if found<0 or seenMarkets[found]
 				return false
 			seenMarkets[found]=true
+			if columns==15 and compactField(row,14)!="0" and compactField(row,14)!="1"
+				return false
 			for i=2 to columns-1
 				let value=compactField(row,i)
 				if not tradeInteger(value) or (i!=6 and i!=7 and i!=8 and S2I(value)<0)
@@ -608,7 +648,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		return applyState(document)
 	function applyState(string saved) returns boolean
 		let document=tradePayload(saved)
-		let current=saved.startsWith("v2:")
+		let current=(saved.startsWith("v2:") or saved.startsWith("v3:"))
 		marketSelected=false
 		storeSelected=false
 		if document==""
@@ -616,6 +656,12 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		let restoredSettlement=tradeField(document,0)
 		if restoredSettlement==""
 			return false
+		// Missing legacy records initialize from immutable generated definitions,
+		// not the state of whichever campaign was open before this load.
+		for i=0 to marketCount-1
+			markets[i].resetDefinition()
+		for i=0 to storeCount-1
+			stores[i].resetDefinition()
 		// Resolve stable projections before applying legacy summary fields. The
 		// current view may point at a different market/store after reconstruction.
 		var foundMarket=false
@@ -699,6 +745,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						markets[j].technologyPermille=S2I(compactField(record,8))
 						markets[j].blockaded=compactField(record,9)=="1"
 						markets[j].occupiedByHostile=compactField(record,10)=="1"
+						if saved.startsWith("v3:")
+							markets[j].discovered=compactField(record,14)=="1"
 						// Fields 11-13 were added after the first live-trade save
 						// format. Empty values retain generated defaults.
 						if compactField(record,11)!=""

@@ -74,6 +74,7 @@ class ConformanceSession
 				kept++
 			else
 				destroy city
+		m.definitions = null
 		m.settlementCount = kept
 		for i = kept to originalCount - 1
 			m.settlements[i] = null
