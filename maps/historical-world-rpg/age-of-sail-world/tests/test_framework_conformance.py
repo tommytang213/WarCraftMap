@@ -28,6 +28,7 @@ from test_campaign_packaging import FAKE_GRILL
 from wurst_execution_fixture import allow_synthetic_compiler
 from integration_evidence import verify_execution_coverage
 from requirement_traceability import execution_results
+from scenario_settings import write_settings
 
 
 def copy_category(destination):
@@ -38,6 +39,24 @@ def copy_category(destination):
 
 
 class FrameworkConformanceTests(unittest.TestCase):
+    def test_recovery_destinations_are_generated_from_each_campaign_manifest(self):
+        for name in ("age-of-sail-world", "conformance-campaign"):
+            project = CATEGORY / name
+            manifest = json.loads((project / "physical-maps.json").read_text())
+            with self.subTest(scenario=name), tempfile.TemporaryDirectory() as tmp:
+                write_settings(project, Path(tmp))
+                settings = (Path(tmp) / "ScenarioSettings.wurst").read_text()
+                self.assertIn('SCENARIO_CAMPAIGN_ID = ' + json.dumps(manifest["campaign"]["id"]), settings)
+                destinations = settings.split("public function scenarioPhysicalMapPath", 1)[1]
+                for physical in manifest["physicalMaps"]:
+                    expected = ('\tif mapId == ' + json.dumps(physical["id"]) +
+                                '\n\t\treturn ' + json.dumps(physical["packagePath"]))
+                    if physical["assignments"]["logicalRegionIds"] and not physical.get("bootstrap", False):
+                        self.assertIn(expected, destinations)
+                    else:
+                        self.assertNotIn(expected, destinations)
+                self.assertTrue(destinations.rstrip().endswith('return ""'))
+
     def test_execution_evidence_accepts_shared_contract_and_instrumented_aliases(self):
         with tempfile.TemporaryDirectory() as tmp:
             category = Path(tmp)

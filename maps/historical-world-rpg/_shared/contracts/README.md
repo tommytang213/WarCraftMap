@@ -201,3 +201,33 @@ technical metadata, and archive/runtime budgets. Scenario track selection and
 regional identity do not belong in the shared contract. `audio_playback.py`
 resolves presentation contexts deterministically and owns ephemeral channels;
 its state is deliberately excluded from authoritative campaign saves.
+
+## Physical-map recovery request v1
+
+`PlayableCampaignServices` writes `recovery_request` in the bootstrap storage
+namespace before invoking `PhysicalMapLoader`. Its checksummed v1 record contains
+sequence, pending/consumed status, generated campaign ID, source slot ID, recorded
+map ID, origin-request checksum, milestone checksum, and the untouched selected
+save envelope. The final envelope is an opaque remainder, not delimiter-split
+into request fields. Paths come only from the generated physical-map catalogue;
+the selector is not a recovery destination.
+
+This is a new independent contract. An absent request migrates by retaining the
+existing origin/travel startup path; no campaign slot bytes are rewritten and
+campaign envelope schemas 1–7 remain supported. Those envelopes predate an
+explicit scenario field, so preflight validates their scenario-specific storage,
+authored origin/world-instance pair and generated map/region pair. The new
+request additionally requires its explicit campaign ID. Envelope integrity,
+supported schema, slot ID, kind and index must all agree before handoff.
+
+After destination registrations, the existing save manager stages reconstruction.
+An acknowledgement failure aborts the staged authority and projections. A
+successful consumed write precedes activation/observer publication, and retains
+the envelope so a process interruption at that point can reconstruct it again.
+The running instance treats repeated startup/retry as idempotent. A later origin
+request or milestone fences out the retained recovery basis by checksum; ordinary
+travel and new campaigns use their existing startup contracts. A consumed recovery
+also supersedes an interrupted origin start across later travel; only a new origin
+request can select a new campaign. Recovery itself
+never writes manual, autosave, session-start or milestone slots. These checksums
+provide corruption detection, not a security/authentication boundary.

@@ -12,3 +12,23 @@ Use this deterministic, command-line sequence for a recovery report. It does not
 8. Run `python3 tooling/validate_recovery_documentation.py`, followed by the complete repository validation. Attach the immutable compatibility fixture, integrity report, original-save digest, package provenance, test output, and minimal transition steps to the defect report.
 
 The checked-in compatibility manifest supplies immutable migration/rejected-load fixtures. The named test modules supply interrupted-transition, map-revisit, missing-representation, integrity, native-save, autosave, and checkpoint reproductions. Do not “repair” authoritative facts: only derived indexes and runtime representations are reconstructible.
+
+For the player selection path, execute `wurst/CampaignRecoveryTests.wurst` through
+the pinned full-suite runner. It dispatches registered `/saves`, `/save`, `/load`
+and `/load retry` actions using recording storage, loader and projection ports.
+Compare the selected envelope and every recovery slot byte before and after
+selection, destination registration, reconstruction, acknowledgement failure and
+retry. Include `CampaignStartupTests.wurst`, `CampaignLoadTransactionTests.wurst`
+and the position regressions in that same run.
+
+The bootstrap namespace's `recovery_request` v1 record is separate from the
+origin request and ordinary travel milestone. It copies the selected envelope,
+binds it to the campaign, slot and physical map, and remains recoverable after
+acknowledgement. A changed origin-request or milestone checksum supersedes it.
+Absence of this new record follows the existing startup path; save schemas 1–7
+and their in-memory migrations remain supported. Never overwrite a reported
+source slot to manufacture a retry. Destination failure keeps gameplay locked
+and exposes recovery commands until a full startup succeeds.
+
+This evidence does not close `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+No incremental player QA is required.

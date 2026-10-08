@@ -8,8 +8,15 @@
       "registrationUsage": "unstuck [all]",
       "summary": "Recover stuck mobile units.",
       "help": "Recover selected eligible mobile units, or your main character when nothing is selected. Use 'all' for active units in the current region.",
-      "options": ["all"],
-      "fallbackOrder": ["nearest verified reachable safe position", "verified last-known-safe position", "valid connected recovery anchor", "fail without moving the unit"]
+      "options": [
+        "all"
+      ],
+      "fallbackOrder": [
+        "nearest verified reachable safe position",
+        "verified last-known-safe position",
+        "valid connected recovery anchor",
+        "fail without moving the unit"
+      ]
     },
     {
       "name": "god",
@@ -17,14 +24,33 @@
       "registrationUsage": "god [on|off]",
       "summary": "Toggle player-wide god mode.",
       "help": "Toggle protection for all of your controllable runtime entities, or explicitly use /god on or /god off.",
-      "options": ["on", "off"]
+      "options": [
+        "on",
+        "off"
+      ]
     }
   ],
   "saveSlots": [
-    {"kind": "autosave", "stableId": "autosave_01..autosave_15", "count": 15},
-    {"kind": "manual", "stableId": "manual_N", "count": "player-created"},
-    {"kind": "session_start", "stableId": "session_start", "count": 1},
-    {"kind": "major_milestone", "stableId": "major_milestone", "count": 1}
+    {
+      "kind": "autosave",
+      "stableId": "autosave_01..autosave_15",
+      "count": 15
+    },
+    {
+      "kind": "manual",
+      "stableId": "manual_N",
+      "count": "player-created"
+    },
+    {
+      "kind": "session_start",
+      "stableId": "session_start",
+      "count": 1
+    },
+    {
+      "kind": "major_milestone",
+      "stableId": "major_milestone",
+      "count": 1
+    }
   ],
   "diagnostics": {
     "compatibility": "warcraftmap_release_save_compatibility_v1",
@@ -38,6 +64,27 @@
     "tests/test_cross_map_persistence.py",
     "tests/test_regional_navigation.py",
     "tests/test_native_save_regression.py",
-    "tests/test_autosave_scheduler.py"
+    "tests/test_autosave_scheduler.py",
+    "wurst/CampaignRecoveryTests.wurst"
+  ],
+  "saveCommands": [
+    {
+      "name": "save",
+      "registrationUsage": "save <slot>",
+      "summary": "Save the campaign.",
+      "help": "Write a manual slot. Slot numbers are positive whole decimals without leading zeros."
+    },
+    {
+      "name": "load",
+      "registrationUsage": "load <slot|manual N|autosave N|session_start|major_milestone|retry>",
+      "summary": "Restore a saved campaign on its recorded map.",
+      "help": "Use /saves to identify existing slots. Autosaves are 1 through 15. /load N is the manual shorthand. /load retry resumes a durable recovery after interrupted startup. Rejected loads preserve the active campaign and source saves."
+    },
+    {
+      "name": "saves",
+      "registrationUsage": "saves [manual [first-slot]|autosave|session_start|major_milestone]",
+      "summary": "Identify existing campaign saves.",
+      "help": "List saved map IDs for all 15 autosaves, both checkpoints and a window of 10 manual slots. The default manual window starts at 1; /saves manual N starts at N. Missing slots are omitted. Listing never writes saves."
+    }
   ]
 }
