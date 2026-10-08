@@ -17,7 +17,7 @@ REPORTS = {
     "traceability": "reports/traceability/requirements.json",
 }
 MARKER = re.compile(r"(?m)^Closure blocker: ([\w.:-]+)\s*$")
-REVISION = re.compile(r"(?m)^Closure revision: ([0-9a-f]{40})\\s*$")
+REVISION = re.compile(r"(?m)^Closure revision: ([0-9a-f]{40})\s*$")
 # Narrow owner-approved exception: issue #427 is CI-worker maintenance, not
 # a gameplay/release blocker. It may enter the normal worker only after #426
 # was MERGED (not merely closed), with the usual checks and budgets unchanged.
@@ -208,7 +208,7 @@ class Closure:
         # Keep stale/unregenerated audit checkouts fail-closed.
         prerequisite = APPROVED_MAINTENANCE_MERGED_PR.get(issue.get("number"))
         if (self.fresh and prerequisite is not None
-                and re.match(r"^\\[agent-ready\\]\\s+", issue.get("title") or "", re.IGNORECASE)
+                and re.match(r"^\[agent-ready\]\s+", issue.get("title") or "", re.IGNORECASE)
                 and any(row.get("number") == prerequisite
                         and str(row.get("state") or "").upper() == "MERGED"
                         and row.get("mergedAt") for row in self.prs)):
