@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Recheck PR #423's artifact gate, scoped receipts and packaged recovery grids."""
+import argparse
 import gzip
 import hashlib
 import json
@@ -24,7 +25,7 @@ def save(name, value):
     (DESTINATION / name).write_bytes(gzip.compress(data, mtime=0))
 
 
-def main():
+def main(prefix='ci-repair'):
     revision = source_revision(PROJECT)
     identity = source_identity(PROJECT, revision)
     artifact = PROJECT / '_build/release/AgeOfSailWorldCampaign.w3n'
@@ -36,7 +37,7 @@ def main():
     compiled = verify_campaign_runtime(artifact, config, revision=revision,
                                        source_tree_sha256=identity['sourceTreeSha256'])
     assert compiled['status'] == 'pass', compiled
-    save('ci-repair-runtime-artifact.json.gz', compiled)
+    save(f'{prefix}-runtime-artifact.json.gz', compiled)
 
     report = build_report(artifact, evidence, transcript, revision)
     scope = {f'REQ-{number:04}.01' for number in range(191, 203)}
@@ -50,7 +51,7 @@ def main():
     assert len(receipts) == 4 * len(scope)
     assert {(row['requirement'], row['case']) for row in receipts} == {
         (requirement, case) for requirement in scope for case in ('success', 'failure', 'stale', 'replay')}
-    save('ci-repair-scoped-traceability.json.gz', {
+    save(f'{prefix}-scoped-traceability.json.gz', {
         'sourceIdentity': identity, 'requirements': rows, 'productionReceipts': receipts,
         'blockers': [row for row in report['blockers'] if row['id'] in scope],
         'outOfScopeBlockerCount': sum(row['id'] not in scope for row in report['blockers']),
@@ -79,7 +80,7 @@ def main():
             })
     assert len(navigation) == sum(not physical.bootstrap for physical in config.maps)
     assert source_identity(PROJECT, revision) == identity, 'sources changed during verification'
-    save('ci-repair-packaged-navigation.json.gz', {
+    save(f'{prefix}-packaged-navigation.json.gz', {
         'sourceIdentity': identity, 'artifactSha256': compiled['artifactSha256'], 'maps': navigation,
     })
     print(f"PASS: {len(compiled['maps'])} maps pass the RC artifact gate; {len(rows)} scoped obligations, "
@@ -87,4 +88,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--prefix', choices=('ci-repair', 'ci-timeout'), default='ci-repair',
+                        help='Keep independent receipts for the artifact and timeout repairs.')
+    main(parser.parse_args().prefix)

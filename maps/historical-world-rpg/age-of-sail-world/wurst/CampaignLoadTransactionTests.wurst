@@ -24,6 +24,18 @@ import BoundaryArrival
 import ManagementScreenPauseController
 import ManagementCommandTests
 
+@test function campaignAuthorityLookupPreservesFinalValuesAndEmbeddedStoreSeparators()
+	let trade = "v2:port:0:cargo;ship,0,10,20,~warehouse;port,0,10,20,"
+	let document = "v2;map=old;trade=old;region=europe;trade=" + trade + ";map=new;orders=;clock=clock"
+	lastAuthorityValue(document, "map").assertEquals("new")
+	lastAuthorityValue(document, "trade").assertEquals(trade)
+	lastAuthorityValue(document, "orders").assertEquals("")
+	lastAuthorityValue(document, "clock").assertEquals("clock")
+	lastAuthorityValue(document, "missing").assertEquals("")
+	lastAuthorityValue(document + ";trade=", "trade").assertEquals("")
+	lastAuthorityValue("v2;trade=" + trade, "trade").assertEquals(trade)
+	lastAuthorityValue("", "map").assertEquals("")
+
 class LoadStorage implements CampaignSaveStorage
 	string array[16] keys
 	string array[16] values

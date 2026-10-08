@@ -57,18 +57,12 @@ public PiracyRuntime piracyMigrationRuntime = null
 
 public function lastAuthorityValue(string document, string key) returns string
 	let marker = ";" + key + "="
-	var found = -1
-	var search = 0
-	while search < StringLength(document)
-		let relative = SubString(document, search, StringLength(document)).indexOf(marker)
-		if relative < 0
-			search = StringLength(document)
-		else
-			found = search + relative + StringLength(marker)
-			search = found
+	// Later appended authority wins. Searching backwards avoids scanning and
+	// copying every preceding domain when loading a large campaign snapshot.
+	let found = document.lastIndexOf(marker)
 	if found < 0
 		return ""
-	let tail = SubString(document, found, StringLength(document))
+	let tail = SubString(document, found + StringLength(marker), StringLength(document))
 	// Trade's supported encoding uses semicolons inside kind:id store IDs.
 	// A domain boundary is ;key=, not an arbitrary semicolon in its value.
 	var separator = tail.indexOf(";")

@@ -1,0 +1,114 @@
+{
+  "evidenceFiles": {
+    "ci-timeout-automation.log.gz": "813573809a20b2caf7eb2d6c16023a41f13d79bcfb9aa0fdd919f2fc61a742b6",
+    "ci-timeout-baseline-timings.log.gz": "0d3add3f76a8eac1fbb1968f53a87b2b310b75c78a6602c8a18ec2fcd0e4ffd5",
+    "ci-timeout-compiler.log.gz": "f57434271a8521f531ef3aeae7457f966f3f45c264834a25c48b1b6a18584636",
+    "ci-timeout-evidence.log.gz": "049f7ecb17078824e909a876253186d8b07f3462c111245a7abde2ceee7698f2",
+    "ci-timeout-final-focused.log.gz": "9fbd963d09b6e25adf9cf6847cdb7d6671e90aff8744c20d468eed770ff20ada",
+    "ci-timeout-framework-mutated-execution.log.gz": "ce4a5ba5df06359105e3fabdcda3f1de7d2fa87a15f41c0b16711d3b5c1ef198",
+    "ci-timeout-framework-mutated-results.json.gz": "1a2302454c140126886489d09f5679871dbeda80f53e799ac931e366102010a2",
+    "ci-timeout-framework-original-execution.log.gz": "b933113aab9b817ebf03f1c0e1d89e6a8a46ec27499a14032b41f4f036397870",
+    "ci-timeout-framework-original-results.json.gz": "28b04d6f5cb94f0c5b69b48b44c304ed68161ef39e75001cdd005a1f7982e2bc",
+    "ci-timeout-framework-report.json.gz": "7c51124415b0a85c0b92b9ed5fb2a81f71ef830833a81841fcae0b8d7ad14251",
+    "ci-timeout-framework.log.gz": "2da580a2fdd2bc85ab4cb912ea84a09da4ab681f0553eed11b7cb4e2752e0ba1",
+    "ci-timeout-github-failure.log.gz": "f7106a625c203737b7ff6691dc099c68cb294df1a50a70984288a505f5b51cda",
+    "ci-timeout-packaged-navigation.json.gz": "9d895e5c4b400e0a31de47955d2328de4349340fab3efacce221a00c690587f2",
+    "ci-timeout-packaging.log.gz": "4e3d33fe2971eb71dc2adf599f5c9786e4985817222eb91d64d2992bd5b3f308",
+    "ci-timeout-python.log.gz": "b124abc6afae26dc46d6fef934f9380e8f6a16fa8f0f39eda9ec35c54e41735a",
+    "ci-timeout-registration-profile.log.gz": "7637641153b8fed7896b4bf21d486cb3508e9eb29e5747af81c7cb2d3f9a59ac",
+    "ci-timeout-release-audit.log.gz": "e8897102b5d5fb47e19fb741bbbbab8b995f711694df0403b0cecdb75e713bd2",
+    "ci-timeout-release-tests.log.gz": "a186b87c4cbe57f4c61dc8e76e91cfb4dd0d2c9f2f31ed8cd5d2b585770807a0",
+    "ci-timeout-runtime-artifact.json.gz": "ef3c4a271fbd5699d1e2b3ac52ef69dbe107cf9afe4ebe2e9b1adc60db7f6cf3",
+    "ci-timeout-scoped-traceability.json.gz": "bda5dda37775b8d7d1f20547131d00ce3ceb710bb794ef542934d1608d6e43ee",
+    "ci-timeout-timings.json": "a6c969779e0f12680e34d8eb0c93dfff1a044bcfeda4c65f192056978666b9dc",
+    "ci-timeout-wurst-execution.log.gz": "344a98d69c390b40ea2d25202dc691aa2add42d3f384281470f7d23b7f0a52ee",
+    "ci-timeout-wurst-results.json.gz": "7bfea8a57bae7660d674fbac53b2a194594414d8a315746847f66a0d9b25ac06",
+    "verify-ci-repair-evidence.py": "ebb1114cbb833499c39215ced38c77351cbfc2df946ab2f2bbefd0627509ec68"
+  },
+  "failedJob": "https://github.com/tommytang213/WarCraftMap/actions/runs/37787494713/job/113345907853",
+  "format": "warcraftmap_issue_414_ci_timeout_repair_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "packaging": {
+    "artifactSha256": "9664073f65c635f3ddfbf918882ffa98ba9dfe3f4dbf216aaf0cbf893a189c13",
+    "driver": "reports/issue-414/packaging-driver.py via the existing _build/issue414-ci-repair-package.py copy using the second local pinned toolchain",
+    "evidenceCommand": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py --prefix ci-timeout",
+    "exactRcArtifactGate": "pass",
+    "gameplayMapsWithFourMovementRastersVerifiedAgainstWpm": 16,
+    "physicalMapsTypecheckedCompiledAndInspected": 17,
+    "status": "pass"
+  },
+  "pinnedWurst": {
+    "command": "python3 maps/historical-world-rpg/_shared/tooling/run_wurst_tests.py maps/historical-world-rpg/age-of-sail-world/package.json --grill \"$PWD/_build/grill-offline\"",
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "def8ff12f1958b115c690eb8e591547c6da806aea85137c5eb4594236e2a7025",
+    "status": "pass",
+    "testsDiscovered": 330,
+    "testsPassed": 330,
+    "transcriptSha256": "1a83c587aac698b8c973536c51c75ab6068cb7ab1096a32c0586de80dd3f82df"
+  },
+  "preservedSaveSchemas": {
+    "autosave": 1,
+    "campaign": 8,
+    "militarySettlements": 4,
+    "partyLocations": 1,
+    "rpg": 3
+  },
+  "pythonChecks": {
+    "automationTests": 129,
+    "note": "Synthetic compiler fixtures in the Python tests validate orchestration and rejection only. Actual pinned execution and compiled archives are recorded separately.",
+    "releaseAuditRegressions": 9,
+    "status": "pass",
+    "targetedScenarioTests": 229
+  },
+  "releaseScope": "Issue #414 is ready for outer repository validation. Broader publication blockers and native-client release certification are outside this CI repair.",
+  "repair": {
+    "cause": "Four recovery/load journeys exceeded the pinned 20-second interpreter timeout during repeated catalogue registration and snapshot reconstruction.",
+    "changes": [
+      "Temporary collision-safe military registration indexes, discarded before gameplay.",
+      "One-pass military snapshot record parsing.",
+      "Backward campaign-field lookup preserving final-value semantics."
+    ],
+    "compilerTestTimeoutSeconds": 20,
+    "existingJourneysAndAssertionsPreserved": true,
+    "regressionsAdded": 3
+  },
+  "restrictions": {
+    "commitsOrPushes": false,
+    "containersUsed": false,
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false
+  },
+  "scopedTraceability": {
+    "blockers": [],
+    "productionReceipts": 48,
+    "requirementsPassed": 12,
+    "status": "pass"
+  },
+  "sharedFramework": {
+    "command": "PATH=\"$PWD/_build:$PATH\" python3 maps/historical-world-rpg/_shared/tooling/validate_framework_fixture.py maps/historical-world-rpg/conformance-campaign",
+    "frameworkSourcesUnchangedAcrossContentMutation": true,
+    "mutatedArchiveSha256": "3ccfe92dc3a761e0df923f3cf75f17a8c71d41fda18a124c21566578fd85c65f",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "4f56764a1e80e634c2b81b0fae486143c7a7e90dfac8c00d41ae62285cda2e57",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceChecks": [
+    "canonical map source",
+    "both scenario world validators",
+    "shared framework boundary",
+    "requirement report freshness",
+    "git diff --check"
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "9867f3be80d1578bf2bde994fe533e0d4dd67091",
+    "sourceTreeSha256": "a45efa3e1cfdf017ef084c1535c14ebc414863858f9b084411c848638d447dda"
+  }
+}

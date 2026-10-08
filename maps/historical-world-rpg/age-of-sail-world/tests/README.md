@@ -53,6 +53,14 @@ quests, treasures, military records, reward profiles and markets before reducing
 the counts, so repeated fixtures do not retain an entire world each and exhaust
 the interpreter heap during the complete suite.
 
+Production military registration uses temporary indexes with exact stable-ID
+comparisons, then discards them before gameplay and reconstruction. Military
+snapshot parsing reads each record once, and campaign field lookup searches from
+the end to retain the final value without scanning earlier domains. Regression
+tests cover hash collisions, duplicate registration, representation reconstruction,
+empty optional fields, malformed records and embedded trade-store separators.
+The complete recovery journeys and the pinned 20-second test limit remain intact.
+
 `RpgInteractionTests.wurst` dispatches production interaction, turn-in, tracking
 and remote-region commands with recording actor and map boundaries. It checks complete
 authority equivalence on rejection, generated local coordinates, eligible reward

@@ -40,7 +40,7 @@ initialization. Nested military schema v4 adds optional
 safe hints: local native representations establish them through validation.
 Unknown, duplicate and malformed hint records are rejected before mutation.
 Map/class/topology/native pathing are revalidated on import and use. Campaign
-envelopes 1–7 and party location schema v1 remain supported without a new domain.
+envelopes 1–8 and party location schema v1 remain supported without a new domain.
 
 Military projection now reads `unitTypeId`, avoiding Wurst's intrinsic `typeId`
 property. For old snapshots containing a class ID instead of a rawcode, a known

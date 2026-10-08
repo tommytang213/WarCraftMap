@@ -132,7 +132,9 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	let trade = new PlayableTradeRuntime()
 	configureGeneratedTrade(trade)
 	campaign.registerExtension(trade)
+	military.beginRegistration()
 	configureMilitarySettlementScenario(military)
+	military.endRegistration()
 	campaign.state.setMilitarySettlementRuntime(military)
 	campaign.countries.setMilitaryAuthority(military)
 	// Choose the actual projection slice without creating default objects yet.

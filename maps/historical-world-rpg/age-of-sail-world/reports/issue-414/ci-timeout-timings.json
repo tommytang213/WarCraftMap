@@ -1,0 +1,49 @@
+{
+  "baselineIdentity": {
+    "compilerInputSetSha256": "b8090a571b217b8e7fb621d086a939cadb3ec8abd343642ff8697dc0475b9f3d",
+    "sourceRevision": "9867f3be80d1578bf2bde994fe533e0d4dd67091",
+    "verifiedBaselineSources": [
+      {
+        "path": "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst",
+        "sha256": "34b2514119dca1d7c7db42944776c5ed9e387a6daa8f6e8e00ca32d821283e4c"
+      },
+      {
+        "path": "maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst",
+        "sha256": "80413670bcbce3306a607f11ea1316964c8de2aa9057142471e74ed4d3c1d117"
+      },
+      {
+        "path": "maps/historical-world-rpg/_shared/wurst/CampaignRegistration.wurst",
+        "sha256": "3fd5c5a2108ca00e3190cee6fe067eaad3466c768151226710516bf439d7c62e"
+      }
+    ]
+  },
+  "compilerLimitSeconds": 20,
+  "failedJob": "https://github.com/tommytang213/WarCraftMap/actions/runs/37787494713/job/113345907853",
+  "note": "Focused timings on the same local pinned compiler; CI hardware differs. No test assertions, journey steps or timeout limits were removed.",
+  "tests": [
+    {
+      "afterSeconds": 7.521,
+      "beforeSeconds": 11.222,
+      "name": "destinationFailuresRetainDurableRequestWithoutActivation",
+      "status": "pass"
+    },
+    {
+      "afterSeconds": 7.537,
+      "beforeSeconds": 13.191,
+      "name": "laterBoundaryTravelSupersedesConsumedRecovery",
+      "status": "pass"
+    },
+    {
+      "afterSeconds": 7.187,
+      "beforeSeconds": 13.231,
+      "name": "recoverySupersedesInterruptedOriginEvenAfterLaterTravel",
+      "status": "pass"
+    },
+    {
+      "afterSeconds": 6.156,
+      "beforeSeconds": 9.471,
+      "name": "foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources",
+      "status": "pass"
+    }
+  ]
+}

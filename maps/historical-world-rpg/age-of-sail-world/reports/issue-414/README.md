@@ -1,5 +1,49 @@
 # Issue #414 validation
 
+## PR #423 interpreter timeout repair
+
+The [subsequent Wurst job](https://github.com/tommytang213/WarCraftMap/actions/runs/37787494713/job/113345907853)
+ran 327 tests and timed out in four existing campaign recovery/load journeys.
+The six live-unstuck journeys passed; both campaign packaging runs and both
+repository validation jobs passed. The raw failed-job transcript is retained in
+[ci-timeout-github-failure.log.gz](ci-timeout-github-failure.log.gz).
+
+Military catalogue registration now uses temporary stable-ID indexes with full
+key comparisons, including hash collisions. The indexes are destroyed before
+gameplay, so reconstruction still reads the authority arrays. Military snapshot
+parsing scans each record once, preserving empty optional fields and strict
+record counts. Campaign field lookup searches backwards for the final value,
+preserving embedded trade-store separators and appended authority semantics.
+No save schema, recovery policy, journey steps or compiler timeout changed.
+
+Three added Wurst regressions cover collisions and duplicate registration across
+reconstruction, malformed military records and recovery hints, and final-value
+campaign lookup. The four formerly failing journeys take 6.2–7.6 seconds locally,
+versus 9.5–13.2 seconds with the original sources, under the unchanged 20-second
+limit. [ci-timeout-timings.json](ci-timeout-timings.json) records the baseline source
+identity and before/after results; local timings do not guarantee CI timing.
+
+Fresh validation is recorded in [ci-timeout-validation.json](ci-timeout-validation.json):
+330/330 pinned Wurst tests, 229 targeted scenario Python tests, nine release-audit
+regressions and 129 automation tests passed. All 17 physical maps were rebuilt
+and pass the RC artifact gate. All twelve scoped obligations pass with 48 distinct
+production receipts; all sixteen gameplay maps have four movement rasters and
+anchors verified against their packaged WPM. The original and content-mutated
+framework campaigns each passed 2/2 Wurst tests and compiled with unchanged
+shared sources. Source/world validation, framework boundaries, traceability
+freshness and `git diff --check` also passed.
+
+This used the existing worktree-local pinned compiler and bundled JRE. No
+containers, global tooling changes, commits, pushes, GitHub writes or player QA
+were required. Broader publication blockers remain outside this repair.
+
+Reproduce the fresh scoped receipts and packaged navigation inspection after the
+pinned suite and packaging driver:
+
+```sh
+python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py --prefix ci-timeout
+```
+
 ## PR #423 CI repair
 
 [The failed campaign job](https://github.com/tommytang213/WarCraftMap/actions/runs/37765519229/job/113272106402)
