@@ -139,7 +139,12 @@ def reference_ok(project, ref):
             # Wurst's indentation scopes keep an unrelated function or comment
             # from satisfying a removed registration/persistence call.
             pattern = r"(?m)^(?P<indent>[ \t]*)(?:@test\s+)?(?:public |private |override |static )*function " + re.escape(ref["symbol"]) + r"\([^\n]*\n"
-            match = re.search(pattern, text)
+            matches = list(re.finditer(pattern, text))
+            # Overloaded installation/creation seams need an exact declaration;
+            # a body in a different overload cannot prove the native call path.
+            if ref.get("signature"):
+                matches = [match for match in matches if match[0].strip() == ref["signature"]]
+            match = next(iter(matches), None)
             if not match:
                 return False
             tail = []

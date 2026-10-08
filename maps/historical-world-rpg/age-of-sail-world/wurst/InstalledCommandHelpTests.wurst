@@ -1,0 +1,240 @@
+package InstalledCommandHelpTests
+
+import CommandRouter
+import CampaignStartupTests
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import UnstuckRecovery
+import Wurstunit
+
+/** The pinned interpreter's TriggerEvaluate executes the actions attached by
+ * TriggerAddAction. No fixture calls routeChat or substitutes a handler for it.
+ * Retired triggers remain callable here to simulate an obsolete queued event. */
+class RecordingChatNatives implements CommandChatNatives
+	trigger array[8] listeners
+	boolean array[8] live
+	boolean array[256] subscriptions
+	int count=0
+	int registrations=0
+	int retired=0
+	trigger context=null
+	player sender=null
+	string message=""
+	function index(trigger listener) returns int
+		for i=0 to count-1
+			if listeners[i]==listener
+				return i
+		return -1
+	override function registerChat(trigger listener,player recipient,string prefix,boolean exact)
+		prefix.assertEquals("/")
+		exact.assertFalse()
+		var found=index(listener)
+		if found<0
+			found=count
+			listeners[count]=listener
+			live[count]=true
+			count++
+		let slot=GetPlayerId(recipient)
+		(slot>=0 and slot<bj_MAX_PLAYERS).assertTrue()
+		subscriptions[found*bj_MAX_PLAYERS+slot].assertFalse()
+		subscriptions[found*bj_MAX_PLAYERS+slot]=true
+		registrations++
+	override function retire(trigger listener)
+		let found=index(listener)
+		(found>=0 and live[found]).assertTrue()
+		live[found]=false
+		retired++
+	override function eventListener() returns trigger
+		return context
+	override function eventPlayer() returns player
+		return sender
+	override function eventText() returns string
+		return message
+	function deliver(player recipient,string text)
+		for i=0 to count-1
+			if live[i] and subscriptions[i*bj_MAX_PLAYERS+GetPlayerId(recipient)] and text.indexOf("/")>=0
+				queued(i,recipient,text)
+	function queued(int index,player recipient,string text)
+		context=listeners[index]
+		sender=recipient
+		message=text
+		TriggerEvaluate(context)
+		context=null
+	function close()
+		uninstallCommandRegistry()
+		for i=0 to count-1
+			DestroyTrigger(listeners[i])
+
+class HelpOutput implements CommandOutput
+	string last=""
+	player recipient=null
+	int calls=0
+	override function show(player recipient,string message)
+		this.recipient=recipient
+		last=message
+		calls++
+
+class HiddenHandler implements CommandHandler
+	int calls=0
+	override function execute(player sender,string arguments)
+		calls++
+
+class HelpFixture
+	StartupFixture campaign=new StartupFixture(new StartupStorage(),new StartupStorage(),"europe_west")
+	RecordingChatNatives chat=new RecordingChatNatives()
+	HelpOutput output=new HelpOutput()
+	HiddenHandler hidden=new HiddenHandler()
+	CommandRegistry commands
+	string before
+	int writes
+	construct()
+		campaign.start("england")
+		commands=registry(false,output)
+		before=campaign.campaign.state.captureAuthoritativeState()
+		(before!="").assertTrue()
+		writes=campaign.saves.writes
+	function registry(boolean debug,HelpOutput target) returns CommandRegistry
+		let result=createCommandRegistry(debug,target)
+		// Production metadata/handlers, including the real unstuck and aliases.
+		registerUnstuckCommand(result,new UnstuckRecoveryService(null))
+		registerRpgRuntimeCommands(result,campaign.campaign.state.rpg).assertEquals("")
+		registerOriginSelection(result,campaign.selector)
+		registerCampaignSaveCommands(result,campaign.campaign.saves)
+		// Sentinel registrations exercise both visibility classes; release
+		// currently has no authored developer/internal command catalogue.
+		result.register("debug-probe","dp","debug-probe","Developer probe.","Debug details.",0,0,COMMAND_DEBUG,hidden).assertEquals("")
+		result.register("internal-probe","ip","internal-probe","Internal probe.","Internal details.",0,0,COMMAND_INTERNAL,hidden).assertEquals("")
+		return result
+	function unchanged()
+		campaign.campaign.state.captureAuthoritativeState().assertEquals(before)
+		campaign.saves.writes.assertEquals(writes)
+		hidden.calls.assertEquals(0)
+	function receipts(string caseName)
+		for i=0 to 5
+			var requirement="REQ-0203.01"
+			if i==1
+				requirement="REQ-0204.01"
+			else if i==2
+				requirement="REQ-0205.01"
+			else if i==3
+				requirement="REQ-0205.02"
+			else if i==4
+				requirement="REQ-0206.01"
+			else if i==5
+				requirement="REQ-0207.01"
+			print("TRACEABILITY {\"requirement\":\""+requirement+"\",\"case\":\""+caseName+"\",\"entryPoint\":\"wc3-chat-help\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"transition\"]}")
+
+@test function installedHelpListsProductionPagesTopicsAndVisibility()
+	let f=new HelpFixture()
+	installCommandRegistry(f.commands,f.chat)
+	f.chat.registrations.assertEquals(bj_MAX_PLAYERS)
+	// A registered slot other than player zero verifies native sender context.
+	let sender=Player(bj_MAX_PLAYERS-1)
+	f.chat.deliver(sender,"ordinary conversation")
+	f.output.calls.assertEquals(0)
+	f.chat.deliver(sender,"/help")
+	f.output.calls.assertEquals(1)
+	(f.output.recipient==sender).assertTrue()
+	f.output.last.assertEquals("Available commands - Page 1/3\n/help [page|command] - Show command help.\n/unstuck [all] - Recover stuck mobile units.\n/rpg-close - Close RPG management.\n/roster - Open the hero roster; /rpg-close closes it.\n/inventory [HERO] - Open equipment; /rpg-close closes it.\n/journal - Open the quest journal; /rpg-close closes it.")
+	f.chat.deliver(sender,"/help 2")
+	(f.output.last.indexOf("Page 2/3\n/technology")>=0).assertTrue()
+	(f.output.last.indexOf("/research ID - Research a technology or establish an institution.")>=0).assertTrue()
+	f.chat.deliver(sender,"/commands 3")
+	(f.output.last.indexOf("Page 3/3\n/accept QUEST")>=0).assertTrue()
+	(f.output.last.indexOf("/load <slot> - Load the campaign.")>=0).assertTrue()
+	(f.output.last.indexOf("probe")<0).assertTrue()
+	f.chat.deliver(sender,"/help unstuck")
+	f.output.last.assertEquals("Usage: /unstuck [all]\nRecover selected eligible mobile units, or your main character when nothing is selected. Use 'all' for active units in the current region.")
+	f.chat.deliver(sender," /HeLP   InStItUtIoN ")
+	f.output.last.assertEquals("Usage: /research ID\nPays the displayed gold cost and applies the unlocked Warcraft effect.")
+	f.chat.deliver(sender,"/help 4")
+	f.output.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+	f.unchanged()
+	f.chat.close()
+	f.receipts("success")
+
+@test function installedHelpRejectsMalformedPagesAndHiddenTopics()
+	let f=new HelpFixture()
+	installCommandRegistry(f.commands,f.chat)
+	f.chat.deliver(Player(0),"/help 0")
+	f.output.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+	f.chat.deliver(Player(0),"/help -1")
+	f.output.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+	f.chat.deliver(Player(0),"/help 4294967297")
+	f.output.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+	f.chat.deliver(Player(0),"/help nowhere")
+	f.output.last.assertEquals("Unknown help topic: nowhere. Enter /help to list available commands.")
+	f.chat.deliver(Player(0),"/help unstuck extra")
+	f.output.last.assertEquals("Malformed help request. Use /help, /help <page>, or /help <command>.")
+	f.chat.deliver(Player(0),"/help dp")
+	f.output.last.assertEquals("That command is unavailable in this build.")
+	f.chat.deliver(Player(0),"/help internal-probe")
+	f.output.last.assertEquals("That command is unavailable in this build.")
+	f.chat.deliver(Player(0),"/debug-probe")
+	f.output.last.assertEquals("That command is unavailable in this build.")
+	f.chat.deliver(Player(0),"/ip")
+	f.output.last.assertEquals("That command is unavailable in this build.")
+	f.output.calls.assertEquals(9)
+	f.unchanged()
+	f.chat.close()
+	f.receipts("failure")
+
+@test function installedHelpRetiresReplacedAndRepeatedListeners()
+	let f=new HelpFixture()
+	let previous=new HelpOutput()
+	let debug=f.registry(true,previous)
+	installCommandRegistry(debug,f.chat)
+	f.chat.deliver(Player(0),"/help 4")
+	(previous.last.indexOf("/debug-probe")>=0 and previous.last.indexOf("/internal-probe")>=0).assertTrue()
+	installCommandRegistry(f.commands,f.chat)
+	installCommandRegistry(f.commands,f.chat)
+	f.chat.retired.assertEquals(2)
+	f.chat.registrations.assertEquals(3*bj_MAX_PLAYERS)
+	f.chat.queued(0,Player(0),"/help")
+	f.chat.queued(1,Player(0),"/help unstuck")
+	f.output.calls.assertEquals(0)
+	previous.calls.assertEquals(1)
+	f.chat.deliver(Player(0),"/help 3")
+	f.output.calls.assertEquals(1)
+	(f.output.last.indexOf("Page 3/3")>=0 and f.output.last.indexOf("probe")<0).assertTrue()
+	f.chat.deliver(Player(0),"/help 4")
+	f.output.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+	f.chat.deliver(Player(0),"/help institutions")
+	f.output.last.assertEquals("Usage: /technology\nShows research costs, ahead-of-time difficulty, institutional support and unlocked effects. Management pauses the campaign. Switch with /roster, /inventory [HERO], /journal, or /technology. Close with /rpg-close. Other open management screens retain their pause.")
+	f.chat.deliver(Player(0),"/help unstuck")
+	(f.output.last.indexOf("Usage: /unstuck [all]")==0).assertTrue()
+	f.chat.deliver(Player(0),"/help ip")
+	f.output.last.assertEquals("That command is unavailable in this build.")
+	f.unchanged()
+	uninstallCommandRegistry()
+	f.chat.queued(2,Player(0),"/help")
+	f.output.calls.assertEquals(5)
+	f.chat.close()
+	f.receipts("stale")
+
+@test function installedHelpReplayAfterRegistryReconstructionIsReadOnly()
+	let f=new HelpFixture()
+	installCommandRegistry(f.commands,f.chat)
+	f.chat.deliver(Player(0),"/help 2")
+	let page=f.output.last
+	f.chat.deliver(Player(0),"/help unstuck")
+	let topic=f.output.last
+	let reconstructed=new HelpOutput()
+	installCommandRegistry(f.registry(false,reconstructed),f.chat)
+	for i=0 to 1
+		f.chat.deliver(Player(0),"/commands 2")
+		reconstructed.last.assertEquals(page)
+		f.chat.deliver(Player(0),"/help unstuck")
+		reconstructed.last.assertEquals(topic)
+		f.chat.deliver(Player(0),"/help unlock")
+		reconstructed.last.assertEquals("Usage: /research ID\nPays the displayed gold cost and applies the unlocked Warcraft effect.")
+		f.chat.deliver(Player(0),"/help 4")
+		reconstructed.last.assertEquals("Invalid help page. Enter a page number between 1 and 3.")
+		f.chat.deliver(Player(0),"/help dp")
+		reconstructed.last.assertEquals("That command is unavailable in this build.")
+	reconstructed.calls.assertEquals(10)
+	f.output.calls.assertEquals(2)
+	f.unchanged()
+	f.chat.close()
+	f.receipts("replay")

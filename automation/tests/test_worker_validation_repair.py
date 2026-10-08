@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 from automation.warcraftmap_agent import worker
+from automation.warcraftmap_agent.closure import Closure
 
 
 class ValidationRepairTests(unittest.TestCase):
@@ -27,7 +28,11 @@ class ValidationRepairTests(unittest.TestCase):
         self.git(self.worktree, "checkout", "-b", "agent/issue-402")
         self.config = worker.Config(self.worktree, self.root / "state")
         self.state_path = self.config.state_dir / "state.json"
-        self.issue = {"number": 402, "title": "[agent-ready] Repair validation", "body": "Implement it."}
+        self.issue = {
+            "number": 402, "title": "[agent-ready] Repair validation", "body": "Implement it.",
+            "state": "OPEN", "createdAt": "2026-01-01T00:00:00Z",
+            "url": "https://example.invalid/issues/402",
+        }
         self.original_failure = "command failed (1): ./automation/run_checks.sh\nFAILED: original validation assertion"
         self.launches = []
         self.action = lambda: {"outcome": "complete"}
@@ -41,8 +46,9 @@ class ValidationRepairTests(unittest.TestCase):
             "default_branch": mock.Mock(return_value="main"),
             "make_config": mock.Mock(return_value=self.config),
             "promote_planned_issues": mock.Mock(return_value=[]),
-            "list_issues": mock.Mock(return_value=[self.issue]),
-            "list_needs_design_issues": mock.Mock(return_value=[]),
+            "list_history": mock.Mock(side_effect=lambda config, kind: [self.issue] if kind == "issue" else []),
+            "read_closure": mock.Mock(return_value=Closure("a" * 40, True, {})),
+            "gh_json": mock.Mock(side_effect=AssertionError("Unexpected GitHub request in local repair fixture")),
             "service_open_prs": mock.Mock(return_value=False),
             "queue_refill_count": mock.Mock(return_value=0),
             "worktree_for": mock.Mock(return_value=(self.worktree, "agent/issue-402")),
