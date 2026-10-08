@@ -1,5 +1,55 @@
 # Issue #414 validation
 
+## PR #423 CI repair
+
+[The failed campaign job](https://github.com/tommytang213/WarCraftMap/actions/runs/37765519229/job/113272106402)
+passed 327 Wurst tests and both campaign builds, then rejected the compiled
+Europe map because `registerOriginSelection` was absent as a call. The pinned
+optimizer had inlined that one-line wrapper; the actual `origin` command
+registration was present. [The reproduction](ci-repair-regression.json) records
+the old and repaired check against the same previously compiled archive bytes.
+
+Artifact acceptance now requires the emitted command registration, generated
+origin configuration and physical-map loading calls. It still rejects a missing
+registration or operation, an unbound compiler alias, comments, string literals,
+and the surviving wrapper stack annotation. The new regression test failed with
+the original checker before passing with this repair.
+
+Fresh results are recorded in [ci-repair-validation.json](ci-repair-validation.json).
+All 327 pinned Wurst tests, including the six live recovery journeys, passed.
+The complete scenario Python suite passed all 926 tests.
+All 17 physical maps were typechecked, compiled and inspected; the fresh campaign
+also passes the exact RC artifact gate that failed in CI. Both framework fixture
+variants passed 2/2 interpreter tests and compiled with unchanged shared sources.
+The scoped audit passes all twelve obligations with 48 distinct production
+receipts. All sixteen gameplay maps have four movement rasters and anchors
+verified against their packaged WPM, with map-local transforms retained in the
+compressed navigation evidence.
+
+Reproduce the artifact/receipt checks after running the pinned suite and the
+packaging driver from the repository root:
+
+```sh
+python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py
+```
+
+The `ci-repair-*` receipts bind the current dirty source digest and the exact
+campaign bytes. Validation used the already available pinned compiler and bundled
+JRE in worktree-local storage. The map builds used a second local toolchain copy
+to avoid sharing compiler log files with the concurrent interpreter run; the
+packaging driver changed only its Grill executable path. No containers, global
+tooling changes, GitHub writes, commits, pushes, or player QA were needed.
+
+The merged baseline uses outer campaign schema v8 from issue #413, with RPG v3,
+military v4 and party locations v1. This repair changes no save layout or recovery
+policy. Broader publication blockers remain outside this issue's scope; passing
+artifact inspection does not claim native-client gameplay validation.
+
+## Original implementation evidence
+
+The earlier receipts below describe the source identity in `validation.json`,
+before the issue #413 merge and this CI repair.
+
 Live `/unstuck` recovery now uses ordinary party and military representations,
 the loaded physical map's generated movement components, and the existing
 party/force position authority. Creation, ownership/context changes, retirement,

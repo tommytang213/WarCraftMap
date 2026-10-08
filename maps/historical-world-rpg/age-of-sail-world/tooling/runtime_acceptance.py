@@ -17,7 +17,10 @@ STAGES=("dataComplete","headlessSimulationComplete","runtimeIntegrated","playerF
 MANDATORY_SYSTEMS=frozenset({"campaign_launch","origin_selection","country_diplomacy","government_rewards","trade","army_fleet_control","city_capture","garrisons","administration","heroes","inventory_equipment","technology_institutions","quests_journal","treasures_discovery","religion","piracy","save_autosave_load","cross_map_travel","world_map","remote_management"})
 COMPILED_TEXT_REQUIREMENTS={
  "campaign_launch":({"initializePlayableCampaignRuntime","installCommandRegistry"},set()),
- "origin_selection":({"registerOriginSelection","configureGeneratedOrigins","compatLoadPhysicalMap"},{"origin"}),
+ # registerOriginSelection only wraps the origin command registration and can
+ # be inlined by the pinned optimizer. Require that real registration below,
+ # plus catalogue initialization and travel; its stack annotation is no call.
+ "origin_selection":({"configureGeneratedOrigins","compatLoadPhysicalMap"},{"origin"}),
  "country_diplomacy":({"configureGeneratedCountryInteractions"},{"country","peace"}),
  "government_rewards":({"configureGeneratedCountryInteractions"},{"reward"}),
  "trade":({"registerPlayableTrade","configureGeneratedTrade"},{"trade"}),

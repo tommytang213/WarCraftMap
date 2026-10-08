@@ -1,0 +1,29 @@
+{
+  "artifact": "_build/issue414-packaged/europe_west/europe_west.w3x",
+  "artifactSha256": "44abd0814754d0a71f6824debb81e4500df825373bfa5eb6f28c30a9d74f6b31",
+  "evidenceScope": "Previously built compiler output, used to reproduce the CI checker failure; not current-source certification",
+  "before": {
+    "status": "fail",
+    "failures": [
+      "origin_selection: production calls absent: registerOriginSelection"
+    ],
+    "evidenceLevel": "compiled_text_static_heuristic",
+    "metrics": {
+      "compiledLuaBytes": 10569048,
+      "longestLineBytes": 1869,
+      "callNameMatches": 1737,
+      "commandRegistrations": 35
+    }
+  },
+  "after": {
+    "status": "pass",
+    "failures": [],
+    "evidenceLevel": "compiled_text_static_heuristic",
+    "metrics": {
+      "compiledLuaBytes": 10569048,
+      "longestLineBytes": 1869,
+      "callNameMatches": 1737,
+      "commandRegistrations": 35
+    }
+  }
+}
