@@ -10,14 +10,14 @@
     "census-mismatch": 69,
     "dependency-uncovered": 49,
     "integration-missing": 2268,
-    "mechanism-missing": 598,
-    "state-unmapped": 622,
-    "static-only": 21,
-    "unmapped": 622,
-    "unpersisted": 1244,
-    "unreachable": 622
+    "mechanism-missing": 596,
+    "state-unmapped": 620,
+    "static-only": 23,
+    "unmapped": 620,
+    "unpersisted": 1240,
+    "unreachable": 620
   },
-  "blockerCount": 7286,
+  "blockerCount": 7276,
   "blockers": [
     {
       "class": "artifact-missing",
@@ -15935,36 +15935,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "REQ-0184.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "REQ-0184.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "REQ-0184.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "REQ-0184.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0184.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0184.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "REQ-0184.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -15983,6 +15953,11 @@
       "class": "integration-missing",
       "id": "REQ-0184.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "REQ-0184.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -16050,36 +16025,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "REQ-0187.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "REQ-0187.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "REQ-0187.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "REQ-0187.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0187.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0187.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "REQ-0187.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -16098,6 +16043,11 @@
       "class": "integration-missing",
       "id": "REQ-0187.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "REQ-0187.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -38442,7 +38392,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "d12d6ed0c1c02bf9862802741954be81faebab6cef9b3cc4be2342fed3c5b661",
-  "mappingSha256": "d094fe441cb18c40f0c865283011bada71e544729b4dc2df47fc122e2e1ee899",
+  "mappingSha256": "812226a9a038c2a7d25b4d749a438446cf43bf733811b22b6bc4c6fefd076ebe",
   "requirements": [
     {
       "authority": {
@@ -44642,16 +44592,297 @@
       "blockerClasses": [
         "artifact-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "mechanism",
       "id": "REQ-0184.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\bTimerStart\\s*\\(",
+            "\\b[\\w.]*CampaignAutosaveScheduler[\\w]*timerWake[\\w]*\\s*\\(",
+            "\\b[\\w.]*CampaignAutosaveScheduler[\\w]*restoreState[\\w]*\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-autosave-wake",
+          "kind": "timer",
+          "path": [
+            {
+              "contains": [
+                "campaignServices.enableAutosaveTimer(new WarcraftAutosaveTimerAdapter(), getManagementScreenPauseController())"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "enableCampaignAutosaves"
+            },
+            {
+              "contains": [
+                "autosaves.bindManagementPause(pauses)",
+                "autosaves.attachTimer(adapter)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "enableAutosaveTimer"
+            },
+            {
+              "contains": [
+                "timerAdapter.start(this, delay, timerGeneration)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "armTimer"
+            },
+            {
+              "contains": [
+                "GetExpiredTimer() == activeAutosaveTimer.wakeTimer",
+                "adapter.scheduler.timerWake(adapter, adapter.generation"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "campaignAutosaveWake"
+            },
+            {
+              "contains": [
+                "sampleElapsed()",
+                "advance(0., createdAt)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "timerWake"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "autosaves.bindManagementPause(pauses)",
+              "autosaves.attachTimer(adapter)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "enableAutosaveTimer"
+          },
+          "testInvocation": ".wake.fire("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "sampleElapsed()",
+              "advance(0., createdAt)",
+              "armTimer(1.)"
+            ],
+            "path": "wurst/CampaignAutosaveScheduler.wurst",
+            "symbol": "timerWake"
+          },
+          {
+            "contains": [
+              "if committed and completedSlot != 0",
+              "nextSlot = completedSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1",
+              "remaining = interval"
+            ],
+            "path": "wurst/CampaignAutosaveScheduler.wurst",
+            "symbol": "afterCampaignSave"
+          },
+          {
+            "contains": [
+              "state.captureAuthoritativeState()",
+              "storage.writeTransactional(slotId, payload)",
+              "finishSave(true)"
+            ],
+            "path": "wurst/CampaignSaveManager.wurst",
+            "symbol": "save"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "activateAuthoritativeState"
+          },
+          "mode": "persisted",
+          "reason": "Campaign schema 8 carries independently versioned v1 next-slot/remaining-delay metadata. Schemas 1–7 with no metadata get slot 1/configured interval; explicit v0 last-completed-slot records migrate deterministically. Invalid/duplicate metadata rejects before reconstruction.",
+          "references": [
+            {
+              "contains": [
+                "autosaves.captureState()",
+                "replaceCampaignField(result, \"autosave\", schedulerState)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "captureDomains"
+            },
+            {
+              "contains": [
+                "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "sourceSchema < 8",
+                "validCampaignAutosave(decoded)",
+                "autosaveMetadataSlot(schedulerState)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "decodeMigrateAndValidate"
+            }
+          ],
+          "save": {
+            "contains": [
+              "autosaves.captureState()",
+              "replaceCampaignField(result, \"autosave\", schedulerState)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          }
+        },
+        "state": {
+          "mutation": "One committed autosave publishes next slot and full next delay. Native timer sampling accounts for fractional elapsed seconds without saving during snapshot capture.",
+          "outcome": "Fifteen rolling recovery slots retain their order and remaining unpaused delay across saves and map reconstruction.",
+          "owner": "CampaignAutosaveScheduler",
+          "references": [
+            {
+              "contains": [
+                "writingSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1",
+                "secondsUntilDue()"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "captureState"
+            },
+            {
+              "contains": [
+                "saveInProgress or manager.saving",
+                "manager.save(SAVE_SLOT_AUTOSAVE, nextSlot, intendedCreatedAt)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "request"
+            }
+          ],
+          "rejection": "Unsafe transitions defer; failures preserve slot/intended request, rejected loads retain the timer, and coalesced/stale callbacks cannot complete twice."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.wake.starts.assertEquals(starts)",
+              "f.campaign.state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveFailureAndLoadRollbackRetainPendingWork",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0184.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.campaign.autosaves.nextSlotIndex().assertEquals(2)",
+              "f.storage.writes.assertEquals(2)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveCommittedLoadRetiresStaleTimersAndDeferredIntent",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0184.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.storage.writes.assertEquals(1)",
+              "f.wake.delay.assertEquals(.25)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveCommittedLoadRetiresStaleTimersAndDeferredIntent",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0184.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "storage.order.assertEquals(expectedOrder)",
+              "split.wake.delay.assertEquals(176.875)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveRotationMatchesAcrossEighteenMapReconstructions",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0184.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Travel uses the same snapshot and load transaction. Only a committed load retires pending autosave intent and arms one transient timer from the restored delay; failed or aborted loads leave the prior timer untouched.",
+          "references": [
+            {
+              "contains": [
+                "saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)",
+                "loader.load(boundary.destinationPath)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "transition"
+            },
+            {
+              "contains": [
+                "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "manager.cancelDeferredAutosave()",
+                "armTimer(remaining)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "restoreState"
+            }
+          ]
+        }
+      },
       "parent": "REQ-0184",
       "status": "fail",
       "text": "15 rolling timed autosave slots."
@@ -45224,16 +45455,298 @@
       "blockerClasses": [
         "artifact-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "mechanism",
       "id": "REQ-0187.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\bTimerStart\\s*\\(",
+            "\\b[\\w.]*CampaignAutosaveScheduler[\\w]*timerWake[\\w]*\\s*\\(",
+            "\\b[\\w.]*CampaignAutosaveScheduler[\\w]*restoreState[\\w]*\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-autosave-wake",
+          "kind": "timer",
+          "path": [
+            {
+              "contains": [
+                "campaignServices.enableAutosaveTimer(new WarcraftAutosaveTimerAdapter(), getManagementScreenPauseController())"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "enableCampaignAutosaves"
+            },
+            {
+              "contains": [
+                "autosaves.bindManagementPause(pauses)",
+                "autosaves.attachTimer(adapter)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "enableAutosaveTimer"
+            },
+            {
+              "contains": [
+                "timerAdapter.start(this, delay, timerGeneration)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "armTimer"
+            },
+            {
+              "contains": [
+                "GetExpiredTimer() == activeAutosaveTimer.wakeTimer",
+                "adapter.scheduler.timerWake(adapter, adapter.generation"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "campaignAutosaveWake"
+            },
+            {
+              "contains": [
+                "sampleElapsed()",
+                "advance(0., createdAt)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "timerWake"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "autosaves.bindManagementPause(pauses)",
+              "autosaves.attachTimer(adapter)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "enableAutosaveTimer"
+          },
+          "testInvocation": ".wake.fire("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "sampleElapsed()",
+              "advance(0., createdAt)",
+              "armTimer(1.)"
+            ],
+            "path": "wurst/CampaignAutosaveScheduler.wurst",
+            "symbol": "timerWake"
+          },
+          {
+            "contains": [
+              "if committed and completedSlot != 0",
+              "nextSlot = completedSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1",
+              "remaining = interval"
+            ],
+            "path": "wurst/CampaignAutosaveScheduler.wurst",
+            "symbol": "afterCampaignSave"
+          },
+          {
+            "contains": [
+              "state.captureAuthoritativeState()",
+              "storage.writeTransactional(slotId, payload)",
+              "finishSave(true)"
+            ],
+            "path": "wurst/CampaignSaveManager.wurst",
+            "symbol": "save"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "activateAuthoritativeState"
+          },
+          "mode": "persisted",
+          "reason": "Campaign schema 8 carries independently versioned v1 next-slot/remaining-delay metadata. Schemas 1–7 with no metadata get slot 1/configured interval; explicit v0 last-completed-slot records migrate deterministically. Invalid/duplicate metadata rejects before reconstruction.",
+          "references": [
+            {
+              "contains": [
+                "autosaves.captureState()",
+                "replaceCampaignField(result, \"autosave\", schedulerState)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "captureDomains"
+            },
+            {
+              "contains": [
+                "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "sourceSchema < 8",
+                "validCampaignAutosave(decoded)",
+                "autosaveMetadataSlot(schedulerState)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "decodeMigrateAndValidate"
+            }
+          ],
+          "save": {
+            "contains": [
+              "autosaves.captureState()",
+              "replaceCampaignField(result, \"autosave\", schedulerState)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          }
+        },
+        "state": {
+          "mutation": "One committed autosave publishes next slot and full next delay. Native timer sampling accounts for fractional elapsed seconds without saving during snapshot capture.",
+          "outcome": "Fifteen rolling recovery slots retain their order and remaining unpaused delay across saves and map reconstruction.",
+          "owner": "CampaignAutosaveScheduler",
+          "references": [
+            {
+              "contains": [
+                "writingSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1",
+                "secondsUntilDue()"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "captureState"
+            },
+            {
+              "contains": [
+                "saveInProgress or manager.saving",
+                "manager.save(SAVE_SLOT_AUTOSAVE, nextSlot, intendedCreatedAt)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "request"
+            }
+          ],
+          "rejection": "Unsafe transitions defer; failures preserve slot/intended request, rejected loads retain the timer, and coalesced/stale callbacks cannot complete twice."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.storage.contains(\"autosave_01\").assertFalse()",
+              "f.campaign.state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveFailureAndLoadRollbackRetainPendingWork",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0187.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.campaign.saves.retryDeferred().assertFalse()",
+              "f.storage.writes.assertEquals(1)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveDeferredRetryCommitsOnceWithCoalescedRequests",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0187.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.campaign.saves.hasDeferredSave().assertFalse()",
+              "f.storage.writes.assertEquals(1)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveCommittedLoadRetiresStaleTimersAndDeferredIntent",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0187.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.storage.writes.assertEquals(0)",
+              "f.campaign.saves.retryDeferred().assertTrue()",
+              "f.storage.writes.assertEquals(1)"
+            ],
+            "entryPoint": "live-autosave-wake",
+            "id": "wurst/CampaignAutosaveLifecycleTests.wurst:liveAutosaveDeferredRetryCommitsOnceWithCoalescedRequests",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-autosave-wake",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0187.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Travel uses the same snapshot and load transaction. Only a committed load retires pending autosave intent and arms one transient timer from the restored delay; failed or aborted loads leave the prior timer untouched.",
+          "references": [
+            {
+              "contains": [
+                "saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)",
+                "loader.load(boundary.destinationPath)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "transition"
+            },
+            {
+              "contains": [
+                "autosaves.restoreState(lastAuthorityValue(staged, \"autosave\"))"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "manager.cancelDeferredAutosave()",
+                "armTimer(remaining)"
+              ],
+              "path": "wurst/CampaignAutosaveScheduler.wurst",
+              "symbol": "restoreState"
+            }
+          ]
+        }
+      },
       "parent": "REQ-0187",
       "status": "fail",
       "text": "Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes."

@@ -1,0 +1,385 @@
+package CampaignAutosaveLifecycleTests
+
+import CampaignAutosaveScheduler
+import CampaignSaveManager
+import CampaignTimeline
+import CampaignHandoff
+import CommandRouter
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import WarcraftRpgRuntime
+import BoundaryArrival
+import ManagementScreenPauseController
+import FrameworkPorts
+
+/** Only the native wake boundary is virtual; no wall-clock sleeping. */
+public class RecordingAutosaveTimer implements CampaignAutosaveTimerAdapter
+	CampaignAutosaveScheduler scheduler
+	int generation = 0
+	int starts = 0
+	int stops = 0
+	boolean active = false
+	real spent = 0.
+	real delay = 0.
+	override function start(CampaignAutosaveScheduler scheduler, real delay, int generation)
+		active.assertFalse()
+		this.scheduler = scheduler
+		this.generation = generation
+		this.delay = delay
+		spent = 0.
+		active = true
+		starts++
+	override function elapsed() returns real
+		return spent
+	override function stop()
+		if active
+			stops++
+		active = false
+	function elapse(real seconds)
+		if active
+			spent += seconds
+	function fire(string createdAt)
+		active.assertTrue()
+		spent = delay
+		scheduler.timerWake(this, generation, createdAt)
+
+class AutosavePause implements CampaignPauseRuntime
+	override function setCampaignPaused(boolean paused)
+		skip
+
+class AutosaveStorage extends StartupStorage
+	string order = ""
+	CampaignAutosaveScheduler nested = null
+	boolean reenter = false
+	override function writeTransactional(string key, string value) returns boolean
+		if reenter
+			nested.request("nested").assertFalse()
+			nested.manager.save(SAVE_SLOT_AUTOSAVE, nested.nextSlotIndex(), "nested-direct").assertFalse()
+			nested.manager.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+		let result = super.writeTransactional(key, value)
+		if result and key.startsWith("autosave_")
+			order += key + ";"
+		return result
+
+class AutosaveExtension implements CampaignRuntimeExtension
+	boolean fail = false
+	override function newCampaign(string settlementId)
+		skip
+	override function validate(string authorityDocument) returns boolean
+		return true
+	override function beginLoad()
+		skip
+	override function reconstruct(string authorityDocument) returns boolean
+		return not fail
+	override function rollbackLoad()
+		skip
+	override function commitLoad()
+		skip
+	override function capture() returns string
+		return ""
+
+class AutosaveFixture
+	PlayableCampaignServices campaign
+	AutosaveStorage storage
+	StartupPorts ports = new StartupPorts()
+	RecordingAutosaveTimer wake = new RecordingAutosaveTimer()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(new AutosavePause(), false)
+	AutosaveExtension extension = new AutosaveExtension()
+	construct(AutosaveStorage storage, string mapId)
+		this.storage = storage
+		let cache = new StartupStorage()
+		ports.handoff = cache
+		ports.selectorIdentity = new PlayerCampaignIdentity()
+		ports.selectorIdentity.restore("england", "england", mapId, "west", "port")
+		cache.writeTransactional(HANDOFF_REQUEST, "travel-fixture")
+		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.), mapId, null, storage, new CampaignHandoff(new StartupStorage(), ports), ports, null)
+		campaign.state.arrivalPathing = ports
+		campaign.origins.add("england", "England", mapId, "map.w3x", "west", "port")
+		campaign.countries.registerPolity("england", 1000)
+		campaign.state.setRpgRuntime(new WarcraftRpgRuntime(ports))
+		campaign.registerExtension(extension)
+		campaign.identity.restore("england", "england", mapId, "west", "port")
+		campaign.state.replaceAuthority("v2;map=" + mapId + ";region=europe;world=instance:west;players=origin:england,allegiance:england,settlement:port;quests=;discovery=port;orders=;trade=;militarySettlements=v1;religion=v1;piracy=v1")
+		campaign.state.startupLocked = false
+		campaign.started = true
+		addRoute("east", "europe_west", "europe_east")
+		addRoute("west", "europe_east", "europe_west")
+	function addRoute(string id, string source, string destination)
+		let route = new BoundaryCorrespondence(id, source, destination, destination + ".w3x", "europe", false, 1., 0.)
+		route.source = new BoundaryEndpoint(source, "east", 0., 1., -4096., -4096., 4096., 4096.)
+		route.destination = new BoundaryEndpoint(destination, "west", 0., 1., -4096., -4096., 4096., 4096.)
+		route.destination.addSpan(0, 1, 0., -4096., 4096.)
+		route.destination.addSpan(0, 1, 192., -3904., 3904.)
+		campaign.state.addBoundary(route)
+	function savedMetadata(string slot) returns string
+		let document = campaign.saves.codec.decodeMigrateAndValidate(storage.read(slot), slot)
+		(document != "").assertTrue()
+		return lastAuthorityValue(document, "autosave")
+	function dispose()
+		campaign.autosaves.detachTimer()
+		campaign.autosaves.bindManagementPause(null)
+
+function autosaveReceipt(string requirement, string caseName)
+	print("TRACEABILITY {\"requirement\":\"" + requirement + "\",\"case\":\"" + caseName + "\",\"entryPoint\":\"live-autosave-wake\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+@test function liveAutosaveRotationMatchesAcrossEighteenMapReconstructions()
+	let whole = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	whole.campaign.enableAutosaveTimer(whole.wake, whole.pauses).assertTrue()
+	let storage = new AutosaveStorage()
+	var split = new AutosaveFixture(storage, "europe_west")
+	split.campaign.enableAutosaveTimer(split.wake, split.pauses).assertTrue()
+	var expectedOrder = ""
+	for i = 1 to 18
+		let index = (i - 1) mod 15 + 1
+		let slot = campaignSlotId(SAVE_SLOT_AUTOSAVE, index)
+		expectedOrder += slot + ";"
+		whole.wake.elapse(123.125)
+		split.wake.elapse(123.125)
+		var destination = "europe_east"
+		var boundaryId = "east"
+		if i mod 2 == 0
+			destination = "europe_west"
+			boundaryId = "west"
+		split.campaign.travel.transition(split.campaign.state.boundary(boundaryId), .5, "mid-interval").assertTrue()
+		split.savedMetadata("major_milestone").assertEquals(autosaveMetadata(index, 176.875))
+		split.dispose()
+		split = new AutosaveFixture(storage, destination)
+		split.campaign.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
+		split.campaign.enableAutosaveTimer(split.wake, split.pauses).assertTrue()
+		split.wake.starts.assertEquals(1)
+		split.wake.delay.assertEquals(176.875)
+		split.campaign.autosaves.nextSlotIndex().assertEquals(index)
+		whole.wake.fire("due")
+		split.wake.fire("due")
+		whole.savedMetadata(slot).assertEquals(split.savedMetadata(slot))
+		split.savedMetadata(slot).assertEquals(autosaveMetadata(index mod 15 + 1, 300.))
+		split.campaign.autosaves.secondsUntilDue().assertEquals(300.)
+		// Reconstruct the autosave itself, especially slots 15 and 1.
+		split.campaign.saves.load(SAVE_SLOT_AUTOSAVE, index).assertTrue()
+		split.campaign.autosaves.nextSlotIndex().assertEquals(index mod 15 + 1)
+	storage.order.assertEquals(expectedOrder)
+	whole.storage.order.assertEquals(expectedOrder)
+	whole.dispose()
+	split.dispose()
+	autosaveReceipt("REQ-0184.01", "success")
+
+@test function liveAutosaveManualRecoveryAndPauseRetainFractionalDelay()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	f.wake.elapse(.1234567)
+	let remaining = 300. - .1234567
+	let modal = f.pauses.openModalManagementScreen()
+	f.wake.active.assertFalse()
+	f.wake.elapse(900.)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "paused").assertTrue()
+	f.campaign.sessionStart("paused")
+	f.campaign.majorMilestone("paused")
+	f.savedMetadata("manual_01").assertEquals(autosaveMetadata(1, remaining))
+	f.savedMetadata("session_start").assertEquals(f.savedMetadata("manual_01"))
+	f.savedMetadata("major_milestone").assertEquals(f.savedMetadata("manual_01"))
+	modal.close()
+	f.wake.delay.assertEquals(remaining)
+	f.wake.fire("due")
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.wake.delay.assertEquals(remaining)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	f.pauses.setManuallyPaused(true)
+	f.campaign.saves.load(SAVE_SLOT_SESSION_START, 0).assertTrue()
+	f.wake.active.assertFalse()
+	f.campaign.autosaves.secondsUntilDue().assertEquals(remaining)
+	f.pauses.setManuallyPaused(false)
+	f.campaign.saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0).assertTrue()
+	f.wake.delay.assertEquals(remaining)
+	f.dispose()
+
+@test function liveAutosaveDeferredRetryCommitsOnceWithCoalescedRequests()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	f.campaign.state.beginTransition()
+	f.wake.fire("original-due")
+	f.storage.writes.assertEquals(0)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	f.campaign.autosaves.secondsUntilDue().assertEquals(0.)
+	f.wake.delay.assertEquals(1.)
+	f.campaign.saves.hasDeferredSave().assertTrue()
+	f.campaign.state.finishTransition()
+	f.storage.nested = f.campaign.autosaves
+	f.storage.reenter = true
+	let stale = f.wake.generation
+	// Retry through the manager is also a scheduler completion.
+	f.campaign.saves.retryDeferred().assertTrue()
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	f.storage.writes.assertEquals(1)
+	(f.storage.read("autosave_01").indexOf("|created=original-due|") >= 0).assertTrue()
+	f.campaign.autosaves.timerWake(f.wake, stale, "duplicate")
+	f.storage.writes.assertEquals(1)
+	f.campaign.saves.retryDeferred().assertFalse()
+	f.savedMetadata("autosave_01").assertEquals(autosaveMetadata(2, 300.))
+	f.dispose()
+	autosaveReceipt("REQ-0187.01", "success")
+	autosaveReceipt("REQ-0187.01", "replay")
+
+@test function liveAutosaveFailureAndLoadRollbackRetainPendingWork()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	f.wake.elapse(100.25)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "checkpoint").assertTrue()
+	f.storage.failKey = "autosave_01"
+	f.wake.fire("failed-due")
+	f.storage.contains("autosave_01").assertFalse()
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	f.campaign.autosaves.secondsUntilDue().assertEquals(0.)
+	let starts = f.wake.starts
+	let generation = f.wake.generation
+	let candidate = f.campaign.saves.codec.decodeMigrateAndValidate(f.storage.read("manual_01"), "manual_01")
+	let before = f.campaign.state.captureAuthoritativeState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.wake.starts.assertEquals(starts)
+	f.wake.generation.assertEquals(generation)
+	f.campaign.autosaves.intendedCreatedAt.assertEquals("failed-due")
+	f.extension.fail = false
+	f.campaign.saves.stageCandidate(candidate).assertTrue()
+	f.campaign.state.captureStagedAuthoritativeState().assertEquals(candidate)
+	f.campaign.saves.abortLoad()
+	f.campaign.autosaves.intendedCreatedAt.assertEquals("failed-due")
+	f.wake.starts.assertEquals(starts)
+	f.wake.fire("retry")
+	f.storage.writes.assertEquals(2)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	(f.storage.read("autosave_01").indexOf("|created=failed-due|") >= 0).assertTrue()
+	f.dispose()
+	autosaveReceipt("REQ-0184.01", "failure")
+	autosaveReceipt("REQ-0187.01", "failure")
+
+@test function liveAutosaveCommittedLoadRetiresStaleTimersAndDeferredIntent()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	f.wake.elapse(299.75)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before-wrap").assertTrue()
+	f.campaign.state.beginTransition()
+	f.wake.fire("old-due")
+	f.campaign.state.finishTransition()
+	let oldGeneration = f.wake.generation
+	let starts = f.wake.starts
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.wake.starts.assertEquals(starts + 1)
+	f.wake.delay.assertEquals(.25)
+	f.campaign.autosaves.intendedCreatedAt.assertEquals("")
+	f.campaign.autosaves.pendingRequest.assertFalse()
+	f.campaign.saves.hasDeferredSave().assertFalse()
+	f.campaign.autosaves.timerWake(f.wake, oldGeneration, "stale")
+	f.storage.writes.assertEquals(1)
+	f.wake.fire("new-due")
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	f.storage.writes.assertEquals(2)
+	f.campaign.saves.load(SAVE_SLOT_AUTOSAVE, 1).assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_AUTOSAVE, 1).assertTrue()
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	f.wake.delay.assertEquals(300.)
+	f.storage.writes.assertEquals(2)
+	f.dispose()
+	autosaveReceipt("REQ-0184.01", "stale")
+	autosaveReceipt("REQ-0184.01", "replay")
+	autosaveReceipt("REQ-0187.01", "stale")
+
+@test function liveAutosaveMigrationAndInvalidMetadataAreAtomic()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	let current = f.campaign.state.captureAuthoritativeState()
+	let marker = current.indexOf(";autosave=")
+	let tail = SubString(current, marker + 1, StringLength(current))
+	let finish = tail.indexOf(";")
+	let legacy = SubString(current, 0, marker) + SubString(tail, finish, StringLength(tail))
+	for schema = 1 to 7
+		let old = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "old", legacy)
+		f.storage.writeTransactional("manual_01", old)
+		f.wake.elapse(25.125)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.campaign.autosaves.captureState().assertEquals(autosaveMetadata(1, 300.))
+		f.storage.read("manual_01").assertEquals(old)
+	let migrated = replaceCampaignField(current, "autosave", "0|15|" + clockReal(.25))
+	f.storage.writeTransactional("manual_01", campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "v0", migrated))
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.wake.delay.assertEquals(.25)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	string array[20] invalid
+	invalid[0] = "1|0|0"
+	invalid[1] = "1|16|0"
+	invalid[2] = "1|1|-1"
+	invalid[3] = "1|1|NaN"
+	invalid[4] = "1|1|Infinity"
+	invalid[5] = "1|1|1024:1"
+	invalid[6] = "1|1|0|extra"
+	invalid[7] = "1|01|0"
+	invalid[8] = "2|1|0"
+	invalid[9] = "0|-1|0"
+	invalid[10] = ""
+	invalid[11] = "1|1|0;autosave=1|2|0"
+	invalid[12] = "1|1|-1075:1"
+	invalid[13] = "1|1|1:01"
+	invalid[14] = "1|2147483648|0"
+	invalid[15] = "0|-2147483649|0"
+	invalid[16] = "1|1|2147483648:1"
+	invalid[17] = "1|1|-2147483649:1"
+	invalid[18] = "1|1|NaN:1"
+	invalid[19] = "1|1|-:1"
+	let before = f.campaign.state.captureAuthoritativeState()
+	let starts = f.wake.starts
+	for i = 0 to 19
+		let candidate = replaceCampaignField(current, "autosave", invalid[i])
+		f.storage.writeTransactional("manual_01", campaignSaveEnvelope(8, "manual_01", SAVE_SLOT_MANUAL, 1, "bad", candidate))
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+		f.wake.starts.assertEquals(starts)
+	f.storage.writeTransactional("manual_01", campaignSaveEnvelope(8, "manual_01", SAVE_SLOT_MANUAL, 1, "missing", legacy))
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.wake.starts.assertEquals(starts)
+	f.dispose()
+
+@test function liveAutosaveOverdueSnapshotDoesNotSaveOrLoseElapsedOnRejectedLoad()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	f.wake.elapse(123.125)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "middle").assertTrue()
+	f.wake.elapse(.375)
+	let generation = f.wake.generation
+	let starts = f.wake.starts
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.autosaves.secondsUntilDue().assertEquals(176.5)
+	f.wake.generation.assertEquals(generation)
+	f.wake.starts.assertEquals(starts)
+	f.extension.fail = false
+	f.wake.elapse(1000.)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "overdue").assertTrue()
+	f.storage.writes.assertEquals(2)
+	f.storage.contains("autosave_01").assertFalse()
+	f.savedMetadata("manual_02").assertEquals(autosaveMetadata(1, 0.))
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	f.wake.delay.assertEquals(0.)
+	f.wake.fire("zero-due")
+	f.storage.writes.assertEquals(3)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	f.dispose()
+
+@test function liveAutosaveFailedOverwritePreservesRecoveryAndWraparoundIntent()
+	let f = new AutosaveFixture(new AutosaveStorage(), "europe_west")
+	f.campaign.enableAutosaveTimer(f.wake, f.pauses).assertTrue()
+	for i = 1 to 15
+		f.wake.fire("first-rotation")
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	let previous = f.storage.read("autosave_01")
+	f.storage.failKey = "autosave_01"
+	f.wake.fire("intended-overwrite")
+	f.storage.read("autosave_01").assertEquals(previous)
+	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "still-due").assertTrue()
+	f.savedMetadata("manual_01").assertEquals(autosaveMetadata(1, 0.))
+	f.campaign.autosaves.intendedCreatedAt.assertEquals("intended-overwrite")
+	f.wake.fire("retry")
+	f.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	(f.storage.read("autosave_01").indexOf("|created=intended-overwrite|") >= 0).assertTrue()
+	f.storage.writes.assertEquals(17)
+	f.dispose()

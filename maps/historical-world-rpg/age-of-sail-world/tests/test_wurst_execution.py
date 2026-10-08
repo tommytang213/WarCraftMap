@@ -73,12 +73,26 @@ class WurstExecutionTests(unittest.TestCase):
             "boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
         }.issubset(discovered))
 
+    def test_required_suite_discovers_production_autosave_reconstruction(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
+        self.assertTrue({
+            "liveAutosaveRotationMatchesAcrossEighteenMapReconstructions",
+            "liveAutosaveManualRecoveryAndPauseRetainFractionalDelay",
+            "liveAutosaveDeferredRetryCommitsOnceWithCoalescedRequests",
+            "liveAutosaveFailureAndLoadRollbackRetainPendingWork",
+            "liveAutosaveCommittedLoadRetiresStaleTimersAndDeferredIntent",
+            "liveAutosaveMigrationAndInvalidMetadataAreAtomic",
+            "liveAutosaveOverdueSnapshotDoesNotSaveOrLoseElapsedOnRejectedLoad",
+            "liveAutosaveFailedOverwritePreservesRecoveryAndWraparoundIntent",
+            "productionAutosaveDelayAndRotationSurviveGeneratedDestinationStartup",
+        }.issubset(discovered))
+
     def test_required_suite_discovers_party_locations_and_every_migration_batch(self):
         discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
         self.assertTrue({
             "legacyTransferSchemasOneAndTwoResolveGeneratedBoundary",
             "legacyTransferSchemasThreeAndFourResolveGeneratedBoundary",
-            "transferSchemasFiveThroughSevenResolveGeneratedBoundary",
+            "transferSchemasFiveThroughEightResolveGeneratedBoundary",
             "coordinateLessSchemasOneAndTwoUseDeterministicFallback",
             "coordinateLessSchemasThreeAndFourUseDeterministicFallback",
             "coordinateLessSchemasFiveAndSixUseDeterministicFallback",

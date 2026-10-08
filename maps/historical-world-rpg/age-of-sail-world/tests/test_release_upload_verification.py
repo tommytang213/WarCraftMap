@@ -199,7 +199,7 @@ class ReleaseUploadTests(unittest.TestCase):
                     manifest = {'format': release.MANIFEST_FORMAT,
                                 'releaseCandidateId': config['releaseCandidateId'],
                                 'sourceRevision': identity['sourceRevision'],
-                                'schemaCompatibility': {'supportedSaveSchemas': [1, 2, 3, 4, 5, 6, 7]},
+                                'schemaCompatibility': {'supportedSaveSchemas': [1, 2, 3, 4, 5, 6, 7, 8]},
                                 'artifactValidation': artifact,
                                 'artifacts': [{'kind': 'payload', 'archivePath': name, 'bytes': len(value),
                                                'sha256': release.sha_bytes(value)} for name, value in payloads.items()]}
@@ -331,7 +331,7 @@ class ReleaseUploadTests(unittest.TestCase):
             'format': release.MANIFEST_FORMAT,
             'releaseCandidateId': config['releaseCandidateId'],
             'sourceRevision': 'a' * 40,
-            'schemaCompatibility': {'supportedSaveSchemas': [1, 2, 3, 4, 5, 6, 7]},
+            'schemaCompatibility': {'supportedSaveSchemas': [1, 2, 3, 4, 5, 6, 7, 8]},
             'artifacts': [{'kind': 'campaign',
                            'archivePath': config['archive']['campaignPath'],
                            'bytes': len(campaign),

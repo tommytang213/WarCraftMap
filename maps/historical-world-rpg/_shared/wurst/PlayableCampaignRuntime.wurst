@@ -50,7 +50,7 @@ public interface CampaignRuntimeExtension
 
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 /** These values mirror the release-save manifest and are checked by the release gate. */
-public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 7
+public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 8
 public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
@@ -243,6 +243,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	string lastDiagnostic = ""
 	WarcraftRegionalAdapter regional
 	CampaignClock clock
+	CampaignAutosaveScheduler autosaves = null
 	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries = null
 	WarcraftRpgRuntime rpg = null
@@ -343,6 +344,12 @@ public class PlayableCampaignState implements CampaignStatePort
 			if locations == ""
 				return ""
 		result = replaceCampaignField(result, "partyLocations", locations)
+		var schedulerState = lastAuthorityValue(document, "autosave")
+		if includeIdentity and autosaves != null
+			schedulerState = autosaves.captureState()
+		else if schedulerState == ""
+			schedulerState = autosaveMetadata(1, CAMPAIGN_AUTOSAVE_SECONDS)
+		result = replaceCampaignField(result, "autosave", schedulerState)
 		return replaceCampaignField(result, "clock", clock.captureState())
 	function localHero(RpgHero hero, string regionId) returns boolean
 		return fieldHeroAt(hero, loadedPhysicalMap, regionId)
@@ -427,6 +434,9 @@ public class PlayableCampaignState implements CampaignStatePort
 				return false
 		if not clock.validateState(lastAuthorityValue(candidate, "clock"))
 			lastDiagnostic = clock.diagnostic()
+			return false
+		if not validCampaignAutosave(candidate)
+			lastDiagnostic = "invalid autosave scheduler authority"
 			return false
 		if loadedPhysicalMap != "" and (lastAuthorityValue(candidate, "map") != loadedPhysicalMap or playerAuthorityValue(candidate, "origin") == "")
 			lastDiagnostic = "checkpoint does not belong to the loaded physical map or has no player identity"
@@ -672,6 +682,10 @@ public class PlayableCampaignState implements CampaignStatePort
 			authority = staged
 		if party != null
 			authority = replaceCampaignField(authority, "partyLocations", committedLocations)
+		// No fallible reconstruction remains. Rejected or staged loads never
+		// mutate scheduler authority or disturb its pending request/timer.
+		if autosaves != null
+			autosaves.restoreState(lastAuthorityValue(staged, "autosave"))
 		staged = ""
 		clock.reconstructTimer()
 		// UI ownership is transient. Only a committed load retires the old RPG
@@ -758,6 +772,11 @@ public function campaignSaveEnvelope(int schema, string slotId, int slotKind, in
 	let body = "schema=" + schema.toString() + "|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
 	return "integrity=" + runtimeChecksum(body).toString() + "|" + body
 
+function validCampaignAutosave(string document) returns boolean
+	let marker = ";autosave="
+	let first = document.indexOf(marker)
+	return first >= 0 and SubString(document, first + StringLength(marker), StringLength(document)).indexOf(marker) < 0 and validAutosaveMetadata(lastAuthorityValue(document, "autosave"))
+
 /** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
 public class PlayableCampaignCodec implements CampaignSaveCodec
 	string lastDiagnostic = ""
@@ -799,6 +818,9 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		initialReligion = religion.captureState()
 		initialPiracy = piracy.migrationAuthority()
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+		if not validCampaignAutosave(authoritativeState)
+			lastDiagnostic = "save has missing, duplicate or invalid autosave scheduler authority"
+			return ""
 		if not validateClock(authoritativeState) or not validateLocations(authoritativeState)
 			return ""
 		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, authoritativeState)
@@ -883,12 +905,22 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// exactly once, then capture stable member positions after reconstruction.
 		if sourceSchema < 7 and decoded.indexOf(";partyLocations=") < 0
 			decoded += ";partyLocations=legacy"
+		// Schema 8 carries the live rotation/delay. Omitted historical state
+		// deterministically starts at slot 1/full configured interval, never at
+		// the current running scheduler. Explicit v0 uses last-completed slot.
+		if sourceSchema < 8 and decoded.indexOf(";autosave=") < 0
+			decoded += ";autosave=" + autosaveMetadata(1, CAMPAIGN_AUTOSAVE_SECONDS)
 		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
 		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
 			lastDiagnostic = "save is missing authority required by its schema"
 			return ""
 		if not validateClock(decoded) or not validateLocations(decoded)
 			return ""
+		if not validCampaignAutosave(decoded)
+			lastDiagnostic = "save has missing, duplicate or invalid autosave scheduler authority"
+			return ""
+		let schedulerState = lastAuthorityValue(decoded, "autosave")
+		decoded = replaceCampaignField(decoded, "autosave", autosaveMetadata(autosaveMetadataSlot(schedulerState), autosaveMetadataRemaining(schedulerState)))
 		lastDiagnostic = ""
 		return decoded
 	override function diagnostic() returns string
@@ -1309,6 +1341,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		state.setReligionRuntime(religion)
 		saves = new CampaignSaveManager(storage, new PlayableCampaignCodec(clock), state)
 		autosaves = new CampaignAutosaveScheduler(saves, CAMPAIGN_AUTOSAVE_SECONDS)
+		state.autosaves = autosaves
 		let logicalRegion = scenarioLogicalRegion(physicalMapId)
 		travel = new CampaignTravelRuntime(state, saves, autosaves, loader, physicalMapId, logicalRegion)
 		regionAccess = new PlayableRegionAccess()
@@ -1337,7 +1370,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		return registered
 	function diagnostic() returns string
 		return lastDiagnostic
-	/** Envelopes 1-7 predate an explicit scenario field. Their scenario binding
+	/** Envelopes 1-8 predate an explicit scenario field. Their scenario binding
 	 * is the scenario-specific cache plus authored origin/world and map/region
 	 * identities. Keep these bytes supported; the new request also names the
 	 * campaign explicitly. Destination terrain/native validation stays local. */
@@ -1464,6 +1497,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return rejectRestoration(reason)
 		state.startupLocked = true
 		state.clock.detachTimer()
+		autosaves.detachTimer()
 		lastDiagnostic = reason
 		if state.party != null and state.rpg != null
 			state.party.clear(state.rpg)
@@ -1583,6 +1617,12 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return false
 		state.clock.attachTimer(adapter, interval)
 		return true
+	function enableAutosaveTimer(CampaignAutosaveTimerAdapter adapter, ManagementScreenPauseController pauses) returns boolean
+		if not started
+			return false
+		autosaves.bindManagementPause(pauses)
+		autosaves.attachTimer(adapter)
+		return true
 	override function afterCampaignLoad()
 		let document = state.authorityDocument()
 		let loadedMap = lastAuthorityValue(document, "map")
@@ -1604,11 +1644,6 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		maps.setCommandRegion(loadedRegion)
 
 public PlayableCampaignServices campaignServices = null
-timer campaignAutosaveTimer = null
-
-function campaignAutosaveTick()
-	if campaignServices != null and campaignServices.started
-		campaignServices.autosaves.advance(CAMPAIGN_AUTOSAVE_SECONDS, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
 
 public function initializePlayableCampaignRuntime(CommandRegistry commands, string physicalMapId, CampaignClock clock, ReligionRuntime religion, PiracyRuntime piracy) returns PlayableCampaignServices
 	religionMigrationRuntime = religion
@@ -1624,7 +1659,6 @@ public function initializePlayableCampaignRuntime(CommandRegistry commands, stri
 	return campaignServices
 
 public function enableCampaignAutosaves()
-	if campaignServices == null or not campaignServices.started or campaignAutosaveTimer != null
+	if campaignServices == null or not campaignServices.started or campaignServices.autosaves.timerAdapter != null
 		return
-	campaignAutosaveTimer = CreateTimer()
-	TimerStart(campaignAutosaveTimer, CAMPAIGN_AUTOSAVE_SECONDS, true, function campaignAutosaveTick)
+	campaignServices.enableAutosaveTimer(new WarcraftAutosaveTimerAdapter(), getManagementScreenPauseController())

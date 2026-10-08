@@ -19,7 +19,7 @@ for final-W3N catalogue census, byte composition and execution requirements.
 The release pipeline builds every physical W3X twice and inspects the packaged W3N.
 Automated checks cover binary structure, physical-map identities, localized terrain
 and pathing, settlement and spawn representations, destination data and arrival
-transforms, and save schemas 1–7. Compiled script checks identify handoff calls and
+transforms, and save schemas 1–8. Compiled script checks identify handoff calls and
 registrations but do not execute them or prove control-flow reachability. Player QA
 is not required to produce this candidate.
 
@@ -31,10 +31,16 @@ is not required to produce this candidate.
 
 ## Save compatibility
 
-This candidate writes campaign save schema 7. It transactionally supports schema 1, 2,
-3, 4, 5, 6, and 7 saves through the documented migration chain. Keep a copy of an older save
+This candidate writes campaign save schema 8. It transactionally supports schema 1, 2,
+3, 4, 5, 6, 7, and 8 saves through the documented migration chain. Keep a copy of an older save
 until it has loaded and been saved successfully. Saves from a newer or modified build are
 not supported; a rejected save is never rewritten.
+
+Schema 8 preserves the autosave next slot and remaining unpaused delay through
+manual saves, autosaves, recovery checkpoints and map transfers. Schemas 1–7
+without this metadata start at slot 1 with the configured full interval. Previously
+discarded rotation and elapsed time cannot be recovered. Failed saves and rejected
+loads preserve the active scheduler.
 
 Schema 7 preserves each locally represented party member's physical map and current
 coordinates in manual saves, autosaves and recovery checkpoints. A transfer arrival
