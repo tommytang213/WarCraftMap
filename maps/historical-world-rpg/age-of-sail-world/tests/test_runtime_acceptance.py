@@ -58,7 +58,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                     with zipfile.ZipFile(fixture, "w") as archive:
                         for binary in ("war3map.w3e", "war3map.wpm", "war3mapUnits.doo", "war3map.w3i", "war3map.shd"):
                             archive.write(source / binary, binary)
-                        archive.writestr("war3map.lua", "function config() end\nfunction main() InitBlizzard() end")
+                        archive.writestr("war3map.lua", "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() end")
                         for member, document in metadata.items():
                             archive.writestr(member, json.dumps(document))
                     with self.assertRaisesRegex(runtime.RuntimeAcceptanceError, "metadata must be JSON objects"):
@@ -96,7 +96,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                     materialize(PROJECT, source, generated, physical, data)
                     (source / "runtime/scenario-runtime.json").write_text(json.dumps(data))
                     (source / "runtime/build-identity.json").write_text(json.dumps(identity))
-                    script = ("function config() end\nfunction main() InitBlizzard() TimerStart() showPage() ChangeLevel(path, true) end"
+                    script = ("function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() ChangeLevel(path, true) end"
                               if physical.bootstrap else self.executable_script())
                     (source / "war3map.lua").write_text(script)
                     fixture = root / (physical.id + ".w3x")
@@ -317,7 +317,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                         for call in required})
         commands = sorted({command for _, required in runtime.COMPILED_TEXT_REQUIREMENTS.values()
                            for command in required})
-        return ("function config() end\nfunction main() InitBlizzard()\n" + "\n".join(f"  {call}()" for call in calls) +
+        return ("function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard()\n" + "\n".join(f"  {call}()" for call in calls) +
                 "\n" + "\n".join(f'  registry:register("{command}", handler)'
                                    for command in commands) + "\nend\n")
 
@@ -366,7 +366,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
 
     def test_classes_commands_and_markers_without_bootstrap_calls_fail(self):
         marker_only = '\n'.join(
-            ["function config() end\nfunction main() InitBlizzard() end", "-- registerOriginSelection initializePlayableCampaignRuntime",
+            ["function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() end", "-- registerOriginSelection initializePlayableCampaignRuntime",
              'local marker = "commands.register(\\"origin\\")"',
              "function registerOriginSelection() end"])
         result = runtime.verify_compiled_script(marker_only)
@@ -388,7 +388,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                                 for failure in result["failures"]))
 
     def test_compiled_lua_payload_budgets_reject_pathological_line(self):
-        result = runtime.verify_compiled_script("function config() end\nfunction main() InitBlizzard() " +
+        result = runtime.verify_compiled_script("function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() " +
                                                 "x" * (runtime.MAX_LUA_LINE_BYTES + 1) + " end")
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("line exceeds" in x for x in result["failures"]))
@@ -428,20 +428,20 @@ CommandRegistry_TO(registry, "trade", "when calling register in PlayableTrade, l
             _resize_map_info(original[:40], 128, 128)
 
     def test_bootstrap_compiled_semantics_require_native_transition_before_end(self):
-        good = "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() bj_changeLevelMapName=path ChangeLevel(bj_changeLevelMapName, true) end"
+        good = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() bj_changeLevelMapName=path ChangeLevel(bj_changeLevelMapName, true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(good)["status"])
-        helper = "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() SetNextLevelBJ(path) EndGame(true) end"
+        helper = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() SetNextLevelBJ(path) EndGame(true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(helper)["status"])
-        native = "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() ChangeLevel(path, true) end"
+        native = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() ChangeLevel(path, true) end"
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(native)["status"])
-        lost_native = "-- source said SetNextLevelBJ\nfunction config() end\nfunction main() InitBlizzard() TimerStart() showPage() EndGame(true) end"
+        lost_native = "-- source said SetNextLevelBJ\nfunction config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() EndGame(true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(lost_native)["status"])
-        reversed_calls = "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() EndGame(true) ChangeLevel(path, true) end"
+        reversed_calls = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() EndGame(true) ChangeLevel(path, true) end"
         self.assertEqual("fail", runtime.verify_compiled_bootstrap(reversed_calls)["status"])
 
     def test_bootstrap_handoff_comments_and_strings_are_not_effects(self):
         for fake in ('-- SetNextLevel(path)\n', 'local note = "SetNextLevel(path)"\n'):
-            script = fake + "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() EndGame(true) end"
+            script = fake + "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() EndGame(true) end"
             result = runtime.verify_compiled_bootstrap(script)
             self.assertEqual("fail", result["status"])
             self.assertEqual("compiled_text_static_heuristic", result["evidenceLevel"])
@@ -449,7 +449,7 @@ CommandRegistry_TO(registry, "trade", "when calling register in PlayableTrade, l
 
     def test_bootstrap_direct_change_level_survives_renamed_adapter(self):
         script = ('function BO(CO, VO) ChangeLevel(CO, true) end\n'
-                  'function config() end\nfunction main() InitBlizzard() TimerStart() showPage() BO(path, note) end')
+                  'function config() end\nfunction main() SetDayNightModels("terrain.mdl", "unit.mdl") InitBlizzard() TimerStart() showPage() BO(path, note) end')
         self.assertEqual("pass", runtime.verify_compiled_bootstrap(script)["status"])
         # Exact failure shape emitted by the pinned compiler before the repair:
         # the unused BJ destination assignment disappeared, leaving only EndGame.
@@ -460,7 +460,7 @@ CommandRegistry_TO(registry, "trade", "when calling register in PlayableTrade, l
             self.assertEqual("fail", runtime.verify_compiled_bootstrap(fake + broken)["status"])
 
     def test_bootstrap_compiled_semantics_reject_global_scenario_registrations(self):
-        script = "function config() end\nfunction main() InitBlizzard() TimerStart() showPage() registerSettlement(x) ChangeLevel(path, true) end"
+        script = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() TimerStart() showPage() registerSettlement(x) ChangeLevel(path, true) end"
         result = runtime.verify_compiled_bootstrap(script)
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("regional registration" in x for x in result["failures"]))

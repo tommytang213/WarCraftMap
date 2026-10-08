@@ -2,7 +2,9 @@
 
 This is a source/compiled-text contract, not Lua or Warcraft execution. Blizzard
 initialization creates the shared forces, rectangles and game-start timer used
-by campaign services. An empty source-map main survives Wurst compilation.
+by campaign services. It does not initialize the terrain/unit lighting models.
+The editor loads those separately before InitBlizzard. An incomplete source-map
+main survives Wurst compilation. These checks do not prove native compatibility.
 """
 from __future__ import annotations
 
@@ -13,7 +15,8 @@ _TOKEN = re.compile(r"[A-Za-z_]\w*|.")
 
 
 def _tokens(script: str) -> list[str]:
-    # Ignore quoted strings and Lua long strings/comments (including = levels).
+    # Keep strings as opaque tokens, so they cannot masquerade as calls but
+    # literal native arguments can be checked. Ignore comments (including = levels).
     result, at = [], 0
     while at < len(script):
         comment = script.startswith("--", at)
@@ -23,15 +26,19 @@ def _tokens(script: str) -> list[str]:
             closing = "]" + long[1] + "]"
             end = script.find(closing, start + len(long[0]))
             at = len(script) if end < 0 else end + len(closing)
+            if not comment:
+                result.append(script[start:at])
         elif comment:
             end = script.find("\n", start)
             at = len(script) if end < 0 else end
         elif script[at] in "\"'":
+            start = at
             quote = script[at]
             at += 1
             while at < len(script) and script[at] != quote:
                 at += 2 if script[at] == "\\" else 1
             at += 1
+            result.append(script[start:at])
         elif script[at].isspace():
             at += 1
         else:
@@ -68,7 +75,7 @@ def startup_failures(script: bytes | str) -> list[str]:
         if len(starts) != 1:
             failures.append(f"compiled Lua requires one {name} entry point")
             continue
-        depth, calls = 1, []
+        depth, calls, lighting = 1, [], []
         for i in range(starts[0], len(tokens)):
             token = tokens[i]
             if token in ("function", "if", "do", "repeat"):
@@ -79,11 +86,31 @@ def startup_failures(script: bytes | str) -> list[str]:
                     break
             elif tokens[i + 1:i + 3] == ["(", ")"] and token == "InitBlizzard":
                 calls.append((i, depth))
+            elif token == "SetDayNightModels" and tokens[i + 1:i + 2] == ["("]:
+                lighting.append((i, depth))
         else:
             failures.append(f"compiled Lua has an unterminated {name} entry point")
         if name == "config" and calls:
             failures.append("InitBlizzard must run in main, never in config")
+        if name == "config" and lighting:
+            failures.append("SetDayNightModels must run in main, never in config")
         if name == "main":
+            if len(lighting) != 1 or lighting[0][1] != 1:
+                failures.append("compiled Lua main must initialize terrain and unit lighting once before InitBlizzard")
+            else:
+                position = lighting[0][0]
+                before = tokens[starts[0]:position]
+                arguments = tokens[position + 1:position + 6]
+                literal = lambda value: len(value) > 2 and value[0] in "\"'" and value[-1] == value[0]
+                if (len(arguments) != 5 or arguments[0] != "(" or arguments[2] != ","
+                        or arguments[4] != ")" or not literal(arguments[1]) or not literal(arguments[3])):
+                    failures.append("SetDayNightModels requires two nonempty literal model paths")
+                if (any(token in {"return", "goto", "if", "do", "repeat", "function",
+                                  "and", "or", "SetDayNightModels"} or token.startswith("init_") for token in before)
+                        or (before and before[-1] in {".", ":", "=", "(", ","})):
+                    failures.append("SetDayNightModels must be an unconditional direct startup call")
+                if calls and position > calls[0][0]:
+                    failures.append("SetDayNightModels follows InitBlizzard")
             if len(calls) != 1 or calls[0][1] != 1:
                 failures.append("compiled Lua main must call InitBlizzard once before Wurst package initialization")
             else:

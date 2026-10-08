@@ -35,7 +35,7 @@ if sys.argv[1] == "build":
     out = root / "_build"; out.mkdir(parents=True, exist_ok=True)
     generated = (root / "wurst/ScenarioData.wurst").read_text()
     bootstrap = (root / "wurst/Bootstrap.wurst").read_text()
-    lua = "function config() end\nfunction main() InitBlizzard() end\nAge of Sail: The World - development bootstrap loaded.\nWC3Compatibility: required Warcraft III v3.0\n" + generated + bootstrap
+    lua = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() end\nAge of Sail: The World - development bootstrap loaded.\nWC3Compatibility: required Warcraft III v3.0\n" + generated + bootstrap
     with zipfile.ZipFile(out / "tool-output.w3x", "w") as archive:
         for path in sorted(source.rglob("*")):
             if path.is_file(): archive.write(path, path.relative_to(source).as_posix())

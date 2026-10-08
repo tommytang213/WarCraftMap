@@ -1,0 +1,102 @@
+{
+  "campaignBuild": {
+    "archivedStartupAndPhysicalContracts": "pass",
+    "builtMaps": 17,
+    "stagingSourceIdentityAndExecutionGate": "pass",
+    "typecheckedMaps": 17
+  },
+  "containerPolicy": "Existing pinned image; wurstuser UID/GID 1001; worktree and cached dependencies mounted read-only; compilation in container-private /tmp; network disabled; no global tooling/service changes; container removed after retaining evidence.",
+  "diagnostic": {
+    "bytes": 38816623,
+    "file": "build/issue-425/diagnostic/Campaigns/AgeOfSailWorldCampaign.w3n",
+    "id": "LAUNCH-425-LIGHTING-1",
+    "manifest": "diagnostic-manifest.json",
+    "releaseCandidate": false,
+    "sha256": "e9039d3b81e00425524dfb3095a844262d27e9a0e0e4ff76a7106d8341cbad7e",
+    "sourceIdentity": {
+      "sourceRevision": "a2e24e86dd8f2284e8d33786c11d125c7fe513f4",
+      "sourceTreeSha256": "b25155f9fa96cd357c58566ee8f0d417fe129a39ca1ee08d38d3f4efd0bd695a"
+    }
+  },
+  "frameworkConformance": {
+    "mutatedMaps": 3,
+    "mutatedSha256": "074700d5dbc94c59a5494083bb3d9b5029a2f5f91b9840ecb9a2e1c881be16ba",
+    "originalMaps": 3,
+    "originalSha256": "cbad75a8132937fd2a9b3c23a2b524a94a6e190200dc0daca197a3ef528fed67",
+    "status": "pass",
+    "testsPerRun": 2,
+    "unchangedSharedSourceHashes": 158
+  },
+  "identifiedOmission": "No SetDayNightModels call before InitBlizzard in the failing first-chapter Lua; the independent editor fixture and pinned core definitions establish the separate setup.",
+  "implementationStatus": "ready_for_repository_validation",
+  "independentReader": {
+    "campaignMembersCheckedPerCampaign": 20,
+    "limitation": "17 encrypted nested listfiles per campaign are unsupported and excluded; this is not native execution",
+    "mapsPerCampaign": 17,
+    "nestedMembersCheckedPerCampaign": 814,
+    "originalAndRevisedCampaigns": "byte_agreement",
+    "reader": "eagleflo/mpyq",
+    "revision": "6bfba18ec403f702666b4109db3d95f3b97b1dc5"
+  },
+  "issue": 425,
+  "nativeCausality": "unconfirmed; the engine function/object at offset 0x8E3F42 remains unresolved",
+  "nativeClient": {
+    "build": 24342,
+    "reproduction": "failed",
+    "revisedArtifact": "not_revalidated",
+    "version": "3.0.1"
+  },
+  "playerQARequested": false,
+  "privateCrashBundleAccessed": false,
+  "realClientExecuted": false,
+  "release": {
+    "blocker": "release:REAL-CLIENT-LAUNCH-425",
+    "blockerStatus": "open",
+    "officialPublicationGatesChanged": false,
+    "remainingDiscriminator": "Launch these revised bytes on Warcraft III 3.0.1 build 24342 and establish whether origin selection opens. If the same crash persists, correlate its exception offset and original context before changing another startup input.",
+    "reportedClosureRevision": "d53fa8dd2073bb6c401acad8733709ca6f24b5c2",
+    "sourceTraceabilityPublicationBlockers": 7274,
+    "status": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+  },
+  "repositoryChecks": {
+    "automationTests": 129,
+    "command": "WARCRAFTMAP_WURST_CHECK=skip ./automation/run_checks.sh",
+    "exitCode": 0,
+    "scenarioTests": 930,
+    "status": "pass",
+    "wurst": "executed separately without skips in pinned container"
+  },
+  "sourceIdentity": {
+    "sourceRevision": "a2e24e86dd8f2284e8d33786c11d125c7fe513f4",
+    "sourceTreeSha256": "b25155f9fa96cd357c58566ee8f0d417fe129a39ca1ee08d38d3f4efd0bd695a"
+  },
+  "stagingNegativeControls": {
+    "checks": [
+      "stale source revision rejected before staging",
+      "archived lighting call removed with valid recalculated manifest and original source identity rejected before staging"
+    ],
+    "harnessCorrection": "Initial negative-control matcher expected the word revision; corrected to the existing generic mismatched-execution-evidence error. Production rejection already worked.",
+    "status": "pass"
+  },
+  "targetedTests": {
+    "launchContract": 10,
+    "runtimeAcceptance": 23,
+    "status": "pass"
+  },
+  "worktreeChanges": "uncommitted",
+  "wurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 335,
+    "executionStatus": "completed",
+    "passed": 335,
+    "productionCoverageSystemsVerified": 20,
+    "sourceIdentityVerified": true,
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9"
+  }
+}

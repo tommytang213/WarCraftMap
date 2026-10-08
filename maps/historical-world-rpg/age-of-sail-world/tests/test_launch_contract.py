@@ -26,11 +26,39 @@ class LaunchContractTests(unittest.TestCase):
         self.assertEqual("c17afea376ab8b813cfb0386894a838bdf422c7014de5a38ecf63db4edc92dbe",
                          hashlib.sha256(script).hexdigest())
         self.assertEqual([
+            "compiled Lua main must initialize terrain and unit lighting once before InitBlizzard",
             "compiled Lua main must call InitBlizzard once before Wurst package initialization"
         ], startup_failures(script))
 
+    def test_exact_issue425_artifact_has_blizzard_init_but_no_lighting(self):
+        script = gzip.decompress((PROJECT / "tests/fixtures/artifact-11525436101-bootstrap.lua.gz").read_bytes())
+        self.assertEqual("8d1533e1dfd0fea5331333507b242bd0e36e63072d19397c0fa4af91b9168c6a", hashlib.sha256(script).hexdigest())
+        self.assertEqual([
+            "compiled Lua main must initialize terrain and unit lighting once before InitBlizzard"
+        ], startup_failures(script))
+        # Controlled comparison: change only the omitted call in the exact
+        # failing member. This establishes the contract delta, not a native pass.
+        repaired = script.replace(b"\tInitBlizzard()", b"\tSetDayNightModels('terrain.mdl', 'unit.mdl')\n\tInitBlizzard()", 1)
+        self.assertEqual([], startup_failures(repaired))
+
+    def test_lighting_must_be_direct_and_before_blizzard_initialization(self):
+        lighting = "SetDayNightModels('terrain.mdl', 'unit.mdl')"
+        good = f"function config() end\nfunction main() {lighting} InitBlizzard() init_Bootstrap() end"
+        self.assertEqual([], startup_failures(good))
+        for replacement in ("", "-- " + lighting + "\n", f'local ignored = "{lighting}"',
+                            f"--[=[{lighting}]=]", f"if false then {lighting} end",
+                            f"local function unused() {lighting} end", "unused." + lighting,
+                            "return; " + lighting, "local ignored = false and " + lighting,
+                            "local SetDayNightModels = function() end; " + lighting,
+                            lighting + " " + lighting, "SetDayNightModels('', 'unit.mdl')",
+                            "SetDayNightModels('terrain.mdl', '')", "SetDayNightModels(nil, nil)"):
+            with self.subTest(replacement=replacement):
+                self.assertTrue(startup_failures(good.replace(lighting, replacement)))
+        self.assertTrue(startup_failures(good.replace(lighting + " InitBlizzard()", "InitBlizzard() " + lighting)))
+        self.assertTrue(startup_failures(good.replace("config() end", "config() " + lighting + " end")))
+
     def test_initialization_must_be_in_main_before_packages(self):
-        good = "function config() end\nfunction main() InitBlizzard() init_Bootstrap() end"
+        good = "function config() end\nfunction main() SetDayNightModels('terrain.mdl', 'unit.mdl') InitBlizzard() init_Bootstrap() end"
         self.assertEqual([], startup_failures(good))
         for wrong in (
             good.replace("InitBlizzard()", "-- InitBlizzard()\n"),
@@ -62,9 +90,9 @@ class LaunchContractTests(unittest.TestCase):
     def test_mpq_inspection_checks_archived_lua_not_intermediate_output(self):
         config = load_config(PROJECT / "package.json")
         broken = gzip.decompress((PROJECT / "tests/fixtures/artifact-704-bootstrap.lua.gz").read_bytes())
-        # Change only the missing source-main call in the historical script.
+        # Restore the editor's lighting and Blizzard initialization calls.
         repaired = broken.replace(b"\tif not xpcall(init_AbilityIds,",
-                                  b"\tInitBlizzard()\n\tif not xpcall(init_AbilityIds,", 1)
+                                  b"\tSetDayNightModels('terrain.mdl', 'unit.mdl')\n\tInitBlizzard()\n\tif not xpcall(init_AbilityIds,", 1)
         self.assertEqual([], startup_failures(repaired))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
