@@ -35,6 +35,7 @@ jobs:
       - name: Build and inspect diagnostic campaign in pinned Wurst environment
         run: |
           set -eu
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
           artifact_dir="$RUNNER_TEMP/age-of-sail-launch-smoke"
           mkdir -p "$artifact_dir"
           docker run --rm \
@@ -50,7 +51,6 @@ jobs:
               apt-get install -y --no-install-recommends python3
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
-              test "$(cd /tmp/workspace && git rev-parse HEAD)" = "$SOURCE_REVISION"
               su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
               source_campaign="/tmp/workspace/$MAP_PROJECT/_build/release/AgeOfSailWorldCampaign.w3n"
               test -s "$source_campaign"
