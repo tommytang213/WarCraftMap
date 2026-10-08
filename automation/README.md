@@ -91,7 +91,14 @@ closed. The controller does not compile during planning or rewrite tracked
 reports. Compiler execution and packaging remain repair/validation work.
 
 While closure is pending, the worker selects and plans only blocker repairs,
-even when unrelated ready work fills the queue. Repeated symptoms are grouped by
+even when unrelated ready work fills the queue. One narrow owner-approved CI
+maintenance exception permits issue #427 to enter the usual one-at-a-time
+implementation and PR-validation process **only after PR #426 has actually
+merged**. Closing PR #426 without merging does not satisfy this prerequisite;
+a stale checkout cannot activate the exception. Other unrelated improvements
+remain gated, and #425 launch-repair work retains the queue's existing
+oldest-eligible ordering. This exception changes neither release acceptance
+nor the worker's token/attempt budgets, sandbox or single-worker lock. Repeated symptoms are grouped by
 stable requirement/finding identity, with runtime findings shared across reports
 deduplicated. Missing global runtime execution is repaired before validating
 domains whose source checks pass; a package census waits for its final artifact.
