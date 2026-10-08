@@ -289,7 +289,7 @@ class CampaignPackagingTests(unittest.TestCase):
         shutil.copy2(self.project / "wurst-bootstrap/Bootstrap.wurst", compiled / "wurst/Bootstrap.wurst")
         _retain_bootstrap_dependencies(compiled)
         self.assertEqual({"Bootstrap.wurst", "ScenarioData.wurst", "CommandRouter.wurst",
-                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst", "ScenarioSettings.wurst"},
+                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst", "RuntimeProtection.wurst", "ScenarioSettings.wurst"},
                          {path.name for path in (compiled / "wurst").glob("*.wurst")})
 
     def test_origin_handoff_and_every_physical_map_region_are_explicit(self):

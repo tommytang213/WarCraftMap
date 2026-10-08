@@ -1,60 +1,53 @@
 package PlayerGodMode
 import CommandRouter
 import CampaignSaveManager
+import WC3Compatibility
+import RuntimeProtection
 import ErrorHandling
 
 public interface GodModeRuntime
-	function refresh(int playerIndex)
-	function entityCount() returns int
-	function entityAt(int index) returns int
+	function refresh()
+	function nextEntity() returns int
 	function ownerOf(int entity) returns int
-	function isInvulnerable(int entity) returns boolean
-	function setInvulnerable(int entity, boolean value)
+	function ownsProtection(int entity) returns boolean
+	function setProtection(int entity, boolean value)
 
 public class PlayerGodModeController implements CampaignLoadObserver
 	GodModeRuntime runtime
 	boolean array[24] enabled
-	hashtable leases = InitHashtable()
 	construct(GodModeRuntime r)
 		runtime = r
 	function isEnabled(int playerIndex) returns boolean
-		return enabled[playerIndex]
+		return playerIndex >= 0 and playerIndex < bj_MAX_PLAYERS and enabled[playerIndex]
 	function ownsProtection(int entity) returns boolean
-		return HaveSavedBoolean(leases, 0, entity)
-	function protect(int playerIndex, int entity)
-		if runtime.ownerOf(entity) == playerIndex and not runtime.isInvulnerable(entity)
-			runtime.setInvulnerable(entity, true)
-			SaveBoolean(leases, 0, entity, true)
-	function release(int entity)
-		if ownsProtection(entity)
-			runtime.setInvulnerable(entity, false)
-			RemoveSavedBoolean(leases, 0, entity)
+		return runtime.ownsProtection(entity)
+	function entityBecameControlled(int entity)
+		if entity != 0
+			runtime.setProtection(entity, isEnabled(runtime.ownerOf(entity)))
+	function entityChangedOwner(int entity)
+		// Reconcile the new owner without releasing/reacquiring an unchanged claim.
+		entityBecameControlled(entity)
+	function reconcile()
+		runtime.refresh()
+		var entity = runtime.nextEntity()
+		while entity != 0
+			entityBecameControlled(entity)
+			entity = runtime.nextEntity()
 	function setEnabled(int playerIndex, boolean value)
-		if enabled[playerIndex] == value
+		if playerIndex < 0 or playerIndex >= bj_MAX_PLAYERS
 			return
 		enabled[playerIndex] = value
-		runtime.refresh(playerIndex)
-		for i = 0 to runtime.entityCount() - 1
-			let entity = runtime.entityAt(i)
-			if value
-				protect(playerIndex, entity)
-			else
-				release(entity)
+		reconcile()
 	function toggle(int playerIndex) returns boolean
-		setEnabled(playerIndex, not enabled[playerIndex])
-		return enabled[playerIndex]
-	function entityBecameControlled(int entity)
-		let owner = runtime.ownerOf(entity)
-		if owner >= 0 and owner < bj_MAX_PLAYERS and enabled[owner]
-			protect(owner, entity)
-	function entityChangedOwner(int entity)
-		release(entity)
-		entityBecameControlled(entity)
+		setEnabled(playerIndex, not isEnabled(playerIndex))
+		return isEnabled(playerIndex)
 	function resetSessionState()
 		for playerIndex = 0 to bj_MAX_PLAYERS - 1
-			if enabled[playerIndex]
-				setEnabled(playerIndex, false)
+			enabled[playerIndex] = false
+		reconcile()
 	override function afterCampaignLoad()
+		// The save manager delivers this only after a successful commit. Failed
+		// and aborted reconstructions retain the active session and its claims.
 		resetSessionState()
 
 public class GodModeCommand implements CommandHandler
@@ -80,57 +73,115 @@ public class GodModeCommand implements CommandHandler
 		else
 			output.show(sender, "Player-wide god mode is OFF.")
 
-WarcraftGodModeRuntime activeRuntime
-PlayerGodModeController activeController
+WarcraftGodModeRuntime activeRuntime = null
+PlayerGodModeController activeController = null
+CampaignSaveManager activeSaveManager = null
+trigger lifecycle = null
+
 public class WarcraftGodModeRuntime implements GodModeRuntime
+	GodModeNatives natives
 	hashtable handles = InitHashtable()
-	int array[8192] entities
-	int count
+	construct(GodModeNatives natives)
+		this.natives = natives
 	function remember(unit target) returns int
+		if not compatUnitProtection().natives.exists(target)
+			compatUnitProtection().retire(target)
+			return 0
 		let id = GetHandleId(target)
 		SaveUnitHandle(handles, 0, id, target)
 		return id
-	override function refresh(int playerIndex)
-		count = 0
-		let units = CreateGroup()
-		GroupEnumUnitsOfPlayer(units, Player(playerIndex), null)
-		for target from units
-			entities[count] = remember(target)
-			count++
-		DestroyGroup(units)
-	override function entityCount() returns int
-		return count
-	override function entityAt(int index) returns int
-		return entities[index]
+	override function refresh()
+		// Only the current enumeration/event context needs this lookup. The
+		// protection authority owns claims and retires disappeared objects.
+		FlushChildHashtable(handles, 0)
+		compatUnitProtection().reconcile()
+		natives.enumerateUnits()
+	override function nextEntity() returns int
+		var target = natives.nextUnit()
+		while target != null
+			let id = remember(target)
+			if id != 0
+				return id
+			target = natives.nextUnit()
+		return 0
 	override function ownerOf(int entity) returns int
 		let target = LoadUnitHandle(handles, 0, entity)
-		if target == null
+		if not compatUnitProtection().natives.exists(target)
 			return -1
-		return GetPlayerId(GetOwningPlayer(target))
-	override function isInvulnerable(int entity) returns boolean
-		return BlzIsUnitInvulnerable(LoadUnitHandle(handles, 0, entity))
-	override function setInvulnerable(int entity, boolean value)
-		SetUnitInvulnerable(LoadUnitHandle(handles, 0, entity), value)
+		return natives.ownerIndex(target)
+	override function ownsProtection(int entity) returns boolean
+		return compatUnitProtection().owns(LoadUnitHandle(handles, 0, entity), PROTECTION_GOD_MODE)
+	override function setProtection(int entity, boolean value)
+		compatSetUnitProtection(LoadUnitHandle(handles, 0, entity), PROTECTION_GOD_MODE, value)
 
 function onGodModeEntityEvent()
-	activeController.entityChangedOwner(activeRuntime.remember(GetTriggerUnit()))
+	if activeController == null or activeRuntime.natives.eventListener() != lifecycle
+		return
+	if activeRuntime.natives.eventId() == EVENT_GAME_TIMER_EXPIRED
+		activeController.reconcile()
+	else
+		activeController.entityChangedOwner(activeRuntime.remember(compatGodModeEventEntity(activeRuntime.natives)))
 
-public function installPlayerGodMode(CommandRegistry registry, CampaignSaveManager saveManager)
-	activeRuntime = new WarcraftGodModeRuntime()
-	activeController = new PlayerGodModeController(activeRuntime)
-	let output = new WarcraftOutput()
-	let problem = registry.register("god", "", "god [on|off]", "Toggle player-wide god mode.", "Toggle protection for all of your controllable runtime entities, or explicitly use /god on or /god off.", 0, 1, COMMAND_RELEASE, new GodModeCommand(activeController, output))
-	if problem != ""
-		error(problem)
-	if saveManager != null
-		saveManager.setLoadObserver(activeController)
-	let lifecycle = CreateTrigger()
-	let world = CreateRegion()
-	RegionAddRect(world, GetWorldBounds())
-	TriggerRegisterEnterRegion(lifecycle, world, null)
-	for i = 0 to bj_MAX_PLAYERS - 1
-		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CHANGE_OWNER, null)
-		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_SUMMON, null)
-		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_TRAIN_FINISH, null)
-		TriggerRegisterPlayerUnitEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, null)
-	TriggerAddAction(lifecycle, function onGodModeEntityEvent)
+public function uninstallPlayerGodMode()
+	let obsolete = lifecycle
+	lifecycle = null
+	if activeSaveManager != null
+		activeSaveManager.removeLoadObserver(activeController)
+		activeSaveManager = null
+	if activeController != null
+		activeController.resetSessionState()
+		activeRuntime.natives.retire(obsolete)
+	activeController = null
+	activeRuntime = null
+
+/** Rebuilding command presentation or native listeners retains the same session
+ * controller. Installation is idempotent, including its load subscription. */
+public function installPlayerGodMode(CommandRegistry registry, CampaignSaveManager saveManager, GodModeNatives natives, CommandOutput output) returns PlayerGodModeController
+	if activeController == null
+		activeRuntime = new WarcraftGodModeRuntime(natives)
+		activeController = new PlayerGodModeController(activeRuntime)
+	else if activeRuntime.natives != natives
+		let obsolete = lifecycle
+		lifecycle = null
+		activeRuntime.natives.retire(obsolete)
+		activeRuntime.natives = natives
+	if registry.find("god") == null
+		let problem = registry.register("god", "", "god [on|off]", "Toggle player-wide god mode.", "Toggle protection for all of your controllable runtime entities, or explicitly use /god on or /god off.", 0, 1, COMMAND_RELEASE, new GodModeCommand(activeController, output))
+		if problem != ""
+			error(problem)
+	else
+		let registered = registry.find("god")
+		if not (registered.handler instanceof GodModeCommand)
+			error("Ambiguous command registration: 'god' is already registered.")
+			return activeController
+		let command = registered.handler castTo GodModeCommand
+		command.controller = activeController
+		command.output = output
+	if activeSaveManager != saveManager
+		if activeSaveManager != null
+			activeSaveManager.removeLoadObserver(activeController)
+		activeSaveManager = saveManager
+		if saveManager != null
+			saveManager.setLoadObserver(activeController)
+	if lifecycle == null
+		lifecycle = CreateTrigger()
+		natives.registerEnter(lifecycle)
+		// Include neutral slots: CHANGE_OWNER can be delivered for the losing
+		// owner when a previously uncontrolled representation is acquired.
+		for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+			natives.registerPlayerEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CHANGE_OWNER)
+			natives.registerPlayerEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_SUMMON)
+			natives.registerPlayerEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_TRAIN_FINISH)
+			natives.registerPlayerEvent(lifecycle, Player(i), EVENT_PLAYER_UNIT_CONSTRUCT_FINISH)
+		natives.registerSweep(lifecycle)
+		TriggerAddAction(lifecycle, function onGodModeEntityEvent)
+	activeController.reconcile()
+	return activeController
+
+public function installPlayerGodMode(CommandRegistry registry, CampaignSaveManager saveManager) returns PlayerGodModeController
+	GodModeNatives natives = null
+	if activeRuntime != null
+		natives = activeRuntime.natives
+	else
+		natives = new WarcraftGodModeNatives()
+	return installPlayerGodMode(registry, saveManager, natives, new WarcraftOutput())

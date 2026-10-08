@@ -11,6 +11,75 @@ import RemoteRegionManagement
 import PlayablePiracy
 import ManagementScreenPauseController
 
+@test function authorityFieldIndexPreservesDuplicateEmptyAndEmbeddedSemicolonValues()
+	let document = "v2;map=old;trade=v2:warehouse;london:grain,1;ship;hold:cargo,2;empty=;map=new;clock=final"
+	lastAuthorityValue(document, "map").assertEquals("new")
+	lastAuthorityValue(document, "trade").assertEquals("v2:warehouse;london:grain,1;ship;hold:cargo,2")
+	lastAuthorityValue(document, "empty").assertEquals("")
+	lastAuthorityValue(document, "missing").assertEquals("")
+	lastAuthorityValue(document, "clock").assertEquals("final")
+	lastAuthorityValue(document, "Map").assertEquals("")
+	// Appended empty values supersede earlier state; a missing leading
+	// semicolon never creates a field. Neither lookup can reuse a stale index.
+	lastAuthorityValue(document + ";map=", "map").assertEquals("")
+	lastAuthorityValue("map=ignored;map=kept", "map").assertEquals("kept")
+	lastAuthorityValue("map=ignored", "map").assertEquals("")
+	lastAuthorityValue("", "map").assertEquals("")
+	lastAuthorityValue(document, "map").assertEquals("new")
+
+@test function authorityFieldIndexRetainsLegacyDomainBoundaryRules()
+	let payload = "start;kind:id=value;name,rest=value;type|rest=value;entry~rest=value;unterminated"
+	lastAuthorityValue("v2;trade=" + payload, "trade").assertEquals(payload)
+	lastAuthorityValue("v2;trade=" + payload + ";clock=end", "trade").assertEquals(payload)
+	let longestBoundary = "1234567890123456789012345678901"
+	lastAuthorityValue("v2;trade=value;" + longestBoundary + "=end", "trade").assertEquals("value")
+	// Longer keys are still addressable, but are not legacy domain delimiters.
+	let longKey = longestBoundary + "2"
+	let document = "v2;trade=value;" + longKey + "=end;clock=done"
+	lastAuthorityValue(document, "trade").assertEquals("value;" + longKey + "=end")
+	lastAuthorityValue(document, longKey).assertEquals("end")
+	lastAuthorityValue("v2;trade=value;;clock=end", "trade").assertEquals("value;")
+	lastAuthorityValue("v2;trade=value;=end", "trade").assertEquals("value")
+
+@test function authorityFieldIndexInvalidatesForSameLengthDocumentsAndLargePayloads()
+	var payload = "v2"
+	// More delimiters than the engine's small fixed record arrays; the index
+	// must retain every position without imposing a new save-format limit.
+	for i = 0 to 299
+		payload += ";store" + i + ":grain,1"
+	let first = "v2;map=alpha;trade=" + payload + ";map=omega;clock=one"
+	let second = "v2;map=omega;trade=" + payload + ";map=alpha;clock=two"
+	StringLength(first).assertEquals(StringLength(second))
+	for i = 0 to 2
+		lastAuthorityValue(first, "map").assertEquals("omega")
+		lastAuthorityValue(first, "trade").assertEquals(payload)
+		lastAuthorityValue(first, "clock").assertEquals("one")
+		lastAuthorityValue(second, "map").assertEquals("alpha")
+		lastAuthorityValue(second, "trade").assertEquals(payload)
+		lastAuthorityValue(second, "clock").assertEquals("two")
+	lastAuthorityValue("v2;clock=short", "clock").assertEquals("short")
+	lastAuthorityValue("v2;clock=short", "map").assertEquals("")
+
+@test function indexedMetadataRejectsMissingAndDuplicateFieldsBeforeEncoding()
+	let clock = new CampaignClock(1, 100, 1, 1.)
+	let codec = new PlayableCampaignCodec(clock)
+	let ticks = ";clock=" + clock.captureState()
+	let locations = ";partyLocations=v1"
+	let autosave = ";autosave=1|1|0"
+	let valid = "v2" + ticks + locations + autosave
+	string array[6] invalid
+	invalid[0] = valid + ticks
+	invalid[1] = valid + locations
+	invalid[2] = valid + autosave
+	invalid[3] = "v2;notclock=" + clock.captureState() + locations + autosave
+	invalid[4] = "v2" + ticks + ";notpartyLocations=v1" + autosave
+	invalid[5] = "v2" + ticks + locations + ";notautosave=1|1|0"
+	for i = 0 to 5
+		(codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "valid", valid) != "").assertTrue()
+		codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "invalid", invalid[i]).assertEquals("")
+		// Rejection cannot contaminate a subsequent read of the original text.
+		(codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "valid", valid) != "").assertTrue()
+
 class RecordingRegionPause implements CampaignPauseRuntime
 	boolean paused = false
 	int changes = 0

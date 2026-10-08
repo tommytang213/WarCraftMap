@@ -1,0 +1,214 @@
+{
+  "automationTests": {
+    "seconds": 2.526,
+    "status": "pass",
+    "testsPassed": 129
+  },
+  "campaignPackaging": {
+    "artifact": "_build/issue415-repair/diagnostic/AgeOfSailWorldCampaign.w3n",
+    "buildDirectory": "container-private /tmp/issue415",
+    "buildUser": "wurstuser (1001:1001)",
+    "bytes": 32005083,
+    "dependencies": "Private Python copy; recorded WurstStdlib2 checkout; pinned Grill bundled v3.0 core JASS.",
+    "kind": "diagnostic campaign; not a player release",
+    "network": "disabled",
+    "physicalMapsTypecheckedCompiledAndInspected": 17,
+    "sha256": "07f0a4be51758ca264d6792c01d37a163fcc1d803125d9af7ebf9f95638d9366",
+    "sourceBindMount": "read-only",
+    "status": "pass",
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9"
+  },
+  "campaignSaveSchemaChanged": false,
+  "ciFailures": [
+    {
+      "failedTests": {
+        "foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)",
+        "laterBoundaryTravelSupersedesConsumedRecovery": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)",
+        "recoverySupersedesInterruptedOriginEvenAfterLaterTravel": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)"
+      },
+      "headSha": "010a1c88a7720b9cdb6c0ca7389e4d31bee228bd",
+      "run": "37777578705",
+      "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/37777578705"
+    },
+    {
+      "failedTests": {
+        "fullLocalGroupEquipmentRoundTripsThroughLiveCampaignCodec": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)",
+        "laterBoundaryTravelSupersedesConsumedRecovery": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)",
+        "recoverySupersedesInterruptedOriginEvenAfterLaterTravel": "FAILED - TIMEOUT (This test did not complete in 20 seconds, it might contain an endless loop)"
+      },
+      "headSha": "010a1c88a7720b9cdb6c0ca7389e4d31bee228bd",
+      "run": "37777578859",
+      "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/37777578859"
+    }
+  ],
+  "ciJourneyTimings": {
+    "baseline": {
+      "returnCode": 0,
+      "tests": {
+        "foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources": {
+          "result": "OK!",
+          "seconds": 9.597
+        },
+        "fullLocalGroupEquipmentRoundTripsThroughLiveCampaignCodec": {
+          "result": "OK!",
+          "seconds": 10.961
+        },
+        "laterBoundaryTravelSupersedesConsumedRecovery": {
+          "result": "OK!",
+          "seconds": 12.935
+        },
+        "recoverySupersedesInterruptedOriginEvenAfterLaterTravel": {
+          "result": "OK!",
+          "seconds": 12.391
+        }
+      },
+      "wallSeconds": 54.584
+    },
+    "repair": {
+      "returnCode": 0,
+      "tests": {
+        "foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources": {
+          "result": "OK!",
+          "seconds": 5.475
+        },
+        "fullLocalGroupEquipmentRoundTripsThroughLiveCampaignCodec": {
+          "result": "OK!",
+          "seconds": 3.376
+        },
+        "laterBoundaryTravelSupersedesConsumedRecovery": {
+          "result": "OK!",
+          "seconds": 11.261
+        },
+        "recoverySupersedesInterruptedOriginEvenAfterLaterTravel": {
+          "result": "OK!",
+          "seconds": 10.996
+        }
+      },
+      "wallSeconds": 40.206
+    }
+  },
+  "evidence": {
+    "repair-automation-tests.log.gz": "b2a54c941b508e1d10411a61ee3464f35aba67b06704c4c491a4382d3c3ee5de",
+    "repair-baseline-timing-execution.log.gz": "be8dfbef37ead1918b23bf5f7017ddb2cca53b924702daaba7e8915793ae0f79",
+    "repair-ci-failures.json.gz": "a614c500b84cd92967580763571d6551b30ef87de62bc9eb1d46974b328684e6",
+    "repair-container-mounts.json.gz": "f86a095a85124a400ef3dbc2bf38743cc217e2f86591b4a0d32755c02a57924d",
+    "repair-framework-build.log.gz": "1a81f862bbfd4cd7b997766518e7a772a974f65e7097ebc46fc438376694a740",
+    "repair-framework-mutated-execution.log.gz": "db4faebfb4c082db249e8e0a5aa2821e928997bf409a04034b3764dc327e5e5c",
+    "repair-framework-mutated-results.json.gz": "d58410eb0e64a83f4a043c1115710b51aeadcc5ab04f7bd0a52691d54f0ea836",
+    "repair-framework-original-execution.log.gz": "ea9e0bcb5eea89a5c2091f745616cfc49e704b6a94e2b80352f783efbf63c6ad",
+    "repair-framework-original-results.json.gz": "1f2e65fd0624bc89d03de4d31b6bb7cc4854fd700d281ec5dcd336baca0f79a3",
+    "repair-framework-report.json.gz": "5c82c8e6380d68caf85f98d41f880a7f47eb763f55d807d8f7e34abe157b9c18",
+    "repair-parser-regressions.log.gz": "c3f4dae8229c5edc7d4992d313d63ae80add91439c39bb145516918c57030b92",
+    "repair-pinned-campaign.log.gz": "baccecbe60d8a96b26022dcd5d369cd1815365fe8d78f17db57063ebca7556f8",
+    "repair-requirement-traceability.json.gz": "d6ce7c03eef9b47e811b9aedf2d45677113e84d844a30e27c29c07ac101a9a1b",
+    "repair-requirement-traceability.md.gz": "b255e164ee4258a74af7367e88c92b737923d5db3af34c95c7be21b1249eac1c",
+    "repair-runtime-acceptance.json.gz": "e3e4bc9d558bf21f4ac3a60ac8622d76fb4496eb1e0dd279a33ab54edf758c21",
+    "repair-scenario-tests.log.gz": "85193c0152fc8d1fc9a2b5e8e6cb16f740284c4a232eb45b740e71f2d77b746d",
+    "repair-scoped-evidence.json.gz": "4124378db85e9433cd83aa058099c62c90f9a028ecfd772c9fce2acab87e23fb",
+    "repair-source-traceability.log.gz": "6105829b657d81a4d288fe3fc42bf275453c7c11c3a70cf8009837e4cdee9ec7",
+    "repair-timing-execution.log.gz": "43629884aab4c5f859da3436714d3cea648ddc6de8f2cb23622cab498bc88134",
+    "repair-timings.json.gz": "37df608e5954782cbe4ba3991ade25e669da5b9f98ead99dc64ca96982ec8b41",
+    "repair-wurst-execution.log.gz": "315f3599cbbb1b9afe6ff2b899631d1b49e41f6c939a9c23ac9e35ce28a2edb1",
+    "repair-wurst-results.json.gz": "fb8303a98e38778404af1629f53ee1df744d74956263ca3e026190843f66741b"
+  },
+  "format": "warcraftmap_issue_415_ci_repair_validation_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "parserRegressions": {
+    "status": "pass",
+    "testsPassed": 4
+  },
+  "pinnedWurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "3ca6e6e53e3633f41dcc626f3a1845447d3ebbdb20024a161d88b879b42fd7c2",
+    "status": "pass",
+    "targetedPackages": {
+      "CampaignLoadTransactionTests.wurst": 22,
+      "CampaignRecoveryTests.wurst": 27,
+      "CharacterEquipmentTests.wurst": 9,
+      "InstalledGodModeTests.wurst": 6,
+      "MilitaryCombatEventsTests.wurst": 9,
+      "MilitarySettlementRuntimeTests.wurst": 8,
+      "PlayableCampaignRuntimeTests.wurst": 15,
+      "PlayerGodModeTests.wurst": 4
+    },
+    "testsDiscovered": 331,
+    "testsPassed": 331,
+    "transcriptSha256": "b28b36a2dc2abbfd203ada96b854c1f4a80457d6e058d10aa3708c1b54686dcd"
+  },
+  "realClientExecuted": false,
+  "regionalMapsWithVerifiedGodModeRegistrations": 16,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "scenarioTests": {
+    "seconds": 1665.5,
+    "status": "pass",
+    "testsPassed": 923
+  },
+  "sharedFramework": {
+    "mutatedArchiveSha256": "11fb7baa4b22d5734a37b1421f94f6fee05b25edad25db2cc85a1200f84a3f97",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "c2da3aee5dc02e39684f2b9931dd701d890efa172aee7d44c12384c354986e55",
+    "originalTestsPassed": 2,
+    "sharedSourceHashesVerified": 158,
+    "status": "pass"
+  },
+  "sourceRevision": "010a1c88a7720b9cdb6c0ca7389e4d31bee228bd",
+  "sourceTreeSha256": "3f476c45c9ac84ae1c118939c01ab6eb075f6c499eddc5f1b232e4300ff35297",
+  "traceability": {
+    "candidateReady": false,
+    "dependency": {
+      "id": "DEP-god-controller-reconstruction",
+      "status": "pass"
+    },
+    "receipts": 44,
+    "remainingPublicationBlockers": 8963,
+    "requirements": [
+      {
+        "id": "REQ-0208.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0209.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0209.02",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0210.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0211.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0211.02",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0212.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0212.02",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0213.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0214.01",
+        "status": "pass"
+      }
+    ],
+    "status": "pass"
+  }
+}

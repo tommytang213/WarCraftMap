@@ -2,6 +2,7 @@ package WC3Compatibility
 
 import ErrorHandling
 import Annotations
+import RuntimeProtection
 
 /** Native movement types mapped to the navigation contract's land, naval,
  * amphibious and flying classes. Unsupported/static types fail closed. */
@@ -144,6 +145,7 @@ public function compatTeleportUnit(unit target, real x, real y)
 public function compatCreateUnit(player owner, int typeId, real x, real y, real facing) returns unit
 	return CreateUnit(owner, typeId, x, y, facing)
 public function compatRemoveUnit(unit target)
+	compatUnitProtection().retire(target)
 	RemoveUnit(target)
 public function compatPanCamera(player owner, real x, real y, real duration)
 	PanCameraToTimedForPlayer(owner, x, y, duration)
@@ -154,7 +156,104 @@ public function compatSetUnitMaxLife(unit target, int life)
 public function compatSetUnitOwner(unit target, player owner, boolean changeColor)
 	SetUnitOwner(target, owner, changeColor)
 public function compatSetUnitInvulnerable(unit target, boolean shouldProtect)
-	SetUnitInvulnerable(target, shouldProtect)
+	compatSetUnitProtection(target, PROTECTION_SCRIPT, shouldProtect)
+public function compatSetUnitProtection(unit target, int source, boolean shouldProtect)
+	compatUnitProtection().set(target, source, shouldProtect)
+public class WarcraftUnitProtectionNatives implements UnitProtectionNatives
+	override function exists(unit target) returns boolean
+		return target != null and GetUnitTypeId(target) != 0
+	override function isInvulnerable(unit target) returns boolean
+		return BlzIsUnitInvulnerable(target)
+	override function setInvulnerable(unit target, boolean value)
+		SetUnitInvulnerable(target, value)
+RuntimeProtection unitProtection = null
+public function compatUnitProtection() returns RuntimeProtection
+	if unitProtection == null
+		unitProtection = new RuntimeProtection(new WarcraftUnitProtectionNatives())
+	return unitProtection
+
+/** Recordable native context: normalization below is shared by retail and the
+ * installed-adapter fixtures. Producers are deliberately separate recipients. */
+public interface GodModeNatives
+	function enumerateUnits()
+	function nextUnit() returns unit
+	function ownerIndex(unit target) returns int
+	function registerEnter(trigger listener)
+	function registerPlayerEvent(trigger listener, player owner, playerunitevent eventType)
+	function registerSweep(trigger listener)
+	function retire(trigger listener)
+	function eventListener() returns trigger
+	function eventId() returns eventid
+	function triggerUnit() returns unit
+	function enteringUnit() returns unit
+	function summonedUnit() returns unit
+	function trainedUnit() returns unit
+	function constructedUnit() returns unit
+
+public class WarcraftGodModeNatives implements GodModeNatives
+	group enumerated = CreateGroup()
+	region world = null
+	override function enumerateUnits()
+		if enumerated == null
+			enumerated = CreateGroup()
+		GroupClear(enumerated)
+		let bounds = GetWorldBounds()
+		GroupEnumUnitsInRect(enumerated, bounds, null)
+		RemoveRect(bounds)
+	override function nextUnit() returns unit
+		let target = FirstOfGroup(enumerated)
+		if target != null
+			GroupRemoveUnit(enumerated, target)
+		return target
+	override function ownerIndex(unit target) returns int
+		return GetPlayerId(GetOwningPlayer(target))
+	override function registerEnter(trigger listener)
+		world = CreateRegion()
+		let bounds = GetWorldBounds()
+		RegionAddRect(world, bounds)
+		RemoveRect(bounds)
+		TriggerRegisterEnterRegion(listener, world, null)
+	override function registerPlayerEvent(trigger listener, player owner, playerunitevent eventType)
+		TriggerRegisterPlayerUnitEvent(listener, owner, eventType, null)
+	override function registerSweep(trigger listener)
+		TriggerRegisterTimerEvent(listener, 1., true)
+	override function retire(trigger listener)
+		DestroyTrigger(listener)
+		if world != null
+			RemoveRegion(world)
+			world = null
+		DestroyGroup(enumerated)
+		enumerated = null
+	override function eventListener() returns trigger
+		return GetTriggeringTrigger()
+	override function eventId() returns eventid
+		return GetTriggerEventId()
+	override function triggerUnit() returns unit
+		return GetTriggerUnit()
+	override function enteringUnit() returns unit
+		return GetEnteringUnit()
+	override function summonedUnit() returns unit
+		return GetSummonedUnit()
+	override function trainedUnit() returns unit
+		return GetTrainedUnit()
+	override function constructedUnit() returns unit
+		return GetConstructedStructure()
+
+public function compatGodModeEventEntity(GodModeNatives natives) returns unit
+	let kind = natives.eventId()
+	if kind == EVENT_GAME_ENTER_REGION
+		return natives.enteringUnit()
+	if kind == EVENT_PLAYER_UNIT_SUMMON
+		return natives.summonedUnit()
+	if kind == EVENT_PLAYER_UNIT_TRAIN_FINISH
+		return natives.trainedUnit()
+	if kind == EVENT_PLAYER_UNIT_CONSTRUCT_FINISH
+		return natives.constructedUnit()
+	if kind == EVENT_PLAYER_UNIT_CHANGE_OWNER
+		return natives.triggerUnit()
+	return null
+public function compatEnteringUnit() returns unit
+	return GetEnteringUnit()
 public function compatAddUnitAbility(unit target, int abilityId)
 	UnitAddAbility(target, abilityId)
 public function compatRemoveUnitAbility(unit target, int abilityId)

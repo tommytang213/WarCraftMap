@@ -1,0 +1,101 @@
+package RuntimeProtection
+
+/** Independent, session-only claims on a Warcraft representation. Sources must
+ * release their own claim through this boundary, never write the native bit. */
+public constant int PROTECTION_GOD_MODE = 1
+public constant int PROTECTION_CAPTURE = 2
+public constant int PROTECTION_SCRIPT = 3
+
+public interface UnitProtectionNatives
+	function exists(unit target) returns boolean
+	function isInvulnerable(unit target) returns boolean
+	function setInvulnerable(unit target, boolean value)
+
+class ProtectedRepresentation
+	unit target
+	int claims = 0
+	ProtectedRepresentation previous = null
+	ProtectedRepresentation next = null
+	construct(unit target)
+		this.target = target
+
+public class RuntimeProtection
+	UnitProtectionNatives natives
+	hashtable records = InitHashtable()
+	hashtable sources = InitHashtable()
+	ProtectedRepresentation first = null
+	int count = 0
+	construct(UnitProtectionNatives natives)
+		this.natives = natives
+	function record(unit target) returns ProtectedRepresentation
+		if target == null or not HaveSavedInteger(records, 0, GetHandleId(target))
+			return null
+		return LoadInteger(records, 0, GetHandleId(target)) castTo ProtectedRepresentation
+	function owns(unit target, int source) returns boolean
+		return target != null and natives.exists(target) and HaveSavedBoolean(sources, GetHandleId(target), source)
+	function forget(ProtectedRepresentation entry)
+		let id = GetHandleId(entry.target)
+		FlushChildHashtable(sources, id)
+		RemoveSavedInteger(records, 0, id)
+		if entry.previous == null
+			first = entry.next
+		else
+			entry.previous.next = entry.next
+		if entry.next != null
+			entry.next.previous = entry.previous
+		entry.target = null
+		count--
+		destroy entry
+	function retire(unit target)
+		if target != null
+			let entry = record(target)
+			if entry != null
+				forget(entry)
+	function set(unit target, int source, boolean value)
+		if target == null or source <= 0
+			return
+		if not natives.exists(target)
+			retire(target)
+			return
+		var entry = record(target)
+		let id = GetHandleId(target)
+		if entry == null
+			if not value
+				if source == PROTECTION_SCRIPT and natives.isInvulnerable(target)
+					natives.setInvulnerable(target, false)
+				return
+			entry = new ProtectedRepresentation(target)
+			entry.next = first
+			if first != null
+				first.previous = entry
+			first = entry
+			count++
+			SaveInteger(records, 0, id, entry castTo int)
+			// An unclaimed pre-existing native protection belongs to the script
+			// source, never to the first consumer that happens to observe it.
+			if natives.isInvulnerable(target)
+				SaveBoolean(sources, id, PROTECTION_SCRIPT, true)
+				entry.claims++
+		let held = HaveSavedBoolean(sources, id, source)
+		if value and not held
+			SaveBoolean(sources, id, source, true)
+			entry.claims++
+		else if not value and held
+			RemoveSavedBoolean(sources, id, source)
+			entry.claims--
+		let wanted = entry.claims > 0
+		if natives.isInvulnerable(target) != wanted
+			natives.setInvulnerable(target, wanted)
+		if not wanted
+			forget(entry)
+	/** Removed representations are never written or retained. A native bit cleared
+	 * by reconstruction is repaired while any independent claim remains active. */
+	function reconcile()
+		var entry = first
+		while entry != null
+			let following = entry.next
+			if not natives.exists(entry.target)
+				forget(entry)
+			else if not natives.isInvulnerable(entry.target)
+				natives.setInvulnerable(entry.target, true)
+			entry = following

@@ -54,37 +54,70 @@ public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
 
-public function lastAuthorityValue(string document, string key) returns string
+// Validation, reconstruction and observers read many fields of the same
+// immutable document. Index its semicolons once instead of rescanning every
+// domain payload for every key. Only text and offsets are cached; this is never
+// save authority. Changing documents discards the entire derived index.
+string indexedAuthority = null
+hashtable authoritySeparators = null
+int authoritySeparatorCount = 0
+
+function indexAuthoritySeparators(string document)
+	if indexedAuthority == document
+		return
+	if authoritySeparators == null
+		authoritySeparators = InitHashtable()
+	else
+		FlushChildHashtable(authoritySeparators, 0)
+	indexedAuthority = document
+	authoritySeparatorCount = 0
+	for cursor = 0 to StringLength(document) - 1
+		if SubString(document, cursor, cursor + 1) == ";"
+			SaveInteger(authoritySeparators, 0, authoritySeparatorCount, cursor)
+			authoritySeparatorCount++
+
+function hasUniqueAuthorityValue(string document, string key) returns boolean
+	indexAuthoritySeparators(document)
 	let marker = ";" + key + "="
+	let markerLength = StringLength(marker)
+	var found = false
+	for index = 0 to authoritySeparatorCount - 1
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if SubString(document, separator, separator + markerLength) == marker
+			if found
+				return false
+			found = true
+	return found
+
+public function lastAuthorityValue(string document, string key) returns string
+	indexAuthoritySeparators(document)
+	let marker = ";" + key + "="
+	let markerLength = StringLength(marker)
+	let documentLength = StringLength(document)
 	var found = -1
-	var search = 0
-	while search < StringLength(document)
-		let relative = SubString(document, search, StringLength(document)).indexOf(marker)
-		if relative < 0
-			search = StringLength(document)
-		else
-			found = search + relative + StringLength(marker)
-			search = found
+	var nextSeparator = 0
+	for index = authoritySeparatorCount - 1 downto 0
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if SubString(document, separator, separator + markerLength) == marker
+			found = separator + markerLength
+			nextSeparator = index + 1
+			break
 	if found < 0
 		return ""
-	let tail = SubString(document, found, StringLength(document))
 	// Trade's supported encoding uses semicolons inside kind:id store IDs.
 	// A domain boundary is ;key=, not an arbitrary semicolon in its value.
-	var separator = tail.indexOf(";")
-	while separator >= 0
-		var cursor = separator + 1
-		while cursor < StringLength(tail) and cursor <= separator + 32
-			let character = SubString(tail, cursor, cursor + 1)
-			if character == "="
-				return SubString(tail, 0, separator)
-			if character == ";" or character == "," or character == ":" or character == "|" or character == "~"
-				break
-			cursor++
-		let following = SubString(tail, separator + 1, StringLength(tail)).indexOf(";")
-		if following < 0
-			return tail
-		separator += following + 1
-	return tail
+	for index = nextSeparator to authoritySeparatorCount - 1
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if separator >= found
+			var cursor = separator + 1
+			while cursor < documentLength and cursor <= separator + 32
+				let character = SubString(document, cursor, cursor + 1)
+				if character == "="
+					return SubString(document, found, separator)
+				if character == ";" or character == "," or character == ":" or character == "|" or character == "~"
+					break
+				cursor++
+	return SubString(document, found, documentLength)
 
 function playerAuthorityValue(string document, string key) returns string
 	let players = lastAuthorityValue(document, "players")
@@ -763,9 +796,7 @@ public function campaignSaveEnvelope(int schema, string slotId, int slotKind, in
 	return "integrity=" + runtimeChecksum(body).toString() + "|" + body
 
 function validCampaignAutosave(string document) returns boolean
-	let marker = ";autosave="
-	let first = document.indexOf(marker)
-	return first >= 0 and SubString(document, first + StringLength(marker), StringLength(document)).indexOf(marker) < 0 and validAutosaveMetadata(lastAuthorityValue(document, "autosave"))
+	return hasUniqueAuthorityValue(document, "autosave") and validAutosaveMetadata(lastAuthorityValue(document, "autosave"))
 
 /** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
 public class PlayableCampaignCodec implements CampaignSaveCodec
@@ -779,16 +810,12 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		this.clock = clock
 		initialClock = clock.initialState()
 	function validateClock(string document) returns boolean
-		let marker = ";clock="
-		let first = document.indexOf(marker)
-		if first < 0 or SubString(document, first + StringLength(marker), StringLength(document)).indexOf(marker) >= 0 or not clock.validateState(lastAuthorityValue(document, "clock"))
+		if not hasUniqueAuthorityValue(document, "clock") or not clock.validateState(lastAuthorityValue(document, "clock"))
 			lastDiagnostic = "save has missing, duplicate or invalid campaign clock authority"
 			return false
 		return true
 	function validateLocations(string document) returns boolean
-		let marker = ";partyLocations="
-		let first = document.indexOf(marker)
-		if first < 0 or SubString(document, first + StringLength(marker), StringLength(document)).indexOf(marker) >= 0
+		if not hasUniqueAuthorityValue(document, "partyLocations")
 			lastDiagnostic = "save has missing or duplicate party location authority"
 			return false
 		let value = lastAuthorityValue(document, "partyLocations")
@@ -1032,7 +1059,7 @@ public class PhysicalBoundaryRegistry
 	function entered()
 		if transitioning
 			return
-		let entering = GetEnteringUnit()
+		let entering = compatEnteringUnit()
 		if entering == null or GetOwningPlayer(entering) != Player(0)
 			return
 		let fired = GetTriggeringTrigger()
