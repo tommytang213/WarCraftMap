@@ -5,34 +5,35 @@ import CommandRouter
 class FakeRuntime implements GodModeRuntime
 	int array[16] owners
 	boolean array[16] invulnerable
-	int array[16] current
-	int size
+	boolean array[16] present
 	int writes
 	function add(int entity, int owner, boolean initiallyInvulnerable)
+		present[entity] = true
 		owners[entity] = owner
 		invulnerable[entity] = initiallyInvulnerable
-	function select(int a, int b, int c)
-		current[0] = a
-		current[1] = b
-		current[2] = c
-		size = 3
-	override function refresh(int playerIndex)
-		size = 0
-		for entity = 1 to 12
-			if owners[entity] == playerIndex
-				current[size] = entity
-				size++
-	override function entityCount() returns int
-		return size
-	override function entityAt(int index) returns int
-		return current[index]
+		unrelated[entity] = initiallyInvulnerable
+	boolean array[16] protection
+	boolean array[16] unrelated
+	int cursor
+	override function refresh()
+		cursor = 0
+	override function nextEntity() returns int
+		cursor++
+		while cursor <= 12
+			if present[cursor]
+				return cursor
+			cursor++
+		return 0
 	override function ownerOf(int entity) returns int
 		return owners[entity]
-	override function isInvulnerable(int entity) returns boolean
-		return invulnerable[entity]
-	override function setInvulnerable(int entity, boolean value)
-		invulnerable[entity] = value
-		writes++
+	override function ownsProtection(int entity) returns boolean
+		return protection[entity]
+	override function setProtection(int entity, boolean value)
+		protection[entity] = value
+		let wanted = value or unrelated[entity]
+		if invulnerable[entity] != wanted
+			invulnerable[entity] = wanted
+			writes++
 
 class Output implements CommandOutput
 	string last
@@ -65,7 +66,7 @@ class Output implements CommandOutput
 	runtime.add(2, 0, false)
 	let controller = new PlayerGodModeController(runtime)
 	controller.setEnabled(0, true)
-	controller.ownsProtection(1).assertFalse()
+	controller.ownsProtection(1).assertTrue()
 	controller.ownsProtection(2).assertTrue()
 	runtime.add(3, 0, false)
 	controller.entityBecameControlled(3)

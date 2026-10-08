@@ -39,6 +39,8 @@ WRAPPED_NATIVES = (
     "BlzFrameSetVisible", "BlzFrameSetEnable", "IsTerrainPathable",
     "SetUnitPosition", "SetUnitX", "SetUnitY", "BlzGetUnitMaxHP",
     "BlzSetUnitMaxHP", "BlzGetUnitCollisionSize",
+    "SetUnitInvulnerable", "BlzIsUnitInvulnerable", "GetEnteringUnit",
+    "GetSummonedUnit", "GetTrainedUnit", "GetConstructedStructure",
 )
 
 

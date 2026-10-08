@@ -1,4 +1,5 @@
 package MilitarySettlementRuntime
+import RuntimeProtection
 
 import WC3Compatibility
 import CommandRouter
@@ -267,7 +268,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	override function protectRepresentation(string stableId, boolean shouldProtect)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			compatSetUnitInvulnerable(handles[found], shouldProtect)
+			compatSetUnitProtection(handles[found], PROTECTION_CAPTURE, shouldProtect)
 	override function showManagement(player viewer, string heading, string body)
 		DisplayTimedTextToPlayer(viewer, 0., 0., 60., heading + "\n" + body + "\nUse /management-close to resume the campaign.")
 
