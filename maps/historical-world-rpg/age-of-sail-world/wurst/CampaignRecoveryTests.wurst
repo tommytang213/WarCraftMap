@@ -35,9 +35,12 @@ function sameMapSlots(int first, int last)
 	f.start("ethiopian_empire")
 	let commands = recoveryCommands(f)
 	registerCampaignSaveCommands(commands, f.campaign)
-	let wanted = f.campaign.state.captureAuthoritativeState()
 	for slot = first to last
 		f.campaign.saves.save(SAVE_SLOT_AUTOSAVE, slot, "saved").assertTrue()
+		// Autosaves persist their post-commit rotation; compare recovery with
+		// that committed state, including the slot following wraparound.
+		f.campaign.autosaves.nextSlotIndex().assertEquals(slot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1)
+		let wanted = f.campaign.state.captureAuthoritativeState()
 		let bytes = storageBytes(f.saves)
 		f.campaign.identity.changeAllegiance("portugal").assertTrue()
 		commands.dispatch(null, "/load autosave " + slot.toString()).assertTrue()

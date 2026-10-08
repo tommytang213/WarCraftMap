@@ -1,6 +1,7 @@
 """Deterministic rolling autosave scheduling for campaign runtimes."""
 from __future__ import annotations
 from dataclasses import dataclass
+from math import isfinite
 from typing import Any, Mapping
 from campaign_save import AUTOSAVE_SLOT_COUNT, CampaignSaveManager, SaveError, SaveSlot
 
@@ -15,7 +16,7 @@ class AutosaveAttempt:
 class RollingAutosaveScheduler:
     """Schedule fifteen rolling slots without owning clocks or Warcraft objects."""
     def __init__(self, manager: CampaignSaveManager, interval: float, *, now: float = 0) -> None:
-        if isinstance(interval, bool) or not isinstance(interval, (int, float)) or interval <= 0:
+        if isinstance(interval, bool) or not isinstance(interval, (int, float)) or not isfinite(interval) or interval <= 0:
             raise ValueError("autosave interval must be positive")
         self.manager = manager
         self.interval = float(interval)
@@ -71,6 +72,8 @@ class RollingAutosaveScheduler:
         remaining = self.interval
         if metadata is not None:
             version = metadata.get("version", 0)
+            if isinstance(version, bool) or not isinstance(version, int):
+                raise ValueError("invalid autosave scheduler metadata version")
             if version == 0:
                 last = metadata.get("lastCompletedSlot", 0)
                 if isinstance(last, bool) or not isinstance(last, int) or not 0 <= last <= AUTOSAVE_SLOT_COUNT:
@@ -83,7 +86,7 @@ class RollingAutosaveScheduler:
             else:
                 raise ValueError(f"unsupported autosave scheduler metadata version {version}")
             remaining = metadata.get("secondsUntilDue", self.interval)
-            if isinstance(remaining, bool) or not isinstance(remaining, (int, float)) or remaining < 0:
+            if isinstance(remaining, bool) or not isinstance(remaining, (int, float)) or not isfinite(remaining) or remaining < 0:
                 raise ValueError("invalid autosave remaining-time metadata")
         self.next_slot = next_slot
         self.next_due = float(now) + float(remaining)

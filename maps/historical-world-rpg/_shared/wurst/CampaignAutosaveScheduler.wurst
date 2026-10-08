@@ -1,9 +1,64 @@
 package CampaignAutosaveScheduler
 import CampaignSaveManager
+import CampaignTimeline
+import ManagementScreenPauseController
 
 public constant int AUTOSAVE_SCHEDULER_METADATA_VERSION = 1
 
-public class CampaignAutosaveScheduler
+/** Elapsed seconds since start, excluding time for which this timer is stopped. */
+public interface CampaignAutosaveTimerAdapter
+	function start(CampaignAutosaveScheduler scheduler, real delay, int generation)
+	function elapsed() returns real
+	function stop()
+
+function metadataField(string record, int index) returns string
+	var tail = record
+	for i = 0 to index - 1
+		let cut = tail.indexOf("|")
+		if cut < 0
+			return ""
+		tail = SubString(tail, cut + 1, StringLength(tail))
+	let finish = tail.indexOf("|")
+	if finish >= 0
+		return SubString(tail, 0, finish)
+	return tail
+
+public function validAutosaveMetadata(int metadataVersion, int slot, real remaining) returns boolean
+	return (metadataVersion == 0 or metadataVersion == AUTOSAVE_SCHEDULER_METADATA_VERSION) and slot >= metadataVersion and slot <= CAMPAIGN_AUTOSAVE_SLOT_COUNT and remaining >= 0. and remaining - remaining == 0.
+
+public function autosaveMetadataRemaining(string record) returns real
+	let encoded = metadataField(record, 2)
+	let colon = encoded.indexOf(":")
+	if colon >= 0
+		// The real codec accepts signed exponents -1074..1023. Bound their
+		// decimal text before its native integer conversion can overflow.
+		var magnitude = SubString(encoded, 0, colon)
+		if magnitude.startsWith("-")
+			magnitude = SubString(magnitude, 1, StringLength(magnitude))
+		if StringLength(magnitude) > 4 or campaignSlotNumber(magnitude).toString() != magnitude
+			return -1.
+	return readClockReal(encoded)
+
+public function autosaveMetadataSlot(string record) returns int
+	let slot = campaignSlotNumber(metadataField(record, 1))
+	if metadataField(record, 0) == "0"
+		return slot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1
+	return slot
+
+public function validAutosaveMetadata(string record) returns boolean
+	let metadataVersion = metadataField(record, 0)
+	let slot = metadataField(record, 1)
+	let slotValue = campaignSlotNumber(slot)
+	let remaining = autosaveMetadataRemaining(record)
+	if (metadataVersion != "0" and metadataVersion != "1") or slotValue.toString() != slot or not validAutosaveMetadata(S2I(metadataVersion), slotValue, remaining)
+		return false
+	return record == metadataVersion + "|" + slot + "|" + clockReal(remaining)
+
+public function autosaveMetadata(int nextSlot, real remaining) returns string
+	return "1|" + nextSlot.toString() + "|" + clockReal(remaining)
+
+/** Owns authority independently of its transient one-shot wake timer. */
+public class CampaignAutosaveScheduler implements CampaignSaveObserver, CampaignPauseListener
 	CampaignSaveManager manager
 	real interval
 	real remaining
@@ -13,17 +68,25 @@ public class CampaignAutosaveScheduler
 	boolean configurationValid = false
 	string intendedCreatedAt = ""
 	string lastDiagnostic = ""
+	int writingSlot = 0
+	CampaignAutosaveTimerAdapter timerAdapter = null
+	int timerGeneration = 0
+	real sampledElapsed = 0.
+	boolean timerRunning = false
+	boolean paused = false
+	ManagementScreenPauseController managementPause = null
 
 	construct(CampaignSaveManager saveManager, real configuredInterval)
 		manager = saveManager
-		if configuredInterval <= 0.
+		if not (configuredInterval > 0.) or configuredInterval - configuredInterval != 0.
 			interval = 1.
 			remaining = 1.
-			lastDiagnostic = "autosave interval must be positive"
+			lastDiagnostic = "autosave interval must be positive and finite"
 		else
 			interval = configuredInterval
 			remaining = configuredInterval
 			configurationValid = true
+		manager.setSaveObserver(this)
 
 	function isConfigurationValid() returns boolean
 		return configurationValid
@@ -32,28 +95,44 @@ public class CampaignAutosaveScheduler
 		return nextSlot
 
 	function secondsUntilDue() returns real
+		sampleElapsed()
 		return remaining
 
 	function diagnostic() returns string
 		return lastDiagnostic
 
+	/** Sampling never requests a save, including when already overdue. */
+	function sampleElapsed()
+		if timerAdapter != null and timerRunning and not paused and not manager.loading
+			let elapsed = timerAdapter.elapsed()
+			if elapsed >= sampledElapsed and elapsed - elapsed == 0.
+				consumeElapsed(elapsed - sampledElapsed)
+				sampledElapsed = elapsed
+
+	function consumeElapsed(real elapsed)
+		remaining -= elapsed
+		if remaining < 0.
+			remaining = 0.
+
 	function advance(real elapsed, string createdAt) returns boolean
-		if not configurationValid
-			lastDiagnostic = "autosave interval must be positive"
+		if not configurationValid or not (elapsed >= 0.) or elapsed - elapsed != 0.
+			lastDiagnostic = "autosave elapsed time must be non-negative and finite"
 			return false
-		if elapsed < 0.
-			lastDiagnostic = "autosave clock cannot move backwards"
+		if manager.loading or paused
 			return false
-		remaining = remaining - elapsed
+		consumeElapsed(elapsed)
 		if remaining > 0. and not pendingRequest and intendedCreatedAt == ""
 			return false
 		return request(createdAt)
 
 	function request(string createdAt) returns boolean
-		if saveInProgress
+		if not configurationValid or manager.loading or paused
+			return false
+		if saveInProgress or manager.saving
 			pendingRequest = true
 			lastDiagnostic = "autosave request coalesced while save is in progress"
 			return false
+		sampleElapsed()
 		saveInProgress = true
 		if intendedCreatedAt == ""
 			intendedCreatedAt = createdAt
@@ -61,35 +140,131 @@ public class CampaignAutosaveScheduler
 		saveInProgress = false
 		if not succeeded
 			lastDiagnostic = manager.diagnostic()
-			return false
-		nextSlot++
-		if nextSlot > CAMPAIGN_AUTOSAVE_SLOT_COUNT
-			nextSlot = 1
-		remaining = interval
-		pendingRequest = false
-		intendedCreatedAt = ""
-		lastDiagnostic = ""
-		return true
+		return succeeded
+
+	/** The bytes describe the state AFTER this autosave commits, without
+	 * advancing live authority before the transactional write succeeds. */
+	override function beforeCampaignSave(int kind, int index)
+		sampleElapsed()
+		if kind == SAVE_SLOT_AUTOSAVE
+			writingSlot = index
+	override function afterCampaignSave(boolean committed)
+		let completedSlot = writingSlot
+		writingSlot = 0
+		if committed and completedSlot != 0
+			nextSlot = completedSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1
+			remaining = interval
+			pendingRequest = false
+			intendedCreatedAt = ""
+			lastDiagnostic = ""
+			armTimer(remaining)
+
+	function captureState() returns string
+		if writingSlot != 0
+			return autosaveMetadata(writingSlot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1, interval)
+		return autosaveMetadata(nextSlot, secondsUntilDue())
 
 	function restore(int metadataVersion, int slotValue, real savedRemaining) returns boolean
-		var restoredSlot = slotValue
-		if metadataVersion == 0
-			if slotValue < 0 or slotValue > CAMPAIGN_AUTOSAVE_SLOT_COUNT
-				lastDiagnostic = "invalid migrated autosave slot metadata"
-				return false
-			restoredSlot = slotValue + 1
-			if restoredSlot > CAMPAIGN_AUTOSAVE_SLOT_COUNT
-				restoredSlot = 1
-		else if metadataVersion != AUTOSAVE_SCHEDULER_METADATA_VERSION
-			lastDiagnostic = "unsupported autosave scheduler metadata version"
-			return false
-		if restoredSlot < 1 or restoredSlot > CAMPAIGN_AUTOSAVE_SLOT_COUNT or savedRemaining < 0.
+		if not configurationValid or not validAutosaveMetadata(metadataVersion, slotValue, savedRemaining)
 			lastDiagnostic = "invalid autosave scheduler metadata"
 			return false
+		var restoredSlot = slotValue
+		if metadataVersion == 0
+			restoredSlot = slotValue mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1
 		nextSlot = restoredSlot
 		remaining = savedRemaining
 		saveInProgress = false
 		pendingRequest = false
 		intendedCreatedAt = ""
+		writingSlot = 0
 		lastDiagnostic = ""
 		return true
+
+	/** Only the committed load calls this. Rejection/abort leaves the old
+	 * scheduler, intended request, elapsed sample and timer untouched. */
+	function restoreState(string record) returns boolean
+		if not validAutosaveMetadata(record)
+			lastDiagnostic = "invalid autosave scheduler metadata"
+			return false
+		if not restore(1, autosaveMetadataSlot(record), autosaveMetadataRemaining(record))
+			return false
+		manager.cancelDeferredAutosave()
+		armTimer(remaining)
+		return true
+
+	function bindManagementPause(ManagementScreenPauseController pauses)
+		if managementPause != null
+			managementPause.unsubscribe(this)
+		managementPause = pauses
+		if pauses != null
+			pauses.subscribe(this)
+			onCampaignPause(pauses.isCampaignPaused())
+	override function onCampaignPause(boolean value)
+		if paused == value
+			return
+		sampleElapsed()
+		paused = value
+		armTimer(remaining)
+
+	function attachTimer(CampaignAutosaveTimerAdapter adapter)
+		detachTimer()
+		timerAdapter = adapter
+		armTimer(remaining)
+	function armTimer(real delay)
+		if timerAdapter != null
+			timerAdapter.stop()
+			timerGeneration++
+			sampledElapsed = 0.
+			timerRunning = not paused and configurationValid
+			if timerRunning
+				timerAdapter.start(this, delay, timerGeneration)
+	function detachTimer()
+		sampleElapsed()
+		if timerAdapter != null
+			timerAdapter.stop()
+		timerAdapter = null
+		timerRunning = false
+		timerGeneration++
+	function timerWake(CampaignAutosaveTimerAdapter source, int generation, string createdAt)
+		if source != timerAdapter or generation != timerGeneration or not timerRunning or paused or manager.loading or manager.saving
+			return
+		sampleElapsed()
+		if not advance(0., createdAt)
+			// An unsafe or failed write remains due. A bounded retry avoids a
+			// zero-delay spin without resetting the authoritative interval.
+			if remaining == 0. or intendedCreatedAt != "" or pendingRequest
+				armTimer(1.)
+			else
+				armTimer(remaining)
+
+WarcraftAutosaveTimerAdapter activeAutosaveTimer = null
+
+function campaignAutosaveWake()
+	if activeAutosaveTimer != null and GetExpiredTimer() == activeAutosaveTimer.wakeTimer
+		let adapter = activeAutosaveTimer
+		adapter.scheduler.timerWake(adapter, adapter.generation, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+
+public class WarcraftAutosaveTimerAdapter implements CampaignAutosaveTimerAdapter
+	timer wakeTimer = null
+	CampaignAutosaveScheduler scheduler = null
+	int generation = 0
+	override function start(CampaignAutosaveScheduler scheduler, real delay, int generation)
+		stop()
+		if activeAutosaveTimer != null
+			activeAutosaveTimer.stop()
+		activeAutosaveTimer = this
+		this.scheduler = scheduler
+		this.generation = generation
+		wakeTimer = CreateTimer()
+		TimerStart(wakeTimer, delay, false, function campaignAutosaveWake)
+	override function elapsed() returns real
+		if wakeTimer == null
+			return 0.
+		return TimerGetElapsed(wakeTimer)
+	override function stop()
+		if wakeTimer != null
+			PauseTimer(wakeTimer)
+			DestroyTimer(wakeTimer)
+			wakeTimer = null
+		if activeAutosaveTimer == this
+			activeAutosaveTimer = null

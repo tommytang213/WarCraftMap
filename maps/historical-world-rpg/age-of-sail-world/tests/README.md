@@ -70,7 +70,7 @@ python3 ../_shared/tooling/run_wurst_tests.py package.json
 
 `PlayableTradeTests.wurst` exercises store/commodity/origin FIFO provenance,
 uncosted cargo, split transfers and sales, integer rounding, transaction rejection
-and replay, and the production trade serializer inside campaign envelopes 1–7.
+and replay, and the production trade serializer inside campaign envelopes 1–8.
 Literal legacy fixtures cover every supported aggregate layout.
 `TradeCommandTests.wurst` uses registered production commands and recording physical
 boundaries for two commodities, multiple stores, transfers and a two-settlement
@@ -254,7 +254,7 @@ cursors, changed generated schedules and timer reconstruction. `CampaignStartupT
 also advances the generated production clock through all slot types and independently
 constructed destination/return clocks, asserting time before party reconstruction
 and timer activation. `PlayableCampaignRuntimeTests` migrates and repeatedly resaves
-every supported live schema (1–7). These are interpreter lifecycle checks, not native
+every supported live schema (1–8). These are interpreter lifecycle checks, not native
 client launch evidence; release status remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`.
 
@@ -305,3 +305,12 @@ boundaries cover forged facts, remote or stale targets, changed loot and commiss
 terms, final-read invalidation, exhaustion, duplicate delivery and save/load with a
 pending preview. Every rejected action compares participating authority and native
 projection writes. See [PIRACY_CONFIRMATION.md](../docs/PIRACY_CONFIRMATION.md).
+
+`CampaignAutosaveLifecycleTests.wurst` drives the production service, timer callback,
+codec, transaction manager and travel API with recording native boundaries. Eighteen
+autosaves across fresh map services match uninterrupted rotation and fractional
+delays. Fixtures also cover paused manual/session/milestone saves, wraparound,
+deferred retries through the manager, storage failure, coalescing, stale callbacks,
+load rollback/abort, successful-load cleanup and metadata migration/rejection.
+No sleeps or player QA are required. The schema 8 compatibility matrix retains
+all supported historical envelopes and does not change release blocking policy.

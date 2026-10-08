@@ -27,7 +27,7 @@ class AutosaveSchedulerTests(unittest.TestCase):
         h=Harness(); s=RollingAutosaveScheduler(h.manager,7.5,now=2)
         self.assertIsNone(s.tick(9.49,"early")); self.assertEqual("saved",s.tick(9.5,"due").status)
         self.assertEqual(17.0,s.next_due)
-        for invalid in (0,-1,True):
+        for invalid in (0,-1,True,float("nan"),float("inf"),float("-inf")):
             with self.assertRaisesRegex(ValueError,"positive"): RollingAutosaveScheduler(h.manager,invalid)
 
     def test_unsafe_deferral_retries_intended_slot(self):
@@ -69,5 +69,18 @@ class AutosaveSchedulerTests(unittest.TestCase):
         self.assertEqual((1,53),(restored.next_slot,restored.next_due))
         restored.resume_after_load(None,now=70)
         self.assertEqual((1,90),(restored.next_slot,restored.next_due))
+
+    def test_invalid_metadata_rejects_before_rotation_or_delay_mutation(self):
+        h=Harness(); scheduler=RollingAutosaveScheduler(h.manager,20)
+        scheduler.resume_after_load({"version":1,"nextSlotIndex":15,"secondsUntilDue":.125},now=10)
+        before=scheduler.metadata(10)
+        for changes in ({"secondsUntilDue":float("nan")}, {"secondsUntilDue":float("inf")},
+                        {"secondsUntilDue":float("-inf")}, {"secondsUntilDue":-1},
+                        {"secondsUntilDue":True}, {"nextSlotIndex":0}, {"nextSlotIndex":16},
+                        {"nextSlotIndex":True}, {"version":True}, {"version":2}):
+            with self.subTest(changes=changes):
+                candidate={**before,**changes}
+                with self.assertRaises(ValueError): scheduler.resume_after_load(candidate,now=10)
+                self.assertEqual(before,scheduler.metadata(10))
 
 if __name__=="__main__": unittest.main()

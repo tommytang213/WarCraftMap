@@ -17,6 +17,7 @@ import PlayablePiracy
 import ScenarioData
 import PartyLocations
 import CampaignAutosaveScheduler
+import CampaignAutosaveLifecycleTests
 import ManagementCommandTests
 import ManagementScreenPauseController
 
@@ -857,7 +858,7 @@ function transferSchemasResolveExistingBoundaryPosition(int firstSchema, int las
 @test function legacyTransferSchemasThreeAndFourResolveGeneratedBoundary()
 	transferSchemasResolveExistingBoundaryPosition(3, 4)
 
-@test function transferSchemasFiveThroughSevenResolveGeneratedBoundary()
+@test function transferSchemasFiveThroughEightResolveGeneratedBoundary()
 	transferSchemasResolveExistingBoundaryPosition(5, CAMPAIGN_SAVE_SCHEMA_CURRENT)
 
 /** Move through the recording native boundary, then let production capture read
@@ -1149,3 +1150,32 @@ function coordinateLessSaveSchemasUseDeterministicFallback(int firstSchema, int 
 		destination.saves.read("manual_02").assertEquals(invalid)
 		destination.saves.writes.assertEquals(writes)
 	destroy travelers
+
+@test function productionAutosaveDelayAndRotationSurviveGeneratedDestinationStartup()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	let sourceWake = new RecordingAutosaveTimer()
+	source.campaign.enableAutosaveTimer(sourceWake, null).assertFalse()
+	sourceWake.starts.assertEquals(0)
+	source.start("ethiopian_empire")
+	source.campaign.enableAutosaveTimer(sourceWake, null).assertTrue()
+	sourceWake.fire("first")
+	sourceWake.elapse(127.125)
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "travel").assertTrue()
+	source.campaign.autosaves.detachTimer()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	let destinationWake = new RecordingAutosaveTimer()
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.autosaves.nextSlotIndex().assertEquals(2)
+	destination.campaign.autosaves.secondsUntilDue().assertEquals(172.875)
+	destination.campaign.enableAutosaveTimer(destinationWake, null).assertTrue()
+	destinationWake.starts.assertEquals(1)
+	destinationWake.delay.assertEquals(172.875)
+	destinationWake.fire("second")
+	destination.campaign.autosaves.nextSlotIndex().assertEquals(3)
+	let payload = destination.saves.read("autosave_02")
+	destination.campaign.saves.load(SAVE_SLOT_AUTOSAVE, 2).assertTrue()
+	destination.campaign.autosaves.nextSlotIndex().assertEquals(3)
+	destinationWake.delay.assertEquals(300.)
+	destination.saves.read("autosave_02").assertEquals(payload)
+	destination.campaign.autosaves.detachTimer()

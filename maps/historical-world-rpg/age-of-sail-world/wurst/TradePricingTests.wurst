@@ -211,7 +211,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 		let saved=original.capture()
 		let clock=new CampaignClock(1,100,1,1.)
 		let codec=new PlayableCampaignCodec(clock)
-		let authority="v2;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:test,allegiance:test,settlement:port;quests=;discovery=port;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
+		let authority="v2;autosave=1|1|8:1001011;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:test,allegiance:test,settlement:port;quests=;discovery=port;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
 		let payload=campaignSaveEnvelope(schema,"manual_01",SAVE_SLOT_MANUAL,1,"pricing",authority)
 		let restored=pricingRuntime(100,100,10,1,80)
 		let decoded=codec.decodeMigrateAndValidate(payload,"manual_01")

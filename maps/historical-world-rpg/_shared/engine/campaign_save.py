@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 7
+CURRENT_SCHEMA_VERSION = 8
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -104,6 +104,7 @@ class MigrationRegistry:
             self.register(4, _migrate_v4_to_v5)
             self.register(5, _migrate_v5_to_v6)
             self.register(6, _migrate_v6_to_v7)
+            self.register(7, _migrate_v7_to_v8)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -226,6 +227,16 @@ def _migrate_v6_to_v7(document: dict[str, Any]) -> dict[str, Any]:
     only the live codec knows how to resolve omitted coordinates from anchors.
     """
     document["schemaVersion"] = 7
+    return document
+
+
+def _migrate_v7_to_v8(document: dict[str, Any]) -> dict[str, Any]:
+    """Align live autosave persistence, preserving headless metadata verbatim.
+
+    Missing metadata uses the scheduler's configured interval on reconstruction;
+    the generic envelope must not invent a scenario-specific timer duration.
+    """
+    document["schemaVersion"] = 8
     return document
 
 

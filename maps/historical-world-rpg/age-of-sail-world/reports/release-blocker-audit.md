@@ -79,7 +79,7 @@ Static readiness, executed production integration, built-artifact inspection and
 
 - 31 tracked validation reports
 - 8 hashed release inputs
-- 7 supported release-save schemas migrated and authority-checked
+- 8 supported release-save schemas migrated and authority-checked
 - 2 deterministic 1450–1820 soak runs
 - Journey rows execute campaign-save round trips and migration; their route/system coverage is declared metadata.
 - Native Warcraft save/load, physical-map launches and real-client journeys are not executed by this audit.

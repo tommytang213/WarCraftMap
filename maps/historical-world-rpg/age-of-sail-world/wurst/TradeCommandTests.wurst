@@ -136,7 +136,7 @@ class TradeCommandFixture
 		return trade.findStore("cargo:english_patrol_ship")
 
 function tradeCommandDocument(string saved,CampaignClock clock) returns string
-	return "v2;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:portugal,allegiance:portugal,settlement:lisbon;quests=;discovery=lisbon;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
+	return "v2;autosave=1|1|8:1001011;partyLocations=v1;map=europe_west;region=europe;world=instance:west;players=origin:portugal,allegiance:portugal,settlement:lisbon;quests=;discovery=lisbon;orders=;trade="+saved+";diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1;clock="+clock.captureState()
 
 @test function registeredTradeCommandsCompleteTwoCommodityTwoSettlementCargoJourney()
 	let f=new TradeCommandFixture()
