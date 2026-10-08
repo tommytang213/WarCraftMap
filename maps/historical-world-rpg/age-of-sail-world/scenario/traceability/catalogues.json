@@ -1,24 +1,42 @@
 [
   {
-    "compare": "records",
+    "compare": "ids",
     "compiledIdPatterns": [
       "\\bSettlementRuntimeState_new_SettlementRuntimeState\\w*\\(\\s*{id}(?:\\s*,|\\s*\\))",
       "\\bSettlementRuntimeState_id_storage\\w*\\[[^\\]\\n]+\\]\\s*=\\s*{id}\\s*$"
     ],
     "id": "settlements",
-    "partition": {
-      "mapField": "regionalInstanceIds",
-      "sourceField": "regionalInstanceId"
-    },
     "runtime": {
-      "selector": "settlementDefinitions"
+      "representation": "compiled-identities"
     },
     "sources": [
       {
         "path": "scenario/world/world.json",
         "selector": "settlements"
       }
-    ]
+    ],
+    "projectionPolicy": {
+      "source": {
+        "path": "scenario/integration/release-scale-settlements.json",
+        "selector": "settlements",
+        "idKey": "settlementId"
+      },
+      "fields": {
+        "projectMilitary": {
+          "sourceField": "physicalRepresentationKinds",
+          "contains": "city_core"
+        },
+        "capturable": {
+          "sourceField": "captureModel",
+          "equals": "city_core"
+        },
+        "governanceExceptionId": {
+          "sourceField": "governanceExceptionId",
+          "default": ""
+        }
+      },
+      "compiledPattern": "\\b[\\w.]*configureSettlementPolicy[\\w]*\\([^,\\n]+,\\s*(?P<id>\"(?:\\\\.|[^\"\\\\])+\"),\\s*(?P<projectMilitary>true|false),\\s*(?P<capturable>true|false),\\s*(?P<governanceExceptionId>\"(?:\\\\.|[^\"\\\\])*\")(?:,\\s*\"(?:\\\\.|[^\"\\\\])*\")?\\s*\\)"
+    }
   },
   {
     "compare": "records",

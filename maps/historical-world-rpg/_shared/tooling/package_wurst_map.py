@@ -9,7 +9,7 @@ from scenario_inputs import catalogue_paths, configuration, content_path, settle
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 19
+GENERATOR_VERSION = 20
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -61,48 +61,58 @@ def _fail(stage: str, message: object) -> PackagingError: return PackagingError(
 def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
 
 def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict]:
-    """Join world identity/control to authoritative regional physical placement."""
+    """Every world settlement owns authority, independently of its projection.
+
+    Regional catalogues refine physical placement. Integration profiles also
+    cover communities without a permanent regional placement record.
+    """
     world_by_id = {row["id"]: row for row in world.get("settlements", [])}
     integration_path = config.project / "scenario/integration/release-scale-settlements.json"
     integration = json.loads(integration_path.read_text(encoding="utf-8")) if integration_path.is_file() else {"settlements": []}
     integration_by_id = {row["settlementId"]: row for row in integration.get("settlements", [])}
-    playable_ids = {row["settlementId"] for row in integration.get("settlements", [])
-        if row.get("gameplayRoles", {}).get("physicalMap", {}).get("modelId") != "abstract_regional_projection"}
-    if not integration_by_id:
-        playable_ids = set(world_by_id)
-    result = []
-    for path, geography_path, _region in settlement_sources(config.project):
+    authored_by_id = {}
+    for path, geography_path, region in settlement_sources(config.project):
         source = json.loads(path.read_text(encoding="utf-8"))
         geography = json.loads(geography_path.read_text(encoding="utf-8"))
         instances = {row["id"]: row for row in geography.get("instances", [])}
         for authored in source.get("settlements", []):
-            authoritative = world_by_id.get(authored["id"])
-            if authoritative is None or authored["id"] not in playable_ids:
-                continue
-            position = authored.get("position") or authored.get("localPosition")
-            if isinstance(position, dict): position = [position["x"], position["y"]]
-            if position is None:
-                transform = instances.get(authored["regionalInstanceId"], {}).get("transform", {})
-                origin, scale = transform.get("sourceOrigin"), transform.get("scale")
-                source_position, offset = authored.get("sourcePosition"), transform.get("offset", [0, 0])
-                if not source_position or not origin or not scale:
-                    raise PackagingError(f"generation: settlement {authored['id']} has no resolvable position")
-                position = [(source_position[i] - origin[i]) * scale[i] + offset[i] for i in range(2)]
-            defense = authored.get("defenseClass", authoritative.get("kind", "town"))
-            strength = {"capital": 40, "fortified": 32, "fort": 32, "port": 24}.get(defense, 20)
-            result.append({"id": authored["id"], "controllerId": authoritative["controllerPolityId"],
-                "legalOwnerId": authoritative["legalOwnerPolityId"],
-                "regionId": authored.get("physicalMapId", authored["regionalInstanceId"]),
-                "x": round(float(position[0]) * 128.0, 3), "y": round(float(position[1]) * 128.0, 3),
-                "strength": strength, "reserves": strength * 2, "manpower": strength * 4, "supply": strength * 3,
-                "official": integration_by_id.get(authored["id"], {}).get("official", {
-                    "characterId": "official_" + authored["id"], "displayName": "Local Council"})})
-    missing = playable_ids - {row["id"] for row in result}
-    if missing:
-        raise PackagingError("generation: playable settlements lack runtime placement: " + ", ".join(sorted(missing)[:10]))
-    if world_by_id and not result:
-        raise PackagingError("generation: scenario contains settlements but generated Wurst would register zero settlements")
-    return sorted(result, key=lambda row: row["id"])
+            if authored["id"] in authored_by_id or authored["id"] not in world_by_id:
+                raise PackagingError(f"generation: duplicate or unknown settlement {authored['id']}")
+            authored_by_id[authored["id"]] = (authored, instances, region)
+    result = []
+    for ident, authoritative in sorted(world_by_id.items()):
+        profile = integration_by_id.get(ident, {})
+        authored, instances, region = authored_by_id.get(ident, ({}, {}, profile.get("regionId", "")))
+        if not authored and not profile:
+            raise PackagingError(f"generation: settlement {ident} lacks an authority profile")
+        position = authored.get("position") or authored.get("localPosition")
+        if isinstance(position, dict): position = [position["x"], position["y"]]
+        if position is None and authored:
+            transform = instances.get(authored["regionalInstanceId"], {}).get("transform", {})
+            origin, scale = transform.get("sourceOrigin"), transform.get("scale")
+            source_position, offset = authored.get("sourcePosition"), transform.get("offset", [0, 0])
+            if not source_position or not origin or not scale:
+                raise PackagingError(f"generation: settlement {ident} has no resolvable position")
+            position = [(source_position[i] - origin[i]) * scale[i] + offset[i] for i in range(2)]
+        # Missing physical coordinates are resolved from the same compressed
+        # interaction placement used by services, never invented world truth.
+        defense = authored.get("defenseClass", authoritative.get("kind", "town"))
+        strength = {"capital": 40, "fortified": 32, "fort": 32, "port": 24}.get(defense, 20)
+        capturable = profile.get("captureModel", "city_core" if authoritative.get("capturable", True) else "non_capturable") == "city_core"
+        kinds = profile.get("physicalRepresentationKinds", ["city_core"] if capturable else ["community_marker"])
+        result.append({"id": ident, "controllerId": authoritative["controllerPolityId"],
+            "legalOwnerId": authoritative["legalOwnerPolityId"],
+            "regionId": authored.get("physicalMapId", authoritative["regionalInstanceId"]),
+            "x": round(float(position[0]) * 128.0, 3) if position else None,
+            "y": round(float(position[1]) * 128.0, 3) if position else None,
+            "capturable": capturable, "projectMilitary": capturable and "city_core" in kinds,
+            "governanceExceptionId": profile.get("governanceExceptionId") or "",
+            "presentationModelId": profile.get("gameplayRoles", {}).get("physicalMap", {}).get("modelId", authored.get("physicalMapId", "")),
+            "physicalRepresentationKinds": kinds,
+            "strength": strength, "reserves": strength * 2, "manpower": strength * 4, "supply": strength * 3,
+            "economyProfile": profile.get("economy", {}),
+            "official": profile.get("official", {"characterId": "official_" + ident, "displayName": "Local Council"})})
+    return result
 
 def _load_country_interaction_runtime_data(config: BuildConfig, world: dict) -> dict:
     """Join the campaign authorities used by the headless polity systems.
@@ -382,13 +392,58 @@ def generate(config: BuildConfig, generated: Path) -> None:
         candidate = candidates.get(resolved, {})
         rpg += [f'\tlet treasure{index}=new RuntimeTreasure("{ws(row["id"])}","{ws((row.get("anchorRegionIds") or [candidate.get("regionId", "")])[0])}","{ws(resolved)}")',
                 f'\ttreasure{index}.clueCount={len(row.get("clueIds", []))}', f'\truntime.treasures.register(treasure{index})']
-    templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
-    military_lines = ["\npublic function configureMilitarySettlementScenario(MilitarySettlementRuntime runtime)"]
+    origin_configuration = "public function configureGeneratedOrigins(OriginCatalog controller)\n\tskip\n"
+    arrival_configuration = "public function configureGeneratedArrivals(PlayableCampaignState state)\n\tskip\n"
+    from party_locations import campaign_navigation, configuration as party_navigation_configuration
+    runtime['partyNavigation'] = {}
+    from physical_interactions import interaction_configuration, interaction_locations
+    locations = []
+    physical_manifest = config.project / "physical-maps.json"
+    if physical_manifest.is_file():
+        from package_wurst_campaign import campaign_arrival_configuration, campaign_boundary_navigation, campaign_origin_configuration, campaign_origin_records, position_campaign_origins, load_campaign_config
+        campaign = load_campaign_config(physical_manifest)
+        origins = campaign_origin_records(world, campaign.maps)
+        arrivals = position_campaign_origins(config.project, generated, world, campaign.maps, origins)
+        runtime["newCampaignOrigins"] = origins
+        runtime["physicalMapArrivals"] = arrivals
+        origin_configuration = campaign_origin_configuration(origins, campaign.maps)
+        runtime['boundaryNavigation'] = campaign_boundary_navigation(campaign, generated)
+        arrival_configuration = campaign_arrival_configuration(campaign, runtime['boundaryNavigation'])
+        runtime['partyNavigation'] = campaign_navigation(campaign, generated)
+        arrival_configuration += party_navigation_configuration(runtime['partyNavigation'])
+        arrival_configuration = arrival_configuration.replace(
+            'state.boundaryConfigurationComplete = true',
+            'state.boundaryConfigurationComplete = true\n\tconfigureGeneratedPartyNavigation(state)')
+        locations = interaction_locations(config.project, generated, world, campaign.maps,
+                                          catalogues.get("treasures", {}), [path for _, path in config.regional_terrain])
+    runtime['interactionLocations'] = locations
+    points = {row["id"]: row for row in locations if row["kind"] == "settlement"}
     for row in settlement_runtime:
-        military_lines.append(f'\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}).withLegalOwner("{ws(row["legalOwnerId"])}"))')
-        military_lines.append(f'\truntime.registerForce(new RuntimeForce("defense:{ws(row["id"])}:primary", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "siege", FORCE_DEFENSE, \'hgtw\', {row["strength"]}, {row["supply"]}, {row["x"] + 192.}, {row["y"]}))')
+        if row["x"] is None:
+            if row["id"] not in points:
+                raise PackagingError(f"generation: settlement {row['id']} lacks a local interaction anchor")
+            row["regionId"] = points[row["id"]]["mapId"]
+            row["x"], row["y"] = points[row["id"]]["world"]
+    templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
+    military_lines = ["\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
+    for row in settlement_runtime:
+        policy = f'{str(row["projectMilitary"]).lower()}, {str(row["capturable"]).lower()}, "{ws(row["governanceExceptionId"])}"'
+        start = len(military_lines)
+        military_lines += [f'\tif runtime.settlementIndex("{ws(row["id"])}") < 0', '\t\tif not migrate', '\t\t\treturn false']
+        military_lines.append(f'\t\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}).withLegalOwner("{ws(row["legalOwnerId"])}").withPolicy({policy}))')
+        if row["projectMilitary"]:
+            military_lines.append(f'\t\truntime.registerForce(new RuntimeForce("defense:{ws(row["id"])}:primary", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "siege", FORCE_DEFENSE, \'hgtw\', {row["strength"]}, {row["supply"]}, {row["x"] + 192.}, {row["y"]}))')
         official = row["official"]
-        military_lines.append(f'\truntime.appoint("{ws(row["id"])}", new AdministratorState("{ws(official["characterId"])}", "{ws(official["displayName"])}", "Acting Administrator", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "{ws(row["id"])}", 50, 50, 40, 1))')
+        military_lines.append(f'\t\truntime.appoint("{ws(row["id"])}", new AdministratorState("{ws(official["characterId"])}", "{ws(official["displayName"])}", "Acting Administrator", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "{ws(row["id"])}", 50, 50, 40, 1))')
+        military_lines += [f'\tif runtime.administratorIndex("{ws(row["id"])}") < 0', '\t\treturn false']
+        military_lines.append(f'\truntime.configureSettlementPolicy("{ws(row["id"])}", {policy})')
+        military_lines[start:] = [f'\tif onlyId == "" or onlyId == "{ws(row["id"])}"'] + ['\t' + line for line in military_lines[start:]]
+    military_lines += ['\treturn true', '', 'class GeneratedSettlementDefinitions implements SettlementDefinitions',
+        '\toverride function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean',
+        '\t\treturn configureGeneratedSettlementAuthority(runtime, "", migrate)',
+        '', 'public function configureMilitarySettlementScenario(MilitarySettlementRuntime runtime)',
+        '\truntime.definitions = new GeneratedSettlementDefinitions()',
+        '\truntime.definitions.reconcile(runtime, true)']
     traditions_path = config.project / "scenario/military-traditions.json"
     if traditions_path.is_file():
         tradition_data = json.loads(traditions_path.read_text(encoding="utf-8"))
@@ -474,14 +529,15 @@ def generate(config: BuildConfig, generated: Path) -> None:
         trade_defaults = json.loads((config.project / "scenario/economy/playable-trade.json").read_text(encoding="utf-8"))["marketDefaults"]
         goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
         for settlement in settlement_runtime:
-            region, row = authored_sources[settlement["id"]]
+            region, row = authored_sources.get(settlement["id"], ("", {}))
+            profile = settlement["economyProfile"]
             economy_identity = row.get("economy", {})
-            production = economy_identity.get("production", row.get("productionRefs", []))
-            imports = economy_identity.get("imports", row.get("importRefs", []))
-            shortages = economy_identity.get("shortages", row.get("shortageRefs", []))
+            production = economy_identity.get("production", row.get("productionRefs", profile.get("productionGoodIds", [])))
+            imports = economy_identity.get("imports", row.get("importRefs", profile.get("importGoodIds", [])))
+            shortages = economy_identity.get("shortages", row.get("shortageRefs", profile.get("shortageGoodIds", [])))
             defaults = goods_catalog.get("regionalDefaults", {}).get(region, {})
-            basket = list(dict.fromkeys(production + imports + shortages + defaults.get("stapleGoodIds", [])))
-            roles, services = set(row.get("roles", [])), set(row.get("services", []))
+            basket = list(dict.fromkeys(production + imports + shortages + defaults.get("stapleGoodIds", profile.get("availableGoodIds", []))))
+            roles, services = set(row.get("roles", [])), set(row.get("services", profile.get("serviceHookIds", [])))
             if roles & {"trade_center", "trade_hub", "caravan_center"} or "warehouse" in services:
                 basket += [x for x in defaults.get("tradeGoodIds", []) if x not in basket]
             basket = basket[:int(goods_catalog.get("performanceBudgets", {}).get("maximumGoodsPerSettlement", 12))]
@@ -497,7 +553,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
                     f'{int(good["quantityUnitsPerDisplayUnit"])},{int(good.get("priceElasticityPermille", 1000))},'
                     f'{int(trade_defaults["spreadPermille"])},{int(trade_defaults["priceFloorPermille"])},'
                     f'{int(trade_defaults["priceCeilingPermille"])})')
-            capacity = 24000 if "warehouse" in services else 120 if row.get("port") else 60
+            capacity = (24000 if "warehouse" in services else 120 if row.get("port") else 60) if row else int(profile["storageCapacityUnits"])
             service = "warehouse" in services
             trade_stores.append(dict(id=f'warehouse:{settlement["id"]}', kind='warehouse', authorityId=settlement['id'], warehouseService=service))
             trade_records.append(f'\truntime.registerStore(new TradeStore("warehouse:{ws(settlement["id"])}",{capacity},1000).withAccess("warehouse","{ws(settlement["id"])}",{str(service).lower()}))')
@@ -510,6 +566,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 trade_records.append(f'\truntime.registerStore(new TradeStore("cargo:{ws(unit["id"])}",{capacity},0).withAccess("ship","{ws(unit["id"])}",false))')
     runtime["tradeStoreDefinitions"] = trade_stores
     runtime["tradeMarketCount"] = sum(1 for line in trade_records if "runtime.registerMarketProfile(" in line)
+    if runtime["tradeMarketCount"] > 16384 or len(trade_stores) > 1024:
+        raise PackagingError("generation: trade authority capacity exceeded")
+    if len(settlement_runtime) > 1024:
+        raise PackagingError("generation: settlement authority capacity exceeded")
     if settlement_runtime and runtime["tradeMarketCount"] == 0:
         raise PackagingError("generation: playable settlements would receive no authoritative trade markets")
     trade_lines = []
@@ -522,31 +582,6 @@ def generate(config: BuildConfig, generated: Path) -> None:
         trade_lines += [f"\tconfigureGeneratedTrade{i}(runtime)" for i in range((len(trade_records) + chunk_size - 1) // chunk_size)]
     else:
         trade_lines.append("\tskip")
-    origin_configuration = "public function configureGeneratedOrigins(OriginCatalog controller)\n\tskip\n"
-    arrival_configuration = "public function configureGeneratedArrivals(PlayableCampaignState state)\n\tskip\n"
-    from party_locations import campaign_navigation, configuration as party_navigation_configuration
-    runtime['partyNavigation'] = {}
-    from physical_interactions import interaction_configuration, interaction_locations
-    locations = []
-    physical_manifest = config.project / "physical-maps.json"
-    if physical_manifest.is_file():
-        from package_wurst_campaign import campaign_arrival_configuration, campaign_boundary_navigation, campaign_origin_configuration, campaign_origin_records, position_campaign_origins, load_campaign_config
-        campaign = load_campaign_config(physical_manifest)
-        origins = campaign_origin_records(world, campaign.maps)
-        arrivals = position_campaign_origins(config.project, generated, world, campaign.maps, origins)
-        runtime["newCampaignOrigins"] = origins
-        runtime["physicalMapArrivals"] = arrivals
-        origin_configuration = campaign_origin_configuration(origins, campaign.maps)
-        runtime['boundaryNavigation'] = campaign_boundary_navigation(campaign, generated)
-        arrival_configuration = campaign_arrival_configuration(campaign, runtime['boundaryNavigation'])
-        runtime['partyNavigation'] = campaign_navigation(campaign, generated)
-        arrival_configuration += party_navigation_configuration(runtime['partyNavigation'])
-        arrival_configuration = arrival_configuration.replace(
-            'state.boundaryConfigurationComplete = true',
-            'state.boundaryConfigurationComplete = true\n\tconfigureGeneratedPartyNavigation(state)')
-        locations = interaction_locations(config.project, generated, world, campaign.maps,
-                                          treasure_data, [path for _, path in config.regional_terrain])
-    runtime['interactionLocations'] = locations
     wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport MilitarySettlementRuntime\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
     wurst = wurst.replace('import UnstuckRecovery\n', 'import UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\n', 'import WarcraftRpgRuntime\nimport PhysicalInteraction\n')

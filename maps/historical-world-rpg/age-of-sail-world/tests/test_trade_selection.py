@@ -33,6 +33,7 @@ class TradeSelectionGenerationTests(unittest.TestCase):
                          | {f'cargo:{x}' for x in vessels}, set(stores))
         authored = {row['id']: row for path in (PROJECT / 'scenario/settlements').glob('*-1450.json')
                     for row in json.loads(path.read_text()).get('settlements', [])}
+        profiles = {row['settlementId']: row for row in json.loads((PROJECT / 'scenario/integration/release-scale-settlements.json').read_text())['settlements']}
         locations = {row['id']: row for row in self.data['interactionLocations']
                      if row['kind'] == 'settlement'}
         self.assertTrue(settlements <= set(locations))
@@ -44,7 +45,7 @@ class TradeSelectionGenerationTests(unittest.TestCase):
                     self.assertIn('runtime.registerPersonalStore()', self.wurst)
                 elif row['kind'] == 'warehouse':
                     self.assertIn(row['authorityId'], locations)
-                    self.assertEqual('warehouse' in authored[row['authorityId']].get('services', []),
+                    self.assertEqual('warehouse' in authored.get(row['authorityId'], {}).get('services', profiles[row['authorityId']]['economy']['serviceHookIds']),
                                      row['warehouseService'])
                 else:
                     self.assertEqual('ship', row['kind'])

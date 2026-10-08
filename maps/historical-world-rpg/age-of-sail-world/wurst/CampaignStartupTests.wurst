@@ -94,6 +94,7 @@ public class StartupFixture
 		for i = 0 to military.conflictCount - 1
 			destroy military.conflicts[i]
 			military.conflicts[i] = null
+		military.definitions = null
 		military.settlementCount = 1
 		military.forceCount = 2
 		military.administratorCount = 1

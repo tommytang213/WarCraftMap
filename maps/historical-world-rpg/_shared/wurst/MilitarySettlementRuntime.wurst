@@ -19,7 +19,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 3
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 4
 
 /** Stable conflict identity survives settlement. Membership is immutable once
  * registered; a new war needs a new ID, even between the same governments. */
@@ -82,6 +82,11 @@ public class TraditionState
 		this.milestoneXp = milestoneXp
 		this.milestoneAbilityId = milestoneAbilityId
 
+/** Scenario definitions reconcile presentation and seed missing legacy authority.
+ * Implementations must never reset an existing mutable record. */
+public interface SettlementDefinitions
+	function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
+
 public class SettlementRuntimeState
 	string id
 	string controllerId
@@ -105,6 +110,9 @@ public class SettlementRuntimeState
 	real x
 	real y
 	boolean underAttack = false
+	boolean projectMilitary = true
+	boolean capturable = true
+	string governanceExceptionId = ""
 	construct(string id, string controllerId, string regionId, int coreTypeId, int defenderTypeId, int strength, int reserves, int manpower, int supply, real x, real y)
 		this.id = id
 		this.controllerId = controllerId
@@ -122,6 +130,12 @@ public class SettlementRuntimeState
 		quietPeriod = 20.
 		this.x = x
 		this.y = y
+
+	function withPolicy(boolean projectMilitary, boolean capturable, string governanceExceptionId) returns SettlementRuntimeState
+		this.projectMilitary = projectMilitary
+		this.capturable = capturable
+		this.governanceExceptionId = governanceExceptionId
+		return this
 
 	function withLegalOwner(string ownerId) returns SettlementRuntimeState
 		legalOwnerId = ownerId
@@ -288,6 +302,8 @@ public class MilitarySettlementRuntime
 	MilitaryConflict array[256] conflicts
 	int conflictCount = 0
 	string initialConflicts = ""
+	SettlementDefinitions definitions = null
+	boolean legacySettlements = false
 	boolean legacyConflicts = false
 	int forceCount = 0
 	int traditionCount = 0
@@ -336,7 +352,14 @@ public class MilitarySettlementRuntime
 		if state != null and state.id != "" and settlementIndex(state.id) < 0
 			settlements[settlementCount] = state
 			settlementCount++
-			registerForce(new RuntimeForce("core:" + state.id, state.controllerId, state.regionId, "siege", FORCE_CITY_CORE, state.coreTypeId, 100, state.supply, state.x, state.y))
+			if state.capturable
+				registerForce(new RuntimeForce("core:" + state.id, state.controllerId, state.regionId, "siege", FORCE_CITY_CORE, state.coreTypeId, 100, state.supply, state.x, state.y))
+	// Share one application body across the full catalogue and legacy migration.
+	@noinline
+	function configureSettlementPolicy(string id, boolean projectMilitary, boolean capturable, string governanceExceptionId)
+		let found = settlementIndex(id)
+		if found >= 0
+			settlements[found].withPolicy(projectMilitary, capturable, governanceExceptionId)
 	function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean
 		let found = forceIndex(forceId)
 		if found < 0 or orderId == "" or forces[found].kind == FORCE_GARRISON or forces[found].kind == FORCE_CITY_CORE
@@ -435,7 +458,7 @@ public class MilitarySettlementRuntime
 	function reconcileSieges()
 		for i = 0 to settlementCount - 1
 			let state = settlements[i]
-			if state.underAttack and not atWar(state.attackerId, state.controllerId)
+			if state.underAttack and (not state.capturable or not atWar(state.attackerId, state.controllerId))
 				endSettlementAttack(state)
 	function conflictSnapshot() returns string
 		var result = ""
@@ -461,10 +484,12 @@ public class MilitarySettlementRuntime
 	function instantiate(RuntimeForce runtimeForce)
 		if not runtimeForce.active or runtimeForce.regionId != activeRegionId
 			return
+		let city = settlementForForce(runtimeForce)
+		if city >= 0 and (not settlements[city].projectMilitary or not settlements[city].capturable)
+			return
 		let localDefense = runtimeForce.kind == FORCE_GARRISON or runtimeForce.kind == FORCE_CITY_CORE or runtimeForce.kind == FORCE_DEFENSE
 		adapter.createRepresentation(runtimeForce, adapter.playerForController(runtimeForce.controllerId, localDefense))
 		adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
-		let city = settlementForForce(runtimeForce)
 		if city >= 0 and (runtimeForce.kind == FORCE_CITY_CORE or runtimeForce.kind == FORCE_DEFENSE)
 			adapter.protectRepresentation(runtimeForce.id, settlements[city].captureImmuneUntil > gameplaySeconds)
 	/** Resolve only the registered settlement's exact core or local-force prefix. */
@@ -529,7 +554,7 @@ public class MilitarySettlementRuntime
 				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
 	function beginSettlementAttack(string settlementId, string attackerId, real now) returns boolean
 		let found = settlementIndex(settlementId)
-		if found < 0 or now < settlements[found].captureImmuneUntil or not atWar(attackerId, settlements[found].controllerId)
+		if found < 0 or not settlements[found].capturable or now < settlements[found].captureImmuneUntil or not atWar(attackerId, settlements[found].controllerId)
 			return false
 		let state = settlements[found]
 		if not state.underAttack
@@ -588,7 +613,7 @@ public class MilitarySettlementRuntime
 		if found < 0
 			return false
 		let state = settlements[found]
-		if now < state.captureImmuneUntil or not atWar(attackerId, state.controllerId)
+		if not state.capturable or now < state.captureImmuneUntil or not atWar(attackerId, state.controllerId)
 			return false
 		state.occupationConflictId = activeConflictBetween(attackerId, state.controllerId)
 		transferSettlement(settlementId, attackerId)
@@ -615,10 +640,12 @@ public class MilitarySettlementRuntime
 		state.underAttack = false
 		state.garrisonStrength = 0
 		state.reserves = 0
-		let core = forces[forceIndex("core:" + settlementId)]
-		core.controllerId = controllerId
-		core.active = true
-		instantiate(core)
+		let coreIndex = forceIndex("core:" + settlementId)
+		if coreIndex >= 0
+			let core = forces[coreIndex]
+			core.controllerId = controllerId
+			core.active = true
+			instantiate(core)
 		// Pre-authored defense records retain their exact type and coordinates.
 		for i = 0 to forceCount - 1
 			if hasPrefix(forces[i].id, "defense:" + settlementId + ":")
@@ -739,7 +766,7 @@ public class MilitarySettlementRuntime
 			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.typeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
 		for i = 0 to settlementCount - 1
 			let s = settlements[i]
-			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + clockReal(s.reinforcementInterval) + "," + clockReal(s.quietPeriod) + "," + clockReal(s.nextWaveAt) + "," + clockReal(s.lastCombatAt) + "," + clockReal(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack) + "," + s.legalOwnerId + "," + s.occupationConflictId + "," + s.attackerId
+			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + clockReal(s.reinforcementInterval) + "," + clockReal(s.quietPeriod) + "," + clockReal(s.nextWaveAt) + "," + clockReal(s.lastCombatAt) + "," + clockReal(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack) + "," + s.legalOwnerId + "," + s.occupationConflictId + "," + s.attackerId + "," + boolText(s.projectMilitary) + "," + boolText(s.capturable) + "," + s.governanceExceptionId
 		for i = 0 to administratorCount - 1
 			let d = administrators[i]
 			result += "|d," + administratorSettlementIds[i] + "," + d.characterId + "," + d.name + "," + d.title + "," + d.controllerId + "," + d.physicalRegionId + "," + d.jurisdiction + "," + d.loyalty.toString() + "," + d.administration.toString() + "," + d.command.toString() + "," + d.capacity.toString() + "," + boolText(d.oathbound)
@@ -791,13 +818,17 @@ public class MilitarySettlementRuntime
 			if not (s.reinforcementInterval > 0. and s.quietPeriod > 0. and s.nextWaveAt >= 0. and s.lastCombatAt >= 0. and s.captureImmuneUntil >= 0.)
 				return false
 			if not target.legacyConflicts
-				if snapshotFieldCount(record) != 23
+				if (target.legacySettlements and snapshotFieldCount(record) != 23) or (not target.legacySettlements and snapshotFieldCount(record) != 26)
 					return false
 				s.legalOwnerId = snapshotField(record, 20)
 				s.occupationConflictId = snapshotField(record, 21)
 				s.attackerId = snapshotField(record, 22)
 				if s.legalOwnerId == ""
 					return false
+			if not target.legacySettlements
+				if (snapshotField(record, 23) != "0" and snapshotField(record, 23) != "1") or (snapshotField(record, 24) != "0" and snapshotField(record, 24) != "1")
+					return false
+				s.withPolicy(snapshotField(record, 23) == "1", snapshotField(record, 24) == "1", snapshotField(record, 25))
 			target.settlements[target.settlementCount] = s
 			target.settlementCount++
 			return s.controllerId != "" and s.regionId != "" and s.garrisonMaximum >= s.garrisonStrength and s.garrisonStrength >= 0 and s.reserves >= 0 and s.manpower >= 0 and s.supply >= 0
@@ -861,11 +892,12 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		parsed.legacyConflicts = candidate.startsWith("v1|")
-		parsed.legacyDeadlines = not candidate.startsWith("v3|")
+		parsed.legacySettlements = not candidate.startsWith("v4|")
+		parsed.legacyDeadlines = not candidate.startsWith("v3|") and parsed.legacySettlements
 		var records = SubString(candidate, 2, StringLength(candidate))
 		if parsed.legacyConflicts
 			records = initialConflicts + records
@@ -879,6 +911,9 @@ public class MilitarySettlementRuntime
 				return null
 			start += finish + 1
 		if not parsed.legacyDeadlines and not parsed.hasSavedGameplayClock
+			parsed.dispose()
+			return null
+		if definitions != null and not definitions.reconcile(parsed, parsed.legacySettlements)
 			parsed.dispose()
 			return null
 		for i = 0 to parsed.conflictCount - 1
@@ -898,7 +933,7 @@ public class MilitarySettlementRuntime
 				// v1/v2 had no live timer. Anchor legacy absolute deadlines at the
 				// latest recorded combat/wave/capture event, never at map uptime.
 				parsed.gameplaySeconds = RMaxBJ(parsed.gameplaySeconds, RMaxBJ(state.lastCombatAt, RMaxBJ(state.nextWaveAt - state.reinforcementInterval, state.captureImmuneUntil - CITY_CAPTURE_IMMUNITY_SECONDS)))
-			if parsed.forceIndex("core:" + state.id) < 0
+			if state.capturable and parsed.forceIndex("core:" + state.id) < 0
 				parsed.dispose()
 				return null
 			if state.occupationConflictId != "" and parsed.conflictIndex(state.occupationConflictId) < 0

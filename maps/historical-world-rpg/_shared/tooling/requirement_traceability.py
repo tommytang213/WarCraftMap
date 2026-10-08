@@ -399,6 +399,57 @@ def records(data, spec):
     return dict(zip(identities, rows))
 
 
+def projection_policy_census(project, spec, identities, maps, payloads):
+    """Compare authored policy with arguments to consumed compiled registrations.
+
+    Policy is separate from membership: no policy value can exclude an identity
+    from the authority census. Field derivations are scenario-owned data.
+    """
+    raw = source_path(project, spec["source"]["path"]).read_bytes()
+    sources = records(json.loads(raw), spec["source"])
+    if set(sources) != set(identities):
+        raise ValueError("projection policy identities differ from authority")
+    expected = {}
+    for ident, source in sources.items():
+        values = {}
+        for name, rule in spec["fields"].items():
+            value = source[rule["sourceField"]]
+            if "contains" in rule:
+                value = rule["contains"] in value
+            elif "equals" in rule:
+                value = rule["equals"] == value
+            elif value is None:
+                value = rule.get("default")
+            values[name] = value
+        expected[ident] = values
+    result = {"sourceSha256": sha(raw), "sourceCount": len(expected), "maps": [],
+              "policies": [{"id": ident, **values} for ident, values in sorted(expected.items())]}
+    errors = []
+    matcher = re.compile(spec["compiledPattern"])
+    for physical in maps:
+        if physical["bootstrap"]:
+            continue
+        found, duplicates = {}, []
+        for call in compiled_calls(payloads.get(physical["id"], {})):
+            match = matcher.match(call)
+            if match:
+                ident = json.loads(match["id"])
+                values = {name: json.loads(match[name]) for name in spec["fields"]}
+                if ident in found:
+                    duplicates.append(ident)
+                found[ident] = values
+        row = {"id": physical["id"], "compiledCount": len(found),
+               "missingIds": sorted(set(expected) - set(found)),
+               "unexpectedIds": sorted(set(found) - set(expected)),
+               "duplicateIds": sorted(set(duplicates)),
+               "changedIds": sorted(key for key in expected.keys() & found.keys() if expected[key] != found[key])}
+        result["maps"].append(row)
+        if any(row[key] for key in ("missingIds", "unexpectedIds", "duplicateIds", "changedIds")):
+            errors.append(f"{physical['id']}: compiled projection policy differs from authority")
+    result["status"] = "fail" if errors else "pass"
+    return result, errors
+
+
 def census(project, specs, maps, payloads):
     reports, errors = [], []
     for spec in specs:
@@ -435,6 +486,10 @@ def census(project, specs, maps, payloads):
                 reports.append(row)
                 errors.append(f"{ident}: final runtime payload not inspected")
                 continue
+            if spec.get("projectionPolicy"):
+                row["projectionPolicy"], policy_errors = projection_policy_census(
+                    project, spec["projectionPolicy"], expected, maps, payloads)
+                row["failures"].extend(policy_errors)
             union = set()
             for physical in maps:
                 if physical["bootstrap"]:
@@ -718,6 +773,11 @@ def render_markdown(report):
     lines += ["", "## Packaged content census", "", "Counts are unique stable IDs; per-map assignments, missing/extra/changed IDs and compiled survival are detailed in JSON.", "",
               "| Catalogue | Source | Packaged union | Status |", "|---|---:|---:|---|"]
     lines += [f"| {row['id']} | {row.get('sourceCount', '?')} | {row.get('packagedUniqueCount', '?')} | {row['status']} |" for row in report["catalogues"]]
+    for row in report["catalogues"]:
+        policy = row.get("projectionPolicy")
+        if policy:
+            lines += ["", f"{row['id']} projection policy: **{policy['status']}** across {policy['sourceCount']} authoritative IDs. "
+                      "Authored policy values and independent compiled-policy differences are retained in JSON."]
     lines += ["", "## Final artifact byte composition", ""]
     if report["artifact"]:
         artifact = report["artifact"]

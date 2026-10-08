@@ -192,7 +192,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 	let saved="v2:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10:cargo;ship:1000:cargo;ship,75,999250,1000,grain:grain:grain:cargo;ship,grain,75,750,port"
 	let r=pricingRuntime(100,100,10,1,80)
 	r.reconstruct(saved).assertTrue()
-	r.capture().assertEquals(saved)
+	r.capture().assertEquals("v3:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10,1:cargo;ship:1000:cargo;ship,75,999250,1000,grain:grain:grain:cargo;ship,grain,75,750,port")
 	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(750)
 	r.controller.buy("old-buy",r.market,r.hold,1).assertEquals("Transaction already processed.")
 	r.market.quoteAmount(75,false).assertEquals(905)

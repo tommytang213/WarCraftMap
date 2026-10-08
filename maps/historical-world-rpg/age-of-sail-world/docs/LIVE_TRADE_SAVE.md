@@ -1,6 +1,6 @@
 # Live trade provenance and save contract
 
-`PlayableTradeRuntime` writes trade domain version 2 (`v2:`). The campaign
+`PlayableTradeRuntime` writes trade domain version 3 (`v3:`). The campaign
 envelope is version 8, supporting envelopes 1–8. This follows the existing
 independently versioned diplomacy and military domains. The headless JSON trade
 contract already contains attributable lots and remains unchanged.
@@ -30,7 +30,7 @@ cannot change earlier lots' origins. Existing standing, realized profit and
 completed-route progression persist. Transaction and lot capacity are checked
 before mutation; replay history is never evicted to accept another transaction.
 
-After the `v2:` prefix, fields 0–19 retain the former colon-delimited layout.
+After the `v2:` or `v3:` prefix, fields 0–19 retain the former colon-delimited layout.
 Fields 8–10 now hold **unattributed legacy** cost, quantity and last origin;
 they are archival history and never participate in sales or transfers. Fields
 20–22 contain the selected market's commodity, selected hold's commodity and
@@ -53,10 +53,10 @@ state, processed transaction IDs, next transaction number and earned progression
 are retained. The summary-only formats never saved the hold's commodity; their
 cargo quantity remains present with an unknown commodity rather than guessing
 an identity from the selected market. New purchases receive normal provenance.
-Resaving writes v2 and migration is idempotent. Source saves are not rewritten.
+Resaving writes v3 and migration is idempotent. Source saves are not rewritten.
 
 Quantity-aware pricing does not change this wire format. The live domain stays
-at version 2 and the campaign envelope at version 7. Base prices, target stocks,
+independently versioned; the campaign envelope remains version 8. Base prices, target stocks,
 quantity units, elasticity, spread and price bounds are generated definitions;
 generator provenance is version 18, including the trade access bindings. Current
 stock and persisted live modifiers determine every commit quote. Cached displayed
@@ -108,3 +108,13 @@ trade state and verifies populated lots, earned standing, other campaign domains
 projections and source slots roll back together.
 
 Release status remains `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+Trade v3 adds the market discovery bit as column 14 of each market record while
+retaining additive catalogue registration. V2 and the unversioned layouts still
+migrate. Before applying those older records, reconstruction resets
+registered definitions to their initial balances/profiles, then applies the saved
+state. This initializes newly included abstract settlements deterministically,
+including after loading the same legacy save over a changed campaign. Existing
+saved balances, capacity, commodities, provenance and progression override these
+defaults. Missing personal stores retain the existing zero-balance migration.
+Generated bindings and local actor checks remain the only access authority.

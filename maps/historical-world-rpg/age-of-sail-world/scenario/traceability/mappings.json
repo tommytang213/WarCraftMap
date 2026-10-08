@@ -213,6 +213,558 @@
   },
   "formatVersion": 1,
   "requirements": {
+    "REQ-0181.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*configureSettlementPolicy[\\w]*\\s*\\(",
+          "\\b[\\w.]*registerMarketProfile[\\w]*\\s*\\(",
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"trade\","
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"settlementId\": \"alasora\"",
+            "\"settlementId\": \"dong_kinh\"",
+            "\"runtimePolicy\": \"authoritative_abstract_reconstruct_on_demand\""
+          ],
+          "path": "scenario/integration/release-scale-settlements.json"
+        },
+        {
+          "contains": [
+            "for ident, authoritative in sorted(world_by_id.items())",
+            "configureGeneratedSettlementAuthority",
+            "runtime.registerMarketProfile"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        }
+      ],
+      "entry": {
+        "id": "live-settlement-authority",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "configureMilitarySettlementScenario",
+              "configureGeneratedTrade"
+            ],
+            "path": "wurst/CampaignRegistration.wurst",
+            "symbol": "registerCampaignDomains"
+          },
+          {
+            "contains": [
+              "access.commitActor"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "chooseMarket"
+          },
+          {
+            "contains": [
+              "market.discovered",
+              "state.militarySettlements.atWar"
+            ],
+            "path": "wurst/LiveTradeAccess.wurst",
+            "symbol": "marketPermitted"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "commands.register(\"trade\""
+          ],
+          "path": "wurst/PlayableTrade.wurst",
+          "symbol": "registerPlayableTradeCommands"
+        },
+        "testInvocation": ".dispatch("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "settlements[settlementCount] = state",
+            "if state.capturable"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "registerSettlement"
+        },
+        {
+          "contains": [
+            "not settlements[city].projectMilitary",
+            "adapter.createRepresentation"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "instantiate"
+        },
+        {
+          "contains": [
+            "markets[i].resetDefinition()",
+            "stores[i].resetDefinition()"
+          ],
+          "path": "wurst/PlayableTrade.wurst",
+          "symbol": "applyState"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "militarySettlements.restore",
+            "extension.reconstruct"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "applyRuntime"
+        },
+        "mode": "persisted",
+        "reason": "Military domain v4 migrates v1\u2013v3 by adding absent generated settlements only; trade v3 retains discovery and migrates legacy missing profiles from immutable defaults. Campaign envelopes 1\u20138 remain supported.",
+        "references": [
+          {
+            "contains": [
+              "definitions.reconcile(parsed, parsed.legacySettlements)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          {
+            "contains": [
+              "markets[i].resetDefinition()"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "applyState"
+          }
+        ],
+        "save": {
+          "contains": [
+            "militarySettlements.snapshot()",
+            "extension.capture()"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "captureDomains"
+        }
+      },
+      "state": {
+        "mutation": "Generated registration joins world ownership to authored governance/economy; legal control changes reconcile offices and the trade commit rechecks control.",
+        "outcome": "Abstract settlements retain local services and mutable authority without forced military objects.",
+        "owner": "MilitarySettlementRuntime settlement/office authority and PlayableTradeRuntime markets/stores, addressed by stable authored IDs.",
+        "references": [
+          {
+            "contains": [
+              "not state.capturable"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "capture"
+          },
+          {
+            "contains": [
+              "state.controllerId = controllerId"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "transferSettlement"
+          },
+          {
+            "contains": [
+              "access.storePermitted"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "chooseStore"
+          }
+        ],
+        "rejection": "Remote, undiscovered, hostile, unauthorized, full, or stale selections reject without economic mutation; non-capturable exceptions reject capture."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.reject(\"/trade select dong_kinh rice\")",
+            "f.reject(\"/trade store warehouse:alasora\")"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.military.settlementCount.assertEquals(3)",
+            "f.trade.findStore(\"warehouse:alasora\").cargo.assertEquals(2)"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractAuthorityRoundTripsAcrossInactiveMapsAndRepeatedReconstruction",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.military.transferSovereignty(\"alasora\",\"player\")",
+            "f.reject(\"/trade buy 1\")"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.trade.market.stock.assertEquals(stock-1)"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Inactive settlements retain all authority. Repeated local reconstruction observes the authored projection/capture policy and reuses stable office/store IDs.",
+        "references": [
+          {
+            "contains": [
+              "adapter.removeRepresentation",
+              "instantiate(forces[i])"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "activateRegion"
+          },
+          {
+            "contains": [
+              "not settlements[city].projectMilitary"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "instantiate"
+          }
+        ]
+      }
+    },
+    "REQ-0181.02": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*configureSettlementPolicy[\\w]*\\s*\\(",
+          "\\b[\\w.]*registerMarketProfile[\\w]*\\s*\\(",
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"trade\","
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"settlementId\": \"alasora\"",
+            "\"settlementId\": \"dong_kinh\"",
+            "\"runtimePolicy\": \"authoritative_abstract_reconstruct_on_demand\""
+          ],
+          "path": "scenario/integration/release-scale-settlements.json"
+        },
+        {
+          "contains": [
+            "for ident, authoritative in sorted(world_by_id.items())",
+            "configureGeneratedSettlementAuthority",
+            "runtime.registerMarketProfile"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        }
+      ],
+      "entry": {
+        "id": "live-settlement-authority",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "configureMilitarySettlementScenario",
+              "configureGeneratedTrade"
+            ],
+            "path": "wurst/CampaignRegistration.wurst",
+            "symbol": "registerCampaignDomains"
+          },
+          {
+            "contains": [
+              "access.commitActor"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "chooseMarket"
+          },
+          {
+            "contains": [
+              "market.discovered",
+              "state.militarySettlements.atWar"
+            ],
+            "path": "wurst/LiveTradeAccess.wurst",
+            "symbol": "marketPermitted"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "commands.register(\"trade\""
+          ],
+          "path": "wurst/PlayableTrade.wurst",
+          "symbol": "registerPlayableTradeCommands"
+        },
+        "testInvocation": ".dispatch("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "settlements[settlementCount] = state",
+            "if state.capturable"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "registerSettlement"
+        },
+        {
+          "contains": [
+            "not settlements[city].projectMilitary",
+            "adapter.createRepresentation"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "instantiate"
+        },
+        {
+          "contains": [
+            "markets[i].resetDefinition()",
+            "stores[i].resetDefinition()"
+          ],
+          "path": "wurst/PlayableTrade.wurst",
+          "symbol": "applyState"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "militarySettlements.restore",
+            "extension.reconstruct"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "applyRuntime"
+        },
+        "mode": "persisted",
+        "reason": "Military domain v4 migrates v1\u2013v3 by adding absent generated settlements only; trade v3 retains discovery and migrates legacy missing profiles from immutable defaults. Campaign envelopes 1\u20138 remain supported.",
+        "references": [
+          {
+            "contains": [
+              "definitions.reconcile(parsed, parsed.legacySettlements)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          {
+            "contains": [
+              "markets[i].resetDefinition()"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "applyState"
+          }
+        ],
+        "save": {
+          "contains": [
+            "militarySettlements.snapshot()",
+            "extension.capture()"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "captureDomains"
+        }
+      },
+      "state": {
+        "mutation": "Generated registration joins world ownership to authored governance/economy; legal control changes reconcile offices and the trade commit rechecks control.",
+        "outcome": "Abstract settlements retain local services and mutable authority without forced military objects.",
+        "owner": "MilitarySettlementRuntime settlement/office authority and PlayableTradeRuntime markets/stores, addressed by stable authored IDs.",
+        "references": [
+          {
+            "contains": [
+              "not state.capturable"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "capture"
+          },
+          {
+            "contains": [
+              "state.controllerId = controllerId"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "transferSettlement"
+          },
+          {
+            "contains": [
+              "access.storePermitted"
+            ],
+            "path": "wurst/PlayableTrade.wurst",
+            "symbol": "chooseStore"
+          }
+        ],
+        "rejection": "Remote, undiscovered, hostile, unauthorized, full, or stale selections reject without economic mutation; non-capturable exceptions reject capture."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.reject(\"/trade select dong_kinh rice\")",
+            "f.reject(\"/trade store warehouse:alasora\")"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.02"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.military.settlementCount.assertEquals(3)",
+            "f.trade.findStore(\"warehouse:alasora\").cargo.assertEquals(2)"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractAuthorityRoundTripsAcrossInactiveMapsAndRepeatedReconstruction",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.02"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.military.transferSovereignty(\"alasora\",\"player\")",
+            "f.reject(\"/trade buy 1\")"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.02"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.adapter.created.assertEquals(\"\")",
+            "f.trade.market.stock.assertEquals(stock-1)"
+          ],
+          "entryPoint": "live-settlement-authority",
+          "id": "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "live-settlement-authority",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0181.02"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Inactive settlements retain all authority. Repeated local reconstruction observes the authored projection/capture policy and reuses stable office/store IDs.",
+        "references": [
+          {
+            "contains": [
+              "adapter.removeRepresentation",
+              "instantiate(forces[i])"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "activateRegion"
+          },
+          {
+            "contains": [
+              "not settlements[city].projectMilitary"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "instantiate"
+          }
+        ]
+      }
+    },
     "REQ-0184.01": {
       "artifact": {
         "callPatterns": [

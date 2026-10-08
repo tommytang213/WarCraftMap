@@ -30,10 +30,9 @@ class WarcraftMilitaryRuntimeGenerationTests(unittest.TestCase):
             ):
                 self.assertIn(domain, runtime)
 
-    def test_every_physical_settlement_has_one_generated_runtime_state_at_a_real_location(self):
+    def test_every_authored_settlement_has_one_generated_runtime_state_at_a_real_location(self):
         integration = json.loads((ROOT / "scenario/integration/release-scale-settlements.json").read_text())
-        expected = {row["settlementId"] for row in integration["settlements"]
-                    if row["gameplayRoles"]["physicalMap"]["modelId"] != "abstract_regional_projection"}
+        expected = {row["settlementId"] for row in integration["settlements"]}
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary)
             generate(load_config(ROOT / "package.json"), output)
