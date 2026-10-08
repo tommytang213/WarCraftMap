@@ -1,0 +1,130 @@
+{
+  "automationPython": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+    "errors": 14,
+    "reason": "Unchanged worker validation-repair fixtures invoke gh issue list in temporary repositories with no configured GitHub host; one resulting follow-on error. No automation source was modified.",
+    "status": "unrelated_fixture_errors",
+    "testsRun": 129
+  },
+  "campaignPackaging": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "buildDirectory": "container-private /tmp/recovery-campaign",
+    "buildUser": "wurstuser",
+    "bytes": 31669283,
+    "containerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "containerRemoved": true,
+    "mapsTypecheckedCompiledAndInspected": 17,
+    "sha256": "191b8ebd44400e0a68b6bd7efc74ec1cdc8e3fe7797a5367c8d79b24d427f7f0",
+    "sourceBindMount": "read-only",
+    "status": "pass"
+  },
+  "evidence": {
+    "artifact-traceability.log": "440c8c55823e9b5cd5a71d90e46f42cc21c0071854fd78eabab663c3fb373e47",
+    "automation-tests.log.gz": "4b9fcb7ce6a23a3daf8623b081e33b3f4b96d6db466d54da2431616f6c32251b",
+    "blocker-source-refresh.log": "fd98a0f1ea0194751f4c7fb912b0e4e7463c1964ae1e741240f77c51a63bb928",
+    "blocker-tests-refreshed.log.gz": "0b71b526c7e69f87644b511eb2c5aa7fe348133f1eee767e53217fea831099bf",
+    "campaign-final.log.gz": "0cf37d452a4195dac78e264f7fecf640708b8bdac2ffe62c86816a444bbf8576",
+    "final-requirement-traceability.json.gz": "f60a1f3da655796ac8c28beb41404d5b02552c842736b8df1af4fadcb52e1d59",
+    "final-requirement-traceability.md.gz": "82e567a5383e9add0e6cb2362799850aa1dea59c85bbe657e12cedc28b2dcd57",
+    "framework-boundary.log": "160a58ef098cc20a45b25b5460320c22b906088387af8ae1f836bb7f9d6860b1",
+    "framework-conformance.json.gz": "29b8cf9aa64bed1adee86c90e8f826e679def2a8ec5ee55f1cd25b596b27c474",
+    "framework-final.log.gz": "27d379e581efac8fb37ec9452f8c8f3ecf4d54e489eb5b5c2308272caa8d9b48",
+    "framework-mutated-results.json.gz": "f5ed9ff035c4fd298a77d410b519d942c23ffceead1f3f0f1b53330a2713de83",
+    "framework-original-results.json.gz": "e7eb7d72c469c42c1336b0a8b688f187a84ca0c34405cf35d348e7aec5c9196c",
+    "native-save.json": "c3e4da7c9553a268ba5077cdc52cea26a1c8ec85ef4da4c800f2f3b9695d30c4",
+    "python-suite.log.gz": "da300a2f9f298cd2cd682f568e02886239d4d186a3f7a0d725a8e69f816473ad",
+    "runtime-source-refresh.log": "80ef4609202503bc2cd36265df9d0b2889fa5e88da0aab9fb851dddda5939371",
+    "save-compatibility.log.gz": "ed356a83c59ca54da6ca04aa2f0a127784706586d46cf36ed3f960cabe882a15",
+    "save-tests.log.gz": "8e7226e266320c6433e5f5405a06a4a59d08ec8bb8541cb6f98c797f8f368601",
+    "traceability-source.log": "6c1fae72671e5240309e467b407b6404079215646dbd4119630ec583d712d552",
+    "validate.sh": "b306aa802ce1da8d496014f2eaa7c5c8fb5331b5f9ca33d3a560d3975e9e1759",
+    "wurst-execution.log.gz": "ed410052204d0f3c1b88ddf159dfb53b5c46f8ea06b5611614faadb7306c3c26",
+    "wurst-first.log.gz": "262ed9880b0eca0ddfe5fb7f9789713d2d9c3123717dcf0d28e1e7b8cfc180d9",
+    "wurst-results.json.gz": "64856fcc083b2293aec8d462bea9a99b47c2afb34f0d21b53830da702f6248a5",
+    "wurst-second.log.gz": "23a909e94dd5f7f7a68490534a5118a9822d8182a51561e2bf4ba95e4bbf57d9",
+    "wurst-third.log.gz": "36935436de3137597cb102a1cb8c971916d2b959ecf9a2d2783ae5a9beb0d0e0"
+  },
+  "format": "warcraftmap_issue_412_validation_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "nativeSave": {
+    "oraclePassed": true,
+    "realClientExecuted": false,
+    "reason": "runtime_unavailable",
+    "status": "skip"
+  },
+  "pinnedWurst": {
+    "command": "sh reports/issue-412/validate.sh campaign (container-private source copy)",
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "6378d55730c85f7b004be43b8b8d57a5185070d800328eb8f830b1223896aef4",
+    "recoveryTestsPassed": 27,
+    "status": "pass",
+    "testsDiscovered": 308,
+    "testsPassed": 308,
+    "transcriptSha256": "d030023fa1f895b3a64e7994fdfb088145f5049786f19ff0a8d71d562601c2b6"
+  },
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "restrictions": {
+    "commitsOrPushes": false,
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false,
+    "writableSourceContainerMounts": false
+  },
+  "scenarioPython": {
+    "affectedModuleRetestPassed": 9,
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'",
+    "initialErrors": 1,
+    "resolution": "Refreshed two input hashes in reports/release-blocker-audit.json; status and findings unchanged. All 9 tests in test_release_blocker_audit.py then passed. Other 907 tests passed in the original full run.",
+    "status": "pass_after_report_refresh",
+    "testsRun": 916
+  },
+  "scopedTraceability": {
+    "artifactSha256": "191b8ebd44400e0a68b6bd7efc74ec1cdc8e3fe7797a5367c8d79b24d427f7f0",
+    "auditExitCode": 1,
+    "executionErrors": [],
+    "note": "All three scoped obligations pass. Remaining inventory/coverage blockers still prevent candidate publication; counts are evidence gaps, not distinct gameplay defects.",
+    "publicationBlockedAsRequired": true,
+    "publicationBlockers": 9132,
+    "requirements": {
+      "REQ-0185.01": {
+        "blockerClasses": [],
+        "status": "pass"
+      },
+      "REQ-0186.01": {
+        "blockerClasses": [],
+        "status": "pass"
+      },
+      "REQ-0190.01": {
+        "blockerClasses": [],
+        "status": "pass"
+      }
+    }
+  },
+  "sharedFramework": {
+    "command": "sh reports/issue-412/validate.sh framework",
+    "currentSharedSourceHashesVerified": true,
+    "mutatedArchiveSha256": "721dfd64cf51af84788a7fe8e847e9727d011c53d57053d2fa44359bff5cfa31",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "f3ccb437111238dc5b1d039ab601967a44059499dc0e85ebbdcd0e5213ac7959",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceChecks": [
+    "framework content boundary",
+    "recovery documentation and command metadata",
+    "canonical map-source validation",
+    "requirement report freshness",
+    "git diff --check"
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "cffeb3ed5b171813179acc46f3cb5e978ea375b2",
+    "sourceTreeSha256": "070daf95829da73ad99677c065a13f283e4ed21708cf223584ada04b1bd1f8f5"
+  },
+  "sourceRevision": "cffeb3ed5b171813179acc46f3cb5e978ea375b2"
+}

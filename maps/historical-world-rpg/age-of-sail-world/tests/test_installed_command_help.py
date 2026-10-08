@@ -27,6 +27,13 @@ class InstalledHelpTraceabilityTests(unittest.TestCase):
             relative = f'wurst/{name}.wurst'
             (self.project / relative).write_bytes(trace.source_path(PROJECT, relative).read_bytes())
         self.mappings = trace.load(PROJECT / 'scenario/traceability/mappings.json')
+        # This fixture copies only help production sources and emits help
+        # receipts. Other issue mappings have their own integration fixtures.
+        help_ids = ('REQ-0203.01', 'REQ-0204.01', 'REQ-0205.01', 'REQ-0205.02',
+                    'REQ-0206.01', 'REQ-0207.01')
+        self.mappings['requirements'] = {
+            key: self.mappings['requirements'][key] for key in help_ids
+        }
         ledger = trace.load(PROJECT / 'scenario/traceability/requirements.json')
         parents = {key.split('.')[0] for key in self.mappings['requirements']}
         self.ledger = {'documents': ['docs/DESIGN_LOCK.md'], 'requiredCatalogues': [], 'dependencies': [],

@@ -304,7 +304,7 @@ function autosaveReceipt(string requirement, string caseName)
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.wake.delay.assertEquals(.25)
 	f.campaign.autosaves.nextSlotIndex().assertEquals(1)
-	string array[14] invalid
+	string array[20] invalid
 	invalid[0] = "1|0|0"
 	invalid[1] = "1|16|0"
 	invalid[2] = "1|1|-1"
@@ -319,9 +319,15 @@ function autosaveReceipt(string requirement, string caseName)
 	invalid[11] = "1|1|0;autosave=1|2|0"
 	invalid[12] = "1|1|-1075:1"
 	invalid[13] = "1|1|1:01"
+	invalid[14] = "1|2147483648|0"
+	invalid[15] = "0|-2147483649|0"
+	invalid[16] = "1|1|2147483648:1"
+	invalid[17] = "1|1|-2147483649:1"
+	invalid[18] = "1|1|NaN:1"
+	invalid[19] = "1|1|-:1"
 	let before = f.campaign.state.captureAuthoritativeState()
 	let starts = f.wake.starts
-	for i = 0 to 13
+	for i = 0 to 19
 		let candidate = replaceCampaignField(current, "autosave", invalid[i])
 		f.storage.writeTransactional("manual_01", campaignSaveEnvelope(8, "manual_01", SAVE_SLOT_MANUAL, 1, "bad", candidate))
 		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()

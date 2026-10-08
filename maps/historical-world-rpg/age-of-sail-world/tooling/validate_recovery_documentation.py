@@ -58,6 +58,19 @@ def validate():
     for slot in slots:
         require(slot["kind"] in save_source and slot["stableId"] in player, f"save slot {slot['kind']} is stale or undocumented")
 
+    runtime = (PROJECT / "wurst/PlayableCampaignRuntime.wurst").read_text(encoding="utf-8")
+    save_commands = support.get("saveCommands", [])
+    require({row["name"] for row in save_commands} == {"save", "load", "saves"}, "save command inventory drift")
+    for row in save_commands:
+        registration = (f'commands.register("{row["name"]}", "", "{row["registrationUsage"]}", '
+                        f'"{row["summary"]}", "{row["help"]}"')
+        require(registration in runtime, f"{row['name']} help differs from recovery metadata")
+    for command in ("/save N", "/load N", "/load manual N", "/load autosave N",
+                    "/load session_start", "/load major_milestone", "/load retry", "/saves manual 11"):
+        require(command in player, f"undocumented save action: {command}")
+    require(compatibility.get("recoveryLoadRequest", {}).get("current") == 1,
+            "recovery request compatibility contract drift")
+
     compatibility_source = (PROJECT.parent / "_shared/engine/release_save_compatibility.py").read_text(encoding="utf-8")
     integrity_source = (PROJECT.parent / "_shared/engine/world_integrity.py").read_text(encoding="utf-8")
     diagnostics = support["diagnostics"]

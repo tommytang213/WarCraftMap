@@ -820,16 +820,16 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		if not payload.startsWith("integrity=") or cut < 0
 			lastDiagnostic = "save envelope is malformed"
 			return ""
-		let expected = S2I(SubString(payload, 10, cut))
+		let expected = campaignSlotNumber(SubString(payload, 10, cut))
 		let body = SubString(payload, cut + 1, StringLength(payload))
-		if runtimeChecksum(body) != expected
+		if expected.toString() != SubString(payload, 10, cut) or runtimeChecksum(body) != expected
 			lastDiagnostic = "save integrity check failed"
 			return ""
 		let schemaCut = body.indexOf("|slot=")
 		if not body.startsWith("schema=") or schemaCut < 0
 			lastDiagnostic = "save envelope is malformed"
 			return ""
-		let sourceSchema = S2I(SubString(body, 7, schemaCut))
+		let sourceSchema = campaignSlotNumber(SubString(body, 7, schemaCut))
 		let slotPrefix = "schema=" + sourceSchema.toString() + "|slot=" + expectedSlotId + "|"
 		if sourceSchema < CAMPAIGN_SAVE_SCHEMA_OLDEST or sourceSchema > CAMPAIGN_SAVE_SCHEMA_CURRENT or body.indexOf(slotPrefix) != 0
 			lastDiagnostic = "save schema or slot is incompatible"
@@ -838,6 +838,23 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		let stateCut = body.indexOf(stateMarker)
 		if stateCut < 0
 			lastDiagnostic = "save has no authoritative state"
+			return ""
+		// Bind all slot metadata, not only its text ID. Startup's private bound
+		// checkpoint has always used the session kind and index zero.
+		let metadata = SubString(body, StringLength(slotPrefix), stateCut)
+		let indexCut = metadata.indexOf("|index=")
+		let createdCut = metadata.indexOf("|created=")
+		if not metadata.startsWith("kind=") or indexCut < 6 or createdCut <= indexCut + 7
+			lastDiagnostic = "save slot metadata is malformed"
+			return ""
+		let kindText = SubString(metadata, 5, indexCut)
+		let indexText = SubString(metadata, indexCut + 7, createdCut)
+		let kind = campaignSlotNumber(kindText)
+		let index = campaignSlotNumber(indexText)
+		let created = SubString(metadata, createdCut + 9, StringLength(metadata))
+		let publicSlot = expectedSlotId.startsWith("manual_") or expectedSlotId.startsWith("autosave_") or expectedSlotId == "session_start" or expectedSlotId == "major_milestone"
+		if kind.toString() != kindText or index.toString() != indexText or created.indexOf("|") >= 0 or (publicSlot and campaignSlotId(kind, index) != expectedSlotId) or (expectedSlotId.startsWith(HANDOFF_CHECKPOINT) and (kind != SAVE_SLOT_SESSION_START or index != 0))
+			lastDiagnostic = "save slot metadata is incompatible"
 			return ""
 		var decoded = SubString(body, stateCut + StringLength(stateMarker), StringLength(body))
 		// Each probe is additive and guarded, making repeated in-memory migration idempotent.
@@ -1058,28 +1075,132 @@ function physicalBoundaryEntered()
 	if installedPhysicalBoundaries != null
 		installedPhysicalBoundaries.entered()
 
+/** New, independent persisted contract. Absence preserves the legacy startup
+ * path. The selected envelope is copied verbatim; its source slot is read-only.
+ * Consumed requests retain a reconstruction basis across an acknowledgement /
+ * activation interruption. A later origin selection or travel milestone fences
+ * that basis out, so ordinary travel never replays an older recovery. */
+public constant string CAMPAIGN_RECOVERY_REQUEST = "recovery_request"
+
+public class CampaignRecoveryRequest
+	int sequence
+	string status
+	string scenario
+	string slotId
+	string mapId
+	int startToken
+	int milestoneToken
+	string payload
+	construct(int sequence, string status, string scenario, string slotId, string mapId, int startToken, int milestoneToken, string payload)
+		this.sequence = sequence
+		this.status = status
+		this.scenario = scenario
+		this.slotId = slotId
+		this.mapId = mapId
+		this.startToken = startToken
+		this.milestoneToken = milestoneToken
+		this.payload = payload
+	function encode() returns string
+		let body = "v1|" + sequence.toString() + "|" + status + "|" + scenario + "|" + slotId + "|" + mapId + "|" + startToken.toString() + "|" + milestoneToken.toString() + "|" + payload
+		return runtimeChecksum(body).toString() + "|" + body
+
+public function decodeCampaignRecoveryRequest(string encoded) returns CampaignRecoveryRequest
+	let cut = encoded.indexOf("|")
+	if cut < 1
+		return null
+	let body = SubString(encoded, cut + 1, StringLength(encoded))
+	if runtimeChecksum(body).toString() != SubString(encoded, 0, cut)
+		return null
+	string array[8] fields
+	var start = 0
+	for field = 0 to 7
+		let remaining = SubString(body, start, StringLength(body))
+		let finish = remaining.indexOf("|")
+		if finish < 1
+			return null
+		fields[field] = SubString(remaining, 0, finish)
+		start += finish + 1
+	if fields[0] != "v1" or campaignSlotNumber(fields[1]) == 0 or (fields[2] != "pending" and fields[2] != "consumed") or campaignSlotNumber(fields[6]).toString() != fields[6] or campaignSlotNumber(fields[7]).toString() != fields[7] or start >= StringLength(body)
+		return null
+	return new CampaignRecoveryRequest(campaignSlotNumber(fields[1]), fields[2], fields[3], fields[4], fields[5], campaignSlotNumber(fields[6]), campaignSlotNumber(fields[7]), SubString(body, start, StringLength(body)))
+
+/** Production command boundary shared with recording tests. */
 public class SaveCommand implements CommandHandler
-	CampaignSaveManager saves
+	PlayableCampaignServices campaign
 	CommandOutput output
 	boolean loading
-	construct(CampaignSaveManager saves, CommandOutput output, boolean loading)
-		this.saves = saves
+	construct(PlayableCampaignServices campaign, CommandOutput output, boolean loading)
+		this.campaign = campaign
 		this.output = output
 		this.loading = loading
 	override function execute(player sender, string arguments)
 		var ok = false
 		if loading
-			ok = saves.load(SAVE_SLOT_MANUAL, S2I(arguments))
+			if arguments == "retry"
+				ok = campaign.retryRecovery()
+			else
+				let selected = new CampaignSlotSelection(arguments)
+				ok = campaign.loadSelectedSlot(selected.kind, selected.index)
+				destroy selected
 		else
-			ok = saves.save(SAVE_SLOT_MANUAL, S2I(arguments), I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+			let slot = campaignSlotNumber(arguments)
+			if slot == 0
+				output.show(sender, "Invalid manual slot. Use a positive whole slot number without leading zeros.")
+				return
+			ok = campaign.saves.save(SAVE_SLOT_MANUAL, slot, I2S(R2I(TimerGetElapsed(bj_gameStartedTimer))))
+			campaign.lastDiagnostic = campaign.saves.diagnostic()
 		if ok
 			output.show(sender, "Campaign save operation completed.")
 		else
-			output.show(sender, saves.diagnostic())
+			output.show(sender, campaign.diagnostic())
 
-public function registerCampaignSaveCommands(CommandRegistry commands, CampaignSaveManager saves)
-	commands.register("save", "", "save <slot>", "Save the campaign.", "Write authoritative campaign state to a manual slot.", 1, 1, COMMAND_RELEASE, new SaveCommand(saves, new WarcraftOutput(), false))
-	commands.register("load", "", "load <slot>", "Load the campaign.", "Validate, migrate, reconstruct, then activate a manual save without damaging the active campaign on rejection.", 1, 1, COMMAND_RELEASE, new SaveCommand(saves, new WarcraftOutput(), true))
+public class SaveSlotsCommand implements CommandHandler
+	PlayableCampaignServices campaign
+	CommandOutput output
+	construct(PlayableCampaignServices campaign, CommandOutput output)
+		this.campaign = campaign
+		this.output = output
+	function showSlot(player sender, int kind, int index)
+		let slot = campaignSlotId(kind, index)
+		if not campaign.saves.storage.contains(slot)
+			return
+		let candidate = campaign.saves.codec.decodeMigrateAndValidate(campaign.saves.storage.read(slot), slot)
+		if candidate == "" or not campaign.validateRecoveryDestination(candidate)
+			output.show(sender, slot + ": unavailable (damaged, incompatible or destination unavailable)")
+		else
+			output.show(sender, slot + ": " + lastAuthorityValue(candidate, "map"))
+	override function execute(player sender, string arguments)
+		if not campaign.registered
+			output.show(sender, "Campaign registration is incomplete.")
+			return
+		if arguments == "" or arguments == "autosave"
+			output.show(sender, "Existing autosaves (load with /load autosave N):")
+			for i = 1 to CAMPAIGN_AUTOSAVE_SLOT_COUNT
+				showSlot(sender, SAVE_SLOT_AUTOSAVE, i)
+		if arguments == "" or arguments == "session_start" or arguments == "major_milestone"
+			output.show(sender, "Existing checkpoints (load with /load session_start or /load major_milestone):")
+			if arguments != "major_milestone"
+				showSlot(sender, SAVE_SLOT_SESSION_START, 0)
+			if arguments != "session_start"
+				showSlot(sender, SAVE_SLOT_MAJOR_MILESTONE, 0)
+		if arguments == "" or arguments == "manual" or arguments.startsWith("manual ")
+			var first = 1
+			if arguments.startsWith("manual ")
+				first = campaignSlotNumber(SubString(arguments, 7, StringLength(arguments)))
+			if first == 0
+				output.show(sender, "Invalid first manual slot. Use /saves manual <first-slot>.")
+				return
+			output.show(sender, "Existing manual saves in up to 10 slots starting at " + first.toString() + " (load with /load N):")
+			for offset = 0 to 9
+				if first <= 2147483647 - offset
+					showSlot(sender, SAVE_SLOT_MANUAL, first + offset)
+		else if arguments != "autosave" and arguments != "session_start" and arguments != "major_milestone"
+			output.show(sender, "Invalid slots request. Use /saves [manual [first-slot]|autosave|session_start|major_milestone].")
+
+public function registerCampaignSaveCommands(CommandRegistry commands, PlayableCampaignServices campaign)
+	commands.register("save", "", "save <slot>", "Save the campaign.", "Write a manual slot. Slot numbers are positive whole decimals without leading zeros.", 1, 1, COMMAND_RELEASE, new SaveCommand(campaign, commands.output, false))
+	commands.register("load", "", "load <slot|manual N|autosave N|session_start|major_milestone|retry>", "Restore a saved campaign on its recorded map.", "Use /saves to identify existing slots. Autosaves are 1 through 15. /load N is the manual shorthand. /load retry resumes a durable recovery after interrupted startup. Rejected loads preserve the active campaign and source saves.", 1, 2, COMMAND_RELEASE, new SaveCommand(campaign, commands.output, true))
+	commands.register("saves", "", "saves [manual [first-slot]|autosave|session_start|major_milestone]", "Identify existing campaign saves.", "List saved map IDs for all 15 autosaves, both checkpoints and a window of 10 manual slots. The default manual window starts at 1; /saves manual N starts at N. Missing slots are omitted. Listing never writes saves.", 0, 2, COMMAND_RELEASE, new SaveSlotsCommand(campaign, commands.output))
 
 /** Knowledge and command rights are explicit runtime facts, never inferred from object presence. */
 public class PlayableRegionAccess implements RegionAccessPolicy
@@ -1239,6 +1360,123 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		return registered
 	function diagnostic() returns string
 		return lastDiagnostic
+	/** Envelopes 1-8 predate an explicit scenario field. Their scenario binding
+	 * is the scenario-specific cache plus authored origin/world and map/region
+	 * identities. Keep these bytes supported; the new request also names the
+	 * campaign explicitly. Destination terrain/native validation stays local. */
+	function validateRecoveryDestination(string candidate) returns boolean
+		let mapId = lastAuthorityValue(candidate, "map")
+		let origin = origins.find(playerAuthorityValue(candidate, "origin"))
+		if scenarioPhysicalMapPath(mapId) == "" or lastAuthorityValue(candidate, "region") != scenarioLogicalRegion(mapId)
+			lastDiagnostic = "The saved physical map is unavailable or does not match its region."
+			return false
+		if origin == null or lastAuthorityValue(candidate, "world") != "instance:" + origin.regionalInstanceId
+			lastDiagnostic = "The save does not match this campaign's authored origin and world."
+			return false
+		lastDiagnostic = ""
+		return true
+	function recoveryStartToken() returns int
+		return runtimeChecksum(handoff.storage.read(HANDOFF_REQUEST) + "|" + handoff.storage.read("origin") + "|" + handoff.storage.read("map") + "|" + handoff.storage.read("instance") + "|" + handoff.storage.read("settlement"))
+	function recoveryApplies(CampaignRecoveryRequest request) returns boolean
+		return request.startToken == recoveryStartToken() and request.milestoneToken == runtimeChecksum(saves.storage.read("major_milestone"))
+	function recoveryCandidate(CampaignRecoveryRequest request) returns string
+		if request.scenario != SCENARIO_CAMPAIGN_ID or request.slotId.startsWith(HANDOFF_CHECKPOINT)
+			lastDiagnostic = "The recovery request belongs to a different campaign."
+			return ""
+		let candidate = saves.codec.decodeMigrateAndValidate(request.payload, request.slotId)
+		if candidate == ""
+			lastDiagnostic = "Recovery save rejected: " + saves.codec.diagnostic()
+			return ""
+		if not validateRecoveryDestination(candidate)
+			return ""
+		if request.mapId != lastAuthorityValue(candidate, "map")
+			lastDiagnostic = "The recovery request and saved destination disagree."
+			return ""
+		return candidate
+	function loadSelectedSlot(int kind, int index) returns boolean
+		let slot = campaignSlotId(kind, index)
+		if slot == ""
+			lastDiagnostic = "Invalid save slot. Use /load N, /load manual N, /load autosave 1..15, /load session_start or /load major_milestone."
+			return false
+		if not registered or saves.loading or state.loading or state.transitionOpen or (started and not state.isSaveSafe())
+			lastDiagnostic = "Campaign state is transitional. Use /load retry for an interrupted recovery."
+			return false
+		if not saves.storage.contains(slot)
+			lastDiagnostic = "The selected campaign save slot is missing."
+			return false
+		let payload = saves.storage.read(slot)
+		let candidate = saves.codec.decodeMigrateAndValidate(payload, slot)
+		if candidate == ""
+			lastDiagnostic = "Campaign save rejected: " + saves.codec.diagnostic()
+			return false
+		if not validateRecoveryDestination(candidate)
+			return false
+		let mapId = lastAuthorityValue(candidate, "map")
+		if started and mapId == physicalMapId
+			let loaded = saves.load(kind, index)
+			lastDiagnostic = saves.diagnostic()
+			return loaded
+		var sequence = 1
+		let previous = decodeCampaignRecoveryRequest(handoff.storage.read(CAMPAIGN_RECOVERY_REQUEST))
+		if previous != null
+			if previous.sequence == 2147483647
+				sequence = 0
+			else
+				sequence = previous.sequence + 1
+			destroy previous
+		if sequence <= 0
+			lastDiagnostic = "The recovery request sequence is exhausted."
+			return false
+		let request = new CampaignRecoveryRequest(sequence, "pending", SCENARIO_CAMPAIGN_ID, slot, mapId, recoveryStartToken(), runtimeChecksum(saves.storage.read("major_milestone")), payload)
+		let committed = handoff.storage.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode())
+		destroy request
+		if not committed
+			lastDiagnostic = "The recovery request could not be committed; the active campaign and source saves are unchanged."
+			return false
+		launchRecovery(mapId)
+		return true
+	function launchRecovery(string mapId)
+		// No authority/identity/travel mutation. Freeze the source after the
+		// durable write so its timers cannot replace a recovery checkpoint.
+		state.startupLocked = true
+		state.clock.detachTimer()
+		lastDiagnostic = ""
+		travel.loader.load(scenarioPhysicalMapPath(mapId))
+	function retryRecovery() returns boolean
+		if not registered or saves.loading or state.loading or state.transitionOpen
+			lastDiagnostic = "Campaign registration or reconstruction is incomplete."
+			return false
+		let request = decodeCampaignRecoveryRequest(handoff.storage.read(CAMPAIGN_RECOVERY_REQUEST))
+		if request == null
+			lastDiagnostic = "No valid durable recovery request is available."
+			return false
+		let valid = recoveryApplies(request) and recoveryCandidate(request) != ""
+		let mapId = request.mapId
+		let alreadyActive = started and state.isSaveSafe() and request.status == "consumed"
+		destroy request
+		if not valid
+			lastDiagnostic = "The recovery request is incompatible or superseded by a later campaign start or milestone."
+			return false
+		if alreadyActive
+			lastDiagnostic = ""
+			return true
+		launchRecovery(mapId)
+		return true
+	function restoreRecovery(CampaignRecoveryRequest request) returns boolean
+		let candidate = recoveryCandidate(request)
+		if candidate == "" or request.mapId != physicalMapId
+			return rejectRestoration("The recovery request is invalid for this physical map. " + lastDiagnostic)
+		if not saves.stageCandidate(candidate)
+			return rejectRestoration(saves.diagnostic())
+		if request.status == "pending"
+			request.status = "consumed"
+			if not handoff.storage.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode())
+				saves.abortLoad()
+				return rejectRestoration("Recovery acknowledgement was interrupted; /load retry retains the selected checkpoint.")
+		// All fallible work precedes publication. Consumed records can reconstruct
+		// after a process interruption here, without regranting any starting state.
+		saves.commitLoad(true)
+		return true
 	function rejectRestoration(string reason) returns boolean
 		state.startupLocked = true
 		lastDiagnostic = reason
@@ -1297,6 +1535,29 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return true
 		if not registered
 			return rejectStartup("Campaign registration is incomplete.")
+		let recovery = decodeCampaignRecoveryRequest(handoff.storage.read(CAMPAIGN_RECOVERY_REQUEST))
+		if handoff.storage.contains(CAMPAIGN_RECOVERY_REQUEST) and recovery == null
+			return rejectRestoration("The durable recovery request is damaged or unsupported. Select an existing save with /load.")
+		if recovery != null
+			if recoveryApplies(recovery)
+				let restored = restoreRecovery(recovery)
+				destroy recovery
+				if not restored
+					return false
+				return finishStartup()
+			// Explicit recovery can also replace an interrupted *new campaign*
+			// startup. Its still-pending origin request must stay superseded after
+			// subsequent travel changes the milestone, until a NEW origin request.
+			let recoveredStart = recovery.scenario == SCENARIO_CAMPAIGN_ID and recovery.status == "consumed" and recovery.startToken == recoveryStartToken()
+			destroy recovery
+			if recoveredStart
+				if not saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
+					return rejectRestoration(saves.diagnostic())
+				return finishStartup()
+		if not restoreOrdinaryStartup()
+			return false
+		return finishStartup()
+	function restoreOrdinaryStartup() returns boolean
 		let request = handoff.readRequest()
 		if handoff.hasRequest() and (request == null or not request.valid(origins))
 			return rejectStartup("The campaign start request is missing fields or does not match the authored origins.")
@@ -1330,6 +1591,8 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		else
 			if not saves.load(SAVE_SLOT_MAJOR_MILESTONE, 0)
 				return rejectRestoration(saves.diagnostic())
+		return true
+	function finishStartup() returns boolean
 		started = true
 		state.rpg.management.close()
 		state.startupLocked = false
@@ -1379,7 +1642,7 @@ public function initializePlayableCampaignRuntime(CommandRegistry commands, stri
 	// opened handle must not replace records committed through the other one.
 	let cache = compatInitGameCache(CAMPAIGN_CACHE_FILE)
 	campaignServices = new PlayableCampaignServices(regionalRuntime, clock, physicalMapId, religion, new WarcraftCampaignSaveStorage(cache, "campaign"), new CampaignHandoff(new WarcraftCampaignSaveStorage(cache, "bootstrap"), new WarcraftPhysicalMapLoader()), new WarcraftPhysicalMapLoader(), new WarcraftCampaignPartyProjection())
-	registerCampaignSaveCommands(commands, campaignServices.saves)
+	registerCampaignSaveCommands(commands, campaignServices)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
 	registerCampaignMapCommand(commands, campaignServices.maps)
 	registerGovernmentRewards(commands, campaignServices.countryScreen)

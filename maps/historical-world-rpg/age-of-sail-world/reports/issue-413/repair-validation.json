@@ -1,0 +1,172 @@
+{
+  "campaignPackaging": {
+    "artifact": "_build/issue413/repair/AgeOfSailWorldCampaign.w3n",
+    "buildDirectory": "container-private /tmp/recovery-campaign",
+    "buildUser": "wurstuser",
+    "bytes": 31860552,
+    "kind": "diagnostic campaign; not a player release",
+    "physicalMapsTypecheckedCompiledAndInspected": 17,
+    "sha256": "a024d6615575f79c57394129b2f04369c0ae7ec2d437731500df7a296b789e79",
+    "sourceBindMount": "read-only",
+    "status": "pass"
+  },
+  "conflictsRemaining": [],
+  "evidence": {
+    "repair-blocker-source.log.gz": "e8897102b5d5fb47e19fb741bbbbab8b995f711694df0403b0cecdb75e713bd2",
+    "repair-container-state.json": "4d9b872d8bbe0142187a5f2b3517a6c1b919e44299744b84a2f34d8b8801aa81",
+    "repair-framework-build.log.gz": "27d379e581efac8fb37ec9452f8c8f3ecf4d54e489eb5b5c2308272caa8d9b48",
+    "repair-framework-mutated-execution.log.gz": "335110b9ad277b3bb8dd3c025f0dced06bd3179aece16db076688f459084dd29",
+    "repair-framework-mutated-results.json.gz": "59153796afdc552c867b28111a9b76e9fe69d9133d631056a0766170f173e303",
+    "repair-framework-original-execution.log.gz": "3b7b1d9886a9f2472b14ea562ab7c4916fb01b4108eee82b9e55eb0b44495c6e",
+    "repair-framework-original-results.json.gz": "ad738bd6fae75e822a3367addb4807fa4b46943c1f5edce66370cee40504e25c",
+    "repair-framework-report.json.gz": "0e50060cfd97c59a6fe909cf2f48d6530961d892f6ef9ed840c3c51256ddd99d",
+    "repair-pinned-campaign.log.gz": "ab78743e64aa658d37f545b27e6ca57c99b7aa4f526d49693f00c8b85d62f05d",
+    "repair-repository-checks.log.gz": "ba4378e7aab18ed5c52c3353c0d2e487c6641ad30446a79e814ffc556d4d9d27",
+    "repair-requirement-traceability.json.gz": "88a34fbbd96df269e68c4305fa10917b656992e73bb2dcabde9e3cbd454f8217",
+    "repair-requirement-traceability.md.gz": "01e1433390d9db113815201d1f773757cf1a4547f0ec8d352b16b0415e4c968a",
+    "repair-runtime-acceptance.json.gz": "ddf47ff50ffc0f22fa374b11b15716d325fb99dc39a255d38b67ef8e8933de71",
+    "repair-scoped-evidence.json.gz": "5a0d461e9f51e1e2f4dd6d4f2d15990b3a46caaf6ad8cc17ad748a85810ffd39",
+    "repair-scoped-evidence.log.gz": "53c93f2fb0c51904e04232df65be9b7916ff5310326b009f2f7962cc65460349",
+    "repair-traceability-source.log.gz": "009d0f649fa79f8215b40bd39d282617f00595707fc2f9248025945870c8fbe4",
+    "repair-wurst-execution.log.gz": "2e76681e9ba185157894e2f73d136fd9c9022fb9ccb0dc02396b30da27f0ec44",
+    "repair-wurst-results.json.gz": "7ace870019274706ba2c401cc8e2f7e248f311736a9c0803eb075aa60c39a7fd",
+    "verify-repair-evidence.py": "bfa74fd59fe805b61bb853f2b067b0a5b9ace490ed5ff16259ba7d5d0a1e4474"
+  },
+  "format": "warcraftmap_issue_413_validation_repair_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "mergedMainRevision": "c9079505ae2a3b032748958019e335cdaee9215f",
+  "pinnedWurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "initialRun": "Interrupted to add the bounded-metadata regression cases; only the final execution is acceptance evidence.",
+    "inputSetSha256": "b93837c32d7c388a17e83207c94a13791a4752c5777dc9a47af1576bc64216b7",
+    "status": "pass",
+    "targetedPackages": {
+      "CampaignAutosaveLifecycleTests.wurst": 8,
+      "CampaignAutosaveSchedulerTests.wurst": 2,
+      "CampaignLoadTransactionTests.wurst": 22,
+      "CampaignRecoveryTests.wurst": 27,
+      "CampaignSaveManagerTests.wurst": 3,
+      "CampaignStartupTests.wurst": 49,
+      "CampaignTimelineTests.wurst": 6,
+      "InstalledCommandHelpTests.wurst": 4,
+      "UnstuckRecoveryTests.wurst": 7
+    },
+    "testsDiscovered": 321,
+    "testsPassed": 321,
+    "transcriptSha256": "9cb6e484b335806de3a62d60b7be81aae7dda01ac1a696527d54212cd1799349"
+  },
+  "realClientExecuted": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repairScope": [
+    "Resolve all five merge conflicts, preserving both autosave and recovery metadata and all 11 requirement mappings.",
+    "Retain the incoming help-only fixture scoping that fixes the previous total-mapping-count failure.",
+    "Compare recovery with committed autosave rotation, including explicit slot-15 wraparound.",
+    "Use the merged bounded slot parser and reject oversized or malformed timer exponents before native integer conversion.",
+    "Regenerate same-source execution, diagnostic artifact and requirement evidence without relaxing release blocking."
+  ],
+  "repositoryChecks": {
+    "automationTestsPassed": 129,
+    "command": "TMPDIR=<worktree>/_build/issue413/repair/tmp WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+    "scenarioTestsPassed": 923,
+    "status": "pass",
+    "wurst": "Executed separately with the pinned compiler during diagnostic campaign packaging."
+  },
+  "restrictions": {
+    "commitsOrPushes": false,
+    "githubWrites": false,
+    "hostToolingChanges": false,
+    "playerQA": false,
+    "worktreePermissionChanges": false,
+    "writableSourceContainerMounts": false
+  },
+  "saveSchemas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "sharedFramework": {
+    "command": "sh reports/issue-412/validate.sh framework (container-private copy)",
+    "mutatedArchiveSha256": "348e801f7f638aeee5446e7afcaa811df4d794654c287d8b78a14ab2f7eaa61d",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "351d9a436fa3ff0d5d1c2f872577db6ee58298ac999c8894e18d65e31377a29b",
+    "originalTestsPassed": 2,
+    "sharedSourceHashesVerified": 157,
+    "status": "pass"
+  },
+  "sourceRevision": "0f8dfc4db85ecc340ec59d6c5f474d3928b41c37",
+  "sourceTreeSha256": "a84962edfd4976934292c2ce055a574e40f3c7e587c1d8a72692bf1e80d5939e",
+  "traceability": {
+    "candidateReady": false,
+    "receipts": 44,
+    "remainingPublicationBlockers": 9074,
+    "requirements": [
+      {
+        "blockerClasses": [],
+        "id": "REQ-0184.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0185.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0186.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0187.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0190.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0203.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0204.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0205.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0205.02",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0206.01",
+        "status": "pass"
+      },
+      {
+        "blockerClasses": [],
+        "id": "REQ-0207.01",
+        "status": "pass"
+      }
+    ],
+    "status": "pass"
+  }
+}

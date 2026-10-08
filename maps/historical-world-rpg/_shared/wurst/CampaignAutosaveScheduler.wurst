@@ -27,10 +27,20 @@ public function validAutosaveMetadata(int metadataVersion, int slot, real remain
 	return (metadataVersion == 0 or metadataVersion == AUTOSAVE_SCHEDULER_METADATA_VERSION) and slot >= metadataVersion and slot <= CAMPAIGN_AUTOSAVE_SLOT_COUNT and remaining >= 0. and remaining - remaining == 0.
 
 public function autosaveMetadataRemaining(string record) returns real
-	return readClockReal(metadataField(record, 2))
+	let encoded = metadataField(record, 2)
+	let colon = encoded.indexOf(":")
+	if colon >= 0
+		// The real codec accepts signed exponents -1074..1023. Bound their
+		// decimal text before its native integer conversion can overflow.
+		var magnitude = SubString(encoded, 0, colon)
+		if magnitude.startsWith("-")
+			magnitude = SubString(magnitude, 1, StringLength(magnitude))
+		if StringLength(magnitude) > 4 or campaignSlotNumber(magnitude).toString() != magnitude
+			return -1.
+	return readClockReal(encoded)
 
 public function autosaveMetadataSlot(string record) returns int
-	let slot = S2I(metadataField(record, 1))
+	let slot = campaignSlotNumber(metadataField(record, 1))
 	if metadataField(record, 0) == "0"
 		return slot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1
 	return slot
@@ -38,8 +48,9 @@ public function autosaveMetadataSlot(string record) returns int
 public function validAutosaveMetadata(string record) returns boolean
 	let metadataVersion = metadataField(record, 0)
 	let slot = metadataField(record, 1)
+	let slotValue = campaignSlotNumber(slot)
 	let remaining = autosaveMetadataRemaining(record)
-	if (metadataVersion != "0" and metadataVersion != "1") or S2I(slot).toString() != slot or not validAutosaveMetadata(S2I(metadataVersion), S2I(slot), remaining)
+	if (metadataVersion != "0" and metadataVersion != "1") or slotValue.toString() != slot or not validAutosaveMetadata(S2I(metadataVersion), slotValue, remaining)
 		return false
 	return record == metadataVersion + "|" + slot + "|" + clockReal(remaining)
 

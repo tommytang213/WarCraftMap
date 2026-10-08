@@ -36,3 +36,26 @@ remain build outputs. The diagnostic campaign is not a player release. Unrelated
 requirements and dependency coverage remain blocked, and real-client status stays
 `blocked_pending_real_forsaken_kingdom_launch_smoke`. No retail Warcraft execution
 or incremental player testing is claimed.
+
+The integration repair preserves schema 8 alongside main's versioned recovery
+request, and combines both branches' requirement mappings without changing any
+mapping. The incoming help fixture scopes its six obligations explicitly, fixing
+the previous total-mapping-count failure. Recovery fixtures compare against the
+committed autosave state and assert rotation through slot 15. Autosave metadata
+also uses main's bounded decimal parser; six additional malformed slot/exponent
+records verify rejection before authority or timer changes.
+
+The original `validation.json` and logs remain historical evidence. The repair
+evidence is recorded separately in `repair-validation.json` and `repair-*` logs.
+`verify-repair-evidence.py` checks the two autosave requirements together with the
+three merged recovery and six help obligations against the rebuilt diagnostic
+campaign. It verifies the current source identity, all 44 requirement receipts,
+and retained publication blockers. It accepts explicit artifact, execution and
+output directories for reviewing a build copied from a read-only source container.
+
+The final repair run passed all 321 pinned Wurst tests, 923 scenario Python tests
+and 129 automation tests. Both shared-framework campaign variants passed their
+tests and builds with all 157 shared source hashes verified. All 17 physical maps
+typechecked, compiled and passed archive inspection. The artifact-bound audit
+passes all 11 scoped obligations and retains 9,074 publication blockers across
+the wider inventory. No player QA or real-client execution is claimed.

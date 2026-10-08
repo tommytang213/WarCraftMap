@@ -1,0 +1,524 @@
+package CampaignRecoveryTests
+
+import CampaignStartupTests
+import CampaignHandoff
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import CampaignAutosaveScheduler
+import CommandRouter
+import ScenarioSettings
+import PartyLocations
+
+class RecoveryOutput implements CommandOutput
+	string text = ""
+	override function show(player recipient, string message)
+		text += message + "\n"
+
+class RecoveryObserver implements CampaignLoadObserver
+	int calls = 0
+	override function afterCampaignLoad()
+		calls++
+
+/** Capture all storage bytes, including empty/missing distinctions and bootstrap
+ * checkpoints. No command is allowed to rewrite the selected source slot. */
+function storageBytes(StartupStorage storage) returns string
+	var result = ""
+	for i = 0 to storage.count - 1
+		result += storage.keys[i] + "=" + storage.values[i] + "\n"
+	return result
+
+function recoveryCommands(StartupFixture f) returns CommandRegistry
+	return new CommandRegistry(false, 6, new CommandText(), new RecoveryOutput())
+
+function sameMapSlots(int first, int last)
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	f.start("ethiopian_empire")
+	let commands = recoveryCommands(f)
+	registerCampaignSaveCommands(commands, f.campaign)
+	for slot = first to last
+		f.campaign.saves.save(SAVE_SLOT_AUTOSAVE, slot, "saved").assertTrue()
+		// Autosaves persist their post-commit rotation; compare recovery with
+		// that committed state, including the slot following wraparound.
+		f.campaign.autosaves.nextSlotIndex().assertEquals(slot mod CAMPAIGN_AUTOSAVE_SLOT_COUNT + 1)
+		let wanted = f.campaign.state.captureAuthoritativeState()
+		let bytes = storageBytes(f.saves)
+		f.campaign.identity.changeAllegiance("portugal").assertTrue()
+		commands.dispatch(null, "/load autosave " + slot.toString()).assertTrue()
+		f.campaign.diagnostic().assertEquals("")
+		f.campaign.state.captureAuthoritativeState().assertEquals(wanted)
+		storageBytes(f.saves).assertEquals(bytes)
+	f.ports.loads.assertEquals(1)
+	f.cache.contains(CAMPAIGN_RECOVERY_REQUEST).assertFalse()
+	commands.dispatch(null, "/saves autosave").assertTrue()
+	((commands.output castTo RecoveryOutput).text.indexOf(campaignSlotId(SAVE_SLOT_AUTOSAVE, last) + ": africa") >= 0).assertTrue()
+
+@test function registeredRecoveryLoadsAutosavesOneThroughFive()
+	sameMapSlots(1, 5)
+
+@test function registeredRecoveryLoadsAutosavesSixThroughTen()
+	sameMapSlots(6, 10)
+
+@test function registeredRecoveryLoadsAutosavesElevenThroughFifteen()
+	sameMapSlots(11, 15)
+
+@test function registeredRecoveryListsAndLoadsManualAndCheckpoints()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	f.start("ethiopian_empire")
+	let commands = recoveryCommands(f)
+	registerCampaignSaveCommands(commands, f.campaign)
+	let previousTimer = bj_gameStartedTimer
+	bj_gameStartedTimer = CreateTimer()
+	commands.dispatch(null, "/save 123").assertTrue()
+	DestroyTimer(bj_gameStartedTimer)
+	bj_gameStartedTimer = previousTimer
+	f.saves.contains("manual_123").assertTrue()
+	let wanted = f.campaign.state.captureAuthoritativeState()
+	let bytes = storageBytes(f.saves)
+	commands.dispatch(null, "/saves manual 120").assertTrue()
+	commands.dispatch(null, "/saves").assertTrue()
+	let output = commands.output castTo RecoveryOutput
+	(output.text.indexOf("manual_123: africa") >= 0).assertTrue()
+	(output.text.indexOf("session_start: africa") >= 0).assertTrue()
+	(output.text.indexOf("major_milestone: africa") >= 0).assertTrue()
+	commands.dispatch(null, "/load manual 123").assertTrue()
+	f.campaign.diagnostic().assertEquals("")
+	commands.dispatch(null, "/load 123").assertTrue()
+	f.campaign.diagnostic().assertEquals("")
+	commands.dispatch(null, "/load session_start").assertTrue()
+	f.campaign.diagnostic().assertEquals("")
+	commands.dispatch(null, "/load major_milestone").assertTrue()
+	f.campaign.diagnostic().assertEquals("")
+	f.campaign.state.captureAuthoritativeState().assertEquals(wanted)
+	storageBytes(f.saves).assertEquals(bytes)
+	f.ports.loads.assertEquals(1)
+
+/** A saved archive on A is selected in an independently active map B. The
+ * recording storage boundary connects that archive after B's normal startup;
+ * all selection, destination registration and reconstruction are production. */
+function crossMapSlot(int kind, int index, string command)
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	// Move away from the authored spawn, preserving connected terrain.
+	let nav = source.campaign.state.partyNavigation
+	let x = source.ports.memberX[1]
+	let y = source.ports.memberY[1]
+	var moved = false
+	for distanceStep = 1 to 8
+		if not moved and nav.componentAt(x + distanceStep * 64., y) == nav.componentAt(x, y)
+			source.ports.memberX[1] = x + distanceStep * 64.
+			moved = true
+	moved.assertTrue()
+	source.campaign.identity.changeAllegiance("portugal").assertTrue()
+	source.trade.hold.money = 4321
+	source.campaign.saves.save(kind, index, "map-a-moved").assertTrue()
+	let wanted = source.campaign.state.captureAuthoritativeState()
+	let selected = source.saves.read(campaignSlotId(kind, index))
+	let active = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	active.start("aq_qoyunlu")
+	active.campaign.saves.storage = source.saves
+	let commands = recoveryCommands(active)
+	registerCampaignSaveCommands(commands, active.campaign)
+	let before = active.campaign.state.captureAuthoritativeState()
+	let bytes = storageBytes(source.saves)
+	commands.dispatch(null, command).assertTrue()
+	active.campaign.diagnostic().assertEquals("")
+	active.campaign.state.captureAuthoritativeState().assertEquals(before)
+	active.ports.loads.assertEquals(2)
+	active.ports.destination.assertEquals(scenarioPhysicalMapPath("africa"))
+	let request = decodeCampaignRecoveryRequest(active.cache.read(CAMPAIGN_RECOVERY_REQUEST))
+	request.status.assertEquals("pending")
+	request.payload.assertEquals(selected)
+	let destination = new StartupFixture(active.cache, source.saves, "africa")
+	destination.campaign.startup().assertFalse()
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(wanted)
+	destination.campaign.identity.physicalMapId().assertEquals("africa")
+	destination.campaign.identity.allegianceId().assertEquals("portugal")
+	destination.ports.memberX[1].assertEquals(source.ports.memberX[1])
+	destination.ports.memberY[1].assertEquals(source.ports.memberY[1])
+	destination.trade.hold.money.assertEquals(4321)
+	storageBytes(source.saves).assertEquals(bytes)
+	decodeCampaignRecoveryRequest(active.cache.read(CAMPAIGN_RECOVERY_REQUEST)).status.assertEquals("consumed")
+	let writes = active.cache.writes
+	let spawns = destination.ports.spawns
+	destination.campaign.startup().assertTrue()
+	let retryCommands = recoveryCommands(destination)
+	registerCampaignSaveCommands(retryCommands, destination.campaign)
+	retryCommands.dispatch(null, "/load retry").assertTrue()
+	retryCommands.dispatch(null, "/load retry").assertTrue()
+	destination.ports.loads.assertEquals(0)
+	destination.ports.spawns.assertEquals(spawns)
+	active.cache.writes.assertEquals(writes)
+	storageBytes(source.saves).assertEquals(bytes)
+
+@test function registeredManualRecoveryLoadsRecordedPhysicalMap()
+	crossMapSlot(SAVE_SLOT_MANUAL, 1, "/load 1")
+
+@test function registeredAutosaveRecoveryLoadsRecordedPhysicalMap()
+	crossMapSlot(SAVE_SLOT_AUTOSAVE, 15, "/load autosave 15")
+
+@test function registeredSessionRecoveryLoadsRecordedPhysicalMap()
+	crossMapSlot(SAVE_SLOT_SESSION_START, 0, "/load session_start")
+
+@test function registeredMilestoneRecoveryLoadsRecordedPhysicalMap()
+	crossMapSlot(SAVE_SLOT_MAJOR_MILESTONE, 0, "/load major_milestone")
+
+@test function malformedRecoveryArgumentsNeverSelectAnotherSlot()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	f.start("ethiopian_empire")
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "existing").assertTrue()
+	let commands = recoveryCommands(f)
+	registerCampaignSaveCommands(commands, f.campaign)
+	let before = f.campaign.state.captureAuthoritativeState()
+	let bytes = storageBytes(f.saves)
+	let bootstrap = storageBytes(f.cache)
+	let observer = new RecoveryObserver()
+	f.campaign.saves.setLoadObserver(observer)
+	string array[20] bad
+	bad[0] = ""
+	bad[1] = "0"
+	bad[2] = "-1"
+	bad[3] = "1junk"
+	bad[4] = "1.5"
+	bad[5] = "01"
+	bad[6] = "+1"
+	bad[7] = "2147483648"
+	bad[8] = "4294967297"
+	bad[9] = "manual"
+	bad[10] = "manual 1x"
+	bad[11] = "autosave"
+	bad[12] = "autosave 0"
+	bad[13] = "autosave 16"
+	bad[14] = "autosave 1.0"
+	bad[15] = "session_start 1"
+	bad[16] = "major_milestone 0"
+	bad[17] = "manual 1 extra"
+	bad[18] = "retry 1"
+	bad[19] = "manual_01"
+	for i = 0 to 19
+		commands.dispatch(null, "/load " + bad[i])
+		commands.dispatch(null, "/save " + bad[i])
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+		storageBytes(f.saves).assertEquals(bytes)
+		storageBytes(f.cache).assertEquals(bootstrap)
+	observer.calls.assertEquals(0)
+	f.ports.loads.assertEquals(1)
+
+@test function rejectedRecoveryEnvelopesAndDestinationsPreserveAuthority()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	f.start("ethiopian_empire")
+	let commands = recoveryCommands(f)
+	registerCampaignSaveCommands(commands, f.campaign)
+	let before = f.campaign.state.captureAuthoritativeState()
+	let bootstrap = storageBytes(f.cache)
+	commands.dispatch(null, "/load 1").assertTrue()
+	f.saves.contains("manual_01").assertFalse()
+	string array[8] bad
+	bad[0] = "corrupt"
+	bad[1] = campaignSaveEnvelope(999, "manual_01", SAVE_SLOT_MANUAL, 1, "future", before)
+	bad[2] = campaignSaveEnvelope(7, "manual_02", SAVE_SLOT_MANUAL, 2, "wrong-slot", before)
+	bad[3] = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_AUTOSAVE, 1, "wrong-kind", before)
+	bad[4] = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "foreign", replaceCampaignField(before, "world", "instance:foreign"))
+	bad[5] = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "missing-map", replaceCampaignField(before, "map", "missing"))
+	bad[6] = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "selector", replaceCampaignField(before, "map", SCENARIO_BOOTSTRAP_MAP_ID))
+	bad[7] = campaignSaveEnvelope(7, "manual_01", SAVE_SLOT_MANUAL, 1, "wrong-region", replaceCampaignField(before, "region", "europe"))
+	for i = 0 to 7
+		f.saves.writeTransactional("manual_01", bad[i]).assertTrue()
+		let bytes = storageBytes(f.saves)
+		commands.dispatch(null, "/load 1").assertTrue()
+		(f.campaign.diagnostic() != "").assertTrue()
+		f.campaign.state.captureAuthoritativeState().assertEquals(before)
+		storageBytes(f.saves).assertEquals(bytes)
+		storageBytes(f.cache).assertEquals(bootstrap)
+	f.ports.loads.assertEquals(1)
+
+class RecoveryTrip
+	StartupFixture source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	StartupFixture active = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	CommandRegistry commands
+	string wanted
+	string bytes
+	construct()
+		source.start("ethiopian_empire")
+		source.trade.hold.money = 4321
+		source.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "source-a").assertTrue()
+		wanted = source.campaign.state.captureAuthoritativeState()
+		bytes = storageBytes(source.saves)
+		active.start("aq_qoyunlu")
+		active.campaign.saves.storage = source.saves
+		commands = recoveryCommands(active)
+
+@test function failedRecoveryRequestWriteNeverInvokesLoader()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	let before = trip.active.campaign.state.captureAuthoritativeState()
+	let bootstrap = storageBytes(trip.active.cache)
+	trip.active.cache.failKey = CAMPAIGN_RECOVERY_REQUEST
+	commands.dispatch(null, "/load 1").assertTrue()
+	(trip.active.campaign.diagnostic() != "").assertTrue()
+	trip.active.campaign.state.captureAuthoritativeState().assertEquals(before)
+	trip.active.campaign.state.isSaveSafe().assertTrue()
+	trip.active.ports.loads.assertEquals(1)
+	storageBytes(trip.active.cache).assertEquals(bootstrap)
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+	commands.dispatch(null, "/load 1").assertTrue()
+	trip.active.ports.loads.assertEquals(2)
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+
+@test function destinationFailuresRetainDurableRequestWithoutActivation()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let pending = trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST)
+	let destination = new StartupFixture(trip.active.cache, trip.source.saves, "africa")
+	destination.register()
+	let observer = new RecoveryObserver()
+	destination.campaign.saves.setLoadObserver(observer)
+	let authority = destination.campaign.state.authorityDocument()
+	let rpg = destination.campaign.state.rpg.captureState()
+	let trade = destination.trade.capture()
+	let clock = destination.clock.captureState()
+	destination.ports.failAfterFirstMember = true
+	destination.campaign.startup().assertFalse()
+	destination.campaign.state.rpg.captureState().assertEquals(rpg)
+	destination.trade.capture().assertEquals(trade)
+	destination.clock.captureState().assertEquals(clock)
+	destination.ports.activePlayers.assertEquals(0)
+	destination.campaign.state.authorityDocument().assertEquals(authority)
+	observer.calls.assertEquals(0)
+	trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST).assertEquals(pending)
+	destination.ports.failAfterFirstMember = false
+	trip.active.cache.failKey = CAMPAIGN_RECOVERY_REQUEST
+	destination.campaign.startup().assertFalse()
+	destination.campaign.state.authorityDocument().assertEquals(authority)
+	destination.campaign.state.rpg.captureState().assertEquals(rpg)
+	destination.trade.capture().assertEquals(trade)
+	destination.campaign.identity.hasOrigin().assertFalse()
+	destination.campaign.started.assertFalse()
+	destination.ports.activePlayers.assertEquals(0)
+	observer.calls.assertEquals(0)
+	trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST).assertEquals(pending)
+	let retry = recoveryCommands(destination)
+	registerCampaignSaveCommands(retry, destination.campaign)
+	retry.dispatch(null, "/load retry").assertTrue()
+	retry.dispatch(null, "/load retry").assertTrue()
+	destination.ports.loads.assertEquals(2)
+	trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST).assertEquals(pending)
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(trip.wanted)
+	observer.calls.assertEquals(1)
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+	recoveryReceipt("failure")
+
+@test function consumedRecoveryReconstructsAfterAcknowledgementInterruption()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	// Model process interruption after the transactional consumed write but
+	// before in-memory activation. No gameplay state is changed by this seam.
+	let request = decodeCampaignRecoveryRequest(trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST))
+	request.status = "consumed"
+	trip.active.cache.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode()).assertTrue()
+	let writes = trip.active.cache.writes
+	let destination = new StartupFixture(trip.active.cache, trip.source.saves, "africa")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(trip.wanted)
+	destination.campaign.startup().assertTrue()
+	trip.active.cache.writes.assertEquals(writes)
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+	recoveryReceipt("replay")
+
+@test function durableRecoveryRejectsCorruptForeignAndWrongDestinationRequests()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let pending = trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST)
+	let destination = new StartupFixture(trip.active.cache, trip.source.saves, "middle_east_india")
+	destination.register()
+	let before = destination.campaign.state.authorityDocument()
+	destination.campaign.startup().assertFalse()
+	destination.campaign.started.assertFalse()
+	destination.campaign.state.authorityDocument().assertEquals(before)
+	let request = decodeCampaignRecoveryRequest(pending)
+	request.scenario = "another-campaign"
+	trip.active.cache.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode()).assertTrue()
+	destination.campaign.startup().assertFalse()
+	request.scenario = SCENARIO_CAMPAIGN_ID
+	request.mapId = "middle_east_india"
+	trip.active.cache.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode()).assertTrue()
+	destination.campaign.startup().assertFalse()
+	trip.active.cache.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, pending + "corruption").assertTrue()
+	destination.campaign.startup().assertFalse()
+	destination.campaign.state.authorityDocument().assertEquals(before)
+	destination.campaign.identity.hasOrigin().assertFalse()
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+	recoveryReceipt("stale")
+
+@test function laterBoundaryTravelSupersedesConsumedRecovery()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let recovered = new StartupFixture(trip.active.cache, trip.source.saves, "africa")
+	recovered.register()
+	recovered.campaign.startup().assertTrue()
+	// Model a subsequent normal boundary load through the original loader seam.
+	// Its physical path is intentionally distinct from the consumed request.
+	recovered.campaign.travel.loader = new RecoveryTravelLoader()
+	recovered.campaign.travel.transition(recovered.campaign.state.boundary("africa_to_middle_east_india"), .37, "later-travel").assertTrue()
+	let traveling = new StartupFixture(trip.active.cache, trip.source.saves, "middle_east_india")
+	traveling.register()
+	traveling.campaign.startup().assertTrue()
+	traveling.campaign.identity.physicalMapId().assertEquals("middle_east_india")
+	traveling.trade.hold.money.assertEquals(4321)
+	let retry = recoveryCommands(traveling)
+	registerCampaignSaveCommands(retry, traveling.campaign)
+	retry.dispatch(null, "/load retry").assertTrue()
+	(traveling.campaign.diagnostic() != "").assertTrue()
+	traveling.ports.loads.assertEquals(0)
+	trip.source.saves.read("manual_01").assertEquals(trip.source.campaign.saves.codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "source-a", trip.wanted))
+
+class RecoveryTravelLoader implements PhysicalMapLoader
+	override function load(string path)
+		path.assertEquals(scenarioPhysicalMapPath("middle_east_india"))
+
+@test function ordinarySavedArrivalIsNotReplayedByCrossMapRecovery()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.travel.transition(source.campaign.state.boundary("africa_to_middle_east_india"), .37, "travel").assertTrue()
+	let moved = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	moved.register()
+	moved.campaign.startup().assertTrue()
+	moved.ports.memberX[1] += 64.
+	moved.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "after-arrival").assertTrue()
+	let wanted = moved.campaign.state.captureAuthoritativeState()
+	let commands = recoveryCommands(source)
+	registerCampaignSaveCommands(commands, source.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	// Only the old boundary corridor is unavailable; saved coordinates remain
+	// valid on the destination's generated navigation and recording pathing.
+	destination.campaign.state.boundary("africa_to_middle_east_india").destination.count = 0
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(wanted)
+	destination.ports.memberX[1].assertEquals(moved.ports.memberX[1])
+	destination.ports.memberY[1].assertEquals(moved.ports.memberY[1])
+
+function recoveryReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"REQ-0185.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"campaign-recovery-command\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0186.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"campaign-recovery-command\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0190.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"campaign-recovery-command\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function registeredRecoveryRestoresAuthorityAndLocations()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let destination = new StartupFixture(trip.active.cache, trip.source.saves, "africa")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(trip.wanted)
+	destination.ports.memberX[1].assertEquals(trip.source.ports.memberX[1])
+	destination.ports.memberY[1].assertEquals(trip.source.ports.memberY[1])
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+	decodeCampaignRecoveryRequest(trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST)).status.assertEquals("consumed")
+	recoveryReceipt("success")
+
+function legacyRecoverySchema(int schema)
+	let trip = new RecoveryTrip()
+	let slot = "manual_01"
+	// Historical envelopes with explicitly carried authority/positions retain
+	// those fields. Existing startup tests also cover coordinate-less defaults.
+	let payload = campaignSaveEnvelope(schema, slot, SAVE_SLOT_MANUAL, 1, "supported-history", trip.wanted)
+	trip.source.saves.writeTransactional(slot, payload).assertTrue()
+	let bytes = storageBytes(trip.source.saves)
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	trip.active.campaign.diagnostic().assertEquals("")
+	let destination = new StartupFixture(trip.active.cache, trip.source.saves, "africa")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.state.captureAuthoritativeState().assertEquals(trip.wanted)
+	storageBytes(trip.source.saves).assertEquals(bytes)
+
+@test function recoveryPreservesSchemaOne()
+	legacyRecoverySchema(1)
+
+@test function recoveryPreservesSchemaTwo()
+	legacyRecoverySchema(2)
+
+@test function recoveryPreservesSchemaThree()
+	legacyRecoverySchema(3)
+
+@test function recoveryPreservesSchemaFour()
+	legacyRecoverySchema(4)
+
+@test function recoveryPreservesSchemaFive()
+	legacyRecoverySchema(5)
+
+@test function recoveryPreservesSchemaSix()
+	legacyRecoverySchema(6)
+
+@test function recoveryPreservesSchemaSeven()
+	legacyRecoverySchema(7)
+
+@test function laterOriginSelectionSupersedesPendingRecovery()
+	let trip = new RecoveryTrip()
+	let commands = trip.commands
+	registerCampaignSaveCommands(commands, trip.active.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let pending = trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST)
+	let selected = trip.source.saves.read("manual_01")
+	let fresh = new StartupFixture(trip.active.cache, trip.source.saves, "middle_east_india")
+	fresh.handoff.loader = new RecoveryTravelLoader()
+	fresh.start("aq_qoyunlu")
+	fresh.campaign.identity.originId().assertEquals("aq_qoyunlu")
+	fresh.campaign.identity.physicalMapId().assertEquals("middle_east_india")
+	trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST).assertEquals(pending)
+	trip.source.saves.read("manual_01").assertEquals(selected)
+
+@test function recoverySlotParsingIsBoundedBeforeNativeIntegerConversion()
+	campaignSlotNumber("2147483647").assertEquals(2147483647)
+	campaignSlotNumber("2147483648").assertEquals(0)
+	campaignSlotNumber("999999999999999999999999999999999").assertEquals(0)
+	campaignSlotNumber("1e2").assertEquals(0)
+	campaignSlotNumber("01").assertEquals(0)
+	campaignSlotNumber("1junk").assertEquals(0)
+	campaignSlotNumber("-1").assertEquals(0)
+	campaignSlotNumber("15").assertEquals(15)
+
+@test function recoverySupersedesInterruptedOriginEvenAfterLaterTravel()
+	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.trade.hold.money = 4321
+	source.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "older-campaign").assertTrue()
+	let selected = source.saves.read("manual_01")
+	let interrupted = new StartupFixture(new StartupStorage(), source.saves, "middle_east_india")
+	interrupted.choose("aq_qoyunlu")
+	interrupted.register()
+	interrupted.cache.failKey = HANDOFF_REQUEST
+	interrupted.campaign.startup().assertFalse()
+	interrupted.handoff.readRequest().status.assertEquals("pending")
+	let commands = recoveryCommands(interrupted)
+	registerCampaignSaveCommands(commands, interrupted.campaign)
+	commands.dispatch(null, "/load 1").assertTrue()
+	let recovered = new StartupFixture(interrupted.cache, source.saves, "africa")
+	recovered.register()
+	recovered.campaign.startup().assertTrue()
+	recovered.campaign.identity.originId().assertEquals("ethiopian_empire")
+	recovered.campaign.travel.loader = new RecoveryTravelLoader()
+	recovered.campaign.travel.transition(recovered.campaign.state.boundary("africa_to_middle_east_india"), .37, "after-recovery").assertTrue()
+	let destination = new StartupFixture(interrupted.cache, source.saves, "middle_east_india")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.campaign.identity.originId().assertEquals("ethiopian_empire")
+	destination.trade.hold.money.assertEquals(4321)
+	source.saves.read("manual_01").assertEquals(selected)
