@@ -129,9 +129,20 @@ public class CampaignSaveManager
 		saving = false
 
 	function setLoadObserver(CampaignLoadObserver observer)
+		for i = 0 to loadObserverCount - 1
+			if loadObservers[i] == observer
+				return
 		if observer != null and loadObserverCount < 16
 			loadObservers[loadObserverCount] = observer
 			loadObserverCount++
+	function removeLoadObserver(CampaignLoadObserver observer)
+		for i = 0 to loadObserverCount - 1
+			if loadObservers[i] == observer
+				for j = i to loadObserverCount - 2
+					loadObservers[j] = loadObservers[j + 1]
+				loadObserverCount--
+				loadObservers[loadObserverCount] = null
+				return
 
 	function save(int kind, int index, string createdAt) returns boolean
 		if saving

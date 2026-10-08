@@ -1,5 +1,38 @@
 # Issue #414 validation
 
+## Merge integration repair
+
+The eight merge conflicts are resolved while retaining live recovery, main's
+settlement authority and protection lifecycle, and both parser optimizations.
+Recovery geography now joins the earlier physical-map configuration used by
+settlement generation, without generating the same geography twice.
+
+Both branches previously emitted military v4 with different settlement layouts.
+Military v5 combines policy and recovery hints, with explicit migration for both
+v4 layouts and continued v1–v3 support. The new regression preserves saved hints,
+resources and offices, fills absent legacy authority from definitions, repairs
+known legacy rawcodes, and rejects mixed layouts without mutation. Campaign v8,
+RPG v3, trade v3 and party locations v1 remain supported.
+
+[merge-validation.json](merge-validation.json) records the fresh local validation.
+All 345 pinned Wurst tests, 931 scenario Python tests and 129 automation tests
+pass. Both framework variants pass 2/2 tests and compile; all 17 campaign maps
+compile and pass archive inspection. The 12 recovery obligations have 48 passing
+production receipts, and all 16 gameplay maps have four recovery grids verified
+against packaged WPM. Main's 12 scoped obligations, all 827 settlement/market
+authorities and their projection policies also pass.
+
+The `merge-*` receipts refer to the combined source digest and rebuilt campaign;
+the older receipts below describe their own source revisions. Validation uses
+the existing worktree-local pinned compiler and bundled JRE, with no containers,
+global tooling changes, commits, pushes, GitHub writes or player QA.
+
+After rebuilding, reproduce the scoped receipts and navigation inspection with:
+
+```sh
+python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py --prefix merge
+```
+
 ## PR #423 interpreter timeout repair
 
 The [subsequent Wurst job](https://github.com/tommytang213/WarCraftMap/actions/runs/37787494713/job/113345907853)

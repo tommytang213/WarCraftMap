@@ -1,0 +1,124 @@
+{
+  "evidenceFiles": {
+    "merge-automation.log.gz": "66afd8635e1561a0d54a20af07bb5ecb5748eee3e96bc6716df55d94e4d1fc0c",
+    "merge-evidence.log.gz": "3d8f3e9a6a1b68c55f5784cc61ee1bb50d571a5ccf52d6140a7f12ccd1431cb4",
+    "merge-framework-mutated-results.json.gz": "7c0979ad0e4c4c81a87c0446e5105d47642b9aaad6ba247be0edc197dc2f122a",
+    "merge-framework-original-results.json.gz": "8f15c564561dd5efaf0faaca708dec389807a86cfaab13e089a4450f755825c9",
+    "merge-framework-report.json.gz": "8f6006aa5d03def221763ee4ad10b83ebeed98ab03ec89e77920ee8476b82963",
+    "merge-framework.log.gz": "2da580a2fdd2bc85ab4cb912ea84a09da4ab681f0553eed11b7cb4e2752e0ba1",
+    "merge-main-regressions.json.gz": "8581d3bf4dd66efe95df4c102c7e86a227e0ec068f8c71a8f961f8d61057d97e",
+    "merge-packaged-navigation.json.gz": "2e2fbc479dd655a0c4b1d3f28237e51bfb661499afc9c9bd23075adf11b7cbde",
+    "merge-packaging.log.gz": "4e3d33fe2971eb71dc2adf599f5c9786e4985817222eb91d64d2992bd5b3f308",
+    "merge-python.log.gz": "066606c622b35835cc9aa502eb9ac783e6af7d8abc3458a0b1c0a168f89d21f7",
+    "merge-runtime-artifact.json.gz": "2062392dc5922339975b0546779f8b7e493485110ae1cca877567e04f8d50109",
+    "merge-scoped-traceability.json.gz": "b7d531bf81b1fe331e45883c3ce00e8925dad522dc28e6ce98f7cecc375b6292",
+    "merge-wurst-execution.log.gz": "d534b214190c514589a98b3aa92b9b966aeca16cd9b7f90ed54eae5f76128e8e",
+    "merge-wurst-results.json.gz": "a98f5471b47ae8101d64cd4132817bb6223b1a0788549f1f786bde71b83b8e6f"
+  },
+  "format": "warcraftmap_issue_414_merge_validation_v1",
+  "framework": {
+    "mutatedArchiveSha256": "9bbfb09415482db6d00d549eb21026909088145a5f7793a9e110f6e6f45d976f",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "eaeb62338ab98aa880eb6e198fd414c1e9f17c3a273309108f146999a14146d6",
+    "originalTestsPassed": 2,
+    "status": "pass",
+    "unchangedSharedSourceFiles": 160
+  },
+  "implementationStatus": "ready_for_repository_validation",
+  "initialRun": {
+    "failuresResolved": [
+      "two assertions expected the old military version",
+      "new literal migration fixture needed canonical clock encoding"
+    ],
+    "note": "Final clean run above executes all 345 tests against the final source identity.",
+    "testsDiscovered": 345,
+    "testsPassed": 342
+  },
+  "merge": {
+    "conflictedPathsResolved": 8,
+    "integrationChange": "Military v5 combines policy and recovery hints; both historical v4 layouts and v1-v3 migrate. Malformed or mixed layouts reject before mutation.",
+    "preserved": [
+      "live recovery and map-local navigation",
+      "abstract settlement authority and trade v3",
+      "god-mode protection lifecycle",
+      "military record/index and campaign field lookup optimizations"
+    ],
+    "unmergedPaths": []
+  },
+  "packaging": {
+    "artifactSha256": "d46ea7c43681aec62556f85b92b9fff61a0a10401a0fa4ea4c61b7d219044716",
+    "driver": "reports/issue-414/packaging-driver.py via existing _build/issue414-ci-repair-package.py, using the second local pinned toolchain",
+    "gameplayMapsWithFourRecoveryGridsVerifiedAgainstWpm": 16,
+    "physicalMaps": 17,
+    "status": "pass"
+  },
+  "pinnedWurst": {
+    "command": "python3 maps/historical-world-rpg/_shared/tooling/run_wurst_tests.py maps/historical-world-rpg/age-of-sail-world/package.json --grill \"$PWD/_build/grill-offline\"",
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "status": "pass",
+    "testsDiscovered": 345,
+    "testsPassed": 345
+  },
+  "python": {
+    "automationTests": 129,
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests",
+    "negativeFixtureDiagnostics": "Expected injected compiler, disk and evidence failures appear in the successful suite log.",
+    "scenarioSeconds": 1674.896,
+    "scenarioTests": 931,
+    "status": "pass"
+  },
+  "releaseScope": "Ready for outer repository validation. Broader publication blockers and native-client release certification remain outside this integration repair.",
+  "restrictions": {
+    "commitsOrPushes": false,
+    "containersUsed": false,
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false
+  },
+  "schemas": {
+    "campaign": 8,
+    "militarySettlements": 5,
+    "militarySupportedSources": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "partyLocations": 1,
+    "rpg": 3,
+    "trade": 3
+  },
+  "sourceChecks": {
+    "checks": [
+      "framework boundary",
+      "both scenario world validators",
+      "Europe geography",
+      "canonical map source",
+      "traceability freshness",
+      "git diff --check"
+    ],
+    "status": "pass"
+  },
+  "sourceIdentity": {
+    "sourceRevision": "faa607259ccdf707ed604c0f4f1c3dde7fb36815",
+    "sourceTreeSha256": "c1608dcf02d84557a898045154e5fbbb60a2c99f7592b639e088d23c271e37c2"
+  },
+  "traceability": {
+    "command": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py --prefix merge",
+    "mainObligationsPreserved": 12,
+    "outOfScopeBlockerCount": 8788,
+    "recoveryObligations": 12,
+    "recoveryProductionReceipts": 48,
+    "scopedBlockers": [],
+    "settlementAndMarketAuthorities": 827,
+    "status": "pass"
+  },
+  "validatedAt": "2026-10-08T21:19:01.850874+00:00"
+}

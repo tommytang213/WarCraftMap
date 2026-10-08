@@ -8,6 +8,7 @@ import CommandRouter
 import UnstuckRecovery
 import WarcraftRecoveryRuntime
 import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
 import WarcraftRpgRuntime
 import PartyLocations
 import WC3Compatibility
@@ -411,7 +412,7 @@ function displaceWithinComponent(LiveRecoveryFixture f, unit target, string id)
 	(hint > 0).assertTrue()
 	let rest = SubString(current, hint + 1, StringLength(current))
 	let next = rest.indexOf("|")
-	let legacy = "v3" + SubString(current, 2, hint) + SubString(rest, next, StringLength(rest))
+	let legacy = withoutMilitarySettlementPolicy("v3" + SubString(current, 2, hint) + SubString(rest, next, StringLength(rest)))
 	military.restore(legacy).assertTrue()
 	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("")
 	state.recovery.refresh()

@@ -1,0 +1,475 @@
+package InstalledGodModeTests
+
+import PlayerGodMode
+import RuntimeProtection
+import WC3Compatibility
+import CommandRouter
+import CampaignSaveManager
+import CampaignStartupTests
+import MilitarySettlementRuntime
+import Wurstunit
+
+/** Real interpreter handles, with recordable lifetime, ownership and native
+ * invulnerability writes. The production runtime and claim registry are used. */
+class GodWorld implements UnitProtectionNatives
+	unit array[64] units
+	int array[64] owners
+	boolean array[64] present
+	boolean array[64] invulnerable
+	int count = 0
+	int writes = 0
+	unit lastRecipient = null
+	function index(unit target) returns int
+		for i = 0 to count - 1
+			if units[i] == target
+				return i
+		return -1
+	function add(int owner, int typeId) returns unit
+		let target = CreateUnit(Player(owner), typeId, 0., 0., 0.)
+		units[count] = target
+		owners[count] = owner
+		present[count] = true
+		count++
+		return target
+	function remove(unit target)
+		present[index(target)] = false
+		RemoveUnit(target)
+	override function exists(unit target) returns boolean
+		let found = index(target)
+		return target != null and found >= 0 and present[found]
+	override function isInvulnerable(unit target) returns boolean
+		exists(target).assertTrue()
+		return invulnerable[index(target)]
+	override function setInvulnerable(unit target, boolean value)
+		exists(target).assertTrue()
+		invulnerable[index(target)] = value
+		lastRecipient = target
+		writes++
+
+class GodEvents implements GodModeNatives
+	GodWorld world
+	trigger listener = null
+	trigger context = null
+	eventid kind = null
+	unit producer = null
+	unit recipient = null
+	int cursor = 0
+	int registrations = 0
+	int retirements = 0
+	int selections = 0
+	hashtable subscriptions = InitHashtable()
+	construct(GodWorld world)
+		this.world = world
+	override function enumerateUnits()
+		cursor = 0
+	override function nextUnit() returns unit
+		while cursor < world.count
+			let found = cursor
+			cursor++
+			if world.present[found]
+				return world.units[found]
+		return null
+	override function ownerIndex(unit target) returns int
+		return world.owners[world.index(target)]
+	override function registerEnter(trigger listener)
+		(this.listener == null).assertTrue()
+		this.listener = listener
+		registrations++
+	override function registerPlayerEvent(trigger listener, player owner, playerunitevent eventType)
+		(this.listener == listener).assertTrue()
+		let id = GetHandleId(eventType)
+		let slot = GetPlayerId(owner)
+		HaveSavedBoolean(subscriptions, id, slot).assertFalse()
+		SaveBoolean(subscriptions, id, slot, true)
+		registrations++
+	override function registerSweep(trigger listener)
+		(this.listener == listener).assertTrue()
+		registrations++
+	override function retire(trigger listener)
+		(this.listener == listener).assertTrue()
+		this.listener = null
+		retirements++
+		// Keep the action callable to exercise an already queued obsolete event.
+	override function eventListener() returns trigger
+		return context
+	override function eventId() returns eventid
+		return kind
+	override function triggerUnit() returns unit
+		selections++
+		if kind == EVENT_PLAYER_UNIT_CHANGE_OWNER
+			return recipient
+		return producer
+	override function enteringUnit() returns unit
+		selections++
+		if kind == EVENT_GAME_ENTER_REGION
+			return recipient
+		return producer
+	override function summonedUnit() returns unit
+		selections++
+		if kind == EVENT_PLAYER_UNIT_SUMMON
+			return recipient
+		return producer
+	override function trainedUnit() returns unit
+		selections++
+		if kind == EVENT_PLAYER_UNIT_TRAIN_FINISH
+			return recipient
+		return producer
+	override function constructedUnit() returns unit
+		selections++
+		if kind == EVENT_PLAYER_UNIT_CONSTRUCT_FINISH
+			return recipient
+		return producer
+	function queued(trigger listener, eventid kind, unit producer, unit recipient)
+		context = listener
+		this.kind = kind
+		this.producer = producer
+		this.recipient = recipient
+		TriggerEvaluate(listener)
+		context = null
+	function deliver(eventid kind, unit producer, unit recipient)
+		(listener != null).assertTrue()
+		if kind != EVENT_GAME_ENTER_REGION and kind != EVENT_GAME_TIMER_EXPIRED
+			// A neutral producer/previous owner is subscribed as well.
+			HaveSavedBoolean(subscriptions, GetHandleId(kind), world.owners[world.index(producer)]).assertTrue()
+		queued(listener, kind, producer, recipient)
+	function sweep()
+		deliver(EVENT_GAME_TIMER_EXPIRED, null, null)
+
+class GodChat implements CommandChatNatives
+	trigger listener = null
+	trigger context = null
+	string message = ""
+	player sender = null
+	int registrations = 0
+	override function registerChat(trigger listener, player owner, string prefix, boolean exact)
+		prefix.assertEquals("/")
+		exact.assertFalse()
+		this.listener = listener
+		registrations++
+	override function retire(trigger listener)
+		DestroyTrigger(listener)
+	override function eventListener() returns trigger
+		return context
+	override function eventPlayer() returns player
+		return sender
+	override function eventText() returns string
+		return message
+	function deliver(string message)
+		this.message = message
+		sender = Player(0)
+		context = listener
+		TriggerEvaluate(listener)
+		context = null
+
+class GodOutput implements CommandOutput
+	string last = ""
+	int calls = 0
+	override function show(player recipient, string message)
+		(recipient == Player(0)).assertTrue()
+		last = message
+		calls++
+
+class GodFixture
+	StartupFixture startup = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	GodWorld world = new GodWorld()
+	GodEvents events = new GodEvents(world)
+	GodChat chat = new GodChat()
+	GodOutput output = new GodOutput()
+	CommandRegistry registry = createCommandRegistry(false, output)
+	PlayerGodModeController controller
+	UnitProtectionNatives previousNatives
+	string before
+	int observerCount
+	construct()
+		startup.start("england")
+		previousNatives = compatUnitProtection().natives
+		compatUnitProtection().count.assertEquals(0)
+		compatUnitProtection().natives = world
+		observerCount = startup.campaign.saves.loadObserverCount
+		controller = installPlayerGodMode(registry, startup.campaign.saves, events, output)
+		installCommandRegistry(registry, chat)
+		chat.registrations.assertEquals(bj_MAX_PLAYERS)
+		events.registrations.assertEquals(2 + 4 * bj_MAX_PLAYER_SLOTS)
+		startup.campaign.saves.loadObserverCount.assertEquals(observerCount + 1)
+		controller.isEnabled(0).assertFalse()
+		before = startup.campaign.state.captureAuthoritativeState()
+	function unchanged()
+		startup.campaign.state.captureAuthoritativeState().assertEquals(before)
+	function close()
+		uninstallCommandRegistry()
+		let retired = events.listener
+		uninstallPlayerGodMode()
+		DestroyTrigger(retired)
+		startup.campaign.saves.loadObserverCount.assertEquals(observerCount)
+		for i = 0 to world.count - 1
+			if world.present[i]
+				world.remove(world.units[i])
+		compatUnitProtection().reconcile()
+		compatUnitProtection().count.assertEquals(0)
+		compatUnitProtection().natives = previousNatives
+	function receipt(string requirement, string caseName)
+		print("TRACEABILITY {\"requirement\":\"" + requirement + "\",\"case\":\"" + caseName + "\",\"entryPoint\":\"wc3-god-lifecycle\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	function receipts(string caseName)
+		receipt("REQ-0208.01", caseName)
+		receipt("REQ-0209.01", caseName)
+		receipt("REQ-0209.02", caseName)
+		receipt("REQ-0210.01", caseName)
+		receipt("REQ-0211.01", caseName)
+		receipt("REQ-0211.02", caseName)
+		receipt("REQ-0212.01", caseName)
+		receipt("REQ-0212.02", caseName)
+		receipt("REQ-0213.01", caseName)
+		receipt("REQ-0214.01", caseName)
+		receipt("DEP-god-controller-reconstruction", caseName)
+	function loadChecks()
+		chat.deliver("/god on")
+		unchanged()
+		startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "god-fixture").assertTrue()
+		let document = startup.saves.read("manual_01")
+		startup.ports.failProjection = true
+		startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+		controller.isEnabled(0).assertTrue()
+		unchanged()
+		startup.saves.read("manual_01").assertEquals(document)
+		startup.ports.failProjection = false
+		startup.campaign.saves.stageCandidate(before).assertTrue()
+		startup.campaign.saves.abortLoad()
+		controller.isEnabled(0).assertTrue()
+		unchanged()
+		startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		controller.isEnabled(0).assertFalse()
+		unchanged()
+		startup.saves.read("manual_01").assertEquals(document)
+		chat.deliver("/god off")
+		output.last.assertEquals("Player-wide god mode is OFF.")
+
+@test function installedGodModeNormalizesEveryRecipientAndCategory()
+	let f = new GodFixture()
+	(installPlayerGodMode(f.registry, f.startup.campaign.saves, f.events, f.output) == f.controller).assertTrue()
+	let hero = f.world.add(0, 'Hpal')
+	let companion = f.world.add(0, 'Hamg')
+	let ship = f.world.add(0, 'hbot')
+	let enemy = f.world.add(11, 'hfoo')
+	let neutral = f.world.add(PLAYER_NEUTRAL_PASSIVE, 'hfoo')
+	f.chat.deliver("/god")
+	f.output.last.assertEquals("Player-wide god mode is ON.")
+	f.world.isInvulnerable(hero).assertTrue()
+	f.world.isInvulnerable(companion).assertTrue()
+	f.world.isInvulnerable(ship).assertTrue()
+	f.world.isInvulnerable(enemy).assertFalse()
+	f.world.isInvulnerable(neutral).assertFalse()
+	let entrant = f.world.add(0, 'hpea')
+	f.events.deliver(EVENT_GAME_ENTER_REGION, enemy, entrant)
+	(f.world.lastRecipient == entrant).assertTrue()
+	let summoned = f.world.add(0, 'hwat')
+	f.events.deliver(EVENT_PLAYER_UNIT_SUMMON, enemy, summoned)
+	(f.world.lastRecipient == summoned).assertTrue()
+	let trained = f.world.add(0, 'hfoo')
+	f.events.deliver(EVENT_PLAYER_UNIT_TRAIN_FINISH, enemy, trained)
+	(f.world.lastRecipient == trained).assertTrue()
+	let structure = f.world.add(0, 'htow')
+	f.events.deliver(EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, enemy, structure)
+	(f.world.lastRecipient == structure).assertTrue()
+	f.events.selections.assertEquals(4)
+	f.world.remove(summoned)
+	let replacedSummon = f.world.add(0, 'hwat')
+	f.events.deliver(EVENT_GAME_ENTER_REGION, enemy, replacedSummon)
+	f.world.isInvulnerable(replacedSummon).assertTrue()
+	f.world.owners[f.world.index(neutral)] = 0
+	f.events.deliver(EVENT_PLAYER_UNIT_CHANGE_OWNER, enemy, neutral)
+	f.world.isInvulnerable(neutral).assertTrue()
+	f.world.owners[f.world.index(neutral)] = 1
+	f.events.deliver(EVENT_PLAYER_UNIT_CHANGE_OWNER, enemy, neutral)
+	f.world.isInvulnerable(neutral).assertFalse()
+	f.chat.deliver("/god")
+	f.output.last.assertEquals("Player-wide god mode is OFF.")
+	f.chat.deliver("/god on")
+	let writes = f.world.writes
+	f.chat.deliver("/god on")
+	f.world.writes.assertEquals(writes)
+	f.unchanged()
+	f.loadChecks()
+	f.world.isInvulnerable(hero).assertFalse()
+	f.close()
+	f.receipts("success")
+
+@test function installedGodModeRejectsMissingObsoleteAndUncontrolledRecipients()
+	let f = new GodFixture()
+	(installPlayerGodMode(f.registry, f.startup.campaign.saves, f.events, f.output) == f.controller).assertTrue()
+	let producer = f.world.add(0, 'Hpal')
+	let enemy = f.world.add(11, 'hfoo')
+	let gone = f.world.add(0, 'hfoo')
+	f.chat.deliver("/god on")
+	f.world.remove(gone)
+	let writes = f.world.writes
+	f.events.deliver(EVENT_PLAYER_UNIT_SUMMON, producer, null)
+	f.events.deliver(EVENT_PLAYER_UNIT_TRAIN_FINISH, producer, gone)
+	f.events.deliver(EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, producer, enemy)
+	f.events.deliver(EVENT_GAME_ENTER_REGION, producer, enemy)
+	f.events.queued(f.events.listener, EVENT_PLAYER_UNIT_DEATH, producer, producer)
+	f.world.writes.assertEquals(writes)
+	f.world.isInvulnerable(enemy).assertFalse()
+	compatUnitProtection().owns(gone, PROTECTION_GOD_MODE).assertFalse()
+	compatUnitProtection().count.assertEquals(1)
+	f.chat.deliver("/god maybe")
+	f.output.last.assertEquals("Invalid arguments. Usage: /god [on|off]")
+	f.chat.deliver("/god on extra")
+	f.controller.isEnabled(0).assertTrue()
+	f.world.writes.assertEquals(writes)
+	f.unchanged()
+	f.loadChecks()
+	f.world.isInvulnerable(producer).assertFalse()
+	f.close()
+	f.receipts("failure")
+
+@test function installedGodModeReconstructsAndRejectsRetiredDelivery()
+	let f = new GodFixture()
+	(installPlayerGodMode(f.registry, f.startup.campaign.saves, f.events, f.output) == f.controller).assertTrue()
+	let old = f.world.add(0, 'Hpal')
+	let enemy = f.world.add(11, 'hfoo')
+	f.chat.deliver("/god on")
+	f.world.remove(old)
+	f.events.sweep()
+	compatUnitProtection().count.assertEquals(0)
+	let replacement = f.world.add(0, 'Hpal')
+	f.events.deliver(EVENT_GAME_ENTER_REGION, enemy, replacement)
+	f.world.isInvulnerable(replacement).assertTrue()
+	let oldEvents = f.events
+	let obsolete = oldEvents.listener
+	let recreated = new GodEvents(f.world)
+	let commands = createCommandRegistry(false, f.output)
+	(installPlayerGodMode(commands, f.startup.campaign.saves, recreated, f.output) == f.controller).assertTrue()
+	f.events = recreated
+	installCommandRegistry(commands, f.chat)
+	installPlayerGodMode(commands, f.startup.campaign.saves, recreated, f.output)
+	oldEvents.retirements.assertEquals(1)
+	recreated.registrations.assertEquals(2 + 4 * bj_MAX_PLAYER_SLOTS)
+	f.startup.campaign.saves.loadObserverCount.assertEquals(f.observerCount + 1)
+	let late = f.world.add(0, 'hfoo')
+	let writes = f.world.writes
+	recreated.queued(obsolete, EVENT_PLAYER_UNIT_TRAIN_FINISH, enemy, late)
+	f.events.deliver(EVENT_PLAYER_UNIT_SUMMON, enemy, old)
+	f.world.writes.assertEquals(writes)
+	f.world.isInvulnerable(late).assertFalse()
+	f.events.deliver(EVENT_PLAYER_UNIT_TRAIN_FINISH, enemy, late)
+	f.world.isInvulnerable(late).assertTrue()
+	// An externally cleared native bit is repaired by the installed sweep.
+	f.world.invulnerable[f.world.index(replacement)] = false
+	f.events.sweep()
+	f.world.isInvulnerable(replacement).assertTrue()
+	f.chat.deliver("/god on")
+	f.output.last.assertEquals("Player-wide god mode is ON.")
+	f.unchanged()
+	f.loadChecks()
+	f.close()
+	DestroyTrigger(obsolete)
+	f.receipts("stale")
+
+@test function installedGodModeDuplicateEventsAndIndependentProtectionOrders()
+	let f = new GodFixture()
+	(installPlayerGodMode(f.registry, f.startup.campaign.saves, f.events, f.output) == f.controller).assertTrue()
+	let producer = f.world.add(11, 'hfoo')
+	let prior = f.world.add(0, 'Hpal')
+	f.world.invulnerable[f.world.index(prior)] = true
+	f.chat.deliver("/god on")
+	compatUnitProtection().owns(prior, PROTECTION_GOD_MODE).assertTrue()
+	let target = f.world.add(0, 'htow')
+	f.events.deliver(EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, producer, target)
+	let writes = f.world.writes
+	f.events.deliver(EVENT_PLAYER_UNIT_CONSTRUCT_FINISH, producer, target)
+	f.events.deliver(EVENT_GAME_ENTER_REGION, producer, target)
+	f.events.deliver(EVENT_PLAYER_UNIT_CHANGE_OWNER, producer, target)
+	f.chat.deliver("/god on")
+	f.world.writes.assertEquals(writes)
+	// Execute the production military adapter's capture-protection write.
+	let military = new WarcraftMilitarySettlementAdapter()
+	military.ids[0] = "core:fixture"
+	military.handles[0] = target
+	military.count = 1
+	military.protectRepresentation("core:fixture", true)
+	compatSetUnitInvulnerable(target, true)
+	f.chat.deliver("/god off")
+	f.output.last.assertEquals("Player-wide god mode is OFF.")
+	f.world.isInvulnerable(prior).assertTrue()
+	f.world.isInvulnerable(target).assertTrue()
+	f.chat.deliver("/god off")
+	f.world.writes.assertEquals(writes)
+	compatSetUnitInvulnerable(target, false)
+	f.world.isInvulnerable(target).assertTrue()
+	military.protectRepresentation("core:fixture", false)
+	f.world.isInvulnerable(target).assertFalse()
+	// Reverse the order: expiry cannot cancel enabled god mode, whether the
+	// independent claim preceded or followed the god-mode claim.
+	military.protectRepresentation("core:fixture", true)
+	f.chat.deliver("/god on")
+	military.protectRepresentation("core:fixture", false)
+	compatSetUnitInvulnerable(prior, false)
+	f.world.isInvulnerable(prior).assertTrue()
+	f.world.isInvulnerable(target).assertTrue()
+	f.chat.deliver("/god off")
+	f.world.isInvulnerable(prior).assertFalse()
+	f.world.isInvulnerable(target).assertFalse()
+	compatUnitProtection().count.assertEquals(0)
+	f.unchanged()
+	f.loadChecks()
+	f.close()
+	f.receipts("replay")
+
+@test function installedGodModePreservesCaptureDeadlinesAndOtherPlayers()
+	let f = new GodFixture()
+	(installPlayerGodMode(f.registry, f.startup.campaign.saves, f.events, f.output) == f.controller).assertTrue()
+	let core = f.world.add(0, 'htow')
+	let other = f.world.add(1, 'hfoo')
+	let military = new WarcraftMilitarySettlementAdapter()
+	military.ids[0] = "core:fixture"
+	military.handles[0] = core
+	military.count = 1
+	let runtime = new MilitarySettlementRuntime(military)
+	let city = new SettlementRuntimeState("fixture", "player", "region", 'htow', 'hfoo', 0, 0, 0, 0, 0., 0.)
+	runtime.settlements[0] = city
+	runtime.settlementCount = 1
+	city.captureImmuneUntil = 90.
+	military.protectRepresentation("core:fixture", true)
+	f.chat.deliver("/god on")
+	f.controller.setEnabled(1, true)
+	runtime.releaseCaptureProtection(89.999)
+	(city.captureImmuneUntil == 90.).assertTrue()
+	compatUnitProtection().owns(core, PROTECTION_CAPTURE).assertTrue()
+	runtime.releaseCaptureProtection(90.)
+	(city.captureImmuneUntil == 0.).assertTrue()
+	compatUnitProtection().owns(core, PROTECTION_CAPTURE).assertFalse()
+	f.world.isInvulnerable(core).assertTrue()
+	f.chat.deliver("/god off")
+	f.world.isInvulnerable(core).assertFalse()
+	f.world.isInvulnerable(other).assertTrue()
+	city.captureImmuneUntil = 100.
+	military.protectRepresentation("core:fixture", true)
+	f.chat.deliver("/god on")
+	f.chat.deliver("/god off")
+	runtime.releaseCaptureProtection(99.999)
+	f.world.isInvulnerable(core).assertTrue()
+	runtime.releaseCaptureProtection(100.)
+	f.world.isInvulnerable(core).assertFalse()
+	f.controller.setEnabled(1, false)
+	f.world.isInvulnerable(other).assertFalse()
+	f.unchanged()
+	f.close()
+
+@test function installedGodModeRebindsReusedRegistryAfterSessionTeardown()
+	let f = new GodFixture()
+	let target = f.world.add(0, 'Hpal')
+	f.chat.deliver("/god on")
+	let previous = f.events.listener
+	uninstallPlayerGodMode()
+	f.world.isInvulnerable(target).assertFalse()
+	let replacement = new GodEvents(f.world)
+	f.controller = installPlayerGodMode(f.registry, f.startup.campaign.saves, replacement, f.output)
+	f.events = replacement
+	f.controller.isEnabled(0).assertFalse()
+	f.chat.deliver("/god")
+	f.controller.isEnabled(0).assertTrue()
+	f.output.last.assertEquals("Player-wide god mode is ON.")
+	f.world.isInvulnerable(target).assertTrue()
+	f.unchanged()
+	f.close()
+	DestroyTrigger(previous)

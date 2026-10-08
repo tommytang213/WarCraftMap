@@ -26,6 +26,40 @@ from warcraft_campaign import write_mpq
 
 
 class TraceabilityTests(unittest.TestCase):
+    def test_scenario_policy_census_accepts_pinned_compiler_diagnostics(self):
+        spec = next(row for row in trace.load(PROJECT / "scenario/traceability/catalogues.json") if row["id"] == "settlements")["projectionPolicy"]
+        spec["source"] = {"path": "catalogue.json", "selector": "*"}
+        self.catalogue.write_text(json.dumps([{"id": "port", "physicalRepresentationKinds": ["discovery_marker"],
+                                              "captureModel": "city_core", "governanceExceptionId": None}]))
+        for diagnostic in ('', ', "when calling configureSettlementPolicy in ScenarioData, line 1"'):
+            with self.subTest(diagnostic=diagnostic):
+                script = 'MilitarySettlementRuntime_MilitarySettlementRuntime_configureSettlementPolicy(runtime, "port", false, true, ""' + diagnostic + ')\n'
+                result, errors = trace.projection_policy_census(self.project, spec, {"port"}, self.maps,
+                                                                {"region": {"script": script}})
+                self.assertEqual([], errors)
+                self.assertEqual(1, result["maps"][0]["compiledCount"])
+
+    def test_projection_policy_is_separate_from_compiled_authority_membership(self):
+        self.catalogue.write_text('[{"id":"port","objects":["marker"],"capturable":true}]')
+        policy = {"source": {"path": "catalogue.json", "selector": "*"},
+                  "fields": {"spawn": {"sourceField": "objects", "contains": "core"},
+                             "capture": {"sourceField": "capturable"}},
+                  "compiledPattern": r'configurePolicy\((?P<id>"[^"]+"),\s*(?P<spawn>true|false),\s*(?P<capture>true|false)\)'}
+        payload = {"region": {"script": 'configurePolicy("port", false, true)\n'}}
+        result, errors = trace.projection_policy_census(self.project, policy, {"port"}, self.maps, payload)
+        self.assertEqual([], errors)
+        self.assertEqual("pass", result["status"])
+        payload = {"region": {"script": 'configurePolicy("port", true, true)\n'}}
+        result, errors = trace.projection_policy_census(self.project, policy, {"port"}, self.maps, payload)
+        self.assertEqual(["port"], result["maps"][0]["changedIds"])
+        self.assertTrue(errors)
+        payload = {"region": {"script": '-- configurePolicy("port", false, true)\n'}}
+        result, errors = trace.projection_policy_census(self.project, policy, {"port"}, self.maps, payload)
+        self.assertEqual(["port"], result["maps"][0]["missingIds"])
+        self.assertTrue(errors)
+        with self.assertRaisesRegex(ValueError, "identities differ"):
+            trace.projection_policy_census(self.project, policy, {"port", "missing"}, self.maps, payload)
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

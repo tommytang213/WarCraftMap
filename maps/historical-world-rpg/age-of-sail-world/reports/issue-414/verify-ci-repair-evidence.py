@@ -89,6 +89,6 @@ def main(prefix='ci-repair'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--prefix', choices=('ci-repair', 'ci-timeout'), default='ci-repair',
-                        help='Keep independent receipts for the artifact and timeout repairs.')
+    parser.add_argument('--prefix', choices=('ci-repair', 'ci-timeout', 'merge'), default='ci-repair',
+                        help='Keep independent receipts for artifact, timeout and merge repairs.')
     main(parser.parse_args().prefix)

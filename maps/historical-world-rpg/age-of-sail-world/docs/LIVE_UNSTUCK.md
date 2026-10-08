@@ -35,9 +35,13 @@ never interprets a source-map hint on a different map.
 
 Nested RPG schema v3 adds a single `p,mainCharacterId` record. V2 migrates to the
 first recruited field member in catalogue order; v1 retains normal new-campaign
-initialization. Nested military schema v4 adds optional
+initialization. Nested military schema v5 combines settlement policy with optional
 `n,forceId,mapId,movementClass,component,safeX,safeY` records. V1–v3 have no invented
 safe hints: local native representations establish them through validation.
+Both historical v4 layouts migrate: the recovery branch's 23-field settlements
+receive policy and missing authority from definitions, while main's 26-field
+settlements retain complete-authority validation. Existing hints survive either
+migration; mixed settlement layouts reject. New snapshots always use v5.
 Unknown, duplicate and malformed hint records are rejected before mutation.
 Map/class/topology/native pathing are revalidated on import and use. Campaign
 envelopes 1–8 and party location schema v1 remain supported without a new domain.

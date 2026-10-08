@@ -1,0 +1,291 @@
+package AbstractSettlementTests
+
+import ScenarioData
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import PlayableTrade
+import LiveTradeAccess
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import WarcraftRpgRuntime
+import CampaignTimeline
+import CampaignSaveManager
+import PhysicalInteraction
+import CommandRouter
+import ManagementScreenPauseController
+import Wurstunit
+
+/** Select a bounded slice of the very same generated authority constructor used
+ * by production. Definitions remain immutable while restored records mutate. */
+class AbstractDefinitions implements SettlementDefinitions
+	override function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
+		return configureGeneratedSettlementAuthority(runtime,"alasora",migrate) and configureGeneratedSettlementAuthority(runtime,"dong_kinh",migrate) and configureGeneratedSettlementAuthority(runtime,"anakena",migrate)
+
+class AbstractActors implements InteractionActors
+	real actorX
+	real actorY
+	boolean exists=true
+	override function present(int actor,player owner) returns boolean
+		return exists
+	override function x(int actor) returns real
+		return actorX
+	override function y(int actor) returns real
+		return actorY
+	override function movement(int actor) returns int
+		return 0
+
+class AbstractPorts implements TradePresentation,CommandOutput,CampaignPauseRuntime
+	string output=""
+	override function show(player viewer,string message)
+		output=message
+	override function showMarket(player viewer,string id,string rows)
+		output=rows
+	override function showTradeResult(player viewer,string message)
+		output=message
+	override function setCampaignPaused(boolean paused)
+		skip
+
+class AbstractFixture
+	RecordingMilitaryAdapter adapter=new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime military=new MilitarySettlementRuntime(adapter)
+	PlayableTradeRuntime trade=new PlayableTradeRuntime()
+	WarcraftRpgRuntime rpg=new WarcraftRpgRuntime(null)
+	CampaignClock clock=new CampaignClock(1450,1820,1450,1.)
+	PlayableCampaignState state=new PlayableCampaignState(new WarcraftRegionalAdapter(),clock)
+	AbstractActors actors=new AbstractActors()
+	AbstractPorts ports=new AbstractPorts()
+	CommandRegistry commands
+	construct()
+		military.definitions=new AbstractDefinitions()
+		military.definitions.reconcile(military,true).assertTrue()
+		configureGeneratedTrade(trade)
+		var kept=0
+		for i=0 to trade.marketCount-1
+			let value=trade.markets[i]
+			if (value.id=="alasora" and value.goodName=="grain") or (value.id=="dong_kinh" and value.goodName=="rice")
+				trade.markets[kept]=value
+				kept++
+			else
+				destroy value
+		trade.marketCount=kept
+		kept=0
+		for i=0 to trade.storeCount-1
+			let value=trade.stores[i]
+			if value.accessKind=="personal" or value.accessId=="alasora" or value.accessId=="dong_kinh"
+				trade.stores[kept]=value
+				kept++
+			else
+				destroy value
+		trade.storeCount=kept
+		trade.marketCount.assertEquals(2)
+		trade.storeCount.assertEquals(3)
+		configureGeneratedInteractions(rpg.interactions)
+		let hero=new RpgHero("trader","Trader",'Hpal')
+		hero.recruited=true
+		hero.assignment="field"
+		rpg.heroes.register(hero)
+		rpg.interactions.actors=actors
+		rpg.interactions.maps=new CampaignInteractionMaps(state)
+		state.setRpgRuntime(rpg)
+		state.setMilitarySettlementRuntime(military)
+		state.identity=new PlayerCampaignIdentity()
+		let point=rpg.interactions.get("alasora")
+		state.identity.startCampaign("imerina_chiefdoms",point.mapId,"africa_madagascar_indian_ocean","alasora").assertTrue()
+		state.setExtension(trade)
+		trade.access=new LiveTradeAccess(state)
+		trade.management.pauses=new ManagementScreenPauseController(ports,false)
+		trade.newCampaign("alasora")
+		commands=new CommandRegistry(false,6,new CommandText(),ports)
+		visit("alasora")
+	function visit(string id)
+		let point=rpg.interactions.get(id)
+		state.loadedPhysicalMap=point.mapId
+		state.identity.restore(state.identity.originId(),state.identity.allegianceId(),point.mapId,point.mapId,state.identity.settlementId())
+		state.authority=replaceCampaignField(replaceCampaignField(state.authority,"map",point.mapId),"region",point.mapId)
+		actors.actorX=point.x
+		actors.actorY=point.y
+		military.activateRegion(point.mapId)
+	function dispatch(string command)
+		commands.dispatch(Player(0),command).assertTrue()
+	function reject(string command)
+		let before=state.captureAuthoritativeState()
+		dispatch(command)
+		state.captureAuthoritativeState().assertEquals(before)
+
+function abstractReceipt(string caseName)
+	for i=1 to 2
+		print("TRACEABILITY {\"requirement\":\"REQ-0181.0"+i.toString()+"\",\"case\":\""+caseName+"\",\"entryPoint\":\"live-settlement-authority\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+@test function allAuthoredSettlementsRegisterAuthorityAndDeliberateProjection()
+	let adapter=new RecordingMilitaryAdapter()
+	let military=new MilitarySettlementRuntime(adapter)
+	configureMilitarySettlementScenario(military)
+	military.settlementCount.assertEquals(827)
+	military.administratorCount.assertEquals(827)
+	var abstractCount=0
+	var exceptions=0
+	for i=0 to military.settlementCount-1
+		let city=military.settlements[i]
+		if not city.projectMilitary and city.capturable
+			abstractCount++
+		if not city.capturable
+			exceptions++
+			military.forceIndex("core:"+city.id).assertEquals(-1)
+	abstractCount.assertEquals(33)
+	exceptions.assertEquals(35)
+	adapter.created.assertEquals("")
+	military.dispose()
+
+@test function abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl()
+	let f=new AbstractFixture()
+	registerPlayableTradeCommands(f.commands,f.trade,f.ports).assertEquals("")
+	f.dispatch("/trade select alasora grain")
+	f.dispatch("/trade store player_ship_hold")
+	let stock=f.trade.market.stock
+	f.dispatch("/trade buy 1")
+	f.trade.market.stock.assertEquals(stock-1)
+	f.reject("/trade select dong_kinh rice")
+	f.reject("/trade store warehouse:alasora")
+	f.military.transferSovereignty("alasora","player")
+	f.reject("/trade buy 1")
+	f.dispatch("/trade select alasora grain")
+	f.dispatch("/trade store warehouse:alasora")
+	f.trade.storeSelected.assertTrue()
+	f.trade.hold.id.assertEquals("warehouse:alasora")
+	f.trade.hold.capacity.assertEquals(12000)
+	f.trade.hold.cargo=f.trade.hold.capacity
+	f.trade.hold.goodId="grain"
+	f.reject("/trade buy 1")
+	f.trade.hold.cargo=0
+	f.trade.hold.goodId=""
+	f.visit("dong_kinh")
+	f.dispatch("/trade select dong_kinh rice")
+	f.dispatch("/trade store player_ship_hold")
+	f.trade.hold.cargo=0
+	f.trade.hold.goodId=""
+	f.trade.controller.provenance.clear()
+	f.dispatch("/trade buy 1")
+	f.trade.hold.goodId.assertEquals("rice")
+	f.trade.market.discovered=false
+	f.reject("/trade buy 1")
+	f.trade.market.discovered=true
+	f.trade.market.blockaded=true
+	f.reject("/trade buy 1")
+	f.trade.market.blockaded=false
+	f.military.setWar("imerina_chiefdoms","dai_viet",true)
+	f.reject("/trade buy 1")
+	f.military.setWar("imerina_chiefdoms","dai_viet",false)
+	f.actors.exists=false
+	f.reject("/trade buy 1")
+	f.adapter.created.assertEquals("")
+
+	abstractReceipt("success")
+	abstractReceipt("failure")
+	abstractReceipt("stale")
+
+@test function militaryVersion4BranchesMigratePolicyAndRecoveryTogether()
+	let f = new AbstractFixture()
+	let fleet = new RuntimeForce("legacy_fleet", "player", "africa", "ship", FORCE_FLEET, 'hdes', 40, 20, 32., 64.)
+	f.military.registerForce(fleet)
+	let community = f.military.settlements[f.military.settlementIndex("anakena")]
+	// Literal recovery-branch v4: no settlement policy, a valid safe hint, and
+	// the older intrinsic class ID instead of the registered unit rawcode.
+	let recoveryV4 = "v4|k,0|a,inactive|f,legacy_fleet,player,africa,ship,2,42,40,40,20,32,64,1,,0,0|n,legacy_fleet,africa,1,2,32,64|s,anakena,legacy_council," + community.regionId + "," + community.coreTypeId.toString() + "," + community.defenderTypeId.toString() + ",12,20,11,22,77,10,3:101,4:101,0,0,0,0,0,0,legacy_council,,|d,anakena,retained_official,Retained Council,Council,legacy_council," + community.regionId + ",anakena,70,60,40,1,0"
+	f.military.restore(recoveryV4).assertTrue()
+	f.military.settlementCount.assertEquals(3)
+	f.military.administratorCount.assertEquals(3)
+	f.military.settlements[f.military.settlementIndex("anakena")].supply.assertEquals(77)
+	f.military.settlements[f.military.settlementIndex("anakena")].capturable.assertFalse()
+	f.military.administrators[f.military.administratorIndex("anakena")].characterId.assertEquals("retained_official")
+	let restored = f.military.forces[f.military.forceIndex("legacy_fleet")]
+	restored.unitTypeId.assertEquals('hdes')
+	restored.recoveryMap.assertEquals("africa")
+	restored.recoveryComponent.assertEquals(2)
+	restored.safeX.assertEquals(32.)
+	restored.safeY.assertEquals(64.)
+	let combined = f.military.snapshot()
+	combined.startsWith("v5|").assertTrue()
+	f.military.restore(combined).assertTrue()
+	f.military.snapshot().assertEquals(combined)
+	// Main's v4 already has policy and complete authority, but no safe hints.
+	let policyV4 = ("v4" + SubString(combined, 2, StringLength(combined))).replace("|n,legacy_fleet,africa,1,2,32.0,64.0", "")
+	f.military.restore(policyV4).assertTrue()
+	f.military.forces[f.military.forceIndex("legacy_fleet")].recoveryMap.assertEquals("")
+	f.military.settlementCount.assertEquals(3)
+	f.military.settlements[f.military.settlementIndex("anakena")].capturable.assertFalse()
+	f.military.restore(combined).assertTrue()
+	// Reject a v4 document that changes layout between settlements, and a v5
+	// document that omits policy. Neither failure replaces current authority.
+	let mixed = recoveryV4 + "|s,mixed,player,africa,1,1,1,1,1,1,1,1,3:101,4:101,0,0,0,0,0,0,player,,,0,0,"
+	f.military.restore(mixed).assertFalse()
+	f.military.restore(withoutMilitarySettlementPolicy(combined)).assertFalse()
+	f.military.snapshot().assertEquals(combined)
+
+@test function abstractAuthorityRoundTripsAcrossInactiveMapsAndRepeatedReconstruction()
+	let f=new AbstractFixture()
+	registerPlayableTradeCommands(f.commands,f.trade,f.ports).assertEquals("")
+	f.military.transferSovereignty("alasora","player")
+	f.military.setWar("player","dai_viet",true)
+	f.military.capture("dong_kinh","player",10.).assertTrue()
+	f.military.setWar("player",f.military.settlements[f.military.settlementIndex("anakena")].controllerId,true)
+	f.military.capture("anakena","player",10.).assertFalse()
+	f.dispatch("/trade select alasora grain")
+	f.dispatch("/trade store warehouse:alasora")
+	f.dispatch("/trade buy 2")
+	f.trade.findMarket("dong_kinh","rice").discovered=false
+	let saved=f.state.captureAuthoritativeState()
+	let codec=new PlayableCampaignCodec(f.clock)
+	let encoded=codec.encode("manual_01",SAVE_SLOT_MANUAL,1,"abstract",saved)
+	(encoded!="").assertTrue()
+	for i=0 to 2
+		f.military.activateRegion("inactive")
+		f.visit("alasora")
+		let decoded=codec.decodeMigrateAndValidate(encoded,"manual_01")
+		decoded.assertEquals(saved)
+		f.state.validateAuthoritativeState(decoded).assertTrue()
+		f.state.reconstructRuntime(decoded).assertTrue()
+		f.state.activateAuthoritativeState(decoded)
+		f.military.settlementCount.assertEquals(3)
+		f.military.administratorCount.assertEquals(3)
+		f.military.forceCount.assertEquals(2)
+		f.trade.marketCount.assertEquals(2)
+		f.trade.storeCount.assertEquals(3)
+		f.trade.findStore("warehouse:alasora").cargo.assertEquals(2)
+		f.trade.findMarket("dong_kinh","rice").discovered.assertFalse()
+		f.military.settlements[f.military.settlementIndex("alasora")].legalOwnerId.assertEquals("player")
+		f.military.settlements[f.military.settlementIndex("dong_kinh")].controllerId.assertEquals("player")
+		f.visit("alasora")
+		f.visit("dong_kinh")
+		f.adapter.created.assertEquals("")
+
+	abstractReceipt("replay")
+
+@test function legacyAbstractAuthorityMigrationIsDeterministicAndCurrentOmissionsReject()
+	let f=new AbstractFixture()
+	// An existing community carries changed control, resources and an official;
+	// only the two formerly filtered settlements are absent from this v3 slice.
+	let community=f.military.settlements[f.military.settlementIndex("anakena")]
+	let old="v3|k,"+clockReal(0.)+"|a,inactive|s,anakena,legacy_council,"+community.regionId+","+community.coreTypeId.toString()+","+community.defenderTypeId.toString()+",12,20,11,22,77,10,"+clockReal(10.)+","+clockReal(20.)+","+clockReal(0.)+","+clockReal(0.)+","+clockReal(0.)+",0,0,0,legacy_council,,|d,anakena,retained_official,Retained Council,Council,legacy_council,"+community.regionId+",anakena,70,60,40,1,0"
+	f.military.restore(old).assertTrue()
+	f.military.settlementCount.assertEquals(3)
+	f.military.settlements[f.military.settlementIndex("anakena")].supply.assertEquals(77)
+	f.military.settlements[f.military.settlementIndex("anakena")].controllerId.assertEquals("legacy_council")
+	f.military.administrators[f.military.administratorIndex("anakena")].characterId.assertEquals("retained_official")
+	let initial=f.military.snapshot()
+	f.military.transferSovereignty("alasora","player")
+	f.military.restore(old).assertTrue()
+	f.military.snapshot().assertEquals(initial)
+	f.military.restore("v4|k,"+clockReal(0.)+"|a,inactive").assertFalse()
+	f.military.snapshot().assertEquals(initial)
+	f.military.restore(SubString(initial,0,initial.indexOf("|d,"))).assertFalse()
+	f.military.snapshot().assertEquals(initial)
+	// Literal v2 summary with no newly introduced market/store records.
+	let tradeOld="v2:old_market:90:800:10:9:10:0:20:0:0::0:0:0:1:::player_ship_hold:30:player_ship_hold,0,20,30,grain:grain:grain:"
+	f.trade.reconstruct(tradeOld).assertTrue()
+	let baseline=f.trade.capture()
+	f.trade.findMarket("alasora","grain").stock=1
+	f.trade.findStore("warehouse:alasora").money=2
+	f.trade.reconstruct(tradeOld).assertTrue()
+	f.trade.capture().assertEquals(baseline)
+	f.trade.findStore("warehouse:alasora").cargo.assertEquals(0)
+	f.adapter.created.assertEquals("")
