@@ -309,14 +309,14 @@ class EquipmentFixture
 	// Literal v2 fixture keeps its recorded wearer, including a reserve hero.
 	let legacy = "v2|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,relic|e,chest,relic,beta|j,,0"
 	restored.rpg.restoreState(legacy).assertTrue()
-	restored.rpg.captureState().assertEquals(legacy)
+	restored.rpg.captureState().assertEquals("v3|p," + SubString(legacy, 2, StringLength(legacy)))
 	restored.rpg.reconcile("player")
 	restored.natives.life[0].assertEquals(100)
 	restored.natives.life[1].assertEquals(209)
 	// Equipment can precede owned records; validation uses candidate totals.
 	let reordered = "v2|e,chest,relic,beta|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,relic|j,,0"
 	restored.rpg.restoreState(reordered).assertTrue()
-	restored.rpg.captureState().assertEquals(legacy)
+	restored.rpg.captureState().assertEquals("v3|p," + SubString(legacy, 2, StringLength(legacy)))
 	restored.rpg.restoreState("v1").assertTrue()
 	restored.rpg.inventory.equippedCount.assertEquals(0)
 	restored.rpg.reconcile("player")

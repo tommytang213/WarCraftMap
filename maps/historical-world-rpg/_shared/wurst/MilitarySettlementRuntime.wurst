@@ -7,6 +7,8 @@ import ManagementScreenPauseController
 import WarcraftRpgRuntime
 import CampaignTimeline
 import PrizeCombat
+import WarcraftRecoveryRuntime
+import PartyLocations
 
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
@@ -19,7 +21,65 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 4
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 5
+
+/** Temporary stable-ID index for bulk catalogue registration. Full keys keep
+ * hash collisions distinct; positions still refer to the authority arrays. */
+class MilitaryRegistrationIndex
+	string array[4096] keys
+	int array[4096] positions
+	int array[4096] next
+	int array[1024] buckets
+	int count = 0
+	function bucket(string key) returns int
+		var result = StringHash(key) mod 1024
+		if result < 0
+			result += 1024
+		return result
+	function find(string key) returns int
+		var entry = buckets[bucket(key)]
+		while entry > 0
+			if keys[entry - 1] == key
+				return positions[entry - 1]
+			entry = next[entry - 1]
+		return -1
+	function add(string key, int position)
+		let slot = bucket(key)
+		keys[count] = key
+		positions[count] = position
+		next[count] = buckets[slot]
+		buckets[slot] = count + 1
+		count++
+
+/** One reusable cursor per parse. Read each field once and retain empty fields,
+ * including the final optional conflict/attacker fields of a settlement.
+ * Count excess fields too, so strict record validation still rejects them. */
+class MilitarySnapshotRecord
+	string array[26] fields
+	int count = 0
+	function append(string value)
+		if count < 26
+			fields[count] = value
+		count++
+	function read(string candidate, int start) returns int
+		count = 0
+		let length = StringLength(candidate)
+		var fieldStart = start
+		var finish = start
+		while finish < length
+			let delimiter = SubString(candidate, finish, finish + 1)
+			if delimiter == "|"
+				break
+			if delimiter == ","
+				append(SubString(candidate, fieldStart, finish))
+				fieldStart = finish + 1
+			finish++
+		append(SubString(candidate, fieldStart, finish))
+		return finish + 1
+	function field(int index) returns string
+		if index < 0 or index >= count or index >= 26
+			return ""
+		return fields[index]
 
 /** Stable conflict identity survives settlement. Membership is immutable once
  * registered; a new war needs a new ID, even between the same governments. */
@@ -45,13 +105,18 @@ public class RuntimeForce
 	string regionId
 	string categoryId
 	int kind
-	int typeId
+	int unitTypeId
 	int strength
 	int maximumStrength
 	int supply
 	real x
 	real y
 	boolean active = true
+	string recoveryMap = ""
+	int recoveryClass = -1
+	int recoveryComponent = 0
+	real safeX = 0.
+	real safeY = 0.
 	string orderId = "hold"
 	real orderX = 0.
 	real orderY = 0.
@@ -61,7 +126,7 @@ public class RuntimeForce
 		this.regionId = regionId
 		this.categoryId = categoryId
 		this.kind = kind
-		typeId = unitTypeId
+		this.unitTypeId = unitTypeId
 		this.strength = strength
 		maximumStrength = strength
 		this.supply = supply
@@ -188,6 +253,13 @@ public interface MilitarySettlementAdapter
 	function showManagement(player viewer, string heading, string body)
 
 public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdapter
+	WarcraftRecoveryAdapter recovery = null
+	// Native stat boundary; headless journeys still execute this adapter's
+	// creation, retirement, ownership and reconstruction operations.
+	function maximumLife(unit target) returns int
+		return compatGetUnitMaxLife(target)
+	function setMaximumLife(unit target, int value)
+		compatSetUnitMaxLife(target, value)
 	string array[4096] ids
 	unit array[4096] handles
 	int array[4096] baseMaximumLife
@@ -201,6 +273,8 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	override function beginLoad()
 		previousCount = count
 		for i = 0 to count - 1
+			if recovery != null
+				recovery.unbind("force:" + ids[i])
 			previousIds[i] = ids[i]
 			previousHandles[i] = handles[i]
 			previousBaseLife[i] = baseMaximumLife[i]
@@ -238,15 +312,17 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		// Reconstruction is idempotent even if Warcraft destroyed a unit without
 		// notifying the authority, or a load is repeated on the same physical map.
 		removeRepresentation(runtimeForce.id)
-		let made = compatCreateUnit(owner, runtimeForce.typeId, runtimeForce.x, runtimeForce.y, 0.)
+		let made = compatCreateUnit(owner, runtimeForce.unitTypeId, runtimeForce.x, runtimeForce.y, 0.)
 		var found = indexOf(runtimeForce.id)
 		if found < 0
 			found = count
 			ids[count] = runtimeForce.id
 			count++
 		handles[found] = made
-		baseMaximumLife[found] = compatGetUnitMaxLife(made)
+		baseMaximumLife[found] = maximumLife(made)
 		appliedMilestoneAbility[found] = 0
+		if recovery != null and runtimeForce.active and (runtimeForce.kind == FORCE_ARMY or runtimeForce.kind == FORCE_FLEET)
+			recovery.bind("force:" + runtimeForce.id, made, runtimeForce.regionId)
 		return made
 	override function forceIdForRepresentation(int representation) returns string
 		if representation != 0
@@ -260,6 +336,8 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			return GetHandleId(handles[found])
 		return 0
 	override function removeRepresentation(string stableId)
+		if recovery != null
+			recovery.unbind("force:" + stableId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
 			// Detach before native cleanup can deliver a reentrant death callback.
@@ -270,10 +348,14 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
 			compatSetUnitOwner(handles[found], owner, true)
+			if recovery != null and owner != Player(0)
+				recovery.unbind("force:" + stableId)
+			else if recovery != null and recovery.service.lifecycle != null
+				recovery.service.lifecycle.refresh()
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			compatSetUnitMaxLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
+			setMaximumLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
 			if appliedMilestoneAbility[found] != 0 and appliedMilestoneAbility[found] != milestoneAbilityId
 				compatRemoveUnitAbility(handles[found], appliedMilestoneAbility[found])
 			if milestoneAbilityId != 0
@@ -293,6 +375,8 @@ public class MilitarySettlementRuntime
 	real gameplaySeconds = 0.
 	boolean hasSavedGameplayClock = false
 	boolean legacyDeadlines = false
+	boolean legacyRecovery = false
+	boolean legacyMilitaryVersion4 = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
@@ -310,15 +394,42 @@ public class MilitarySettlementRuntime
 	int settlementCount = 0
 	int administratorCount = 0
 	string activeRegionId = ""
+	private MilitaryRegistrationIndex registrationForces = null
+	private MilitaryRegistrationIndex registrationSettlements = null
+	private MilitaryRegistrationIndex registrationAdministrators = null
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
 	ondestroy
+		endRegistration()
 		if prizeCombat != null
 			prizeCombat.retire()
 			destroy prizeCombat
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg=runtime
+	/** Only register/appoint while this catalogue batch is open. Discard the
+	 * indexes before gameplay, where reconstruction can replace the arrays. */
+	function beginRegistration()
+		endRegistration()
+		registrationForces = new MilitaryRegistrationIndex()
+		registrationSettlements = new MilitaryRegistrationIndex()
+		registrationAdministrators = new MilitaryRegistrationIndex()
+		for i = 0 to forceCount - 1
+			registrationForces.add(forces[i].id, i)
+		for i = 0 to settlementCount - 1
+			registrationSettlements.add(settlements[i].id, i)
+		for i = 0 to administratorCount - 1
+			registrationAdministrators.add(administratorSettlementIds[i], i)
+	function endRegistration()
+		if registrationForces != null
+			destroy registrationForces
+			destroy registrationSettlements
+			destroy registrationAdministrators
+			registrationForces = null
+			registrationSettlements = null
+			registrationAdministrators = null
 	function forceIndex(string id) returns int
+		if registrationForces != null
+			return registrationForces.find(id)
 		for i = 0 to forceCount - 1
 			if forces[i].id == id
 				return i
@@ -326,6 +437,8 @@ public class MilitarySettlementRuntime
 	function hasPrefix(string value, string prefix) returns boolean
 		return StringLength(value) >= StringLength(prefix) and SubString(value, 0, StringLength(prefix)) == prefix
 	function settlementIndex(string id) returns int
+		if registrationSettlements != null
+			return registrationSettlements.find(id)
 		for i = 0 to settlementCount - 1
 			if settlements[i].id == id
 				return i
@@ -336,12 +449,16 @@ public class MilitarySettlementRuntime
 				return i
 		return -1
 	function administratorIndex(string settlementId) returns int
+		if registrationAdministrators != null
+			return registrationAdministrators.find(settlementId)
 		for i = 0 to administratorCount - 1
 			if administratorSettlementIds[i] == settlementId
 				return i
 		return -1
 	function registerForce(RuntimeForce runtimeForce)
 		if runtimeForce != null and runtimeForce.id != "" and forceIndex(runtimeForce.id) < 0
+			if registrationForces != null
+				registrationForces.add(runtimeForce.id, forceCount)
 			forces[forceCount] = runtimeForce
 			forceCount++
 	function registerTradition(TraditionState state)
@@ -350,6 +467,8 @@ public class MilitarySettlementRuntime
 			traditionCount++
 	function registerSettlement(SettlementRuntimeState state)
 		if state != null and state.id != "" and settlementIndex(state.id) < 0
+			if registrationSettlements != null
+				registrationSettlements.add(state.id, settlementCount)
 			settlements[settlementCount] = state
 			settlementCount++
 			if state.capturable
@@ -381,6 +500,8 @@ public class MilitarySettlementRuntime
 				old.loyalty = old.loyalty - 5
 			administrators[current] = administrator
 		else
+			if registrationAdministrators != null
+				registrationAdministrators.add(settlementId, administratorCount)
 			administratorSettlementIds[administratorCount] = settlementId
 			administrators[administratorCount] = administrator
 			administratorCount++
@@ -735,22 +856,6 @@ public class MilitarySettlementRuntime
 					if hasPrefix(forces[j].id, "defense:" + settlements[i].id + ":")
 						adapter.protectRepresentation(forces[j].id, false)
 				settlements[i].captureImmuneUntil = 0.
-	function snapshotField(string record, int wanted) returns string
-		var start = 0
-		var field = 0
-		for i = 0 to StringLength(record)
-			if i == StringLength(record) or SubString(record, i, i + 1) == ","
-				if field == wanted
-					return SubString(record, start, i)
-				field++
-				start = i + 1
-		return ""
-	function snapshotFieldCount(string record) returns int
-		var count = 1
-		for i = 0 to StringLength(record) - 1
-			if SubString(record, i, i + 1) == ","
-				count++
-		return count
 	function boolText(boolean value) returns string
 		if value
 			return "1"
@@ -763,7 +868,11 @@ public class MilitarySettlementRuntime
 		var result = "v" + MILITARY_SETTLEMENT_SNAPSHOT_VERSION.toString() + "|k," + clockReal(gameplaySeconds) + "|a," + activeRegionId
 		for i = 0 to forceCount - 1
 			let f = forces[i]
-			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.typeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
+			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
+			// Strategic movement may reassign an unloaded force. A hint from its
+			// previous physical map cannot accompany the new location authority.
+			if f.recoveryMap != "" and f.recoveryMap == f.regionId and (f.kind == FORCE_ARMY or f.kind == FORCE_FLEET)
+				result += "|n," + f.id + "," + f.recoveryMap + "," + f.recoveryClass.toString() + "," + f.recoveryComponent.toString() + "," + f.safeX.toString() + "," + f.safeY.toString()
 		for i = 0 to settlementCount - 1
 			let s = settlements[i]
 			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + clockReal(s.reinforcementInterval) + "," + clockReal(s.quietPeriod) + "," + clockReal(s.nextWaveAt) + "," + clockReal(s.lastCombatAt) + "," + clockReal(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack) + "," + s.legalOwnerId + "," + s.occupationConflictId + "," + s.attackerId + "," + boolText(s.projectMilitary) + "," + boolText(s.capturable) + "," + s.governanceExceptionId
@@ -779,83 +888,107 @@ public class MilitarySettlementRuntime
 		if legacyDeadlines
 			return S2R(value)
 		return readClockReal(value)
-	function restoreSnapshotRecord(string record, MilitarySettlementRuntime target) returns boolean
-		let kind = snapshotField(record, 0)
+	function restoreSnapshotRecord(MilitarySnapshotRecord record, MilitarySettlementRuntime target) returns boolean
+		let kind = record.field(0)
 		if kind == "k"
-			if target.legacyDeadlines or target.hasSavedGameplayClock or snapshotFieldCount(record) != 2
+			if target.legacyDeadlines or target.hasSavedGameplayClock or record.count != 2
 				return false
-			target.gameplaySeconds = readClockReal(snapshotField(record, 1))
+			target.gameplaySeconds = readClockReal(record.field(1))
 			target.hasSavedGameplayClock = true
 			return target.gameplaySeconds >= 0.
 		if kind == "a"
-			target.activeRegionId = snapshotField(record, 1)
+			target.activeRegionId = record.field(1)
 			return true
 		if kind == "f"
-			let id = snapshotField(record, 1)
+			let id = record.field(1)
 			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 4096
 				return false
-			let f = new RuntimeForce(id, snapshotField(record, 2), snapshotField(record, 3), snapshotField(record, 4), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)), S2I(snapshotField(record, 7)), S2I(snapshotField(record, 9)), S2R(snapshotField(record, 10)), S2R(snapshotField(record, 11)))
-			f.maximumStrength = S2I(snapshotField(record, 8))
-			f.active = snapshotField(record, 12) == "1"
-			f.orderId = snapshotField(record, 13)
-			f.orderX = S2R(snapshotField(record, 14))
-			f.orderY = S2R(snapshotField(record, 15))
+			let f = new RuntimeForce(id, record.field(2), record.field(3), record.field(4), S2I(record.field(5)), S2I(record.field(6)), S2I(record.field(7)), S2I(record.field(9)), S2R(record.field(10)), S2R(record.field(11)))
+			// Older Wurst projections accidentally read the intrinsic class typeId
+			// instead of the authored rawcode. Repair known catalogue identities.
+			let definition = forceIndex(id)
+			if (target.legacyRecovery or target.legacyMilitaryVersion4) and f.unitTypeId < 65536 and definition >= 0
+				f.unitTypeId = forces[definition].unitTypeId
+			f.maximumStrength = S2I(record.field(8))
+			f.active = record.field(12) == "1"
+			f.orderId = record.field(13)
+			f.orderX = S2R(record.field(14))
+			f.orderY = S2R(record.field(15))
 			target.registerForce(f)
 			return f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+		if kind == "n"
+			let found = target.forceIndex(record.field(1))
+			let kindText = record.field(3)
+			let componentText = record.field(4)
+			if target.legacyRecovery or found < 0 or record.count != 7 or not locationNumber(record.field(5)) or not locationNumber(record.field(6))
+				return false
+			let f = target.forces[found]
+			if f.recoveryMap != "" or record.field(2) != f.regionId or S2I(kindText).toString() != kindText or S2I(kindText) < 0 or S2I(kindText) > 3 or S2I(componentText).toString() != componentText or S2I(componentText) <= 0 or (f.kind != FORCE_ARMY and f.kind != FORCE_FLEET)
+				return false
+			f.recoveryMap = record.field(2)
+			f.recoveryClass = S2I(kindText)
+			f.recoveryComponent = S2I(componentText)
+			f.safeX = S2R(record.field(5))
+			f.safeY = S2R(record.field(6))
+			return true
 		if kind == "s"
-			let id = snapshotField(record, 1)
+			let id = record.field(1)
 			if id == "" or target.settlementIndex(id) >= 0 or target.settlementCount >= 1024
 				return false
-			let s = new SettlementRuntimeState(id, snapshotField(record, 2), snapshotField(record, 3), S2I(snapshotField(record, 4)), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)), S2I(snapshotField(record, 8)), S2I(snapshotField(record, 9)), S2I(snapshotField(record, 10)), S2R(snapshotField(record, 17)), S2R(snapshotField(record, 18)))
-			s.garrisonMaximum = S2I(snapshotField(record, 7))
-			s.waveSize = S2I(snapshotField(record, 11))
-			s.reinforcementInterval = target.deadlineReal(snapshotField(record, 12))
-			s.quietPeriod = target.deadlineReal(snapshotField(record, 13))
-			s.nextWaveAt = target.deadlineReal(snapshotField(record, 14))
-			s.lastCombatAt = target.deadlineReal(snapshotField(record, 15))
-			s.captureImmuneUntil = target.deadlineReal(snapshotField(record, 16))
-			s.underAttack = snapshotField(record, 19) == "1"
+			let s = new SettlementRuntimeState(id, record.field(2), record.field(3), S2I(record.field(4)), S2I(record.field(5)), S2I(record.field(6)), S2I(record.field(8)), S2I(record.field(9)), S2I(record.field(10)), S2R(record.field(17)), S2R(record.field(18)))
+			s.garrisonMaximum = S2I(record.field(7))
+			s.waveSize = S2I(record.field(11))
+			s.reinforcementInterval = target.deadlineReal(record.field(12))
+			s.quietPeriod = target.deadlineReal(record.field(13))
+			s.nextWaveAt = target.deadlineReal(record.field(14))
+			s.lastCombatAt = target.deadlineReal(record.field(15))
+			s.captureImmuneUntil = target.deadlineReal(record.field(16))
+			s.underAttack = record.field(19) == "1"
 			if not (s.reinforcementInterval > 0. and s.quietPeriod > 0. and s.nextWaveAt >= 0. and s.lastCombatAt >= 0. and s.captureImmuneUntil >= 0.)
 				return false
+			// Two branches emitted v4: recovery with 23-field settlements, and
+			// settlement policy with 26. Select once and reject mixed layouts.
+			if target.legacyMilitaryVersion4 and target.settlementCount == 0
+				target.legacySettlements = record.count == 23
 			if not target.legacyConflicts
-				if (target.legacySettlements and snapshotFieldCount(record) != 23) or (not target.legacySettlements and snapshotFieldCount(record) != 26)
+				if (target.legacySettlements and record.count != 23) or (not target.legacySettlements and record.count != 26)
 					return false
-				s.legalOwnerId = snapshotField(record, 20)
-				s.occupationConflictId = snapshotField(record, 21)
-				s.attackerId = snapshotField(record, 22)
+				s.legalOwnerId = record.field(20)
+				s.occupationConflictId = record.field(21)
+				s.attackerId = record.field(22)
 				if s.legalOwnerId == ""
 					return false
 			if not target.legacySettlements
-				if (snapshotField(record, 23) != "0" and snapshotField(record, 23) != "1") or (snapshotField(record, 24) != "0" and snapshotField(record, 24) != "1")
+				if (record.field(23) != "0" and record.field(23) != "1") or (record.field(24) != "0" and record.field(24) != "1")
 					return false
-				s.withPolicy(snapshotField(record, 23) == "1", snapshotField(record, 24) == "1", snapshotField(record, 25))
+				s.withPolicy(record.field(23) == "1", record.field(24) == "1", record.field(25))
 			target.settlements[target.settlementCount] = s
 			target.settlementCount++
 			return s.controllerId != "" and s.regionId != "" and s.garrisonMaximum >= s.garrisonStrength and s.garrisonStrength >= 0 and s.reserves >= 0 and s.manpower >= 0 and s.supply >= 0
 		if kind == "d"
-			let settlementId = snapshotField(record, 1)
+			let settlementId = record.field(1)
 			if settlementId == "" or target.administratorIndex(settlementId) >= 0 or target.administratorCount >= 1024
 				return false
-			let d = new AdministratorState(snapshotField(record, 2), snapshotField(record, 3), snapshotField(record, 4), snapshotField(record, 5), snapshotField(record, 6), snapshotField(record, 7), S2I(snapshotField(record, 8)), S2I(snapshotField(record, 9)), S2I(snapshotField(record, 10)), S2I(snapshotField(record, 11)))
-			d.oathbound = snapshotField(record, 12) == "1"
+			let d = new AdministratorState(record.field(2), record.field(3), record.field(4), record.field(5), record.field(6), record.field(7), S2I(record.field(8)), S2I(record.field(9)), S2I(record.field(10)), S2I(record.field(11)))
+			d.oathbound = record.field(12) == "1"
 			target.administratorSettlementIds[target.administratorCount] = settlementId
 			target.administrators[target.administratorCount] = d
 			target.administratorCount++
 			return d.characterId != "" and target.settlementIndex(settlementId) >= 0
 		if kind == "c"
-			let id = snapshotField(record, 1)
-			let settled = snapshotField(record, 2)
-			if snapshotFieldCount(record) != 3 or not validConflictAtom(id) or target.conflictIndex(id) >= 0 or target.conflictCount >= 256 or (settled != "0" and settled != "1")
+			let id = record.field(1)
+			let settled = record.field(2)
+			if record.count != 3 or not validConflictAtom(id) or target.conflictIndex(id) >= 0 or target.conflictCount >= 256 or (settled != "0" and settled != "1")
 				return false
 			target.conflicts[target.conflictCount] = new MilitaryConflict(id)
 			target.conflicts[target.conflictCount].settled = settled == "1"
 			target.conflictCount++
 			return true
 		if kind == "m"
-			let found = target.conflictIndex(snapshotField(record, 1))
-			let polity = snapshotField(record, 2)
-			let side = snapshotField(record, 3)
-			if snapshotFieldCount(record) != 4 or found < 0 or not validConflictAtom(polity) or (side != "1" and side != "2")
+			let found = target.conflictIndex(record.field(1))
+			let polity = record.field(2)
+			let side = record.field(3)
+			if record.count != 4 or found < 0 or not validConflictAtom(polity) or (side != "1" and side != "2")
 				return false
 			let conflict = target.conflicts[found]
 			if conflict.side(polity) != 0 or conflict.count >= 64
@@ -865,17 +998,17 @@ public class MilitarySettlementRuntime
 			conflict.count++
 			return true
 		if kind == "w"
-			if not target.legacyConflicts or snapshotField(record, 1) == "" or snapshotField(record, 2) == "" or snapshotField(record, 1) == snapshotField(record, 2)
+			if not target.legacyConflicts or record.field(1) == "" or record.field(2) == "" or record.field(1) == record.field(2)
 				return false
 			// The authored conflict already justifies this legacy pair, so it must
 			// not acquire a second, immortal source of hostility during migration.
-			target.setWar(snapshotField(record, 1), snapshotField(record, 2), true)
+			target.setWar(record.field(1), record.field(2), true)
 			return true
 		if kind == "t"
-			if target.traditionCount >= 256 or target.traditionIndex(snapshotField(record, 1), snapshotField(record, 2)) >= 0
+			if target.traditionCount >= 256 or target.traditionIndex(record.field(1), record.field(2)) >= 0
 				return false
-			let t = new TraditionState(snapshotField(record, 1), snapshotField(record, 2), S2I(snapshotField(record, 4)), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)))
-			t.experience = S2I(snapshotField(record, 3))
+			let t = new TraditionState(record.field(1), record.field(2), S2I(record.field(4)), S2I(record.field(5)), S2I(record.field(6)))
+			t.experience = S2I(record.field(3))
 			target.registerTradition(t)
 			return t.controllerId != "" and t.categoryId != "" and t.experience >= 0
 		return false
@@ -892,24 +1025,26 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		parsed.legacyConflicts = candidate.startsWith("v1|")
-		parsed.legacySettlements = not candidate.startsWith("v4|")
-		parsed.legacyDeadlines = not candidate.startsWith("v3|") and parsed.legacySettlements
+		parsed.legacyDeadlines = candidate.startsWith("v1|") or candidate.startsWith("v2|")
+		parsed.legacyRecovery = parsed.legacyDeadlines or candidate.startsWith("v3|")
+		parsed.legacySettlements = parsed.legacyRecovery
+		parsed.legacyMilitaryVersion4 = candidate.startsWith("v4|")
 		var records = SubString(candidate, 2, StringLength(candidate))
 		if parsed.legacyConflicts
 			records = initialConflicts + records
+		let record = new MilitarySnapshotRecord()
 		var start = 1
 		while start < StringLength(records)
-			var finish = SubString(records, start, StringLength(records)).indexOf("|")
-			if finish < 0
-				finish = StringLength(records) - start
-			if not restoreSnapshotRecord(SubString(records, start, start + finish), parsed)
+			start = record.read(records, start)
+			if not restoreSnapshotRecord(record, parsed)
+				destroy record
 				parsed.dispose()
 				return null
-			start += finish + 1
+		destroy record
 		if not parsed.legacyDeadlines and not parsed.hasSavedGameplayClock
 			parsed.dispose()
 			return null

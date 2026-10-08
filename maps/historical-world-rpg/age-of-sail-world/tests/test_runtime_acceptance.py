@@ -360,9 +360,41 @@ class RuntimeAcceptanceTests(unittest.TestCase):
     def test_compiled_artifact_requires_executable_calls_and_registrations(self):
         script = self.executable_script()
         self.assertEqual("pass", runtime.verify_compiled_script(script)["status"])
-        result = runtime.verify_compiled_script(script.replace("  registerOriginSelection()", ""))
+        result = runtime.verify_compiled_script(script.replace('  registry:register("origin", handler)', ""))
         self.assertEqual("fail", result["status"])
         self.assertTrue(any("origin_selection" in x for x in result["failures"]))
+
+    def test_inlined_origin_wrapper_requires_real_registration_and_operations(self):
+        # PR #423: the pinned optimizer expands registerOriginSelection into
+        # Bootstrap. Its stack annotation survives, but it is no longer a call.
+        # Model the emitted alias and call, including the actual handler value.
+        registration = ('CommandRegistry_CommandRegistry_register(commands, "origin", "citizenship", '
+                        '"origin [page N|search WORDS|choose ID]", "Choose your origin.", '
+                        '"Confirm one immutable origin.", 0, 99, visibility, handler, '
+                        '"when calling register in CommandRouter, line 486")')
+        alias = 'CommandRegistry.CommandRegistry_register = CommandRegistry_CommandRegistry_register'
+        definition = 'function CommandRegistry_CommandRegistry_register(self, command, ...) end'
+        annotation = ('wurst_stack[wurst_stack_depth] = '
+                      '"when calling registerOriginSelection in Bootstrap, line 99"')
+        script = (definition + '\n' + alias + '\n' + self.executable_script()
+                  .replace('  registerOriginSelection()', '')
+                  .replace('registry:register("origin", handler)', annotation + '\n' + registration))
+        calls, commands = runtime._compiled_call_evidence(script)
+        self.assertNotIn("registerOriginSelection", calls)
+        self.assertIn("origin", commands)
+        self.assertEqual([], runtime.verify_compiled_script(script)["failures"])
+        # Neither the inlining annotation nor a wrapper call can substitute for
+        # the actual command registration, catalogue setup, or physical travel.
+        broken_scripts = [script.replace(registration, replacement) for replacement in
+                          ('', '-- ' + registration, 'registerOriginSelection()',
+                           'local note = ' + json.dumps(registration))]
+        broken_scripts += [script.replace(alias, ''), script.replace(definition, '')]
+        broken_scripts += [script.replace(f'  {operation}()', '') for operation in
+                           ('configureGeneratedOrigins', 'compatLoadPhysicalMap')]
+        for broken in broken_scripts:
+            with self.subTest(script=broken):
+                failures = runtime.verify_compiled_script(broken)["failures"]
+                self.assertTrue(any(failure.startswith("origin_selection:") for failure in failures))
 
     def test_classes_commands_and_markers_without_bootstrap_calls_fail(self):
         marker_only = '\n'.join(

@@ -294,26 +294,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
         runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    movement = {"land": "MOVE_LAND", "naval": "MOVE_NAVAL", "amphibious": "MOVE_AMPHIBIOUS", "flying": "MOVE_FLYING"}
-    recovery = ["\npublic function configureRecoveryScenario(UnstuckRecoveryService service)"]
-    for index, zone in enumerate(world.get("navigationZones", ())):
-        name = f"zone{index}"
-        recovery.append(f'\tlet {name} = new RecoveryZone("{zone["id"]}")')
-        for kind in zone["movementClasses"]: recovery.append(f"\t{name}.addMovement({movement[kind]})")
-        for kind, destinations in zone.get("connections", {}).items():
-            for destination in destinations: recovery.append(f'\t{name}.connect({movement[kind]}, "{destination}")')
-        recovery.append(f"\tservice.addZone({name})")
-    for index, point in enumerate(world.get("navigationSafePoints", ())):
-        name, position = f"point{index}", point["position"]
-        anchor = str(point["kind"] == "recovery_anchor").lower()
-        recovery.append(f'\tlet {name} = new RecoveryPoint("{point["id"]}", "{point["zoneId"]}", {float(position["x"])}, {float(position["y"])}, true, {anchor})')
-        for kind in point["movementClasses"]: recovery.append(f"\t{name}.addMovement({movement[kind]})")
-        recovery.append(f"\tservice.addPoint({name})")
-    for index, state in enumerate(world.get("activeUnitNavigationStates", ())):
-        name, safe = f"entity{index}", state["lastSafePosition"]
-        recovery.append(f'\tlet {name} = new RecoveryEntity("{state["unitId"]}", {movement[state["movementClass"]]}, "{state["currentZoneId"]}", true, true, false, false, true)')
-        recovery.append(f"\tservice.addEntity({name})")
-        recovery.append(f'\tservice.importLastSafe("{state["unitId"]}", "{safe["zoneId"]}", {float(safe["x"])}, {float(safe["y"])})')
+    recovery = []  # Live representations register through their ordinary adapters.
     timeline = world["timeline"]
     timeline_lines = ["\npublic function configureCampaignTimeline() returns CampaignClock",
         f'\tlet clock = new CampaignClock({date.fromisoformat(timeline["startDate"]).toordinal()}, {date.fromisoformat(timeline["endDate"]).toordinal()}, {date.fromisoformat(timeline["initialDate"]).toordinal()}, 1.)']
@@ -396,6 +377,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
     arrival_configuration = "public function configureGeneratedArrivals(PlayableCampaignState state)\n\tskip\n"
     from party_locations import campaign_navigation, configuration as party_navigation_configuration
     runtime['partyNavigation'] = {}
+    runtime['recoveryNavigation'] = {}
+    from recovery_navigation import campaign_navigation as recovery_navigation, configuration as recovery_configuration
     from physical_interactions import interaction_configuration, interaction_locations
     locations = []
     physical_manifest = config.project / "physical-maps.json"
@@ -410,6 +393,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         runtime['boundaryNavigation'] = campaign_boundary_navigation(campaign, generated)
         arrival_configuration = campaign_arrival_configuration(campaign, runtime['boundaryNavigation'])
         runtime['partyNavigation'] = campaign_navigation(campaign, generated)
+        runtime['recoveryNavigation'] = recovery_navigation(campaign, generated)
         arrival_configuration += party_navigation_configuration(runtime['partyNavigation'])
         arrival_configuration = arrival_configuration.replace(
             'state.boundaryConfigurationComplete = true',
@@ -587,6 +571,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     wurst = wurst.replace('import WarcraftRpgRuntime\n', 'import WarcraftRpgRuntime\nimport PhysicalInteraction\n')
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
+    wurst += recovery_configuration(runtime['recoveryNavigation'])
     (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     (generated / GENERATED_WURST).write_text(wurst, encoding="utf-8")
     input_paths = (
@@ -615,6 +600,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             Path(__file__).with_name("physical_interactions.py"),
             Path(__file__).with_name("boundary_arrival.py"),
             Path(__file__).with_name("party_locations.py"),
+            Path(__file__).with_name("recovery_navigation.py"),
             config.project / "scenario/maps/physical-boundaries.json",
         ) if path.is_file()),
         *(config.project.parent / '_shared/wurst').glob('*.wurst'),

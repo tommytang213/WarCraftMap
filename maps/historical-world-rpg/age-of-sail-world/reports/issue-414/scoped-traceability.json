@@ -1,0 +1,3046 @@
+{
+  "blockers": [],
+  "outOfScopeBlockerCount": 8964,
+  "requirements": [
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0191.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Only selected eligible local player units recover.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0191.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0191.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0191.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0191.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0191",
+      "status": "pass",
+      "text": "`/unstuck` applies to selected eligible mobile units."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0192.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "adapter.clear()",
+              "synchronize(false)"
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "reconstructed"
+          },
+          "mode": "persisted",
+          "reason": "Campaign envelope 7 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v4 stores validated map/class/component hints (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
+          "references": [
+            {
+              "contains": [
+                "heroes.mainCharacterId"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "captureState"
+            },
+            {
+              "contains": [
+                "f.recoveryMap",
+                "f.recoveryComponent"
+              ],
+              "path": "wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "snapshot"
+            }
+          ],
+          "save": {
+            "contains": [
+              "recovery.refresh()",
+              "capturePartyLocations(document)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          }
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Empty selection recovers the persisted main character.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0192.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0192.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0192.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0192.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0192",
+      "status": "pass",
+      "text": "If no eligible selection exists because nothing is selected, it may recover the main character."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0193.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Mixed selection recovers mobile units and skips structures.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0193.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0193.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0193.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0193.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0193",
+      "status": "pass",
+      "text": "Mixed selections move eligible mobile units and skip structures."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0194.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "An ineligible-only selection leaves every other unit in place.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0194.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0194.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0194.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0194.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0194",
+      "status": "pass",
+      "text": "If only ineligible objects such as buildings are selected, report the issue and do not silently move something else."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0195.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Structures, system objects and AI-only defenders never enter the movable registry.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0195.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0195.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0195.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0195.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0195",
+      "status": "pass",
+      "text": "Buildings, walls, towers, city cores, destructibles and dummy/system units must never be moved by `/unstuck`."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0196.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Every destination belongs to the current physical movement component.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0196.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0196.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0196.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.moves.assertEquals(0)",
+              "GetUnitX(target).assertEquals(x)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0196.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0196",
+      "status": "pass",
+      "text": "Recovery must be connectivity-aware, not merely pathability-aware."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0197.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Ships cannot recover into disconnected or decorative water.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0197.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0197.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0197.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.moves.assertEquals(0)",
+              "GetUnitX(target).assertEquals(x)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0197.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0197",
+      "status": "pass",
+      "text": "Ships must not be moved into isolated/decorative lakes or disconnected water."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0198.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Land recovery cannot cross disconnected land.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0198.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0198.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0198.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.moves.assertEquals(0)",
+              "GetUnitX(target).assertEquals(x)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0198.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0198",
+      "status": "pass",
+      "text": "Land units must not be moved onto unreachable/disconnected land."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0199.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "adapter.clear()",
+              "synchronize(false)"
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "reconstructed"
+          },
+          "mode": "persisted",
+          "reason": "Campaign envelope 7 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v4 stores validated map/class/component hints (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
+          "references": [
+            {
+              "contains": [
+                "heroes.mainCharacterId"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "captureState"
+            },
+            {
+              "contains": [
+                "f.recoveryMap",
+                "f.recoveryComponent"
+              ],
+              "path": "wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "snapshot"
+            }
+          ],
+          "save": {
+            "contains": [
+              "recovery.refresh()",
+              "capturePartyLocations(document)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          }
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Important active units retain validated map/class/component last-safe records through save/load.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0199.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0199.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0199.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "state.committedLocations.assertEquals(savedParty)",
+              "f.natives.service.entityCount.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0199.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0199",
+      "status": "pass",
+      "text": "Track last-known-safe position/navigation zone for important active units."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0200.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "Each unit searches nearby, then validated last-safe, then a connected generated anchor.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0200.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0200.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0200.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "GetUnitX(first).assertEquals(safeX)",
+              "GetUnitX(first).assertEquals(anchor.x)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryUsesPerEntityCandidatesThenLastSafeThenConnectedAnchor",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0200.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0200",
+      "status": "pass",
+      "text": "Prefer nearby reachable safe position, then verified last-safe position, then a valid connected recovery anchor."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0201.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "An unprovable destination produces feedback without movement.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0201.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0201.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0201.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.moves.assertEquals(0)",
+              "GetUnitX(target).assertEquals(x)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0201.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0201",
+      "status": "pass",
+      "text": "If safety cannot be proven, fail without moving the unit."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Recovery commands"
+      },
+      "blockerClasses": [],
+      "classification": "mechanism",
+      "id": "REQ-0202.01",
+      "kind": "runtime",
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^\\n]*\"unstuck\"",
+            "\\b[\\w.]*UnstuckRecoveryService[\\w]*recoverEntity[\\w]*\\(",
+            "\\bSetUnitX\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "entry": {
+          "id": "live-unstuck",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerCampaignDomains(",
+                "registerUnstuckCommand(commands, recoveryService)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "c.handler.execute(sender,a)"
+              ],
+              "path": "wurst/CommandRouter.wurst",
+              "symbol": "dispatch"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "registry.register(\"unstuck\"",
+              "new UnstuckCommand(service)"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "registerUnstuckCommand"
+          },
+          "testInvocation": ".dispatch(Player(0), \"/unstuck"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "safeDestination(e, e.zoneId, x, y)",
+              "if e.hasLastSafe",
+              "if point.anchor"
+            ],
+            "path": "wurst/UnstuckRecovery.wurst",
+            "symbol": "recoverEntity"
+          },
+          {
+            "contains": [
+              "movementOf(target)",
+              "service.navigation.zoneAt"
+            ],
+            "path": "wurst/WarcraftRecoveryRuntime.wurst",
+            "symbol": "bind"
+          },
+          {
+            "contains": [
+              "state.localHero",
+              "military.activeRegionId",
+              "restoreSafe("
+            ],
+            "path": "wurst/CampaignUnstuck.wurst",
+            "symbol": "synchronize"
+          }
+        ],
+        "persistence": {
+          "mode": "session-only",
+          "reason": "Selection, handles, movement observations and candidate lists are transient. Physical coordinates continue through the existing party/force authority; this obligation adds no competing location store.",
+          "references": [
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.x = e.x",
+                "adapter.unbind(id)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ]
+        },
+        "scope": "Issue #414 / REQ-0191.01\u2013REQ-0202.01. Production adapters with interpreter units and recording selection, object fields and pathing; no claim of native client gameplay validation.",
+        "state": {
+          "mutation": "Ordinary creation binds namespaced stable IDs. Dispatch refreshes eligibility/context, verifies movement-specific generated connectivity and native clearance, then commits physical coordinates through their existing owners.",
+          "outcome": "All considers only physical player-controlled representations on the loaded map.",
+          "owner": "PartyLocation / HeroRoster mainCharacterId / RuntimeForce; WarcraftRecoveryAdapter holds only disposable handles.",
+          "references": [
+            {
+              "contains": [
+                "runtime.isPlayerControlled",
+                "runtime.currentRegion"
+              ],
+              "path": "wurst/UnstuckRecovery.wurst",
+              "symbol": "recoverOne"
+            },
+            {
+              "contains": [
+                "state.committedLocations = previous.encode()",
+                "f.safeX = e.lastSafeX"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "synchronize"
+            }
+          ],
+          "rejection": "Unknown, stale, foreign, nonlocal and unsupported representations are skipped. Invalid topology, blocked pathing and malformed persisted hints fail closed."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "state.captureAuthoritativeState().assertEquals(before)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0202.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.natives.service.entityCount.assertEquals(2)",
+              "f.startup.saves.read(\"manual_01\").assertEquals(saved)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0202.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.moves.assertEquals(moves)",
+              "f.natives.count.assertEquals(2)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0202.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.natives.count.assertEquals(5)"
+            ],
+            "entryPoint": "live-unstuck",
+            "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "live-unstuck",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0202.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Startup and successful/rolled-back loads rebuild the registry from the current ordinary projections. Generated navigation is keyed by loaded physical map; source-map hints are never used as destination coordinates.",
+          "references": [
+            {
+              "contains": [
+                "recovery.reconstructed()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "activateAuthoritativeState"
+            },
+            {
+              "contains": [
+                "mapId != state.loadedPhysicalMap",
+                "navigation.zoneAt(kind, x, y)"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "restoreSafe"
+            },
+            {
+              "contains": [
+                "adapter.clear()"
+              ],
+              "path": "wurst/CampaignUnstuck.wurst",
+              "symbol": "reconstructed"
+            }
+          ]
+        }
+      },
+      "parent": "REQ-0202",
+      "status": "pass",
+      "text": "`/unstuck all` may operate on physically active player-controlled mobile units in the current relevant region, never abstract world entities."
+    }
+  ],
+  "scope": [
+    "REQ-0191.01",
+    "REQ-0192.01",
+    "REQ-0193.01",
+    "REQ-0194.01",
+    "REQ-0195.01",
+    "REQ-0196.01",
+    "REQ-0197.01",
+    "REQ-0198.01",
+    "REQ-0199.01",
+    "REQ-0200.01",
+    "REQ-0201.01",
+    "REQ-0202.01"
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "c9079505ae2a3b032748958019e335cdaee9215f",
+    "sourceTreeSha256": "92a9296ce7c34338145dcd0eb54c7473e0ad35cf768226394e80e78e2a5fc53a"
+  }
+}

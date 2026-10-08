@@ -109,6 +109,12 @@ fixtures. Declared journey itineraries are metadata, not evidence of executing
 physical-map transitions or native Warcraft saves. None of these checks
 establishes successful real-client execution.
 
+Compiled origin-selection checks require the emitted `origin` command
+registration, generated origin configuration and physical-map loading calls.
+The pinned optimizer may inline `registerOriginSelection`; its diagnostic stack
+annotation alone supplies no call or registration evidence. Regression checks
+reject missing registrations or operations even when that annotation remains.
+
 The map's source `main` must call `InitBlizzard()` before Wurst package
 initializers. Wurst retains the source main body; it does not supply the missing
 Blizzard initialization for an empty stub. Packaging reads the final MPQ's Lua

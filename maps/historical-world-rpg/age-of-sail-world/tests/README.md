@@ -53,6 +53,14 @@ quests, treasures, military records, reward profiles and markets before reducing
 the counts, so repeated fixtures do not retain an entire world each and exhaust
 the interpreter heap during the complete suite.
 
+Production military registration uses temporary indexes with exact stable-ID
+comparisons, then discards them before gameplay and reconstruction. Military
+snapshot parsing reads each record once, and campaign field lookup searches from
+the end to retain the final value without scanning earlier domains. Regression
+tests cover hash collisions, duplicate registration, representation reconstruction,
+empty optional fields, malformed records and embedded trade-store separators.
+The complete recovery journeys and the pinned 20-second test limit remain intact.
+
 `RpgInteractionTests.wurst` dispatches production interaction, turn-in, tracking
 and remote-region commands with recording actor and map boundaries. It checks complete
 authority equivalence on rejection, generated local coordinates, eligible reward
@@ -305,6 +313,14 @@ boundaries cover forged facts, remote or stale targets, changed loot and commiss
 terms, final-read invalidation, exhaustion, duplicate delivery and save/load with a
 pending preview. Every rejected action compares participating authority and native
 projection writes. See [PIRACY_CONFIRMATION.md](../docs/PIRACY_CONFIRMATION.md).
+
+`LiveRecoveryTests.wurst` creates ordinary Warcraft party/military representations
+after generated campaign registration and dispatches `/unstuck`. Recording native
+selection, movement fields and collision/pathing cover all movement classes,
+selection variants, disconnected terrain, last-safe/anchor order, stale handles,
+ownership, replacement, save migration and cross-map reconstruction. It emits
+scoped production receipts; `test_live_recovery.py` proves each map's generated
+rasters/anchors against materialized WPM. See [LIVE_UNSTUCK.md](../docs/LIVE_UNSTUCK.md).
 
 `CampaignAutosaveLifecycleTests.wurst` drives the production service, timer callback,
 codec, transaction manager and travel API with recording native boundaries. Eighteen

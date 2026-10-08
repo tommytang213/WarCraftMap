@@ -229,3 +229,100 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	runtime.capture("london", "england", 34.999).assertFalse()
 	runtime.restore(inactiveMutation).assertTrue()
 	runtime.forces[runtime.forceIndex("defense:london:gate")].strength.assertEquals(75)
+
+@test function militarySnapshotRecordBoundariesPreserveRecoveryAndRejectMalformedSuffixes()
+	let runtime = fixture(new RecordingMilitaryAdapter())
+	let army = new RuntimeForce("army:one", "player", "europe", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 32., 64.)
+	army.recoveryMap = "europe"
+	army.recoveryClass = 0
+	army.recoveryComponent = 1
+	army.safeX = 32.
+	army.safeY = 64.
+	runtime.registerForce(army)
+	// Empty active region and trailing settlement fields are valid authority.
+	// Shorter records after these must not inherit fields from the prior row.
+	let saved = runtime.snapshot()
+	let parsed = runtime.parseSnapshot(saved)
+	(parsed != null).assertTrue()
+	parsed.snapshot().assertEquals(saved)
+	parsed.activeRegionId.assertEquals("")
+	parsed.settlements[0].occupationConflictId.assertEquals("")
+	parsed.settlements[0].attackerId.assertEquals("")
+	parsed.forces[parsed.forceIndex("army:one")].safeY.assertEquals(64.)
+	parsed.dispose()
+	string array[7] bad
+	bad[0] = saved + "|"
+	bad[1] = saved + "||a,europe"
+	bad[2] = saved + "|t,another"
+	bad[3] = saved.replace("|k,0|", "|k,0,extra|")
+	bad[4] = saved.replace(",,1,1,|t,", ",,1,1,,|t,")
+	bad[5] = saved.replace(",,1,1,|t,", ",,1,|t,")
+	bad[6] = saved.replace("|n,army:one,europe,0,1,32.0,64.0", "|n,army:one,europe,0,1,32.0")
+	for i = 0 to 6
+		(bad[i] != saved).assertTrue()
+		runtime.restore(bad[i]).assertFalse()
+		runtime.snapshot().assertEquals(saved)
+
+/** Recreate the pre-policy settlement layout when exercising old save versions. */
+public function withoutMilitarySettlementPolicy(string candidate) returns string
+	var result = ""
+	var start = 0
+	let length = StringLength(candidate)
+	while start < length
+		let settlement = SubString(candidate, start, start + 2) == "s,"
+		var finish = start
+		var fields = 0
+		var policyStart = -1
+		while finish < length and SubString(candidate, finish, finish + 1) != "|"
+			if SubString(candidate, finish, finish + 1) == ","
+				fields++
+				if settlement and fields == 23
+					policyStart = finish
+			finish++
+		if policyStart < 0
+			policyStart = finish
+		result += SubString(candidate, start, policyStart)
+		if finish < length
+			result += "|"
+		start = finish + 1
+	return result
+
+@test function militaryRegistrationIndexesPreserveCollisionsDuplicatesAndReconstruction()
+	let runtime = fixture(new RecordingMilitaryAdapter())
+	let lower = new SettlementRuntimeState("port", "england", "europe", 'htow', 'hfoo', 30, 20, 50, 50, 10., 10.)
+	let upper = new SettlementRuntimeState("PORT", "france", "europe", 'htow', 'hfoo', 40, 10, 60, 70, 20., 20.)
+	let first = new AdministratorState("first", "First", "Deputy", "england", "europe", "port", 50, 50, 50, 1)
+	let second = new AdministratorState("second", "Second", "Deputy", "france", "europe", "PORT", 50, 50, 50, 1)
+	StringHash("port").assertEquals(StringHash("PORT"))
+	StringHash("core:port").assertEquals(StringHash("core:PORT"))
+	for repeat = 0 to 1
+		runtime.beginRegistration()
+		runtime.registerSettlement(lower)
+		runtime.registerSettlement(upper)
+		runtime.registerSettlement(lower)
+		runtime.registerForce(runtime.forces[runtime.forceIndex("core:port")])
+		runtime.appoint("port", first)
+		runtime.appoint("PORT", second)
+		runtime.appoint("port", first)
+		runtime.settlementIndex("port").assertEquals(1)
+		runtime.settlementIndex("PORT").assertEquals(2)
+		runtime.administrators[runtime.administratorIndex("port")].characterId.assertEquals("first")
+		runtime.administrators[runtime.administratorIndex("PORT")].characterId.assertEquals("second")
+		runtime.endRegistration()
+		runtime.forceCount.assertEquals(4)
+		runtime.settlementCount.assertEquals(3)
+		runtime.administratorCount.assertEquals(2)
+	let saved = runtime.snapshot()
+	let replacement = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	replacement.registerSettlement(new SettlementRuntimeState("replacement", "england", "europe", 'htow', 'hfoo', 10, 10, 10, 10, 30., 30.))
+	runtime.restore(replacement.snapshot()).assertTrue()
+	runtime.forceIndex("core:port").assertEquals(-1)
+	runtime.forceIndex("core:replacement").assertEquals(0)
+	runtime.restore(saved).assertTrue()
+	runtime.snapshot().assertEquals(saved)
+	runtime.beginRegistration()
+	runtime.forceIndex("core:replacement").assertEquals(-1)
+	runtime.forceIndex("core:port").assertEquals(2)
+	runtime.forceIndex("core:PORT").assertEquals(3)
+	runtime.endRegistration()
+	runtime.snapshot().assertEquals(saved)

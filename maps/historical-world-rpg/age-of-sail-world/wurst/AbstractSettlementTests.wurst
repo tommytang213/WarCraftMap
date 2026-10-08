@@ -183,6 +183,44 @@ function abstractReceipt(string caseName)
 	abstractReceipt("failure")
 	abstractReceipt("stale")
 
+@test function militaryVersion4BranchesMigratePolicyAndRecoveryTogether()
+	let f = new AbstractFixture()
+	let fleet = new RuntimeForce("legacy_fleet", "player", "africa", "ship", FORCE_FLEET, 'hdes', 40, 20, 32., 64.)
+	f.military.registerForce(fleet)
+	let community = f.military.settlements[f.military.settlementIndex("anakena")]
+	// Literal recovery-branch v4: no settlement policy, a valid safe hint, and
+	// the older intrinsic class ID instead of the registered unit rawcode.
+	let recoveryV4 = "v4|k,0|a,inactive|f,legacy_fleet,player,africa,ship,2,42,40,40,20,32,64,1,,0,0|n,legacy_fleet,africa,1,2,32,64|s,anakena,legacy_council," + community.regionId + "," + community.coreTypeId.toString() + "," + community.defenderTypeId.toString() + ",12,20,11,22,77,10,3:101,4:101,0,0,0,0,0,0,legacy_council,,|d,anakena,retained_official,Retained Council,Council,legacy_council," + community.regionId + ",anakena,70,60,40,1,0"
+	f.military.restore(recoveryV4).assertTrue()
+	f.military.settlementCount.assertEquals(3)
+	f.military.administratorCount.assertEquals(3)
+	f.military.settlements[f.military.settlementIndex("anakena")].supply.assertEquals(77)
+	f.military.settlements[f.military.settlementIndex("anakena")].capturable.assertFalse()
+	f.military.administrators[f.military.administratorIndex("anakena")].characterId.assertEquals("retained_official")
+	let restored = f.military.forces[f.military.forceIndex("legacy_fleet")]
+	restored.unitTypeId.assertEquals('hdes')
+	restored.recoveryMap.assertEquals("africa")
+	restored.recoveryComponent.assertEquals(2)
+	restored.safeX.assertEquals(32.)
+	restored.safeY.assertEquals(64.)
+	let combined = f.military.snapshot()
+	combined.startsWith("v5|").assertTrue()
+	f.military.restore(combined).assertTrue()
+	f.military.snapshot().assertEquals(combined)
+	// Main's v4 already has policy and complete authority, but no safe hints.
+	let policyV4 = ("v4" + SubString(combined, 2, StringLength(combined))).replace("|n,legacy_fleet,africa,1,2,32.0,64.0", "")
+	f.military.restore(policyV4).assertTrue()
+	f.military.forces[f.military.forceIndex("legacy_fleet")].recoveryMap.assertEquals("")
+	f.military.settlementCount.assertEquals(3)
+	f.military.settlements[f.military.settlementIndex("anakena")].capturable.assertFalse()
+	f.military.restore(combined).assertTrue()
+	// Reject a v4 document that changes layout between settlements, and a v5
+	// document that omits policy. Neither failure replaces current authority.
+	let mixed = recoveryV4 + "|s,mixed,player,africa,1,1,1,1,1,1,1,1,3:101,4:101,0,0,0,0,0,0,player,,,0,0,"
+	f.military.restore(mixed).assertFalse()
+	f.military.restore(withoutMilitarySettlementPolicy(combined)).assertFalse()
+	f.military.snapshot().assertEquals(combined)
+
 @test function abstractAuthorityRoundTripsAcrossInactiveMapsAndRepeatedReconstruction()
 	let f=new AbstractFixture()
 	registerPlayableTradeCommands(f.commands,f.trade,f.ports).assertEquals("")

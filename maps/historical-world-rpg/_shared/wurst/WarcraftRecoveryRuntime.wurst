@@ -5,12 +5,20 @@ import WC3Compatibility
 
 /** Warcraft-facing registry. Stable IDs, not handles, are persisted. */
 public class WarcraftRecoveryAdapter implements RecoveryRuntime
-	string array[256] ids
-	unit array[256] handles
-	string array[256] regions
+	boolean available = true
+	UnstuckRecoveryService service
+	string array[4128] ids
+	unit array[4128] handles
+	string array[4128] regions
 	int count = 0
 	string array[24] mains
 	string array[24] relevantRegions
+	construct()
+		service = new UnstuckRecoveryService(this)
+	function movementOf(unit target) returns int
+		return compatInteractionMovement(target)
+	function mobile(unit target) returns boolean
+		return target != null and GetUnitTypeId(target) != 0 and not IsUnitType(target, UNIT_TYPE_STRUCTURE) and not IsUnitType(target, UNIT_TYPE_DEAD) and GetUnitMoveSpeed(target) > 0. and GetUnitAbilityLevel(target, 'Aloc') == 0
 
 	function indexOf(string id) returns int
 		for i = 0 to count - 1
@@ -18,19 +26,54 @@ public class WarcraftRecoveryAdapter implements RecoveryRuntime
 				return i
 		return -1
 	function bind(string stableId, unit target, string regionId)
+		if stableId == "" or not mobile(target) or GetOwningPlayer(target) != Player(0)
+			unbind(stableId)
+			return
 		let existing = indexOf(stableId)
 		if existing >= 0
 			handles[existing] = target
 			regions[existing] = regionId
 		else
+			if count >= 4128
+				return
 			ids[count] = stableId
 			handles[count] = target
 			regions[count] = regionId
 			count++
+		let kind = movementOf(target)
+		var e = service.entity(stableId)
+		if e == null
+			e = new RecoveryEntity(stableId, kind, "", true, true, false, false, true)
+			service.addEntity(e)
+		if e.movementClass != kind
+			e.hasLastSafe = false
+			e.zoneId = ""
+		e.movementClass = kind
+		e.x = GetUnitX(target)
+		e.y = GetUnitY(target)
+		if service.navigation != null
+			let zone = service.navigation.zoneAt(kind, e.x, e.y)
+			// Retain a proven component while stuck in a blocked cell. Never
+			// infer connectivity from a nearby pathable point.
+			if zone != ""
+				e.zoneId = zone
+			if not e.zoneId.startsWith(service.navigation.mapId + ":")
+				e.zoneId = ""
+				e.hasLastSafe = false
 	function unbind(string stableId)
 		let found = indexOf(stableId)
 		if found >= 0
-			handles[found] = null
+			count--
+			ids[found] = ids[count]
+			handles[found] = handles[count]
+			regions[found] = regions[count]
+			ids[count] = ""
+			handles[count] = null
+			regions[count] = ""
+		service.removeEntity(stableId)
+	function clear()
+		while count > 0
+			unbind(ids[count - 1])
 	function setMainCharacter(player owner, string stableId)
 		mains[GetPlayerId(owner)] = stableId
 	function setRelevantRegion(player owner, string regionId)
@@ -60,7 +103,7 @@ public class WarcraftRecoveryAdapter implements RecoveryRuntime
 	override function selectedStableId(player owner, int wanted) returns string
 		let selectedUnit = selectedUnitAt(owner, wanted)
 		for i = 0 to count - 1
-			if handles[i] == selectedUnit
+			if selectedUnit != null and handles[i] == selectedUnit
 				return ids[i]
 		// Non-registered selections are deliberately ineligible, never "empty".
 		return "__unregistered_selected_object__"
@@ -72,10 +115,10 @@ public class WarcraftRecoveryAdapter implements RecoveryRuntime
 		return mains[GetPlayerId(owner)]
 	override function isPresent(string stableId) returns boolean
 		let found = indexOf(stableId)
-		return found >= 0 and handles[found] != null and GetUnitTypeId(handles[found]) != 0
+		return available and found >= 0 and mobile(handles[found])
 	override function isPlayerControlled(string stableId, player owner) returns boolean
 		let found = indexOf(stableId)
-		return found >= 0 and handles[found] != null and GetOwningPlayer(handles[found]) == owner
+		return found >= 0 and isPresent(stableId) and GetOwningPlayer(handles[found]) == owner
 	override function currentRegion(string stableId) returns string
 		let found = indexOf(stableId)
 		if found < 0
@@ -83,11 +126,9 @@ public class WarcraftRecoveryAdapter implements RecoveryRuntime
 		return regions[found]
 	override function relevantRegion(player owner) returns string
 		return relevantRegions[GetPlayerId(owner)]
-	override function verifyDestination(string stableId, int movementClass, real x, real y) returns boolean
-		if not isPresent(stableId)
-			return false
+	function terrainAllows(int movementClass, real x, real y) returns boolean
 		if movementClass == MOVE_FLYING
-			return true
+			return not compatIsTerrainPathable(x, y, PATHING_TYPE_FLYABILITY)
 		let walkable = not compatIsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY)
 		let floatable = not compatIsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY)
 		if movementClass == MOVE_LAND
@@ -95,12 +136,50 @@ public class WarcraftRecoveryAdapter implements RecoveryRuntime
 		if movementClass == MOVE_NAVAL
 			return floatable
 		return movementClass == MOVE_AMPHIBIOUS and (walkable or floatable)
+	override function verifyDestination(string stableId, int movementClass, real x, real y) returns boolean
+		if not isPresent(stableId) or service.navigation == null or movementClass < 0 or movementClass > 3
+			return false
+		let target = handles[indexOf(stableId)]
+		let nav = service.navigation
+		let grid = nav.movement[movementClass]
+		let zone = nav.zoneAt(movementClass, x, y)
+		if grid == null or zone == ""
+			return false
+		let radius = RMaxBJ(16., compatGetUnitCollisionSize(target))
+		let samples = IMaxBJ(1, R2I(radius / 32.) + 1)
+		for dx = -samples to samples
+			for dy = -samples to samples
+				let px = x + dx * radius / samples
+				let py = y + dy * radius / samples
+				if nav.zoneAt(movementClass, px, py) != zone or not terrainAllows(movementClass, px, py)
+					return false
+		// Terrain pathability omits live unit collision. Enumerating the loaded
+		// playable map avoids assuming a maximum building collision radius.
+		let area = Rect(grid.minX, grid.minY, grid.minX + grid.width * 128., grid.minY + grid.height * 128.)
+		let obstacles = CreateGroup()
+		GroupEnumUnitsInRect(obstacles, area, null)
+		var other = FirstOfGroup(obstacles)
+		var clear = true
+		while other != null and clear
+			if other != target and GetUnitTypeId(other) != 0 and not IsUnitType(other, UNIT_TYPE_DEAD) and not IsUnitHidden(other) and (movementClass == MOVE_FLYING) == IsUnitType(other, UNIT_TYPE_FLYING)
+				let collision = compatGetUnitCollisionSize(other)
+				let dx = GetUnitX(other) - x
+				let dy = GetUnitY(other) - y
+				if collision > 0. and dx * dx + dy * dy < (radius + collision) * (radius + collision)
+					clear = false
+			GroupRemoveUnit(obstacles, other)
+			other = FirstOfGroup(obstacles)
+		DestroyGroup(obstacles)
+		RemoveRect(area)
+		return clear
 	override function move(string stableId, real x, real y)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			compatTeleportUnit(handles[found], x, y)
+			// SetUnitPosition may silently nudge into a different component.
+			// The exact destination has passed topology and native clearance.
+			compatSetUnitCoordinates(handles[found], x, y)
 	override function feedback(player owner, string message)
 		DisplayTimedTextToPlayer(owner, 0., 0., 12., message)
 
 public WarcraftRecoveryAdapter recoveryRuntime = new WarcraftRecoveryAdapter()
-public UnstuckRecoveryService recoveryService = new UnstuckRecoveryService(recoveryRuntime)
+public UnstuckRecoveryService recoveryService = recoveryRuntime.service

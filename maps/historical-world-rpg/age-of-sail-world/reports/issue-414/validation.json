@@ -1,0 +1,104 @@
+{
+  "campaignPackaging": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "bytes": 33191169,
+    "command": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/packaging-driver.py",
+    "mapsTypecheckedCompiledAndInspected": 17,
+    "note": "The retained driver runs the production per-map generation, localization, budget, materialization, typecheck, compile and archive-inspection functions. The complete Wurst suite ran once separately against the same unchanged source identity.",
+    "regionalMapsWithFourMovementRastersVerifiedAgainstPackagedWpm": 16,
+    "sha256": "7ef05fa57fc3f98a9a86ed43c0fa7772f37c74686f975060b76137ea02867726",
+    "status": "pass"
+  },
+  "evidence": {
+    "campaign-packaging.log.gz": "4e3d33fe2971eb71dc2adf599f5c9786e4985817222eb91d64d2992bd5b3f308",
+    "conformance-world-validation.log": "9bb8e1c2309f1082144b0f685fe199d4e5d8bff470771815700806a0ee17b7ae",
+    "framework-boundary.log": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+    "framework-conformance.json.gz": "8f7c533115b4f953262dbe22533af46f9e60afb7ffeab5c28d97513633042f9f",
+    "framework-conformance.log.gz": "2da580a2fdd2bc85ab4cb912ea84a09da4ab681f0553eed11b7cb4e2752e0ba1",
+    "framework-mutated-execution.log.gz": "7f270947fce4bdd4ad1e2b35700ace483a18ee2dc2bad13e337ff87cadac87d5",
+    "framework-mutated-results.json.gz": "3a19ec1ceaa11ecd339ced0f24a563e01c0393986211cc597cb8000cf7f76193",
+    "framework-original-execution.log.gz": "d8ca3efe455924fc84b87c3c5164814533c08ef3b27010520ccfc4028ba6e63d",
+    "framework-original-results.json.gz": "bd895ab3dae171fb8dfa97e0254faebe9e50b29a44d6e02db78d0cb7b6ca5b83",
+    "grill-offline.sh": "cc1a6f5f7da54421b821d254dd006d0886d1d475228de7c2ecf11e1bdfb24aac",
+    "packaged-navigation.json": "6dd7aaa3abc0c975fa6177590f4e21f34b58151b6d52399daba0be18dd924209",
+    "packaging-driver.py": "f6b1155712e4445d683b1674da11880b3e4d874dfcb23dd99336af10b7607326",
+    "pinned-wurst.log.gz": "0911dd2ebe24b18ae7cd7bd35e8d4cbbf1267ec67dee0cdcc5df5090d3afd029",
+    "production-receipts.json": "6b9167242005d245ccdad77db36d8f90b6a59a762f8499ba686220ac018b456b",
+    "python-suite.log.gz": "64666bbb19ed356f1404f3e90135840844aa4bb792ace04c446a97c8d04e3c06",
+    "scoped-evidence.log": "07444da3ac22fcd244fcc6c97321844ab2246014344683cf555b4dc88705e40a",
+    "scoped-traceability.json": "2c0c7d4abdfe3c1348d60d5c1923d4c6fc61c5e90ac0e8890532df406d34aaae",
+    "traceability-freshness.log": "64b5862a1ffcca28e889c97644aeb94b5bfcea8f0c58116dc343eeabd5d54ca4",
+    "verify-scoped-evidence.py": "0358a58d0884113c50361b4244a5a730524f83e480daede62a3fc8ad9bc1c66d",
+    "world-validation.log": "e12af5bfd90c48af8e2e244e2a1d86eed6b901ccba50c4e6734f48e583311e41",
+    "wurst-execution.log.gz": "a3713c136911d4b1ba8745c0d270220c991a0ea20c58e3b8b0fd85ced810b8c9",
+    "wurst-results.json.gz": "30f3bbfe8dfe88ef6a3bb487d7f70ff9abb24b7aea5abc61b66455122908ce71"
+  },
+  "format": "warcraftmap_issue_414_validation_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "pinnedWurst": {
+    "command": "python3 maps/historical-world-rpg/_shared/tooling/run_wurst_tests.py maps/historical-world-rpg/age-of-sail-world/package.json --grill \"$PWD/_build/grill-offline\"",
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "ed2da0d6fc4715d203885197c4e30e19210a40f6da60be62382408942e0ff2d7",
+    "liveRecoveryJourneysPassed": 6,
+    "status": "pass",
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+    "testsDiscovered": 318,
+    "testsPassed": 318,
+    "toolchainSource": "Copied from the cached pinned image into worktree-local ignored storage; executed on the host with its bundled JRE.",
+    "transcriptSha256": "fd5bd3178aa9187936d1ceed45395f7d985fec0c6adc11de8c87f426e013d943"
+  },
+  "releaseScope": "Issue #414 implementation and scoped evidence are complete. Existing broader campaign publication blockers remain; this is not a native-client release certification.",
+  "restrictions": {
+    "commitsOrPushes": false,
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false,
+    "sourceContainerMounts": false
+  },
+  "saveCompatibility": {
+    "migrations": "Existing RPG v1-v2 and military v1-v3 snapshots remain supported; malformed hint records are rejected before mutation.",
+    "nestedMilitarySchema": 4,
+    "nestedRpgSchema": 3,
+    "outerCampaignSchema": 7,
+    "partyLocationSchema": 1
+  },
+  "scenarioPython": {
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'",
+    "note": "Includes navigation, recovery, party-position, military, save compatibility, traceability and packaging checks; negative fixture errors printed after unittest OK are expected test output.",
+    "status": "pass",
+    "testsRun": 923
+  },
+  "scopedTraceability": {
+    "blockers": [],
+    "command": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-scoped-evidence.py",
+    "outOfScopePublicationBlockerCount": 8964,
+    "productionReceipts": 48,
+    "requirementsPassed": 12,
+    "status": "pass"
+  },
+  "sharedFramework": {
+    "command": "PATH=\"$PWD/_build:$PATH\" python3 maps/historical-world-rpg/_shared/tooling/validate_framework_fixture.py maps/historical-world-rpg/conformance-campaign",
+    "frameworkSourcesUnchangedAcrossContentMutation": true,
+    "mutatedArchiveSha256": "1eb63b840babdc80289c337e0e19fecf9d982f922a461090d49f200677fd2f62",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "d74918d5031a1af2638f99d12bc9c15b9c89c7270c35230fc191ab478732f0be",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceChecks": [
+    "shared framework boundary",
+    "Age of Sail and conformance world validation",
+    "requirement report freshness",
+    "git diff --check"
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "c9079505ae2a3b032748958019e335cdaee9215f",
+    "sourceTreeSha256": "92a9296ce7c34338145dcd0eb54c7473e0ad35cf768226394e80e78e2a5fc53a"
+  }
+}

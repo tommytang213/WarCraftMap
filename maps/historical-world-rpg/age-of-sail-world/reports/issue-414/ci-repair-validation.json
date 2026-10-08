@@ -1,0 +1,106 @@
+{
+  "evidenceFiles": {
+    "ci-repair-evidence.log.gz": "049f7ecb17078824e909a876253186d8b07f3462c111245a7abde2ceee7698f2",
+    "ci-repair-framework-mutated-execution.log.gz": "fa643d30abc99a181bcd6d31eea1c6dbb8f555673008f4f97315527a9e83bfca",
+    "ci-repair-framework-mutated-results.json.gz": "8f935a4188e3ceda466a5dc4759eec06e13c5dae8ec6c46af693ac7c3bfc116a",
+    "ci-repair-framework-original-execution.log.gz": "935bf1dfffb9ecf1f94762cf773837a2660f41ca6110524370b7a0e3f35413bc",
+    "ci-repair-framework-original-results.json.gz": "644ef00f9355191a255370d6356b7608654591a40bd78ab84945b10456195a14",
+    "ci-repair-framework-report.json.gz": "2e6d644757cb923aed17f76e9008be4a3dd39368f1733f496d86edeedead056e",
+    "ci-repair-framework.log.gz": "2da580a2fdd2bc85ab4cb912ea84a09da4ab681f0553eed11b7cb4e2752e0ba1",
+    "ci-repair-github-failure.log.gz": "880241fa2ae1f1b7cb6eed1b3caf53e6db693f133810c5b538deef9fe3172fed",
+    "ci-repair-packaged-navigation.json.gz": "a926cd6709c499c48dac0cacf188627bece95f66ccb49b9b23caba1a16f647c0",
+    "ci-repair-packaging.log.gz": "4e3d33fe2971eb71dc2adf599f5c9786e4985817222eb91d64d2992bd5b3f308",
+    "ci-repair-python.log.gz": "9d9c787a95c7130bf124031e4c568095c9cd0dbeadc2ee706d523e9b365fef2b",
+    "ci-repair-regression.json": "d37a6de094b0f20266f09fe4d60f7df57b3a6d7e0114ebf6127042ab3a10bc95",
+    "ci-repair-runtime-artifact.json.gz": "540ad7e3f730abdcf65fd327e74b65331b78b130ad4ffaed8ab995cbe076d0ca",
+    "ci-repair-scoped-traceability.json.gz": "5d46131d01c652a2aeda56e4d00b6fa11624320e754a19ab6c680120604976f4",
+    "ci-repair-source-checks.log.gz": "46f3353e4a6629f8b76d42db196d2adbf6e2dda76107692f2a90a7e2034c524a",
+    "ci-repair-wurst-execution.log.gz": "1ad297529638221adae586bbd6b02c847cdcf17d82adae8b411e16c299d1c6b8",
+    "ci-repair-wurst-results.json.gz": "a196b217a89e29eff3ec015bf1bd252113eea6748899bc14dde45bd091a2fb6e",
+    "verify-ci-repair-evidence.py": "799cbdcca00f0fbb987115782867b87c8334d40f6dcf70a30216846e4eb64f6f"
+  },
+  "format": "warcraftmap_issue_414_ci_repair_validation_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "packaging": {
+    "artifactSha256": "432d6f71e840747a725a0ed7bc4e723e64ce077135467994fa6eea5017941385",
+    "driver": "reports/issue-414/packaging-driver.py, copied into ignored storage with only the Grill path changed to _build/issue414-ci-repair-toolchain/grill-offline",
+    "evidenceCommand": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-414/verify-ci-repair-evidence.py",
+    "exactRcArtifactGate": "pass",
+    "gameplayMapsWithFourMovementRastersVerifiedAgainstPackagedWpm": 16,
+    "note": "Fresh diagnostic campaign plus the exact production RC artifact verifier. The outer worker performs authoritative repository validation; this does not claim a complete two-build RC publication run.",
+    "physicalMapsTypecheckedCompiledAndInspected": 17,
+    "status": "pass"
+  },
+  "pinnedWurst": {
+    "command": "python3 maps/historical-world-rpg/_shared/tooling/run_wurst_tests.py maps/historical-world-rpg/age-of-sail-world/package.json --grill \"$PWD/_build/grill-offline\"",
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "4798ad2dde3cc5656821ec02d0d7147b97cafec10ee0b0eacaf8e4daa03f1e8e",
+    "liveRecoveryJourneysPassed": 6,
+    "status": "pass",
+    "testsDiscovered": 327,
+    "testsPassed": 327,
+    "transcriptSha256": "5582901bb7d6d66a6407f59a5807da78a81401ff1c2b29bf920b2d10b8a0b7fc"
+  },
+  "preservedSaveSchemas": {
+    "autosave": 1,
+    "campaign": 8,
+    "militarySettlements": 4,
+    "partyLocations": 1,
+    "rpg": 3
+  },
+  "releaseScope": "Issue #414 is ready for repository validation. Broader publication blockers and native-client release certification are outside this repair.",
+  "repair": {
+    "cause": "The pinned optimizer inlined registerOriginSelection; the artifact gate incorrectly required that wrapper as an executable call even though the origin command registration remained.",
+    "change": "Require the emitted origin registration, generated origins and physical-map loading calls. Regression coverage rejects missing operations, missing/unbound registrations, comments, literals and stack annotations.",
+    "failedJob": "https://github.com/tommytang213/WarCraftMap/actions/runs/37765519229/job/113272106402",
+    "pullRequest": "https://github.com/tommytang213/WarCraftMap/pull/423",
+    "regression": "Failed with the original checker, passed after repair; the same before/after was verified against actual previously compiled Europe map bytes."
+  },
+  "restrictions": {
+    "commitsOrPushes": false,
+    "containersUsed": false,
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false
+  },
+  "scenarioPython": {
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'",
+    "note": "Packaging rejection fixtures intentionally print error messages; the complete unittest run exited zero.",
+    "seconds": 1701.598,
+    "status": "pass",
+    "testsRun": 926
+  },
+  "scopedTraceability": {
+    "blockers": [],
+    "outOfScopePublicationBlockerCount": 8942,
+    "productionReceipts": 48,
+    "requirementsPassed": 12,
+    "status": "pass"
+  },
+  "sharedFramework": {
+    "command": "PATH=\"$PWD/_build/issue414-ci-repair-toolchain:$PATH\" python3 maps/historical-world-rpg/_shared/tooling/validate_framework_fixture.py maps/historical-world-rpg/conformance-campaign",
+    "frameworkSourcesUnchangedAcrossContentMutation": true,
+    "mutatedArchiveSha256": "339caa91a6d0a82cfbf0b6a87b7599d4872d2157e4ef8fb316bd4141dc24075d",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "d76ced7dc5ff34339fa4ad044788740a4ce875fd06a61efcef6e43cdcd124af3",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceChecks": [
+    "canonical map validation",
+    "Age of Sail and conformance world validation",
+    "shared framework boundary",
+    "requirement report freshness",
+    "git diff --check"
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "c48f1328854d519d24b665f93617af9de6132283",
+    "sourceTreeSha256": "8913ac0edbd0dad0a48ba2746f6552dcc422be7b70fdbd77233ede0e5d97e0e2"
+  }
+}

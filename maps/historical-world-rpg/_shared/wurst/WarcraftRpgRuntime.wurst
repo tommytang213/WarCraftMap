@@ -6,10 +6,11 @@ import CommandRouter
 import CampaignTimeline
 import CharacterAvailability
 import PhysicalInteraction
+import WarcraftRecoveryRuntime
 
 public constant int RPG_LEVEL_CAP = 300
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
-public constant int RPG_STATE_SCHEMA_VERSION = 2
+public constant int RPG_STATE_SCHEMA_VERSION = 3
 // Equipment assignments reserve owned copies, so they share the item budget.
 public constant int RPG_INVENTORY_CAPACITY = 4096
 public constant string QUEST_OFFERED = "offered"
@@ -194,6 +195,17 @@ public class RpgHero
 			assignment = "reserve"
 
 public class HeroRoster
+	WarcraftRecoveryAdapter recovery = null
+	string mainCharacterId = ""
+	string physicalMapId = ""
+	function bindRecovery(int index)
+		if recovery != null
+			let hero = heroes[index]
+			if hero.recruited and hero.assignment == "field" and not hero.incapacitated and (hero.regionId == "" or hero.regionId == physicalMapId)
+				recovery.bind("party:" + hero.id, projected[index], physicalMapId)
+	function retireRecovery(string id)
+		if recovery != null
+			recovery.unbind("party:" + id)
 	CampaignClock clock = null
 	string lastRecruitmentProblem = ""
 	RpgHero array[2048] heroes
@@ -256,11 +268,13 @@ public class HeroRoster
 		// Deployment is local; a previous remote assignment must not make the
 		// newly created representation appear to belong to its old region.
 		heroes[i].regionId = ""
+		bindRecovery(i)
 		return true
 	function assignRemote(string id, string assignment, string regionId) returns boolean
 		let i = indexOf(id)
 		if i < 0 or not heroes[i].recruited or heroes[i].incapacitated or assignment == ""
 			return false
+		retireRecovery(id)
 		if projected[i] != null
 			compatRemoveUnit(projected[i])
 			projected[i] = null
@@ -269,13 +283,17 @@ public class HeroRoster
 		return true
 	function loseRuntimeObjects()
 		for i = 0 to count - 1
+			retireRecovery(heroes[i].id)
 			if projected[i] != null and GetUnitTypeId(projected[i]) != 0
 				compatRemoveUnit(projected[i])
 			projected[i] = null
 	function reconstructField(player owner, real x, real y)
 		for i = 0 to count - 1
 			if heroes[i].recruited and heroes[i].assignment == "field" and not heroes[i].incapacitated and activeCount() < activeLimit
+				if projected[i] != null
+					compatRemoveUnit(projected[i])
 				projected[i] = compatCreateUnit(owner, heroes[i].unitTypeId, x, y, 0.)
+				bindRecovery(i)
 
 public class RpgItem
 	string id
@@ -725,6 +743,7 @@ public class WarcraftRpgRuntime
 					main=i
 		if main < 0
 			return false
+		heroes.mainCharacterId = heroes.heroes[main].id
 		heroes.heroes[main].assignment="field"
 		heroes.heroes[main].regionId=""
 		return true
@@ -839,6 +858,8 @@ public class WarcraftRpgRuntime
 	function validateRecord(RpgSnapshotRecord record) returns boolean
 		let kind=record.field(0)
 		let id=record.field(1)
+		if kind == "p"
+			return record.count == 2 and (id == "" or heroes.get(id) != null)
 		if kind == "h"
 			return record.count == 18 and record.resolveHero(heroes) != null and rpgValidBool(record.field(2)) and rpgValidInt(record.field(3)) and S2I(record.field(3)) >= 1 and S2I(record.field(3)) <= RPG_LEVEL_CAP and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5)) and rpgValidInt(record.field(6)) and rpgValidInt(record.field(7)) and rpgValidInt(record.field(8)) and S2I(record.field(8)) >= 0 and S2I(record.field(8)) <= 100 and rpgValidBool(record.field(9)) and rpgValidBool(record.field(10)) and rpgValidInt(record.field(11)) and rpgStableText(record.field(12)) and rpgStableText(record.field(13)) and rpgStableText(record.field(14)) and rpgStableText(record.field(15)) and rpgStableText(record.field(16)) and rpgStableText(record.field(17))
 		if kind == "i"
@@ -856,7 +877,7 @@ public class WarcraftRpgRuntime
 			return record.count == 4 and treasure != null and rpgValidInt(record.field(2)) and S2I(record.field(2)) >= 0 and S2I(record.field(2)) <= treasure.clueCount and rpgValidBool(record.field(3))
 		return false
 	function captureState() returns string
-		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()
+		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()+"|p,"+heroes.mainCharacterId
 		for i=0 to heroes.count-1
 			let h=heroes.heroes[i]
 			result+="|h,"+h.id+","+rpgBoolText(h.recruited)+","+h.level.toString()+","+h.experience.toString()+","+h.skillPoints.toString()+","+h.masteryPoints.toString()+","+h.commandExperience.toString()+","+h.loyalty.toString()+","+rpgBoolText(h.oathbound)+","+rpgBoolText(h.incapacitated)+","+h.recoveryDay.toString()+","+h.assignment+","+h.regionId+","+h.professionId+","+h.personalQuestId+","+h.signatureProgressionId+","+h.chosenPerks
@@ -879,7 +900,9 @@ public class WarcraftRpgRuntime
 	function applyRecord(RpgSnapshotRecord record)
 		let kind=record.field(0)
 		let id=record.field(1)
-		if kind == "h"
+		if kind == "p"
+			heroes.mainCharacterId = id
+		else if kind == "h"
 			let h=record.resolveHero(heroes)
 			h.recruited=rpgBool(record.field(2))
 			h.level=S2I(record.field(3))
@@ -924,6 +947,7 @@ public class WarcraftRpgRuntime
 	function restoreState(string candidate) returns boolean
 		if not validateState(candidate)
 			return false
+		heroes.mainCharacterId = ""
 		inventory.ownedCount=0
 		inventory.equippedCount=0
 		technologies.unlockedCount=0
@@ -962,18 +986,26 @@ public class WarcraftRpgRuntime
 			start=record.read(candidate,start)
 			applyRecord(record)
 		destroy record
+		if candidate.startsWith("v2|")
+			// Legacy saves had no main ID. Preserve the first deployed member in
+			// catalogue order; do not select a reserve or remote representation.
+			for i = 0 to heroes.count - 1
+				let hero = heroes.heroes[i]
+				if heroes.mainCharacterId == "" and hero.recruited and hero.assignment == "field" and not hero.incapacitated
+					heroes.mainCharacterId = hero.id
 		lastDiagnostic=""
 		return true
 	function validateState(string candidate) returns boolean
 		if candidate == "v1"
 			lastDiagnostic=""
 			return true
-		if not candidate.startsWith("v2|")
+		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|")
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
 		let keys = new RpgSnapshotKeys()
 		let record = new RpgSnapshotRecord()
 		var start=3
+		var mainRecords=0
 		var heroRecords=0
 		var itemRecords=0
 		var equipmentRecords=0
@@ -1002,7 +1034,9 @@ public class WarcraftRpgRuntime
 				destroy keys
 				lastDiagnostic="RPG state contains duplicate authority"
 				return false
-			if kind == "h"
+			if kind == "p"
+				mainRecords++
+			else if kind == "h"
 				heroRecords++
 			else if kind == "i"
 				itemRecords++
@@ -1027,7 +1061,7 @@ public class WarcraftRpgRuntime
 				lastDiagnostic="RPG equipment exceeds owned item quantities"
 				return false
 		destroy keys
-		if heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > RPG_INVENTORY_CAPACITY or equipmentRecords > RPG_INVENTORY_CAPACITY or unlockRecords > 2048
+		if (candidate.startsWith("v3|") and mainRecords != 1) or (candidate.startsWith("v2|") and mainRecords != 0) or heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > RPG_INVENTORY_CAPACITY or equipmentRecords > RPG_INVENTORY_CAPACITY or unlockRecords > 2048
 			lastDiagnostic="RPG state is incomplete or exceeds runtime budgets"
 			return false
 		lastDiagnostic=""

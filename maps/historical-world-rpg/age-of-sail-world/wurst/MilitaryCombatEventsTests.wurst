@@ -328,11 +328,11 @@ class CombatFixture
 	f.captureViaNatives()
 	f.natives.advance(0.0625)
 	let saved = f.runtime.snapshot()
-	saved.startsWith("v4|k,").assertTrue()
+	saved.startsWith("v5|k,").assertTrue()
 	f.runtime.restore(saved).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	f.runtime.restore(saved + "|k,0").assertFalse()
-	f.runtime.restore("v4" + SubString(saved, saved.indexOf("|a,"), StringLength(saved))).assertFalse()
+	f.runtime.restore("v5" + SubString(saved, saved.indexOf("|a,"), StringLength(saved))).assertFalse()
 	f.runtime.snapshot().assertEquals(saved)
 	// Legacy formats had no production timer. Migration anchors the old
 	// deadlines to their last recorded event and retains v2 conflict authority.

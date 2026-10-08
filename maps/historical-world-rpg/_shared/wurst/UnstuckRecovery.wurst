@@ -2,11 +2,31 @@ package UnstuckRecovery
 
 import CommandRouter
 import ErrorHandling
+import PartyLocations
 
 public constant int MOVE_LAND = 0
 public constant int MOVE_NAVAL = 1
 public constant int MOVE_AMPHIBIOUS = 2
 public constant int MOVE_FLYING = 3
+
+/** One physical map's movement-specific components, generated from its WPM.
+ * Component identity includes the map and movement class. */
+public class RecoveryNavigation
+	string mapId
+	PartyNavigation array[4] movement
+	construct(string mapId)
+		this.mapId = mapId
+	function zoneAt(int kind, real x, real y) returns string
+		if kind < 0 or kind > 3 or movement[kind] == null
+			return ""
+		let component = movement[kind].componentAt(x, y)
+		if component <= 0
+			return ""
+		return mapId + ":" + kind.toString() + ":" + component.toString()
+
+public interface RecoveryLifecycle
+	function refresh()
+	function moved(string id)
 
 /** Scenario-neutral runtime boundary; tests use a recording implementation. */
 public interface RecoveryRuntime
@@ -67,6 +87,8 @@ public class RecoveryEntity
 	boolean dummyOrSystem
 	boolean abstractStrategic
 	boolean important
+	real x = 0.
+	real y = 0.
 	boolean hasLastSafe = false
 	string lastSafeZone = ""
 	real lastSafeX = 0.
@@ -90,11 +112,13 @@ public class RecoveryResult
 
 public class UnstuckRecoveryService
 	RecoveryRuntime runtime
+	RecoveryLifecycle lifecycle = null
+	RecoveryNavigation navigation = null
 	RecoveryZone array[128] zones
 	int zoneCount = 0
-	RecoveryPoint array[256] points
+	RecoveryPoint array[4096] points
 	int pointCount = 0
-	RecoveryEntity array[256] entities
+	RecoveryEntity array[4128] entities
 	int entityCount = 0
 	construct(RecoveryRuntime adapter)
 		runtime = adapter
@@ -102,11 +126,29 @@ public class UnstuckRecoveryService
 		zones[zoneCount] = value
 		zoneCount++
 	function addPoint(RecoveryPoint value)
+		if pointCount >= 4096
+			destroy value
+			return
 		points[pointCount] = value
 		pointCount++
 	function addEntity(RecoveryEntity value)
+		removeEntity(value.stableId)
+		if entityCount >= 4128
+			destroy value
+			return
 		entities[entityCount] = value
 		entityCount++
+	function removeEntity(string id)
+		for i = 0 to entityCount - 1
+			if entities[i].stableId == id
+				destroy entities[i]
+				entityCount--
+				entities[i] = entities[entityCount]
+				entities[entityCount] = null
+				return
+	function clearEntities()
+		while entityCount > 0
+			removeEntity(entities[entityCount - 1].stableId)
 	function entity(string id) returns RecoveryEntity
 		for i = 0 to entityCount - 1
 			if entities[i].stableId == id
@@ -118,6 +160,8 @@ public class UnstuckRecoveryService
 				return zones[i]
 		return null
 	function reachable(string origin, string destination, int kind) returns boolean
+		if navigation != null
+			return origin != "" and origin == destination and origin.startsWith(navigation.mapId + ":" + kind.toString() + ":")
 		string array[128] pending
 		string array[128] visited
 		var pendingCount = 1
@@ -149,38 +193,68 @@ public class UnstuckRecoveryService
 								pendingCount++
 		return false
 	function destinationValid(RecoveryEntity e, RecoveryPoint point) returns boolean
-		return point != null and point.verified and point.movement[e.movementClass] and reachable(e.zoneId, point.zoneId, e.movementClass) and runtime.verifyDestination(e.stableId, e.movementClass, point.x, point.y)
+		return point != null and point.verified and e.movementClass >= 0 and e.movementClass < 4 and point.movement[e.movementClass] and safeDestination(e, point.zoneId, point.x, point.y)
+	function safeDestination(RecoveryEntity e, string zoneId, real x, real y) returns boolean
+		return reachable(e.zoneId, zoneId, e.movementClass) and (navigation == null or navigation.zoneAt(e.movementClass, x, y) == zoneId) and runtime.verifyDestination(e.stableId, e.movementClass, x, y)
+	function moveTo(RecoveryEntity e, string zoneId, real x, real y)
+		runtime.move(e.stableId, x, y)
+		e.zoneId = zoneId
+		e.x = x
+		e.y = y
+		updateLastSafe(e.stableId, zoneId, x, y)
+		if lifecycle != null
+			lifecycle.moved(e.stableId)
 	function recoverEntity(string id) returns boolean
 		let e = entity(id)
 		if e == null or not e.canRecover() or not runtime.isPresent(id)
 			return false
-		// Ordinary points are registered nearest-first by the runtime.
+		// Evaluate the same bounded neighbourhood independently for EACH unit.
+		var nearest = 512. * 512. + 1.
+		var px = e.x
+		var py = e.y
+		var destinationZone = ""
+		if navigation != null
+			for dy = -16 to 16
+				for dx = -16 to 16
+					let distance = (dx * dx + dy * dy) * 1024.
+					let x = e.x + dx * 32.
+					let y = e.y + dy * 32.
+					if distance > 0. and distance < nearest and distance <= 512. * 512. and safeDestination(e, e.zoneId, x, y)
+						nearest = distance
+						px = x
+						py = y
+						destinationZone = e.zoneId
 		for i = 0 to pointCount - 1
 			let point = points[i]
-			if not point.anchor and destinationValid(e, point)
-				runtime.move(id, point.x, point.y)
-				e.zoneId = point.zoneId
-				return true
-		if e.hasLastSafe and reachable(e.zoneId, e.lastSafeZone, e.movementClass) and runtime.verifyDestination(id, e.movementClass, e.lastSafeX, e.lastSafeY)
-			runtime.move(id, e.lastSafeX, e.lastSafeY)
-			e.zoneId = e.lastSafeZone
+			let distance = (point.x - e.x) * (point.x - e.x) + (point.y - e.y) * (point.y - e.y)
+			if not point.anchor and distance < nearest and destinationValid(e, point)
+				nearest = distance
+				px = point.x
+				py = point.y
+				destinationZone = point.zoneId
+		if destinationZone != ""
+			moveTo(e, destinationZone, px, py)
+			return true
+		if e.hasLastSafe and safeDestination(e, e.lastSafeZone, e.lastSafeX, e.lastSafeY)
+			moveTo(e, e.lastSafeZone, e.lastSafeX, e.lastSafeY)
 			return true
 		for i = 0 to pointCount - 1
 			let point = points[i]
 			if point.anchor and destinationValid(e, point)
-				runtime.move(id, point.x, point.y)
-				e.zoneId = point.zoneId
+				moveTo(e, point.zoneId, point.x, point.y)
 				return true
 		return false
 	function recoverOne(RecoveryResult result, player owner, string id)
 		let e = entity(id)
-		if e == null or not e.canRecover() or not runtime.isPresent(id) or not runtime.isPlayerControlled(id, owner)
+		if e == null or not e.canRecover() or not runtime.isPresent(id) or not runtime.isPlayerControlled(id, owner) or runtime.currentRegion(id) != runtime.relevantRegion(owner)
 			result.skipped++
 		else if recoverEntity(id)
 			result.recovered++
 		else
 			result.failed++
 	function recoverSelection(player owner) returns RecoveryResult
+		if lifecycle != null
+			lifecycle.refresh()
 		let result = new RecoveryResult()
 		let count = runtime.selectedCount(owner)
 		if count == 0
@@ -194,6 +268,8 @@ public class UnstuckRecoveryService
 				recoverOne(result, owner, runtime.selectedStableId(owner, i))
 		return result
 	function recoverAll(player owner) returns RecoveryResult
+		if lifecycle != null
+			lifecycle.refresh()
 		let result = new RecoveryResult()
 		let relevant = runtime.relevantRegion(owner)
 		for i = 0 to runtime.activeCount(owner) - 1
@@ -204,9 +280,7 @@ public class UnstuckRecoveryService
 		return result
 	function updateLastSafe(string id, string safeZone, real x, real y) returns boolean
 		let e = entity(id)
-		if e == null or not e.important or not e.canRecover() or not reachable(e.zoneId, safeZone, e.movementClass)
-			return false
-		if runtime.isPresent(id) and not runtime.verifyDestination(id, e.movementClass, x, y)
+		if e == null or not e.important or not e.canRecover() or not runtime.isPresent(id) or not safeDestination(e, safeZone, x, y)
 			return false
 		e.hasLastSafe = true
 		e.lastSafeZone = safeZone
@@ -216,11 +290,11 @@ public class UnstuckRecoveryService
 	function clearInvalidLastSafe()
 		for i = 0 to entityCount - 1
 			let e = entities[i]
-			if e.hasLastSafe and (not runtime.isPresent(e.stableId) or not reachable(e.zoneId, e.lastSafeZone, e.movementClass) or not runtime.verifyDestination(e.stableId, e.movementClass, e.lastSafeX, e.lastSafeY))
+			if e.hasLastSafe and (not runtime.isPresent(e.stableId) or not safeDestination(e, e.lastSafeZone, e.lastSafeX, e.lastSafeY))
 				e.hasLastSafe = false
 	function exportLastSafe(string id) returns string
 		let e = entity(id)
-		if e == null or not e.hasLastSafe
+		if e == null or not e.hasLastSafe or not runtime.isPresent(id) or not safeDestination(e, e.lastSafeZone, e.lastSafeX, e.lastSafeY)
 			return ""
 		return e.stableId + "|" + e.lastSafeZone + "|" + e.lastSafeX.toString() + "|" + e.lastSafeY.toString()
 	function importLastSafe(string id, string safeZone, real x, real y) returns boolean
@@ -248,10 +322,11 @@ public class UnstuckCommand implements CommandHandler
 			return
 		if result.recovered > 0
 			service.runtime.feedback(sender, "Recovered " + result.recovered.toString() + " unit(s); skipped " + result.skipped.toString() + "; no safe destination for " + result.failed.toString() + ".")
-		else if result.skipped > 0
+		else if result.skipped > 0 and result.failed == 0
 			service.runtime.feedback(sender, "Selected objects are not eligible for recovery; nothing was moved.")
 		else
 			service.runtime.feedback(sender, "No verified connected safe destination was found; nothing was moved.")
+		destroy result
 
 public function registerUnstuckCommand(CommandRegistry registry, UnstuckRecoveryService service)
 	let problem = registry.register("unstuck", "", "unstuck [all]", "Recover stuck mobile units.", "Recover selected eligible mobile units, or your main character when nothing is selected. Use 'all' for active units in the current region.", 0, 1, COMMAND_RELEASE, new UnstuckCommand(service))

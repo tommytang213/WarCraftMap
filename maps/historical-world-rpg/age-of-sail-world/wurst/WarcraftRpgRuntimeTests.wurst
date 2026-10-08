@@ -333,18 +333,20 @@ class Projections implements RpgProjectionPort
 		treasure.clueStage = 1
 		runtime.treasures.register(treasure)
 	let saved = runtime.captureState()
-	var reordered = "v2"
+	let schemaHeader = SubString(saved, 0, 2)
+	var reordered = schemaHeader
 	var start = 3
 	while start < StringLength(saved)
 		var finish = saved.indexOf("|", start)
 		if finish < 0
 			finish = StringLength(saved)
-		reordered = "v2|" + SubString(saved, start, finish) + SubString(reordered, 2, StringLength(reordered))
+		reordered = schemaHeader + "|" + SubString(saved, start, finish) + SubString(reordered, 2, StringLength(reordered))
 		start = finish + 1
 	runtime.restoreState("v1").assertTrue()
 	runtime.restoreState(reordered).assertTrue()
 	runtime.captureState().assertEquals(saved)
-	let firstRecord = SubString(saved, 3, saved.indexOf("|", 3))
+	let heroStart = saved.indexOf("|h,") + 1
+	let firstRecord = SubString(saved, heroStart, saved.indexOf("|", heroStart))
 	runtime.restoreState(reordered + "|" + firstRecord).assertFalse()
 	runtime.captureState().assertEquals(saved)
 	runtime.restoreState(saved).assertTrue()

@@ -18,8 +18,10 @@ local eligible actors, loaded/party map agreement, discovery, war/blockade,
 warehouse ownership or authored service entitlement, capacity and commit-time
 control checks still apply.
 
-Military snapshot v4 carries the policy for detached runtimes; installed scenario
-definitions reconcile it before projection. V1–v3 remain supported. The generated
+Military snapshot v5 carries policy and recovery hints for detached runtimes;
+installed scenario definitions reconcile it before projection. V1–v4 remain
+supported, including both historical v4 layouts described in
+[LIVE_UNSTUCK.md](LIVE_UNSTUCK.md). The generated
 registration supplies missing legacy settlements and officials once, preserving
 existing records, title, control, resources, deadlines and offices. Current saves
 missing a required authority record reject. Definition reconciliation never uses
