@@ -1,0 +1,89 @@
+name: Age of Sail retail launch smoke (diagnostic only)
+
+# This workflow deliberately publishes a non-release campaign for one targeted
+# real-client launch test. It does not relax the official release candidate gates.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/age-of-sail-launch-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-launch-smoke:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      WURST_IMAGE: frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a
+      MAP_PROJECT: maps/historical-world-rpg/age-of-sail-world
+      SOURCE_REVISION: ${{ github.sha }}
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate canonical sources
+        run: |
+          set -eu
+          python3 maps/historical-world-rpg/_shared/tooling/validate_world.py \
+            maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+          python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
+
+      - name: Build and inspect diagnostic campaign in pinned Wurst environment
+        run: |
+          set -eu
+          artifact_dir="$RUNNER_TEMP/age-of-sail-launch-smoke"
+          mkdir -p "$artifact_dir"
+          docker run --rm \
+            --user root \
+            -e MAP_PROJECT \
+            -e SOURCE_REVISION \
+            -v "$PWD:/source:ro" \
+            -v "$artifact_dir:/out" \
+            "$WURST_IMAGE" \
+            /bin/sh -lc '
+              set -eu
+              apt-get update
+              apt-get install -y --no-install-recommends python3
+              cp -a /source /tmp/workspace
+              chown -R wurstuser:wurstuser /tmp/workspace
+              test "$(cd /tmp/workspace && git rev-parse HEAD)" = "$SOURCE_REVISION"
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
+              source_campaign="/tmp/workspace/$MAP_PROJECT/_build/release/AgeOfSailWorldCampaign.w3n"
+              test -s "$source_campaign"
+              mkdir -p /out/Campaigns
+              cp "$source_campaign" /out/Campaigns/AgeOfSailWorldCampaign.w3n
+              cd /out
+              sha256sum Campaigns/AgeOfSailWorldCampaign.w3n > SHA256SUMS.txt
+              printf "%s\n" "$SOURCE_REVISION" > SOURCE_REVISION.txt
+              printf "%s\n" \
+                "DIAGNOSTIC LAUNCH TEST ONLY - NOT A RELEASE CANDIDATE" \
+                "Source revision: $SOURCE_REVISION" \
+                "Target: Warcraft III Forsaken Kingdom 3.0.0.24268" \
+                "Real-client status: NOT TESTED by CI." \
+                "The campaign is NOT validated as gameplay-complete or release-ready." \
+                "" \
+                "1. Close Warcraft III, then copy Campaigns/AgeOfSailWorldCampaign.w3n to the game account Campaigns folder." \
+                "2. Open Single Player > Custom Campaigns > Age of Sail: The World > Begin the Campaign." \
+                "3. Check whether origin selection opens; if so, select an origin and try the first regional map." \
+                "4. Report outcome, failure stage, game client version, and crash report ID when applicable." \
+                "5. Keep the source revision and SHA256SUMS.txt with every report." \
+                "" \
+                "No official release gate is bypassed by the existence of this diagnostic file." \
+                > LAUNCH-SMOKE-ONLY.txt
+            '
+          test -s "$artifact_dir/Campaigns/AgeOfSailWorldCampaign.w3n"
+          test -s "$artifact_dir/SHA256SUMS.txt"
+          echo "**Diagnostic campaign built and structurally inspected.** Retail launch: **NOT RUN**. Official release gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostic W3N, never a player release candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: age-of-sail-LAUNCH-SMOKE-NOT-RELEASE-${{ github.run_number }}
+          path: ${{ runner.temp }}/age-of-sail-launch-smoke/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
