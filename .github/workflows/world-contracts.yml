@@ -2,6 +2,7 @@ name: World data contracts
 
 on:
   push:
+    branches: [main]
     paths:
       - "maps/historical-world-rpg/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
@@ -26,6 +27,13 @@ on:
       - "maps/historical-world-rpg/age-of-sail-world/tests/fixtures/quest_events/**"
       - ".github/workflows/world-contracts.yml"
   workflow_dispatch:
+
+# Keep PR verification and final main checks, but do not rebuild each agent branch
+# twice (once for its push and again for pull_request). New PR commits cancel
+# only their own obsolete PR checks; main and manual runs are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
