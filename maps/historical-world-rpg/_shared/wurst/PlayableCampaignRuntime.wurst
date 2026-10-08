@@ -19,6 +19,7 @@ import ReligionRuntime
 import PlayablePiracy
 import PhysicalInteraction
 import PartyLocations
+import CampaignUnstuck
 import ScenarioSettings
 
 /** Physical identity is distinct from map tracking and remote command view.
@@ -174,6 +175,7 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
 	override function beginLoad(WarcraftRpgRuntime rpg)
 		// Keep old units (including position, orders and life) until commit.
 		for i = 0 to rpg.heroes.count - 1
+			rpg.heroes.retireRecovery(rpg.heroes.heroes[i].id)
 			previous[i] = rpg.heroes.projected[i]
 			rpg.heroes.projected[i] = null
 	override function rollbackLoad(WarcraftRpgRuntime rpg)
@@ -209,6 +211,7 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
 			// CreateUnit can nudge colliding spawns. These coordinates have already
 			// passed topology/native validation, so restore the recorded point.
 			compatSetUnitCoordinates(target, value.x, value.y)
+			rpg.heroes.bindRecovery(index)
 		rpg.reconcile("player")
 		return locations.count > 0 and rpg.heroes.activeCount() == locations.count
 	override function clear(WarcraftRpgRuntime rpg)
@@ -225,6 +228,7 @@ public class PlayableCampaignState implements CampaignStatePort
 	boolean startupLocked = false
 	boolean loading = false
 	CampaignLoadCheckpoint checkpoint = null
+	CampaignUnstuckRecovery recovery = null
 	CampaignPartyProjection party = null
 	PartyNavigation partyNavigation = null
 	string committedLocations = "v1"
@@ -311,6 +315,8 @@ public class PlayableCampaignState implements CampaignStatePort
 	function captureDomains(string document, boolean includeIdentity) returns string
 		if clock.advancing
 			return ""
+		if recovery != null and not loading
+			recovery.refresh()
 		// Emit this domain in a canonical position even when activation retained
 		// it before the lazily captured country/RPG domains.
 		var result = withoutPartyLocations(document)
@@ -521,6 +527,8 @@ public class PlayableCampaignState implements CampaignStatePort
 			lastDiagnostic += "; campaign rollback failed; saving remains locked"
 		destroy checkpoint
 		checkpoint = null
+		if restored and recovery != null
+			recovery.reconstructed()
 		if restored and militarySettlements != null
 			militarySettlements.resumeCallbacks()
 	function applyRuntime(string candidate) returns boolean
@@ -671,6 +679,8 @@ public class PlayableCampaignState implements CampaignStatePort
 		if rpg != null
 			rpg.management.close()
 		loading = false
+		if recovery != null
+			recovery.reconstructed()
 		if militarySettlements != null
 			militarySettlements.resumeCallbacks()
 	override function diagnostic() returns string

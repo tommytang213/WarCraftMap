@@ -305,3 +305,11 @@ boundaries cover forged facts, remote or stale targets, changed loot and commiss
 terms, final-read invalidation, exhaustion, duplicate delivery and save/load with a
 pending preview. Every rejected action compares participating authority and native
 projection writes. See [PIRACY_CONFIRMATION.md](../docs/PIRACY_CONFIRMATION.md).
+
+`LiveRecoveryTests.wurst` creates ordinary Warcraft party/military representations
+after generated campaign registration and dispatches `/unstuck`. Recording native
+selection, movement fields and collision/pathing cover all movement classes,
+selection variants, disconnected terrain, last-safe/anchor order, stale handles,
+ownership, replacement, save migration and cross-map reconstruction. It emits
+scoped production receipts; `test_live_recovery.py` proves each map's generated
+rasters/anchors against materialized WPM. See [LIVE_UNSTUCK.md](../docs/LIVE_UNSTUCK.md).

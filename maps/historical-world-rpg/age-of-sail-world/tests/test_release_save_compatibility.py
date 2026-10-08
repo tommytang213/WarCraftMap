@@ -48,7 +48,8 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         military = (LIVE_CODEC.parent / "MilitarySettlementRuntime.wurst").read_text()
         military_version = int(re.search(r"MILITARY_SETTLEMENT_SNAPSHOT_VERSION\s*=\s*(\d+)", military).group(1))
         self.assertEqual({"diplomacy": {"current": 2, "supportedSources": [1, 2]},
-                          "militarySettlements": {"current": military_version, "supportedSources": [1, 2, 3]},
+                          "militarySettlements": {"current": military_version, "supportedSources": [1, 2, 3, 4]},
+                          "rpg": {"current": 3, "supportedSources": [1, 2, 3]},
                           "trade": {"current": 2, "supportedSources": [1, 2]},
                           "partyLocations": {"current": 1, "supportedSources": [1]}},
                          live["domainSchemas"])

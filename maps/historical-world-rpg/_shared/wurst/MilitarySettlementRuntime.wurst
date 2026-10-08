@@ -6,6 +6,8 @@ import ManagementScreenPauseController
 import WarcraftRpgRuntime
 import CampaignTimeline
 import PrizeCombat
+import WarcraftRecoveryRuntime
+import PartyLocations
 
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
@@ -18,7 +20,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 3
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 4
 
 /** Stable conflict identity survives settlement. Membership is immutable once
  * registered; a new war needs a new ID, even between the same governments. */
@@ -44,13 +46,18 @@ public class RuntimeForce
 	string regionId
 	string categoryId
 	int kind
-	int typeId
+	int unitTypeId
 	int strength
 	int maximumStrength
 	int supply
 	real x
 	real y
 	boolean active = true
+	string recoveryMap = ""
+	int recoveryClass = -1
+	int recoveryComponent = 0
+	real safeX = 0.
+	real safeY = 0.
 	string orderId = "hold"
 	real orderX = 0.
 	real orderY = 0.
@@ -60,7 +67,7 @@ public class RuntimeForce
 		this.regionId = regionId
 		this.categoryId = categoryId
 		this.kind = kind
-		typeId = unitTypeId
+		this.unitTypeId = unitTypeId
 		this.strength = strength
 		maximumStrength = strength
 		this.supply = supply
@@ -173,6 +180,13 @@ public interface MilitarySettlementAdapter
 	function showManagement(player viewer, string heading, string body)
 
 public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdapter
+	WarcraftRecoveryAdapter recovery = null
+	// Native stat boundary; headless journeys still execute this adapter's
+	// creation, retirement, ownership and reconstruction operations.
+	function maximumLife(unit target) returns int
+		return compatGetUnitMaxLife(target)
+	function setMaximumLife(unit target, int value)
+		compatSetUnitMaxLife(target, value)
 	string array[4096] ids
 	unit array[4096] handles
 	int array[4096] baseMaximumLife
@@ -186,6 +200,8 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	override function beginLoad()
 		previousCount = count
 		for i = 0 to count - 1
+			if recovery != null
+				recovery.unbind("force:" + ids[i])
 			previousIds[i] = ids[i]
 			previousHandles[i] = handles[i]
 			previousBaseLife[i] = baseMaximumLife[i]
@@ -223,15 +239,17 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		// Reconstruction is idempotent even if Warcraft destroyed a unit without
 		// notifying the authority, or a load is repeated on the same physical map.
 		removeRepresentation(runtimeForce.id)
-		let made = compatCreateUnit(owner, runtimeForce.typeId, runtimeForce.x, runtimeForce.y, 0.)
+		let made = compatCreateUnit(owner, runtimeForce.unitTypeId, runtimeForce.x, runtimeForce.y, 0.)
 		var found = indexOf(runtimeForce.id)
 		if found < 0
 			found = count
 			ids[count] = runtimeForce.id
 			count++
 		handles[found] = made
-		baseMaximumLife[found] = compatGetUnitMaxLife(made)
+		baseMaximumLife[found] = maximumLife(made)
 		appliedMilestoneAbility[found] = 0
+		if recovery != null and runtimeForce.active and (runtimeForce.kind == FORCE_ARMY or runtimeForce.kind == FORCE_FLEET)
+			recovery.bind("force:" + runtimeForce.id, made, runtimeForce.regionId)
 		return made
 	override function forceIdForRepresentation(int representation) returns string
 		if representation != 0
@@ -245,6 +263,8 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			return GetHandleId(handles[found])
 		return 0
 	override function removeRepresentation(string stableId)
+		if recovery != null
+			recovery.unbind("force:" + stableId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
 			// Detach before native cleanup can deliver a reentrant death callback.
@@ -255,10 +275,14 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
 			compatSetUnitOwner(handles[found], owner, true)
+			if recovery != null and owner != Player(0)
+				recovery.unbind("force:" + stableId)
+			else if recovery != null and recovery.service.lifecycle != null
+				recovery.service.lifecycle.refresh()
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			compatSetUnitMaxLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
+			setMaximumLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
 			if appliedMilestoneAbility[found] != 0 and appliedMilestoneAbility[found] != milestoneAbilityId
 				compatRemoveUnitAbility(handles[found], appliedMilestoneAbility[found])
 			if milestoneAbilityId != 0
@@ -278,6 +302,7 @@ public class MilitarySettlementRuntime
 	real gameplaySeconds = 0.
 	boolean hasSavedGameplayClock = false
 	boolean legacyDeadlines = false
+	boolean legacyRecovery = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
@@ -735,7 +760,11 @@ public class MilitarySettlementRuntime
 		var result = "v" + MILITARY_SETTLEMENT_SNAPSHOT_VERSION.toString() + "|k," + clockReal(gameplaySeconds) + "|a," + activeRegionId
 		for i = 0 to forceCount - 1
 			let f = forces[i]
-			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.typeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
+			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
+			// Strategic movement may reassign an unloaded force. A hint from its
+			// previous physical map cannot accompany the new location authority.
+			if f.recoveryMap != "" and f.recoveryMap == f.regionId and (f.kind == FORCE_ARMY or f.kind == FORCE_FLEET)
+				result += "|n," + f.id + "," + f.recoveryMap + "," + f.recoveryClass.toString() + "," + f.recoveryComponent.toString() + "," + f.safeX.toString() + "," + f.safeY.toString()
 		for i = 0 to settlementCount - 1
 			let s = settlements[i]
 			result += "|s," + s.id + "," + s.controllerId + "," + s.regionId + "," + s.coreTypeId.toString() + "," + s.defenderTypeId.toString() + "," + s.garrisonStrength.toString() + "," + s.garrisonMaximum.toString() + "," + s.reserves.toString() + "," + s.manpower.toString() + "," + s.supply.toString() + "," + s.waveSize.toString() + "," + clockReal(s.reinforcementInterval) + "," + clockReal(s.quietPeriod) + "," + clockReal(s.nextWaveAt) + "," + clockReal(s.lastCombatAt) + "," + clockReal(s.captureImmuneUntil) + "," + R2S(s.x) + "," + R2S(s.y) + "," + boolText(s.underAttack) + "," + s.legalOwnerId + "," + s.occupationConflictId + "," + s.attackerId
@@ -767,6 +796,11 @@ public class MilitarySettlementRuntime
 			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 4096
 				return false
 			let f = new RuntimeForce(id, snapshotField(record, 2), snapshotField(record, 3), snapshotField(record, 4), S2I(snapshotField(record, 5)), S2I(snapshotField(record, 6)), S2I(snapshotField(record, 7)), S2I(snapshotField(record, 9)), S2R(snapshotField(record, 10)), S2R(snapshotField(record, 11)))
+			// Older Wurst projections accidentally read the intrinsic class typeId
+			// instead of the authored rawcode. Repair known catalogue identities.
+			let definition = forceIndex(id)
+			if target.legacyRecovery and f.unitTypeId < 65536 and definition >= 0
+				f.unitTypeId = forces[definition].unitTypeId
 			f.maximumStrength = S2I(snapshotField(record, 8))
 			f.active = snapshotField(record, 12) == "1"
 			f.orderId = snapshotField(record, 13)
@@ -774,6 +808,21 @@ public class MilitarySettlementRuntime
 			f.orderY = S2R(snapshotField(record, 15))
 			target.registerForce(f)
 			return f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+		if kind == "n"
+			let found = target.forceIndex(snapshotField(record, 1))
+			let kindText = snapshotField(record, 3)
+			let componentText = snapshotField(record, 4)
+			if target.legacyRecovery or found < 0 or snapshotFieldCount(record) != 7 or not locationNumber(snapshotField(record, 5)) or not locationNumber(snapshotField(record, 6))
+				return false
+			let f = target.forces[found]
+			if f.recoveryMap != "" or snapshotField(record, 2) != f.regionId or S2I(kindText).toString() != kindText or S2I(kindText) < 0 or S2I(kindText) > 3 or S2I(componentText).toString() != componentText or S2I(componentText) <= 0 or (f.kind != FORCE_ARMY and f.kind != FORCE_FLEET)
+				return false
+			f.recoveryMap = snapshotField(record, 2)
+			f.recoveryClass = S2I(kindText)
+			f.recoveryComponent = S2I(componentText)
+			f.safeX = S2R(snapshotField(record, 5))
+			f.safeY = S2R(snapshotField(record, 6))
+			return true
 		if kind == "s"
 			let id = snapshotField(record, 1)
 			if id == "" or target.settlementIndex(id) >= 0 or target.settlementCount >= 1024
@@ -860,11 +909,12 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		parsed.legacyConflicts = candidate.startsWith("v1|")
-		parsed.legacyDeadlines = not candidate.startsWith("v3|")
+		parsed.legacyDeadlines = candidate.startsWith("v1|") or candidate.startsWith("v2|")
+		parsed.legacyRecovery = not candidate.startsWith("v4|")
 		var records = SubString(candidate, 2, StringLength(candidate))
 		if parsed.legacyConflicts
 			records = initialConflicts + records

@@ -660,7 +660,10 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
             party_navigation = runtime.get('partyNavigation', {}).get(physical.id)
             if party_navigation is None:
                 raise ValueError('missing party navigation')
-            verify_packaged_navigation(navigation, physical.id, w3i, wpm, party_navigation)
+            recovery = runtime.get('recoveryNavigation', {}).get(physical.id)
+            if recovery is None:
+                raise PackagingError('packaged recovery navigation is missing')
+            verify_packaged_navigation(navigation, physical.id, w3i, wpm, party_navigation, recovery)
         if units[:12] != b"W3do" + struct.pack("<II", 8, 11):
             raise ValueError("malformed materialized player objects")
         if manifest.get("physicalMapId") != physical.id or manifest.get("terrain", {}).get("width") != width or manifest.get("terrain", {}).get("height") != height:

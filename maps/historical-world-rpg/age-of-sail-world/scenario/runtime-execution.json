@@ -137,6 +137,30 @@
     "treasure": {
       "path": "wurst/WarcraftRpgRuntime.wurst",
       "signature": "function discover(string id, string locationId, PlayerInventory inventory) returns boolean"
+    },
+    "unstuck_registration": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "public function registerUnstuckCommand(CommandRegistry registry, UnstuckRecoveryService service)"
+    },
+    "unstuck_binding": {
+      "path": "wurst/WarcraftRecoveryRuntime.wurst",
+      "signature": "function bind(string stableId, unit target, string regionId)"
+    },
+    "unstuck_refresh": {
+      "path": "wurst/CampaignUnstuck.wurst",
+      "signature": "function synchronize(boolean samplePositions)"
+    },
+    "unstuck_recover": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "function recoverEntity(string id) returns boolean"
+    },
+    "unstuck_safe_export": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "function exportLastSafe(string id) returns string"
+    },
+    "unstuck_reconstructed": {
+      "path": "wurst/CampaignUnstuck.wurst",
+      "signature": "function reconstructed()"
     }
   },
   "systems": {
@@ -232,6 +256,17 @@
     "piracy": [
       "piracy_registration",
       "prize"
+    ],
+    "live_unstuck": [
+      "domains",
+      "startup",
+      "dispatch",
+      "unstuck_registration",
+      "unstuck_binding",
+      "unstuck_refresh",
+      "unstuck_recover",
+      "unstuck_safe_export",
+      "unstuck_reconstructed"
     ]
   }
 }

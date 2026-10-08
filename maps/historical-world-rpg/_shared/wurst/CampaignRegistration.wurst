@@ -12,6 +12,8 @@ import PlayableCountryInteractions
 import ReligionRuntime
 import PlayablePiracy
 import CampaignPiracyAuthority
+import CampaignUnstuck
+import WarcraftRecoveryRuntime
 
 /** Founding bridge into the same campaign authorities used by normal states.
  * Captured settlement/force records remain the military and territorial source
@@ -148,5 +150,6 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	military.setRpgRuntime(rpg)
 	configureGeneratedOrigins(campaign.origins)
 	configureGeneratedArrivals(campaign.state)
+	configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())
 	campaign.finishRegistration()
 	return trade

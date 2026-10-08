@@ -1,0 +1,433 @@
+package LiveRecoveryTests
+
+import CampaignStartupTests
+import CampaignUnstuck
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import CommandRouter
+import UnstuckRecovery
+import WarcraftRecoveryRuntime
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+import PartyLocations
+import WC3Compatibility
+import ManagementCommandTests
+
+/** Native selection, object movement fields and destination collision are the
+ * recording boundaries. Creation/ownership/removal use interpreter unit handles
+ * through the ordinary Warcraft party and military adapters. */
+class RecoveryNatives extends WarcraftRecoveryAdapter
+	unit array[16] selection
+	int selectionCount = 0
+	int mode = 0
+	real onlyX = 0.
+	real onlyY = 0.
+	unit stale = null
+	unit changed = null
+	int changedKind = MOVE_LAND
+	string message = ""
+	int moves = 0
+	override function mobile(unit target) returns boolean
+		return target != null and target != stale and GetUnitTypeId(target) != 0 and GetUnitTypeId(target) != 'htow'
+	override function movementOf(unit target) returns int
+		if target == changed
+			return changedKind
+		let kind = GetUnitTypeId(target)
+		if kind == 'hdes'
+			return MOVE_NAVAL
+		if kind == 'naga'
+			return MOVE_AMPHIBIOUS
+		if kind == 'hgry'
+			return MOVE_FLYING
+		return MOVE_LAND
+	override function selectedCount(player owner) returns int
+		return selectionCount
+	override function selectedUnitAt(player owner, int index) returns unit
+		return selection[index]
+	override function verifyDestination(string id, int kind, real x, real y) returns boolean
+		return isPresent(id) and (mode == 0 or mode == 2 and x == onlyX and y == onlyY)
+	override function move(string id, real x, real y)
+		moves++
+		super.move(id, x, y)
+	override function feedback(player owner, string text)
+		message = text
+
+class RecoveryMilitaryNatives extends WarcraftMilitarySettlementAdapter
+	override function maximumLife(unit target) returns int
+		return 100
+	override function setMaximumLife(unit target, int value)
+		skip
+
+class LiveRecoveryFixture
+	StartupFixture startup
+	RecoveryNatives natives = new RecoveryNatives()
+	RecoveryMilitaryNatives militaryObjects = new RecoveryMilitaryNatives()
+	WarcraftCampaignPartyProjection party = new WarcraftCampaignPartyProjection()
+	CommandRegistry commands
+	string main
+	construct(string mapId, string origin)
+		startup = new StartupFixture(new StartupStorage(), new StartupStorage(), mapId)
+		startup.choose(origin)
+		startup.register()
+		startup.campaign.state.party = party
+		startup.campaign.state.militarySettlements.adapter = militaryObjects
+		configureCampaignRecovery(startup.campaign.state, natives)
+		startup.campaign.startup().assertTrue()
+		main = startup.campaign.state.rpg.heroes.mainCharacterId
+		(main != "").assertTrue()
+		commands = new CommandRegistry(false, 8, new CommandText(), new RecordingManagementPorts())
+		startup.campaign.state.recovery.refresh()
+	function hero() returns unit
+		let roster = startup.campaign.state.rpg.heroes
+		return roster.projected[roster.indexOf(main)]
+	function anchor(int kind) returns RecoveryPoint
+		for i = 0 to natives.service.pointCount - 1
+			let p = natives.service.points[i]
+			if p.movement[kind]
+				return p
+		return null
+	function recruit(string id, int kind, int typeId) returns unit
+		let point = anchor(kind)
+		(point != null).assertTrue()
+		let f = new RuntimeForce(id, "player", startup.campaign.physicalMapId, "infantry", FORCE_ARMY, typeId, 40, 40, point.x, point.y)
+		if kind == MOVE_NAVAL
+			f.kind = FORCE_FLEET
+		startup.campaign.state.militarySettlements.recruit(f).assertTrue()
+		return militaryObjects.handles[militaryObjects.indexOf(id)]
+
+@test function liveRecoverySelectionAndAllUseOrdinaryRepresentations()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	f.natives.mainCharacterStableId(Player(0)).assertEquals("party:" + f.main)
+	f.natives.relevantRegion(Player(0)).assertEquals("europe_west")
+	f.natives.count.assertEquals(1)
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(1)
+	let tower = compatCreateUnit(Player(0), 'htow', 0., 0., 0.)
+	f.natives.selection[0] = tower
+	f.natives.selectionCount = 1
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(1)
+	(f.natives.message.indexOf("not eligible") >= 0).assertTrue()
+	f.natives.selection[1] = f.hero()
+	f.natives.selectionCount = 2
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(2)
+	let land = f.recruit("land", MOVE_LAND, 'hfoo')
+	let ship = f.recruit("ship", MOVE_NAVAL, 'hdes')
+	let amphibious = f.recruit("amphibious", MOVE_AMPHIBIOUS, 'naga')
+	let flying = f.recruit("flying", MOVE_FLYING, 'hgry')
+	let military = f.startup.campaign.state.militarySettlements
+	military.recruit(new RuntimeForce("defender", "player", "europe_west", "siege", FORCE_GARRISON, 'hfoo', 40, 40, 0., 0.)).assertTrue()
+	military.recruit(new RuntimeForce("remote", "player", "east_asia_south", "infantry", FORCE_ARMY, 'hfoo', 40, 40, 0., 0.)).assertTrue()
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.moves.assertEquals(7)
+	f.natives.count.assertEquals(5)
+	f.natives.service.entity("force:land").movementClass.assertEquals(MOVE_LAND)
+	f.natives.service.entity("force:ship").movementClass.assertEquals(MOVE_NAVAL)
+	f.natives.service.entity("force:amphibious").movementClass.assertEquals(MOVE_AMPHIBIOUS)
+	f.natives.service.entity("force:flying").movementClass.assertEquals(MOVE_FLYING)
+	(f.natives.service.entity("force:defender") == null).assertTrue()
+	(f.natives.service.entity("force:remote") == null).assertTrue()
+	// Owner drift and a stale natives handle are checked afresh before dispatch.
+	military.forces[military.forceIndex("ship")].controllerId = "enemy"
+	f.militaryObjects.changeRepresentationOwner("ship", Player(11))
+	f.natives.stale = amphibious
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.moves.assertEquals(10)
+	f.natives.count.assertEquals(3)
+	f.natives.selection[0] = ship
+	f.natives.selection[1] = amphibious
+	f.natives.selectionCount = 2
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(10)
+	military.forces[military.forceIndex("ship")].controllerId = "player"
+	f.militaryObjects.changeRepresentationOwner("ship", Player(0))
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.count.assertEquals(4)
+	f.natives.changed = land
+	f.natives.changedKind = MOVE_FLYING
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.service.entity("force:land").movementClass.assertEquals(MOVE_FLYING)
+	(flying != null).assertTrue()
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 3, "selection").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 3).assertTrue()
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.count.assertEquals(5)
+	print("TRACEABILITY {\"requirement\":\"REQ-0191.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0192.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0193.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0194.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0195.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0202.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+
+@test function liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	let state = f.startup.campaign.state
+	let ship = f.recruit("saved_ship", MOVE_NAVAL, 'hdes')
+	state.recovery.refresh()
+	let e = f.natives.service.entity("party:" + f.main)
+	let safeX = e.lastSafeX
+	let safeY = e.lastSafeY
+	// Movement sampling updates the existing party authority before saving.
+	compatSetUnitCoordinates(f.hero(), safeX + 32., safeY)
+	state.recovery.refresh()
+	let didSave = f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "recovery")
+	didSave.assertTrue()
+	let savedParty = state.committedLocations
+	let saved = f.startup.saves.read("manual_01")
+	(saved.indexOf("|n,saved_ship,europe_west,1,") >= 0).assertTrue()
+	let before = state.captureAuthoritativeState()
+	let beforeHandle = f.hero()
+	let invalid = replaceCampaignField(before, "militarySettlements", state.militarySettlements.snapshot() + "|n,saved_ship,europe_west,1,1,nan,0")
+	f.startup.saves.writeTransactional("manual_02", campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_02", SAVE_SLOT_MANUAL, 2, "invalid-hint", invalid)).assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertFalse()
+	state.captureAuthoritativeState().assertEquals(before)
+	(f.hero() == beforeHandle).assertTrue()
+	for repeat = 0 to 2
+		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		state.committedLocations.assertEquals(savedParty)
+		f.natives.count.assertEquals(2)
+		f.natives.service.entityCount.assertEquals(2)
+		f.natives.mainCharacterStableId(Player(0)).assertEquals("party:" + f.main)
+		f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.startup.saves.read("manual_01").assertEquals(saved)
+	// A replacement keeps a single stable identity and ignores the old handle.
+	let military = state.militarySettlements
+	military.instantiate(military.forces[military.forceIndex("saved_ship")])
+	f.natives.selectionCount = 1
+	f.natives.selection[0] = ship
+	let moves = f.natives.moves
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(moves)
+	f.natives.count.assertEquals(2)
+	// Native blockage invalidates every candidate, including saved and anchors.
+	f.natives.selection[0] = f.hero()
+	f.natives.mode = 1
+	let x = GetUnitX(f.hero())
+	let y = GetUnitY(f.hero())
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	GetUnitX(f.hero()).assertEquals(x)
+	GetUnitY(f.hero()).assertEquals(y)
+	f.natives.moves.assertEquals(moves)
+	(f.natives.message.indexOf("No verified connected") >= 0).assertTrue()
+	state.startupLocked = true
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.moves.assertEquals(moves)
+	state.startupLocked = false
+	state.rpg.heroes.assignRemote(f.main, "governor", "east_asia_south").assertTrue()
+	f.militaryObjects.removeRepresentation("saved_ship")
+	state.recovery.refresh()
+	f.natives.count.assertEquals(0)
+	f.natives.service.entityCount.assertEquals(0)
+	print("TRACEABILITY {\"requirement\":\"REQ-0191.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0191.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0191.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0192.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0192.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0192.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0193.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0193.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0193.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0194.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0194.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0194.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0195.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0195.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0195.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0196.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0196.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0196.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0197.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0197.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0197.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0198.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0198.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0198.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0199.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0199.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0199.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0199.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0200.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0200.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0200.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0201.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0201.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0201.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0202.01\",\"case\":\"failure\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0202.01\",\"case\":\"stale\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0202.01\",\"case\":\"replay\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+
+function connectedAnchor(LiveRecoveryFixture f, string zone) returns RecoveryPoint
+	for i = 0 to f.natives.service.pointCount - 1
+		if f.natives.service.points[i].zoneId == zone
+			return f.natives.service.points[i]
+	return null
+
+function displaceWithinComponent(LiveRecoveryFixture f, unit target, string id)
+	let e = f.natives.service.entity(id)
+	for distanceStep = 8 to 24
+		for direction = 0 to 3
+			var x = e.x
+			var y = e.y
+			if direction == 0
+				x += distanceStep * 128.
+			else if direction == 1
+				x -= distanceStep * 128.
+			else if direction == 2
+				y += distanceStep * 128.
+			else
+				y -= distanceStep * 128.
+			if f.natives.service.navigation.zoneAt(e.movementClass, x, y) == e.zoneId
+				compatSetUnitCoordinates(target, x, y)
+				return
+	false.assertTrue()
+
+@test function liveRecoveryUsesPerEntityCandidatesThenLastSafeThenConnectedAnchor()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	let first = f.recruit("first", MOVE_LAND, 'hfoo')
+	let second = f.recruit("second", MOVE_LAND, 'hfoo')
+	f.startup.campaign.state.recovery.refresh()
+	displaceWithinComponent(f, second, "force:second")
+	let firstX = GetUnitX(first)
+	let firstY = GetUnitY(first)
+	let secondX = GetUnitX(second)
+	let secondY = GetUnitY(second)
+	f.natives.selection[0] = first
+	f.natives.selection[1] = second
+	f.natives.selectionCount = 2
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	f.natives.moves.assertEquals(2)
+	let dx1 = GetUnitX(first) - firstX
+	let dy1 = GetUnitY(first) - firstY
+	let dx2 = GetUnitX(second) - secondX
+	let dy2 = GetUnitY(second) - secondY
+	(dx1 * dx1 + dy1 * dy1).assertEquals(1024.)
+	(dx2 * dx2 + dy2 * dy2).assertEquals(1024.)
+	let e = f.natives.service.entity("force:first")
+	let anchor = connectedAnchor(f, e.zoneId)
+	(anchor != null).assertTrue()
+	let safeX = e.lastSafeX
+	let safeY = e.lastSafeY
+	// The command's nearby search cannot reach this saved point. The
+	// generated anchor is blocked, proving the last-safe fallback is live.
+	displaceWithinComponent(f, first, "force:first")
+	f.natives.mode = 2
+	f.natives.onlyX = safeX
+	f.natives.onlyY = safeY
+	f.natives.selectionCount = 1
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	GetUnitX(first).assertEquals(safeX)
+	GetUnitY(first).assertEquals(safeY)
+	// Now last-safe is blocked too; only the connected generated anchor works.
+	displaceWithinComponent(f, first, "force:first")
+	f.natives.onlyX = anchor.x
+	f.natives.onlyY = anchor.y
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	GetUnitX(first).assertEquals(anchor.x)
+	GetUnitY(first).assertEquals(anchor.y)
+	f.natives.moves.assertEquals(4)
+	print("TRACEABILITY {\"requirement\":\"REQ-0200.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+
+@test function liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	let land = f.recruit("island_test", MOVE_LAND, 'hfoo')
+	let ship = f.recruit("lake_test", MOVE_NAVAL, 'hdes')
+	f.startup.campaign.state.recovery.refresh()
+	for kind = MOVE_LAND to MOVE_NAVAL
+		var target = land
+		var id = "force:island_test"
+		if kind == MOVE_NAVAL
+			target = ship
+			id = "force:lake_test"
+		let e = f.natives.service.entity(id)
+		RecoveryPoint disconnected = null
+		for i = 0 to f.natives.service.pointCount - 1
+			let point = f.natives.service.points[i]
+			if point.movement[kind] and point.zoneId != e.zoneId
+				disconnected = point
+		(disconnected != null).assertTrue()
+		f.natives.mode = 2
+		f.natives.onlyX = disconnected.x
+		f.natives.onlyY = disconnected.y
+		f.natives.selection[0] = target
+		f.natives.selectionCount = 1
+		let x = GetUnitX(target)
+		let y = GetUnitY(target)
+		f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+		GetUnitX(target).assertEquals(x)
+		GetUnitY(target).assertEquals(y)
+	f.natives.moves.assertEquals(0)
+	print("TRACEABILITY {\"requirement\":\"REQ-0196.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0197.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0198.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0201.01\",\"case\":\"success\",\"entryPoint\":\"live-unstuck\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"transition\",\"outcome\"]}")
+
+@test function liveRecoveryTravelRebuildsHintsInDestinationCoordinates()
+	let f = new LiveRecoveryFixture("africa", "songhai_kingdom")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	let source = f.startup
+	f.commands.dispatch(Player(0), "/unstuck").assertTrue()
+	let oldSafe = f.natives.service.exportLastSafe("party:" + f.main)
+	(oldSafe.startsWith("party:" + f.main + "|africa:")).assertTrue()
+	let route = source.campaign.state.boundary("africa_to_middle_east_india")
+	source.campaign.travel.transition(route, .37, "unstuck-travel").assertTrue()
+	let destination = new StartupFixture(source.cache, source.saves, "middle_east_india")
+	destination.register()
+	let natives = new RecoveryNatives()
+	destination.campaign.state.party = new WarcraftCampaignPartyProjection()
+	destination.campaign.state.militarySettlements.adapter = new RecoveryMilitaryNatives()
+	configureCampaignRecovery(destination.campaign.state, natives)
+	destination.campaign.startup().assertTrue()
+	let commands = new CommandRegistry(false, 8, new CommandText(), new RecordingManagementPorts())
+	registerUnstuckCommand(commands, natives.service)
+	commands.dispatch(Player(0), "/unstuck").assertTrue()
+	natives.moves.assertEquals(1)
+	natives.count.assertEquals(1)
+	let hero = natives.service.entity("party:" + f.main)
+	(hero.zoneId.startsWith("middle_east_india:")).assertTrue()
+	(natives.service.exportLastSafe(hero.stableId) != oldSafe).assertTrue()
+	(destination.campaign.state.partyNavigation.componentAt(hero.x, hero.y) > 0).assertTrue()
+	destination.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "destination").assertTrue()
+	destination.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	natives.count.assertEquals(1)
+	natives.moves.assertEquals(2)
+
+@test function liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	registerUnstuckCommand(f.commands, f.natives.service)
+	let state = f.startup.campaign.state
+	let military = state.militarySettlements
+	f.recruit("migrating", MOVE_NAVAL, 'hdes')
+	state.recovery.refresh()
+	let current = military.snapshot()
+	military.validateSnapshot(current + "|n,migrating,europe_west,1,1,1,2").assertFalse()
+	military.validateSnapshot(current + "|n,missing,europe_west,1,1,1,2").assertFalse()
+	let hint = current.indexOf("|n,migrating,")
+	(hint > 0).assertTrue()
+	let rest = SubString(current, hint + 1, StringLength(current))
+	let next = rest.indexOf("|")
+	let legacy = "v3" + SubString(current, 2, hint) + SubString(rest, next, StringLength(rest))
+	military.restore(legacy).assertTrue()
+	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("")
+	state.recovery.refresh()
+	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("europe_west")
+	let rpg = state.rpg.captureState()
+	let firstHero = rpg.indexOf("|h,")
+	state.rpg.restoreState("v2" + SubString(rpg, firstHero, StringLength(rpg))).assertTrue()
+	state.rpg.heroes.mainCharacterId.assertEquals(f.main)
+	state.rpg.restoreState(rpg + "|p," + f.main).assertFalse()
+	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()
+	f.natives.count.assertEquals(2)
+	// Abstract reassignment retires the local registry entry and must not save
+	// coordinates from the old map under the destination's location authority.
+	military.forces[military.forceIndex("migrating")].regionId = "middle_east_india"
+	state.recovery.refresh()
+	f.natives.count.assertEquals(1)
+	let reassigned = military.snapshot()
+	(reassigned.indexOf("|n,migrating,") < 0).assertTrue()
+	military.validateSnapshot(reassigned).assertTrue()

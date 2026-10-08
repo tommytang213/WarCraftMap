@@ -328,7 +328,7 @@ class CombatFixture
 	f.captureViaNatives()
 	f.natives.advance(0.0625)
 	let saved = f.runtime.snapshot()
-	saved.startsWith("v3|k,").assertTrue()
+	saved.startsWith("v4|k,").assertTrue()
 	f.runtime.restore(saved).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	f.runtime.restore(saved + "|k,0").assertFalse()

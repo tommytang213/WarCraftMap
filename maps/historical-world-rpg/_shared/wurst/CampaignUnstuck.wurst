@@ -1,0 +1,151 @@
+package CampaignUnstuck
+
+import UnstuckRecovery
+import WarcraftRecoveryRuntime
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import initlater PlayableCampaignRuntime
+import PartyLocations
+import initlater ScenarioData
+
+/** Joins the disposable registry to existing party/force authority. Recovery
+ * stores no second party-location document and never enumerates world units. */
+public class CampaignUnstuckRecovery implements RecoveryLifecycle
+	PlayableCampaignState state
+	WarcraftRecoveryAdapter adapter
+	boolean refreshing = false
+	construct(PlayableCampaignState state, WarcraftRecoveryAdapter adapter)
+		this.state = state
+		this.adapter = adapter
+		adapter.service.lifecycle = this
+		configureRecoveryScenario(adapter.service, state.loadedPhysicalMap)
+		state.rpg.heroes.recovery = adapter
+		state.rpg.heroes.physicalMapId = state.loadedPhysicalMap
+		if state.militarySettlements.adapter instanceof WarcraftMilitarySettlementAdapter
+			(state.militarySettlements.adapter castTo WarcraftMilitarySettlementAdapter).recovery = adapter
+	function restoreSafe(string id, string mapId, int kind, int component, real x, real y)
+		let e = adapter.service.entity(id)
+		if e == null or mapId != state.loadedPhysicalMap or component <= 0 or kind != e.movementClass
+			return
+		let zone = mapId + ":" + kind.toString() + ":" + component.toString()
+		// A saved component is useful when the current cell is blocked, but
+		// only a point in that exact generated component can validate it.
+		if adapter.service.navigation.zoneAt(kind, x, y) != zone
+			return
+		if e.zoneId == ""
+			e.zoneId = zone
+		if not e.hasLastSafe
+			adapter.service.importLastSafe(id, zone, x, y)
+	function sample(string id)
+		let e = adapter.service.entity(id)
+		if e != null
+			adapter.service.updateLastSafe(id, e.zoneId, e.x, e.y)
+	function synchronize(boolean samplePositions)
+		if refreshing
+			return
+		adapter.available = state.isSaveSafe()
+		if not adapter.available
+			return
+		refreshing = true
+		let roster = state.rpg.heroes
+		adapter.setMainCharacter(Player(0), "party:" + roster.mainCharacterId)
+		adapter.setRelevantRegion(Player(0), state.loadedPhysicalMap)
+		let previous = parsePartyLocations(state.committedLocations)
+		for i = 0 to roster.count - 1
+			let hero = roster.heroes[i]
+			let id = "party:" + hero.id
+			let target = roster.projected[i]
+			if state.localHero(hero, lastAuthorityValue(state.authority, "region")) and adapter.mobile(target) and GetOwningPlayer(target) == Player(0)
+				adapter.bind(id, target, state.loadedPhysicalMap)
+				if previous != null and previous.get(hero.id) != null
+					let old = previous.get(hero.id)
+					restoreSafe(id, old.mapId, MOVE_LAND, old.component, old.safeX, old.safeY)
+				if samplePositions
+					sample(id)
+				// Existing PartyLocation remains the sole saved party authority.
+				let e = adapter.service.entity(id)
+				if previous != null and e != null and e.movementClass == MOVE_LAND and adapter.service.exportLastSafe(id) != ""
+					let component = state.partyNavigation.componentAt(e.lastSafeX, e.lastSafeY)
+					var old = previous.get(hero.id)
+					if old == null
+						old = new PartyLocation(hero.id, state.loadedPhysicalMap, e.x, e.y, component, e.lastSafeX, e.lastSafeY)
+						previous.add(old)
+					old.mapId = state.loadedPhysicalMap
+					old.component = component
+					old.safeX = e.lastSafeX
+					old.safeY = e.lastSafeY
+					if state.partyNavigation.componentAt(e.x, e.y) == component
+						old.x = e.x
+						old.y = e.y
+			else
+				adapter.unbind(id)
+		if previous != null
+			state.committedLocations = previous.encode()
+			destroy previous
+		let military = state.militarySettlements
+		if military.adapter instanceof WarcraftMilitarySettlementAdapter
+			let objects = military.adapter castTo WarcraftMilitarySettlementAdapter
+			for i = 0 to military.forceCount - 1
+				let f = military.forces[i]
+				let id = "force:" + f.id
+				let found = objects.indexOf(f.id)
+				unit target = null
+				if found >= 0
+					target = objects.handles[found]
+				if f.active and f.regionId == state.loadedPhysicalMap and military.activeRegionId == state.loadedPhysicalMap and f.controllerId == "player" and (f.kind == FORCE_ARMY or f.kind == FORCE_FLEET) and adapter.mobile(target) and GetOwningPlayer(target) == Player(0)
+					adapter.bind(id, target, f.regionId)
+					restoreSafe(id, f.recoveryMap, f.recoveryClass, f.recoveryComponent, f.safeX, f.safeY)
+					if samplePositions
+						sample(id)
+					let e = adapter.service.entity(id)
+					if e != null and adapter.service.exportLastSafe(id) != ""
+						f.recoveryMap = state.loadedPhysicalMap
+						f.recoveryClass = e.movementClass
+						f.recoveryComponent = adapter.service.navigation.movement[e.movementClass].componentAt(e.lastSafeX, e.lastSafeY)
+						f.safeX = e.lastSafeX
+						f.safeY = e.lastSafeY
+						// The existing force coordinates own reconstruction as well.
+						if adapter.service.safeDestination(e, e.zoneId, e.x, e.y)
+							f.x = e.x
+							f.y = e.y
+				else
+					adapter.unbind(id)
+		refreshing = false
+	override function refresh()
+		synchronize(true)
+	override function moved(string id)
+		// A batch recovery commits one record at a time. Do not resample every
+		// other unit (and all its collision checks) after each individual move.
+		let e = adapter.service.entity(id)
+		if e == null or adapter.service.exportLastSafe(id) == ""
+			return
+		if id.startsWith("party:") and e.movementClass == MOVE_LAND
+			let locations = parsePartyLocations(state.committedLocations)
+			if locations != null
+				let value = locations.get(SubString(id, 6, StringLength(id)))
+				if value != null
+					value.x = e.x
+					value.y = e.y
+					value.component = state.partyNavigation.componentAt(e.x, e.y)
+					value.safeX = e.lastSafeX
+					value.safeY = e.lastSafeY
+					state.committedLocations = locations.encode()
+				destroy locations
+		else if id.startsWith("force:")
+			let index = state.militarySettlements.forceIndex(SubString(id, 6, StringLength(id)))
+			if index >= 0
+				let f = state.militarySettlements.forces[index]
+				f.x = e.x
+				f.y = e.y
+				f.recoveryMap = state.loadedPhysicalMap
+				f.recoveryClass = e.movementClass
+				f.recoveryComponent = adapter.service.navigation.movement[e.movementClass].componentAt(e.lastSafeX, e.lastSafeY)
+				f.safeX = e.lastSafeX
+				f.safeY = e.lastSafeY
+	function reconstructed()
+		// Drop every observation from the old load, including matching IDs.
+		adapter.clear()
+		synchronize(false)
+
+public function configureCampaignRecovery(PlayableCampaignState state, WarcraftRecoveryAdapter adapter)
+	state.recovery = new CampaignUnstuckRecovery(state, adapter)

@@ -76,17 +76,22 @@ class WarcraftReligionEffects implements ReligionModifierPort
 public ReligionRuntime religionRuntime = new ReligionRuntime(new WarcraftReligionEffects())
 
 
+function sampleRecoveryPositions()
+	if recoveryService.lifecycle != null
+		recoveryService.lifecycle.refresh()
+
 function initializeRegionalCampaign()
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
 	let clock = configureCampaignTimeline()
 	installCampaignClock(clock)
-	configureRecoveryScenario(recoveryService)
 	let commands = createCommandRegistry(false)
 	piracyRuntime = createGeneratedPiracyRuntime()
 	let campaign = initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID, clock, religionRuntime, piracyRuntime)
 	campaign.registerPiracyRuntime(piracyRuntime)
 	registerCampaignDomains(campaign, rpgRuntime, militarySettlementRuntime, new WarcraftRpgProjections(rpgRuntime.heroes))
+	recoveryRuntime = campaign.state.recovery.adapter
+	recoveryService = recoveryRuntime.service
 	if PHYSICAL_MAP_ID == SCENARIO_BOOTSTRAP_MAP_ID
 		bootstrapOriginSelection = new NewCampaignOriginController(8, new WarcraftOriginPresentation(), campaign.identity)
 		bootstrapOriginSelection.setObserver(new CampaignHandoff(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE, "bootstrap"), new WarcraftPhysicalMapLoader()))
@@ -109,6 +114,7 @@ function initializeRegionalCampaign()
 		physicalBoundaries.install()
 		campaign.enableClockTimer(new WarcraftCampaignTimerAdapter(), 1.)
 		enableCampaignAutosaves()
+		TimerStart(CreateTimer(), 1., true, function sampleRecoveryPositions)
 	registerPiracy(commands,piracyRuntime)
 	let tradeRegistrationProblem = registerPlayableTrade(commands, campaign)
 	if tradeRegistrationProblem != ""

@@ -135,6 +135,7 @@ function mobile(string id, int kind, string zone) returns RecoveryEntity
 	addPoint(service, "anchor", "land", MOVE_LAND, 30., true)
 	service.recoverEntity("hero")
 	runtime.movedX[0].assertEquals(10.)
+	service.importLastSafe("hero", "land", 20., 0.).assertTrue()
 	service.setPointVerified("nearby", false)
 	service.recoverEntity("hero")
 	runtime.movedX[1].assertEquals(20.)
