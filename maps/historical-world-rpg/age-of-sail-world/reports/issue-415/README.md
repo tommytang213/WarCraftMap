@@ -48,3 +48,32 @@ implementation and complete suite.
 The W3N is a diagnostic artifact. Release status remains
 `blocked_pending_real_forsaken_kingdom_launch_smoke`. No retail execution, player
 QA, commits, pushes or GitHub changes are claimed.
+
+PR #424's failed [Wurst run](https://github.com/tommytang213/WarCraftMap/actions/runs/37777578705)
+and [campaign build](https://github.com/tommytang213/WarCraftMap/actions/runs/37777578859)
+both reached 324/327 passing tests. Four campaign-load journeys hit the unchanged
+20-second interpreter limit across those runs: founded-polity restoration, two
+recovery/travel journeys, and full-group equipment restoration. Their timeout
+stacks all entered `lastAuthorityValue`, which rescanned every domain payload for
+each requested field. The installed god-mode tests passed in both failed runs.
+
+The CI repair indexes semicolon offsets for the current immutable authority
+document and discards the index when its text changes. Reads retain last-value
+selection, empty values, the existing domain-boundary grammar and embedded trade
+store separators. Clock, party-location and autosave validation reuse the same
+index to reject absent or duplicate metadata. Four executed Wurst regressions
+cover those rules, switching between equal-length documents, metadata rejection
+followed by valid reads, and a payload with 300 embedded separators. Save
+schemas, load assertions, capture deadlines and interpreter limits are unchanged.
+
+The original validation files remain historical evidence. `repair-validation.json`
+and the `repair-*` receipts record validation of the repaired source and its
+diagnostic campaign. The same scoped verifier checks the ten god-mode obligations,
+their reconstruction dependency, all 44 receipts and compiled registrations.
+
+The repaired source passes 331 pinned Wurst tests, 923 scenario Python tests and
+129 automation tests. Both framework campaign variants execute and package with
+all 158 shared-source hashes verified. A separate comparison of the four timeout
+journeys measures 9.6–12.9 seconds before the repair and 3.4–11.3 seconds afterward
+on this environment, using the same pinned interpreter and unchanged assertions.
+Those timings describe local validation, not a claim about GitHub runner speed.
