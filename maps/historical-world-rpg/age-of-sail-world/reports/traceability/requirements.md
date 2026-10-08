@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7361**.
+Candidate ready: **False**; blockers: **7351**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -276,10 +276,10 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0181.02 | combination | Warcraft object instances are representations of that state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0182.01 | mechanism | Native Warcraft save/load must be regression-tested and must not intentionally be broken. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0183.01 | mechanism | Separate versioned campaign persistence is required for long-term compatibility. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | artifact-missing, integration-missing, static-only |
 | REQ-0185.01 | mechanism | Manual save slots. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0186.01 | mechanism | Separate session-start and major-milestone recovery checkpoints. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0187.01 | mechanism | Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0187.01 | mechanism | Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes. | artifact-missing, integration-missing, static-only |
 | REQ-0188.01 | mechanism | Save data includes format/build/scenario version metadata and integrity checks. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0189.01 | mechanism | Save-format changes require migrations whenever practical. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0190.01 | mechanism | Failed/incompatible loads must not overwrite the original save. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -3967,16 +3967,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0183.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0183.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0183.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0184.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0184.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0184.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0184.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0184.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0184.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0184.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0184.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0184.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0184.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0184.01 [static-only]: source references cannot establish executed integration
 - REQ-0184.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0185.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0185.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -4000,16 +3995,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0186.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0186.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0186.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0187.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0187.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0187.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0187.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0187.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0187.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0187.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0187.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0187.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0187.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0187.01 [static-only]: source references cannot establish executed integration
 - REQ-0187.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0188.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0188.01 [mechanism-missing]: reusable mechanism evidence is absent or stale

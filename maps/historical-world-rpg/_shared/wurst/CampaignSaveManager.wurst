@@ -30,6 +30,11 @@ public interface CampaignStatePort
 public interface CampaignLoadObserver
 	function afterCampaignLoad()
 
+/** Prepare serialized metadata, then publish it only after storage commits. */
+public interface CampaignSaveObserver
+	function beforeCampaignSave(int kind, int index)
+	function afterCampaignSave(boolean committed)
+
 function paddedSlotIndex(int index) returns string
 	if index < 10
 		return "0" + index
@@ -58,6 +63,8 @@ public class CampaignSaveManager
 	CampaignLoadObserver array[16] loadObservers
 	int loadObserverCount = 0
 	boolean loading = false
+	boolean saving = false
+	CampaignSaveObserver saveObserver = null
 	string loadingCandidate = ""
 
 	construct(CampaignSaveStorage saveStorage, CampaignSaveCodec saveCodec, CampaignStatePort statePort)
@@ -74,15 +81,38 @@ public class CampaignSaveManager
 	function diagnostic() returns string
 		return lastDiagnostic
 
+	function setSaveObserver(CampaignSaveObserver observer)
+		saveObserver = observer
+
+	function cancelDeferredAutosave()
+		if deferred and deferredKind == SAVE_SLOT_AUTOSAVE
+			deferred = false
+			deferredKind = -1
+			deferredIndex = -1
+			deferredCreatedAt = ""
+
+	function finishSave(boolean committed)
+		if saveObserver != null
+			saveObserver.afterCampaignSave(committed)
+		saving = false
+
 	function setLoadObserver(CampaignLoadObserver observer)
 		if observer != null and loadObserverCount < 16
 			loadObservers[loadObserverCount] = observer
 			loadObserverCount++
 
 	function save(int kind, int index, string createdAt) returns boolean
+		if saving
+			lastDiagnostic = "save coalesced while a commit is in progress"
+			return false
 		let slotId = campaignSlotId(kind, index)
 		if slotId == ""
 			lastDiagnostic = "invalid campaign save slot"
+			return false
+		if loading and kind == SAVE_SLOT_AUTOSAVE
+			// A callback from the retiring runtime cannot queue work against the
+			// candidate, nor replace the old request if reconstruction rolls back.
+			lastDiagnostic = "autosave suppressed during campaign reconstruction"
 			return false
 		if not isSaveSafe()
 			deferred = true
@@ -91,14 +121,20 @@ public class CampaignSaveManager
 			deferredCreatedAt = createdAt
 			lastDiagnostic = "save deferred: authoritative state is transitional"
 			return false
+		saving = true
+		if saveObserver != null
+			saveObserver.beforeCampaignSave(kind, index)
 		let payload = codec.encode(slotId, kind, index, createdAt, state.captureAuthoritativeState())
 		if payload == ""
 			lastDiagnostic = "save serialization failed: " + codec.diagnostic()
+			finishSave(false)
 			return false
 		if not storage.writeTransactional(slotId, payload)
 			lastDiagnostic = "transactional save failed: " + storage.diagnostic()
+			finishSave(false)
 			return false
 		deferred = false
+		finishSave(true)
 		lastDiagnostic = ""
 		return true
 
@@ -109,7 +145,7 @@ public class CampaignSaveManager
 		return save(deferredKind, deferredIndex, deferredCreatedAt)
 
 	function load(int kind, int index) returns boolean
-		if loading
+		if loading or saving
 			lastDiagnostic = "campaign load is already in progress"
 			return false
 		let slotId = campaignSlotId(kind, index)
@@ -131,7 +167,7 @@ public class CampaignSaveManager
 		return true
 
 	function stageCandidate(string candidate) returns boolean
-		if loading
+		if loading or saving
 			lastDiagnostic = "campaign load is already in progress"
 			return false
 		loading = true

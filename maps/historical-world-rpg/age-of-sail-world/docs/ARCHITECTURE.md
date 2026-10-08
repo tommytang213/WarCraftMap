@@ -239,7 +239,7 @@ request against the generated origin tuple and the loaded `PHYSICAL_MAP_ID`, or
 restore the existing transfer milestone. Founded polity bridges reconstruct before
 saved country resources are applied, so registration cannot reset their treasury.
 Migration defaults are captured after registration; campaign schemas 1–6 remain
-supported through migration to schema 7; source saves are never rewritten on load.
+supported through migration to schema 8; source saves are never rewritten on load.
 
 A pending new request takes precedence over an unrelated milestone. After identity,
 authored location and party projection succeed, startup writes a codec checkpoint
@@ -288,7 +288,7 @@ commit, and saves remain deferred through reconstruction and observer delivery.
 The clock rolls back before date-sensitive domain effects, retaining its original
 timer; successful activation restarts the timer only after commit. These checkpoints
 are internal runtime state: atomic loading adds no persisted format changes, and
-supported schemas 1–7 and the original source slots remain intact.
+supported schemas 1–8 and the original source slots remain intact.
 
 ## Live campaign clock persistence
 
@@ -365,3 +365,31 @@ location records are validated and preserved. Schema 7 rejects missing or duplic
 location domains. The generic Python envelope advances to 7 without modifying its
 existing stable-ID coordinates; the live codec owns coordinate-less anchor migration.
 Source saves are never rewritten by migration or reconstruction.
+
+## Autosave scheduler authority (campaign schema 8)
+
+The shared scheduler stores v1 `nextSlotIndex` and `secondsUntilDue` in the live
+`autosave` domain. Like the clock, timing uses canonical binary real encoding,
+not three-decimal native string formatting. Schemas 1–7 that omitted this domain
+migrate to slot 1 and the configured interval; explicit v0 last-completed-slot
+records migrate modulo 15. Missing current metadata, duplicate domains, invalid
+slots and nonfinite, negative or malformed delays reject before mutation.
+
+`CampaignSaveManager` brackets serialization and transactional storage with a
+scheduler observer. Autosave bytes carry the next slot and a fresh interval; live
+authority advances only after storage commits. Manager-driven deferred retries
+use that same completion path. Reentrant requests coalesce, and serialization or
+storage failure retains the original slot and request timestamp. Manual/recovery
+checkpoints and travel sample elapsed seconds without triggering a nested save.
+
+The native adapter owns a single one-shot timer. Capture accounts for elapsed
+seconds since its last sample; pause boundaries sample and stop it, and resuming
+arms the remaining delay. Failed/unsafe due attempts retain zero remaining delay
+and retry after one second instead of spinning at zero or resetting the interval.
+Only committed reconstruction restores metadata, clears old autosave intent and
+replaces the timer. Staged snapshots use candidate metadata while aborted and
+rejected loads retain the old scheduler, sampled elapsed time and timer. Timer
+generations and the expired native handle reject callbacks from retired timers.
+
+Requirement-specific fixtures cover REQ-0184.01 and REQ-0187.01. Their evidence
+does not close unrelated dependency, coverage or real-client release blockers.

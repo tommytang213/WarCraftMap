@@ -63,7 +63,7 @@ open management. `/trade close` releases only that market owner, preserving othe
 management sessions and manual pause. Failed or aborted loads retain the session
 and previous selection validation; committed reconstruction closes the session.
 
-Trade schema 2 and campaign envelopes 1–7 remain supported. Access bindings and
+Trade schema 2 and campaign envelopes 1–8 remain supported. Access bindings and
 interaction points are regenerated definitions (generator version 18), not saved
 permissions or new mutable location records. Current military ownership/control,
 RPG physical observations and merchant standing remain the authorities, with
