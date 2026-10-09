@@ -1077,7 +1077,10 @@ def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str) 
     ).stdout.strip()
     if existing:
         return int(existing)
-    result = run(["gh", "pr", "create", "--base", default_branch(config.repo_root), "--head", branch, "--title", READY.sub("", issue["title"]), "--body", f"Closes #{issue['number']}\n\nCreated by the low-priority WarCraftMap autonomous worker after repository validation."], cwd=worktree)
+    # Native launch #438 cannot be marked fixed by static/headless CI: do not
+    # let GitHub's closing-keyword automation close it on a PR merge.
+    relation = "Investigates" if issue["number"] in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC else "Closes"
+    result = run(["gh", "pr", "create", "--base", default_branch(config.repo_root), "--head", branch, "--title", READY.sub("", issue["title"]), "--body", f"{relation} #{issue['number']}\n\nCreated by the low-priority WarCraftMap autonomous worker after repository validation."], cwd=worktree)
     match = re.search(r"/(\d+)\s*$", result.stdout.strip())
     if not match:
         raise RuntimeError(f"could not parse PR number from: {result.stdout.strip()}")
@@ -1160,10 +1163,16 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
     """Keep merge success authoritative even when issue-close/cleanup reports warnings."""
     record["status"] = "merged"
     errors: list[str] = []
-    try:
-        run(["gh", "issue", "close", str(number), "--reason", "completed"], cwd=config.repo_root)
-    except Exception as exc:
-        errors.append(f"could not close merged issue #{number}: {exc}")
+    if int(number) in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC:
+        # Code integration succeeded; a real client smoke has NOT been run.
+        # Keep the incident open so a second speculative static fix cannot be
+        # mistaken for the player's actual launch acceptance.
+        record["native_validation"] = "pending"
+    else:
+        try:
+            run(["gh", "issue", "close", str(number), "--reason", "completed"], cwd=config.repo_root)
+        except Exception as exc:
+            errors.append(f"could not close merged issue #{number}: {exc}")
     errors.extend(cleanup_merged_issue(config, int(number)))
     if errors:
         record["cleanup_errors"] = errors
