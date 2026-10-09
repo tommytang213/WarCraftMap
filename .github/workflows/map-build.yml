@@ -2,6 +2,7 @@ name: Age of Sail campaign artifact
 
 on:
   push:
+    branches: [main]
     paths:
       - "maps/historical-world-rpg/**"
       - ".github/workflows/map-build.yml"
@@ -10,6 +11,13 @@ on:
       - "maps/historical-world-rpg/**"
       - ".github/workflows/map-build.yml"
   workflow_dispatch:
+
+# Keep PR verification and final main checks, but do not rebuild each agent branch
+# twice (once for its push and again for pull_request). New PR commits cancel
+# only their own obsolete PR checks; main and manual runs are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
