@@ -18,9 +18,13 @@ class ResearchResources implements ResearchCommandResources
 	string controller="player"
 	int balance=100000
 	int writes=0
+	boolean useLiveClock=false
+	WarcraftResearchResources live=new WarcraftResearchResources()
 	override function controllerId(player sender) returns string
 		return controller
 	override function year() returns int
+		if useLiveClock
+			return live.year()
 		return 1450
 	override function gold(player sender) returns int
 		return balance
@@ -255,3 +259,136 @@ function codecRestore(ResearchFixture fixture,string records,int schema)
 	resumed.reject("/research flintlock_drill")
 	resumed.resources.controller="other"
 	resumed.reject("/institution scientific_societies")
+
+function researchClock() returns CampaignClock
+	// Gregorian ordinals: 1450-01-01 through 1471-01-01.
+	let clock=new CampaignClock(529237,536907,529237,1.)
+	installCampaignClock(clock,null)
+	return clock
+
+function restoreHistoricalResearch(ResearchFixture fixture,CampaignClock clock,string state,string clockState)
+	let prefix="v2;autosave=1|1|8:1001011;partyLocations=v1;clock="+clockState+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let codec=new PlayableCampaignCodec(clock)
+	let encoded=codec.encode("manual-1",SAVE_SLOT_MANUAL,1,"now",prefix+state)
+	codec.decodeMigrateAndValidate(encoded,"manual-1").assertEquals(prefix+state)
+	clock.restoreState(clockState).assertTrue()
+	fixture.runtime.restoreState(state).assertTrue()
+	fixture.runtime.reconcile("player")
+	fixture.runtime.captureState().assertEquals(state)
+
+function historicalResearchReceipt(string caseName)
+	for i=0 to 2
+		var requirement="REQ-0037.01"
+		if i==1
+			requirement="REQ-0038.01"
+		else if i==2
+			requirement="ROAD-0045.01"
+		print("TRACEABILITY {\"requirement\":\""+requirement+"\",\"case\":\""+caseName+"\",\"entryPoint\":\"live-historical-research\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce()
+	let previous=getCampaignClock()
+	let clock=researchClock()
+	let f=new ResearchFixture()
+	f.resources.useLiveClock=true
+	f.commands=new CommandRegistry(false,6,new CommandText(),f.output)
+	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
+	f.resources.balance=864
+	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.output.last.assertEquals("Action completed.")
+	f.resources.balance.assertEquals(0)
+	f.resources.writes.assertEquals(1)
+	f.effects.calls.assertEquals(1)
+	f.runtime.technologies.isUnlocked("player","pike_and_shot").assertTrue()
+	restoreHistoricalResearch(f,clock,f.runtime.captureState(),clock.captureState())
+	f.reject("/research pike_and_shot")
+	installCampaignClock(previous)
+	historicalResearchReceipt("success")
+
+@test function historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates()
+	let previous=getCampaignClock()
+	let clock=researchClock()
+	let f=new ResearchFixture()
+	f.resources.useLiveClock=true
+	f.commands=new CommandRegistry(false,6,new CommandText(),f.output)
+	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
+	f.resources.balance=863
+	let before=f.runtime.captureState()
+	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.output.last.assertEquals("Requirements are not met here.")
+	f.runtime.captureState().assertEquals(before)
+	f.resources.writes.assertEquals(0)
+	f.effects.calls.assertEquals(0)
+	f.reject("/research pike_and_shot")
+	f.resources.balance=2147483647
+	let pike=f.runtime.technologies.get("pike_and_shot")
+	pike.baseCost="2147483647"
+	f.reject("/research pike_and_shot")
+	pike.baseCost="NaN"
+	f.reject("/research pike_and_shot")
+	pike.baseCost="90"
+	pike.additionalMultiplierPerYearAhead="-1"
+	f.reject("/research pike_and_shot")
+	pike.additionalMultiplierPerYearAhead="0.08"
+	f.completions("|u,player,trace_italienne|u,other,military_fiscal_state")
+	f.reject("/research flintlock_drill")
+	f.reject("/institution scientific_societies")
+	restoreHistoricalResearch(f,clock,f.runtime.captureState(),clock.captureState())
+	f.reject("/research flintlock_drill")
+	f.resources.writes.assertEquals(0)
+	installCampaignClock(previous)
+	historicalResearchReceipt("failure")
+
+@test function historicalResearchCommandRepricesAfterClockAndDefinitionChanges()
+	let previous=getCampaignClock()
+	let clock=researchClock()
+	let f=new ResearchFixture()
+	f.resources.useLiveClock=true
+	f.commands=new CommandRegistry(false,6,new CommandText(),f.output)
+	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
+	clock.advanceTo(536177).assertTrue()
+	f.runtime.technologies.cost("pike_and_shot",f.resources.year(),0,0).assertEquals(728)
+	f.resources.balance=90
+	f.reject("/research pike_and_shot")
+	clock.advanceTo(536542).assertTrue()
+	f.resources.year().assertEquals(1470)
+	let pike=f.runtime.technologies.get("pike_and_shot")
+	pike.baseCost="90.0000005"
+	f.reject("/research pike_and_shot")
+	f.resources.balance=91
+	f.commands.dispatch(null,"/unlock pike_and_shot").assertTrue()
+	f.output.last.assertEquals("Action completed.")
+	f.resources.balance.assertEquals(0)
+	f.resources.writes.assertEquals(1)
+	restoreHistoricalResearch(f,clock,f.runtime.captureState(),clock.captureState())
+	f.resources.year().assertEquals(1470)
+	f.reject("/research pike_and_shot")
+	installCampaignClock(previous)
+	historicalResearchReceipt("stale")
+
+@test function historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions()
+	let previous=getCampaignClock()
+	let clock=researchClock()
+	let f=new ResearchFixture()
+	f.resources.useLiveClock=true
+	f.commands=new CommandRegistry(false,6,new CommandText(),f.output)
+	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
+	let pending=f.runtime.captureState()
+	let savedDate=clock.captureState()
+	f.resources.balance=1000
+	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.resources.balance.assertEquals(136)
+	let completed=f.runtime.captureState()
+	clock.advanceTo(536907).assertTrue()
+	restoreHistoricalResearch(f,clock,pending,savedDate)
+	f.resources.year().assertEquals(1450)
+	f.resources.balance=1000
+	f.succeed("/research pike_and_shot","pike_and_shot")
+	f.resources.balance.assertEquals(136)
+	f.runtime.captureState().assertEquals(completed)
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		codecRestore(f,completed,schema)
+		f.reject("/institution pike_and_shot")
+	f.resources.writes.assertEquals(2)
+	f.effects.playerPower.assertEquals(1)
+	installCampaignClock(previous)
+	historicalResearchReceipt("replay")
