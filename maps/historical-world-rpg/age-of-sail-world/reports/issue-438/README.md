@@ -257,3 +257,59 @@ or staged, no Windows/WGC execution occurred, and no player retest is requested.
 experiment remains the qualified standalone-selector comparison described
 above. Full final-tree repository validation belongs to the outer worker;
 this routing repair does not claim a new full Wurst or retail-client pass.
+
+## PR #442 CI repair: pinned compiler image retrieval
+
+At head `3b477f64a017ea59a352af56e129c1f39e151829`, both the
+[Wurst job](https://github.com/tommytang213/WarCraftMap/actions/runs/37989671235/job/114020322396)
+and [campaign job](https://github.com/tommytang213/WarCraftMap/actions/runs/37989671173/job/114020323534)
+failed with Docker exit 125: `toomanyrequests` / unauthenticated pull rate limit.
+Neither reached compilation. This is a CI image-retrieval failure, with no new
+evidence about the Warcraft null read. Docker documents the
+[unauthenticated pull limit](https://docs.docker.com/docker-hub/usage/pulls/).
+
+Before changing the workflows, a read-only request to Google's public mirror
+returned the **exact existing manifest**, SHA-256
+`ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a`.
+Its 11,328-byte config also matched the manifest's hash
+`e232a8ae12c157da892ddb50d853e1a9bb1b7106914f62874e082af1f4aa9762`
+and identifies `linux/amd64`. HEAD requests for all 12 layer descriptors returned
+HTTP 200 and their expected sizes. No layer download or compiler execution is
+implied by those HTTP checks. The mirror is a
+[public cache](https://docs.cloud.google.com/artifact-registry/docs/pull-cached-dockerhub-images),
+whose contents can expire; the implementation retains a canonical Hub fallback.
+
+The shared `automation/prepare_wurst_image.sh` selects an already available
+immutable reference first, otherwise pulls the same digest from the mirror and
+then Hub. It rejects tags and unexpected repository names, keeps pull output
+separate from the selected reference, verifies that the exact reference is
+available locally, and fails if both registries fail. All three compiler
+workflows use that reference with `--pull=never`. Canonical `WURST_IMAGE`
+provenance stays unchanged; the smoke workflow now passes it explicitly too.
+Required PR checks also run when the helper changes. No credentials, new
+service, registry publication, mutable image tag or daemon configuration is added.
+
+Behavioral controls execute the actual workflow preparation and container
+invocation against a recording Docker boundary. They cover Hub unavailability
+with mirror success, mirror miss with Hub success, cached images, both registries
+unavailable, a successful pull without a usable image, invalid pins, and compiler
+exit 37. The last two failure paths must prevent a passing build; no compiler
+failure is retried or suppressed. These tests establish CI behavior, not native
+gameplay. Exact commands, counts and limitations are retained in
+`ci-image-repair-validation.json`.
+
+Passed locally: 146 branch automation tests, 154 automation tests in the
+current-main integration snapshot, 14 launch-diagnostic tests, nine artifact-gate
+tests, ShellCheck, and syntax checks for all 16 shell steps in the four changed
+workflows. The full repository command passed its initial source/contract checks;
+its duplicate scenario-suite run was stopped in favor of the user-specified
+outer worker's authoritative final-tree validation. This turn therefore claims
+no completed full scenario suite, Wurst compilation, or hosted CI pass.
+
+The original smoke #3 checksum and independent agreement for 17 maps / 814 nested
+members were reconfirmed. No new campaign candidate is created or staged by this
+repair, and no player test is requested. `diagnosis_unconfirmed`,
+`real_client_launch=failed`, `campaign_native=failed`, and
+`map_standalone_native=not_run` remain unchanged. The next single native
+experiment remains the qualified standalone-selector comparison above; all
+production release gates and the full retail campaign requirement remain intact.

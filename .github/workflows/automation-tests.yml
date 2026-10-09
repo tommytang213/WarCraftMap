@@ -46,6 +46,7 @@ jobs:
         run: |
           bash -n automation/run_agent.sh
           bash -n automation/run_checks.sh
+          bash -n automation/prepare_wurst_image.sh
           bash -n automation/install-user-service.sh
           bash -n automation/uninstall-user-service.sh
 

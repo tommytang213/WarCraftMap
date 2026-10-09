@@ -1,0 +1,240 @@
+{
+  "afterChecks": [
+    {
+      "command": "python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 146
+    },
+    {
+      "command": "cd build/issue-438/ci-image-repair/integration && python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 154
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_ci_artifact.py",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_launch_diagnostics.py",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "command": "python3 -m unittest automation.tests.test_closure",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 43
+    },
+    {
+      "command": "shellcheck automation/prepare_wurst_image.sh",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "bash -n automation/prepare_wurst_image.sh",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "PyYAML parse of four changed workflows, followed by bash -n on each run step",
+      "exitCode": 0,
+      "shellSteps": 16,
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "passed"
+    }
+  ],
+  "baselineRechecked": {
+    "campaignMembers": 20,
+    "campaignSha256": "4f2f9cf8ca56f81aaeca524f257ae15e273c2366e52adfaa1eafdf5b996ff9ad",
+    "checkedNestedMembers": 814,
+    "maps": 17,
+    "originalFilesChanged": false,
+    "readerRevision": "6bfba18ec403f702666b4109db3d95f3b97b1dc5",
+    "readerSha256": "e10fa2f422d837345f438934a99a3cdf67fa9148c7106d421408e1ecfa83e239",
+    "selectorSha256": "3c953659969c956e509093cb2732aaf1e2d94ed6355556a98204637ab1cb1f16",
+    "unsupportedEncryptedListfiles": 17
+  },
+  "beforeControls": [
+    {
+      "command": "python3 -m unittest automation.tests.test_prepare_wurst_image",
+      "exitCode": 1,
+      "failures": 2,
+      "status": "expected_failure_before_workflow_wiring",
+      "tests": 8
+    }
+  ],
+  "changedImplementationFiles": {
+    ".github/workflows/age-of-sail-launch-smoke.yml": "b09c6b5bdbe44b6afd5804a1d22f3bb31dcb3efb501f9f9cb0d4e6358154e8a4",
+    ".github/workflows/automation-tests.yml": "d17397422c0ea81c91e79ff23eaf10c86951163f33eee25a22eee0ccb6e0e540",
+    ".github/workflows/map-build.yml": "d73762bebe7df499f8ec2dc81e0b0128648f7f8105c2e275c4d898eb183e2bdc",
+    ".github/workflows/wurst-typecheck.yml": "6ff3c03d158f109e0dbdbdab8e399a5cee5e745de0406773b60fe14b1a2b7017",
+    "automation/prepare_wurst_image.sh": "6764f4a0c1237efe2c0aaa085eef2234a05d1b9e164302862d32c68ffb9252d8",
+    "automation/tests/test_prepare_wurst_image.py": "771a3463d3406a20104928717a883328ac51cb4b07d83c0f96f9bb4675ba6a38",
+    "maps/historical-world-rpg/age-of-sail-world/docs/TOOLCHAIN.md": "6628d2ed8c936894cdd826b38fed88a58a46adb2fe04f648e3dbee8270a4857b"
+  },
+  "checkoutRevision": "3b477f64a017ea59a352af56e129c1f39e151829",
+  "ciFailure": {
+    "compilerReached": false,
+    "dockerExitCode": 125,
+    "error": "toomanyrequests: You have reached your unauthenticated pull rate limit.",
+    "headRevision": "3b477f64a017ea59a352af56e129c1f39e151829",
+    "jobs": [
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37989671235/job/114020322396",
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/37989671173/job/114020323534"
+    ]
+  },
+  "fullRepositoryAttempt": {
+    "command": "DOCKER_HOST=unix:///var/run/docker.sock bash automation/run_checks.sh (inherited Docker context/TLS selectors unset)",
+    "exitCode": 143,
+    "passedStages": [
+      "framework boundary",
+      "both world contracts",
+      "Europe geography",
+      "canonical map source",
+      "traceability inventory consistency"
+    ],
+    "reason": "Stopped the owned duplicate scenario test process after focused verification; the user-specified outer worker performs authoritative final-tree validation. No full Python or Wurst pass claimed.",
+    "status": "not_completed",
+    "stoppedStage": "scenario Python suite; historical local duration 1621.644 seconds",
+    "traceabilityPublicationBlockers": 7190
+  },
+  "gameSourceTreeSha256": "26f9227c87a842990913f3df5b3771ee8aca95b6357f6badce4959c8b7e34dc7",
+  "implementationStatus": "ready_for_repository_validation",
+  "integrationPreparation": {
+    "commonBase": "b27e1bf76c0e2aed24ae85f0d48db0fb5f05162d",
+    "main": "da7f8918002b394c934c3cb479c636f5c39ca1ab",
+    "method": "Copy current automation/ and .github/ inside the worktree build directory. Merge closure.py with git merge-file -p using the common base; read main worker.py and test_native_launch_diagnostic_routing.py into that snapshot. No refs or commits changed."
+  },
+  "issue": 438,
+  "issueShouldRemainOpen": true,
+  "mirrorConfigAndLayerAvailability": {
+    "architecture": "amd64",
+    "configSha256": "e232a8ae12c157da892ddb50d853e1a9bb1b7106914f62874e082af1f4aa9762",
+    "layerAvailability": [
+      {
+        "contentLength": "41602703",
+        "digest": "sha256:08f5f5b2a2b0d2a960804adef3bd1783c5f2c20f42db5e290dc05d9529d11ae2",
+        "expectedSize": 41602703,
+        "status": 200
+      },
+      {
+        "contentLength": "394",
+        "digest": "sha256:6a7c4f6d8c3863707c14af40aad062db2bb477271491c7d3e99e03394dd261e3",
+        "expectedSize": 394,
+        "status": 200
+      },
+      {
+        "contentLength": "22368066",
+        "digest": "sha256:2e4959a8c532cb4c782f5df03bcd085daaed2e3bf39fca0a1bb21848930618cb",
+        "expectedSize": 22368066,
+        "status": 200
+      },
+      {
+        "contentLength": "92756921",
+        "digest": "sha256:1965e636326860fef6aa61081d28c053f4f8e0111cbd4e4b433069eb234ecd78",
+        "expectedSize": 92756921,
+        "status": 200
+      },
+      {
+        "contentLength": "32",
+        "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+        "expectedSize": 32,
+        "status": 200
+      },
+      {
+        "contentLength": "2464",
+        "digest": "sha256:a16bf028f39a13ebae92f846c88253d2b61a6697a30837217890d7b72659d986",
+        "expectedSize": 2464,
+        "status": 200
+      },
+      {
+        "contentLength": "4562827",
+        "digest": "sha256:7e773f2f7c14950e807605e82d2db667a16d63e95b98c06e5e6c80b5536cf73e",
+        "expectedSize": 4562827,
+        "status": 200
+      },
+      {
+        "contentLength": "3539",
+        "digest": "sha256:f894c7b76291c959cd09b8c9bf70ffdb5ff0afca7d05be46de5ab34baa38bd67",
+        "expectedSize": 3539,
+        "status": 200
+      },
+      {
+        "contentLength": "32",
+        "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+        "expectedSize": 32,
+        "status": 200
+      },
+      {
+        "contentLength": "10604420",
+        "digest": "sha256:1e6aca2b5f922962e39ef9868e42325ca8c2181f59845154e24c3650717bc43b",
+        "expectedSize": 10604420,
+        "status": 200
+      },
+      {
+        "contentLength": "72995785",
+        "digest": "sha256:4df09a61d5953f002dd1942efaedd17305ecd1c603860c9c63cdfed41d4ca2d3",
+        "expectedSize": 72995785,
+        "status": 200
+      },
+      {
+        "contentLength": "72994909",
+        "digest": "sha256:0f6ec1563199ae581f5ea0dedfbba8d3e30266bf3526cd13f4870c596f69af32",
+        "expectedSize": 72994909,
+        "status": 200
+      }
+    ],
+    "layersDownloaded": false,
+    "os": "linux"
+  },
+  "mirrorManifest": {
+    "compressedLayerBytes": 317892092,
+    "config": {
+      "digest": "sha256:e232a8ae12c157da892ddb50d853e1a9bb1b7106914f62874e082af1f4aa9762",
+      "mediaType": "application/vnd.docker.container.image.v1+json",
+      "size": 11328
+    },
+    "contentType": "application/vnd.docker.distribution.manifest.v2+json",
+    "dockerContentDigest": "sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "layers": 12,
+    "sha256": "ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "status": 200,
+    "url": "https://mirror.gcr.io/v2/frotty/wurstscript/manifests/sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a"
+  },
+  "nativeStatus": {
+    "campaign_native": "failed",
+    "compiler": "not_run_in_this_repair_turn",
+    "diagnosis": "diagnosis_unconfirmed",
+    "editor_open": "historical_owner_observation_of_title_and_17_maps_only",
+    "latestFailingClient": "3.0.0.24268",
+    "map_standalone_native": "not_run",
+    "nativeRunner": "native_runner_unavailable",
+    "precedingFailingClient": "3.0.1.24342",
+    "real_client_launch": "failed",
+    "static_archive": "passed_for_existing_baseline"
+  },
+  "networkEvidenceLimit": "Manifest/config hashes verified; all 12 layer HEAD responses matched expected sizes. No image pull, daemon change or compiler container executed in this repair turn. Availability is not guaranteed for future runs.",
+  "newDiagnosticW3nProduced": false,
+  "nextSingleExperiment": "Unchanged: qualify the local WGC adapter on same-client positive Lua and corrupt negative controls, then compare the exact extracted selector at 1x. Full retail W3N acceptance remains separate.",
+  "playerTestRequested": false,
+  "pullRequest": 442,
+  "recordedAt": "2026-10-09T21:09:07.976959+00:00",
+  "remainingValidation": "Outer worker: bash automation/run_checks.sh. Hosted CI must rerun after the outer workflow publishes the repair; no push or CI dispatch performed here.",
+  "repair": "Reuse local immutable references or fetch the identical digest from mirror.gcr.io, then Docker Hub. Run the selected reference with --pull=never; retain canonical compiler provenance and every validation/publication gate.",
+  "retainedLog": {
+    "path": "ci-image-repair-tests.log.gz",
+    "sanitized": true,
+    "sha256": "01ebca10e3591e8483922172af13e02319fcd0b1d2b096ad8c082ceee15c4fe8"
+  },
+  "uncommittedRepair": true,
+  "verifiedDefect": "CI relied on an implicit cold Docker Hub pull; Hub rejected both required compiler jobs before compilation."
+}

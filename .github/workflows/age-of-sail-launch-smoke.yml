@@ -29,6 +29,11 @@ jobs:
             maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 
+      - name: Prepare pinned Wurst image
+        run: |
+          WURST_RUN_IMAGE=$(bash automation/prepare_wurst_image.sh "$WURST_IMAGE")
+          echo "WURST_RUN_IMAGE=$WURST_RUN_IMAGE" >> "$GITHUB_ENV"
+
       - name: Build and inspect diagnostic campaign in pinned Wurst environment
         run: |
           set -eu
@@ -36,14 +41,16 @@ jobs:
           artifact_dir="$RUNNER_TEMP/age-of-sail-launch-smoke"
           mkdir -p "$artifact_dir"
           docker run --rm \
+            --pull=never \
             --user root \
+            -e WURST_IMAGE \
             -e MAP_PROJECT \
             -e SOURCE_REVISION \
             -e GITHUB_RUN_ID \
             -e GITHUB_RUN_ATTEMPT \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \
-            "$WURST_IMAGE" \
+            "$WURST_RUN_IMAGE" \
             /bin/sh -lc '
               set -eu
               apt-get update

@@ -70,7 +70,20 @@ Patch changes are treated as compatibility work, not casual dependency updates.
 
 ## CI
 
-GitHub CI performs Wurst typechecking using the official/community Wurst Docker workflow. It refreshes Wurst before checking so the CI toolchain understands the currently pinned `v3.0` target.
+GitHub CI uses the immutable Wurst image declared in each build workflow.
+`automation/prepare_wurst_image.sh` first reuses an available local digest,
+then tries Google's public Docker Hub mirror and the canonical Docker Hub
+repository. Both requests use the same SHA-256 manifest pin. The selected
+registry reference is passed to `docker run --pull=never`; `WURST_IMAGE` in
+build provenance retains the canonical compiler identity. No mutable tag,
+registry credentials, or Docker daemon reconfiguration is required. If neither
+registry supplies the pinned image, validation fails before compilation.
+
+This handles the Docker Hub rate-limit failure observed in PR #442 without
+changing compilers or skipping any checks. The mirror is a cache and can miss;
+its availability is not a validation or native-launch result. See the
+[issue #438 evidence](../reports/issue-438/README.md) for the verified manifest
+and the separate native launch blocker.
 
 CI validates the folder structure and performs a full Wurst build from the canonical source path, but does not retain `_build/` as source.
 
