@@ -708,7 +708,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			militarySettlements.adapter.commitLoad()
 		destroy checkpoint
 		checkpoint = null
-		regional.recoverActiveRegion()
+		// A committed load reconstructs the physical view, never a previously
+		// selected remote region whose authority may have been revoked by the save.
+		regional.activateRegion(lastAuthorityValue(staged, "region"))
 		if countries != null
 			authority = withoutCountryAuthority(staged)
 		else
@@ -1239,49 +1241,64 @@ public function registerCampaignSaveCommands(CommandRegistry commands, PlayableC
 	commands.register("load", "", "load <slot|manual N|autosave N|session_start|major_milestone|retry>", "Restore a saved campaign on its recorded map.", "Use /saves to identify existing slots. Autosaves are 1 through 15. /load N is the manual shorthand. /load retry resumes a durable recovery after interrupted startup. Rejected loads preserve the active campaign and source saves.", 1, 2, COMMAND_RELEASE, new SaveCommand(campaign, commands.output, true))
 	commands.register("saves", "", "saves [manual [first-slot]|autosave|session_start|major_milestone]", "Identify existing campaign saves.", "List saved map IDs for all 15 autosaves, both checkpoints and a window of 10 manual slots. The default manual window starts at 1; /saves manual N starts at N. Missing slots are omitted. Listing never writes saves.", 0, 2, COMMAND_RELEASE, new SaveSlotsCommand(campaign, commands.output))
 
-/** Knowledge and command rights are explicit runtime facts, never inferred from object presence. */
+/** Knowledge is a view filter. Command rights are read from current campaign
+ * authority on EVERY request, including requests for the already open region.
+ * No grants or Warcraft handles are cached or serialized here. */
 public class PlayableRegionAccess implements RegionAccessPolicy
+	PlayableCampaignState state
 	string array[64] ids
 	boolean array[64] known
-	boolean array[64] authorized
 	int count = 0
-	function add(string id, boolean isKnown, boolean mayCommand)
+	construct(PlayableCampaignState state)
+		this.state = state
+	function add(string id, boolean isKnown)
 		ids[count] = id
 		known[count] = isKnown
-		authorized[count] = mayCommand
 		count++
 	function find(string id) returns int
 		for i = 0 to count - 1
 			if ids[i] == id
 				return i
 		return -1
-	function revealAndAuthorize(string id)
+	function reveal(string id)
 		let i = find(id)
 		if i >= 0
 			known[i] = true
-			authorized[i] = true
 	override function regionExists(string regionId) returns boolean
 		return find(regionId) >= 0
 	override function regionIsKnown(player whichPlayer, string regionId) returns boolean
 		let i = find(regionId)
 		return i >= 0 and known[i]
 	override function mayCommandRegion(player whichPlayer, string regionId) returns boolean
-		let i = find(regionId)
-		return i >= 0 and authorized[i]
+		// The existing single-player campaign controller is slot 0 / "player".
+		// Citizenship, allegiance and offices do not transfer territorial control.
+		if whichPlayer != Player(0) or not regionExists(regionId) or state == null or not state.isSaveSafe() or state.militarySettlements == null
+			return false
+		let military = state.militarySettlements
+		for i = 0 to military.settlementCount - 1
+			let holding = military.settlements[i]
+			// Capture authorizes management through control without granting title.
+			// Conversely, title to an enemy-occupied holding grants no command.
+			if holding.controllerId == "player" and scenarioAuthorityRegion(holding.regionId) == regionId
+				return true
+		for i = 0 to military.forceCount - 1
+			let runtimeForce = military.forces[i]
+			// Local defenses remain AI-controlled, even in a player holding.
+			if runtimeForce.controllerId == "player" and runtimeForce.active and runtimeForce.strength > 0 and (runtimeForce.kind == FORCE_ARMY or runtimeForce.kind == FORCE_FLEET) and scenarioAuthorityRegion(runtimeForce.regionId) == regionId
+				return true
+		return false
 
 public class PlayableRegionCommandRuntime implements RegionCommandRuntime
 	WarcraftRegionalAdapter regional
-	string previousRegion = ""
 	string lastDiagnostic = ""
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	override function snapshotRuntime() returns string
-		return previousRegion
+		return regional.activeRegionId
 	override function restoreRuntime(string snapshot)
 		if snapshot != ""
 			regional.activateRegion(snapshot)
 	override function retireCommandRegion(string regionId)
-		previousRegion = regionId
 		regional.retireRegion(regionId)
 	override function reconstructCommandRegion(player whichPlayer, string regionId) returns boolean
 		regional.reconstructRegion(regionId)
@@ -1371,12 +1388,12 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		state.autosaves = autosaves
 		let logicalRegion = scenarioLogicalRegion(physicalMapId)
 		travel = new CampaignTravelRuntime(state, saves, autosaves, loader, physicalMapId, logicalRegion)
-		regionAccess = new PlayableRegionAccess()
+		regionAccess = new PlayableRegionAccess(state)
 		for i = 0 to scenarioRegionCount() - 1
 			let regionId = scenarioRegionId(i)
 			let known = scenarioRegionInitiallyKnown(regionId)
-			regionAccess.add(regionId, known, known)
-		regionAccess.revealAndAuthorize(logicalRegion)
+			regionAccess.add(regionId, known)
+		regionAccess.reveal(logicalRegion)
 		regionSelector = new RegionSelector(regionAccess, new PlayableRegionCommandRuntime(regional), logicalRegion)
 		mapPresentation = new WarcraftMapPresentation(new WarcraftOutput())
 		mapPresentation.setKnowledge(logicalRegion, "", "", "")
@@ -1664,8 +1681,8 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			loadedAllegiance = loadedOrigin
 		identity.restore(loadedOrigin, loadedAllegiance, loadedMap, instance, loadedSettlement)
 		travel.startAt(loadedMap, loadedRegion)
-		regionAccess.revealAndAuthorize(loadedRegion)
-		regionSelector.setPhysicalRegionId(loadedRegion)
+		regionAccess.reveal(loadedRegion)
+		regionSelector.afterCampaignLoad(loadedRegion)
 		mapPresentation.setKnowledge(loadedRegion, loadedSettlement, "", "")
 		maps.setPhysicalRegion(loadedRegion)
 		maps.setCommandRegion(loadedRegion)
