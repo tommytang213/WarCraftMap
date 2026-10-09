@@ -35,6 +35,9 @@ def closure(*, fresh=True, extra_dependencies=()):
         EVIDENCE: Blocker(EVIDENCE, "Headless evidence missing",
                           ["no same-revision execution"], ["reports/runtime-acceptance.json"]),
     }
+    for dependency in extra_dependencies:
+        blockers[dependency] = Blocker(dependency, "Unresolved extra prerequisite",
+                                      ["not yet repaired"], ["reports/traceability/requirements.json"])
     return Closure(REVISION, fresh, blockers, reports={
         "runtime": {"regenerated": fresh},
         "release": {"regenerated": fresh},
