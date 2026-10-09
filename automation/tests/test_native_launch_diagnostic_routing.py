@@ -39,9 +39,9 @@ def closure(*, fresh=True, extra_dependencies=()):
         blockers[dependency] = Blocker(dependency, "Unresolved extra prerequisite",
                                       ["not yet repaired"], ["reports/traceability/requirements.json"])
     return Closure(REVISION, fresh, blockers, reports={
-        "runtime": {"regenerated": fresh},
-        "release": {"regenerated": fresh},
-        "traceability": {"regenerated": fresh},
+        "runtime": {"path": "reports/runtime-acceptance.json", "regenerated": fresh},
+        "release": {"path": "reports/release-blocker-audit.json", "regenerated": fresh},
+        "traceability": {"path": "reports/traceability/requirements.json", "regenerated": fresh},
     })
 
 
