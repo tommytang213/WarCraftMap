@@ -3,13 +3,14 @@
 from __future__ import annotations
 import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
 from datetime import date
+from decimal import Decimal
 from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 20
+GENERATOR_VERSION = 21
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -241,6 +242,36 @@ def _character_recruitment_windows(world: dict) -> dict[str, tuple[date, date]]:
         windows[ident] = (dates[0], dates[1])
     return windows
 
+def research_decimal(value: object, minimum: str, context: str) -> str:
+    """Exact, bounded plain-decimal definition for ResearchCost.wurst; never round."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+        raise _fail("generation", f"{context}: expected a number")
+    number = Decimal(str(value))
+    if not number.is_finite() or number < Decimal(minimum):
+        raise _fail("generation", f"{context}: invalid research coefficient")
+    digits = list(number.as_tuple().digits)
+    exponent = number.as_tuple().exponent
+    while len(digits) > 1 and digits[-1] == 0:
+        digits.pop()
+        exponent += 1
+    if number == 0:
+        return "0"
+    if len(digits) > 28 or not -28 <= exponent <= 28:
+        raise _fail("generation", f"{context}: research decimal is not representable")
+    text = format(number, "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def research_time_cost(cost: dict, node_id: str) -> tuple[int, str, str, str]:
+    year = cost.get("preferredYear")
+    if isinstance(year, bool) or not isinstance(year, int) or not -2147483648 <= year <= 2147483647:
+        raise _fail("generation", f"{node_id}.preferredYear: not a signed integer year")
+    return (year, *(research_decimal(cost.get(field), minimum, f"{node_id}.{field}")
+                    for field, minimum in (("baseCost", "0.000001"),
+                                           ("aheadOfTimeCostMultiplier", "1"),
+                                           ("additionalMultiplierPerYearAhead", "0"))))
+
+
 def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
@@ -333,11 +364,14 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 f'\thero{index}.regionId="{ws(row.get("regionId", ""))}"',
                 f'\thero{index}.recruited={str(bool(row.get("recruited"))).lower()}',
                 f'\truntime.heroes.register(hero{index})']
-    research_rows = [("technology", row) for row in world.get("technologies", ())] + [("institution", row) for row in world.get("institutions", ())]
+    # Parse authored decimal tokens directly, avoiding a binary-float round trip.
+    exact_world = json.loads(config.scenario_file.read_text(encoding="utf-8"), parse_float=Decimal)
+    research_rows = [("technology", row) for row in exact_world.get("technologies", ())] + [("institution", row) for row in exact_world.get("institutions", ())]
     for index, (research_kind, row) in enumerate(research_rows):
         cost = row.get("timeCost", {})
         unlock = (row.get("unlocks") or [{}])[0]
-        rpg += [f'\tlet technology{index}=new RuntimeTechnology("{ws(row["id"])}","{ws(row.get("name", row["id"]))}",{int(cost.get("preferredYear", 0))},{int(cost.get("baseCost", 1))})',
+        year, base, ahead, annual = research_time_cost(cost, row["id"])
+        rpg += [f'\tlet technology{index}=new RuntimeTechnology("{ws(row["id"])}","{ws(row.get("name", row["id"]))}",{year},"{base}","{ahead}","{annual}")',
                 f'\ttechnology{index}.kind="{research_kind}"']
         for prerequisite_id in row["prerequisiteIds"]:
             rpg.append(f'\ttechnology{index}.addPrerequisite("{ws(prerequisite_id)}")')

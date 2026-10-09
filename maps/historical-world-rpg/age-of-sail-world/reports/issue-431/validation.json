@@ -1,0 +1,89 @@
+{
+  "candidateReady": false,
+  "evidenceFiles": {
+    "README.md": "4cb6ea6963a4821175849dc2783c7970900f066a8ce4628dce6c006dc9a533e0",
+    "diagnostic-packaging.log.gz": "97657cfe6a1b8a17833c66ab3a60f43720ba8faa68e601952f824f5efc58ee86",
+    "framework-conformance.json.gz": "7fc35edb118034c1be4878b11f3e97f46162a457219a2c84da734ec4b26e2cec",
+    "framework-validation.log.gz": "6397487903fba534cfcc4e210800503219b42ba4874b4b124f843cd21d2921ad",
+    "release-blockers.log": "fd98a0f1ea0194751f4c7fb912b0e4e7463c1964ae1e741240f77c51a63bb928",
+    "repository-checks.log.gz": "2d47bb59a97dc514a13ce8039bbc5bf553c1add5b8f1c6791af8fa7242b15109",
+    "requirement-traceability.json.gz": "74666b2312d85c4c2f90e6e33149fd3c5e72b328c01437ce1c00b0b4bfe95b98",
+    "requirement-traceability.md.gz": "4419282891392a79547648e0ffd99337d166a79bc578470e2cedef0a7b90a92b",
+    "scoped-evidence.json": "4e28824fad6ba297d2312242a2b3a1ef7003f48d96eb011d6d51a505cc28933a",
+    "scoped-evidence.log": "876aeb7998838d554a88c4cd2120c5213d9e06bd89c2317e774afd3e8aac2009",
+    "targeted-python.log.gz": "4d18d7772f955839ff60309e5ed4fe61a86a7fe058ef3a4e084be52531c08300",
+    "verify-evidence.py": "cc6c3b34c776217c87c6ccf594128cb4d87fbc48efb76502e16d084bd72ff93b",
+    "wurst-execution.log.gz": "9bb4980f0e90b2c9b3b2a0a942a43699278b0a82e6f14b1db8bd487678b8f6c4",
+    "wurst-results.json.gz": "09f5dd3b5c9873407add8cb0613d63c2c6f6e689e4ee163270b0d1a23a79b417"
+  },
+  "format": "warcraftmap_issue_431_validation_v1",
+  "framework": {
+    "mutatedTests": 2,
+    "originalTests": 2,
+    "sharedSourcesUnchanged": true,
+    "status": "pass"
+  },
+  "generatorVersion": 21,
+  "implementationStatus": "ready_for_repository_validation",
+  "packaging": {
+    "artifactSha256": "ab37f43e11b4018b6031ad908a7d551c63bf503c249ea2824d38073d9b903638",
+    "compiledResearchDefinitions": 3296,
+    "driver": "reports/issue-414/packaging-driver.py, using issue431 output paths and the isolated pinned offline compiler adapter",
+    "gameplayMaps": 16,
+    "mapsTypecheckedCompiledInspected": 17,
+    "status": "pass"
+  },
+  "python": {
+    "automationTests": 129,
+    "repositoryCommand": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+    "scenarioTests": 936,
+    "status": "pass",
+    "targetedTests": 125,
+    "wurstValidation": "Executed separately: full pinned suite, 17 diagnostic builds and both framework variants"
+  },
+  "realClientExecuted": false,
+  "releaseAuditFindingsUnchanged": true,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingReleaseFindings": 21,
+  "remainingTraceabilityBlockers": 8764,
+  "requirements": [
+    {
+      "id": "REQ-0037.01",
+      "status": "pass"
+    },
+    {
+      "id": "REQ-0038.01",
+      "status": "pass"
+    }
+  ],
+  "saveCompatibility": {
+    "campaignSchemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "persistedContractChanged": false,
+    "rpgSchema": 3
+  },
+  "scopedReceipts": 12,
+  "sourceRevision": "1bdfe32feae8775979735d89a379ecfdd0b28c83",
+  "sourceTreeSha256": "a07d41a4f6d6f212a8fd52cbd9897bc42ef3365a47b22802b8c4b27d662515b2",
+  "wurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "environment": "cached pinned compiler and bundled JRE, executed locally in ignored worktree storage",
+    "standardLibraryRevision": "110252dd8b19fe683505bfbbbd6b6a1f9f4dfd9e",
+    "status": "pass",
+    "tests": 352
+  }
+}

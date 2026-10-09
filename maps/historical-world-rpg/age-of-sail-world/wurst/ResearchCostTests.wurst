@@ -1,0 +1,65 @@
+package ResearchCostTests
+
+import ResearchCost
+import WarcraftRpgRuntime
+import ScenarioData
+
+// These literals are also checked independently with Fraction and the headless
+// Decimal contract by test_research_cost_contract.py (no generator-derived oracle).
+function assertCost(string base,string ahead,string annual,int preferred,int year,string units,int gold)
+	researchCostUnits(base,ahead,annual,preferred,year).assertEquals(units)
+	researchGoldCost(base,ahead,annual,preferred,year,0,0).assertEquals(gold)
+
+@test function historicalResearchMatchesIndependentDecimalFixtures()
+	assertCost("90","8","0.08",1470,1450,"864000000",864)
+	assertCost("90","8","0.08",1470,1469,"727200000",728)
+	assertCost("90","8","0.08",1470,1470,"90000000",90)
+	assertCost("90","8","0.08",1470,1471,"90000000",90)
+	assertCost("12.125","1.25","0.0625",1500,1497,"17429688",18)
+	assertCost("12.125","1.25","0.0625",1500,1500,"12125000",13)
+	assertCost("1.0000004","1","0",1500,1500,"1000000",1)
+	assertCost("1.0000005","1","0",1500,1500,"1000001",2)
+	assertCost("0.000001","1.5","0",1500,1499,"2",1)
+	assertCost("1","1","0.0000005",1500,1499,"1000001",2)
+	assertCost("2147483647","1","0",1500,1500,"2147483647000000",2147483647)
+	assertCost("2147483647.0000004","1","0",1500,1500,"2147483647000000",2147483647)
+	assertCost("2147483647.0000005","1","0",1500,1500,"2147483647000001",-1)
+	assertCost("2147483648","1","0",1500,1500,"2147483648000000",-1)
+	assertCost("2000000000","1","0.0000001",1500,1499,"2000000200000000",2000000200)
+	assertCost("1","1","0.000001",2147483647,1,"2148483646",2149)
+	assertCost("1","1","0",-2147483648,9999,"1000000",1)
+	assertCost("0.000001","1000000000000000000000","0",1500,1499,"1000000000000000000000",-1)
+	assertCost("1.234567890123456789012345678","1.234567890123456789012345678","0.0000000000000000000000000001",1500,1499,"1524158",2)
+	// Decimal context rounds this product onto the half-millionth boundary.
+	assertCost("0.999999999999999999999999999","1.000000500000000000000000001","0",1500,1499,"1000001",2)
+
+@test function historicalResearchRejectsMalformedAndUnrepresentableDefinitions()
+	researchGoldCost("NaN","8","0.08",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("1oops","8","0.08",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("1..2","8","0.08",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("0","8","0.08",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("0.0000009","8","0.08",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("90","0.9","0.08",1470,1470,0,0).assertEquals(-1)
+	researchGoldCost("90","8","-0.08",1470,1470,0,0).assertEquals(-1)
+	researchGoldCost("90","8","0.00000000000000000000000000001",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("1.2345678901234567890123456789","8","0",1470,1450,0,0).assertEquals(-1)
+	researchGoldCost("90","8","0.08",1470,0,0,0).assertEquals(-1)
+	researchGoldCost("90","8","0.08",1470,10000,0,0).assertEquals(-1)
+	researchGoldCost("90","8","0.08",1470,1450,-1,0).assertEquals(-1)
+	researchGoldCost("90","8","0.08",1470,1450,0,-1).assertEquals(-1)
+	researchGoldCost("90","8","0.08",1470,1450,5,7).assertEquals(852)
+	researchGoldCost("90","8","0.08",1470,1450,2147483647,2147483647).assertEquals(1)
+	// Discounts cannot rescue an unrepresentable historical amount.
+	researchGoldCost("2147483648","1","0",1470,1450,2147483647,0).assertEquals(-1)
+
+@test function generatedHistoricalCostIncludesAuthoredCoefficients()
+	let runtime=new WarcraftRpgRuntime(null)
+	configureGeneratedRpg(runtime)
+	let pike=runtime.technologies.get("pike_and_shot")
+	pike.baseCost.assertEquals("90")
+	pike.aheadOfTimeCostMultiplier.assertEquals("8")
+	pike.additionalMultiplierPerYearAhead.assertEquals("0.08")
+	runtime.technologies.cost("pike_and_shot",1450,0,0).assertEquals(864)
+	runtime.technologies.cost("pike_and_shot",1470,0,0).assertEquals(90)
+	runtime.technologies.cost("pike_and_shot",1471,0,0).assertEquals(90)
+	runtime.technologies.cost("unknown",1450,0,0).assertEquals(-1)
