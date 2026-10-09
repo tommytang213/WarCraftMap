@@ -52,3 +52,12 @@ This is scoped starting-profile evidence. ROAD-0135.01, broader hero growth and
 multi-axis progression, local field-group performance and native Warcraft launch
 remain unresolved. The diagnostic is **not a release candidate** and does not
 change `blocked_pending_real_forsaken_kingdom_launch_smoke`.
+
+The repository-validation repair refreshes only the release-blocker report's
+`package.json` hash after the profile composer was added. The stale report made
+the audit exit before emitting its JSON summary. The implementation is unchanged;
+all 21 existing release blockers remain recorded. `repair-validation.json` and
+the `repair-*.log.gz` transcripts record the local rechecks. The retained pinned
+execution was verified against the unchanged source digest and its four scoped
+receipts. A fresh compiler/build run is deferred to the outer worker because
+Grill is absent and Docker socket access is denied in this Codex environment.
