@@ -10,6 +10,7 @@ import PlayableCampaignRuntime
 import WarcraftRegionalRuntime
 import RemoteRegionManagement
 import ManagementScreenPauseController
+import MilitarySettlementRuntime
 
 class InteractionOutput implements CommandOutput
 	string last = ""
@@ -316,12 +317,14 @@ class InteractionFixture
 @test function rpgRemoteCommandAndTrackingNeverConferPhysicalPresence()
 	let f = new InteractionFixture()
 	f.ready()
-	let access = new PlayableRegionAccess()
-	access.add("europe", true, true)
-	access.add("africa", true, true)
+	let access = new PlayableRegionAccess(f.state)
+	f.state.setMilitarySettlementRuntime(new MilitarySettlementRuntime(null))
+	f.state.militarySettlements.registerForce(new RuntimeForce("remote", "player", "africa", "infantry", FORCE_ARMY, 'hfoo', 10, 10, 0., 0.))
+	access.add("europe", true)
+	access.add("africa", true)
 	let selector = new RegionSelector(access, new PlayableRegionCommandRuntime(f.state.regional), "europe", new ManagementScreenPauseController(new InteractionPause(), false))
 	registerRegionCommand(f.commands, selector, f.output).assertEquals("")
-	f.commands.dispatch(null, "/region africa").assertTrue()
+	f.commands.dispatch(Player(0), "/region africa").assertTrue()
 	selector.getCommandRegionId().assertEquals("africa")
 	f.state.identity.physicalMapId().assertEquals("europe_west")
 	// Production tracking changes guidance only; its text uses the output port.

@@ -10568,6 +10568,566 @@
           }
         ]
       }
+    },
+    "REQ-0296.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"region\",",
+          "\\b[\\w.]*PlayableRegionAccess[\\w]*mayCommandRegion[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"initiallyKnownRegionIds\""
+          ],
+          "path": "package.json"
+        },
+        {
+          "contains": [
+            "\"controllerPolityId\"",
+            "\"regionalInstanceId\""
+          ],
+          "path": "scenario/world/world.json"
+        },
+        {
+          "contains": [
+            "\"logicalRegionIds\"",
+            "\"regionalInstanceIds\""
+          ],
+          "path": "physical-maps.json"
+        }
+      ],
+      "entry": {
+        "id": "campaign-region-command",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "registerRegionCommand(commands, campaignServices.regionSelector"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "initializePlayableCampaignRuntime"
+          },
+          {
+            "contains": [
+              "selector.select(sender, wanted)",
+              "selector.returnToPhysicalRegion(sender)"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "execute"
+          },
+          {
+            "contains": [
+              "access.regionIsKnown(whichPlayer, regionId)",
+              "access.mayCommandRegion(whichPlayer, regionId)",
+              "runtime.retireCommandRegion",
+              "runtime.reconstructCommandRegion",
+              "runtime.focusCommandRegion"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "select"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "registry.register(\"region\""
+          ],
+          "path": "wurst/RemoteRegionManagement.wurst",
+          "symbol": "registerRegionCommand"
+        },
+        "testInvocation": "f.reject("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "whichPlayer != Player(0)",
+            "state.isSaveSafe()",
+            "holding.controllerId == \"player\"",
+            "runtimeForce.controllerId == \"player\"",
+            "runtimeForce.active",
+            "runtimeForce.strength > 0",
+            "FORCE_ARMY or runtimeForce.kind == FORCE_FLEET",
+            "scenarioAuthorityRegion"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "mayCommandRegion"
+        },
+        {
+          "contains": [
+            "regionId != physicalRegionId",
+            "access.regionIsKnown",
+            "access.mayCommandRegion"
+          ],
+          "path": "wurst/RemoteRegionManagement.wurst",
+          "symbol": "select"
+        }
+      ],
+      "persistence": {
+        "mode": "reconstructed",
+        "reason": "No access grants or command region are serialized. Campaign envelopes 1\u20138 and existing military migrations remain unchanged; the policy reads the restored authority arrays after both commit and rollback.",
+        "references": [
+          {
+            "contains": [
+              "militarySettlements.snapshot()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          },
+          {
+            "contains": [
+              "militarySettlements.restore"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "applyRuntime"
+          },
+          {
+            "contains": [
+              "regionAccess.reveal(loadedRegion)",
+              "regionSelector.afterCampaignLoad(loadedRegion)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "afterCampaignLoad"
+          }
+        ]
+      },
+      "state": {
+        "mutation": "Capture, territorial transfer and force transfer mutate the existing domain records; every remote request rereads them. Region selection changes only transient context and its modal token.",
+        "outcome": "Authorized region command changes the view without moving the party or transferring unrelated entities. The physical region remains reachable after revocation.",
+        "owner": "Current MilitarySettlementRuntime settlement control and living mobile force authority; PlayableRegionAccess retains discovery only. Slot 0 maps to the existing player controller.",
+        "references": [
+          {
+            "contains": [
+              "let military = state.militarySettlements"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "mayCommandRegion"
+          },
+          {
+            "contains": [
+              "lastMessage = \"You are not authorized",
+              "return false",
+              "runtime.snapshotRuntime()"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "select"
+          }
+        ],
+        "rejection": "Unknown, undiscovered, unauthorized, foreign-player or transitional remote requests return before any context adapter call or pause acquisition. Origin, allegiance, visitation, title to hostile-occupied land and AI local defenders alone confer no command."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.reject(\"/region europe\")",
+            "f.reject(\"/region pacific\")",
+            "f.rejectAs(Player(1), \"/region europe\")",
+            "f.ports.calls.assertEquals(\"\")"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRejectsKnowledgeCitizenshipVisitationAndOtherPlayers",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0296.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.reject(\"/load 1\")",
+            "f.dispatch(\"/load 1\")",
+            "f.campaign.regionAccess.mayCommandRegion(Player(0), \"europe\").assertFalse()",
+            "f.pauses.getModalOwnerCount().assertEquals(1)",
+            "rebuilt.mayCommandRegion(Player(0), \"europe\").assertFalse()"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionLoadsReconstructAccessAndRejectWithoutChangingContext",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0296.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.military.capture(\"london\", \"player\", 10.).assertTrue()",
+            "f.military.transferSettlement(\"london\", \"england\")",
+            "f.reject(\"/region europe\")",
+            "f.home()"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRevalidatesCaptureAndControlLossEvenForOpenContext",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0296.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.open(\"europe\")",
+            "unrelated.controllerId.assertEquals(\"england\")",
+            "f.pauses.getModalOwnerCount().assertEquals(0)"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionUsesCurrentHoldingsAndOnlyEligibleForces",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0296.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Committed restoration reconstructs the physical context and closes only the remote selector token. Staged/rejected loads retain the previous valid context. Physical cross-map command transport is still downstream (REQ-0300.01, ROAD-0062.01); these mappings cover authorization and information filtering only.",
+        "references": [
+          {
+            "contains": [
+              "regional.activateRegion(lastAuthorityValue(staged, \"region\"))"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "activateAuthoritativeState"
+          },
+          {
+            "contains": [
+              "commandRegionId = regionId",
+              "modal.close()"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "afterCampaignLoad"
+          },
+          {
+            "contains": [
+              "known[i] = true"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "reveal"
+          }
+        ]
+      }
+    },
+    "REQ-0305.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"region\",",
+          "\\b[\\w.]*PlayableRegionAccess[\\w]*mayCommandRegion[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"initiallyKnownRegionIds\""
+          ],
+          "path": "package.json"
+        },
+        {
+          "contains": [
+            "\"controllerPolityId\"",
+            "\"regionalInstanceId\""
+          ],
+          "path": "scenario/world/world.json"
+        },
+        {
+          "contains": [
+            "\"logicalRegionIds\"",
+            "\"regionalInstanceIds\""
+          ],
+          "path": "physical-maps.json"
+        }
+      ],
+      "entry": {
+        "id": "campaign-region-command",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "registerRegionCommand(commands, campaignServices.regionSelector"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "initializePlayableCampaignRuntime"
+          },
+          {
+            "contains": [
+              "selector.select(sender, wanted)",
+              "selector.returnToPhysicalRegion(sender)"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "execute"
+          },
+          {
+            "contains": [
+              "access.regionIsKnown(whichPlayer, regionId)",
+              "access.mayCommandRegion(whichPlayer, regionId)",
+              "runtime.retireCommandRegion",
+              "runtime.reconstructCommandRegion",
+              "runtime.focusCommandRegion"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "select"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "registry.register(\"region\""
+          ],
+          "path": "wurst/RemoteRegionManagement.wurst",
+          "symbol": "registerRegionCommand"
+        },
+        "testInvocation": "f.reject("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "whichPlayer != Player(0)",
+            "state.isSaveSafe()",
+            "holding.controllerId == \"player\"",
+            "runtimeForce.controllerId == \"player\"",
+            "runtimeForce.active",
+            "runtimeForce.strength > 0",
+            "FORCE_ARMY or runtimeForce.kind == FORCE_FLEET",
+            "scenarioAuthorityRegion"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "mayCommandRegion"
+        },
+        {
+          "contains": [
+            "regionId != physicalRegionId",
+            "access.regionIsKnown",
+            "access.mayCommandRegion"
+          ],
+          "path": "wurst/RemoteRegionManagement.wurst",
+          "symbol": "select"
+        }
+      ],
+      "persistence": {
+        "mode": "reconstructed",
+        "reason": "No access grants or command region are serialized. Campaign envelopes 1\u20138 and existing military migrations remain unchanged; the policy reads the restored authority arrays after both commit and rollback.",
+        "references": [
+          {
+            "contains": [
+              "militarySettlements.snapshot()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains"
+          },
+          {
+            "contains": [
+              "militarySettlements.restore"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "applyRuntime"
+          },
+          {
+            "contains": [
+              "regionAccess.reveal(loadedRegion)",
+              "regionSelector.afterCampaignLoad(loadedRegion)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "afterCampaignLoad"
+          }
+        ]
+      },
+      "state": {
+        "mutation": "Capture, territorial transfer and force transfer mutate the existing domain records; every remote request rereads them. Region selection changes only transient context and its modal token.",
+        "outcome": "Authorized region command changes the view without moving the party or transferring unrelated entities. The physical region remains reachable after revocation.",
+        "owner": "Current MilitarySettlementRuntime settlement control and living mobile force authority; PlayableRegionAccess retains discovery only. Slot 0 maps to the existing player controller.",
+        "references": [
+          {
+            "contains": [
+              "let military = state.militarySettlements"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "mayCommandRegion"
+          },
+          {
+            "contains": [
+              "lastMessage = \"You are not authorized",
+              "return false",
+              "runtime.snapshotRuntime()"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "select"
+          }
+        ],
+        "rejection": "Unknown, undiscovered, unauthorized, foreign-player or transitional remote requests return before any context adapter call or pause acquisition. Origin, allegiance, visitation, title to hostile-occupied land and AI local defenders alone confer no command."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.reject(\"/region europe\")",
+            "f.reject(\"/region pacific\")",
+            "f.rejectAs(Player(1), \"/region europe\")",
+            "f.ports.calls.assertEquals(\"\")"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRejectsKnowledgeCitizenshipVisitationAndOtherPlayers",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0305.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.reject(\"/load 1\")",
+            "f.dispatch(\"/load 1\")",
+            "f.campaign.regionAccess.mayCommandRegion(Player(0), \"europe\").assertFalse()",
+            "f.pauses.getModalOwnerCount().assertEquals(1)",
+            "rebuilt.mayCommandRegion(Player(0), \"europe\").assertFalse()"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionLoadsReconstructAccessAndRejectWithoutChangingContext",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0305.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.military.capture(\"london\", \"player\", 10.).assertTrue()",
+            "f.military.transferSettlement(\"london\", \"england\")",
+            "f.reject(\"/region europe\")",
+            "f.home()"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRevalidatesCaptureAndControlLossEvenForOpenContext",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0305.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.open(\"europe\")",
+            "unrelated.controllerId.assertEquals(\"england\")",
+            "f.pauses.getModalOwnerCount().assertEquals(0)"
+          ],
+          "entryPoint": "campaign-region-command",
+          "id": "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionUsesCurrentHoldingsAndOnlyEligibleForces",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "campaign-region-command",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0305.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Committed restoration reconstructs the physical context and closes only the remote selector token. Staged/rejected loads retain the previous valid context. Physical cross-map command transport is still downstream (REQ-0300.01, ROAD-0062.01); these mappings cover authorization and information filtering only.",
+        "references": [
+          {
+            "contains": [
+              "regional.activateRegion(lastAuthorityValue(staged, \"region\"))"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "activateAuthoritativeState"
+          },
+          {
+            "contains": [
+              "commandRegionId = regionId",
+              "modal.close()"
+            ],
+            "path": "wurst/RemoteRegionManagement.wurst",
+            "symbol": "afterCampaignLoad"
+          },
+          {
+            "contains": [
+              "known[i] = true"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "reveal"
+          }
+        ]
+      }
     }
   }
 }

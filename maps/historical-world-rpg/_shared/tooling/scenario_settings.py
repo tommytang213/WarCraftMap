@@ -37,6 +37,22 @@ def write_settings(project, destination):
             if logical:
                 lines += ["\tif mapId == " + json.dumps(physical["id"]), "\t\treturn " + json.dumps(logical[0])]
     lines += ['\treturn ""', ""]
+    # Stable military locations use logical regions, physical chapters or legacy
+    # regional instances. Resolve all three through authored assignments, never
+    # ID prefixes or a fallback region that could authorize unrelated holdings.
+    lines += ["public function scenarioAuthorityRegion(string locationId) returns string"]
+    authority_regions = {region: region for region in regions}
+    if physical_maps:
+        for physical in physical_maps["physicalMaps"]:
+            logical = physical["assignments"]["logicalRegionIds"]
+            if len(logical) == 1:
+                for location in [physical["id"], *physical["assignments"]["regionalInstanceIds"]]:
+                    if location in authority_regions and authority_regions[location] != logical[0]:
+                        raise ValueError("configuration: ambiguous authority region " + location)
+                    authority_regions[location] = logical[0]
+    for location, region in sorted(authority_regions.items()):
+        lines += ["\tif locationId == " + json.dumps(location), "\t\treturn " + json.dumps(region)]
+    lines += ['\treturn ""', ""]
     # Recovery can target any packaged regional map, including maps without an
     # origin or a boundary adjacent to the currently loaded map. Never use a
     # path supplied by a saved document as loader input.

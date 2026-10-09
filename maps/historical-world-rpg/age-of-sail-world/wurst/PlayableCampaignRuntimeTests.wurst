@@ -10,6 +10,7 @@ import WarcraftRegionalRuntime
 import RemoteRegionManagement
 import PlayablePiracy
 import ManagementScreenPauseController
+import MilitarySettlementRuntime
 
 @test function authorityFieldIndexPreservesDuplicateEmptyAndEmbeddedSemicolonValues()
 	let document = "v2;map=old;trade=v2:warehouse;london:grain,1;ship;hold:cargo,2;empty=;map=new;clock=final"
@@ -341,10 +342,13 @@ class FakeRegionRuntime implements RegionCommandRuntime
 	storage.contains("major_milestone").assertFalse()
 
 @test function remoteAccessDoesNotRevealUnknownOrMovePhysicalRegion()
-	let access = new PlayableRegionAccess()
-	access.add("europe", true, true)
-	access.add("africa", true, true)
-	access.add("pacific", false, true)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	state.setMilitarySettlementRuntime(new MilitarySettlementRuntime(null))
+	state.militarySettlements.registerForce(new RuntimeForce("owned", "player", "africa", "infantry", FORCE_ARMY, 'hfoo', 10, 10, 0., 0.))
+	let access = new PlayableRegionAccess(state)
+	access.add("europe", true)
+	access.add("africa", true)
+	access.add("pacific", false)
 	access.regionExists("africa").assertTrue()
 	access.regionIsKnown(Player(0), "africa").assertTrue()
 	access.mayCommandRegion(Player(0), "africa").assertTrue()

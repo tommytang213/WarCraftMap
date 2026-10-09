@@ -50,6 +50,15 @@ public class RegionSelector
 		physicalRegionId = regionId
 		if modal == null
 			commandRegionId = regionId
+	/** Called only after committed campaign reconstruction has restored the
+	 * physical runtime. Rejected/staged loads must retain this view and token. */
+	function afterCampaignLoad(string regionId)
+		physicalRegionId = regionId
+		commandRegionId = regionId
+		if modal != null
+			modal.close()
+			modal = null
+		lastMessage = ""
 	function select(player whichPlayer, string regionId) returns boolean
 		if not access.regionExists(regionId)
 			lastMessage = "Unknown region: " + regionId + "."
@@ -58,6 +67,8 @@ public class RegionSelector
 		if not access.regionIsKnown(whichPlayer, regionId)
 			lastMessage = "Region is not known: " + regionId + "."
 			return false
+		// Re-read live authority before even the same-region shortcut and before
+		// any adapter call or pause acquisition. Returning home requires no grant.
 		if regionId != physicalRegionId and not access.mayCommandRegion(whichPlayer, regionId)
 			lastMessage = "You are not authorized to manage region: " + regionId + "."
 			return false
