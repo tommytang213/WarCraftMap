@@ -51,6 +51,17 @@ def build_report(catalog,source):
     return {"format":"warcraftmap_hero_progression_coverage_v1","status":"pass","characterCount":len(profiles),"levelCap":catalog["levelCap"],"localFieldBudget":32,"dimensions":{k:dict(sorted(v.items())) for k,v in dimensions.items()}}
 
 def main(argv=None):
+    if argv is None: argv=sys.argv[1:]
+    if argv == ["--runtime-catalog"]:
+        # The shared packager consumes this scenario-owned composition, never
+        # its historical identities or balance formula. Include every input to
+        # the composition in generated-data provenance.
+        from global_characters import SOURCE as characters, PHASE8_SOURCE, RELEASE_SCALE_SOURCE
+        catalog, _ = load_catalog()
+        inputs = [SOURCE, characters, PHASE8_SOURCE, RELEASE_SCALE_SOURCE,
+                  Path(__file__), ROOT / "tooling/global_characters.py"]
+        print(json.dumps({"catalog": catalog, "sources": [str(p.relative_to(ROOT)) for p in inputs]}))
+        return
     catalog,source=load_catalog(); quests={q["id"] for q in source["personalQuests"]}; world=json.loads((ROOT/"scenario/world/world.json").read_text())
     HeroProgressionRuntime(catalog,[x["id"] for x in source["characters"]],quest_ids=quests,
         event_ids={x["id"] for x in world["events"]},item_ids=equipment_catalog(),

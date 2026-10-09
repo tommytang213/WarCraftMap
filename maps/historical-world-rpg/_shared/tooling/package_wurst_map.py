@@ -8,9 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
+from hero_starting_profiles import starting_definitions, rank_text
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 21
+GENERATOR_VERSION = 22
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -276,6 +277,20 @@ def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
     recruitment_windows = _character_recruitment_windows(world)
+    progression_sources = [Path(__file__).with_name("hero_starting_profiles.py")]
+    progression_catalog = None
+    builder = configuration(config.project)["scenario"].get("heroProgressionBuilder")
+    try:
+        if builder:
+            builder_path = content_path(config.project, builder)
+            composed = subprocess.run([sys.executable, str(builder_path), "--runtime-catalog"],
+                                      cwd=config.project, text=True, capture_output=True, check=True)
+            payload = json.loads(composed.stdout)
+            progression_catalog = payload["catalog"]
+            progression_sources += [builder_path, *(content_path(config.project, p) for p in payload["sources"])]
+        hero_starts = starting_definitions(world, progression_catalog)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
+        raise _fail("hero starting profiles", error) from error
     generated.mkdir(parents=True, exist_ok=True)
     if config.custom_2d_builder:
         result=subprocess.run([sys.executable,str(config.custom_2d_builder),"--output",str(generated/"custom-2d"),"--check"],cwd=config.project,text=True,capture_output=True)
@@ -305,6 +320,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         ident: {"startDate": start.isoformat(), "endDate": end.isoformat()}
         for ident, (start, end) in recruitment_windows.items()
     }
+    runtime["heroStartingDefinitions"] = hero_starts
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -362,7 +378,11 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 f'\thero{index}.professionId="{ws((row.get("professionIds") or [""])[0])}"',
                 f'\thero{index}.personalQuestId="{ws((row.get("personalQuestIds") or [""])[0])}"',
                 f'\thero{index}.regionId="{ws(row.get("regionId", ""))}"',
-                f'\thero{index}.recruited={str(bool(row.get("recruited"))).lower()}',
+                f'\thero{index}.recruited={str(bool(row.get("recruited"))).lower()}']
+        profile = hero_starts["profiles"][row["id"]]
+        for field in ("skillIds", "masteryIds", "personalTreeIds"):
+            rpg.append(f'\thero{index}.{field}="~{"~".join(hero_starts[field])}~"')
+        rpg += [f'\thero{index}.startingProfile=new HeroStartingProfile({profile["level"]},"{rank_text(profile["skills"])}","{rank_text(profile["masteries"])}","{profile["personalTreeId"]}")',
                 f'\truntime.heroes.register(hero{index})']
     # Parse authored decimal tokens directly, avoiding a binary-float round trip.
     exact_world = json.loads(config.scenario_file.read_text(encoding="utf-8"), parse_float=Decimal)
@@ -621,6 +641,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *terrain_authorities,
         *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
         *(path for path in paths.values() if path.is_file()),
+        *progression_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
         *(path for path in country_runtime["sources"] if path.is_file()),
         *(path for source, geography, _region in settlement_sources(config.project) for path in (source, geography)),

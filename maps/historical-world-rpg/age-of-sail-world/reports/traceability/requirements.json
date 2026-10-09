@@ -6,18 +6,18 @@
   },
   "blockerClasses": {
     "artifact-missing": 644,
-    "authority-missing": 521,
+    "authority-missing": 520,
     "census-mismatch": 69,
     "dependency-uncovered": 49,
     "integration-missing": 2268,
-    "mechanism-missing": 580,
-    "state-unmapped": 604,
-    "static-only": 39,
-    "unmapped": 604,
-    "unpersisted": 1208,
-    "unreachable": 604
+    "mechanism-missing": 579,
+    "state-unmapped": 603,
+    "static-only": 40,
+    "unmapped": 603,
+    "unpersisted": 1206,
+    "unreachable": 603
   },
-  "blockerCount": 7190,
+  "blockerCount": 7184,
   "blockers": [
     {
       "class": "artifact-missing",
@@ -7445,41 +7445,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "REQ-0093.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "authority-missing",
-      "id": "REQ-0093.01",
-      "message": "scenario content authority is absent or stale"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "REQ-0093.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "REQ-0093.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "REQ-0093.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0093.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0093.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "REQ-0093.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -7498,6 +7463,11 @@
       "class": "integration-missing",
       "id": "REQ-0093.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "REQ-0093.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -38170,7 +38140,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "d12d6ed0c1c02bf9862802741954be81faebab6cef9b3cc4be2342fed3c5b661",
-  "mappingSha256": "e4767e54d1759645badeda1901e4ceb5a2205bc9b872b07eec555a072c056fa8",
+  "mappingSha256": "34e7e348bf871c57853e11818fd7ff80b1bc51925253309953e05904b7f6249a",
   "requirements": [
     {
       "authority": {
@@ -41708,18 +41678,312 @@
       },
       "blockerClasses": [
         "artifact-missing",
-        "authority-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "combination",
       "id": "REQ-0093.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"recruit\",",
+            "\\b[\\w.]*HeroRoster[\\w]*recruit[\\w]*\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "\"heroProgressionBuilder\": \"tooling/hero_progression_catalog.py\""
+            ],
+            "path": "package.json"
+          },
+          {
+            "contains": [
+              "def load_catalog():",
+              "\"startingLevel\":level",
+              "\"startingSkills\":skills",
+              "\"startingMasteries\":masteries",
+              "\"personalTreeId\":"
+            ],
+            "path": "tooling/hero_progression_catalog.py"
+          },
+          {
+            "contains": [
+              "\"levelCap\": 300",
+              "\"personalTrees\""
+            ],
+            "path": "scenario/progression/hero-progression.json"
+          }
+        ],
+        "entry": {
+          "id": "hero-first-recruitment",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerRpgRuntimeCommands(commands,rpgRuntime)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "configureGeneratedRpg(rpg)"
+              ],
+              "path": "wurst/CampaignRegistration.wurst",
+              "symbol": "registerCampaignDomains"
+            },
+            {
+              "contains": [
+                "recruitmentProblem(id)",
+                "hero.initializeStartingProfile()"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "recruit"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "commands.register(\"recruit\"",
+              "new RecruitHeroCommand(runtime,commands.output)"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "registerRpgRuntimeCommands"
+          },
+          "testInvocation": "startingFixture("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "recruitmentProblem(id)",
+              "hero.initializeStartingProfile()",
+              "hero.recruited = true"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "recruit"
+          },
+          {
+            "contains": [
+              "if recruited or startingProfile == null",
+              "level = startingProfile.level",
+              "experience = 0",
+              "skillPoints = 0",
+              "masteryPoints = 0",
+              "skillRanks = startingProfile.skills",
+              "signatureProgressionId = startingProfile.personalTreeId"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "initializeStartingProfile"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "h.skillRanks=record.field(18)",
+              "h.masteryRanks=record.field(19)"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "applyRecord"
+          },
+          "mode": "persisted",
+          "reason": "RPG domain v4 adds rank maps. v2/v3 load existing levels, experience, points and signature unchanged with empty absent ranks; v1 remains empty. Loading never applies starting grants.",
+          "references": [
+            {
+              "contains": [
+                "candidate.startsWith(\"v4|\")"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "validateState"
+            },
+            {
+              "contains": [
+                "validateState(candidate)",
+                "applyRecord(record)"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "restoreState"
+            }
+          ],
+          "save": {
+            "contains": [
+              "h.skillRanks",
+              "h.masteryRanks"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          }
+        },
+        "state": {
+          "mutation": "Successful first recruitment copies level, residual experience, skill/mastery ranks and personal-tree identity. The saved recruited bit guards repeat grants.",
+          "outcome": "Inventory character inspection exposes initialized ranks and personal tree; existing equipment, perk and experience consumers read the initialized level.",
+          "owner": "RpgHero strategic authority; starting definitions are regenerated from the composed scenario catalogue.",
+          "references": [
+            {
+              "contains": [
+                "hero.recruited",
+                "isCharacterRecruitmentDay",
+                "hero.startingProfile.valid(hero)"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "recruitmentProblem"
+            },
+            {
+              "contains": [
+                "hero.progressionSummary()"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "inventorySummary"
+            },
+            {
+              "contains": [
+                "progressionRank(skillRanks, id)"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "skillRank"
+            },
+            {
+              "contains": [
+                "progressionRank(masteryRanks, id)"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "masteryRank"
+            }
+          ],
+          "rejection": "Availability and profile validation precede every mutation. Invalid save ranks and failed reconstruction leave the prior campaign intact."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.reject(\"/recruit leonardo_da_vinci\"",
+              "profile.level = 301",
+              "profile.skills = \"engineering:101~\"",
+              "f.hero.skillRank(\"engineering\").assertEquals(0)"
+            ],
+            "entryPoint": "hero-first-recruitment",
+            "id": "wurst/HeroStartingProfileTests.wurst:invalidStartingProfilesAndDatesRejectWithoutProgressionMutation",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "hero-first-recruitment",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0093.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "rejectRanks(f, \"engineering:101~\", \"\")",
+              "load.rejectAndVerify(candidate)",
+              "load.rpg.captureState().assertEquals(before)",
+              "load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()"
+            ],
+            "entryPoint": "hero-first-recruitment",
+            "id": "wurst/HeroStartingProfileTests.wurst:malformedRankSnapshotsAndFailedRestorationAreAtomic",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "hero-first-recruitment",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0093.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.clock.advanceTo(f.hero.availabilityEndDay + 1).assertTrue()",
+              "destination.rpg.captureState().assertEquals(expected)",
+              "destination.hero.skillRank(\"navigation\").assertEquals(84)"
+            ],
+            "entryPoint": "hero-first-recruitment",
+            "id": "wurst/HeroStartingProfileTests.wurst:profileStateSurvivesExpiryLoadTravelAuthorityAndRepeatedReconstruction",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "hero-first-recruitment",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0093.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "assertStart(f, \"hang_tuah\", 66",
+              "assertStart(f, \"leonardo_da_vinci\", 64",
+              "assertStart(f, \"horatio_nelson\", 115"
+            ],
+            "entryPoint": "hero-first-recruitment",
+            "id": "wurst/HeroStartingProfileTests.wurst:registeredRecruitmentAppliesComposedEarlyAndLateRoleProfiles",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "hero-first-recruitment",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0093.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Travel carries RPG v4 through the existing campaign authority and reconstructs disposable objects; starting definitions are never reapplied. Full hero growth, large field performance and native launch remain separate obligations.",
+          "references": [
+            {
+              "contains": [
+                "rpg.captureState()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "captureDomains"
+            },
+            {
+              "contains": [
+                "rpg.restoreState("
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "applyRuntime"
+            },
+            {
+              "contains": [
+                "heroes.reconstructField(owner,x,y)"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "signature": "function reconstruct(player owner, real x, real y, string controllerId)",
+              "symbol": "reconstruct"
+            }
+          ]
+        }
+      },
       "parent": "REQ-0093",
       "status": "fail",
       "text": "Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1."
