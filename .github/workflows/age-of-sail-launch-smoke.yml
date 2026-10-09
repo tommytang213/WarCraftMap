@@ -1,13 +1,10 @@
 name: Age of Sail retail launch smoke (diagnostic only)
 
-# This workflow deliberately publishes a non-release campaign for one targeted
-# real-client launch test. It does not relax the official release candidate gates.
+# Manual only: identity/harness edits must not trigger a 17-map build or a player
+# retest. Dispatch only for a reviewed, materially justified diagnostic.
+# This workflow never grants real-client acceptance or relaxes release gates.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/age-of-sail-launch-smoke.yml"
 
 permissions:
   contents: read
@@ -42,6 +39,8 @@ jobs:
             --user root \
             -e MAP_PROJECT \
             -e SOURCE_REVISION \
+            -e GITHUB_RUN_ID \
+            -e GITHUB_RUN_ATTEMPT \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \
             "$WURST_IMAGE" \
@@ -55,9 +54,37 @@ jobs:
               su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && python3 tooling/stage_launch_smoke.py --source-revision $SOURCE_REVISION --output /tmp/launch-smoke"
               cp -R /tmp/launch-smoke/. /out/
             '
-          test -s "$artifact_dir/Campaigns/AgeOfSailWorldCampaign.w3n"
-          test -s "$artifact_dir/SHA256SUMS.txt"
-          echo "**Diagnostic campaign built and structurally inspected.** Warcraft III 3.0.1 build 24342: **original FAILED; revised NOT REVALIDATED**. Diagnostic: **LAUNCH-425-LIGHTING-1**. Official release gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
+          python3 "$MAP_PROJECT/tooling/stage_launch_smoke.py" \
+            --verify-only --source-revision "$SOURCE_REVISION" --output "$artifact_dir"
+          (cd "$artifact_dir" && sha256sum --check SHA256SUMS.txt)
+          echo "**Diagnostic identity and archive checks passed. Native launch remains FAILED; candidate NOT RUN.** Latest failing client: 3.0.0 build 24268; preceding failure: 3.0.1 build 24342. Filename identity is not a crash repair. No player retest is requested. Official release gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prepare exact standalone selector and optional local adapter, never execute Warcraft
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          import urllib.request
+          sys.path.insert(0, 'maps/historical-world-rpg/_shared/tooling')
+          from independent_mpq import READER_REVISION, READER_SHA256
+          from prepare_native_map_diagnostic import prepare
+          root = Path(os.environ['RUNNER_TEMP'])
+          reader = root / 'issue-438-reviewed-mpyq.py'
+          payload = urllib.request.urlopen(
+              f'https://raw.githubusercontent.com/eagleflo/mpyq/{READER_REVISION}/mpyq.py', timeout=60).read()
+          if hashlib.sha256(payload).hexdigest() != READER_SHA256:
+              raise SystemExit('independent reader pin mismatch')
+          reader.write_bytes(payload)
+          artifact = root / 'age-of-sail-launch-smoke'
+          receipt = artifact / 'launch-smoke.json'
+          metadata = json.loads(receipt.read_text())
+          prepare(artifact / metadata['installedCampaignPath'], metadata['campaignSha256'],
+                  reader, artifact / 'Standalone', 'Maps/AgeOfSailWorld.w3x', receipt)
+          print('Independent map hashes verified; native_runner_unavailable; map/campaign native NOT RUN')
+          PY
 
       - name: Upload diagnostic W3N, never a player release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

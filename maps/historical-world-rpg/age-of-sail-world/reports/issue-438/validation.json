@@ -1,0 +1,154 @@
+{
+  "authoritativeFinalValidation": "Outer worker runs its configured gate on the final tree; no release or native gate is waived.",
+  "checks": [
+    {
+      "command": "reports/issue-425/inspect-independent.py (see README)",
+      "encryptedListfilesExcluded": 17,
+      "maps": 17,
+      "nestedMembers": 814,
+      "outerMembers": 20,
+      "status": "passed"
+    },
+    {
+      "command": "reports/issue-438/compare.py (see README)",
+      "result": "All four metadata members consumed exactly; no demonstrated causal format violation",
+      "status": "passed"
+    },
+    {
+      "command": "prepare_native_map_diagnostic.py (see README)",
+      "result": "Exact first map extracted; all manifest map hashes verified; original W3N unchanged; native not_run",
+      "status": "passed"
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_launch_diagnostics.py",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "command": "python3 -m unittest automation.tests.test_closure",
+      "status": "passed",
+      "tests": 42
+    },
+    {
+      "automationTests": 137,
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "exitCode": 0,
+      "scenarioPythonTests": 955,
+      "scope": "Suite collected before the last two diagnostic test additions; all 14 final diagnostic tests passed separately. Wurst validation ran separately in the pinned container.",
+      "status": "passed"
+    },
+    {
+      "command": "Pinned read-only Docker: tooling/package_release.sh; validate_framework_fixture.py conformance-campaign",
+      "compiler": {
+        "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "exitCode": 0,
+      "frameworkResult": "Original and content-mutated three-map campaigns built; framework source hashes unchanged",
+      "frameworkTests": [
+        2,
+        2
+      ],
+      "scope": "Validation snapshot before final diagnostic-only tooling refinements; production Wurst/map/scenario source unchanged. Not native execution or final-revision release evidence.",
+      "sourceIdentity": {
+        "sourceRevision": "b27e1bf76c0e2aed24ae85f0d48db0fb5f05162d",
+        "sourceTreeSha256": "ae0f3c4027f828d58f09bc5b7e1a1a70be576fe6ce9fd0933eca57c3afbcdbba"
+      },
+      "status": "passed",
+      "validationW3xSha256": "ab27c1cecb16d2e51408e28c915faf005bc870a7d96e95ee8c09a0f70e079f35",
+      "wurstTests": 361
+    },
+    {
+      "command": "git diff --check; Python compile and workflow YAML parse",
+      "status": "passed"
+    }
+  ],
+  "diagnosis": "diagnosis_unconfirmed",
+  "diagnosticPackage": "build/issue-438/native-diagnostic/",
+  "externalWrites": [],
+  "hostedCiTriggered": false,
+  "implementationStatus": "ready_for_repository_validation",
+  "issue": 438,
+  "issueShouldRemainOpen": true,
+  "nativeStatus": {
+    "campaign_native": "failed",
+    "editor_open": "owner_observed_campaign_title_and_17_maps_only",
+    "headless_execution": "passed",
+    "map_standalone_native": "not_run",
+    "native_runner": "native_runner_unavailable",
+    "newDiagnosticCampaignNative": "not_run",
+    "observedMilestone": "first_chapter_loader_entries_then_native_crash_before_origin_selection",
+    "previousWindowsClientBuild": "3.0.1.24342",
+    "real_client_launch": "failed",
+    "source": "Sanitized issue findings; private dumps/logs not accessed",
+    "static_packaging": "passed_for_original_baseline_and_identity_controls",
+    "windowsClientBuild": "3.0.0.24268"
+  },
+  "newRepairW3nProduced": false,
+  "nextSingleExperiment": "One future owner-initiated same-client WGC control session at 1x, then exact extracted selector. Positive Lua gameplay and corrupt-control rejection qualify the runner; observe origin selection. Full retail W3N acceptance remains separate.",
+  "playerTestRequested": false,
+  "preserved": [
+    "gameplay source",
+    "scenario/design authority",
+    "save schema",
+    "official packaging/deterministic-build gates",
+    "real-client release gates"
+  ],
+  "releaseBlocked": true,
+  "reproduction": {
+    "artifactId": 11587974377,
+    "pinnedSourceTreeRecomputed": true,
+    "runId": 37864283149,
+    "shaVerifiedLocally": true,
+    "sourceIdentity": {
+      "sourceRevision": "1bdfe32feae8775979735d89a379ecfdd0b28c83",
+      "sourceTreeSha256": "30e90e93d033d0f1b869de6aba4e3c90ca1fc8000771195addbdc9f0f113e230"
+    },
+    "w3nSha256": "4f2f9cf8ca56f81aaeca524f257ae15e273c2366e52adfaa1eafdf5b996ff9ad",
+    "w3xSha256": "3c953659969c956e509093cb2732aaf1e2d94ed6355556a98204637ab1cb1f16"
+  },
+  "retainedLogs": [
+    {
+      "path": "repository-python-checks.log.gz",
+      "sanitized": true,
+      "sha256": "56439256418d741d6ebbc402a729aca876de14d480b001364f6fdb2fec052cb9"
+    },
+    {
+      "path": "wurst-validation.log.gz",
+      "sanitized": true,
+      "sha256": "1a189c41505df907ef3001e9078e643c79680a824268aafa81a6838c443925d1"
+    },
+    {
+      "path": "diagnostic-tests.log.gz",
+      "sanitized": true,
+      "sha256": "f633ad8e738512bb7562a43fab273ab65cdc5a224925052dd0e38b5bd4931a80"
+    },
+    {
+      "path": "closure-tests.log.gz",
+      "sanitized": true,
+      "sha256": "0d1b93375aa353c1922724ff980d0c1e361e462dd85a3da748d3c87943daafd5"
+    }
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "b27e1bf76c0e2aed24ae85f0d48db0fb5f05162d",
+    "sourceTreeSha256": "26f9227c87a842990913f3df5b3771ee8aca95b6357f6badce4959c8b7e34dc7"
+  },
+  "validationEnvironment": "Source bind-mounted /source:ro. Compilation as wurstuser in container-private /tmp; no worktree chown/chmod or writable bind. No desktop/VM/native test node.",
+  "wgcReview": {
+    "availability": "Hive HTTP 403; download via web cache miss; pending staff review per upstream documentation",
+    "dependencyReview": "unavailable",
+    "executed": false,
+    "fallback": "Hash-locked separately reviewed owner-approved local copy only; dry-run default",
+    "knownWorkingLuaPositiveControl": "unavailable; independent War3Net reference is JASS",
+    "licenseReview": "unavailable",
+    "loadfileSemanticsOn3_0": "unconfirmed; source review and positive native control required",
+    "sourceReview": "unavailable",
+    "upstreamSourceSha256": null,
+    "upstreamVersion": "1.1",
+    "vendored": false,
+    "windowsJobLifecycle": "not_run; no Windows client execution in Linux"
+  }
+}
