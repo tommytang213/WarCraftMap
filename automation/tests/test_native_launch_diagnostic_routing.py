@@ -5,9 +5,13 @@ This is a worker *selection* exception, not a native-success or release-gate
 exception. Do not broaden it to arbitrary [agent-ready] tickets.
 """
 import unittest
+import tempfile
+from pathlib import Path
+from subprocess import CompletedProcess
+from unittest import mock
 
 from automation.warcraftmap_agent.closure import Blocker, Closure
-from automation.warcraftmap_agent.worker import select_issue
+from automation.warcraftmap_agent.worker import Config, finish_merged_issue, publish, select_issue
 
 
 REVISION = "a" * 40
@@ -104,6 +108,66 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
         self.assertFalse(gate.permits_issue(optional))
         self.assertEqual(select_issue([optional, self.crash],
                                       {"issues": {}}, 3, closure=gate)["number"], 438)
+
+
+    def test_native_code_merge_does_not_auto_close_unverified_incident(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+            record = {"status": "pr_open", "pr": 555}
+            with mock.patch("automation.warcraftmap_agent.worker.run") as run, \
+                 mock.patch("automation.warcraftmap_agent.worker.cleanup_merged_issue",
+                            return_value=[]) as cleanup:
+                finish_merged_issue(config, "438", record)
+            self.assertEqual("merged", record["status"])
+            self.assertEqual("pending", record["native_validation"])
+            run.assert_not_called()
+            cleanup.assert_called_once_with(config, 438)
+
+    def test_normal_code_merge_still_closes_completed_issue(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+            record = {"status": "pr_open", "pr": 556}
+            with mock.patch("automation.warcraftmap_agent.worker.run") as run, \
+                 mock.patch("automation.warcraftmap_agent.worker.cleanup_merged_issue",
+                            return_value=[]):
+                finish_merged_issue(config, "434", record)
+            self.assertEqual("merged", record["status"])
+            self.assertNotIn("native_validation", record)
+            run.assert_called_once_with(
+                ["gh", "issue", "close", "434", "--reason", "completed"],
+                cwd=config.repo_root,
+            )
+
+    def test_native_investigation_pr_has_no_github_auto_close_keyword(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = Config(root, root / "state")
+            commands = []
+            def fake_run(args, **kwargs):
+                commands.append(args)
+                if args[:3] == ["git", "status", "--porcelain"]:
+                    return CompletedProcess(args, 0, " M staged.wurst\\n", "")
+                if args[:3] == ["gh", "pr", "list"]:
+                    return CompletedProcess(args, 0, "", "")
+                if args[:3] == ["gh", "pr", "create"]:
+                    return CompletedProcess(args, 0, "https://github.com/example/WarCraftMap/pull/999\\n", "")
+                return CompletedProcess(args, 0, "", "")
+            with mock.patch("automation.warcraftmap_agent.worker.run",
+                            side_effect=fake_run), \
+                 mock.patch("automation.warcraftmap_agent.worker.default_branch",
+                            return_value="main"):
+                self.assertEqual(999, publish(config, self.crash, root, "agent/issue-438"))
+                normal = issue(434, "[agent-ready] Regular repair", keys=[EVIDENCE])
+                self.assertEqual(999, publish(config, normal, root, "agent/issue-434"))
+            pr_commands = [args for args in commands if args[:3] == ["gh", "pr", "create"]]
+            self.assertEqual(2, len(pr_commands))
+            native_body = pr_commands[0][pr_commands[0].index("--body") + 1]
+            normal_body = pr_commands[1][pr_commands[1].index("--body") + 1]
+            self.assertIn("Investigates #438", native_body)
+            self.assertNotIn("Closes #438", native_body)
+            self.assertIn("Closes #434", normal_body)
 
 
 if __name__ == "__main__":
