@@ -76,8 +76,8 @@ class Projections implements RpgProjectionPort
 	runtime.inventory.grant("coat").assertEquals(true)
 	runtime.inventory.grant("coat").assertEquals(false)
 	runtime.inventory.grant("hat")
-	runtime.inventory.equip("hero","coat",hero,1600,"","").assertEquals(true)
-	runtime.inventory.equip("hero","hat",hero,1600,"","").assertEquals(true)
+	runtime.inventory.equip("hero","coat",hero,1600,null,"player").assertEquals(true)
+	runtime.inventory.equip("hero","hat",hero,1600,null,"player").assertEquals(true)
 	runtime.inventory.setBonusPower("hero").assertEquals(10)
 
 @test function questTreasureTechnologyAndReconstruction()
@@ -134,7 +134,7 @@ class Projections implements RpgProjectionPort
 	source.inventory.registerItem(coat)
 	source.inventory.registerSet(new EquipmentSet("set",1,3,2,7))
 	source.inventory.grant("coat")
-	source.inventory.equip("hero","coat",hero,1600,"","")
+	source.inventory.equip("hero","coat",hero,1600,null,"player")
 	let technology=new RuntimeTechnology("printing","Printing",1450,100)
 	technology.effectId="stock"
 	technology.effectMagnitude=2
@@ -379,7 +379,7 @@ function generatedRpgWithProgress() returns WarcraftRpgRuntime
 	var equipped=false
 	for i=0 to runtime.inventory.definitionCount-1
 		let itemDefinition=runtime.inventory.definitions[i]
-		if not equipped and runtime.inventory.available(itemDefinition,hero,1450,"","")
+		if not equipped and runtime.inventory.available(itemDefinition,hero,1450,runtime.technologies,"player")
 			runtime.inventory.grant(itemDefinition.id).assertTrue()
 			runtime.equipItem(hero.id,itemDefinition.id,1450).assertTrue()
 			equipped=true

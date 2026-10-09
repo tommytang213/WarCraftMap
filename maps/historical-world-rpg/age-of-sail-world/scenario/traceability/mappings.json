@@ -10568,6 +10568,272 @@
           }
         ]
       }
+    },
+    "REQ-0076.01": {
+      "scope": "Issue #433 covers equipment research eligibility only. Merchant availability, local production, trade access, wealth, polity/culture, quest/event gates and broader progression integration remain blocked; no native-client claim. The nested mapping is supplementary evidence and does not satisfy the whole obligation.",
+      "equipmentEligibility": {
+        "content": [
+          {
+            "path": "scenario/inventory/player-use-catalog.json",
+            "contains": [
+              "\"technologyIds\"",
+              "\"institutionIds\"",
+              "\"precision_court_theodolite\""
+            ]
+          },
+          {
+            "path": "../_shared/tooling/package_wurst_map.py",
+            "contains": [
+              "validate_equipment_research",
+              "for technology_id in requirements.get(\"technologyIds\", ())",
+              "for institution_id in requirements.get(\"institutionIds\", ())"
+            ]
+          }
+        ],
+        "mechanism": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "available",
+            "contains": [
+              "value.technologyCount - 1",
+              "value.institutionCount - 1",
+              "research.isUnlockedOfKind(controllerId"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "isUnlocked",
+            "contains": [
+              "unlockedKeys[i] == controllerId+\":\"+id"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "equip",
+            "contains": [
+              "not owns(itemId)",
+              "not available(value, hero, year, research, controllerId)",
+              "slotIndex(heroId, value.slotId)",
+              "assigned >= ownedQuantity(itemId)"
+            ]
+          }
+        ],
+        "entry": {
+          "id": "live-equipment-research",
+          "kind": "command",
+          "registration": {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "registerRpgRuntimeCommands",
+            "contains": [
+              "commands.register(\"equip\""
+            ]
+          },
+          "path": [
+            {
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign",
+              "contains": [
+                "registerRpgRuntimeCommands(commands,rpgRuntime)",
+                "installCommandRegistry(commands)"
+              ]
+            },
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "contains": [
+                "ok=runtime.equipItem(first,second,resources.year(),resources.controllerId(sender))"
+              ]
+            },
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "contains": [
+                "inventory.equip(heroId,itemId,hero,year,technologies,controllerId)",
+                "reconcile(controllerId)"
+              ]
+            }
+          ],
+          "testInvocation": "fixture.command("
+        },
+        "state": {
+          "owner": "Stable item definitions, owned copies, character-slot assignments and controller research completions.",
+          "mutation": "Only a fully eligible equip reserves a copy and replaces the named wearer slot before projection.",
+          "rejection": "Missing/wrong-controller/overlapping research identities, level/date and ownership failures leave authority and projected bonuses unchanged.",
+          "outcome": "Action completed. or Requirements are not met here.",
+          "references": [
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "equip",
+              "contains": [
+                "equippedItems[slot] = itemId",
+                "equippedHeroes[slot] = heroId"
+              ]
+            },
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "contains": [
+                "output.show(sender,\"Requirements are not met here.\")"
+              ]
+            }
+          ]
+        },
+        "persistence": {
+          "mode": "persisted",
+          "reason": "RPG v3 and supported campaign schemas 1\u20138 remain unchanged. Restore retains previously earned loadouts and research; new definitions are regenerated.",
+          "references": [
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "captureState",
+              "contains": [
+                "inventory.equippedHeroes[i]",
+                "technologies.unlockedKeys[i]"
+              ]
+            },
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "restoreState",
+              "contains": [
+                "inventory.equippedCount=0",
+                "technologies.unlockedCount=0"
+              ]
+            }
+          ],
+          "save": {
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "captureDomains",
+            "contains": [
+              "rpg.captureState()"
+            ]
+          },
+          "load": {
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "applyRuntime",
+            "contains": [
+              "rpg.restoreState"
+            ]
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Equipment and set projections rebuild from saved wearer assignments without rechecking new equip eligibility.",
+          "references": [
+            {
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "reconcile",
+              "contains": [
+                "projections.clearEquipmentLayer()",
+                "projections.applyEquipment(heroId,"
+              ]
+            }
+          ]
+        },
+        "tests": {
+          "success": {
+            "id": "wurst/CharacterEquipmentTests.wurst:generatedEquipmentCommandsRequireEveryAuthoredResearchIdentity",
+            "level": "production_adapter",
+            "entryPoint": "live-equipment-research",
+            "assertions": [
+              "fixture.checkMissingIndividually(\"precision_court_theodolite\")",
+              "fixture.checkMissingIndividually(\"kangxi_court_compass\")"
+            ],
+            "receipt": {
+              "requirement": "REQ-0076.01",
+              "case": "success",
+              "entryPoint": "live-equipment-research",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ]
+            }
+          },
+          "failure": {
+            "id": "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRejectMissingOverlappingAndOtherControllerResearchAtomically",
+            "level": "production_adapter",
+            "entryPoint": "live-equipment-research",
+            "assertions": [
+              "fixture.checkMissingIndividually(\"replacement\")",
+              "fixture.resources.controller = \"other\"",
+              "fixture.roundTrip()"
+            ],
+            "receipt": {
+              "requirement": "REQ-0076.01",
+              "case": "failure",
+              "entryPoint": "live-equipment-research",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ]
+            }
+          },
+          "stale": {
+            "id": "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRecheckEligibilityAndConserveCopiesAcrossWearers",
+            "level": "production_adapter",
+            "entryPoint": "live-equipment-research",
+            "assertions": [
+              "fixture.command(\"/equip beta replacement\", false)",
+              "fixture.f.rpg.inventory.equippedQuantity(\"coat\").assertEquals(2)",
+              "fixture.roundTrip()"
+            ],
+            "receipt": {
+              "requirement": "REQ-0076.01",
+              "case": "stale",
+              "entryPoint": "live-equipment-research",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ]
+            }
+          },
+          "replay": {
+            "id": "wurst/CharacterEquipmentTests.wurst:equipmentResearchSavesRetainEligibleAndLegacyLoadoutsAcrossReconstruction",
+            "level": "production_adapter",
+            "entryPoint": "live-equipment-research",
+            "assertions": [
+              "CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT",
+              "manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()",
+              "fixture.f.natives.life[0].assertEquals(108)",
+              "fixture.roundTrip()"
+            ],
+            "receipt": {
+              "requirement": "REQ-0076.01",
+              "case": "replay",
+              "entryPoint": "live-equipment-research",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ]
+            }
+          }
+        },
+        "artifact": {
+          "mapIds": [
+            "@regional"
+          ],
+          "callPatterns": [
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"equip\",",
+            "\\b[\\w.]*PlayerInventory[\\w]*(?:available|equip)[\\w]*\\s*\\(",
+            "\\b[\\w.]*TechnologyRuntime[\\w]*isUnlocked[\\w]*\\s*\\("
+          ]
+        }
+      }
     }
   }
 }

@@ -109,7 +109,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0074.01 | combination | Rarity/quality is a separate field and should communicate affix/effect complexity, craftsmanship, scarcity, and ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0074.02 | combination | Use a clear ordered ladder such as Common, Fine, Superior, Rare, Epic, Legendary, and Relic/Artifact, with exact labels kept data-driven. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0075.01 | combination | Identity/provenance is also separate from rarity: generic, regional/cultural, polity-specific, profession/specialist, quest reward, equipment-set piece, unique historical item, legendary/relic, or other authored identity may coexist with any appropriate power level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0076.01 | combination | Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0076.01 | combination | Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | REQ-0076.02 | combination | Historical/unique items remain persistent singular identities unless explicitly authored otherwise. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0077.01 | combination | Equipment comparison UI should show item level, rarity, major stats/effects, equipment-set membership, requirements, and green/red deltas against the currently equipped item. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0077.02 | combination | Build-specific abilities, resistances, passives, set thresholds, and conditional effects must remain visible so a lower-level specialized item can rationally outperform a higher-level generic one. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -1957,7 +1957,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0075.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0075.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0075.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0076.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0076.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0076.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0076.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1968,6 +1967,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0076.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0076.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0076.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0076.01 [static-only]: source references cannot establish executed integration
 - REQ-0076.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0076.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0076.02 [authority-missing]: scenario content authority is absent or stale

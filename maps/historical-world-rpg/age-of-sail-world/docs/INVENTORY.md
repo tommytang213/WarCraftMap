@@ -111,6 +111,32 @@ representation, preserving unrelated modifier layers. Replacement representation
 start with a fresh contribution ledger. The ledger and set totals are derived and
 never saved.
 
+## Live equipment research eligibility
+
+The generator retains every `technologyIds` and `institutionIds` entry in authored
+order. Lists must contain unique stable research IDs, fit the 512-entry research
+budget, and resolve to the matching kind in the scenario's research catalogue.
+Colonial Printed Almanac requires the `movable_type_printing` institution; its
+authoring script derives that classification from the research catalogue.
+
+At `/equip HERO ITEM`, the production research resource boundary supplies the
+current campaign year and controller identity (the existing single-player
+identity is `player`). `PlayerInventory.available` checks every requirement
+against exact controller completion IDs in `TechnologyRuntime`. Substrings,
+another controller's completions, and the wrong research kind cannot qualify.
+Level, date, recruitment, owned copies, unique ownership and wearer-specific
+slots remain part of the same transaction. Rejection precedes any assignment or
+projection write and returns the bounded English message
+“Requirements are not met here.”
+
+These are definition changes, not saved fields. Existing equipment and research
+records remain authoritative on restoration, including loadouts earned under
+the earlier incomplete gate. Loading or rebuilding representations does not
+delete items, clear assignments or reapply new-action eligibility. Subsequent
+equip commands use the current full requirements; unequipping still releases the
+owned copy normally. Merchant availability and broader progression integration
+remain separate incomplete portions of REQ-0076.01 and its dependencies.
+
 ## Pickup order and overflow
 
 Routing is transactional and does not mutate its input:
@@ -131,8 +157,10 @@ slot map. Every item stack and backpack instance has an immutable stable `instan
 types and slots use stable IDs. Quantity is authoritative. Handles, object rawcodes,
 translated names, and UI page numbers are not persistence keys.
 
-The live Wurst RPG snapshot remains v2: its existing `e,slotId,itemId,characterId`
-records already store the wearer, so no format migration or reassignment is needed.
+The live Wurst RPG snapshot remains v3: its existing `e,slotId,itemId,characterId`
+and `u,controllerId,researchId` records already store the necessary identities,
+so equipment eligibility needs no format migration or reassignment. Supported v2
+snapshots retain their existing main-character migration.
 The loader validates duplicate character-slot pairs and per-item owned/equipped
 copy counts across the whole candidate before changing authority. The v1 empty-RPG
 migration and existing campaign envelope versions remain supported. Equipment uses

@@ -301,7 +301,7 @@ class LoadFixture
 		hero.assignment = "field"
 		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "rare", 10, 5))
 		rpg.inventory.grant("coat").assertTrue()
-		rpg.inventory.equip("hero", "coat", hero, 1600, "", "").assertTrue()
+		rpg.inventory.equip("hero", "coat", hero, 1600, null, "player").assertTrue()
 		let tech = new RuntimeTechnology("printing", "Printing", 1450, 100)
 		tech.effectId = "stock"
 		tech.effectMagnitude = 2

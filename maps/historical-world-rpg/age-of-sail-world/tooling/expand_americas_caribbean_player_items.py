@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/"scenario/inventory/player-use-catalog.json"
+INSTITUTION_IDS={row["id"] for row in json.loads((ROOT/"scenario/world/world.json").read_text())["institutions"]}
 
 EVIDENCE=[
  ("americas_material","The Cambridge History of the Native Peoples of the Americas (1996–2000)","Indigenous material cultures, political networks, exchange, arms, and adaptation."),
@@ -57,7 +58,11 @@ UNIQUE_NAMES=[
 
 def row(ident,name,sub,category,slot,level,years,merchants,stats,evidence,*,unique=False,set_id=None,tech=()):
  req={"startYear":years[0],"endYear":years[1],"regionIds":["americas_caribbean"]}
- if tech:req["technologyIds"]=list(tech)
+ # Resolve the authored research kind, including movable-type printing.
+ technologies=[ident for ident in tech if ident not in INSTITUTION_IDS]
+ institutions=[ident for ident in tech if ident in INSTITUTION_IDS]
+ if technologies:req["technologyIds"]=technologies
+ if institutions:req["institutionIds"]=institutions
  late=years[0]>=1500
  return {"id":ident,"name":name,"category":category,"itemLevel":level,"rarityId":("relic" if unique else "rare" if level>=55 else "fine"),"provenance":{"kind":"historical" if unique else "set_piece" if set_id else "regional","identityId":ident+"_identity"},"unique":unique,"requirements":req,"enhancement":{"maxRank":5 if unique else 3,"maxRestoration":4 if unique else 2},"merchant":{"eligible":True,"archetypeIds":list(merchants),"basePriceMinor":level*(65 if unique else 12),"minimumWealth":min(80,level//3),**({"requiresTradeAccess":True} if late and category in {"book_map","artifact"} else {})},"comparison":{"slotIds":[slot] if slot else [],"majorStats":stats,"effectIds":(["frontier_adaptation"] if sub in {"frontier","colonial"} else []),**({"setId":set_id} if set_id else {})},"coverage":{"subregionIds":[sub],"historicalClass":"named_historical" if unique else "ordinary"},"availability":{"source":"deterministic_merchant","ownershipPolicy":"singular_registry" if unique else "ordinary_instance","rewardQuestIds":[]},"evidenceIds":[evidence]}
 

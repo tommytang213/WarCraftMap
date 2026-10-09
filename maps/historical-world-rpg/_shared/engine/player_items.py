@@ -7,11 +7,16 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 
 class PlayerItemError(ValueError): pass
+
+
+RESEARCH_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*")
+EQUIPMENT_RESEARCH_CAPACITY = 512
 
 
 @dataclass(frozen=True)
@@ -60,6 +65,13 @@ def validate_catalog(data: Mapping[str, Any], *, bulk_good_ids=()) -> None:
             if identity in unique_identities: raise PlayerItemError(f"item {item_id}: duplicate unique identity {identity}")
             unique_identities.add(identity)
         req=item["requirements"]
+        for field in ("technologyIds", "institutionIds"):
+            ids = req.get(field, [])
+            if (not isinstance(ids, list) or len(ids) > EQUIPMENT_RESEARCH_CAPACITY or
+                    any(not isinstance(ident, str) or not RESEARCH_ID.fullmatch(ident) for ident in ids)):
+                raise PlayerItemError(f"item {item_id}: {field} must be a bounded array of stable research IDs")
+            if len(ids) != len(set(ids)):
+                raise PlayerItemError(f"item {item_id}: duplicate {field}")
         if req.get("startYear",1)>req.get("endYear",9999): raise PlayerItemError(f"item {item_id}: invalid era")
         enh=item["enhancement"]
         if not (isinstance(enh.get("maxRank"),int) and 0 <= enh["maxRank"] <= 10): raise PlayerItemError(f"item {item_id}: invalid enhancement bound")
@@ -94,6 +106,19 @@ def validate_catalog(data: Mapping[str, Any], *, bulk_good_ids=()) -> None:
         if not counts or counts != sorted(set(counts)) or max(counts)>len(piece_ids): raise PlayerItemError(f"set {set_id}: invalid thresholds")
         for threshold in row["thresholds"]:
             if set(threshold.get("effectIds",[]))-set(effects): raise PlayerItemError(f"set {set_id}: unknown threshold effect")
+
+
+def validate_equipment_research(data: Mapping[str, Any], technologies, institutions) -> None:
+    """Resolve equipment references against the correct authored research kind.
+
+    Call after validate_catalog so malformed/duplicate lists cannot become sets.
+    Kept separate from merchant availability for reuse by the live generator.
+    """
+    for item in data["items"]:
+        for field, targets in (("technologyIds", technologies), ("institutionIds", institutions)):
+            unknown = set(item["requirements"].get(field, [])) - set(targets)
+            if unknown:
+                raise PlayerItemError(f"item {item['id']}: unknown {field} {sorted(unknown)}")
 
 
 def validate_catalog_references(data: Mapping[str,Any], references: Mapping[str,set[str]]) -> None:

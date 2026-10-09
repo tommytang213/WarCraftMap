@@ -1,0 +1,99 @@
+{
+  "candidateReady": false,
+  "diagnosticArtifact": {
+    "artifactSha256": "ea9d5a9605769e154cbfee573aa20f8333a5862ed902eb97f2d4877da5c05189",
+    "compiledItems": 7488,
+    "gameplayMapsWithCompleteEquipment": 16,
+    "institutionPrerequisitesPerMap": 6,
+    "itemsPerMap": 468,
+    "mapsTypecheckedCompiledInspected": 17,
+    "status": "pass",
+    "technologyPrerequisitesPerMap": 46
+  },
+  "evidenceSha256": {
+    "artifact-evidence.log.gz": "78c6f9edd4bcc509dd21a547c1a65bcf1e795de7e1c27f555bb5833609ae4a60",
+    "automation-tests.log.gz": "8072a7904d934090247bc287f11774ef5424ddf07a8569d6b9ab6442d33ce574",
+    "diagnostic-campaign.log.gz": "f7659864e1d3bdad531940287d07b5f6b11a3ed2c50ff47117fade08f9851d1e",
+    "framework-conformance.json.gz": "92b76c024a5bef46efb0858be96cf7112a04e724582baf8cb8c4f6ad6203b818",
+    "framework-mutated-execution.log.gz": "d3ef78fe1664a3a7bc7cbaa37cafc60896602219dba4089aec9256812e610187",
+    "framework-mutated-results.json.gz": "abac187e0caa58382e4ca23ee9ae793bbd55bffe6f58527ccfffc9cf2b7aff75",
+    "framework-original-execution.log.gz": "3a1f0ef27680ecb151e199dfb4bed400395726ddee3f7bc1de6541ba68590bcb",
+    "framework-original-results.json.gz": "0f4b6fd7655269d586d5b97c01592f1aa67dc6e71834ee733e5f1da39f43ceac",
+    "framework-validation.log.gz": "5c211396a4a46e9a1baa1c1a69696463defd1fcfd7a5f984fe7942f8c4cfb1d4",
+    "generation-tests.log.gz": "6a1f6151ca94491c90e927d4cfb88ee357dd52fdca7c39ed5552c3d7bfa8736a",
+    "native-save.json": "c3e4da7c9553a268ba5077cdc52cea26a1c8ec85ef4da4c800f2f3b9695d30c4",
+    "release-blocker-final.log.gz": "71eb8a177151e934658f9fe7224e0bf516ddad4a942f8cae33db0ff3c92751a7",
+    "release-blocker-refresh.log.gz": "e8897102b5d5fb47e19fb741bbbbab8b995f711694df0403b0cecdb75e713bd2",
+    "repository-checks.log.gz": "077f30ed2779ededb9d83e876911af95a227aef547fcfc8c9a002ad564d28230",
+    "requirement-traceability.json.gz": "1c78e937c46b4b88248c8dda72626612a539bb9e2946efd54a9272f22c01827e",
+    "requirement-traceability.md.gz": "ca92194a896aa111a69070d0112e690294116e90f109f1b5e22a934d3ffbd06d",
+    "scoped-evidence.json": "97caf6f938cba80c866402a2b329a95b38044fcb24e7fa3626be8d1afa098197",
+    "source-traceability.log.gz": "1927ecdd09f3ca8353299ab992efb692c6b18f42b930e4006afcd7c6ba74bb20",
+    "targeted-python.log.gz": "7b5e1eac9dc86136cd571d12acc26f81f0f55751f3687bd8c93190dfbc872a9b",
+    "wurst-execution.log.gz": "18389cd0576761ac0261c24d1b837ec10d91e13de985d35817f877de2f711854",
+    "wurst-results.json.gz": "cce868a959c56399e83ecf338180d86b44deee363c598050b3a7d715f063493d"
+  },
+  "framework": {
+    "mutatedTests": 2,
+    "originalTests": 2,
+    "sharedSourcesUnchanged": true,
+    "status": "pass"
+  },
+  "generatorVersion": 22,
+  "nativeSaveOracle": "pass",
+  "nativeSaveRuntime": "skipped: runner unavailable",
+  "persistedContractChanged": false,
+  "python": {
+    "allScenarioTestsVerifiedAcrossRuns": true,
+    "automationStatus": "pass",
+    "automationTests": 136,
+    "equipmentGenerationTests": 6,
+    "finalFreshnessTest": {
+      "status": "pass",
+      "tests": 1
+    },
+    "initialError": "Stale release-blocker report input hash for the updated equip execution probe",
+    "initialErrors": 1,
+    "initialPassed": 941,
+    "note": "The Wurst gate ran separately through the full diagnostic campaign build. The full Python run stopped at one stale output hash; its failing test and the automation suite passed separately after refresh.",
+    "repair": "Regenerated only the tracked release report hash; all 21 source blockers retained",
+    "repositoryCommand": "WARCRAFTMAP_WURST_CHECK=skip automation/run_checks.sh",
+    "scenarioTests": 942,
+    "targetedTests": 38
+  },
+  "realClientExecuted": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingArtifactPublicationBlockers": 8764,
+  "remainingSourceReleaseBlockers": 21,
+  "requirement": "REQ-0076.01 equipment research eligibility only",
+  "rpgSchema": 3,
+  "scopedCommandReceipts": 4,
+  "scopedEquipmentEvidence": "pass",
+  "sourceRevision": "f028b5232b7589e016ff7c20492a8bb5a59ce832",
+  "sourceTreeSha256": "63de4e857e30fca85bd35aed1ecb9579a9dc9ef066ab1dc68113457e6618e930",
+  "status": "ready_for_repository_validation",
+  "supportedCampaignSchemas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "wholeRequirementStatus": "fail",
+  "wurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "environment": "Cached pinned compiler and bundled JRE executed locally; offline standard library; no container source mounts",
+    "standardLibraryRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+    "status": "pass",
+    "tests": 356
+  }
+}

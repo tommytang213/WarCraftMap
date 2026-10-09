@@ -12,8 +12,8 @@
     "integration-missing": 2268,
     "mechanism-missing": 582,
     "state-unmapped": 606,
-    "static-only": 37,
-    "unmapped": 606,
+    "static-only": 38,
+    "unmapped": 605,
     "unpersisted": 1212,
     "unreachable": 606
   },
@@ -5885,11 +5885,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "REQ-0076.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
       "class": "authority-missing",
       "id": "REQ-0076.01",
       "message": "scenario content authority is absent or stale"
@@ -5938,6 +5933,11 @@
       "class": "integration-missing",
       "id": "REQ-0076.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "REQ-0076.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -36232,7 +36232,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 468,
       "sourceHashes": {
-        "scenario/inventory/player-use-catalog.json": "e11312652c411c4790cc96d46096e37ca54411bdf4e0d79f26547578bd1eec5a"
+        "scenario/inventory/player-use-catalog.json": "e3c18bcc00d63153c5ced491ea947ac65a9ec11df507bfbe4199964abccdb65d"
       },
       "sourceIdsSha256": "d0129447de79ef743684b8413782375f7d05c1ccdfc34ee0a722364c6829a8f1",
       "sources": [
@@ -36252,7 +36252,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 51,
       "sourceHashes": {
-        "scenario/inventory/player-use-catalog.json": "e11312652c411c4790cc96d46096e37ca54411bdf4e0d79f26547578bd1eec5a"
+        "scenario/inventory/player-use-catalog.json": "e3c18bcc00d63153c5ced491ea947ac65a9ec11df507bfbe4199964abccdb65d"
       },
       "sourceIdsSha256": "0dfbd863878186ae5747ad038d55b1b9a12413f593edce6f887edca39f286835",
       "sources": [
@@ -36602,7 +36602,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 11,
       "sourceHashes": {
-        "scenario/inventory/player-use-catalog.json": "e11312652c411c4790cc96d46096e37ca54411bdf4e0d79f26547578bd1eec5a"
+        "scenario/inventory/player-use-catalog.json": "e3c18bcc00d63153c5ced491ea947ac65a9ec11df507bfbe4199964abccdb65d"
       },
       "sourceIdsSha256": "cdc0690e33ccb90c101b676c76e89c97eca05e0c48beefaef8082e5265992e60",
       "sources": [
@@ -36622,7 +36622,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 7,
       "sourceHashes": {
-        "scenario/inventory/player-use-catalog.json": "e11312652c411c4790cc96d46096e37ca54411bdf4e0d79f26547578bd1eec5a"
+        "scenario/inventory/player-use-catalog.json": "e3c18bcc00d63153c5ced491ea947ac65a9ec11df507bfbe4199964abccdb65d"
       },
       "sourceIdsSha256": "08dee6c59c54601daee9e197e3d658f9437800fd6837eb637b8611641f76e1df",
       "sources": [
@@ -36642,7 +36642,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 78,
       "sourceHashes": {
-        "scenario/inventory/player-use-catalog.json": "e11312652c411c4790cc96d46096e37ca54411bdf4e0d79f26547578bd1eec5a"
+        "scenario/inventory/player-use-catalog.json": "e3c18bcc00d63153c5ced491ea947ac65a9ec11df507bfbe4199964abccdb65d"
       },
       "sourceIdsSha256": "2445ada265ada1c147c29f81d376a2ddf4fac6059800aa6b89400908eab2d510",
       "sources": [
@@ -38230,7 +38230,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "d12d6ed0c1c02bf9862802741954be81faebab6cef9b3cc4be2342fed3c5b661",
-  "mappingSha256": "58e5c4758cf4531d49b379571a36917a792a85902424c2e88f0f8bd5cfe24f89",
+  "mappingSha256": "761e4b45dfa07b25cc5e49ed66c2cc3d43752a6a3bf2f0ef62e13a34aa06dcdb",
   "requirements": [
     {
       "authority": {
@@ -41174,14 +41174,279 @@
         "integration-missing",
         "mechanism-missing",
         "state-unmapped",
-        "unmapped",
+        "static-only",
         "unpersisted",
         "unreachable"
       ],
       "classification": "combination",
       "id": "REQ-0076.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "equipmentEligibility": {
+          "artifact": {
+            "callPatterns": [
+              "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"equip\",",
+              "\\b[\\w.]*PlayerInventory[\\w]*(?:available|equip)[\\w]*\\s*\\(",
+              "\\b[\\w.]*TechnologyRuntime[\\w]*isUnlocked[\\w]*\\s*\\("
+            ],
+            "mapIds": [
+              "@regional"
+            ]
+          },
+          "content": [
+            {
+              "contains": [
+                "\"technologyIds\"",
+                "\"institutionIds\"",
+                "\"precision_court_theodolite\""
+              ],
+              "path": "scenario/inventory/player-use-catalog.json"
+            },
+            {
+              "contains": [
+                "validate_equipment_research",
+                "for technology_id in requirements.get(\"technologyIds\", ())",
+                "for institution_id in requirements.get(\"institutionIds\", ())"
+              ],
+              "path": "../_shared/tooling/package_wurst_map.py"
+            }
+          ],
+          "entry": {
+            "id": "live-equipment-research",
+            "kind": "command",
+            "path": [
+              {
+                "contains": [
+                  "registerRpgRuntimeCommands(commands,rpgRuntime)",
+                  "installCommandRegistry(commands)"
+                ],
+                "path": "wurst/Bootstrap.wurst",
+                "symbol": "initializeRegionalCampaign"
+              },
+              {
+                "contains": [
+                  "ok=runtime.equipItem(first,second,resources.year(),resources.controllerId(sender))"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+              },
+              {
+                "contains": [
+                  "inventory.equip(heroId,itemId,hero,year,technologies,controllerId)",
+                  "reconcile(controllerId)"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+              }
+            ],
+            "registration": {
+              "contains": [
+                "commands.register(\"equip\""
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "registerRpgRuntimeCommands"
+            },
+            "testInvocation": "fixture.command("
+          },
+          "mechanism": [
+            {
+              "contains": [
+                "value.technologyCount - 1",
+                "value.institutionCount - 1",
+                "research.isUnlockedOfKind(controllerId"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "available"
+            },
+            {
+              "contains": [
+                "unlockedKeys[i] == controllerId+\":\"+id"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "isUnlocked"
+            },
+            {
+              "contains": [
+                "not owns(itemId)",
+                "not available(value, hero, year, research, controllerId)",
+                "slotIndex(heroId, value.slotId)",
+                "assigned >= ownedQuantity(itemId)"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "equip"
+            }
+          ],
+          "persistence": {
+            "load": {
+              "contains": [
+                "rpg.restoreState"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "applyRuntime"
+            },
+            "mode": "persisted",
+            "reason": "RPG v3 and supported campaign schemas 1–8 remain unchanged. Restore retains previously earned loadouts and research; new definitions are regenerated.",
+            "references": [
+              {
+                "contains": [
+                  "inventory.equippedHeroes[i]",
+                  "technologies.unlockedKeys[i]"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+                "symbol": "captureState"
+              },
+              {
+                "contains": [
+                  "inventory.equippedCount=0",
+                  "technologies.unlockedCount=0"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+                "symbol": "restoreState"
+              }
+            ],
+            "save": {
+              "contains": [
+                "rpg.captureState()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "captureDomains"
+            }
+          },
+          "state": {
+            "mutation": "Only a fully eligible equip reserves a copy and replaces the named wearer slot before projection.",
+            "outcome": "Action completed. or Requirements are not met here.",
+            "owner": "Stable item definitions, owned copies, character-slot assignments and controller research completions.",
+            "references": [
+              {
+                "contains": [
+                  "equippedItems[slot] = itemId",
+                  "equippedHeroes[slot] = heroId"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+                "symbol": "equip"
+              },
+              {
+                "contains": [
+                  "output.show(sender,\"Requirements are not met here.\")"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+              }
+            ],
+            "rejection": "Missing/wrong-controller/overlapping research identities, level/date and ownership failures leave authority and projected bonuses unchanged."
+          },
+          "tests": {
+            "failure": {
+              "assertions": [
+                "fixture.checkMissingIndividually(\"replacement\")",
+                "fixture.resources.controller = \"other\"",
+                "fixture.roundTrip()"
+              ],
+              "entryPoint": "live-equipment-research",
+              "id": "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRejectMissingOverlappingAndOtherControllerResearchAtomically",
+              "level": "production_adapter",
+              "receipt": {
+                "case": "failure",
+                "entryPoint": "live-equipment-research",
+                "observed": [
+                  "registration",
+                  "adapter",
+                  "validation",
+                  "mutation",
+                  "persistence",
+                  "transition",
+                  "outcome"
+                ],
+                "requirement": "REQ-0076.01"
+              }
+            },
+            "replay": {
+              "assertions": [
+                "CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT",
+                "manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()",
+                "fixture.f.natives.life[0].assertEquals(108)",
+                "fixture.roundTrip()"
+              ],
+              "entryPoint": "live-equipment-research",
+              "id": "wurst/CharacterEquipmentTests.wurst:equipmentResearchSavesRetainEligibleAndLegacyLoadoutsAcrossReconstruction",
+              "level": "production_adapter",
+              "receipt": {
+                "case": "replay",
+                "entryPoint": "live-equipment-research",
+                "observed": [
+                  "registration",
+                  "adapter",
+                  "validation",
+                  "mutation",
+                  "persistence",
+                  "transition",
+                  "outcome"
+                ],
+                "requirement": "REQ-0076.01"
+              }
+            },
+            "stale": {
+              "assertions": [
+                "fixture.command(\"/equip beta replacement\", false)",
+                "fixture.f.rpg.inventory.equippedQuantity(\"coat\").assertEquals(2)",
+                "fixture.roundTrip()"
+              ],
+              "entryPoint": "live-equipment-research",
+              "id": "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRecheckEligibilityAndConserveCopiesAcrossWearers",
+              "level": "production_adapter",
+              "receipt": {
+                "case": "stale",
+                "entryPoint": "live-equipment-research",
+                "observed": [
+                  "registration",
+                  "adapter",
+                  "validation",
+                  "mutation",
+                  "persistence",
+                  "transition",
+                  "outcome"
+                ],
+                "requirement": "REQ-0076.01"
+              }
+            },
+            "success": {
+              "assertions": [
+                "fixture.checkMissingIndividually(\"precision_court_theodolite\")",
+                "fixture.checkMissingIndividually(\"kangxi_court_compass\")"
+              ],
+              "entryPoint": "live-equipment-research",
+              "id": "wurst/CharacterEquipmentTests.wurst:generatedEquipmentCommandsRequireEveryAuthoredResearchIdentity",
+              "level": "production_adapter",
+              "receipt": {
+                "case": "success",
+                "entryPoint": "live-equipment-research",
+                "observed": [
+                  "registration",
+                  "adapter",
+                  "validation",
+                  "mutation",
+                  "persistence",
+                  "transition",
+                  "outcome"
+                ],
+                "requirement": "REQ-0076.01"
+              }
+            }
+          },
+          "transition": {
+            "mode": "reconstructed",
+            "reason": "Equipment and set projections rebuild from saved wearer assignments without rechecking new equip eligibility.",
+            "references": [
+              {
+                "contains": [
+                  "projections.clearEquipmentLayer()",
+                  "projections.applyEquipment(heroId,"
+                ],
+                "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+                "symbol": "reconcile"
+              }
+            ]
+          }
+        },
+        "scope": "Issue #433 covers equipment research eligibility only. Merchant availability, local production, trade access, wealth, polity/culture, quest/event gates and broader progression integration remain blocked; no native-client claim. The nested mapping is supplementary evidence and does not satisfy the whole obligation."
+      },
       "parent": "REQ-0076",
       "status": "fail",
       "text": "Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability."
