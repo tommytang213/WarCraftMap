@@ -1,0 +1,160 @@
+package ResearchCost
+
+/** Positive decimal arithmetic for engine/technology_institutions.py::cost_units.
+ * No Warcraft real conversion: authored decimals survive generation exactly.
+ * Operations use Decimal's 28 significant digits, ties-to-even; the final
+ * millionth uses HALF_UP. Definitions outside the documented representation
+ * (28 significant digits, decimal exponent -28..28) fail closed. */
+function trimDigits(string value) returns string
+	var start=0
+	while start<StringLength(value)-1 and SubString(value,start,start+1)=="0"
+		start++
+	return SubString(value,start,StringLength(value))
+
+function zeros(int count) returns string
+	var result=""
+	for i=1 to count
+		result+="0"
+	return result
+
+function addDigits(string a,string b) returns string
+	var i=StringLength(a)-1
+	var j=StringLength(b)-1
+	var carry=0
+	var result=""
+	while i>=0 or j>=0 or carry>0
+		if i>=0
+			carry+=S2I(SubString(a,i,i+1))
+		if j>=0
+			carry+=S2I(SubString(b,j,j+1))
+		result=I2S(carry mod 10)+result
+		carry=carry div 10
+		i--
+		j--
+	return trimDigits(result)
+
+function multiplyDigits(string a,string b) returns string
+	var result="0"
+	for j=0 to StringLength(b)-1
+		let digit=S2I(SubString(b,j,j+1))
+		var carry=0
+		var row=""
+		var i=StringLength(a)-1
+		while i>=0
+			let product=S2I(SubString(a,i,i+1))*digit+carry
+			row=I2S(product mod 10)+row
+			carry=product div 10
+			i--
+		if carry>0
+			row=I2S(carry)+row
+		result=addDigits(result+"0",row)
+	return trimDigits(result)
+
+/** Remove decimal places, rounding ties either HALF_UP or HALF_EVEN. */
+function roundDigits(string digits,int places,boolean halfUp) returns string
+	if places<=0
+		return digits+zeros(-places)
+	let cut=StringLength(digits)-places
+	if cut<0
+		return "0"
+	var whole="0"
+	if cut>0
+		whole=SubString(digits,0,cut)
+	let first=S2I(SubString(digits,cut,cut+1))
+	let tail=trimDigits(SubString(digits,cut+1,StringLength(digits)))
+	let odd=S2I(SubString(whole,StringLength(whole)-1,StringLength(whole))) mod 2==1
+	if first>5 or (first==5 and (halfUp or odd or (tail!="" and tail!="0")))
+		whole=addDigits(whole,"1")
+	return whole
+
+class CostDecimal
+	string digits=""
+	int scale=0
+	boolean valid=true
+	construct(string value)
+		var point=false
+		if StringLength(value)==0 or StringLength(value)>58
+			valid=false
+		for i=0 to StringLength(value)-1
+			let character=SubString(value,i,i+1)
+			if character=="." and not point and i>0 and i<StringLength(value)-1
+				point=true
+			else if character=="0" or character=="1" or character=="2" or character=="3" or character=="4" or character=="5" or character=="6" or character=="7" or character=="8" or character=="9"
+				digits+=character
+				if point
+					scale++
+			else
+				valid=false
+		digits=trimDigits(digits)
+		// Trailing zeroes are insignificant, including large integral powers of ten.
+		while StringLength(digits)>1 and SubString(digits,StringLength(digits)-1,StringLength(digits))=="0"
+			digits=SubString(digits,0,StringLength(digits)-1)
+			scale--
+		if StringLength(digits)>28 or scale>28 or scale< -28 or digits==""
+			valid=false
+	function atLeastOne() returns boolean
+		return digits!="0" and StringLength(digits)>scale
+	function atLeastMillionth() returns boolean
+		return digits!="0" and StringLength(digits)>scale-6
+	function precision()
+		let excess=StringLength(digits)-28
+		if excess>0
+			digits=roundDigits(digits,excess,false)
+			scale-=excess
+	function multiply(CostDecimal other)
+		digits=multiplyDigits(digits,other.digits)
+		scale+=other.scale
+		precision()
+	function add(CostDecimal other)
+		let common=IMaxBJ(scale,other.scale)
+		digits=addDigits(digits+zeros(common-scale),other.digits+zeros(common-other.scale))
+		scale=common
+		precision()
+
+/** Empty means invalid/unrepresentable. Otherwise returns integer millionths
+ * as decimal text, since even ordinary research exceeds a signed int in units. */
+public function researchCostUnits(string baseCost,string aheadMultiplier,string annualMultiplier,int preferredYear,int year) returns string
+	let base=new CostDecimal(baseCost)
+	let ahead=new CostDecimal(aheadMultiplier)
+	let annual=new CostDecimal(annualMultiplier)
+	var result=""
+	if base.valid and base.atLeastMillionth() and ahead.valid and ahead.atLeastOne() and annual.valid and year>=1 and year<=9999
+		if preferredYear>year
+			// year is positive, so this subtraction cannot overflow a signed int.
+			let years=new CostDecimal(I2S(preferredYear-year))
+			annual.multiply(years)
+			ahead.add(annual)
+			base.multiply(ahead)
+			destroy years
+		else
+			base.precision()
+		result=roundDigits(base.digits,base.scale-6,true)
+	destroy base
+	destroy ahead
+	destroy annual
+	return result
+
+/** Native gold is whole points: ceil the already HALF_UP-rounded millionths.
+ * Reject overflow before applying existing nonnegative point discounts. */
+public function researchGoldCost(string baseCost,string aheadMultiplier,string annualMultiplier,int preferredYear,int year,int provincialAdoption,int institutionalSupport) returns int
+	let units=researchCostUnits(baseCost,aheadMultiplier,annualMultiplier,preferredYear,year)
+	if units=="" or units=="0" or StringLength(units)>16 or provincialAdoption<0 or institutionalSupport<0
+		return -1
+	let cut=IMaxBJ(0,StringLength(units)-6)
+	var whole="0"
+	if cut>0
+		whole=SubString(units,0,cut)
+	if trimDigits(SubString(units,cut,StringLength(units)))!="0"
+		whole=addDigits(whole,"1")
+	// Check range before native conversion (all characters are already digits).
+	if StringLength(whole)>10
+		return -1
+	if StringLength(whole)==10
+		let prefix=S2I(SubString(whole,0,9))
+		if prefix>214748364 or (prefix==214748364 and S2I(SubString(whole,9,10))>7)
+			return -1
+	let amount=S2I(whole)
+	if amount<1 or I2S(amount)!=whole
+		return -1
+	let discounted=amount-IMinBJ(amount-1,provincialAdoption)
+	return discounted-IMinBJ(discounted-1,institutionalSupport)

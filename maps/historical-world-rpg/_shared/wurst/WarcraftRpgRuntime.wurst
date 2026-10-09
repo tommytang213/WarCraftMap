@@ -1,5 +1,7 @@
 package WarcraftRpgRuntime
 
+import ResearchCost
+
 import WC3Compatibility
 import ManagementScreenPauseController
 import CommandRouter
@@ -609,7 +611,9 @@ public class RuntimeTechnology
 	string name
 	string kind = "technology"
 	int historicalYear
-	int baseCost
+	string baseCost
+	string aheadOfTimeCostMultiplier
+	string additionalMultiplierPerYearAhead
 	// Definitions are scenario-owned; saves contain only controller completion IDs.
 	string array[512] prerequisiteIds
 	int prerequisiteCount = 0
@@ -619,7 +623,16 @@ public class RuntimeTechnology
 		this.id=id
 		this.name=name
 		this.historicalYear=historicalYear
+		this.baseCost=I2S(baseCost)
+		this.aheadOfTimeCostMultiplier="1"
+		this.additionalMultiplierPerYearAhead="0"
+	construct(string id,string name,int historicalYear,string baseCost,string aheadMultiplier,string annualMultiplier)
+		this.id=id
+		this.name=name
+		this.historicalYear=historicalYear
 		this.baseCost=baseCost
+		this.aheadOfTimeCostMultiplier=aheadMultiplier
+		this.additionalMultiplierPerYearAhead=annualMultiplier
 	function addPrerequisite(string id)
 		prerequisiteIds[prerequisiteCount]=id
 		prerequisiteCount++
@@ -654,12 +667,12 @@ public class TechnologyRuntime
 	function cost(string id,int year,int provincialAdoption,int institutionalSupport) returns int
 		let technology=get(id)
 		if technology == null
-			return 0
-		var ahead=IMaxBJ(0,technology.historicalYear-year)
-		return IMaxBJ(1,technology.baseCost+ahead*technology.baseCost div 20-provincialAdoption-institutionalSupport)
+			return -1
+		return researchGoldCost(technology.baseCost,technology.aheadOfTimeCostMultiplier,technology.additionalMultiplierPerYearAhead,technology.historicalYear,year,provincialAdoption,institutionalSupport)
 	function unlock(string controllerId,string id,int year,int paid,int provincialAdoption,int institutionalSupport) returns boolean
 		let technology=get(id)
-		if technology == null or isUnlocked(controllerId,id) or paid < cost(id,year,provincialAdoption,institutionalSupport)
+		let required=cost(id,year,provincialAdoption,institutionalSupport)
+		if technology == null or required<1 or controllerId=="" or unlockedCount>=2048 or isUnlocked(controllerId,id) or paid < required
 			return false
 		for i=0 to technology.prerequisiteCount-1
 			if not isUnlocked(controllerId,technology.prerequisiteIds[i])
@@ -1239,7 +1252,7 @@ class RpgActionCommand implements CommandHandler
 			let year=resources.year()
 			let cost=runtime.technologies.cost(first,year,0,0)
 			let available=resources.gold(sender)
-			if available >= cost
+			if cost>0 and available >= cost
 				ok=runtime.research(resources.controllerId(sender),first,year,cost)
 				if ok
 					resources.setGold(sender,available-cost)

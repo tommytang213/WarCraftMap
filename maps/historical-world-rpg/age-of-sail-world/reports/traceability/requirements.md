@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7202**.
+Candidate ready: **False**; blockers: **7190**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -56,8 +56,8 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0035.01 | combination | These ranges are release-planning targets rather than hard ceilings. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0035.02 | combination | The final content audit should flag clearly thin regions, eras, major powers, gameplay roles, store inventories, progression branches, or quest/event density even if a global raw-count minimum is technically met. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0036.01 | combination | Large technology trees with multiple branches. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0037.01 | combination | Technology availability/cost changes with historical time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0038.01 | combination | Ahead-of-time technology is possible, not absolutely forbidden; extreme early research should be exceptionally expensive/difficult. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0037.01 | combination | Technology availability/cost changes with historical time. | artifact-missing, integration-missing, static-only |
+| REQ-0038.01 | combination | Ahead-of-time technology is possible, not absolutely forbidden; extreme early research should be exceptionally expensive/difficult. | artifact-missing, integration-missing, static-only |
 | REQ-0039.01 | combination | Technologies can have cross-tree prerequisites. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0040.01 | combination | Institutions/technology adoption can diffuse unevenly through provinces. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0041.01 | combination | Countries can have unique/special units and other distinct content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -1333,29 +1333,17 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0036.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0036.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0036.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0037.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0037.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0037.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0037.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0037.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0037.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0037.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0037.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0037.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0037.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0037.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0037.01 [static-only]: source references cannot establish executed integration
 - REQ-0037.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0038.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0038.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0038.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0038.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0038.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0038.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0038.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0038.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0038.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0038.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0038.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0038.01 [static-only]: source references cannot establish executed integration
 - REQ-0038.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0039.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0039.01 [authority-missing]: scenario content authority is absent or stale

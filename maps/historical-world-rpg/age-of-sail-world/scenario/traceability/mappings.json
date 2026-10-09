@@ -213,6 +213,594 @@
   },
   "formatVersion": 1,
   "requirements": {
+    "REQ-0037.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"research\",",
+          "\\b[\\w.]*TechnologyRuntime[\\w]*register[\\w]*\\s*\\(",
+          "\\b[\\w.]*TechnologyRuntime[\\w]*cost[\\w]*\\s*\\(",
+          "\\b[\\w.]*CostDecimal[\\w]*multiply[\\w]*\\s*\\(",
+          "roundDigits\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"timeCost\"",
+            "\"aheadOfTimeCostMultiplier\"",
+            "\"additionalMultiplierPerYearAhead\""
+          ],
+          "path": "scenario/world/world.json"
+        },
+        {
+          "contains": [
+            "research_decimal",
+            "preferredYear"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        },
+        {
+          "contains": [
+            "parse_float=Decimal",
+            "research_time_cost(cost, row[\"id\"])"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        }
+      ],
+      "entry": {
+        "id": "live-historical-research",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "let year=resources.year()",
+              "runtime.technologies.cost(first,year,0,0)",
+              "if cost>0 and available >= cost",
+              "resources.setGold(sender,available-cost)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "return getCampaignYear()"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "signature": "override function year() returns int",
+            "symbol": "year"
+          },
+          {
+            "contains": [
+              "return campaignClock.campaignYear()"
+            ],
+            "path": "../_shared/wurst/CampaignTimeline.wurst",
+            "symbol": "getCampaignYear"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "commands.register(\"research\"",
+            "\"unlock,institution\""
+          ],
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "testInvocation": ".commands.dispatch("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "preferredYear>year",
+            "annual.multiply(years)",
+            "ahead.add(annual)",
+            "base.multiply(ahead)",
+            "roundDigits(base.digits,base.scale-6,true)"
+          ],
+          "path": "../_shared/wurst/ResearchCost.wurst",
+          "symbol": "researchCostUnits"
+        },
+        {
+          "contains": [
+            "return -1",
+            "whole=addDigits(whole,\"1\")"
+          ],
+          "path": "../_shared/wurst/ResearchCost.wurst",
+          "symbol": "researchGoldCost"
+        },
+        {
+          "contains": [
+            "required<1",
+            "isUnlocked(controllerId,id)",
+            "technology.prerequisiteCount-1",
+            "isUnlocked(controllerId,technology.prerequisiteIds[i])"
+          ],
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "unlock"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "clock.restoreState",
+            "rpg.restoreState"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "applyRuntime"
+        },
+        "mode": "persisted",
+        "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1\u20138 are unchanged; old completions remain earned.",
+        "references": [
+          {
+            "contains": [
+              "unlockedKeys[i]"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          },
+          {
+            "contains": [
+              "unlockedCount"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "restoreState"
+          }
+        ],
+        "save": {
+          "contains": [
+            "rpg.captureState()"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "captureDomains"
+        }
+      },
+      "state": {
+        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+        "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
+        "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
+        "references": [
+          {
+            "contains": [
+              "if cost>0 and available >= cost",
+              "resources.setGold(sender,available-cost)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "unlockedKeys[unlockedCount]=controllerId+\":\"+id"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "unlock"
+          }
+        ],
+        "rejection": "Invalid or unrepresentable costs, wrong-controller/missing prerequisites, insufficient resources and duplicate completion preserve gold, completions and effects."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.runtime.captureState().assertEquals(before)",
+            "f.resources.writes.assertEquals(0)",
+            "f.reject(\"/institution scientific_societies\")",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0037.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.resources.year().assertEquals(1450)",
+            "f.resources.balance.assertEquals(136)",
+            "f.runtime.captureState().assertEquals(completed)",
+            "codecRestore(f,completed,schema)"
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0037.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "clock.advanceTo(536542).assertTrue()",
+            "pike.baseCost=\"90.0000005\"",
+            "f.resources.writes.assertEquals(1)",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRepricesAfterClockAndDefinitionChanges",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0037.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.resources.balance.assertEquals(0)",
+            "f.resources.writes.assertEquals(1)",
+            "f.effects.calls.assertEquals(1)",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0037.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+        "references": [
+          {
+            "contains": [
+              "technologies.reconstruct(controllerId)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "effects.clearTechnologyLayer(controllerId)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "reconstruct"
+          }
+        ]
+      }
+    },
+    "REQ-0038.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"research\",",
+          "\\b[\\w.]*TechnologyRuntime[\\w]*register[\\w]*\\s*\\(",
+          "\\b[\\w.]*TechnologyRuntime[\\w]*cost[\\w]*\\s*\\(",
+          "\\b[\\w.]*CostDecimal[\\w]*multiply[\\w]*\\s*\\(",
+          "roundDigits\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"timeCost\"",
+            "\"aheadOfTimeCostMultiplier\"",
+            "\"additionalMultiplierPerYearAhead\""
+          ],
+          "path": "scenario/world/world.json"
+        },
+        {
+          "contains": [
+            "research_decimal",
+            "preferredYear"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        },
+        {
+          "contains": [
+            "parse_float=Decimal",
+            "research_time_cost(cost, row[\"id\"])"
+          ],
+          "path": "../_shared/tooling/package_wurst_map.py"
+        }
+      ],
+      "entry": {
+        "id": "live-historical-research",
+        "kind": "command",
+        "path": [
+          {
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)",
+              "installCommandRegistry(commands)"
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "let year=resources.year()",
+              "runtime.technologies.cost(first,year,0,0)",
+              "if cost>0 and available >= cost",
+              "resources.setGold(sender,available-cost)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "return getCampaignYear()"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "signature": "override function year() returns int",
+            "symbol": "year"
+          },
+          {
+            "contains": [
+              "return campaignClock.campaignYear()"
+            ],
+            "path": "../_shared/wurst/CampaignTimeline.wurst",
+            "symbol": "getCampaignYear"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "commands.register(\"research\"",
+            "\"unlock,institution\""
+          ],
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "testInvocation": ".commands.dispatch("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "preferredYear>year",
+            "annual.multiply(years)",
+            "ahead.add(annual)",
+            "base.multiply(ahead)",
+            "roundDigits(base.digits,base.scale-6,true)"
+          ],
+          "path": "../_shared/wurst/ResearchCost.wurst",
+          "symbol": "researchCostUnits"
+        },
+        {
+          "contains": [
+            "return -1",
+            "whole=addDigits(whole,\"1\")"
+          ],
+          "path": "../_shared/wurst/ResearchCost.wurst",
+          "symbol": "researchGoldCost"
+        },
+        {
+          "contains": [
+            "required<1",
+            "isUnlocked(controllerId,id)",
+            "technology.prerequisiteCount-1",
+            "isUnlocked(controllerId,technology.prerequisiteIds[i])"
+          ],
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "unlock"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "clock.restoreState",
+            "rpg.restoreState"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "applyRuntime"
+        },
+        "mode": "persisted",
+        "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1\u20138 are unchanged; old completions remain earned.",
+        "references": [
+          {
+            "contains": [
+              "unlockedKeys[i]"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          },
+          {
+            "contains": [
+              "unlockedCount"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "restoreState"
+          }
+        ],
+        "save": {
+          "contains": [
+            "rpg.captureState()"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "captureDomains"
+        }
+      },
+      "state": {
+        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+        "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
+        "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
+        "references": [
+          {
+            "contains": [
+              "if cost>0 and available >= cost",
+              "resources.setGold(sender,available-cost)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "unlockedKeys[unlockedCount]=controllerId+\":\"+id"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "unlock"
+          }
+        ],
+        "rejection": "Invalid or unrepresentable costs, wrong-controller/missing prerequisites, insufficient resources and duplicate completion preserve gold, completions and effects."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.runtime.captureState().assertEquals(before)",
+            "f.resources.writes.assertEquals(0)",
+            "f.reject(\"/institution scientific_societies\")",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0038.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.resources.year().assertEquals(1450)",
+            "f.resources.balance.assertEquals(136)",
+            "f.runtime.captureState().assertEquals(completed)",
+            "codecRestore(f,completed,schema)"
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0038.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "clock.advanceTo(536542).assertTrue()",
+            "pike.baseCost=\"90.0000005\"",
+            "f.resources.writes.assertEquals(1)",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRepricesAfterClockAndDefinitionChanges",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0038.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "f.resources.balance.assertEquals(0)",
+            "f.resources.writes.assertEquals(1)",
+            "f.effects.calls.assertEquals(1)",
+            "restoreHistoricalResearch("
+          ],
+          "entryPoint": "live-historical-research",
+          "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "live-historical-research",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "persistence",
+              "transition",
+              "outcome"
+            ],
+            "requirement": "REQ-0038.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+        "references": [
+          {
+            "contains": [
+              "technologies.reconstruct(controllerId)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          },
+          {
+            "contains": [
+              "effects.clearTechnologyLayer(controllerId)"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "reconstruct"
+          }
+        ]
+      }
+    },
     "REQ-0181.01": {
       "artifact": {
         "callPatterns": [
