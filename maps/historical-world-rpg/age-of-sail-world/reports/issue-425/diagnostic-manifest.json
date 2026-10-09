@@ -1,0 +1,276 @@
+{
+  "campaignSha256": "e9039d3b81e00425524dfb3095a844262d27e9a0e0e4ff76a7106d8341cbad7e",
+  "changes": [
+    "Initialize stock terrain and unit day/night models before InitBlizzard in source main."
+  ],
+  "diagnosticId": "LAUNCH-425-LIGHTING-1",
+  "nativeClient": {
+    "build": 24342,
+    "reproduction": "failed",
+    "revisedArtifact": "not_revalidated",
+    "version": "3.0.1"
+  },
+  "purpose": "Test the missing lighting initialization hypothesis; its relationship to the native null read is unconfirmed.",
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingDiscriminator": "Launch these revised bytes on Warcraft III 3.0.1 build 24342 and establish whether origin selection opens. If the same crash persists, correlate its exception offset and original context before changing another startup input.",
+  "reproductionSha256": "d6651b77a48a3c7c1b4916a204676b506a380f77a4496fbadd417697e8d87abc",
+  "sourceIdentity": {
+    "sourceRevision": "a2e24e86dd8f2284e8d33786c11d125c7fe513f4",
+    "sourceTreeSha256": "b25155f9fa96cd357c58566ee8f0d417fe129a39ca1ee08d38d3f4efd0bd695a"
+  },
+  "staticValidation": {
+    "maps": [
+      {
+        "id": "bootstrap_runtime_validation",
+        "luaSha256": "efaffe67682ca0c3c952722ce0a5f42be1ba954a27c5ad49177f48b6c536ebe3",
+        "path": "Maps/AgeOfSailWorld.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "7a32a2ceb8b077af74b655f190d3c82ad3f6f3c5433d8b62bdc97acd76dc96e4",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "europe_west",
+        "luaSha256": "d21378a9c6e19e1d40b7ee880a22259181c6bbb1539739f7016923fe75721b3e",
+        "path": "Maps/EuropeWest.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "ac171d4eb6697d7941e1f4fafc6b4b92b4f02e7bed12ab798bbb6210c0f38126",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "europe_central_east",
+        "luaSha256": "305b4706ae03448c8075d687fa8313e8f35fa99c2c75acb1966909fae7deb311",
+        "path": "Maps/EuropeCentralEast.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "02d1008563b15e4228697d68a773d7cc0372e5fd27e1df5e6cced91ec5f2dabd",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "africa",
+        "luaSha256": "7471507babe724698ac9365989e1634f682958dd3ff906f25fcb3f84c9d7551a",
+        "path": "Maps/Africa.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "ee5d69489691e86b9d7eaeaa6688e45d024627eb511597d287415449e3c1c284",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "middle_east_india",
+        "luaSha256": "98f75215ab2f7f859dd00fb39cfc8c191709b8425908e44ec7bd8f2ffc2c9f4a",
+        "path": "Maps/MiddleEastIndia.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "2ee20c7c521ef21a5242abc444943076c90336b48074e2ae38166bfa3345f404",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "southeast_asia",
+        "luaSha256": "a2b237b60a088924c40abc15cb9456787917058eff4ecdea1cb89cfdc4e8a86e",
+        "path": "Maps/SoutheastAsia.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "59d39dde16093422b2f52232ba9197f70763059c2194945b16ff8f2097f7d083",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "east_asia",
+        "luaSha256": "e1fa5ae0d5f5cad7071474e7ac325bbbb5a093e95284d65e127824a2680572d2",
+        "path": "Maps/EastAsia.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "22980b6745a45941517585476679bd4919ca97fcb54a4eecf24b528f94e4602f",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "americas_north_central",
+        "luaSha256": "6961f7318d2ee0decf15bdbc3952c79e50ee034cca51905157488a3f5571d056",
+        "path": "Maps/AmericasNorthCentral.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "37fb9a6321e6effabf0621aa4e71bc966f381ccf5feef807b78276cd7adeaef5",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "americas_caribbean",
+        "luaSha256": "3c546acd46c713cd88437314d1df4114b95698a60b6a6fdc0daccbd126d35f0d",
+        "path": "Maps/AmericasCaribbean.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "e69cce1cf13fd3a3ae969e228953fdedc541d13da09a3ecd46a7bf70e06d2247",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "americas_south",
+        "luaSha256": "c4177ac54e67ebab5974f2544521fb43ce375c21485e38131ec6bdbdc2d7770d",
+        "path": "Maps/AmericasSouth.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "df59aca4023b58dfcb5432fe76f5c594c57857bca27fbe8238d8ae6bbcac41af",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "americas_pacific_transition",
+        "luaSha256": "93009cdbce194e1cb22e225f69b89059a016604fe212a9635a020d3880ec7ab4",
+        "path": "Maps/AmericasPacificTransition.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "579042cf9ef72d8cec50992d284dac063b935fcc6be70eab52e457d8d93bccad",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_north",
+        "luaSha256": "17516c99298f8bd0a29482cef2b857ad84553356203ee977e5648e0bb1c293c3",
+        "path": "Maps/PacificNorth.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "b94bfabfda5bd9f5408f9f090e3479694afb4107788fab7641767dd18092f075",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_west",
+        "luaSha256": "da5c2b08b5f7eb8a223038800645d6a0cbeab105a9fb71d62ebbf6252773fd64",
+        "path": "Maps/PacificWest.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "fd849c3f4115aa89e4335a3e792bb9e6261215e7284cebd851ce5443a160b498",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_melanesia",
+        "luaSha256": "253703ea4971f92c472f5eaa3aab01ea4699c1f49086f8bd6ec3beefde10909e",
+        "path": "Maps/PacificMelanesia.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "2f21fce0aeefad3f50ec7701c11d209693c2150e1e7ba9fef2b1f8d729faf5cb",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_polynesia",
+        "luaSha256": "3d3d5c695f8a46eea5b45b73535426b10c49c954ebbc125b60f6a8c6c1247395",
+        "path": "Maps/PacificPolynesia.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "d9a5658070668e9c0a1f62a0a47e1f98b5085f31b09d7078dfa93477f2f8f20e",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_new_zealand",
+        "luaSha256": "690078f320303f104a0258fd5c8e80864f7ab9e3237befbcb782cf3d345e6eea",
+        "path": "Maps/PacificNewZealand.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "5c01a2d614cff11615fb0ef281bc6b83c1a047b40bf586fd95f13676b4b48f72",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      },
+      {
+        "id": "pacific_open_ocean_encounter",
+        "luaSha256": "a317f9056faa1c24256fb4fdb7c83ffebd2a7511e2b17aa94338b256604ef5f8",
+        "path": "Maps/PacificOpenOceanEncounter.w3x",
+        "producerVersion": [
+          3,
+          0,
+          0,
+          24268
+        ],
+        "sha256": "c24072d15675958b117596e11fc83a5a720a554298b16c5081589a20c2801821",
+        "startupContract": "pass",
+        "w3iFormat": 31
+      }
+    ],
+    "status": "pass"
+  },
+  "wurstInterpreter": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "status": "pass",
+    "tests": 335
+  }
+}

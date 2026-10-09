@@ -52,32 +52,12 @@ jobs:
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
               su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
-              source_campaign="/tmp/workspace/$MAP_PROJECT/_build/release/AgeOfSailWorldCampaign.w3n"
-              test -s "$source_campaign"
-              mkdir -p /out/Campaigns
-              cp "$source_campaign" /out/Campaigns/AgeOfSailWorldCampaign.w3n
-              cd /out
-              sha256sum Campaigns/AgeOfSailWorldCampaign.w3n > SHA256SUMS.txt
-              printf "%s\n" "$SOURCE_REVISION" > SOURCE_REVISION.txt
-              printf "%s\n" \
-                "DIAGNOSTIC LAUNCH TEST ONLY - NOT A RELEASE CANDIDATE" \
-                "Source revision: $SOURCE_REVISION" \
-                "Target: Warcraft III Forsaken Kingdom 3.0.0.24268" \
-                "Real-client status: NOT TESTED by CI." \
-                "The campaign is NOT validated as gameplay-complete or release-ready." \
-                "" \
-                "1. Close Warcraft III, then copy Campaigns/AgeOfSailWorldCampaign.w3n to the game account Campaigns folder." \
-                "2. Open Single Player > Custom Campaigns > Age of Sail: The World > Begin the Campaign." \
-                "3. Check whether origin selection opens; if so, select an origin and try the first regional map." \
-                "4. Report outcome, failure stage, game client version, and crash report ID when applicable." \
-                "5. Keep the source revision and SHA256SUMS.txt with every report." \
-                "" \
-                "No official release gate is bypassed by the existence of this diagnostic file." \
-                > LAUNCH-SMOKE-ONLY.txt
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && python3 tooling/stage_launch_smoke.py --source-revision $SOURCE_REVISION --output /tmp/launch-smoke"
+              cp -R /tmp/launch-smoke/. /out/
             '
           test -s "$artifact_dir/Campaigns/AgeOfSailWorldCampaign.w3n"
           test -s "$artifact_dir/SHA256SUMS.txt"
-          echo "**Diagnostic campaign built and structurally inspected.** Retail launch: **NOT RUN**. Official release gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
+          echo "**Diagnostic campaign built and structurally inspected.** Warcraft III 3.0.1 build 24342: **original FAILED; revised NOT REVALIDATED**. Diagnostic: **LAUNCH-425-LIGHTING-1**. Official release gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload diagnostic W3N, never a player release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

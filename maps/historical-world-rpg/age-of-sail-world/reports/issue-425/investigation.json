@@ -1,0 +1,405 @@
+{
+  "access": {
+    "artifactId": 11525436101,
+    "initialSandboxAttempt": "network unavailable; authorized retry succeeded",
+    "method": "gh run download with existing authentication",
+    "runId": 37717746177
+  },
+  "controlledComparison": {
+    "change": "Insert only SetDayNightModels with two nonempty model paths before InitBlizzard in the exact failing Lua fixture.",
+    "nativeExecution": false,
+    "newContractAfter": "pass",
+    "newContractBefore": "fail: missing lighting",
+    "oldContract": "pass: config/main and InitBlizzard present"
+  },
+  "diagnosis": "Verified missing native lighting initialization; candidate launch cause, not symbolically resolved crash root cause.",
+  "evidenceLevel": "static_archive_and_independent_reference_comparison",
+  "failingCampaign": {
+    "expectedSha256": "d6651b77a48a3c7c1b4916a204676b506a380f77a4496fbadd417697e8d87abc",
+    "hashVerified": true,
+    "mapsWithVerifiedManifestHashes": 17,
+    "sha256": "d6651b77a48a3c7c1b4916a204676b506a380f77a4496fbadd417697e8d87abc",
+    "sourceRevision": "893f3b97b05ae131f66d8fb55ef3c1a4efe24bca"
+  },
+  "firstChapter": {
+    "blizzardCalls": 1,
+    "callSiteScope": "Static call sites in main/package initialization, not a captured execution trace or a total native call order.",
+    "configCalls": [
+      "SetMapName",
+      "SetMapDescription",
+      "SetPlayers(1)",
+      "SetTeams(1)",
+      "SetGamePlacement",
+      "DefineStartLocation",
+      "SetPlayerStartLocation",
+      "SetPlayerColor",
+      "SetPlayerRacePreference",
+      "SetPlayerRaceSelectable",
+      "SetPlayerController",
+      "SetPlayerTeam",
+      "SetStartLocPrioCount",
+      "SetEnemyStartLocPrioCount"
+    ],
+    "customUnitObjectDataPresent": false,
+    "deferredOrigin": [
+      "DestroyTimer",
+      "PauseGame(true)",
+      "DisplayTimedTextToPlayer"
+    ],
+    "earlyNativeCallSites": [
+      "InitBlizzard",
+      "CreateTimer (stdlib GameTimer)",
+      "CreateForce (error reporting)",
+      "CreateGroup",
+      "Location",
+      "InitGameCache",
+      "CreateTrigger / chat registration",
+      "TimerStart (deferred origin selection)"
+    ],
+    "lightingCalls": 0,
+    "luaSha256": "8d1533e1dfd0fea5331333507b242bd0e36e63072d19397c0fa4af91b9168c6a",
+    "mapInfo": {
+      "author": "WarCraftMap Project",
+      "cameraBounds": [
+        -2816.0,
+        -3328.0,
+        2816.0,
+        2816.0,
+        -2816.0,
+        2816.0,
+        2816.0,
+        -3328.0
+      ],
+      "cameraComplements": [
+        6,
+        6,
+        4,
+        8
+      ],
+      "cameraZoom": null,
+      "description": "",
+      "editorVersion": 6116,
+      "flags": 56336,
+      "forceRecords": [
+        {
+          "flags": 0,
+          "name": "TRIGSTR_002",
+          "playerMask": 4294967295
+        }
+      ],
+      "forces": 1,
+      "format": 31,
+      "gameDataVersion": 1,
+      "gameVersion": [
+        3,
+        0,
+        0,
+        24268
+      ],
+      "graphicsModes": 3,
+      "name": "Age of Sail: The World",
+      "playableHeight": 52,
+      "playableWidth": 52,
+      "playerSlots": [
+        {
+          "controller": 1,
+          "fixedStartPosition": 0,
+          "id": 0,
+          "name": "TRIGSTR_001",
+          "position": [
+            -128.0,
+            64.0
+          ],
+          "priorities": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "race": 1
+        }
+      ],
+      "players": 1,
+      "recommendedPlayers": "TRIGSTR_009",
+      "saves": 79,
+      "scriptLanguage": 1
+    },
+    "overridesOfUnitsSlkOrUiMinimapPresent": false,
+    "path": "Maps/AgeOfSailWorld.w3x",
+    "sha256": "680d8355f3139c549fbf8a45f1533baadde641805ae32f07d735aee73caa84bd",
+    "startupFailures": [
+      "compiled Lua main must initialize terrain and unit lighting once before InitBlizzard"
+    ]
+  },
+  "independentArchiveRead": {
+    "campaignMembers": 20,
+    "campaignSha256": "d6651b77a48a3c7c1b4916a204676b506a380f77a4496fbadd417697e8d87abc",
+    "detail": "failing-independent-mpq.json.gz",
+    "encryptedListfilesNotIndependentlyRead": 17,
+    "independentReader": "mpyq",
+    "maps": [
+      {
+        "id": "bootstrap_runtime_validation",
+        "sha256": "680d8355f3139c549fbf8a45f1533baadde641805ae32f07d735aee73caa84bd",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 47
+      },
+      {
+        "id": "europe_west",
+        "sha256": "0d05e8efb9344118bf330d3a0a7d0c9e85990525c57730ebac276f55cbefd3de",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "europe_central_east",
+        "sha256": "bc74c50defe9b9f89f1ddfbe16634530435df619ab9c5a46a0ae98b53502c609",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "africa",
+        "sha256": "909487611adee0fd417bbc0f776f8cbf81aed1eef9f7a6766fd3fc2b60cc6d29",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "middle_east_india",
+        "sha256": "845dab0378ce711e62f189a2ff3281d359099790b88088c7747f43f70908e008",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "southeast_asia",
+        "sha256": "a389103b48abd718691acd1bff8e832ff8a7df57bdd540eb886dfbce22cc3180",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "east_asia",
+        "sha256": "93191fe89cd511b41b3b661097dbbcfd2880779b28b81bd89b70b86d6c438294",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "americas_north_central",
+        "sha256": "e2d36f9c83fdd26aecc238300d79f4aba998af80882e4edd413cabc6a08aec07",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "americas_caribbean",
+        "sha256": "421262c37fac90faa5ced21ee90e75f7fc83c550da2b46f1679525a4c713f755",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "americas_south",
+        "sha256": "e37fe921ae07ce4598b43cfd264a101e32b82ab390d8571c92d1cea91b6bc647",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "americas_pacific_transition",
+        "sha256": "274588da6aa3daf6b112efb6d5ac4c7586311a56020c0229d4bea88a3c6b788e",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_north",
+        "sha256": "8cca8e6c2c5c15d3207001a2fa6eb5a844afd289e4317f87331f95832d094687",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_west",
+        "sha256": "624c416f049dc84406f914989bae26745dee4eed00dbc32637631e05cc28a08f",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_melanesia",
+        "sha256": "c980b56b1f6af80b2b30717603f069ec8c1062da84ba54daeb7532d66f80b206",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_polynesia",
+        "sha256": "30b1e849519191f84bd165c7a41e0e09de41d04bef4858336d3ebeecaed2ba36",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_new_zealand",
+        "sha256": "003396012cb6205b3bffd52b6d489f43206bf71b771d243f64a0d7a678854c6f",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 48
+      },
+      {
+        "id": "pacific_open_ocean_encounter",
+        "sha256": "9376f024443a537e127d540b0b0202018b69f15701cd7274378b0fbe6acad51e",
+        "unsupportedMembers": [
+          {
+            "name": "(listfile)",
+            "reason": "Encryption is not supported yet."
+          }
+        ],
+        "verifiedMembers": 47
+      }
+    ],
+    "nestedMembersVerified": 814,
+    "readerSha256": "e10fa2f422d837345f438934a99a3cdf67fa9148c7106d421408e1ecfa83e239",
+    "revision": "6bfba18ec403f702666b4109db3d95f3b97b1dc5"
+  },
+  "independentReference": {
+    "fixture": "tests/War3Net.TestTools.UnitTesting/TestData/Maps/patch_3.0.0_Empty.w3x",
+    "fixtureSha256": "18af23464674350adf20270e070766ce4894f5e878ccae3c1034b88c02281893",
+    "generator": "src/War3Net.Build/MapScriptBuilder/Common/Main.cs",
+    "generatorSha256": "28b0d9faf99b991e8dc64260f1d1de7488d34576825336db3d7a1d05afbe0f42",
+    "interpretation": "Independent editor/reference evidence of the omitted lighting setup. Not native execution of this campaign or proof of crash causality. Producer version/layout differences alone are not incompatibility evidence.",
+    "mainCallsBeforeBlizzard": [
+      "SetCameraBounds",
+      "SetDayNightModels",
+      "SetHDWaterParamsEx",
+      "NewSoundEnvironment",
+      "SetAmbientDaySound",
+      "SetAmbientNightSound",
+      "SetMapMusic"
+    ],
+    "producerVersion": "3.0.0.24268",
+    "repository": "https://github.com/Drake53/War3Net",
+    "revision": "18e88f0e1f67e6b16870dcbcd827740275fe2173",
+    "scriptSha256": "ed8ad942c9f0ef86456d3a3ac2a0a27fe5a0c17c6f64801c4848017f83ec8acf",
+    "w3iFormat": 39
+  },
+  "issue": 425,
+  "nativeEvidence": {
+    "client": "3.0.1 build 24342",
+    "exception": "0xC0000005",
+    "instruction": "mov rcx, qword ptr [rcx + 0x3a0]",
+    "moduleOffset": "0x8E3F42",
+    "objectIdentity": "unresolved",
+    "originalRCX": "0",
+    "readAddress": "0x3A0",
+    "revisedLaunchStatus": "not_revalidated",
+    "source": "Sanitized issue #425 findings supplied by the owner; private ZIP/dump not accessed from the VM."
+  },
+  "pinnedCore": {
+    "blizzardJsha256": "b6db172525d7b106781337252efcba4f56bceb16bb4832680ad07dea052e6e26",
+    "interpretation": "InitBlizzard does not supply the omitted lighting call.",
+    "setDayNightModelsReferences": 0
+  },
+  "releaseBlocked": true,
+  "remainingDiscriminator": "Launch the materially revised diagnostic on 3.0.1 build 24342. Origin selection opening validates the launch boundary. If it still fails, compare the new module-relative exception and original context before changing another startup input.",
+  "revisedFirstChapter": {
+    "lightingModels": [
+      "Environment\\DNC\\DNCLordaeron\\DNCLordaeronTerrain\\DNCLordaeronTerrain.mdl",
+      "Environment\\DNC\\DNCLordaeron\\DNCLordaeronUnit\\DNCLordaeronUnit.mdl"
+    ],
+    "literalModelPathsMatchIndependentEditorFixture": true,
+    "luaSha256": "efaffe67682ca0c3c952722ce0a5f42be1ba954a27c5ad49177f48b6c536ebe3",
+    "nativeExecuted": false,
+    "sha256": "7a32a2ceb8b077af74b655f190d3c82ad3f6f3c5433d8b62bdc97acd76dc96e4",
+    "sourceIdentity": {
+      "sourceRevision": "a2e24e86dd8f2284e8d33786c11d125c7fe513f4",
+      "sourceTreeSha256": "b25155f9fa96cd357c58566ee8f0d417fe129a39ca1ee08d38d3f4efd0bd695a"
+    }
+  },
+  "sourceChange": [
+    {
+      "afterLightingCalls": 1,
+      "afterSha256": "2594567bb2f59a26935f8c3f83bfdc2d20fa59a7bccc11b8bb8e3f7555b3e372",
+      "beforeLightingCalls": 0,
+      "beforeSha256": "ccf2b0bc41cfeb52069ae99d5a66acf2f1d677f7a2dfab1965f77dc675c5a5af",
+      "path": "maps/historical-world-rpg/age-of-sail-world/map/AgeOfSailWorld.w3x/war3map.j",
+      "terrainTileset": "L"
+    },
+    {
+      "afterLightingCalls": 1,
+      "afterSha256": "2594567bb2f59a26935f8c3f83bfdc2d20fa59a7bccc11b8bb8e3f7555b3e372",
+      "beforeLightingCalls": 0,
+      "beforeSha256": "ccf2b0bc41cfeb52069ae99d5a66acf2f1d677f7a2dfab1965f77dc675c5a5af",
+      "path": "maps/historical-world-rpg/conformance-campaign/map/Conformance.w3x/war3map.j",
+      "terrainTileset": "L"
+    }
+  ]
+}
