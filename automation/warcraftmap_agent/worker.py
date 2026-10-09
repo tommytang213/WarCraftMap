@@ -596,6 +596,22 @@ def issue_blocker_numbers(issue: dict[str, Any]) -> set[int]:
     return numbers
 
 
+def completed_dependency_numbers(
+    issues: list[dict[str, Any]], pull_requests: list[dict[str, Any]],
+) -> set[int]:
+    """Only closed issues or genuinely merged PRs can satisfy # dependencies.
+
+    A closed but unmerged PR is not complete. Merged PRs must have their
+    mergedAt timestamp, and are distinct from GitHub Issues history.
+    """
+    closed_issues = {int(row["number"]) for row in issues if not is_open(row)}
+    merged_prs = {
+        int(row["number"]) for row in pull_requests
+        if str(row.get("state") or "").upper() == "MERGED" and row.get("mergedAt")
+    }
+    return closed_issues | merged_prs
+
+
 def repair_kind(record: dict[str, Any]) -> str:
     """Return the retry lane, including recovery for legacy CI-repair records."""
     explicit = str(record.get("repair_kind") or "")
@@ -640,7 +656,7 @@ def select_issue(
 ) -> dict[str, Any] | None:
     blockers = open_design_numbers or set()
     if closure is not None:
-        closed = {int(row["number"]) for row in closure.issues if not is_open(row)}
+        closed = completed_dependency_numbers(closure.issues, closure.prs)
         blockers = blockers | {number for issue in issues for number in issue_blocker_numbers(issue) if number not in closed}
     for issue in issues:
         if not READY.match(str(issue.get("title", ""))):
@@ -1264,7 +1280,7 @@ def main(argv: list[str] | None = None) -> int:
         closure = context["closure"]
         if closure.active:
             state.pop("planning_exhausted_for_blockers", None)
-        closed_numbers = {int(item["number"]) for item in context["issues"] if not is_open(item)}
+        closed_numbers = completed_dependency_numbers(context["issues"], context["pull_requests"])
         # PR recovery and merging must obey the same dependency/design gates
         # as implementation selection; a ready PR cannot bypass a missing rule.
         allowed_pr_issues = {int(row["number"]) for row in context["issues"]
