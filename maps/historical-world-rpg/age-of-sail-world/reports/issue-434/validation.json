@@ -1,0 +1,147 @@
+{
+  "additionalChecks": {
+    "composedCatalogue": "pass",
+    "frameworkBoundary": "pass",
+    "gitDiffCheck": "pass",
+    "globalCharacters": "pass",
+    "worldContracts": "pass"
+  },
+  "campaign": {
+    "artifact": "_build/issue434/AgeOfSailWorldCampaign.w3n",
+    "artifactSha256": "3f3aaf9f500069b9440df01c9a7ae4c9398be752cd94ae2be92fc2f5a6e2043d",
+    "artifactTracked": false,
+    "stages": "diagnostic-stages.log.gz",
+    "status": "pass",
+    "transcript": "campaign.log.gz",
+    "typecheckedAndBuiltMaps": [
+      "bootstrap_runtime_validation",
+      "europe_west",
+      "europe_central_east",
+      "africa",
+      "middle_east_india",
+      "southeast_asia",
+      "east_asia",
+      "americas_north_central",
+      "americas_caribbean",
+      "americas_south",
+      "americas_pacific_transition",
+      "pacific_north",
+      "pacific_west",
+      "pacific_melanesia",
+      "pacific_polynesia",
+      "pacific_new_zealand",
+      "pacific_open_ocean_encounter"
+    ]
+  },
+  "committed": false,
+  "environment": {
+    "buildLocation": "container-private /tmp/issue434",
+    "containerUser": "wurstuser",
+    "dependencyMount": "read-only at /dependencies",
+    "globalToolsChanged": false,
+    "network": "none",
+    "servicesInstalled": false,
+    "validationContainersRemoved": true,
+    "worktreeMount": "read-only at /source"
+  },
+  "framework": {
+    "evidence": "framework-conformance.json",
+    "mapsBuiltPerVariant": 3,
+    "sharedSourcesUnchanged": 162,
+    "status": "pass",
+    "transcript": "framework.log.gz",
+    "variants": [
+      "original",
+      "content-mutated"
+    ],
+    "wurstTestsPerVariant": 2
+  },
+  "issue": 434,
+  "playerQARequested": false,
+  "published": false,
+  "pushed": false,
+  "python": {
+    "distinctTests": 189,
+    "generationAndClock": {
+      "status": "pass",
+      "tests": 38,
+      "transcript": "generation-clock-python.log.gz"
+    },
+    "profileVectorsRechecked": {
+      "status": "pass",
+      "tests": 3,
+      "transcript": "profile-python.log.gz"
+    },
+    "targeted": {
+      "status": "pass",
+      "tests": 103,
+      "transcript": "targeted-python.log.gz"
+    },
+    "traceability": {
+      "status": "pass",
+      "tests": 48,
+      "transcript": "traceability-tests.log.gz"
+    }
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "saveCompatibility": {
+    "legacyRpgSchemas": [
+      1,
+      2,
+      3
+    ],
+    "migration": "Preserve saved progression and ownership; absent ranks become empty; never replay starting grants.",
+    "rpgSchemaVersion": 4,
+    "supportedCampaignSchemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  "sourceIdentity": {
+    "sourceRevision": "88c144a6f136edad4e27d1dbda4d73d912be3609",
+    "sourceTreeSha256": "9d553f9a6dd3c477b73c3af8b67040470729cdf6de66f0fc0d0d3ee94c73f83b"
+  },
+  "sourceState": "uncommitted worktree; source-tree digest binds the tested implementation independently of the base revision",
+  "status": "ready_for_repository_validation",
+  "traceability": {
+    "artifactCheck": "artifact-verification.log.gz",
+    "compiledProfilesPerRegionalMap": 107,
+    "evidence": "scoped-evidence.json",
+    "receipts": 4,
+    "regionalMaps": 16,
+    "remainingPublicationBlockers": 8728,
+    "requirement": "REQ-0093.01",
+    "retainedHeroProgressionObligations": [
+      "ROAD-0135.01",
+      "REQ-0091.01",
+      "REQ-0092.01",
+      "REQ-0094.02"
+    ],
+    "sourceReportRegenerated": true,
+    "status": "pass_for_issue_scope"
+  },
+  "wurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 362,
+    "executionLogSha256": "8ce42e32d5ef9152f00e214fed3159cc75ced0f70d66542bd795bf290dcae838",
+    "inputSetSha256": "64a2baad653f54c2846df859999f09d31e8406b2a69e65880c00f7a29bca5020",
+    "results": "wurst-results.json.gz",
+    "status": "pass",
+    "succeeded": 362,
+    "transcript": "wurst-execution.log.gz"
+  }
+}

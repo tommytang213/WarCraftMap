@@ -398,6 +398,30 @@ function displaceWithinComponent(LiveRecoveryFixture f, unit target, string id)
 	natives.count.assertEquals(1)
 	natives.moves.assertEquals(2)
 
+/** Make a real v2 fixture: omit the main ID and the two v4 rank fields.
+ * Merely relabelling a v4 snapshot would correctly fail schema validation. */
+function legacyRecoveryRpg(string current) returns string
+	var result = "v2"
+	var start = 3
+	while start < StringLength(current)
+		var finish = current.indexOf("|", start)
+		if finish < 0
+			finish = StringLength(current)
+		let record = SubString(current, start, finish)
+		if record.startsWith("h,")
+			var commas = 0
+			var limit = StringLength(record)
+			for i = 0 to StringLength(record) - 1
+				if SubString(record, i, i + 1) == ","
+					commas++
+					if commas == 18
+						limit = i
+			result += "|" + SubString(record, 0, limit)
+		else if not record.startsWith("p,")
+			result += "|" + record
+		start = finish + 1
+	return result
+
 @test function liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords()
 	let f = new LiveRecoveryFixture("europe_west", "england")
 	registerUnstuckCommand(f.commands, f.natives.service)
@@ -418,8 +442,7 @@ function displaceWithinComponent(LiveRecoveryFixture f, unit target, string id)
 	state.recovery.refresh()
 	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("europe_west")
 	let rpg = state.rpg.captureState()
-	let firstHero = rpg.indexOf("|h,")
-	state.rpg.restoreState("v2" + SubString(rpg, firstHero, StringLength(rpg))).assertTrue()
+	state.rpg.restoreState(legacyRecoveryRpg(rpg)).assertTrue()
 	state.rpg.heroes.mainCharacterId.assertEquals(f.main)
 	state.rpg.restoreState(rpg + "|p," + f.main).assertFalse()
 	f.commands.dispatch(Player(0), "/unstuck all").assertTrue()

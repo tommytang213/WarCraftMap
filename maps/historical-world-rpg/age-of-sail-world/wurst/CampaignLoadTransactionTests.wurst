@@ -260,7 +260,7 @@ class LoadPolity implements PiratePolityAuthority
 	override function setRecognition(string polityId, string countryId, string status)
 		ordinary.setRecognition(polityId, countryId, status)
 
-class LoadFixture
+public class LoadFixture
 	LoadStorage storage = new LoadStorage()
 	LoadPorts ports = new LoadPorts()
 	CampaignClock clock = new CampaignClock(1, 100, 1, 1.)

@@ -396,6 +396,15 @@ function originLifecycle(string origin, string mapId)
 	f.start("ming_empire")
 	let rpg = f.campaign.state.rpg
 	rpg.heroes.heroes[0].experience = 753
+	let companion = rpg.heroes.get("hang_tuah")
+	companion.level.assertEquals(66)
+	companion.awardExperience(6607)
+	companion.skillRanks = "command:61~diplomacy:59~navigation:60~"
+	companion.masteryRanks = "land_warfare:38~sea_command:39~statecraft:40~"
+	companion.skillPoints = 9
+	companion.masteryPoints = 4
+	companion.signatureProgressionId = "retained_personal_tree"
+	companion.choosePerk("earned_perk", 60).assertTrue()
 	rpg.journal.currency = 123
 	let military = f.campaign.state.militarySettlements
 	military.settlements[0].reserves = 17
@@ -434,6 +443,15 @@ function originLifecycle(string origin, string mapId)
 	resumed.identity.originId().assertEquals("ming_empire")
 	resumed.identity.allegianceId().assertEquals("portugal")
 	resumed.state.rpg.heroes.heroes[0].experience.assertEquals(753)
+	let transferred = resumed.state.rpg.heroes.get("hang_tuah")
+	transferred.level.assertEquals(67)
+	transferred.experience.assertEquals(7)
+	transferred.skillPoints.assertEquals(9)
+	transferred.masteryPoints.assertEquals(4)
+	transferred.skillRanks.assertEquals(companion.skillRanks)
+	transferred.masteryRanks.assertEquals(companion.masteryRanks)
+	transferred.signatureProgressionId.assertEquals("retained_personal_tree")
+	transferred.chosenPerks.assertEquals("~earned_perk~")
 	resumed.state.rpg.journal.currency.assertEquals(123)
 	resumed.state.militarySettlements.settlements[0].reserves.assertEquals(17)
 	resumed.state.militarySettlements.forces[0].supply.assertEquals(13)

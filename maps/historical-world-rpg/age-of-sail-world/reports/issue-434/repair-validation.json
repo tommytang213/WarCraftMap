@@ -1,0 +1,80 @@
+{
+  "additionalChecks": {
+    "frameworkBoundary": "pass",
+    "worldContracts": "pass"
+  },
+  "checkpointRevision": "e97bb810303b62772a2c8fca8db085e05b497c01",
+  "freshPinnedWurstValidation": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "containersStarted": false,
+    "deferredTo": "outer worker repository validation",
+    "dockerCheck": "permission denied while trying to connect to the docker API at unix:///var/run/docker.sock",
+    "error": "Wurst execution failed: inputs stage failed: required tool 'grill' was not found on PATH",
+    "status": "unavailable"
+  },
+  "fullRepositorySuiteRerun": false,
+  "issue": 434,
+  "playerQARequested": false,
+  "python": {
+    "checks": {
+      "framework": {
+        "command": "python3 -m unittest discover -s tests -p test_framework_conformance.py -v",
+        "seconds": 223.49,
+        "status": "pass",
+        "tests": 8,
+        "transcript": "repair-framework.log.gz"
+      },
+      "release-blocker": {
+        "command": "python3 -m unittest -v tests.test_release_blocker_audit",
+        "seconds": 65.781,
+        "status": "pass",
+        "tests": 9,
+        "transcript": "repair-release-blocker.log.gz"
+      },
+      "targeted": {
+        "command": "PYTHONPATH=tests python3 -m unittest -v test_hero_starting_profiles test_hero_progression test_progression_catalog test_progression_coverage test_recruitment_generation test_character test_campaign_clock test_campaign_save test_campaign_save_manager test_cross_map_persistence test_live_recovery test_release_save_compatibility test_runtime_acceptance test_requirement_traceability",
+        "seconds": 42.848,
+        "status": "pass",
+        "tests": 136,
+        "transcript": "repair-targeted.log.gz"
+      }
+    },
+    "distinctTests": 153
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "repair": {
+    "cause": "The release-blocker audit report retained the package.json hash from before the starting-profile composer was configured, so the freshness check raised before emitting its JSON summary.",
+    "change": "Regenerated reports/release-blocker-audit.json; only the package.json release-input hash changed.",
+    "implementationUnchanged": true,
+    "packageJsonSha256": "bb9237e42b391c1825558cc9f3890bbd1e20ea2598653f5451e1c0cf22529f30",
+    "unresolvedCampaignBlockers": 21
+  },
+  "retainedPinnedExecution": {
+    "currentSourceInputsMatchRetainedExecution": true,
+    "inputSetSha256": "64a2baad653f54c2846df859999f09d31e8406b2a69e65880c00f7a29bca5020",
+    "logSha256": "8ce42e32d5ef9152f00e214fed3159cc75ced0f70d66542bd795bf290dcae838",
+    "reexecuted": false,
+    "requirement": "REQ-0093.01",
+    "scopedReceipts": 4,
+    "sourceIdentity": {
+      "sourceRevision": "88c144a6f136edad4e27d1dbda4d73d912be3609",
+      "sourceTreeSha256": "9d553f9a6dd3c477b73c3af8b67040470729cdf6de66f0fc0d0d3ee94c73f83b"
+    },
+    "status": "pass",
+    "tests": 362,
+    "verification": [
+      "verify_execution_coverage",
+      "execution_results"
+    ]
+  },
+  "status": "ready_for_repository_validation",
+  "traceability": {
+    "command": "python3 tooling/requirement_traceability_audit.py --write --check",
+    "reportUnchanged": true,
+    "status": "pass",
+    "summary": "Traceability: 643 obligations; 7184 publication blockers",
+    "transcript": "repair-traceability.log.gz"
+  }
+}

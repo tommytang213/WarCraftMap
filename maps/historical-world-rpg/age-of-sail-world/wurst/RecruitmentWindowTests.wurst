@@ -45,7 +45,7 @@ class RecruitmentStorage implements CampaignSaveStorage
 	override function diagnostic() returns string
 		return ""
 
-class RecruitmentFixture
+public class RecruitmentFixture
 	RecruitmentPorts ports = new RecruitmentPorts()
 	RecruitmentStorage storage = new RecruitmentStorage()
 	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(ports)
