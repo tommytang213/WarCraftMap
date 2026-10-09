@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Any
 
 from .budget import budget_available, recent_runs, usage_summary
-from .closure import Closure, REPORTS, build_closure, is_open, marked_keys
+from .closure import (APPROVED_NATIVE_LAUNCH_DIAGNOSTIC, Closure, REPORTS,
+                      build_closure, is_open, marked_keys)
 
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
@@ -658,7 +659,15 @@ def select_issue(
     if closure is not None:
         closed = completed_dependency_numbers(closure.issues, closure.prs)
         blockers = blockers | {number for issue in issues for number in issue_blocker_numbers(issue) if number not in closed}
-    for issue in issues:
+    # Keep the original order for ordinary repairs. Explicitly verified
+    # native launch failure #438 takes precedence only while release closure
+    # remains active; the one-worker lock and all attempt/CI gates still apply.
+    ordered = (sorted(issues, key=lambda issue: (
+        0 if issue.get("number") in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC
+             and closure is not None and closure.active and closure.permits_issue(issue)
+        else 1))
+        if closure is not None and closure.active else issues)
+    for issue in ordered:
         if not READY.match(str(issue.get("title", ""))):
             continue
         if closure is not None and not closure.permits_issue(issue):
