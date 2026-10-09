@@ -39,6 +39,23 @@ def copy_category(destination):
 
 
 class FrameworkConformanceTests(unittest.TestCase):
+    def test_command_authority_locations_resolve_only_authored_assignments(self):
+        for name in ("age-of-sail-world", "conformance-campaign"):
+            project = CATEGORY / name
+            manifest = json.loads((project / "physical-maps.json").read_text())
+            with self.subTest(scenario=name), tempfile.TemporaryDirectory() as tmp:
+                write_settings(project, Path(tmp))
+                settings = (Path(tmp) / "ScenarioSettings.wurst").read_text()
+                resolver = settings.split("public function scenarioAuthorityRegion", 1)[1].split("public function", 1)[0]
+                for physical in manifest["physicalMaps"]:
+                    logical = physical["assignments"]["logicalRegionIds"]
+                    if len(logical) != 1:
+                        continue
+                    for location in [logical[0], physical["id"], *physical["assignments"]["regionalInstanceIds"]]:
+                        self.assertIn('\tif locationId == ' + json.dumps(location) +
+                                      '\n\t\treturn ' + json.dumps(logical[0]), resolver)
+                self.assertTrue(resolver.rstrip().endswith('return ""'))
+
     def test_recovery_destinations_are_generated_from_each_campaign_manifest(self):
         for name in ("age-of-sail-world", "conformance-campaign"):
             project = CATEGORY / name

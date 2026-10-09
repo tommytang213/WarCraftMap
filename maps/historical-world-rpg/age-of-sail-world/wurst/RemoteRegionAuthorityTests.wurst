@@ -1,0 +1,271 @@
+package RemoteRegionAuthorityTests
+
+import CampaignStartupTests
+import CampaignSaveManager
+import CommandRouter
+import PlayableCampaignRuntime
+import RemoteRegionManagement
+import MilitarySettlementRuntime
+import ManagementScreenPauseController
+import ScenarioSettings
+import WarcraftRegionalRuntime
+import Wurstunit
+
+/** Record the context boundary; campaign registration, authority, access,
+ * command dispatch and transactional save/load all remain production. */
+class RegionAuthorityPorts implements RegionCommandRuntime, CampaignPauseRuntime, CommandOutput
+	WarcraftRegionalAdapter regional
+	string calls = ""
+	string output = ""
+	boolean fail = false
+	int pauseWrites = 0
+	override function snapshotRuntime() returns string
+		calls += "snapshot|"
+		return regional.activeRegionId
+	override function restoreRuntime(string snapshot)
+		calls += "restore|"
+		regional.activeRegionId = snapshot
+	override function retireCommandRegion(string regionId)
+		calls += "retire:" + regionId + "|"
+	override function reconstructCommandRegion(player sender, string regionId) returns boolean
+		calls += "reconstruct:" + regionId + "|"
+		regional.activeRegionId = regionId
+		return not fail
+	override function focusCommandRegion(player sender, string regionId)
+		calls += "focus:" + regionId + "|"
+		regional.activeRegionId = regionId
+	override function diagnostic() returns string
+		return "recorded reconstruction failure"
+	override function setCampaignPaused(boolean paused)
+		pauseWrites++
+	override function show(player sender, string message)
+		output = message
+
+class RegionAuthorityFixture
+	StartupFixture startup = new StartupFixture(new StartupStorage(), new StartupStorage(), "africa")
+	PlayableCampaignServices campaign
+	MilitarySettlementRuntime military
+	RegionAuthorityPorts ports = new RegionAuthorityPorts()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(ports, false)
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), ports)
+	construct()
+		startup.start("ethiopian_empire")
+		campaign = startup.campaign
+		military = campaign.state.militarySettlements
+		// Share the projection context with campaign restoration. A committed
+		// load must really leave the old remote region, not just reset the UI ID.
+		ports.regional = campaign.state.regional
+		ports.regional.activateRegion("africa")
+		// Use the very policy constructed by PlayableCampaignServices. Only the
+		// context adapter and native pause/output effects are replaced.
+		campaign.regionSelector = new RegionSelector(campaign.regionAccess, ports, "africa", pauses)
+		registerCampaignSaveCommands(commands, campaign)
+	function dispatch(string command)
+		commands.dispatch(Player(0), command).assertTrue()
+	function rejectAs(player sender, string command)
+		let authority = campaign.state.captureAuthoritativeState()
+		let calls = ports.calls
+		let owners = pauses.getModalOwnerCount()
+		let writes = ports.pauseWrites
+		let context = campaign.regionSelector.getCommandRegionId()
+		let active = ports.regional.activeRegionId
+		commands.dispatch(sender, command).assertTrue()
+		if command.startsWith("/region ")
+			(ports.output.startsWith("You are not authorized") or ports.output.startsWith("Unknown region:") or ports.output.startsWith("Region is not known:")).assertTrue()
+		else
+			(campaign.diagnostic() != "").assertTrue()
+		campaign.state.captureAuthoritativeState().assertEquals(authority)
+		ports.calls.assertEquals(calls)
+		ports.regional.activeRegionId.assertEquals(active)
+		pauses.getModalOwnerCount().assertEquals(owners)
+		ports.pauseWrites.assertEquals(writes)
+		campaign.regionSelector.getCommandRegionId().assertEquals(context)
+		campaign.regionSelector.getPhysicalRegionId().assertEquals("africa")
+		campaign.identity.physicalMapId().assertEquals("africa")
+	function reject(string command)
+		rejectAs(Player(0), command)
+	function open(string regionId)
+		let authority = campaign.state.captureAuthoritativeState()
+		dispatch("/region " + regionId)
+		campaign.regionSelector.getCommandRegionId().assertEquals(regionId)
+		ports.regional.activeRegionId.assertEquals(regionId)
+		campaign.state.captureAuthoritativeState().assertEquals(authority)
+		campaign.identity.physicalMapId().assertEquals("africa")
+	function home()
+		let authority = campaign.state.captureAuthoritativeState()
+		dispatch("/region return")
+		campaign.regionSelector.getCommandRegionId().assertEquals("africa")
+		ports.regional.activeRegionId.assertEquals("africa")
+		campaign.state.captureAuthoritativeState().assertEquals(authority)
+	function addForce(string id, string controller, string locationId, int kind) returns RuntimeForce
+		let value = new RuntimeForce(id, controller, locationId, "infantry", kind, 'hfoo', 20, 10, 128., 256.)
+		value.orderId = "patrol"
+		value.orderX = 333.
+		value.orderY = 444.
+		military.registerForce(value)
+		return value
+
+function remoteAuthorityReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"REQ-0296.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"campaign-region-command\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+	print("TRACEABILITY {\"requirement\":\"REQ-0305.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"campaign-region-command\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+@test function registeredRegionRejectsKnowledgeCitizenshipVisitationAndOtherPlayers()
+	let f = new RegionAuthorityFixture()
+	registerRegionCommand(f.commands, f.campaign.regionSelector, f.ports).assertEquals("")
+	f.military.registerSettlement(new SettlementRuntimeState("citizen-town", "ethiopian_empire", "europe_west", 'htow', 'hfoo', 20, 20, 20, 20, 0., 0.))
+	f.campaign.identity.originId().assertEquals("ethiopian_empire")
+	f.reject("/region europe")
+	f.ports.output.assertEquals("You are not authorized to manage region: europe.")
+	f.campaign.identity.changeAllegiance("england").assertTrue()
+	f.reject("/region europe")
+	// The startup/load visitation hook reveals knowledge only.
+	f.campaign.regionAccess.reveal("east_asia")
+	f.campaign.regionAccess.regionIsKnown(Player(0), "east_asia").assertTrue()
+	f.reject("/region east_asia")
+	f.reject("/region nowhere")
+	f.addForce("hidden-owned", "player", "pacific_north", FORCE_FLEET)
+	f.reject("/region pacific")
+	f.ports.output.assertEquals("Region is not known: pacific.")
+	f.military.transferSovereignty("london", "player")
+	f.rejectAs(Player(1), "/region europe")
+	f.campaign.state.beginTransition()
+	f.reject("/region europe")
+	f.campaign.state.cancelTransition()
+	f.ports.calls.assertEquals("")
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	remoteAuthorityReceipt("failure")
+
+@test function registeredRegionUsesCurrentHoldingsAndOnlyEligibleForces()
+	let f = new RegionAuthorityFixture()
+	registerRegionCommand(f.commands, f.campaign.regionSelector, f.ports).assertEquals("")
+	// An abstract controlled holding needs no Warcraft core to confer management.
+	f.military.registerSettlement(new SettlementRuntimeState("abstract-owned", "player", "europe_atlantic_isles", 'htow', 'hfoo', 20, 20, 20, 20, 0., 0.).withPolicy(false, true, ""))
+	let unrelated = f.addForce("unrelated", "england", "europe_west", FORCE_ARMY)
+	let outer = f.pauses.openModalManagementScreen()
+	for i = 0 to 2
+		f.open("europe")
+		f.pauses.getModalOwnerCount().assertEquals(2)
+		f.home()
+		f.pauses.getModalOwnerCount().assertEquals(1)
+	unrelated.controllerId.assertEquals("england")
+	unrelated.orderId.assertEquals("patrol")
+	f.military.transferSovereignty("abstract-owned", "england")
+	f.reject("/region europe")
+	let runtimeForce = f.addForce("eligible", "player", "europe_central_east", FORCE_FLEET)
+	f.open("europe")
+	f.home()
+	runtimeForce.regionId = "europe"
+	f.open("europe")
+	f.home()
+	runtimeForce.regionId = "europe_unregistered"
+	f.reject("/region europe")
+	runtimeForce.regionId = "europe_west"
+	runtimeForce.active = false
+	f.reject("/region europe")
+	runtimeForce.active = true
+	runtimeForce.strength = 0
+	f.reject("/region europe")
+	runtimeForce.strength = 20
+	for kind = FORCE_GARRISON to FORCE_DEFENSE
+		runtimeForce.kind = kind
+		f.reject("/region europe")
+	runtimeForce.kind = FORCE_ARMY
+	f.open("europe")
+	f.home()
+	outer.close()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	remoteAuthorityReceipt("success")
+
+@test function registeredRegionRevalidatesCaptureAndControlLossEvenForOpenContext()
+	let f = new RegionAuthorityFixture()
+	registerRegionCommand(f.commands, f.campaign.regionSelector, f.ports).assertEquals("")
+	f.reject("/region europe")
+	f.military.setWar("england", "player", true)
+	f.military.capture("london", "player", 10.).assertTrue()
+	f.military.settlements[f.military.settlementIndex("london")].legalOwnerId.assertEquals("england")
+	f.open("europe")
+	f.military.transferSettlement("london", "england")
+	// Same-region requests must not bypass the live policy.
+	f.reject("/region europe")
+	f.home()
+	let runtimeForce = f.addForce("transferred", "england", "europe_west", FORCE_ARMY)
+	f.military.transferControl(runtimeForce.id, "player")
+	f.open("europe")
+	f.military.transferControl(runtimeForce.id, "england")
+	f.reject("/region europe")
+	f.home()
+	f.military.transferSovereignty("london", "player")
+	f.open("europe")
+	f.military.transferSettlement("london", "england")
+	// Legal title alone cannot command an enemy occupation.
+	f.military.settlements[f.military.settlementIndex("london")].legalOwnerId.assertEquals("player")
+	f.reject("/region europe")
+	f.home()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	remoteAuthorityReceipt("stale")
+
+@test function registeredRegionLoadsReconstructAccessAndRejectWithoutChangingContext()
+	let f = new RegionAuthorityFixture()
+	registerRegionCommand(f.commands, f.campaign.regionSelector, f.ports).assertEquals("")
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "without-rights").assertTrue()
+	f.military.transferSovereignty("london", "player")
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "with-rights").assertTrue()
+	let outer = f.pauses.openModalManagementScreen()
+	f.open("europe")
+	f.startup.saves.writeTransactional("manual_03", "damaged").assertTrue()
+	f.reject("/load 3")
+	// Fail after domains have been restored. Rollback replaces authority records;
+	// the policy must observe the restored records, not retain pointers or grants.
+	f.startup.ports.failProjection = true
+	f.reject("/load 1")
+	f.startup.ports.failProjection = false
+	f.campaign.regionAccess.mayCommandRegion(Player(0), "europe").assertTrue()
+	f.dispatch("/load 1")
+	f.campaign.diagnostic().assertEquals("")
+	f.campaign.regionSelector.getCommandRegionId().assertEquals("africa")
+	f.campaign.state.regional.activeRegionId.assertEquals("africa")
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	f.campaign.regionAccess.mayCommandRegion(Player(0), "europe").assertFalse()
+	f.reject("/region europe")
+	for i = 0 to 1
+		f.dispatch("/load 2")
+		f.campaign.diagnostic().assertEquals("")
+		f.campaign.regionSelector.getCommandRegionId().assertEquals("africa")
+		f.open("europe")
+		f.pauses.getModalOwnerCount().assertEquals(2)
+	f.home()
+	outer.close()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	// Derived access can be discarded and rebuilt without a save schema change.
+	let rebuilt = new PlayableRegionAccess(f.campaign.state)
+	rebuilt.add("europe", true)
+	rebuilt.mayCommandRegion(Player(0), "europe").assertTrue()
+	f.military.transferSovereignty("london", "england")
+	rebuilt.mayCommandRegion(Player(0), "europe").assertFalse()
+	remoteAuthorityReceipt("replay")
+
+@test function registeredRegionAdapterFailureRestoresPreviousViewAndPauseOwner()
+	let f = new RegionAuthorityFixture()
+	registerRegionCommand(f.commands, f.campaign.regionSelector, f.ports).assertEquals("")
+	f.military.transferSovereignty("london", "player")
+	f.addForce("other-owned", "player", "east_asia", FORCE_ARMY)
+	f.campaign.regionAccess.reveal("east_asia")
+	let before = f.campaign.state.captureAuthoritativeState()
+	f.ports.fail = true
+	f.dispatch("/region europe")
+	f.campaign.regionSelector.getCommandRegionId().assertEquals("africa")
+	f.ports.regional.activeRegionId.assertEquals("africa")
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	f.ports.fail = false
+	f.open("europe")
+	let owners = f.pauses.getModalOwnerCount()
+	let writes = f.ports.pauseWrites
+	f.ports.fail = true
+	f.dispatch("/region east_asia")
+	f.campaign.regionSelector.getCommandRegionId().assertEquals("europe")
+	f.ports.regional.activeRegionId.assertEquals("europe")
+	f.pauses.getModalOwnerCount().assertEquals(owners)
+	f.ports.pauseWrites.assertEquals(writes)
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.ports.fail = false
+	f.home()

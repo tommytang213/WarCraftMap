@@ -1,0 +1,162 @@
+{
+  "additionalChecks": {
+    "europeGeography": "pass",
+    "frameworkBoundaryAudit": "pass",
+    "gitDiffCheck": "pass",
+    "mapSourceValidation": "pass",
+    "retainedEvidenceIntegrity": "pass: current source identity, archive hash, execution hashes, compressed evidence, and all 160 shared-source hashes verified",
+    "scenarioContracts": "pass"
+  },
+  "campaign": {
+    "artifact": "build/issue-432/AgeOfSailWorldCampaign.w3n",
+    "artifactSha256": "5908c302c334c66c4867212212bfd5ae83b75405478f789fb423de46ac7a903b",
+    "artifactTracked": false,
+    "status": "pass",
+    "transcript": "campaign.log.gz",
+    "typecheckedAndBuiltMaps": [
+      "bootstrap_runtime_validation",
+      "europe_west",
+      "europe_central_east",
+      "africa",
+      "middle_east_india",
+      "southeast_asia",
+      "east_asia",
+      "americas_north_central",
+      "americas_caribbean",
+      "americas_south",
+      "americas_pacific_transition",
+      "pacific_north",
+      "pacific_west",
+      "pacific_melanesia",
+      "pacific_polynesia",
+      "pacific_new_zealand",
+      "pacific_open_ocean_encounter"
+    ]
+  },
+  "committed": false,
+  "environment": {
+    "buildLocation": "container-private /tmp/issue432",
+    "containerUser": "wurstuser",
+    "dependencyCacheMount": "read-only at /dependencies",
+    "globalToolsChanged": false,
+    "network": "none",
+    "servicesInstalled": false,
+    "toolLocation": "container-private /tmp/issue432-tools",
+    "validationContainerRemoved": true,
+    "worktreeMount": "read-only at /source"
+  },
+  "framework": {
+    "evidence": "framework-conformance.json",
+    "mapsBuiltPerVariant": 3,
+    "mutatedArchiveSha256": "04df973640a2488d6627a7896bfedc24cff88e7dfaa49c752451fe3471971d7e",
+    "originalArchiveSha256": "e49ff9b589e4020005f90a1c2511282bf3dd7dbe9a435816c1896e522db5c737",
+    "sharedSourcesUnchanged": 160,
+    "status": "pass",
+    "variants": [
+      "original",
+      "content-mutated"
+    ],
+    "wurstTestsPerVariant": 2
+  },
+  "issue": 432,
+  "playerQARequested": false,
+  "published": false,
+  "pushed": false,
+  "python": {
+    "automation": {
+      "status": "pass",
+      "tests": 136,
+      "transcript": "automation.log.gz"
+    },
+    "scenario": {
+      "status": "pass",
+      "tests": 934,
+      "transcript": "python.log.gz"
+    },
+    "sequence": "The full scenario suite passed before the final artifact-matcher correction. The 48 traceability tests, pinned Wurst execution, both framework builds, and all 17 campaign map builds then passed with the final metadata. No runtime code changed after the full scenario suite.",
+    "traceabilityRecheck": {
+      "status": "pass",
+      "tests": 48,
+      "transcript": "traceability-tests.log.gz"
+    }
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "remainingReleaseGates": {
+    "existingBlockersPreserved": true,
+    "nativeLaunch": "not executed; existing confirmation blocker retained",
+    "releaseBlockerAudit": {
+      "status": "fail",
+      "transcript": "release-blocker.log.gz",
+      "unresolvedCampaignBlockers": 21
+    },
+    "remoteTransportObligations": [
+      "REQ-0300.01",
+      "ROAD-0062.01"
+    ],
+    "reportsRegenerated": true,
+    "runtimeAcceptance": {
+      "existingFailures": 30,
+      "status": "fail",
+      "transcript": "runtime-acceptance.log.gz"
+    }
+  },
+  "saveCompatibility": {
+    "migrationRequired": false,
+    "persistedFieldsChanged": false,
+    "supportedCampaignSchemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  "sourceIdentity": {
+    "sourceRevision": "fbd3139336d5b211f66cedaee337949623a21af8",
+    "sourceTreeSha256": "b0cc3b845fe30779ef792bd3ec4270eb4c65ebaceb2341c6b4a3940d0b4c6509"
+  },
+  "sourceState": "uncommitted worktree; source-tree digest identifies tested bytes independently of the base revision",
+  "status": "ready_for_repository_validation",
+  "traceability": {
+    "artifactCheck": "Command registration and the live PlayableRegionAccess.mayCommandRegion call are present in each regional map. The compiler inlines the generated scenarioAuthorityRegion lookup.",
+    "evidence": "scoped-evidence.json",
+    "packagedReportPublicationBlockers": 8764,
+    "receipts": 8,
+    "requirements": [
+      {
+        "id": "REQ-0296.01",
+        "status": "pass"
+      },
+      {
+        "id": "REQ-0305.01",
+        "status": "pass"
+      }
+    ],
+    "sourceReportCheck": "pass",
+    "sourceReportPublicationBlockers": 7202,
+    "sourceReportRegenerated": true,
+    "status": "pass_for_issue_scope"
+  },
+  "wurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "coverage": "registered remote command with production authority policy, settlement/control, pause ownership, persistence, successful and rejected restoration, and reconstruction",
+    "discovered": 350,
+    "executionLogSha256": "21453fcfa961b367321ab1ccee11d828b5c321bb04728003ddd460d6b6f6e0de",
+    "inputSetSha256": "a1aa97313d9d0af7efe64d13ff5056bf5f1a48586fcb2ecc809b92cdcf7a9398",
+    "results": "wurst-results.json.gz",
+    "status": "pass",
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+    "succeeded": 350,
+    "transcript": "wurst-execution.log.gz"
+  }
+}
