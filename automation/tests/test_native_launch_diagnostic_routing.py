@@ -148,11 +148,11 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
             def fake_run(args, **kwargs):
                 commands.append(args)
                 if args[:3] == ["git", "status", "--porcelain"]:
-                    return CompletedProcess(args, 0, " M staged.wurst\\n", "")
+                    return CompletedProcess(args, 0, " M staged.wurst\n", "")
                 if args[:3] == ["gh", "pr", "list"]:
                     return CompletedProcess(args, 0, "", "")
                 if args[:3] == ["gh", "pr", "create"]:
-                    return CompletedProcess(args, 0, "https://github.com/example/WarCraftMap/pull/999\\n", "")
+                    return CompletedProcess(args, 0, "https://github.com/example/WarCraftMap/pull/999\n", "")
                 return CompletedProcess(args, 0, "", "")
             with mock.patch("automation.warcraftmap_agent.worker.run",
                             side_effect=fake_run), \
