@@ -23,6 +23,11 @@ REVISION = re.compile(r"(?m)^Closure revision: ([0-9a-f]{40})\s*$")
 # was MERGED (not merely closed), with the usual checks and budgets unchanged.
 APPROVED_MAINTENANCE_MERGED_PR = {427: 426}
 
+# A player-confirmed native crash is independent of the *missing* headless
+# evidence which normally precedes runtime acceptance. Narrow exemption: one
+# launch diagnosis task; no release gate, audit result, or other repair is waived.
+APPROVED_NATIVE_LAUNCH_DIAGNOSTIC = {438: "runtime:campaign_launch"}
+
 
 def marked_keys(entry: dict) -> set[str]:
     return set(MARKER.findall(entry.get("body") or ""))
@@ -203,6 +208,19 @@ class Closure:
     def permits_issue(self, issue: dict) -> bool:
         if not self.active:
             return True
+        # Native startup diagnosis must not wait for headless production evidence
+        # which it cannot produce while the actual game still crashes. This is
+        # only a selection exception for the independently verified #438 report.
+        key = APPROVED_NATIVE_LAUNCH_DIAGNOSTIC.get(issue.get("number"))
+        if (self.fresh and key is not None
+                and re.match(r"^\[agent-ready\]\s+", issue.get("title") or "", re.IGNORECASE)
+                and "Native launch status: failed" in (issue.get("body") or "").splitlines()
+                and self.keys_for(issue) == {key} and key in self.blockers):
+            # Preserve all other source/dependency prerequisites. The only
+            # tolerated unresolved dependency is missing headless evidence.
+            other_dependencies = self.blockers[key].dependencies - {"runtime:evidence"}
+            if not any(self.dependency_pending(dep) for dep in other_dependencies):
+                return True
         # Explicit, reviewed CI maintenance may proceed while release closure
         # is pending, but only after its prerequisite PR is actually merged.
         # Keep stale/unregenerated audit checkouts fail-closed.

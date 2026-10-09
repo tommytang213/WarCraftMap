@@ -334,9 +334,15 @@ def generate(config: BuildConfig, generated: Path) -> None:
             runtime[catalogue_id] = catalogues[catalogue_id]
     if "inventory" in catalogues:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
-        from player_items import validate_catalog
+        from player_items import validate_catalog, validate_equipment_research, PlayerItemError
         goods = json.loads((config.project / "scenario/economy/global-goods.json").read_text())
-        validate_catalog(catalogues["inventory"], bulk_good_ids={row["id"] for row in goods["goods"]})
+        try:
+            validate_catalog(catalogues["inventory"], bulk_good_ids={row["id"] for row in goods["goods"]})
+            validate_equipment_research(catalogues["inventory"],
+                {row["id"] for row in world.get("technologies", ())},
+                {row["id"] for row in world.get("institutions", ())})
+        except PlayerItemError as error:
+            raise _fail("generation", str(error)) from error
     if config.custom_2d_source:
         custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
         runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
@@ -415,9 +421,12 @@ def generate(config: BuildConfig, generated: Path) -> None:
         requirements = row.get("requirements", {})
         rpg += [f'\tlet item{index}=new RpgItem("{ws(row["id"])}","{ws(row.get("name", row["id"]))}","{ws((comparison.get("slotIds") or [row.get("category", "item")])[0])}","{ws(row.get("rarityId", "common"))}",{int(row.get("itemLevel", 1))},{power})',
                 f'\titem{index}.setId="{ws(item_sets.get(row["id"], ""))}"', f'\titem{index}.unique={str(bool(row.get("unique"))).lower()}',
-                f'\titem{index}.startYear={int(requirements.get("startYear", 0))}', f'\titem{index}.endYear={int(requirements.get("endYear", 0))}',
-                f'\titem{index}.technologyId="{ws((requirements.get("technologyIds") or [""])[0])}"',
-                f'\titem{index}.institutionId="{ws((requirements.get("institutionIds") or [""])[0])}"', f'\truntime.inventory.registerItem(item{index})']
+                f'\titem{index}.startYear={int(requirements.get("startYear", 0))}', f'\titem{index}.endYear={int(requirements.get("endYear", 0))}']
+        for technology_id in requirements.get("technologyIds", ()):
+            rpg.append(f'\titem{index}.addTechnology("{ws(technology_id)}")')
+        for institution_id in requirements.get("institutionIds", ()):
+            rpg.append(f'\titem{index}.addInstitution("{ws(institution_id)}")')
+        rpg.append(f'\truntime.inventory.registerItem(item{index})')
     for index, row in enumerate(inventory.get("equipmentSets", ())):
         thresholds = row.get("thresholds", []); first = thresholds[0] if thresholds else {}; last = thresholds[-1] if thresholds else {}
         rpg.append(f'\truntime.inventory.registerSet(new EquipmentSet("{ws(row["id"])}",{int(first.get("pieceCount", 0))},{len(first.get("effectIds", []))},{int(last.get("pieceCount", 0))},{len(last.get("effectIds", []))}))')

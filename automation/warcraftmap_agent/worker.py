@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Any
 
 from .budget import budget_available, recent_runs, usage_summary
-from .closure import Closure, REPORTS, build_closure, is_open, marked_keys
+from .closure import (APPROVED_NATIVE_LAUNCH_DIAGNOSTIC, Closure, REPORTS,
+                      build_closure, is_open, marked_keys)
 
 
 READY = re.compile(r"^\[agent-ready\]\s+", re.IGNORECASE)
@@ -658,7 +659,15 @@ def select_issue(
     if closure is not None:
         closed = completed_dependency_numbers(closure.issues, closure.prs)
         blockers = blockers | {number for issue in issues for number in issue_blocker_numbers(issue) if number not in closed}
-    for issue in issues:
+    # Keep the original order for ordinary repairs. Explicitly verified
+    # native launch failure #438 takes precedence only while release closure
+    # remains active; the one-worker lock and all attempt/CI gates still apply.
+    ordered = (sorted(issues, key=lambda issue: (
+        0 if issue.get("number") in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC
+             and closure is not None and closure.active and closure.permits_issue(issue)
+        else 1))
+        if closure is not None and closure.active else issues)
+    for issue in ordered:
         if not READY.match(str(issue.get("title", ""))):
             continue
         if closure is not None and not closure.permits_issue(issue):
@@ -1068,7 +1077,10 @@ def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str) 
     ).stdout.strip()
     if existing:
         return int(existing)
-    result = run(["gh", "pr", "create", "--base", default_branch(config.repo_root), "--head", branch, "--title", READY.sub("", issue["title"]), "--body", f"Closes #{issue['number']}\n\nCreated by the low-priority WarCraftMap autonomous worker after repository validation."], cwd=worktree)
+    # Native launch #438 cannot be marked fixed by static/headless CI: do not
+    # let GitHub's closing-keyword automation close it on a PR merge.
+    relation = "Investigates" if issue["number"] in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC else "Closes"
+    result = run(["gh", "pr", "create", "--base", default_branch(config.repo_root), "--head", branch, "--title", READY.sub("", issue["title"]), "--body", f"{relation} #{issue['number']}\n\nCreated by the low-priority WarCraftMap autonomous worker after repository validation."], cwd=worktree)
     match = re.search(r"/(\d+)\s*$", result.stdout.strip())
     if not match:
         raise RuntimeError(f"could not parse PR number from: {result.stdout.strip()}")
@@ -1151,10 +1163,16 @@ def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> 
     """Keep merge success authoritative even when issue-close/cleanup reports warnings."""
     record["status"] = "merged"
     errors: list[str] = []
-    try:
-        run(["gh", "issue", "close", str(number), "--reason", "completed"], cwd=config.repo_root)
-    except Exception as exc:
-        errors.append(f"could not close merged issue #{number}: {exc}")
+    if int(number) in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC:
+        # Code integration succeeded; a real client smoke has NOT been run.
+        # Keep the incident open so a second speculative static fix cannot be
+        # mistaken for the player's actual launch acceptance.
+        record["native_validation"] = "pending"
+    else:
+        try:
+            run(["gh", "issue", "close", str(number), "--reason", "completed"], cwd=config.repo_root)
+        except Exception as exc:
+            errors.append(f"could not close merged issue #{number}: {exc}")
     errors.extend(cleanup_merged_issue(config, int(number)))
     if errors:
         record["cleanup_errors"] = errors

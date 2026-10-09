@@ -9,11 +9,14 @@ import CommandRouter
 import CampaignTimeline
 import ManagementScreenPauseController
 import ManagementCommandTests
+import ScenarioData
 
 class EquipmentCommandOutput implements CommandOutput
 	string last = ""
+	int calls = 0
 	override function show(player recipient, string message)
 		last = message
+		calls++
 
 /** Records native recipients, live values and representation replacement. The
  * production projector, resolver, inventory actions and codecs remain intact. */
@@ -170,8 +173,8 @@ class EquipmentFixture
 	f.rpg.heroes.get("gamma").recruited = false
 	f.rejectEquip("gamma", "coat")
 	let before = f.rpg.captureState()
-	f.rpg.inventory.equip("alpha", "hat", f.rpg.heroes.get("beta"), 1600, "", "").assertFalse()
-	f.rpg.inventory.equip("alpha", "hat", null, 1600, "", "").assertFalse()
+	f.rpg.inventory.equip("alpha", "hat", f.rpg.heroes.get("beta"), 1600, null, "player").assertFalse()
+	f.rpg.inventory.equip("alpha", "hat", null, 1600, null, "player").assertFalse()
 	f.rpg.unequipItem("missing", "chest").assertFalse()
 	f.rpg.unequipItem("alpha", "missing").assertFalse()
 	f.rpg.captureState().assertEquals(before)
@@ -185,8 +188,8 @@ class EquipmentFixture
 	gated.endYear = 1599
 	f.rejectEquip("alpha", "replacement")
 	gated.endYear = 1700
-	gated.technologyId = "craft"
-	gated.institutionId = "guild"
+	gated.addTechnology("craft")
+	gated.addInstitution("guild")
 	f.rpg.technologies.register(new RuntimeTechnology("craft", "Craft", 1500, 1))
 	let institution = new RuntimeTechnology("guild", "Guild", 1500, 1)
 	institution.kind = "institution"
@@ -421,3 +424,258 @@ class EquipmentStorage implements CampaignSaveStorage
 		inventory.grant("copy").assertTrue()
 	inventory.grant("copy").assertFalse()
 	inventory.ownedQuantity("copy").assertEquals(RPG_INVENTORY_CAPACITY)
+
+/** Same controller/date boundary as production research; no cached UI unlocks. */
+class EquipmentResearchResources implements ResearchCommandResources
+	string controller = "player"
+	int currentYear = 1820
+	override function controllerId(player sender) returns string
+		return controller
+	override function year() returns int
+		return currentYear
+	override function gold(player sender) returns int
+		return 0
+	override function setGold(player sender, int amount)
+		// Equipping never spends research currency.
+		false.assertTrue()
+
+class EquipmentEligibilityFixture
+	EquipmentFixture f = new EquipmentFixture()
+	EquipmentResearchResources resources = new EquipmentResearchResources()
+	EquipmentCommandOutput output = new EquipmentCommandOutput()
+	CommandRegistry commands
+	string initial
+	construct()
+		f.rpg.researchResources = resources
+		commands = new CommandRegistry(false, 6, new CommandText(), output)
+		f.equip("alpha", "coat")
+		f.equip("alpha", "hat")
+		f.equip("beta", "coat")
+		let itemDefinition = f.rpg.inventory.getItem("replacement")
+		itemDefinition.addTechnology("craft")
+		itemDefinition.addTechnology("fine_craft")
+		itemDefinition.addTechnology("survey")
+		itemDefinition.addInstitution("guild")
+		itemDefinition.addInstitution("academy")
+		addResearch("craft", "technology")
+		addResearch("fine_craft", "technology")
+		addResearch("survey", "technology")
+		addResearch("guild", "institution")
+		addResearch("academy", "institution")
+		// Valid distinct IDs containing each required identity as a substring.
+		addResearch("craftsmanship", "technology")
+		addResearch("fine_craft_extra", "technology")
+		addResearch("prefix_survey", "technology")
+		addResearch("guilds", "institution")
+		addResearch("academy_extra", "institution")
+		initial = f.rpg.captureState()
+	function addResearch(string id, string kind)
+		let node = new RuntimeTechnology(id, id, 1450, 1)
+		node.kind = kind
+		f.rpg.technologies.register(node)
+	function completions(string records)
+		// The supported restore authority accepts legitimate existing unlocks;
+		// this fixture does not depend on research costs or prerequisite repairs.
+		f.rpg.restoreState(initial + records).assertTrue()
+		f.rpg.reconcile(resources.controller)
+	function command(string value, boolean success)
+		let before = f.rpg.captureState()
+		let writes = f.natives.totalWrites
+		let alpha = f.natives.life[0]
+		let beta = f.natives.life[1]
+		let gamma = f.natives.life[2]
+		let feedback = output.calls
+		commands.dispatch(null, value).assertTrue()
+		output.calls.assertEquals(feedback + 1)
+		(StringLength(output.last) < 128).assertTrue()
+		if success
+			output.last.assertEquals("Action completed.")
+		else
+			output.last.assertEquals("Requirements are not met here.")
+			f.rpg.captureState().assertEquals(before)
+			f.natives.totalWrites.assertEquals(writes)
+			f.natives.life[0].assertEquals(alpha)
+			f.natives.life[1].assertEquals(beta)
+			f.natives.life[2].assertEquals(gamma)
+	function requirements(RpgItem itemDefinition, string controller, int missing) returns string
+		var records = ""
+		for i = 0 to itemDefinition.technologyCount - 1
+			if missing != i
+				records += "|u," + controller + "," + itemDefinition.technologyIds[i]
+		for i = 0 to itemDefinition.institutionCount - 1
+			if missing != itemDefinition.technologyCount + i
+				records += "|u," + controller + "," + itemDefinition.institutionIds[i]
+		return records
+	function roundTrip()
+		let saved = f.rpg.captureState()
+		let alpha = f.natives.life[0]
+		let beta = f.natives.life[1]
+		let gamma = f.natives.life[2]
+		let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+		state.setRpgRuntime(f.rpg)
+		let storage = new EquipmentStorage()
+		let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
+		manager.save(SAVE_SLOT_MANUAL, 1, "equipment").assertTrue()
+		f.rpg.restoreState(initial).assertTrue()
+		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.rpg.captureState().assertEquals(saved)
+		// Replaced Warcraft objects are projections; definitions and authority survive.
+		for i = 0 to 2
+			f.natives.represent(i, f.natives.identities[i] + 10, (i + 1) * 100)
+		f.rpg.reconcile(resources.controller)
+		f.natives.life[0].assertEquals(alpha)
+		f.natives.life[1].assertEquals(beta)
+		f.natives.life[2].assertEquals(gamma)
+		f.rpg.reconcile(resources.controller)
+		f.natives.life[0].assertEquals(alpha)
+		f.natives.life[1].assertEquals(beta)
+		f.natives.life[2].assertEquals(gamma)
+		f.rpg.captureState().assertEquals(saved)
+	function checkMissingIndividually(string id)
+		let itemDefinition = f.rpg.inventory.getItem(id)
+		for missing = 0 to itemDefinition.technologyCount + itemDefinition.institutionCount - 1
+			completions(requirements(itemDefinition, resources.controller, missing))
+			command("/equip alpha " + id, false)
+		completions(requirements(itemDefinition, "other", -1))
+		command("/equip alpha " + id, false)
+		completions(requirements(itemDefinition, resources.controller, -1))
+		command("/equip alpha " + id, true)
+		roundTrip()
+
+function equipmentEligibilityReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"REQ-0076.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"live-equipment-research\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function generatedEquipmentCommandsRequireEveryAuthoredResearchIdentity()
+	let fixture = new EquipmentEligibilityFixture()
+	registerRpgRuntimeCommands(fixture.commands, fixture.f.rpg).assertEquals("")
+	let generated = new WarcraftRpgRuntime(null)
+	configureGeneratedRpg(generated)
+	fixture.f.rpg.technologies = generated.technologies
+	// Exercise all five authored multi-technology items using their generated
+	// definitions, including the theodolite's additional scientific institution.
+	for i = 0 to generated.inventory.definitionCount - 1
+		let itemDefinition = generated.inventory.definitions[i]
+		if itemDefinition.technologyCount > 1
+			fixture.f.rpg.inventory.registerItem(itemDefinition)
+			fixture.f.rpg.inventory.grant(itemDefinition.id).assertTrue()
+	fixture.initial = fixture.f.rpg.captureState()
+	fixture.checkMissingIndividually("percussion_jungle_musket")
+	fixture.checkMissingIndividually("precision_court_theodolite")
+	fixture.checkMissingIndividually("steam_era_coastal_manual")
+	fixture.checkMissingIndividually("natural_history_island_atlas")
+	fixture.checkMissingIndividually("kangxi_court_compass")
+	fixture.command("/equip alpha kangxi_court_compass", true)
+	equipmentEligibilityReceipt("success")
+
+@test function equipmentCommandsRejectMissingOverlappingAndOtherControllerResearchAtomically()
+	let fixture = new EquipmentEligibilityFixture()
+	registerRpgRuntimeCommands(fixture.commands, fixture.f.rpg).assertEquals("")
+	let itemDefinition = fixture.f.rpg.inventory.getItem("replacement")
+	fixture.checkMissingIndividually("replacement")
+	fixture.completions("|u,player,craftsmanship|u,player,fine_craft_extra|u,player,prefix_survey|u,player,guilds|u,player,academy_extra")
+	fixture.command("/equip alpha replacement", false)
+	// A longer containing ID cannot fill even one individually missing gate.
+	for missing = 0 to 4
+		fixture.completions(fixture.requirements(itemDefinition, "player", missing) + "|u,player,craftsmanship|u,player,fine_craft_extra|u,player,prefix_survey|u,player,guilds|u,player,academy_extra")
+		fixture.command("/equip alpha replacement", false)
+		fixture.completions(fixture.requirements(itemDefinition, "player", missing) + fixture.requirements(itemDefinition, "other", -1))
+		fixture.command("/equip alpha replacement", false)
+	fixture.resources.controller = "other"
+	fixture.completions(fixture.requirements(itemDefinition, "player", -1))
+	fixture.command("/equip alpha replacement", false)
+	fixture.completions(fixture.requirements(itemDefinition, "other", -1))
+	fixture.command("/equip alpha replacement", true)
+	fixture.f.rpg.technologies.isUnlocked("player", "craft").assertFalse()
+	// Both the controller and research kind are checked at the commit boundary.
+	fixture.f.rpg.technologies.get("guild").kind = "technology"
+	fixture.command("/equip beta replacement", false)
+	fixture.f.rpg.technologies.get("guild").kind = "institution"
+	fixture.roundTrip()
+	equipmentEligibilityReceipt("failure")
+
+@test function equipmentCommandsRecheckEligibilityAndConserveCopiesAcrossWearers()
+	let fixture = new EquipmentEligibilityFixture()
+	registerRpgRuntimeCommands(fixture.commands, fixture.f.rpg).assertEquals("")
+	let itemDefinition = fixture.f.rpg.inventory.getItem("replacement")
+	fixture.completions(fixture.requirements(itemDefinition, "player", -1))
+	// A previous comparison/availability result never authorizes a later action.
+	fixture.f.rpg.inventory.available(itemDefinition, fixture.f.rpg.heroes.get("alpha"), 1820, fixture.f.rpg.technologies, "player").assertTrue()
+	itemDefinition.requiredLevel = 21
+	fixture.command("/equip alpha replacement", false)
+	itemDefinition.requiredLevel = 20
+	itemDefinition.startYear = 1800
+	fixture.resources.currentYear = 1799
+	fixture.command("/equip alpha replacement", false)
+	fixture.resources.currentYear = 1821
+	itemDefinition.endYear = 1820
+	fixture.command("/equip alpha replacement", false)
+	fixture.resources.currentYear = 1820
+	fixture.command("/equip alpha replacement", true)
+	fixture.f.natives.life[0].assertEquals(112)
+	fixture.f.natives.life[1].assertEquals(205)
+	fixture.command("/equip beta replacement", false)
+	fixture.command("/equip gamma coat", true)
+	fixture.f.rpg.inventory.equippedQuantity("coat").assertEquals(2)
+	fixture.command("/unequip alpha chest", true)
+	fixture.command("/equip beta replacement", true)
+	fixture.command("/equip alpha coat", true)
+	fixture.f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
+	fixture.f.rpg.inventory.ownedQuantity("replacement").assertEquals(1)
+	fixture.f.rpg.inventory.equippedQuantity("coat").assertEquals(2)
+	fixture.f.rpg.inventory.equippedQuantity("replacement").assertEquals(1)
+	fixture.command("/equip missing replacement", false)
+	fixture.command("/equip alpha stored", false)
+	fixture.command("/equip alpha token", false)
+	fixture.f.rpg.heroes.get("gamma").recruited = false
+	fixture.command("/equip gamma hat", false)
+	fixture.f.rpg.heroes.get("gamma").recruited = true
+	fixture.command("/equip alpha relic", true)
+	fixture.command("/equip beta relic", false)
+	fixture.roundTrip()
+	equipmentEligibilityReceipt("stale")
+
+@test function equipmentResearchSavesRetainEligibleAndLegacyLoadoutsAcrossReconstruction()
+	let fixture = new EquipmentEligibilityFixture()
+	registerRpgRuntimeCommands(fixture.commands, fixture.f.rpg).assertEquals("")
+	let itemDefinition = fixture.f.rpg.inventory.getItem("replacement")
+	fixture.completions(fixture.requirements(itemDefinition, "player", -1))
+	fixture.command("/equip alpha replacement", true)
+	let saved = fixture.f.rpg.captureState()
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.))
+	state.setRpgRuntime(fixture.f.rpg)
+	let storage = new EquipmentStorage()
+	let manager = new CampaignSaveManager(storage, new PlayableCampaignCodec(state.clock), state)
+	let authority = state.captureAuthoritativeState()
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		storage.payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority)
+		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		fixture.f.rpg.captureState().assertEquals(saved)
+		fixture.command("/equip alpha replacement", true)
+		fixture.f.rpg.captureState().assertEquals(saved)
+		fixture.command("/equip beta replacement", false)
+	fixture.roundTrip()
+	// A literal v2 save from the truncated gate keeps its item, wearer and bonus
+	// even though it lacks newly enforced gates. Restoration is not a new equip.
+	let legacy = "v2|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|i,replacement|i,coat|e,chest,replacement,alpha|u,player,craft|j,,0"
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		storage.payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority + ";rpg=" + legacy)
+		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		// RPG v4 preserves legacy progression and adds empty skill/mastery ranks.
+		fixture.f.rpg.captureState().assertEquals("v4|p,|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,|h,gamma,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,|i,replacement|i,coat|e,chest,replacement,alpha|u,player,craft|j,,0")
+		fixture.f.rpg.reconcile("player")
+		fixture.f.natives.life[0].assertEquals(108)
+		fixture.f.natives.life[1].assertEquals(200)
+		fixture.command("/equip alpha replacement", false)
+		fixture.command("/equip beta replacement", false)
+	fixture.roundTrip()
+	fixture.command("/unequip alpha chest", true)
+	fixture.f.natives.life[0].assertEquals(100)
+	fixture.f.rpg.inventory.ownedQuantity("replacement").assertEquals(1)
+	fixture.command("/equip beta replacement", false)
+	fixture.command("/equip alpha coat", true)
+	storage.payload = campaignSaveEnvelope(1, "manual_01", SAVE_SLOT_MANUAL, 1, "pre-rpg", authority + ";rpg=v1")
+	manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	fixture.f.rpg.inventory.ownedCount.assertEquals(0)
+	fixture.f.rpg.inventory.equippedCount.assertEquals(0)
+	fixture.f.rpg.technologies.unlockedCount.assertEquals(0)
+	equipmentEligibilityReceipt("replay")

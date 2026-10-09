@@ -61,3 +61,20 @@ the `repair-*.log.gz` transcripts record the local rechecks. The retained pinned
 execution was verified against the unchanged source digest and its four scoped
 receipts. A fresh compiler/build run is deferred to the outer worker because
 Grill is absent and Docker socket access is denied in this Codex environment.
+
+The subsequent merge integration updates #433's legacy-equipment regression to
+expect RPG v4 records with empty skill/mastery rank maps. Its literal v2 input,
+equipment ownership, research gates and reconstruction checks remain intact.
+The merged source-tree digest differs from the retained pinned evidence above;
+that evidence remains historical. Fresh pinned execution and diagnostic artifact
+verification must run in the outer worker because Grill and Docker access remain
+unavailable here. Source traceability was regenerated without further changes,
+and the release-blocker audit retains all 21 unresolved campaign blockers.
+
+Merged-tree validation passed 381 Python tests: 94 progression, recruitment,
+clock, persistence and generation tests; 95 inventory, traceability and release
+audit tests; 48 packaging, research generation and framework tests; and 144
+automation tests. The packaging/framework suites use synthetic compiler fixtures
+and do not establish pinned Wurst execution. Framework-boundary, world-contract,
+map-source, literal legacy-record migration and diff checks also passed. Local
+suite logs are in ignored `_build/issue434-integration/` storage.
