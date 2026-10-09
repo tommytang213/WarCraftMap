@@ -217,3 +217,43 @@ Positive/negative fixture tests establish harness behavior, **not a reproducible
 native crash repair**. No concrete engine defect was isolated, so no new native
 regression or repair claim is made. Native runner qualification, the decisive
 standalone experiment, and eventual full retail campaign launch remain open.
+
+## PR #442 CI repair: stale-checkout routing
+
+The [failed automation job](https://github.com/tommytang213/WarCraftMap/actions/runs/37974187994/job/113968158564)
+tested merge `d8ec79c74e58fe76669c4bb36bdcc77e220c5d62`, combining this branch's
+`893ef74e430c39dc7765bb1d6d15166ab78a7f9d` with main's
+`da7f8918002b394c934c3cb479c636f5c39ca1ab`. All 957 scenario tests passed;
+automation failed `test_other_dependencies_and_stale_checkout_remain_blocking`
+because `closure(fresh=False).permits_issue(crash)` returned `True`.
+That regression comes from #439 on main and was absent from the branch-only
+137-test suite. The Wurst, world-contract and campaign-build CI jobs passed.
+These are historical CI results, not native-launch evidence.
+
+Before editing the implementation, the exact upstream failing test reproduced
+locally. A new regression also reproduced the bypass for a stale checkout,
+a mismatched revision, and missing audit regeneration. The fix adds `self.fresh`
+to the #438 dependency-exemption condition in `Closure.permits_issue`. Current
+checkouts can still investigate the confirmed crash while headless evidence is
+missing; stale checkouts and other prerequisites continue to block selection.
+The positive and negative routing controls leave blocker sets and release gates
+intact. No gameplay, map, startup, diagnostic archive or save source changed.
+
+After the fix: 138 branch automation tests, 146 integration automation tests
+(including main's eight additional tests), and 14 diagnostic tests passed.
+The integration check copied `automation/` and `.github/` into temporary storage
+inside this worktree, combined `closure.py` with `git merge-file -p` using the
+common base `b27e1bf76c0e2aed24ae85f0d48db0fb5f05162d`, and used main's
+`worker.py` and `test_native_launch_diagnostic_routing.py`. No Git refs or
+commits were changed. Commands, identities and results are recorded in
+`ci-repair-validation.json`; sanitized test output is in `ci-repair-tests.log.gz`.
+Shell syntax, whitespace, framework-boundary and traceability inventory checks
+also passed; the inventory still reports publication blockers.
+
+The original smoke #3 W3N hash was reconfirmed unchanged. No new W3N was built
+or staged, no Windows/WGC execution occurred, and no player retest is requested.
+`diagnosis_unconfirmed`, `real_client_launch=failed`, and
+`map_standalone_native=not_run` remain unchanged. The next single native
+experiment remains the qualified standalone-selector comparison described
+above. Full final-tree repository validation belongs to the outer worker;
+this routing repair does not claim a new full Wurst or retail-client pass.

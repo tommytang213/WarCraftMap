@@ -220,8 +220,9 @@ class Closure:
         # crash. Headless coverage is not a prerequisite to investigating it.
         # This affects issue routing only: blocker sets, audits, release/merge
         # gates and all other prerequisite edges remain unchanged.
+        # A stale checkout still needs current audits before using the exemption.
         exemptions = set()
-        if (issue.get("number") == 438 and keys == {"runtime:campaign_launch"}
+        if (self.fresh and issue.get("number") == 438 and keys == {"runtime:campaign_launch"}
                 and re.match(r"^\[agent-ready\]\s+", issue.get("title") or "", re.IGNORECASE)
                 and re.search(r"(?m)^Native launch status: failed\s*$", issue.get("body") or "")):
             exemptions.add("runtime:evidence")

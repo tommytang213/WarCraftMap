@@ -73,6 +73,27 @@ class ClosureTests(unittest.TestCase):
         closure.blockers[KEY] = Blocker(KEY, "Another required repair")
         self.assertFalse(closure.permits_issue(repair))
 
+    def test_confirmed_438_crash_exemption_requires_current_regenerated_checkout(self):
+        repair = issue(438, keys=("runtime:campaign_launch",))
+        repair["body"] += "\nNative launch status: failed\n"
+        unregenerated = bundle() | {"regenerated": False}
+        for reason, data, revision, current in (
+            ("stale checkout", bundle(), A, False),
+            ("stale revision", bundle(), B, True),
+            ("missing regeneration", unregenerated, A, True),
+        ):
+            with self.subTest(reason=reason):
+                closure = build_closure(data, revision, issues=[repair], checkout_current=current)
+                launch = Blocker("runtime:campaign_launch", "Investigate launch",
+                                 dependencies={"runtime:evidence"})
+                closure.blockers[launch.key] = launch
+                closure.blockers["runtime:evidence"] = Blocker("runtime:evidence", "Execute headless coverage")
+                self.assertFalse(closure.fresh)
+                self.assertFalse(closure.permits_issue(repair))
+                self.assertIsNone(worker.select_issue([repair], {"issues": {}}, 3, closure=closure))
+                self.assertEqual(launch.dependencies, {"runtime:evidence"})
+                self.assertTrue(closure.active)
+
     def closure(self, findings=("REQ-0002.01",), **kwargs):
         return build_closure(bundle(findings=findings), A, **kwargs)
 
