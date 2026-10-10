@@ -107,8 +107,8 @@
       "signature": "function previewPrize(player sender, PrizeRequest request, PrizeProposal expected) returns string"
     },
     "order": {
-      "path": "wurst/MilitarySettlementRuntime.wurst",
-      "signature": "function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean"
+      "path": "wurst/MilitaryOrderEvents.wurst",
+      "signature": "function onOrder(int epoch, player sender, int source, int arguments, int order, real px, real py, int target) returns boolean"
     },
     "capture": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
@@ -161,6 +161,10 @@
     "unstuck_reconstructed": {
       "path": "wurst/CampaignUnstuck.wurst",
       "signature": "function reconstructed()"
+    },
+    "order_registration": {
+      "path": "wurst/MilitaryOrderEvents.wurst",
+      "signature": "public function installMilitaryOrderEvents(PlayableCampaignServices campaign, MilitaryOrderNatives natives) returns MilitaryOrderEvents"
     }
   },
   "systems": {
@@ -191,7 +195,8 @@
     "army_fleet_control": [
       "military_registration",
       "dispatch",
-      "order"
+      "order",
+      "order_registration"
     ],
     "city_capture": [
       "military_registration",

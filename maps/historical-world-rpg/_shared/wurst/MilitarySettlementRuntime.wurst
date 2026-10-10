@@ -21,7 +21,10 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 5
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 6
+
+function militaryOrderAtom(string value) returns boolean
+	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
 
 /** Temporary stable-ID index for bulk catalogue registration. Full keys keep
  * hash collisions distinct; positions still refer to the authority arrays. */
@@ -120,9 +123,12 @@ public class RuntimeForce
 	string orderId = "hold"
 	real orderX = 0.
 	real orderY = 0.
+	string orderTargetId = ""
+	string orderControllerId
 	construct(string id, string controllerId, string regionId, string categoryId, int kind, int unitTypeId, int strength, int supply, real x, real y)
 		this.id = id
 		this.controllerId = controllerId
+		orderControllerId = controllerId
 		this.regionId = regionId
 		this.categoryId = categoryId
 		this.kind = kind
@@ -132,6 +138,24 @@ public class RuntimeForce
 		this.supply = supply
 		this.x = x
 		this.y = y
+	function mobileForce() returns boolean
+		return kind == FORCE_ARMY or kind == FORCE_FLEET
+	function cancelOrder()
+		orderId = "stop"
+		orderX = 0.
+		orderY = 0.
+		orderTargetId = ""
+		orderControllerId = controllerId
+	function validOrder() returns boolean
+		if not militaryOrderAtom(orderControllerId) or not locationNumber(orderX.toString()) or not locationNumber(orderY.toString())
+			return false
+		if orderId == "attack"
+			return mobileForce() and militaryOrderAtom(orderTargetId) and orderX == 0. and orderY == 0.
+		if orderTargetId != ""
+			return false
+		if orderId == "move" or orderId == "patrol" or orderId == "attack-move"
+			return mobileForce()
+		return (orderId == "hold" or orderId == "stop") and orderX == 0. and orderY == 0.
 
 public class TraditionState
 	string controllerId
@@ -235,6 +259,14 @@ public interface MilitaryRuntimeCallbacks
 	function synchronize()
 	function suspend()
 	function resume()
+
+/** Orders own a separate transient subscription from combat and its timer. */
+public interface MilitaryOrderCallbacks
+	function capture()
+	function suspend()
+	function resume()
+	function reconstruct()
+	function reconstructedForce(string id)
 
 public interface MilitarySettlementAdapter
 	/** Load checkpoints retain existing representations, including an empty
@@ -372,11 +404,13 @@ public class MilitarySettlementRuntime
 	PrizeCombatAuthority prizeCombat = new PrizeEncounters()
 	MilitarySettlementAdapter adapter
 	MilitaryRuntimeCallbacks callbacks = null
+	MilitaryOrderCallbacks orderCallbacks = null
 	real gameplaySeconds = 0.
 	boolean hasSavedGameplayClock = false
 	boolean legacyDeadlines = false
 	boolean legacyRecovery = false
 	boolean legacyMilitaryVersion4 = false
+	boolean legacyOrders = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
@@ -480,12 +514,21 @@ public class MilitarySettlementRuntime
 		if found >= 0
 			settlements[found].withPolicy(projectMilitary, capturable, governanceExceptionId)
 	function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean
+		var command = orderId
 		let found = forceIndex(forceId)
-		if found < 0 or orderId == "" or forces[found].kind == FORCE_GARRISON or forces[found].kind == FORCE_CITY_CORE
+		if found < 0 or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
 			return false
-		forces[found].orderId = orderId
+		if orderId == "march" or orderId == "sail"
+			command = "move"
+		if command != "move" and command != "patrol" and command != "attack-move" and command != "hold" and command != "stop"
+			return false
+		if (orderId == "hold" or orderId == "stop") and (targetX != 0. or targetY != 0.)
+			return false
+		forces[found].orderId = command
 		forces[found].orderX = targetX
 		forces[found].orderY = targetY
+		forces[found].orderTargetId = ""
+		forces[found].orderControllerId = forces[found].controllerId
 		return true
 	function appoint(string settlementId, AdministratorState administrator) returns string
 		let settlement = settlementIndex(settlementId)
@@ -613,6 +656,8 @@ public class MilitarySettlementRuntime
 		adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 		if city >= 0 and (runtimeForce.kind == FORCE_CITY_CORE or runtimeForce.kind == FORCE_DEFENSE)
 			adapter.protectRepresentation(runtimeForce.id, settlements[city].captureImmuneUntil > gameplaySeconds)
+		if orderCallbacks != null
+			orderCallbacks.reconstructedForce(runtimeForce.id)
 	/** Resolve only the registered settlement's exact core or local-force prefix. */
 	function settlementForForce(RuntimeForce runtimeForce) returns int
 		if runtimeForce.kind != FORCE_CITY_CORE and runtimeForce.kind != FORCE_GARRISON and runtimeForce.kind != FORCE_DEFENSE
@@ -623,12 +668,18 @@ public class MilitarySettlementRuntime
 				return i
 		return -1
 	function suspendCallbacks()
+		if orderCallbacks != null
+			orderCallbacks.suspend()
 		if callbacks != null
 			callbacks.suspend()
 	function resumeCallbacks()
 		if callbacks != null
 			callbacks.resume()
+		if orderCallbacks != null
+			orderCallbacks.resume()
 	function activateRegion(string regionId)
+		if orderCallbacks != null
+			orderCallbacks.capture()
 		suspendCallbacks()
 		if activeRegionId != ""
 			for i = 0 to forceCount - 1
@@ -637,6 +688,8 @@ public class MilitarySettlementRuntime
 		activeRegionId = regionId
 		for i = 0 to forceCount - 1
 			instantiate(forces[i])
+		if orderCallbacks != null
+			orderCallbacks.reconstruct()
 		resumeCallbacks()
 	function recruit(RuntimeForce runtimeForce) returns boolean
 		if runtimeForce.strength <= 0 or runtimeForce.supply <= 0 or forceIndex(runtimeForce.id) >= 0
@@ -662,9 +715,18 @@ public class MilitarySettlementRuntime
 	function transferControl(string forceId, string controllerId)
 		let found = forceIndex(forceId)
 		if found >= 0
+			if orderCallbacks != null
+				orderCallbacks.capture()
+			suspendCallbacks()
+			if forces[found].controllerId != controllerId
+				forces[found].cancelOrder()
 			forces[found].controllerId = controllerId
-			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, false))
+			forces[found].orderControllerId = controllerId
+			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, not forces[found].mobileForce()))
 			adapter.applyTradition(forceId, traditionLifePermille(forces[found]), traditionAbility(forces[found]))
+			if orderCallbacks != null
+				orderCallbacks.reconstruct()
+			resumeCallbacks()
 	function awardTradition(string controllerId, string categoryId, int experience)
 		let found = traditionIndex(controllerId, categoryId)
 		if found < 0 or experience <= 0
@@ -863,12 +925,14 @@ public class MilitarySettlementRuntime
 	/** Stable, handle-free authority. Every mutable military/settlement field is
 	 * included so inactive regions advance and reload exactly like active ones. */
 	function snapshot() returns string
+		if orderCallbacks != null
+			orderCallbacks.capture()
 		if callbacks != null
 			callbacks.synchronize()
 		var result = "v" + MILITARY_SETTLEMENT_SNAPSHOT_VERSION.toString() + "|k," + clockReal(gameplaySeconds) + "|a," + activeRegionId
 		for i = 0 to forceCount - 1
 			let f = forces[i]
-			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY)
+			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY) + "," + f.orderTargetId + "," + f.orderControllerId
 			// Strategic movement may reassign an unloaded force. A hint from its
 			// previous physical map cannot accompany the new location authority.
 			if f.recoveryMap != "" and f.recoveryMap == f.regionId and (f.kind == FORCE_ARMY or f.kind == FORCE_FLEET)
@@ -901,7 +965,9 @@ public class MilitarySettlementRuntime
 			return true
 		if kind == "f"
 			let id = record.field(1)
-			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 4096
+			if id == "" or target.forceIndex(id) >= 0 or target.forceCount >= 4096 or (target.legacyOrders and record.count != 16) or (not target.legacyOrders and record.count != 18)
+				return false
+			if not locationNumber(record.field(10)) or not locationNumber(record.field(11)) or not locationNumber(record.field(14)) or not locationNumber(record.field(15))
 				return false
 			let f = new RuntimeForce(id, record.field(2), record.field(3), record.field(4), S2I(record.field(5)), S2I(record.field(6)), S2I(record.field(7)), S2I(record.field(9)), S2R(record.field(10)), S2R(record.field(11)))
 			// Older Wurst projections accidentally read the intrinsic class typeId
@@ -914,8 +980,18 @@ public class MilitarySettlementRuntime
 			f.orderId = record.field(13)
 			f.orderX = S2R(record.field(14))
 			f.orderY = S2R(record.field(15))
+			if target.legacyOrders
+				if f.orderId == "march" or f.orderId == "sail"
+					f.orderId = "move"
+				// Old arbitrary strings carried no target identity or argument
+				// contract. Never infer a target that the old save did not record.
+				if not f.validOrder()
+					f.cancelOrder()
+			else
+				f.orderTargetId = record.field(16)
+				f.orderControllerId = record.field(17)
 			target.registerForce(f)
-			return f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+			return f.validOrder() and f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
 		if kind == "n"
 			let found = target.forceIndex(record.field(1))
 			let kindText = record.field(3)
@@ -1025,9 +1101,10 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
+		parsed.legacyOrders = not candidate.startsWith("v6|")
 		parsed.legacyConflicts = candidate.startsWith("v1|")
 		parsed.legacyDeadlines = candidate.startsWith("v1|") or candidate.startsWith("v2|")
 		parsed.legacyRecovery = parsed.legacyDeadlines or candidate.startsWith("v3|")

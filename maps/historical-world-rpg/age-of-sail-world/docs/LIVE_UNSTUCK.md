@@ -41,7 +41,9 @@ safe hints: local native representations establish them through validation.
 Both historical v4 layouts migrate: the recovery branch's 23-field settlements
 receive policy and missing authority from definitions, while main's 26-field
 settlements retain complete-authority validation. Existing hints survive either
-migration; mixed settlement layouts reject. New snapshots always use v5.
+migration; mixed settlement layouts reject. V5 unified those layouts; current snapshots use v6.
+Military v6 retains those hint records unchanged while adding the
+[live order contract](LIVE_MILITARY_ORDERS.md); v5 remains readable.
 Unknown, duplicate and malformed hint records are rejected before mutation.
 Map/class/topology/native pathing are revalidated on import and use. Campaign
 envelopes 1–8 and party location schema v1 remain supported without a new domain.
