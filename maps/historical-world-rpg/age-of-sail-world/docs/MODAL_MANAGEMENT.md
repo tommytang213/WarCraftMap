@@ -5,6 +5,7 @@ is used. Text disappearing from the chat display does not close management.
 
 | View | Open or switch | Close |
 | --- | --- | --- |
+| Remote command | `/region REGION`, map, holding or force ID | `/region return` |
 | Roster | `/roster` (`/heroes`, `/companions`) | `/rpg-close` |
 | Inventory/equipment | `/inventory [HERO]` (`/equipment`, `/items`) | `/rpg-close` |
 | Journal | `/journal` (`/quests`) | `/rpg-close` |
@@ -39,8 +40,10 @@ Military gameplay timers already subscribe to this boundary and remain stopped
 until the final modal/manual pause releases them. Reinstalling a clock removes
 its previous subscription and timer rather than accumulating listeners.
 
-Sessions, tokens, listeners, and pause flags are transient and absent from saved
-campaign authority. Campaign and trade save schema versions remain unchanged.
+Sessions, tokens and listeners remain transient. Campaign schema 9 records the
+manual pause choice and active physical command map; destination startup rebuilds
+one remote-command owner. See [remote command maps](REMOTE_COMMAND_MAPS.md).
+Trade save schema versions remain unchanged.
 A committed campaign reconstruction closes the old RPG and market sessions.
 Validation failures, reconstruction failures, and staged-load aborts retain
 their sessions and reachable close commands. New campaign initialization retires

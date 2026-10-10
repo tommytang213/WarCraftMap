@@ -26,11 +26,11 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
 
     def test_matrix_is_derived_from_complete_registered_paths(self):
         registry = saves.MigrationRegistry()
-        self.assertEqual((1, 2, 3, 4, 5, 6, 7, 8), registry.supported_source_versions())
-        self.assertEqual((1, 2, 3, 4, 5, 6, 7, 8), registry.migration_path(1))
-        partial = saves.MigrationRegistry(current_version=9)
-        partial.register(8, lambda d: dict(d, schemaVersion=9))
-        self.assertEqual((8, 9), partial.supported_source_versions())
+        self.assertEqual((1, 2, 3, 4, 5, 6, 7, 8, 9), registry.supported_source_versions())
+        self.assertEqual((1, 2, 3, 4, 5, 6, 7, 8, 9), registry.migration_path(1))
+        partial = saves.MigrationRegistry(current_version=10)
+        partial.register(9, lambda d: dict(d, schemaVersion=10))
+        self.assertEqual((9, 10), partial.supported_source_versions())
         with self.assertRaises(saves.IncompatibleSaveError): partial.migration_path(4)
 
     def test_release_manifest_matches_compiled_live_codec_contract(self):
@@ -52,6 +52,7 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
                           "rpg": {"current": 3, "supportedSources": [1, 2, 3]},
                           "trade": {"current": 3, "supportedSources": [1, 2, 3]},
                           "partyLocations": {"current": 1, "supportedSources": [1]},
+                          "commandContext": {"current": 1, "supportedSources": [1]},
                           "autosave": {"current": 1, "supportedSources": [0, 1]}},
                          live["domainSchemas"])
         trade_source = (LIVE_CODEC.parent / "PlayableTrade.wurst").read_text(encoding="utf-8")
@@ -61,15 +62,15 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         self.assertIn("for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT", tests)
         self.assertEqual(
             {"identity", "travel", "diplomacy", "rewards", "rpg",
-             "militarySettlements", "trade", "religion", "piracy", "clock", "partyLocations", "autosave"},
+             "militarySettlements", "trade", "religion", "piracy", "clock", "partyLocations", "autosave", "commandContext"},
             set(live["authorityDomains"]),
         )
 
     def test_every_immutable_fixture_migrates_and_resaves_deterministically(self):
         results = [release.validate_release_fixture(f, self.manifest["budgets"]) for f in self.fixtures]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8], [r["schemaVersion"] for r in results])
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], [r["schemaVersion"] for r in results])
         self.assertEqual({self.fixtures[0]["expectedAuthoritySha256"]}, {r["authoritySha256"] for r in results})
-        self.assertEqual(["migrated"] * 7 + ["compatible"], [r["status"] for r in results])
+        self.assertEqual(["migrated"] * 8 + ["compatible"], [r["status"] for r in results])
 
     def test_direct_multistep_and_idempotent_paths_preserve_all_authority(self):
         expected = self.manifest["expectedCurrentAuthority"]

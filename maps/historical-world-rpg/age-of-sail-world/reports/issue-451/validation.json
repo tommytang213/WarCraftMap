@@ -1,0 +1,262 @@
+{
+  "automationPython": {
+    "command": "python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+    "status": "pass",
+    "testsPassed": 154
+  },
+  "campaignPackaging": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "bytes": 47294848,
+    "chaptersTypecheckedCompiledAndInspected": 17,
+    "executionEvidenceReuse": "Only the complete pinned run with matching current source identity and transcript was reused; every chapter was freshly typechecked and compiled.",
+    "sha256": "8419fdbed46d296d71a1a9bce70090b38effe9d692a089fa2b565ef0775ea928",
+    "status": "pass"
+  },
+  "diffCheck": "pass",
+  "evidence": {
+    "README.md": "42d595360f4fd6b13da0cfa12c0a04ecbaca8f982049a2f762c04dacf19a40f2",
+    "automation-python.log.gz": "dff1e58b9bff0a57e9de6eac7bca0c4be86a34e0216d647fd34d8155b80fca07",
+    "blocker-python-retest.log.gz": "bf248c9721959a6f2e3309ec729ff70899e9cf55aff68d91c465ade560f00774",
+    "build-diagnostic.py": "33b4c95e903d1cae9d8029a14a43190ced9bbc457ab03ef7cfc7b78b146e14f9",
+    "campaign-build.log.gz": "29fbf3698bccbb18aa5d176af56373a38aaa4b0085941958958baa2cb9c9ef94",
+    "framework-boundary.log.gz": "822ceeb970b5d99b6d108a1be28438d8bc7604fb0e92177ed8315a73ae9942f5",
+    "framework-mutated-execution.log.gz": "e34f2b75e609bd820372f98898e1c7b8c24d2216dcb340960a99eceb493d28b0",
+    "framework-mutated-results.json.gz": "adebd5ffcb29ce4d56a91a101d3f6bef40933d899e03ed92a46d038e30cecb1f",
+    "framework-original-execution.log.gz": "3d3ca04d9b566d599fc05cae8d75a58a6a8a0d8c50c5264784f6b720cbd39de5",
+    "framework-original-results.json.gz": "11f21b9960fc107776df5640e046cc8ffc5098513818e8c323c0b44fa2c0f048",
+    "framework-report.json.gz": "15c2a876e3d0d68dbd642e4c1098a3ea9a888d9dd203c3d4231329c038de9dff",
+    "framework.log.gz": "0c487dfe30a56f2d30d1d07d82074eb1ae84460fa6de586f7701e830fde51bdb",
+    "release-blockers.log.gz": "e8897102b5d5fb47e19fb741bbbbab8b995f711694df0403b0cecdb75e713bd2",
+    "requirement-traceability.json.gz": "2f7327cf61c8d8ba66496718ea9f0b15a562ac3d60abc6d9ae560a92d902a6b1",
+    "requirement-traceability.md.gz": "6ccb81ecd67f2764211349661d86ebae6cc666ae4055724652a70891af02972c",
+    "save-compatibility.log.gz": "9998123dc1778dfd0d8a1d73f04817db8e2395a1cedd53ce1fb42de1e38ccc58",
+    "scenario-python.log.gz": "30863d28364a0bc248ba6060522a4ee8b165e4dbcda302ef937a1307afb284b8",
+    "scoped-evidence.json.gz": "baffe16c413327808ff564ed6f951146273a2bafd346fe71a64e4821e3d96cf5",
+    "scoped-evidence.log.gz": "999bb0a57fdf20862ffb1ceaa37fa4af00dcc7d7eb083ca8c2cba87d51be42b0",
+    "source-traceability.log.gz": "d016528e1c3c4859066b5c407f4e0398c3b36faa98160e319f012a1511bc49f0",
+    "targeted-python.log.gz": "b07f02b7784418d4b4b753d7a47373d73f97064920994ed41d61e9aa8271028a",
+    "verify-evidence.py": "65c23bcebe428e5d0c9587c42260b2a9dd4860a9447fc88719ae335bfb24e4de",
+    "wurst-execution.log.gz": "a11f7ea8b85b380400dc9581a8730a68a3cd2880e02fc8dfcdfb4bdc568eae15",
+    "wurst-gate.log.gz": "06bc7df6bb2264112d4555588ad22f7d77b0f8296ec5ecbea0715bf62a6b1227",
+    "wurst-results.json.gz": "2e4e76cda8fe76577245725938b33c82004ed04a202725445c3f661b83e43333"
+  },
+  "format": "warcraftmap_issue_451_validation_v1",
+  "implementationStatus": "ready_for_repository_validation",
+  "pinnedWurst": {
+    "command": "SOURCE_REVISION=$(git rev-parse HEAD) WURST_IMAGE=<pinned image> python3 ../_shared/tooling/run_wurst_tests.py package.json --grill <worktree-local pinned Grill wrapper>",
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "currentSourceIdentityAndProductionCoverageVerified": true,
+    "inputSetSha256": "12478bea77908f73753fa0116fb87672d26c1b97588e7ab2400c6e4a83a0ee4b",
+    "status": "pass",
+    "targetedPackages": {
+      "CampaignAutosaveLifecycleTests.wurst": 8,
+      "CampaignAutosaveSchedulerTests.wurst": 2,
+      "CampaignLoadTransactionTests.wurst": 23,
+      "CampaignRecoveryTests.wurst": 27,
+      "CampaignSaveManagerTests.wurst": 3,
+      "CampaignStartupTests.wurst": 49,
+      "CommandMapTransportTests.wurst": 10,
+      "LiveRecoveryTests.wurst": 7,
+      "MilitaryOrderEventsTests.wurst": 7,
+      "PartyLocationTests.wurst": 2,
+      "RemoteRegionAuthorityTests.wurst": 5,
+      "UnstuckRecoveryTests.wurst": 7
+    },
+    "testsDiscovered": 418,
+    "testsPassed": 418,
+    "transcriptSha256": "988d55e9b606d69182d1ee1a21efebe36bf2bbc942663e862d90f3d6beb74a0c"
+  },
+  "releaseAudit": {
+    "status": "blocked_expected",
+    "unresolvedCampaignBlockers": 21
+  },
+  "remainingLimits": [
+    "Native Warcraft launch and native save/load were not executed.",
+    "REQ-0302.02 inactive-world simulation remains separately blocked.",
+    "The diagnostic is not release approval; the outer worker performs authoritative repository validation."
+  ],
+  "restrictions": {
+    "githubWrites": false,
+    "globalToolingChanges": false,
+    "playerQA": false,
+    "repositoryCommitsOrPushes": false,
+    "servicesInstalled": false,
+    "worktreePermissionChanges": false,
+    "writableSourceContainerMounts": false
+  },
+  "saveCompatibility": {
+    "dedicatedTestsPassed": 6,
+    "realClientExecuted": false,
+    "schemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "status": "pass"
+  },
+  "scenarioPython": {
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'",
+    "initialFailure": "test_release_blocker_audit.ReleaseBlockerAuditTests.test_release_save_compatibility_matrix_is_part_of_the_gate",
+    "initialFailures": 1,
+    "initialTestsPassed": 971,
+    "remainingFailures": 0,
+    "resolution": "Updated the expected supported schemas to include schema 9. All nine tests in the corrected module passed; the other 971 tests passed in the full run.",
+    "retestCommand": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_release_blocker_audit.py",
+    "retestTestsPassed": 9,
+    "status": "pass_after_targeted_retest",
+    "testsRun": 972
+  },
+  "scopedTraceability": {
+    "artifactSha256": "8419fdbed46d296d71a1a9bce70090b38effe9d692a089fa2b565ef0775ea928",
+    "campaignSchemaVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "candidateReady": false,
+    "chapters": [
+      {
+        "mapId": "europe_west",
+        "packagePath": "Maps/EuropeWest.w3x"
+      },
+      {
+        "mapId": "europe_central_east",
+        "packagePath": "Maps/EuropeCentralEast.w3x"
+      },
+      {
+        "mapId": "africa",
+        "packagePath": "Maps/Africa.w3x"
+      },
+      {
+        "mapId": "middle_east_india",
+        "packagePath": "Maps/MiddleEastIndia.w3x"
+      },
+      {
+        "mapId": "southeast_asia",
+        "packagePath": "Maps/SoutheastAsia.w3x"
+      },
+      {
+        "mapId": "east_asia",
+        "packagePath": "Maps/EastAsia.w3x"
+      },
+      {
+        "mapId": "americas_north_central",
+        "packagePath": "Maps/AmericasNorthCentral.w3x"
+      },
+      {
+        "mapId": "americas_caribbean",
+        "packagePath": "Maps/AmericasCaribbean.w3x"
+      },
+      {
+        "mapId": "americas_south",
+        "packagePath": "Maps/AmericasSouth.w3x"
+      },
+      {
+        "mapId": "americas_pacific_transition",
+        "packagePath": "Maps/AmericasPacificTransition.w3x"
+      },
+      {
+        "mapId": "pacific_north",
+        "packagePath": "Maps/PacificNorth.w3x"
+      },
+      {
+        "mapId": "pacific_west",
+        "packagePath": "Maps/PacificWest.w3x"
+      },
+      {
+        "mapId": "pacific_melanesia",
+        "packagePath": "Maps/PacificMelanesia.w3x"
+      },
+      {
+        "mapId": "pacific_polynesia",
+        "packagePath": "Maps/PacificPolynesia.w3x"
+      },
+      {
+        "mapId": "pacific_new_zealand",
+        "packagePath": "Maps/PacificNewZealand.w3x"
+      },
+      {
+        "mapId": "pacific_open_ocean_encounter",
+        "packagePath": "Maps/PacificOpenOceanEncounter.w3x"
+      }
+    ],
+    "executionLogSha256": "988d55e9b606d69182d1ee1a21efebe36bf2bbc942663e862d90f3d6beb74a0c",
+    "realClientExecuted": false,
+    "receipts": 44,
+    "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+    "remainingPublicationBlockers": 8541,
+    "remainingSimulationObligation": "REQ-0302.02",
+    "requirements": [
+      "REQ-0297.01",
+      "REQ-0297.02",
+      "REQ-0298.01",
+      "REQ-0299.01",
+      "REQ-0300.01",
+      "REQ-0300.02",
+      "REQ-0301.01",
+      "REQ-0301.02",
+      "REQ-0302.01",
+      "REQ-0303.01",
+      "ROAD-0062.01"
+    ],
+    "sourceRevision": "bac9d0c29e83fc677ea38ec6acdbd44745270022",
+    "sourceTreeSha256": "2019c78151b3a37a56b5915bdbd82962d087de3bfaadafe3cac9b69175a6b2f8",
+    "status": "pass"
+  },
+  "sharedFramework": {
+    "currentSharedSourceHashesVerified": 172,
+    "mapsPackagedPerCampaign": 3,
+    "mutatedArchiveSha256": "4ac11e2c5ebf553fbefa500e2acd56ec1b78814c502e8433fbccf91e3f8471f7",
+    "mutatedTestsPassed": 2,
+    "originalArchiveSha256": "f4c9e7c80903d41fcbea9a1f0f55098a6f22aaefebee87680ef437542f13dce3",
+    "originalTestsPassed": 2,
+    "status": "pass"
+  },
+  "sourceRevision": "bac9d0c29e83fc677ea38ec6acdbd44745270022",
+  "sourceTraceability": {
+    "inventoryAndMappings": "pass",
+    "obligations": 643,
+    "sourceOnlyPublicationBlockers": 7078
+  },
+  "sourceTreeSha256": "2019c78151b3a37a56b5915bdbd82962d087de3bfaadafe3cac9b69175a6b2f8",
+  "targetedPython": {
+    "coverage": [
+      "remote management",
+      "origins",
+      "military runtime",
+      "characters",
+      "live recovery",
+      "cross-map persistence",
+      "boundary arrival",
+      "campaign saves and migration",
+      "autosave",
+      "clock",
+      "framework conformance",
+      "packaging",
+      "map source",
+      "launch contract",
+      "Wurst execution gate"
+    ],
+    "status": "pass",
+    "testsPassed": 127
+  },
+  "toolchainSetup": "Copied the cached pinned compiler from a stopped, unmounted container, removed that container, and ran it locally with cached dependencies and a worktree-local Java user directory."
+}

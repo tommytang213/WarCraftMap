@@ -82,6 +82,16 @@ public class ManagementScreenPauseController
 
 	function isCampaignPaused() returns boolean
 		return campaignPaused
+	function isManuallyPaused() returns boolean
+		if modalOwnerCount > 0
+			return pausedBeforeFirstModal
+		return campaignPaused
+	/** Restore the durable player choice without closing another UI's token. */
+	function restoreManualPause(boolean paused)
+		if modalOwnerCount > 0
+			pausedBeforeFirstModal = paused
+		else
+			applyPauseState(paused)
 	function subscribe(CampaignPauseListener listener)
 		for i = 0 to listenerCount - 1
 			if listeners[i] == listener

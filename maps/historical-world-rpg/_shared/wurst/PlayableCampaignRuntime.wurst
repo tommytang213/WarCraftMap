@@ -3,6 +3,7 @@ package PlayableCampaignRuntime
 import CampaignSaveManager
 import CampaignTimeline
 import CampaignHandoff
+import public CommandMapContext
 import BoundaryArrival
 import CampaignAutosaveScheduler
 import CommandRouter
@@ -50,7 +51,7 @@ public interface CampaignRuntimeExtension
 
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 /** These values mirror the release-save manifest and are checked by the release gate. */
-public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 8
+public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 9
 public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
@@ -170,8 +171,8 @@ public function replaceCampaignField(string document, string key, string value) 
 		return SubString(document, 0, fieldStart) + marker + value
 	return SubString(document, 0, fieldStart) + marker + value + SubString(tail, finish, StringLength(tail))
 
-function withoutPartyLocations(string document) returns string
-	let marker = ";partyLocations="
+function withoutCampaignField(string document, string key) returns string
+	let marker = ";" + key + "="
 	let start = document.indexOf(marker)
 	if start < 0
 		return document
@@ -272,6 +273,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	string committedLocations = "v1"
 	PlayerCampaignIdentity identity = null
 	string loadedPhysicalMap = ""
+	PlayableRegionAccess commandAccess = null
+	ManagementScreenPauseController commandPauses = getManagementScreenPauseController()
 	OriginCatalog origins = null
 	BoundaryCorrespondence array[64] boundaries
 	int boundaryCount = 0
@@ -377,6 +380,10 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		return captureDomains(authority, true)
 	function captureStagedAuthoritativeState() returns string
 		return captureDomains(staged, false)
+	function captureCommandMap(string document) returns string
+		if pendingPartyArrival(lastAuthorityValue(document, "partyLocations"))
+			return lastAuthorityValue(document, "map")
+		return loadedPhysicalMap
 	function captureDomains(string document, boolean includeIdentity) returns string
 		if clock.advancing
 			return ""
@@ -384,7 +391,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			recovery.refresh()
 		// Emit this domain in a canonical position even when activation retained
 		// it before the lazily captured country/RPG domains.
-		var result = withoutPartyLocations(document)
+		var result = withoutCampaignField(withoutCampaignField(document, "partyLocations"), "commandContext")
 		if includeIdentity and identity != null and identity.hasOrigin()
 			result = replaceCampaignField(result, "players", "origin:" + identity.originId() + ",allegiance:" + identity.allegianceId() + ",settlement:" + identity.settlementId())
 		if countries != null
@@ -399,6 +406,12 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			result += ";piracy=" + piracy.captureAuthority()
 		if extension != null
 			result += ";trade=" + extension.capture()
+		var context = lastAuthorityValue(document, "commandContext")
+		if includeIdentity and commandAccess != null
+			context = commandContext(captureCommandMap(document), commandPauses.isManuallyPaused(), commandAccess.captureKnowledge())
+		else if context == ""
+			context = commandContext(lastAuthorityValue(document, "map"), false, initialCommandKnowledge(lastAuthorityValue(document, "map")))
+		result = replaceCampaignField(result, "commandContext", context)
 		var locations = "v1"
 		// A source map cannot sample coordinates for the destination checkpoint.
 		if pendingPartyArrival(lastAuthorityValue(document, "partyLocations")) and lastAuthorityValue(document, "map") != loadedPhysicalMap
@@ -458,6 +471,9 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			committedLocations = locations.encode()
 		destroy locations
 	function capturePartyLocations(string document) returns string
+		// Remote terrain cannot sample or re-anchor the home party.
+		if loadedPhysicalMap != "" and loadedPhysicalMap != lastAuthorityValue(document, "map")
+			return committedLocations
 		let previous = parsePartyLocations(committedLocations)
 		let captured = new PartyLocationSet()
 		var valid = previous != null and partyNavigation != null and arrivalPathing != null
@@ -490,11 +506,34 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			destroy previous
 		destroy captured
 		return result
+	function validateCommandDestination(string candidate) returns boolean
+		let context = lastAuthorityValue(candidate, "commandContext")
+		let homeMap = lastAuthorityValue(candidate, "map")
+		let target = campaignCommandMap(candidate)
+		if context != "" and not validCommandContext(context)
+			lastDiagnostic = "invalid command context"
+			return false
+		if target == homeMap
+			return true
+		if scenarioPhysicalMapPath(homeMap) == "" or scenarioPhysicalMapPath(target) == "" or not commandKnows(context, scenarioLogicalRegion(target)) or pendingPartyArrival(lastAuthorityValue(candidate, "partyLocations"))
+			lastDiagnostic = "unknown or unavailable command destination"
+			return false
+		if militarySettlements == null
+			return false
+		let detached = militarySettlements.parseSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+		let authorized = commandAuthorityOnMap(detached, target)
+		if detached != null
+			detached.dispose()
+		if not authorized
+			lastDiagnostic = "command authority no longer permits this destination"
+		return authorized
 	override function validateAuthoritativeState(string candidate) returns boolean
 		if loading
 			lastDiagnostic = "campaign reconstruction is already in progress"
 			return false
 		staged = ""
+		if not validateCommandDestination(candidate)
+			return false
 		if lastAuthorityValue(candidate, "boundary") == "" and (lastAuthorityValue(candidate, "transition") != "" or lastAuthorityValue(candidate, "arrival") != "")
 			lastDiagnostic = "saved transfer is missing its boundary"
 			return false
@@ -523,7 +562,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 				else if pendingPartyArrival(locations)
 					if value.mapId != boundary(lastAuthorityValue(candidate, "boundary")).sourceMapId
 						valid = false
-				else if partyNavigation == null or not partyNavigation.accepts(value) or value.mapId != loadedPhysicalMap
+				else if value.mapId != lastAuthorityValue(candidate, "map") or (loadedPhysicalMap == value.mapId and (partyNavigation == null or not partyNavigation.accepts(value)))
 					valid = false
 			destroy parsed
 			if not valid
@@ -535,7 +574,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if not validCampaignAutosave(candidate)
 			lastDiagnostic = "invalid autosave scheduler authority"
 			return false
-		if loadedPhysicalMap != "" and (lastAuthorityValue(candidate, "map") != loadedPhysicalMap or playerAuthorityValue(candidate, "origin") == "")
+		if loadedPhysicalMap != "" and (campaignCommandMap(candidate) != loadedPhysicalMap or playerAuthorityValue(candidate, "origin") == "")
 			lastDiagnostic = "checkpoint does not belong to the loaded physical map or has no player identity"
 			return false
 		if origins != null and origins.find(playerAuthorityValue(candidate, "origin")) == null
@@ -681,6 +720,21 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if rpg == null or militarySettlements == null or party == null
 			return false
 		let saved = lastAuthorityValue(candidate, "partyLocations")
+		if loadedPhysicalMap != lastAuthorityValue(candidate, "map")
+			let home = parsePartyLocations(saved)
+			if home == null
+				return false
+			var homeValid = home.count > 0
+			for i = 0 to home.count - 1
+				let value = home.entries[i]
+				let hero = rpg.heroes.get(value.id)
+				if hero == null or value.mapId != lastAuthorityValue(candidate, "map") or not locatedHeroAt(hero, value.mapId, lastAuthorityValue(candidate, "region"))
+					homeValid = false
+			destroy home
+			if homeValid
+				party.clear(rpg)
+				committedLocations = saved
+			return homeValid
 		var locations = parsePartyLocations(saved)
 		if saved == "" or saved == "legacy" or pendingPartyArrival(saved)
 			// Only a new campaign, migrated coordinate-less save or pending
@@ -786,11 +840,15 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		checkpoint = null
 		// A committed load reconstructs the physical view, never a previously
 		// selected remote region whose authority may have been revoked by the save.
-		regional.activateRegion(lastAuthorityValue(staged, "region"))
+		if lastAuthorityValue(staged, "commandContext") != "" and loadedPhysicalMap != lastAuthorityValue(staged, "map")
+			regional.activateRegion(loadedPhysicalMap)
+		else
+			regional.activateRegion(lastAuthorityValue(staged, "region"))
 		if countries != null
 			authority = withoutCountryAuthority(staged)
 		else
 			authority = staged
+		authority = replaceCampaignField(authority, "commandContext", lastAuthorityValue(candidate, "commandContext"))
 		if party != null
 			authority = replaceCampaignField(authority, "partyLocations", committedLocations)
 		// No fallible reconstruction remains. Rejected or staged loads never
@@ -886,6 +944,15 @@ public function campaignSaveEnvelope(int schema, string slotId, int slotKind, in
 	let body = "schema=" + schema.toString() + "|slot=" + slotId + "|kind=" + slotKind.toString() + "|index=" + slotIndex.toString() + "|created=" + createdAt + "|state=" + authoritativeState
 	return "integrity=" + runtimeChecksum(body).toString() + "|" + body
 
+public function campaignCommandMap(string document) returns string
+	let context = lastAuthorityValue(document, "commandContext")
+	if context == ""
+		return lastAuthorityValue(document, "map")
+	return locationField(context, 1)
+
+function validCampaignCommandContext(string document) returns boolean
+	return hasUniqueAuthorityValue(document, "commandContext") and validCommandContext(lastAuthorityValue(document, "commandContext"))
+
 function validCampaignAutosave(string document) returns boolean
 	return hasUniqueAuthorityValue(document, "autosave") and validAutosaveMetadata(lastAuthorityValue(document, "autosave"))
 
@@ -931,7 +998,13 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 			return ""
 		if not validateClock(authoritativeState) or not validateLocations(authoritativeState)
 			return ""
-		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, authoritativeState)
+		var document = authoritativeState
+		if lastAuthorityValue(document, "commandContext") == ""
+			document = replaceCampaignField(document, "commandContext", commandContext(lastAuthorityValue(document, "map"), false, initialCommandKnowledge(lastAuthorityValue(document, "map"))))
+		if not validCampaignCommandContext(document)
+			lastDiagnostic = "invalid command context"
+			return ""
+		return campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, slotId, slotKind, slotIndex, createdAt, document)
 	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
 		let marker = "|schema="
 		let cut = payload.indexOf(marker)
@@ -1018,9 +1091,15 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// the current running scheduler. Explicit v0 uses last-completed slot.
 		if sourceSchema < 8 and decoded.indexOf(";autosave=") < 0
 			decoded += ";autosave=" + autosaveMetadata(1, CAMPAIGN_AUTOSAVE_SECONDS)
+		// Schema 9 separates physical command context from the party's home.
+		if sourceSchema < 9 and decoded.indexOf(";commandContext=") < 0
+			decoded += ";commandContext=" + commandContext(lastAuthorityValue(decoded, "map"), false, initialCommandKnowledge(lastAuthorityValue(decoded, "map")))
 		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
 		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
 			lastDiagnostic = "save is missing authority required by its schema"
+			return ""
+		if not validCampaignCommandContext(decoded)
+			lastDiagnostic = "save has missing, duplicate or invalid command context"
 			return ""
 		if not validateClock(decoded) or not validateLocations(decoded)
 			return ""
@@ -1087,7 +1166,7 @@ public class CampaignTravelRuntime
 		currentMapId = mapId
 		currentRegionId = regionId
 	function transition(BoundaryCorrespondence boundary, real normalized, string createdAt) returns boolean
-		if not state.isSaveSafe()
+		if not state.isSaveSafe() or (state.loadedPhysicalMap != "" and state.loadedPhysicalMap != currentMapId)
 			lastDiagnostic = "travel deferred: authoritative state is transitional"
 			return false
 		if boundary == null or state.boundary(boundary.id) != boundary or not boundary.valid() or boundary.sourceMapId != currentMapId or not validBoundaryPosition(normalized)
@@ -1109,6 +1188,7 @@ public class CampaignTravelRuntime
 			transferLocations += SubString(captured, 2, StringLength(captured))
 		state.beginTransition()
 		state.replaceAuthority(replaceCampaignField(withoutTravelAuthority(previous), "partyLocations", transferLocations) + ";map=" + boundary.destinationMapId + ";region=" + boundary.destinationRegionId + ";boundary=" + boundary.id + ";position=" + arrival.toString() + ";transition=" + boundary.id + ";arrival=" + arrival.toString())
+		state.replaceAuthority(replaceCampaignField(state.authorityDocument(), "commandContext", commandContext(boundary.destinationMapId, state.commandPauses.isManuallyPaused(), initialCommandKnowledge(boundary.destinationMapId))))
 		state.finishTransition()
 		if not saves.save(SAVE_SLOT_MAJOR_MILESTONE, 0, createdAt)
 			state.replaceAuthority(previous)
@@ -1343,6 +1423,15 @@ public class PlayableRegionAccess implements RegionAccessPolicy
 		let i = find(id)
 		if i >= 0
 			known[i] = true
+	function captureKnowledge() returns string
+		var result = "|"
+		for i = 0 to count - 1
+			if known[i]
+				result += ids[i] + "|"
+		return result
+	function restoreKnowledge(string context)
+		for i = 0 to count - 1
+			known[i] = commandKnows(context, ids[i])
 	override function regionExists(string regionId) returns boolean
 		return find(regionId) >= 0
 	override function regionIsKnown(player whichPlayer, string regionId) returns boolean
@@ -1367,9 +1456,8 @@ public class PlayableRegionAccess implements RegionAccessPolicy
 				return true
 		return false
 
-public class PlayableRegionCommandRuntime implements RegionCommandRuntime
+public class WarcraftRegionProjectionRuntime implements RegionCommandRuntime
 	WarcraftRegionalAdapter regional
-	string lastDiagnostic = ""
 	construct(WarcraftRegionalAdapter regional)
 		this.regional = regional
 	override function snapshotRuntime() returns string
@@ -1383,10 +1471,175 @@ public class PlayableRegionCommandRuntime implements RegionCommandRuntime
 		regional.reconstructRegion(regionId)
 		return true
 	override function focusCommandRegion(player whichPlayer, string regionId)
-		// Each representation retains authoritative coordinates; activating it cannot move the party.
 		regional.activateRegion(regionId)
 	override function diagnostic() returns string
+		return ""
+
+public constant string CAMPAIGN_COMMAND_REQUEST = "command_request"
+public constant string CAMPAIGN_COMMAND_SLOT = "command_context"
+
+/** Separate v1 transport record using the integrity-protected envelope carrier.
+ * The storage key/slot distinguish command transport from recovery and origin.
+ * Its start token includes explicit recovery; milestone fences ordinary travel.
+ * A consumed record survives the acknowledgement/activation crash window. */
+public class PlayableRegionCommandRuntime implements RegionCommandTransport
+	PlayableCampaignServices campaign
+	string lastDiagnostic = ""
+	construct(PlayableCampaignServices campaign)
+		this.campaign = campaign
+	function startToken() returns int
+		return runtimeChecksum(campaign.recoveryStartToken().toString() + "|" + campaign.handoff.storage.read(CAMPAIGN_RECOVERY_REQUEST))
+	function applies(CampaignRecoveryRequest request) returns boolean
+		return request.startToken == startToken() and request.milestoneToken == runtimeChecksum(campaign.saves.storage.read("major_milestone"))
+	function candidate(CampaignRecoveryRequest request) returns string
+		if request.scenario != SCENARIO_CAMPAIGN_ID or request.slotId != CAMPAIGN_COMMAND_SLOT
+			return ""
+		let document = campaign.saves.codec.decodeMigrateAndValidate(request.payload, CAMPAIGN_COMMAND_SLOT)
+		if document == "" or request.mapId != campaignCommandMap(document) or not campaign.validateRecoveryDestination(document)
+			return ""
+		return document
+	function reject(string message) returns boolean
+		lastDiagnostic = message
+		campaign.lastDiagnostic = message
+		return false
+	override function diagnostic() returns string
 		return lastDiagnostic
+	override function requestCommandMap(player sender, string destination) returns boolean
+		if sender != Player(0)
+			return reject("You are not authorized to manage this campaign.")
+		if destination == "retry"
+			return retry()
+		let state = campaign.state
+		if not campaign.registered or state.loading or campaign.saves.loading or state.transitionOpen
+			return reject("Campaign registration or reconstruction is incomplete.")
+		// Return is available even after destination restoration or permission
+		// revalidation failed, using the intact durable home checkpoint.
+		if not campaign.started or not state.isSaveSafe()
+			if destination == "return"
+				let pending = decodeCampaignRecoveryRequest(campaign.handoff.storage.read(CAMPAIGN_COMMAND_REQUEST))
+				if pending != null and applies(pending)
+					if campaign.started
+						destroy pending
+						// The still-loaded source may have observed a last control
+						// change. Returning must not replay its older handoff copy.
+						let live = state.captureAuthoritativeState()
+						if live == ""
+							return reject(state.diagnostic())
+						return depart(live, campaign.identity.physicalMapId())
+					let pendingDocument = campaign.saves.codec.decodeMigrateAndValidate(pending.payload, CAMPAIGN_COMMAND_SLOT)
+					destroy pending
+					if pendingDocument != ""
+						return depart(pendingDocument, lastAuthorityValue(pendingDocument, "map"))
+			return reject("Command startup is interrupted. Use /region retry or /region return.")
+		let homeMap = campaign.identity.physicalMapId()
+		var mapId = homeMap
+		if destination != "return"
+			let knownRegion = commandDestinationRegion(state.militarySettlements, destination)
+			if knownRegion == ""
+				return reject("Unknown command destination.")
+			if not campaign.regionAccess.regionIsKnown(sender, knownRegion)
+				return reject("Region is not known.")
+			mapId = resolveCommandMap(state.militarySettlements, destination)
+		if mapId == "" or scenarioPhysicalMapPath(mapId) == ""
+			return reject("Invalid or ambiguous command destination. Specify a physical map, holding or force ID.")
+		if not campaign.regionAccess.regionIsKnown(sender, scenarioLogicalRegion(mapId))
+			return reject("Region is not known.")
+		if mapId != homeMap and (not campaign.regionAccess.mayCommandRegion(sender, scenarioLogicalRegion(mapId)) or not commandAuthorityOnMap(state.militarySettlements, mapId))
+			return reject("You are not authorized to manage this command map.")
+		if mapId == campaign.physicalMapId
+			lastDiagnostic = "Already managing " + mapId + "."
+			return true
+		// Acquiring our token samples clock/autosave elapsed time before capture.
+		// Failed writes release only this new owner; existing modal/manual state
+		// and all Warcraft projections remain intact.
+		let selector = campaign.regionSelector
+		var acquired = false
+		if selector.modal == null
+			selector.modal = selector.pauseController.openModalManagementScreen()
+			acquired = true
+		let document = state.captureAuthoritativeState()
+		if document == "" or not depart(document, mapId)
+			if acquired
+				selector.modal.close()
+				destroy selector.modal
+				selector.modal = null
+			return reject("Command handoff could not be committed. " + lastDiagnostic)
+		return true
+	function depart(string document, string mapId) returns boolean
+		if scenarioPhysicalMapPath(mapId) == ""
+			return reject("The command destination is unavailable.")
+		let context = lastAuthorityValue(document, "commandContext")
+		let updated = replaceCampaignField(document, "commandContext", commandContext(mapId, locationField(context, 2) == "1", locationField(context, 3)))
+		if not campaign.validateRecoveryDestination(updated)
+			return reject(campaign.diagnostic())
+		var sequence = 1
+		let previous = decodeCampaignRecoveryRequest(campaign.handoff.storage.read(CAMPAIGN_COMMAND_REQUEST))
+		if previous != null
+			sequence = previous.sequence + 1
+			destroy previous
+		if sequence <= 0
+			return reject("The command handoff sequence is exhausted.")
+		let payload = campaign.saves.codec.encode(CAMPAIGN_COMMAND_SLOT, SAVE_SLOT_SESSION_START, 0, "command-map", updated)
+		if payload == ""
+			return reject(campaign.saves.codec.diagnostic())
+		let request = new CampaignRecoveryRequest(sequence, "pending", SCENARIO_CAMPAIGN_ID, CAMPAIGN_COMMAND_SLOT, mapId, startToken(), runtimeChecksum(campaign.saves.storage.read("major_milestone")), payload)
+		let written = campaign.handoff.storage.writeTransactional(CAMPAIGN_COMMAND_REQUEST, request.encode())
+		destroy request
+		if not written
+			return reject("The command handoff storage write failed.")
+		launch(mapId)
+		return true
+	function launch(string mapId)
+		if not campaign.state.startupLocked
+			campaign.state.militarySettlements.suspendCallbacks()
+		campaign.state.startupLocked = true
+		campaign.state.clock.detachTimer()
+		campaign.autosaves.detachTimer()
+		lastDiagnostic = "Loading command map " + mapId + ". Your party remains at its physical location."
+		campaign.travel.loader.load(scenarioPhysicalMapPath(mapId))
+	function retry() returns boolean
+		if not campaign.registered or campaign.state.loading or campaign.saves.loading or campaign.state.transitionOpen
+			return reject("Campaign registration or reconstruction is incomplete.")
+		let request = decodeCampaignRecoveryRequest(campaign.handoff.storage.read(CAMPAIGN_COMMAND_REQUEST))
+		if request == null
+			return reject("No valid command handoff is available.")
+		if not applies(request) or candidate(request) == ""
+			destroy request
+			return reject("The command handoff is superseded, unavailable or unauthorized.")
+		let mapId = request.mapId
+		let home = lastAuthorityValue(campaign.saves.codec.decodeMigrateAndValidate(request.payload, CAMPAIGN_COMMAND_SLOT), "map")
+		// The source still has live authority, even with its timers frozen.
+		if campaign.started and mapId != home and (not commandAuthorityOnMap(campaign.state.militarySettlements, mapId) or not campaign.regionAccess.regionIsKnown(Player(0), scenarioLogicalRegion(mapId)))
+			destroy request
+			return reject("Command authority or discovery changed before departure.")
+		let active = campaign.started and campaign.state.isSaveSafe() and campaign.physicalMapId == mapId and request.status == "consumed"
+		destroy request
+		if active
+			lastDiagnostic = ""
+			return true
+		if not campaign.started and campaign.physicalMapId == mapId
+			let restored = campaign.startup()
+			lastDiagnostic = campaign.diagnostic()
+			return restored
+		launch(mapId)
+		return true
+	function restore(CampaignRecoveryRequest request) returns boolean
+		let document = candidate(request)
+		if document == "" or request.mapId != campaign.physicalMapId
+			return campaign.rejectRestoration("Command destination is unavailable or unauthorized. Use /region return or /load.")
+		if not campaign.saves.stageCandidate(document)
+			return campaign.rejectRestoration(campaign.saves.diagnostic())
+		// Recheck the restored current authority, never a cached source grant.
+		if request.mapId != lastAuthorityValue(document, "map") and not commandAuthorityOnMap(campaign.state.militarySettlements, request.mapId)
+			campaign.saves.abortLoad()
+			return campaign.rejectRestoration("Command authority was lost during destination reconstruction.")
+		if request.status == "pending"
+			request.status = "consumed"
+			if not campaign.handoff.storage.writeTransactional(CAMPAIGN_COMMAND_REQUEST, request.encode())
+				campaign.saves.abortLoad()
+				return campaign.rejectRestoration("Command acknowledgement was interrupted. Use /region retry or /region return.")
+		campaign.saves.commitLoad(true)
+		return true
 
 public class WarcraftMapPresentation implements MapPresentationRuntime
 	CommandOutput output
@@ -1468,12 +1721,14 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		let logicalRegion = scenarioLogicalRegion(physicalMapId)
 		travel = new CampaignTravelRuntime(state, saves, autosaves, loader, physicalMapId, logicalRegion)
 		regionAccess = new PlayableRegionAccess(state)
+		state.commandAccess = regionAccess
 		for i = 0 to scenarioRegionCount() - 1
 			let regionId = scenarioRegionId(i)
 			let known = scenarioRegionInitiallyKnown(regionId)
 			regionAccess.add(regionId, known)
 		regionAccess.reveal(logicalRegion)
-		regionSelector = new RegionSelector(regionAccess, new PlayableRegionCommandRuntime(regional), logicalRegion)
+		regionSelector = new RegionSelector(regionAccess, null, logicalRegion)
+		regionSelector.transport = new PlayableRegionCommandRuntime(this)
 		mapPresentation = new WarcraftMapPresentation(new WarcraftOutput())
 		mapPresentation.setKnowledge(logicalRegion, "", "", "")
 		maps = new MapDiscoveryScreenController(getManagementScreenPauseController(), mapPresentation, logicalRegion, logicalRegion)
@@ -1503,6 +1758,9 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		if scenarioPhysicalMapPath(mapId) == "" or lastAuthorityValue(candidate, "region") != scenarioLogicalRegion(mapId)
 			lastDiagnostic = "The saved physical map is unavailable or does not match its region."
 			return false
+		if scenarioPhysicalMapPath(campaignCommandMap(candidate)) == "" or not state.validateCommandDestination(candidate)
+			lastDiagnostic = "The saved command destination is unavailable or unauthorized."
+			return false
 		if origin == null or lastAuthorityValue(candidate, "world") != "instance:" + origin.regionalInstanceId
 			lastDiagnostic = "The save does not match this campaign's authored origin and world."
 			return false
@@ -1513,7 +1771,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 	function recoveryApplies(CampaignRecoveryRequest request) returns boolean
 		return request.startToken == recoveryStartToken() and request.milestoneToken == runtimeChecksum(saves.storage.read("major_milestone"))
 	function recoveryCandidate(CampaignRecoveryRequest request) returns string
-		if request.scenario != SCENARIO_CAMPAIGN_ID or request.slotId.startsWith(HANDOFF_CHECKPOINT)
+		if request.scenario != SCENARIO_CAMPAIGN_ID or request.slotId.startsWith(HANDOFF_CHECKPOINT) or request.slotId == CAMPAIGN_COMMAND_SLOT
 			lastDiagnostic = "The recovery request belongs to a different campaign."
 			return ""
 		let candidate = saves.codec.decodeMigrateAndValidate(request.payload, request.slotId)
@@ -1522,7 +1780,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return ""
 		if not validateRecoveryDestination(candidate)
 			return ""
-		if request.mapId != lastAuthorityValue(candidate, "map")
+		if request.mapId != campaignCommandMap(candidate)
 			lastDiagnostic = "The recovery request and saved destination disagree."
 			return ""
 		return candidate
@@ -1544,8 +1802,8 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return false
 		if not validateRecoveryDestination(candidate)
 			return false
-		let mapId = lastAuthorityValue(candidate, "map")
-		if started and mapId == physicalMapId
+		let mapId = campaignCommandMap(candidate)
+		if started and mapId == physicalMapId and not handoff.storage.contains(CAMPAIGN_COMMAND_REQUEST)
 			let loaded = saves.load(kind, index)
 			lastDiagnostic = saves.diagnostic()
 			return loaded
@@ -1668,6 +1926,18 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return true
 		if not registered
 			return rejectStartup("Campaign registration is incomplete.")
+		let command = decodeCampaignRecoveryRequest(handoff.storage.read(CAMPAIGN_COMMAND_REQUEST))
+		if handoff.storage.contains(CAMPAIGN_COMMAND_REQUEST) and command == null
+			return rejectRestoration("The command handoff is damaged. Select an existing save with /load.")
+		if command != null
+			let transport = regionSelector.transport castTo PlayableRegionCommandRuntime
+			if transport.applies(command)
+				let restored = transport.restore(command)
+				destroy command
+				if not restored
+					return false
+				return finishStartup()
+			destroy command
 		let recovery = decodeCampaignRecoveryRequest(handoff.storage.read(CAMPAIGN_RECOVERY_REQUEST))
 		if handoff.storage.contains(CAMPAIGN_RECOVERY_REQUEST) and recovery == null
 			return rejectRestoration("The durable recovery request is damaged or unsupported. Select an existing save with /load.")
@@ -1746,6 +2016,25 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		autosaves.bindManagementPause(pauses)
 		autosaves.attachTimer(adapter)
 		return true
+	function focusCommandMap()
+		if physicalMapId == identity.physicalMapId()
+			let locations = parsePartyLocations(state.committedLocations)
+			if locations != null
+				if locations.count > 0
+					state.regional.focus(Player(0), locations.entries[0].x, locations.entries[0].y)
+				destroy locations
+			return
+		let military = state.militarySettlements
+		for i = 0 to military.forceCount - 1
+			let value = military.forces[i]
+			if commandEligibleForce(value) and scenarioAuthorityMap(value.regionId) == physicalMapId
+				state.regional.focus(Player(0), value.x, value.y)
+				return
+		for i = 0 to military.settlementCount - 1
+			let value = military.settlements[i]
+			if value.controllerId == "player" and scenarioAuthorityMap(value.regionId) == physicalMapId
+				state.regional.focus(Player(0), value.x, value.y)
+				return
 	override function afterCampaignLoad()
 		let document = state.authorityDocument()
 		let loadedMap = lastAuthorityValue(document, "map")
@@ -1753,11 +2042,20 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		let loadedSettlement = playerAuthorityValue(document, "settlement")
 		restoreCampaignPlayerIdentity(identity, document)
 		travel.startAt(loadedMap, loadedRegion)
+		let context = lastAuthorityValue(document, "commandContext")
+		if context != ""
+			regionAccess.restoreKnowledge(context)
 		regionAccess.reveal(loadedRegion)
-		regionSelector.afterCampaignLoad(loadedRegion)
+		if regionSelector.transport != null
+			state.commandPauses.restoreManualPause(locationField(context, 2) == "1")
+			regionSelector.restoreCommandContext(loadedRegion, scenarioLogicalRegion(physicalMapId), physicalMapId != loadedMap)
+		else
+			regionSelector.afterCampaignLoad(loadedRegion)
 		mapPresentation.setKnowledge(loadedRegion, loadedSettlement, "", "")
 		maps.setPhysicalRegion(loadedRegion)
-		maps.setCommandRegion(loadedRegion)
+		maps.setCommandRegion(regionSelector.getCommandRegionId())
+		if regionSelector.transport != null
+			focusCommandMap()
 
 function restoreCampaignPlayerIdentity(PlayerCampaignIdentity identity, string document)
 	if identity == null

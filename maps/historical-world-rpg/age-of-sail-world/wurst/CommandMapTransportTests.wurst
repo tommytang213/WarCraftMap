@@ -1,0 +1,403 @@
+package CommandMapTransportTests
+
+import CampaignStartupTests
+import CampaignHandoff
+import CampaignSaveManager
+import CampaignTimelineTests
+import CampaignAutosaveLifecycleTests
+import CommandRouter
+import PlayableCampaignRuntime
+import RemoteRegionManagement
+import ManagementScreenPauseController
+import MilitarySettlementRuntime
+import MilitaryOrderEvents
+import MilitaryOrderEventsTests
+import PartyLocations
+import UnstuckRecovery
+import WC3Compatibility
+import Wurstunit
+
+class CommandMapPorts implements CommandOutput, CampaignPauseRuntime
+	string text = ""
+	override function show(player recipient, string message)
+		text = message
+	override function setCampaignPaused(boolean paused)
+		skip
+
+/** Fresh services share durable bytes only. Terrain, projections, timers and UI
+ * ownership are new instances, exactly as after a physical map load. */
+class CommandMapFixture
+	StartupFixture f
+	PlayableCampaignServices campaign
+	CommandMapPorts ports = new CommandMapPorts()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(ports, false)
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), ports)
+	OrderRepresentations objects = new OrderRepresentations()
+	RecordingOrderNatives natives = new RecordingOrderNatives()
+	MilitaryOrderEvents orders = null
+	construct(StartupStorage cache, StartupStorage saves, string mapId)
+		f = new StartupFixture(cache, saves, mapId)
+		campaign = f.campaign
+		campaign.state.commandPauses = pauses
+		campaign.regionSelector.pauseController = pauses
+		f.clock.bindManagementPause(pauses)
+		campaign.autosaves.bindManagementPause(pauses)
+		registerCampaignSaveCommands(commands, campaign)
+	function start()
+		f.start("ethiopian_empire")
+		campaign.state.militarySettlements.transferSovereignty("london", "player")
+	function register()
+		registerRegionCommand(commands, campaign.regionSelector, ports).assertEquals("")
+		f.register()
+		campaign.state.militarySettlements.adapter = objects
+	function resume()
+		register()
+		if not campaign.startup()
+			print("COMMAND STARTUP: " + campaign.diagnostic() + " / " + campaign.state.diagnostic())
+		campaign.started.assertTrue()
+	function dispatch(string command)
+		commands.dispatch(Player(0), command).assertTrue()
+	function record(string id) returns RuntimeForce
+		return campaign.state.militarySettlements.forces[campaign.state.militarySettlements.forceIndex(id)]
+	function addForce(string id, string mapId)
+		let origin = campaign.origins.find("england")
+		campaign.state.militarySettlements.registerForce(new RuntimeForce(id, "player", mapId, "infantry", FORCE_ARMY, 'hfoo', 40, 40, origin.x, origin.y))
+	function reject(string command)
+		let before = campaign.state.captureAuthoritativeState()
+		let writes = f.cache.writes
+		let loads = f.ports.loads
+		let owners = pauses.getModalOwnerCount()
+		let count = f.ports.activePlayers
+		dispatch(command)
+		(campaign.diagnostic() != "").assertTrue()
+		f.cache.writes.assertEquals(writes)
+		f.ports.loads.assertEquals(loads)
+		f.ports.activePlayers.assertEquals(count)
+		pauses.getModalOwnerCount().assertEquals(owners)
+		campaign.state.captureAuthoritativeState().assertEquals(before)
+	function checkParty(string locations, string rpg)
+		campaign.identity.physicalMapId().assertEquals("africa")
+		lastAuthorityValue(campaign.state.captureAuthoritativeState(), "partyLocations").assertEquals(locations)
+		campaign.state.rpg.captureState().assertEquals(rpg)
+	function close()
+		if orders != null
+			orders.stop()
+		campaign.regionSelector.afterCampaignLoad("africa")
+		f.clock.detachTimer()
+		campaign.autosaves.detachTimer()
+
+function commandReceipt(string caseName)
+	string array[11] requirements
+	requirements[0] = "REQ-0297.01"
+	requirements[1] = "REQ-0298.01"
+	requirements[2] = "REQ-0299.01"
+	requirements[3] = "REQ-0300.01"
+	requirements[4] = "REQ-0301.01"
+	requirements[5] = "REQ-0302.01"
+	requirements[6] = "REQ-0303.01"
+	requirements[7] = "ROAD-0062.01"
+	requirements[8] = "REQ-0297.02"
+	requirements[9] = "REQ-0300.02"
+	requirements[10] = "REQ-0301.02"
+	for i = 0 to 10
+		print("TRACEABILITY {\"requirement\":\"" + requirements[i] + "\",\"case\":\"" + caseName + "\",\"entryPoint\":\"region\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function registeredCommandLoadsActualTerrainOrdersAndReturnsHome()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.addForce("remote-army", "europe_atlantic_isles")
+	source.addForce("abstract-army", "africa")
+	source.campaign.state.militarySettlements.issueOrder("abstract-army", "patrol", 10., 20.).assertTrue()
+	let locations = lastAuthorityValue(source.campaign.state.captureAuthoritativeState(), "partyLocations")
+	let rpg = source.campaign.state.rpg.captureState()
+	source.dispatch("/region europe")
+	source.f.ports.destination.assertEquals(scenarioPhysicalMapPath("europe_west"))
+	source.f.ports.loads.assertEquals(2)
+	source.campaign.identity.physicalMapId().assertEquals("africa")
+	source.campaign.state.isSaveSafe().assertFalse()
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.resume()
+	remote.checkParty(locations, rpg)
+	remote.f.ports.activePlayers.assertEquals(0)
+	remote.f.ports.spawns.assertEquals(0)
+	(remote.campaign.state.regional castTo StartupRegionalAdapter).cameraX.assertEquals(remote.record("remote-army").x)
+	remote.campaign.state.militarySettlements.activeRegionId.assertEquals("europe_west")
+	(remote.objects.representationId("remote-army") != 0).assertTrue()
+	(remote.objects.representationId("core:london") != 0).assertTrue()
+	remote.objects.representationId("abstract-army").assertEquals(0)
+	remote.orders = installMilitaryOrderEvents(remote.campaign, remote.natives)
+	(remote.orders != null).assertTrue()
+	// Supported order delivered through the very callback installed at startup.
+	remote.natives.deliver(Player(0), remote.objects.representationId("remote-army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertTrue()
+	remote.record("remote-army").orderId.assertEquals("stop")
+	remote.record("abstract-army").orderId.assertEquals("patrol")
+	remote.dispatch("/region return")
+	remote.f.ports.destination.assertEquals(scenarioPhysicalMapPath("africa"))
+	let home = new CommandMapFixture(source.f.cache, source.f.saves, "africa")
+	home.resume()
+	home.checkParty(locations, rpg)
+	home.f.ports.activePlayers.assertEquals(source.f.ports.activePlayers)
+	home.record("remote-army").orderId.assertEquals("stop")
+	home.record("abstract-army").orderId.assertEquals("patrol")
+	home.campaign.regionSelector.isRemote().assertFalse()
+	home.pauses.getModalOwnerCount().assertEquals(0)
+	source.close()
+	remote.close()
+	home.close()
+	commandReceipt("success")
+
+@test function commandMapResolutionAndRejectedWritesHaveNoDepartureEffects()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.addForce("eastern-army", "europe_central_east")
+	source.reject("/region europe")
+	source.reject("/region missing-map")
+	source.reject("/region pacific")
+	source.campaign.regionAccess.reveal("east_asia")
+	source.reject("/region east_asia")
+	source.campaign.state.militarySettlements.transferSettlement("london", "england")
+	source.reject("/region europe_west")
+	source.campaign.state.militarySettlements.transferSettlement("london", "player")
+	let outer = source.pauses.openModalManagementScreen()
+	source.f.cache.failKey = CAMPAIGN_COMMAND_REQUEST
+	source.reject("/region london")
+	outer.isOpen().assertTrue()
+	source.pauses.getModalOwnerCount().assertEquals(1)
+	outer.close()
+	source.dispatch("/region eastern-army")
+	source.f.ports.destination.assertEquals(scenarioPhysicalMapPath("europe_central_east"))
+	source.close()
+	commandReceipt("failure")
+
+@test function commandHandoffRevalidatesPermissionAtRetryAndDestination()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.dispatch("/region london")
+	let before = source.f.ports.loads
+	source.campaign.state.militarySettlements.transferSettlement("london", "england")
+	source.dispatch("/region retry")
+	source.f.ports.loads.assertEquals(before)
+	// Model a changed committed checkpoint between launch and destination: the
+	// envelope remains valid, but its live control grant has been revoked.
+	let request = decodeCampaignRecoveryRequest(source.f.cache.read(CAMPAIGN_COMMAND_REQUEST))
+	let candidate = source.campaign.saves.codec.decodeMigrateAndValidate(request.payload, CAMPAIGN_COMMAND_SLOT)
+	let revoked = replaceCampaignField(candidate, "militarySettlements", source.campaign.state.militarySettlements.snapshot())
+	request.payload = source.campaign.saves.codec.encode(CAMPAIGN_COMMAND_SLOT, SAVE_SLOT_SESSION_START, 0, "revoked", revoked)
+	source.f.cache.writeTransactional(CAMPAIGN_COMMAND_REQUEST, request.encode()).assertTrue()
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.register()
+	remote.campaign.startup().assertFalse()
+	remote.f.ports.activePlayers.assertEquals(0)
+	remote.campaign.started.assertFalse()
+	decodeCampaignRecoveryRequest(source.f.cache.read(CAMPAIGN_COMMAND_REQUEST)).status.assertEquals("pending")
+	remote.dispatch("/region return")
+	remote.f.ports.destination.assertEquals(scenarioPhysicalMapPath("africa"))
+	let home = new CommandMapFixture(source.f.cache, source.f.saves, "africa")
+	home.resume()
+	home.campaign.state.militarySettlements.settlements[home.campaign.state.militarySettlements.settlementIndex("london")].controllerId.assertEquals("england")
+	source.close()
+	remote.close()
+	home.close()
+	commandReceipt("stale")
+
+@test function commandInterruptedAcknowledgementAndConsumedReplayAreIdempotent()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.dispatch("/region london")
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.register()
+	let previous = remote.campaign.state.militarySettlements.snapshot()
+	source.f.cache.failKey = CAMPAIGN_COMMAND_REQUEST
+	remote.campaign.startup().assertFalse()
+	remote.campaign.state.militarySettlements.snapshot().assertEquals(previous)
+	remote.f.ports.activePlayers.assertEquals(0)
+	remote.pauses.getModalOwnerCount().assertEquals(0)
+	remote.dispatch("/region retry")
+	remote.campaign.started.assertTrue()
+	remote.pauses.getModalOwnerCount().assertEquals(1)
+	let writes = source.f.cache.writes
+	for i = 0 to 2
+		remote.dispatch("/region retry")
+		remote.campaign.startup().assertTrue()
+	source.f.cache.writes.assertEquals(writes)
+	remote.f.ports.loads.assertEquals(0)
+	// Starting another process at the acknowledgement boundary consumes the
+	// retained checkpoint without replaying starting grants or spawning heroes.
+	let replay = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	replay.resume()
+	replay.f.ports.spawns.assertEquals(0)
+	replay.pauses.getModalOwnerCount().assertEquals(1)
+	replay.campaign.state.rpg.captureState().assertEquals(source.campaign.state.rpg.captureState())
+	source.f.cache.writes.assertEquals(writes)
+	source.close()
+	remote.close()
+	replay.close()
+	commandReceipt("replay")
+
+@test function commandRemoteSaveRecoveryAndRejectedHomeProjectionRetainOrders()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.addForce("remote-army", "europe_west")
+	source.dispatch("/region remote-army")
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.resume()
+	remote.campaign.state.militarySettlements.issueOrder("remote-army", "patrol", 20., 30.).assertTrue()
+	remote.campaign.saves.save(SAVE_SLOT_MANUAL, 4, "remote").assertTrue()
+	let saved = source.f.saves.read("manual_04")
+	remote.dispatch("/region return")
+	let rejected = new CommandMapFixture(source.f.cache, source.f.saves, "africa")
+	rejected.register()
+	rejected.f.ports.failProjection = true
+	rejected.campaign.startup().assertFalse()
+	decodeCampaignRecoveryRequest(source.f.cache.read(CAMPAIGN_COMMAND_REQUEST)).status.assertEquals("pending")
+	rejected.f.ports.failProjection = false
+	rejected.dispatch("/region retry")
+	rejected.campaign.started.assertTrue()
+	rejected.record("remote-army").orderId.assertEquals("patrol")
+	rejected.dispatch("/load 4")
+	rejected.f.ports.destination.assertEquals(scenarioPhysicalMapPath("europe_west"))
+	let recovered = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	recovered.resume()
+	recovered.f.ports.activePlayers.assertEquals(0)
+	recovered.record("remote-army").orderId.assertEquals("patrol")
+	recovered.campaign.identity.physicalMapId().assertEquals("africa")
+	source.f.saves.read("manual_04").assertEquals(saved)
+	source.close()
+	remote.close()
+	rejected.close()
+	recovered.close()
+
+@test function commandPreservesIncapacitatedPartyPauseClockAndAutosave()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	for i = 0 to source.campaign.state.rpg.heroes.count - 1
+		if source.f.ports.represented[i]
+			source.campaign.state.defeatHero(i)
+	source.f.ports.activePlayers.assertEquals(0)
+	let locations = lastAuthorityValue(source.campaign.state.captureAuthoritativeState(), "partyLocations")
+	let rpg = source.campaign.state.rpg.captureState()
+	let clockTimer = new RecordingClockTimer()
+	source.campaign.enableClockTimer(clockTimer, 1.).assertTrue()
+	clockTimer.tick(.25)
+	let autosaveTimer = new RecordingAutosaveTimer()
+	source.campaign.enableAutosaveTimer(autosaveTimer, source.pauses).assertTrue()
+	autosaveTimer.elapse(37.)
+	source.pauses.setManuallyPaused(true)
+	let outer = source.pauses.openModalManagementScreen()
+	let clockState = source.f.clock.captureState()
+	let scheduler = source.campaign.autosaves.captureState()
+	source.dispatch("/region london")
+	outer.isOpen().assertTrue()
+	source.pauses.getModalOwnerCount().assertEquals(2)
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.resume()
+	remote.checkParty(locations, rpg)
+	remote.f.ports.activePlayers.assertEquals(0)
+	remote.pauses.getModalOwnerCount().assertEquals(1)
+	remote.pauses.isManuallyPaused().assertTrue()
+	remote.f.clock.advanceElapsed(100.).assertTrue()
+	remote.campaign.autosaves.advance(100., "remote").assertFalse()
+	remote.f.clock.captureState().assertEquals(clockState)
+	remote.campaign.autosaves.captureState().assertEquals(scheduler)
+	remote.dispatch("/region return")
+	let home = new CommandMapFixture(source.f.cache, source.f.saves, "africa")
+	home.resume()
+	home.checkParty(locations, rpg)
+	home.f.ports.activePlayers.assertEquals(0)
+	home.pauses.getModalOwnerCount().assertEquals(0)
+	home.pauses.isCampaignPaused().assertTrue()
+	home.f.clock.captureState().assertEquals(clockState)
+	home.campaign.autosaves.captureState().assertEquals(scheduler)
+	home.pauses.setManuallyPaused(false)
+	home.campaign.autosaves.advance(262., "not-yet").assertFalse()
+	home.campaign.autosaves.advance(1., "due").assertTrue()
+	source.close()
+	outer.close()
+	remote.close()
+	home.close()
+
+@test function commandBetweenTwoMapsInSameLogicalRegionStillOwnsRemotePause()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.f.start("england")
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.addForce("eastern-army", "europe_central_east")
+	let locations = lastAuthorityValue(source.campaign.state.captureAuthoritativeState(), "partyLocations")
+	source.dispatch("/region eastern-army")
+	source.f.ports.destination.assertEquals(scenarioPhysicalMapPath("europe_central_east"))
+	let remote = new CommandMapFixture(source.f.cache, source.f.saves, "europe_central_east")
+	remote.resume()
+	remote.campaign.regionSelector.getPhysicalRegionId().assertEquals("europe")
+	remote.campaign.regionSelector.getCommandRegionId().assertEquals("europe")
+	remote.campaign.regionSelector.isRemote().assertTrue()
+	remote.pauses.getModalOwnerCount().assertEquals(1)
+	remote.campaign.identity.physicalMapId().assertEquals("europe_west")
+	remote.f.ports.activePlayers.assertEquals(0)
+	lastAuthorityValue(remote.campaign.state.captureAuthoritativeState(), "partyLocations").assertEquals(locations)
+	remote.dispatch("/region return")
+	remote.f.ports.destination.assertEquals(scenarioPhysicalMapPath("europe_west"))
+	source.close()
+	remote.close()
+
+@test function commandDestinationCannotAcquireDiscoveryFromLoadedTerrain()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.dispatch("/region london")
+	let request = decodeCampaignRecoveryRequest(source.f.cache.read(CAMPAIGN_COMMAND_REQUEST))
+	let document = source.campaign.saves.codec.decodeMigrateAndValidate(request.payload, CAMPAIGN_COMMAND_SLOT)
+	let hidden = replaceCampaignField(document, "commandContext", commandContext("europe_west", false, "|africa|"))
+	request.payload = source.campaign.saves.codec.encode(CAMPAIGN_COMMAND_SLOT, SAVE_SLOT_SESSION_START, 0, "hidden", hidden)
+	source.f.cache.writeTransactional(CAMPAIGN_COMMAND_REQUEST, request.encode()).assertTrue()
+	let destination = new CommandMapFixture(source.f.cache, source.f.saves, "europe_west")
+	destination.register()
+	// The constructor sees loaded terrain, but only durable discovery is used
+	// for activation. Presence of forces alone cannot grant knowledge.
+	destination.campaign.startup().assertFalse()
+	destination.f.ports.activePlayers.assertEquals(0)
+	destination.f.ports.loads.assertEquals(0)
+	destination.pauses.getModalOwnerCount().assertEquals(0)
+	source.close()
+	destination.close()
+
+@test function commandSchemaEightMigrationAndCurrentMetadataAreValidated()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	let codec = source.campaign.saves.codec
+	let document = source.campaign.state.captureAuthoritativeState()
+	// The raw legacy fixture has no command context. Current fields on either
+	// side remain intact; migration is additive and idempotent.
+	let marker = document.indexOf(";commandContext=")
+	let tail = SubString(document, marker + 1, StringLength(document))
+	let finish = tail.indexOf(";")
+	let legacy = SubString(document, 0, marker) + SubString(tail, finish, StringLength(tail))
+	let payload = campaignSaveEnvelope(8, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", legacy)
+	let migrated = codec.decodeMigrateAndValidate(payload, "manual_01")
+	campaignCommandMap(migrated).assertEquals("africa")
+	lastAuthorityValue(migrated, "partyLocations").assertEquals(lastAuthorityValue(document, "partyLocations"))
+	lastAuthorityValue(migrated, "militarySettlements").assertEquals(lastAuthorityValue(document, "militarySettlements"))
+	codec.decodeMigrateAndValidate(campaignSaveEnvelope(9, "manual_01", SAVE_SLOT_MANUAL, 1, "missing", legacy), "manual_01").assertEquals("")
+	codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "duplicate", document + ";commandContext=" + lastAuthorityValue(document, "commandContext")).assertEquals("")
+	source.close()
+
+@test function commandSourceCancellationRetainsCurrentControlAndDistinctRecoveryKind()
+	let source = new CommandMapFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start()
+	registerRegionCommand(source.commands, source.campaign.regionSelector, source.ports).assertEquals("")
+	source.dispatch("/region london")
+	let command = decodeCampaignRecoveryRequest(source.f.cache.read(CAMPAIGN_COMMAND_REQUEST))
+	source.campaign.recoveryCandidate(command).assertEquals("")
+	source.campaign.state.militarySettlements.transferSettlement("london", "england")
+	source.dispatch("/region retry")
+	source.f.ports.loads.assertEquals(2)
+	source.dispatch("/region return")
+	let home = new CommandMapFixture(source.f.cache, source.f.saves, "africa")
+	home.resume()
+	home.campaign.state.militarySettlements.settlements[home.campaign.state.militarySettlements.settlementIndex("london")].controllerId.assertEquals("england")
+	source.close()
+	home.close()

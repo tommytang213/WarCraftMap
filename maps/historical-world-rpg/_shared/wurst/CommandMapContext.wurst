@@ -1,0 +1,101 @@
+package CommandMapContext
+
+import ScenarioSettings
+import PartyLocations
+import MilitarySettlementRuntime
+
+/** Schema 9 domain: active physical command map, manual pause choice and
+ * discovered logical regions. Home map/coordinates remain in existing domains.
+ * No modal owners, handles, callbacks or loader paths are serialized. */
+public function commandContext(string mapId, boolean manuallyPaused, string knowledge) returns string
+	var paused = "0"
+	if manuallyPaused
+		paused = "1"
+	return "v1," + mapId + "," + paused + "," + knowledge
+
+public function initialCommandKnowledge(string homeMap) returns string
+	var result = "|"
+	for i = 0 to scenarioRegionCount() - 1
+		let regionId = scenarioRegionId(i)
+		if scenarioRegionInitiallyKnown(regionId) or regionId == scenarioLogicalRegion(homeMap)
+			result += regionId + "|"
+	return result
+
+public function commandKnows(string context, string regionId) returns boolean
+	return regionId != "" and locationField(context, 3).indexOf("|" + regionId + "|") >= 0
+
+public function validCommandContext(string context) returns boolean
+	let mapId = locationField(context, 1)
+	let paused = locationField(context, 2)
+	let knowledge = locationField(context, 3)
+	if locationField(context, 0) != "v1" or mapId == "" or (paused != "0" and paused != "1") or context != commandContext(mapId, paused == "1", knowledge)
+		return false
+	var canonical = "|"
+	for i = 0 to scenarioRegionCount() - 1
+		let regionId = scenarioRegionId(i)
+		if commandKnows(context, regionId)
+			canonical += regionId + "|"
+	return canonical == knowledge
+
+public function commandEligibleForce(RuntimeForce value) returns boolean
+	return value.controllerId == "player" and value.active and value.strength > 0 and value.mobileForce()
+
+public function commandAuthorityOnMap(MilitarySettlementRuntime military, string mapId) returns boolean
+	if military == null or scenarioPhysicalMapPath(mapId) == ""
+		return false
+	for i = 0 to military.settlementCount - 1
+		let holding = military.settlements[i]
+		if holding.controllerId == "player" and scenarioAuthorityMap(holding.regionId) == mapId
+			return true
+	for i = 0 to military.forceCount - 1
+		let value = military.forces[i]
+		if commandEligibleForce(value) and scenarioAuthorityMap(value.regionId) == mapId
+			return true
+	return false
+
+/** Knowledge lookup uses geography only, never control or title. */
+public function commandDestinationRegion(MilitarySettlementRuntime military, string destination) returns string
+	let holding = military.settlementIndex(destination)
+	if holding >= 0
+		return scenarioAuthorityRegion(military.settlements[holding].regionId)
+	let index = military.forceIndex(destination)
+	if index >= 0
+		return scenarioAuthorityRegion(military.forces[index].regionId)
+	return scenarioAuthorityRegion(destination)
+
+/** Resolve by current authority relationships. A logical region is accepted
+ * only when ALL eligible local assets resolve unambiguously to one map. */
+public function resolveCommandMap(MilitarySettlementRuntime military, string destination) returns string
+	if military == null
+		return ""
+	let holding = military.settlementIndex(destination)
+	if holding >= 0
+		if military.settlements[holding].controllerId == "player"
+			return scenarioAuthorityMap(military.settlements[holding].regionId)
+		return ""
+	let forceIndex = military.forceIndex(destination)
+	if forceIndex >= 0
+		if commandEligibleForce(military.forces[forceIndex])
+			return scenarioAuthorityMap(military.forces[forceIndex].regionId)
+		return ""
+	let direct = scenarioAuthorityMap(destination)
+	if direct != ""
+		return direct
+	if scenarioAuthorityRegion(destination) != destination
+		return ""
+	var found = ""
+	for i = 0 to military.settlementCount - 1
+		let value = military.settlements[i]
+		if value.controllerId == "player" and scenarioAuthorityRegion(value.regionId) == destination
+			let mapId = scenarioAuthorityMap(value.regionId)
+			if mapId == "" or (found != "" and found != mapId)
+				return ""
+			found = mapId
+	for i = 0 to military.forceCount - 1
+		let value = military.forces[i]
+		if commandEligibleForce(value) and scenarioAuthorityRegion(value.regionId) == destination
+			let mapId = scenarioAuthorityMap(value.regionId)
+			if mapId == "" or (found != "" and found != mapId)
+				return ""
+			found = mapId
+	return found

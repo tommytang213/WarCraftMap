@@ -445,6 +445,33 @@ function traditionCombatFixture() returns CombatFixture
 function traditionXp(CombatFixture f, string controller, string category) returns int
 	return f.runtime.traditions[f.runtime.traditionIndex(controller, category)].experience
 
+@test function combatOnMappedTerrainPreservesCaptureAndEarnedTradition()
+	let f = traditionCombatFixture()
+	// Authored locations can name a subregion while command activation names
+	// its physical chapter. Both combat participants and holdings use that map.
+	f.runtime.settlements[0].regionId = "europe_atlantic_isles"
+	for i = 0 to f.runtime.forceCount - 1
+		if f.runtime.forces[i].regionId == "europe_west"
+			f.runtime.forces[i].regionId = "europe_atlantic_isles"
+	f.runtime.activateRegion("europe_west")
+	(f.core() != 0).assertTrue()
+	f.token("abstract_army").assertEquals(0)
+	f.captureViaNatives()
+	let victim = f.token("enemy")
+	f.representations.tradition = -1
+	f.natives.damage(victim, f.token("player_army")).assertEquals(1)
+	f.natives.death(victim, f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	// Reconcile the surviving local projection without reviving the casualty
+	// or projecting forces from the other physical map in the same region.
+	f.representations.tradition.assertEquals(0)
+	f.token("enemy").assertEquals(0)
+	f.token("abstract_army").assertEquals(0)
+	let committed = f.runtime.snapshot()
+	f.natives.death(victim, f.token("player_army"))
+	f.runtime.snapshot().assertEquals(committed)
+	f.close()
+
 function traditionReceiptFor(string requirement, string caseName)
 	print("TRACEABILITY {\"requirement\":\"" + requirement + "\",\"case\":\"" + caseName + "\",\"entryPoint\":\"combat-earned-tradition\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
 

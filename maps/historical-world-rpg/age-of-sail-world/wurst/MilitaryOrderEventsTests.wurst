@@ -13,7 +13,7 @@ import UnstuckRecovery
 import WC3Compatibility
 import Wurstunit
 
-class OrderRepresentations extends WarcraftMilitarySettlementAdapter
+public class OrderRepresentations extends WarcraftMilitarySettlementAdapter
 	string heading = ""
 	string management = ""
 	override function maximumLife(unit target) returns int
@@ -26,7 +26,7 @@ class OrderRepresentations extends WarcraftMilitarySettlementAdapter
 
 /** Real interpreter units go through the production military projection.
  * Only event delivery, current native orders and native issuance are recorded. */
-class RecordingOrderNatives extends WarcraftMilitaryOrderNatives
+public class RecordingOrderNatives extends WarcraftMilitaryOrderNatives
 	int epoch = 0
 	int installs = 0
 	int applications = 0

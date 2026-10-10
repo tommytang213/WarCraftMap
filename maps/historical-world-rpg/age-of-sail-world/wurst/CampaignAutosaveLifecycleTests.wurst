@@ -92,7 +92,7 @@ class AutosaveFixture
 		ports.selectorIdentity = new PlayerCampaignIdentity()
 		ports.selectorIdentity.restore("england", "england", mapId, "west", "port")
 		cache.writeTransactional(HANDOFF_REQUEST, "travel-fixture")
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 1, 1.), mapId, null, storage, new CampaignHandoff(new StartupStorage(), ports), ports, null)
+		campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), new CampaignClock(1, 100, 1, 1.), mapId, null, storage, new CampaignHandoff(new StartupStorage(), ports), ports, null)
 		campaign.state.arrivalPathing = ports
 		campaign.origins.add("england", "England", mapId, "map.w3x", "west", "port")
 		campaign.countries.registerPolity("england", 1000)

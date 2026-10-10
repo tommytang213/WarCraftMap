@@ -44,7 +44,7 @@ public class StartupFixture
 		selector = new NewCampaignOriginController(8, ports, ports.selectorIdentity)
 		selector.setObserver(handoff)
 		configureGeneratedOrigins(selector)
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
 		campaign.state.arrivalPathing = ports
 		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
 	function register()

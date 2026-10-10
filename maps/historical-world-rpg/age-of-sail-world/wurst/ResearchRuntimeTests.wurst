@@ -212,7 +212,7 @@ function exerciseGeneratedPrerequisites(string id,string first,string second,str
 
 function codecRestore(ResearchFixture fixture,string records,int schema)
 	let clock=new CampaignClock(1, 100, 1, 1.)
-	let prefix="v2;autosave=1|1|8:1001011;partyLocations=v1;clock="+clock.initialState()+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let prefix="v2;autosave=1|1|8:1001011;partyLocations=v1;commandContext=v1,world-map,0,|europe|;clock="+clock.initialState()+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
 	let document=prefix+records
 	let codec=new PlayableCampaignCodec(clock)
 	var payload=""
@@ -267,7 +267,7 @@ function researchClock() returns CampaignClock
 	return clock
 
 function restoreHistoricalResearch(ResearchFixture fixture,CampaignClock clock,string state,string clockState)
-	let prefix="v2;autosave=1|1|8:1001011;partyLocations=v1;clock="+clockState+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
+	let prefix="v2;autosave=1|1|8:1001011;partyLocations=v1;commandContext=v1,world-map,0,|europe|;clock="+clockState+";map=world-map;region=europe;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;militarySettlements=v1;religion=v1;piracy=v1;rpg="
 	let codec=new PlayableCampaignCodec(clock)
 	let encoded=codec.encode("manual-1",SAVE_SLOT_MANUAL,1,"now",prefix+state)
 	codec.decodeMigrateAndValidate(encoded,"manual-1").assertEquals(prefix+state)

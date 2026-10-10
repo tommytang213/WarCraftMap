@@ -16,8 +16,16 @@ public interface RegionCommandRuntime
 	function focusCommandRegion(player whichPlayer, string regionId)
 	function diagnostic() returns string
 
+/** Commit-first physical transport. The projection-only coordinator remains
+ * useful to single-map consumers; production multi-map campaigns install this. */
+public interface RegionCommandTransport
+	function requestCommandMap(player whichPlayer, string destination) returns boolean
+	function diagnostic() returns string
+
 /** Scenario-neutral coordinator. Command/view state is intentionally not saved. */
 public class RegionSelector
+	RegionCommandTransport transport = null
+	boolean remoteMap = false
 	RegionAccessPolicy access
 	RegionCommandRuntime runtime
 	ManagementScreenPauseController pauseController
@@ -42,7 +50,7 @@ public class RegionSelector
 	function getCommandRegionId() returns string
 		return commandRegionId
 	function isRemote() returns boolean
-		return physicalRegionId != commandRegionId
+		return remoteMap or physicalRegionId != commandRegionId
 	function diagnostic() returns string
 		return lastMessage
 	/** Travel integration hook; strategic relocation remains outside this UI service. */
@@ -53,6 +61,7 @@ public class RegionSelector
 	/** Called only after committed campaign reconstruction has restored the
 	 * physical runtime. Rejected/staged loads must retain this view and token. */
 	function afterCampaignLoad(string regionId)
+		remoteMap = false
 		physicalRegionId = regionId
 		commandRegionId = regionId
 		if modal != null
@@ -60,6 +69,10 @@ public class RegionSelector
 			modal = null
 		lastMessage = ""
 	function select(player whichPlayer, string regionId) returns boolean
+		if transport != null
+			let result = transport.requestCommandMap(whichPlayer, regionId)
+			lastMessage = transport.diagnostic()
+			return result
 		if not access.regionExists(regionId)
 			lastMessage = "Unknown region: " + regionId + "."
 			return false
@@ -100,7 +113,20 @@ public class RegionSelector
 			lastMessage = "Managing " + regionId + ". Your party remains in " + physicalRegionId + "."
 		return true
 	function returnToPhysicalRegion(player whichPlayer) returns boolean
+		if transport != null
+			return select(whichPlayer, "return")
 		return select(whichPlayer, physicalRegionId)
+	/** Publish only after all fallible restoration and acknowledgement work. */
+	function restoreCommandContext(string physicalRegion, string commandRegion, boolean remote)
+		physicalRegionId = physicalRegion
+		commandRegionId = commandRegion
+		remoteMap = remote
+		if remote and modal == null
+			modal = pauseController.openModalManagementScreen()
+		if not remote and modal != null
+			modal.close()
+			destroy modal
+			modal = null
 
 public class RegionCommand implements CommandHandler
 	RegionSelector selector
@@ -117,4 +143,4 @@ public class RegionCommand implements CommandHandler
 		output.show(sender, selector.diagnostic())
 
 public function registerRegionCommand(CommandRegistry registry, RegionSelector selector, CommandOutput output) returns string
-	return registry.register("region", "regions", "region <region-id|return>", "Manage an authorized region remotely.", "Switch camera and command context without moving your character, party, army, or fleet. Use 'return' to restore the physical region view.", 1, 1, COMMAND_RELEASE, new RegionCommand(selector, output))
+	return registry.register("region", "regions", "region <region-id|map-id|holding-id|force-id|return|retry>", "Manage an authorized region remotely.", "Load the terrain of an authorized holding or force without moving your party. Ambiguous regions require a map, holding or force ID. Use 'return' for your physical location or 'retry' after interrupted startup.", 1, 1, COMMAND_RELEASE, new RegionCommand(selector, output))
