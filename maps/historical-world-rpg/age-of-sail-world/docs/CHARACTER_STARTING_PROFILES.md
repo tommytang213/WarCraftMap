@@ -23,8 +23,8 @@ recruitment path.
 Headless progression starts at cumulative `experience_for_level(startingLevel)`.
 Live experience measures progress toward the next level, so that exact level
 floor becomes **zero residual experience**. Starting ranks grant **zero unspent
-skill or mastery points**. Subsequent awards retain the existing live thresholds
-and point cadence. This bridge does not change either engine's growth curve.
+skill, mastery or choice points**. Subsequent awards now follow the authoritative
+curve and generated growth cadence described in [LIVE_HERO_GROWTH.md](LIVE_HERO_GROWTH.md).
 
 `RpgHero.skillRank` and `masteryRank` expose live ranks; the existing signature
 field owns the personal-tree identity. `/inventory HERO` shows level, experience,
@@ -39,7 +39,8 @@ reapply starting profiles.
 
 Migration from RPG v2/v3 preserves recorded level, experience, unspent points,
 personal/signature progression, perks and ownership. Their absent rank maps become
-empty; no retrospective grants are invented. The next save writes v4. Unrecruited
+empty; no retrospective grants are invented. The current writer uses v6, retaining
+v4 ranks and v5 quest stages and appending choice points. Unrecruited
 legacy records still receive the composed start on their first valid recruitment.
 The empty v1 domain remains a new-campaign initialization path.
 

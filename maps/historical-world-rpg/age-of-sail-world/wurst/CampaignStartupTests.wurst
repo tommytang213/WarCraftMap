@@ -11,6 +11,7 @@ import PlayableCampaignRuntime
 import PlayableTrade
 import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
+import HeroProgression
 import QuestStages
 import MilitarySettlementRuntime
 import ReligionRuntime
@@ -399,10 +400,10 @@ function originLifecycle(string origin, string mapId)
 	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "east_asia")
 	f.start("ming_empire")
 	let rpg = f.campaign.state.rpg
-	rpg.heroes.heroes[0].experience = 753
+	rpg.heroes.heroes[0].awardExperience(753).assertTrue()
 	let companion = rpg.heroes.get("hang_tuah")
 	companion.level.assertEquals(66)
-	companion.awardExperience(6607)
+	companion.awardExperience(heroNextLevelExperience(66) + 7).assertTrue()
 	companion.skillRanks = "command:61~diplomacy:59~navigation:60~"
 	companion.masteryRanks = "land_warfare:38~sea_command:39~statecraft:40~"
 	companion.skillPoints = 9
@@ -450,7 +451,7 @@ function originLifecycle(string origin, string mapId)
 	let resumed = destination.campaign
 	resumed.identity.originId().assertEquals("ming_empire")
 	resumed.identity.allegianceId().assertEquals("portugal")
-	resumed.state.rpg.heroes.heroes[0].experience.assertEquals(753)
+	resumed.state.rpg.heroes.heroes[0].cumulativeExperience().assertEquals(753)
 	let transferred = resumed.state.rpg.heroes.get("hang_tuah")
 	transferred.level.assertEquals(67)
 	transferred.experience.assertEquals(7)

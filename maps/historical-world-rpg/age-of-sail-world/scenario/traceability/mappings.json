@@ -13183,6 +13183,805 @@
           }
         ]
       }
+    },
+    "REQ-0091.01": {
+      "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved.",
+      "mechanism": [
+        {
+          "path": "../_shared/wurst/HeroProgression.wurst",
+          "contains": [
+            "HERO_LEVEL_CAP = 300",
+            "heroExperienceForLevel",
+            "heroEarnedPoints",
+            "heroValidExperience"
+          ]
+        },
+        {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "canAwardExperience(amount)",
+            "choicePoints += heroEarnedPoints",
+            "experience = total - heroExperienceForLevel(level)"
+          ],
+          "symbol": "awardExperience"
+        }
+      ],
+      "content": [
+        {
+          "path": "scenario/progression/hero-progression.json",
+          "contains": [
+            "\"levelCap\": 300",
+            "\"choicePointEveryLevels\": 10",
+            "\"masteryPointEveryLevels\": 5"
+          ]
+        },
+        {
+          "path": "../_shared/tooling/package_wurst_map.py",
+          "contains": [
+            "hero_growth = growth_cadence(progression_catalog)",
+            "runtime[\"heroGrowthCadence\"] = hero_growth",
+            "for field, value in hero_growth.items():"
+          ]
+        }
+      ],
+      "entry": {
+        "id": "live-earned-hero-growth",
+        "kind": "command",
+        "registration": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"turnin\""
+          ],
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "path": [
+          {
+            "path": "wurst/Bootstrap.wurst",
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)"
+            ],
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "interactions.resolve(actor, sender, q.turnInId)",
+              "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+            ],
+            "symbol": "turnInQuest"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "hero.canAwardExperience(questDefinition.rewardExperience)",
+              "hero.awardExperience(questDefinition.rewardExperience)"
+            ],
+            "symbol": "turnIn"
+          }
+        ],
+        "testInvocation": ".command("
+      },
+      "state": {
+        "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+        "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
+        "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing.",
+        "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroNextLevelExperience(level)",
+              "Remaining experience",
+              "Choice points"
+            ],
+            "symbol": "progressionSummary"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "questDefinition.completions++",
+              "hero.canAwardExperience"
+            ],
+            "symbol": "turnIn"
+          }
+        ]
+      },
+      "persistence": {
+        "mode": "persisted",
+        "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+        "save": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints.toString()"
+          ],
+          "symbol": "captureState"
+        },
+        "load": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints=0",
+            "record.schema >= 6",
+            "h.choicePoints=S2I(record.field(20))"
+          ],
+          "symbol": "applyRecord"
+        },
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroValidExperience(S2I(record.field(3)), S2I(record.field(4)))"
+            ],
+            "symbol": "validateRecord"
+          },
+          {
+            "path": "docs/LIVE_HERO_GROWTH.md",
+            "contains": [
+              "RPG domain **v6**",
+              "without replaying rewards or lowering an earned level"
+            ]
+          }
+        ]
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Campaign reconstruction restores validated authority without awarding levels, points or starting profiles; late load failures restore prior balances and projections.",
+        "references": [
+          {
+            "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+            "contains": [
+              "rpg.restoreState"
+            ],
+            "symbol": "applyRuntime"
+          },
+          {
+            "path": "wurst/HeroEarnedGrowthTests.wurst",
+            "contains": [
+              "f.rejectAndVerify(candidate)",
+              "f.rpg.captureState().assertEquals(expected)"
+            ]
+          }
+        ]
+      },
+      "artifact": {
+        "mapIds": [
+          "@regional"
+        ],
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
+          "\\bRpgHero_RpgHero_awardExperience\\("
+        ]
+      },
+      "tests": {
+        "success": {
+          "id": "wurst/AuthoredQuestTests.wurst:registeredQuestGrowthUsesConvexExperienceAndEarnsCapPointsOnce",
+          "level": "production_adapter",
+          "entryPoint": "live-earned-hero-growth",
+          "assertions": [
+            "assertBalances(hero, 2, 200, 1, 0, 0)",
+            "assertBalances(cap.rpg.heroes.get(\"hero\"), 300, 0, 299, 60, 30)",
+            "cap.roundTrip()"
+          ],
+          "receipt": {
+            "requirement": "REQ-0091.01",
+            "case": "success",
+            "entryPoint": "live-earned-hero-growth",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ]
+          }
+        },
+        "failure": {
+          "id": "wurst/AuthoredQuestTests.wurst:invalidRegisteredQuestGrowthLeavesQuestCurrencyAndProgressionIntact",
+          "level": "production_adapter",
+          "entryPoint": "live-earned-hero-growth",
+          "assertions": [
+            "f.command(\"/turnin europe_printed_compact hero\", false)",
+            "f.compact.completions.assertEquals(0)",
+            "f.rpg.journal.currency.assertEquals(0)",
+            "f.roundTrip()"
+          ],
+          "receipt": {
+            "requirement": "REQ-0091.01",
+            "case": "failure",
+            "entryPoint": "live-earned-hero-growth",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ]
+          }
+        },
+        "stale": {
+          "id": "wurst/AuthoredQuestTests.wurst:registeredGrowthResumesReadyQuestAndRejectsRemoteStaleTurnin",
+          "level": "production_adapter",
+          "entryPoint": "live-earned-hero-growth",
+          "assertions": [
+            "f.move(\"london\")",
+            "f.command(\"/turnin europe_printed_compact hero\", false)",
+            "assertBalances(hero, 300, 0, 1, 1, 1)",
+            "f.roundTrip()"
+          ],
+          "receipt": {
+            "requirement": "REQ-0091.01",
+            "case": "stale",
+            "entryPoint": "live-earned-hero-growth",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ]
+          }
+        },
+        "replay": {
+          "id": "wurst/AuthoredQuestTests.wurst:registeredGrowthBelongsToSelectedCharacterAcrossRepeatedReconstruction",
+          "level": "production_adapter",
+          "entryPoint": "live-earned-hero-growth",
+          "assertions": [
+            "assertBalances(companion, 10, 0, 1, 1, 1)",
+            "assertBalances(hero, 1, 0, 0, 0, 0)",
+            "f.rpg.captureState().assertEquals(saved)"
+          ],
+          "receipt": {
+            "requirement": "REQ-0091.01",
+            "case": "replay",
+            "entryPoint": "live-earned-hero-growth",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ]
+          }
+        }
+      }
+    },
+    "REQ-0091.02": {
+      "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+      "mechanism": [
+        {
+          "path": "../_shared/wurst/HeroProgression.wurst",
+          "contains": [
+            "HERO_LEVEL_CAP = 300",
+            "heroExperienceForLevel",
+            "heroEarnedPoints",
+            "heroValidExperience"
+          ]
+        },
+        {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "canAwardExperience(amount)",
+            "choicePoints += heroEarnedPoints",
+            "experience = total - heroExperienceForLevel(level)"
+          ],
+          "symbol": "awardExperience"
+        }
+      ],
+      "content": [
+        {
+          "path": "scenario/progression/hero-progression.json",
+          "contains": [
+            "\"levelCap\": 300",
+            "\"choicePointEveryLevels\": 10",
+            "\"masteryPointEveryLevels\": 5"
+          ]
+        },
+        {
+          "path": "../_shared/tooling/package_wurst_map.py",
+          "contains": [
+            "hero_growth = growth_cadence(progression_catalog)",
+            "runtime[\"heroGrowthCadence\"] = hero_growth",
+            "for field, value in hero_growth.items():"
+          ]
+        }
+      ],
+      "entry": {
+        "id": "live-earned-hero-growth",
+        "kind": "command",
+        "registration": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"turnin\""
+          ],
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "path": [
+          {
+            "path": "wurst/Bootstrap.wurst",
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)"
+            ],
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "interactions.resolve(actor, sender, q.turnInId)",
+              "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+            ],
+            "symbol": "turnInQuest"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "hero.canAwardExperience(questDefinition.rewardExperience)",
+              "hero.awardExperience(questDefinition.rewardExperience)"
+            ],
+            "symbol": "turnIn"
+          }
+        ],
+        "testInvocation": ".command("
+      },
+      "state": {
+        "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+        "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
+        "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing.",
+        "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroNextLevelExperience(level)",
+              "Remaining experience",
+              "Choice points"
+            ],
+            "symbol": "progressionSummary"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "questDefinition.completions++",
+              "hero.canAwardExperience"
+            ],
+            "symbol": "turnIn"
+          }
+        ]
+      },
+      "persistence": {
+        "mode": "persisted",
+        "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+        "save": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints.toString()"
+          ],
+          "symbol": "captureState"
+        },
+        "load": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints=0",
+            "record.schema >= 6",
+            "h.choicePoints=S2I(record.field(20))"
+          ],
+          "symbol": "applyRecord"
+        },
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroValidExperience(S2I(record.field(3)), S2I(record.field(4)))"
+            ],
+            "symbol": "validateRecord"
+          },
+          {
+            "path": "docs/LIVE_HERO_GROWTH.md",
+            "contains": [
+              "RPG domain **v6**",
+              "without replaying rewards or lowering an earned level"
+            ]
+          }
+        ]
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Campaign reconstruction restores validated authority without awarding levels, points or starting profiles; late load failures restore prior balances and projections.",
+        "references": [
+          {
+            "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+            "contains": [
+              "rpg.restoreState"
+            ],
+            "symbol": "applyRuntime"
+          },
+          {
+            "path": "wurst/HeroEarnedGrowthTests.wurst",
+            "contains": [
+              "f.rejectAndVerify(candidate)",
+              "f.rpg.captureState().assertEquals(expected)"
+            ]
+          }
+        ]
+      },
+      "artifact": {
+        "mapIds": [
+          "@regional"
+        ],
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
+          "\\bRpgHero_RpgHero_awardExperience\\("
+        ]
+      },
+      "tests": {}
+    },
+    "REQ-0092.01": {
+      "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+      "mechanism": [
+        {
+          "path": "../_shared/wurst/HeroProgression.wurst",
+          "contains": [
+            "HERO_LEVEL_CAP = 300",
+            "heroExperienceForLevel",
+            "heroEarnedPoints",
+            "heroValidExperience"
+          ]
+        },
+        {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "canAwardExperience(amount)",
+            "choicePoints += heroEarnedPoints",
+            "experience = total - heroExperienceForLevel(level)"
+          ],
+          "symbol": "awardExperience"
+        }
+      ],
+      "content": [
+        {
+          "path": "scenario/progression/hero-progression.json",
+          "contains": [
+            "\"levelCap\": 300",
+            "\"choicePointEveryLevels\": 10",
+            "\"masteryPointEveryLevels\": 5"
+          ]
+        },
+        {
+          "path": "../_shared/tooling/package_wurst_map.py",
+          "contains": [
+            "hero_growth = growth_cadence(progression_catalog)",
+            "runtime[\"heroGrowthCadence\"] = hero_growth",
+            "for field, value in hero_growth.items():"
+          ]
+        }
+      ],
+      "entry": {
+        "id": "live-earned-hero-growth",
+        "kind": "command",
+        "registration": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"turnin\""
+          ],
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "path": [
+          {
+            "path": "wurst/Bootstrap.wurst",
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)"
+            ],
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "interactions.resolve(actor, sender, q.turnInId)",
+              "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+            ],
+            "symbol": "turnInQuest"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "hero.canAwardExperience(questDefinition.rewardExperience)",
+              "hero.awardExperience(questDefinition.rewardExperience)"
+            ],
+            "symbol": "turnIn"
+          }
+        ],
+        "testInvocation": ".command("
+      },
+      "state": {
+        "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+        "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
+        "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing.",
+        "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroNextLevelExperience(level)",
+              "Remaining experience",
+              "Choice points"
+            ],
+            "symbol": "progressionSummary"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "questDefinition.completions++",
+              "hero.canAwardExperience"
+            ],
+            "symbol": "turnIn"
+          }
+        ]
+      },
+      "persistence": {
+        "mode": "persisted",
+        "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+        "save": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints.toString()"
+          ],
+          "symbol": "captureState"
+        },
+        "load": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints=0",
+            "record.schema >= 6",
+            "h.choicePoints=S2I(record.field(20))"
+          ],
+          "symbol": "applyRecord"
+        },
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroValidExperience(S2I(record.field(3)), S2I(record.field(4)))"
+            ],
+            "symbol": "validateRecord"
+          },
+          {
+            "path": "docs/LIVE_HERO_GROWTH.md",
+            "contains": [
+              "RPG domain **v6**",
+              "without replaying rewards or lowering an earned level"
+            ]
+          }
+        ]
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Campaign reconstruction restores validated authority without awarding levels, points or starting profiles; late load failures restore prior balances and projections.",
+        "references": [
+          {
+            "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+            "contains": [
+              "rpg.restoreState"
+            ],
+            "symbol": "applyRuntime"
+          },
+          {
+            "path": "wurst/HeroEarnedGrowthTests.wurst",
+            "contains": [
+              "f.rejectAndVerify(candidate)",
+              "f.rpg.captureState().assertEquals(expected)"
+            ]
+          }
+        ]
+      },
+      "artifact": {
+        "mapIds": [
+          "@regional"
+        ],
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
+          "\\bRpgHero_RpgHero_awardExperience\\("
+        ]
+      },
+      "tests": {}
+    },
+    "ROAD-0051.01": {
+      "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+      "mechanism": [
+        {
+          "path": "../_shared/wurst/HeroProgression.wurst",
+          "contains": [
+            "HERO_LEVEL_CAP = 300",
+            "heroExperienceForLevel",
+            "heroEarnedPoints",
+            "heroValidExperience"
+          ]
+        },
+        {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "canAwardExperience(amount)",
+            "choicePoints += heroEarnedPoints",
+            "experience = total - heroExperienceForLevel(level)"
+          ],
+          "symbol": "awardExperience"
+        }
+      ],
+      "content": [
+        {
+          "path": "scenario/progression/hero-progression.json",
+          "contains": [
+            "\"levelCap\": 300",
+            "\"choicePointEveryLevels\": 10",
+            "\"masteryPointEveryLevels\": 5"
+          ]
+        },
+        {
+          "path": "../_shared/tooling/package_wurst_map.py",
+          "contains": [
+            "hero_growth = growth_cadence(progression_catalog)",
+            "runtime[\"heroGrowthCadence\"] = hero_growth",
+            "for field, value in hero_growth.items():"
+          ]
+        }
+      ],
+      "entry": {
+        "id": "live-earned-hero-growth",
+        "kind": "command",
+        "registration": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "commands.register(\"turnin\""
+          ],
+          "symbol": "registerRpgRuntimeCommands"
+        },
+        "path": [
+          {
+            "path": "wurst/Bootstrap.wurst",
+            "contains": [
+              "registerRpgRuntimeCommands(commands,rpgRuntime)"
+            ],
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "interactions.resolve(actor, sender, q.turnInId)",
+              "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+            ],
+            "symbol": "turnInQuest"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "hero.canAwardExperience(questDefinition.rewardExperience)",
+              "hero.awardExperience(questDefinition.rewardExperience)"
+            ],
+            "symbol": "turnIn"
+          }
+        ],
+        "testInvocation": ".command("
+      },
+      "state": {
+        "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+        "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
+        "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing.",
+        "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroNextLevelExperience(level)",
+              "Remaining experience",
+              "Choice points"
+            ],
+            "symbol": "progressionSummary"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "questDefinition.completions++",
+              "hero.canAwardExperience"
+            ],
+            "symbol": "turnIn"
+          }
+        ]
+      },
+      "persistence": {
+        "mode": "persisted",
+        "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+        "save": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints.toString()"
+          ],
+          "symbol": "captureState"
+        },
+        "load": {
+          "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+          "contains": [
+            "h.choicePoints=0",
+            "record.schema >= 6",
+            "h.choicePoints=S2I(record.field(20))"
+          ],
+          "symbol": "applyRecord"
+        },
+        "references": [
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "heroValidExperience(S2I(record.field(3)), S2I(record.field(4)))"
+            ],
+            "symbol": "validateRecord"
+          },
+          {
+            "path": "docs/LIVE_HERO_GROWTH.md",
+            "contains": [
+              "RPG domain **v6**",
+              "without replaying rewards or lowering an earned level"
+            ]
+          }
+        ]
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Campaign reconstruction restores validated authority without awarding levels, points or starting profiles; late load failures restore prior balances and projections.",
+        "references": [
+          {
+            "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+            "contains": [
+              "rpg.restoreState"
+            ],
+            "symbol": "applyRuntime"
+          },
+          {
+            "path": "wurst/HeroEarnedGrowthTests.wurst",
+            "contains": [
+              "f.rejectAndVerify(candidate)",
+              "f.rpg.captureState().assertEquals(expected)"
+            ]
+          }
+        ]
+      },
+      "artifact": {
+        "mapIds": [
+          "@regional"
+        ],
+        "callPatterns": [
+          "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
+          "\\bRpgHero_RpgHero_awardExperience\\("
+        ]
+      },
+      "tests": {}
     }
   }
 }

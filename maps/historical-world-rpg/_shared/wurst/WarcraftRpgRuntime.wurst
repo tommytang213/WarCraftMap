@@ -2,6 +2,7 @@ package WarcraftRpgRuntime
 
 import ResearchCost
 import QuestStages
+import HeroProgression
 
 import WC3Compatibility
 import ManagementScreenPauseController
@@ -11,9 +12,9 @@ import CharacterAvailability
 import PhysicalInteraction
 import WarcraftRecoveryRuntime
 
-public constant int RPG_LEVEL_CAP = 300
+public constant int RPG_LEVEL_CAP = HERO_LEVEL_CAP
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
-public constant int RPG_STATE_SCHEMA_VERSION = 5
+public constant int RPG_STATE_SCHEMA_VERSION = 6
 // Equipment assignments reserve owned copies, so they share the item budget.
 public constant int RPG_INVENTORY_CAPACITY = 4096
 public constant string QUEST_OFFERED = "offered"
@@ -33,16 +34,16 @@ function textContains(string haystack,string needle) returns boolean
 
 /** Reused for one snapshot pass. Scan each record's fields once, without
  * copying the remaining catalogue or reparsing the prefix for every field.
- * Twenty fields is the largest supported record (a v4 hero). */
+ * Twenty-one fields is the largest supported record (a v6 hero). */
 class RpgSnapshotRecord
-	string array[20] fields
-	int schema = 5
+	string array[21] fields
+	int schema = RPG_STATE_SCHEMA_VERSION
 	int count = 0
 	int nextHero = 0
 	int nextQuest = 0
 	int nextTreasure = 0
 	function append(string value)
-		if count < 20
+		if count < 21
 			fields[count] = value
 		count++
 	function read(string candidate, int start) returns int
@@ -61,7 +62,7 @@ class RpgSnapshotRecord
 		append(SubString(candidate, fieldStart, finish))
 		return finish + 1
 	function field(int index) returns string
-		if index >= count or index >= 20
+		if index >= count or index >= 21
 			return ""
 		return fields[index]
 	// Captured records follow catalogue order. Reordered compatible snapshots
@@ -99,9 +100,24 @@ function rpgValidBool(string value) returns boolean
 function rpgValidInt(string value) returns boolean
 	if value == "0"
 		return true
-	if value == "" or value.startsWith("0") or value == "-0"
+	var start = 0
+	var limit = "2147483647"
+	if value.startsWith("-")
+		start = 1
+		limit = "2147483648"
+	let digits = StringLength(value) - start
+	if digits < 1 or digits > 10 or SubString(value, start, start + 1) == "0"
 		return false
-	return S2I(value).toString() == value
+	// Bound canonical decimal text BEFORE S2I: overflow/malformed input can
+	// throw in the interpreter and wrap differently in native runtimes.
+	var comparison = 0
+	for i = 0 to digits - 1
+		let digit = "0123456789".indexOf(SubString(value, start + i, start + i + 1))
+		if digit < 0
+			return false
+		if digits == 10 and comparison == 0
+			comparison = digit - "0123456789".indexOf(SubString(limit, i, i + 1))
+	return comparison <= 0
 
 function rpgStableText(string value) returns boolean
 	return value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0
@@ -224,10 +240,15 @@ public class RpgHero
 	string skillIds = ""
 	string masteryIds = ""
 	string personalTreeIds = ""
+	int skillPointEveryLevels = 1
+	int masteryPointEveryLevels = 5
+	int choicePointEveryLevels = 10
 	int level = 1
+	// Residual XP; cumulative XP = heroExperienceForLevel(level) + experience.
 	int experience = 0
 	int skillPoints = 0
 	int masteryPoints = 0
+	int choicePoints = 0
 	int commandExperience = 0
 	int loyalty = 50
 	boolean oathbound = false
@@ -249,16 +270,28 @@ public class RpgHero
 	ondestroy
 		if startingProfile != null
 			destroy startingProfile
-	function awardExperience(int amount)
-		if amount <= 0
-			return
-		experience += amount
-		while level < RPG_LEVEL_CAP and experience >= level * 100
-			experience -= level * 100
-			level++
-			skillPoints++
-			if level % 5 == 0
-				masteryPoints++
+	function cumulativeExperience() returns int
+		return heroExperienceForLevel(level) + experience
+	function canAwardExperience(int amount) returns boolean
+		if amount <= 0 or not heroValidExperience(level, experience) or skillPoints < 0 or masteryPoints < 0 or choicePoints < 0
+			return false
+		if not heroValidCadence(skillPointEveryLevels) or not heroValidCadence(masteryPointEveryLevels) or not heroValidCadence(choicePointEveryLevels)
+			return false
+		if amount > HERO_EXPERIENCE_LIMIT - cumulativeExperience()
+			return false
+		let next = heroLevelForExperience(cumulativeExperience() + amount)
+		return skillPoints <= HERO_EXPERIENCE_LIMIT - heroEarnedPoints(level, next, skillPointEveryLevels) and masteryPoints <= HERO_EXPERIENCE_LIMIT - heroEarnedPoints(level, next, masteryPointEveryLevels) and choicePoints <= HERO_EXPERIENCE_LIMIT - heroEarnedPoints(level, next, choicePointEveryLevels)
+	function awardExperience(int amount) returns boolean
+		if not canAwardExperience(amount)
+			return false
+		let total = cumulativeExperience() + amount
+		let next = heroLevelForExperience(total)
+		skillPoints += heroEarnedPoints(level, next, skillPointEveryLevels)
+		masteryPoints += heroEarnedPoints(level, next, masteryPointEveryLevels)
+		choicePoints += heroEarnedPoints(level, next, choicePointEveryLevels)
+		level = next
+		experience = total - heroExperienceForLevel(level)
+		return true
 	/** Called only at the successful first-recruitment commit. The persisted
 	 * recruited flag prevents grants on replay, loading and reconstruction. */
 	function initializeStartingProfile()
@@ -270,6 +303,7 @@ public class RpgHero
 		experience = 0
 		skillPoints = 0
 		masteryPoints = 0
+		choicePoints = 0
 		skillRanks = startingProfile.skills
 		masteryRanks = startingProfile.masteries
 		signatureProgressionId = startingProfile.personalTreeId
@@ -278,7 +312,10 @@ public class RpgHero
 	function masteryRank(string id) returns int
 		return progressionRank(masteryRanks, id)
 	function progressionSummary() returns string
-		return "Level " + level + " | Experience " + experience + "/" + (level * 100) + " | Skill points " + skillPoints + " | Mastery points " + masteryPoints + "\nSkills: " + progressionRanksText(skillRanks) + "\nMasteries: " + progressionRanksText(masteryRanks) + "\nPersonal tree: " + progressionLabel(signatureProgressionId)
+		var progress = experience.toString() + "/" + heroNextLevelExperience(level).toString() + " | Remaining experience " + (heroNextLevelExperience(level) - experience).toString()
+		if level == RPG_LEVEL_CAP
+			progress = experience.toString() + " | Level cap reached | Remaining experience 0"
+		return "Level " + level + " | Experience " + progress + " | Skill points " + skillPoints + " | Mastery points " + masteryPoints + " | Choice points " + choicePoints + "\nSkills: " + progressionRanksText(skillRanks) + "\nMasteries: " + progressionRanksText(masteryRanks) + "\nPersonal tree: " + progressionLabel(signatureProgressionId)
 	function choosePerk(string perkId,int requiredLevel) returns boolean
 		if perkId == "" or not rpgStableText(perkId) or perkId.indexOf("~") >= 0 or level < requiredLevel or textContains(chosenPerks,"~"+perkId+"~")
 			return false
@@ -758,12 +795,15 @@ public class QuestJournalRuntime
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_READY or not questDefinition.ready() or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
 			return false
+		// Validate the entire earned-XP award before committing quest/reward state.
+		if questDefinition.rewardExperience < 0 or (questDefinition.rewardExperience > 0 and not hero.canAwardExperience(questDefinition.rewardExperience))
+			return false
 		questDefinition.state=QUEST_COMPLETE
 		questDefinition.updateGuidance()
 		questDefinition.completions++
 		questDefinition.cooldownUntil=day+cooldownDays
 		currency+=questDefinition.rewardCurrency
-		if hero != null
+		if questDefinition.rewardExperience > 0
 			hero.awardExperience(questDefinition.rewardExperience)
 		return true
 	function refill(int day)
@@ -1110,9 +1150,24 @@ public class WarcraftRpgRuntime
 			return record.count == 2 and (id == "" or heroes.get(id) != null)
 		if kind == "h"
 			let hero = record.resolveHero(heroes)
-			if hero == null or (record.schema >= 4 and (record.count != 20 or not validProgressionRanks(record.field(18), hero.skillIds) or not validProgressionRanks(record.field(19), hero.masteryIds))) or (record.schema < 4 and record.count != 18)
+			var expectedFields = 18
+			if record.schema >= 4
+				expectedFields = 20
+			if record.schema >= 6
+				expectedFields = 21
+			if hero == null or record.count != expectedFields or (record.schema >= 4 and (not validProgressionRanks(record.field(18), hero.skillIds) or not validProgressionRanks(record.field(19), hero.masteryIds)))
 				return false
-			return rpgValidBool(record.field(2)) and rpgValidInt(record.field(3)) and S2I(record.field(3)) >= 1 and S2I(record.field(3)) <= RPG_LEVEL_CAP and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5)) and rpgValidInt(record.field(6)) and rpgValidInt(record.field(7)) and rpgValidInt(record.field(8)) and S2I(record.field(8)) >= 0 and S2I(record.field(8)) <= 100 and rpgValidBool(record.field(9)) and rpgValidBool(record.field(10)) and rpgValidInt(record.field(11)) and rpgStableText(record.field(12)) and rpgStableText(record.field(13)) and rpgStableText(record.field(14)) and rpgStableText(record.field(15)) and rpgStableText(record.field(16)) and rpgStableText(record.field(17))
+			for index = 3 to 7
+				if not rpgValidInt(record.field(index))
+					return false
+			// v2-v5 residual XP is rebased onto the corrected floor at the saved
+			// level. Old uncapped thresholds were never larger than the new ones.
+			// Preserve all allocations; absent choice balances migrate to zero.
+			if not heroValidExperience(S2I(record.field(3)), S2I(record.field(4))) or S2I(record.field(5)) < 0 or S2I(record.field(6)) < 0 or S2I(record.field(7)) < 0
+				return false
+			if record.schema >= 6 and (not rpgValidInt(record.field(20)) or S2I(record.field(20)) < 0)
+				return false
+			return rpgValidBool(record.field(2)) and rpgValidInt(record.field(8)) and S2I(record.field(8)) >= 0 and S2I(record.field(8)) <= 100 and rpgValidBool(record.field(9)) and rpgValidBool(record.field(10)) and rpgValidInt(record.field(11)) and rpgStableText(record.field(12)) and rpgStableText(record.field(13)) and rpgStableText(record.field(14)) and rpgStableText(record.field(15)) and rpgStableText(record.field(16)) and rpgStableText(record.field(17))
 		if kind == "i"
 			return record.count == 2 and inventory.getItem(id) != null
 		if kind == "e"
@@ -1155,7 +1210,7 @@ public class WarcraftRpgRuntime
 		for i=0 to heroes.count-1
 			let h=heroes.heroes[i]
 			result+="|h,"+h.id+","+rpgBoolText(h.recruited)+","+h.level.toString()+","+h.experience.toString()+","+h.skillPoints.toString()+","+h.masteryPoints.toString()+","+h.commandExperience.toString()+","+h.loyalty.toString()+","+rpgBoolText(h.oathbound)+","+rpgBoolText(h.incapacitated)+","+h.recoveryDay.toString()+","+h.assignment+","+h.regionId+","+h.professionId+","+h.personalQuestId+","+h.signatureProgressionId+","+h.chosenPerks
-			result+=","+h.skillRanks+","+h.masteryRanks
+			result+=","+h.skillRanks+","+h.masteryRanks+","+h.choicePoints.toString()
 		for i=0 to inventory.ownedCount-1
 			result+="|i,"+inventory.owned[i]
 		for i=0 to inventory.equippedCount-1
@@ -1188,6 +1243,9 @@ public class WarcraftRpgRuntime
 			h.experience=S2I(record.field(4))
 			h.skillPoints=S2I(record.field(5))
 			h.masteryPoints=S2I(record.field(6))
+			h.choicePoints=0
+			if record.schema >= 6
+				h.choicePoints=S2I(record.field(20))
 			h.commandExperience=S2I(record.field(7))
 			h.loyalty=S2I(record.field(8))
 			h.oathbound=rpgBool(record.field(9))
@@ -1259,6 +1317,7 @@ public class WarcraftRpgRuntime
 				h.experience=0
 				h.skillPoints=0
 				h.masteryPoints=0
+				h.choicePoints=0
 				h.commandExperience=0
 				h.loyalty=50
 				h.oathbound=false
@@ -1309,7 +1368,7 @@ public class WarcraftRpgRuntime
 		if candidate == "v1"
 			lastDiagnostic=""
 			return true
-		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|") and not candidate.startsWith("v5|")
+		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|") and not candidate.startsWith("v5|") and not candidate.startsWith("v6|")
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
 		let keys = new RpgSnapshotKeys()

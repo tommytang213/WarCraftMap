@@ -8,11 +8,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
-from hero_starting_profiles import starting_definitions, rank_text, recovery_days
+from hero_starting_profiles import starting_definitions, rank_text, recovery_days, growth_cadence
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 23
+GENERATOR_VERSION = 24
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -291,6 +291,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             progression_sources += [builder_path, *(content_path(config.project, p) for p in payload["sources"])]
         hero_starts = starting_definitions(world, progression_catalog)
         hero_recovery_days = recovery_days(progression_catalog)
+        hero_growth = growth_cadence(progression_catalog)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         raise _fail("hero starting profiles", error) from error
     quest_sources = [Path(__file__).with_name("quest_codegen.py")]
@@ -345,6 +346,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     }
     runtime["heroStartingDefinitions"] = hero_starts
     runtime["heroRecoveryDays"] = hero_recovery_days
+    runtime["heroGrowthCadence"] = hero_growth
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -411,6 +413,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 f'\thero{index}.regionId="{ws(row.get("regionId", ""))}"',
                 f'\thero{index}.recruited={str(bool(row.get("recruited"))).lower()}']
         profile = hero_starts["profiles"][row["id"]]
+        for field, value in hero_growth.items():
+            rpg.append(f'\thero{index}.{field}={value}')
         for field in ("skillIds", "masteryIds", "personalTreeIds"):
             rpg.append(f'\thero{index}.{field}="~{"~".join(hero_starts[field])}~"')
         rpg += [f'\thero{index}.startingProfile=new HeroStartingProfile({profile["level"]},"{rank_text(profile["skills"])}","{rank_text(profile["masteries"])}","{profile["personalTreeId"]}")',
