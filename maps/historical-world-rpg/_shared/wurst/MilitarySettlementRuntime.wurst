@@ -1,5 +1,6 @@
 package MilitarySettlementRuntime
 import ScenarioSettings
+import ExactNatural
 
 import RuntimeProtection
 
@@ -27,7 +28,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 7
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 8
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -166,7 +167,7 @@ public class RuntimeForce
 public class TraditionState
 	string controllerId
 	string categoryId
-	int experience
+	string experience = "0"
 	int lifePermillePerHundredXp
 	int milestoneXp
 	int milestoneAbilityId
@@ -187,41 +188,11 @@ public class TraditionContribution
 		this.id = id
 		this.numerator = numerator
 		this.denominator = denominator
-	/** floor(amount * numerator / denominator), like military_tradition.award.
-	 * Keep the remainder separately to avoid overflowing the product. */
-	function weighted(int amount) returns int
-		if amount <= 0 or numerator <= 0 or denominator <= 0
-			return 0
-		var whole = numerator div denominator
-		var fraction = numerator mod denominator
-		var result = 0
-		var remainder = 0
-		var multiplier = amount
-		while multiplier > 0
-			if multiplier mod 2 == 1
-				if whole < 0 or result > 2147483647 - whole
-					return -1
-				result += whole
-				if remainder >= denominator - fraction
-					if result == 2147483647
-						return -1
-					result++
-					remainder -= denominator - fraction
-				else
-					remainder += fraction
-			multiplier = multiplier div 2
-			if multiplier > 0
-				if whole < 0 or whole > 2147483647 div 2
-					whole = -1
-				else
-					whole *= 2
-				if fraction >= denominator - fraction
-					if whole >= 0
-						whole++
-					fraction -= denominator - fraction
-				else
-					fraction *= 2
-		return result
+	/** Exact floor per contribution, including products above native precision. */
+	function weighted(int amount) returns string
+		if amount <= 0
+			return "0"
+		return exactNaturalScaleFloor(I2S(amount), numerator, denominator)
 
 public interface MilitaryTraditionDefinitions
 	function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
@@ -442,7 +413,10 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
-			setMaximumLife(handles[found], baseMaximumLife[found] + baseMaximumLife[found] * lifePermille div 1000)
+			// This adapter accepts bounded native stats, never authoritative XP.
+			let base = I2S(IMaxBJ(0, baseMaximumLife[found]))
+			let bonus = exactNaturalScaleFloor(base, lifePermille, 1000)
+			setMaximumLife(handles[found], exactNaturalNativeInt(exactNaturalAdd(base, bonus)))
 			if appliedMilestoneAbility[found] != 0 and appliedMilestoneAbility[found] != milestoneAbilityId
 				compatRemoveUnitAbility(handles[found], appliedMilestoneAbility[found])
 			if milestoneAbilityId != 0
@@ -467,6 +441,7 @@ public class MilitarySettlementRuntime
 	boolean legacyMilitaryVersion4 = false
 	boolean legacyOrders = false
 	boolean legacyTraditions = false
+	boolean legacyIntegerExperience = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
@@ -577,7 +552,7 @@ public class MilitarySettlementRuntime
 			if not migrate or traditionCount >= 256
 				return false
 			let state = new TraditionState(controllerId, categoryId, rate, milestoneXp, abilityId)
-			state.experience = startingExperience
+			state.experience = I2S(startingExperience)
 			registerTradition(state)
 			found = traditionIndex(controllerId, categoryId)
 		traditions[found].lifePermillePerHundredXp = rate
@@ -724,10 +699,10 @@ public class MilitarySettlementRuntime
 		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 		if found < 0
 			return 0
-		return traditions[found].experience * traditions[found].lifePermillePerHundredXp div 100
+		return exactNaturalNativeInt(exactNaturalScaleFloor(traditions[found].experience, traditions[found].lifePermillePerHundredXp, 100))
 	function traditionAbility(RuntimeForce runtimeForce) returns int
 		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
-		if found >= 0 and traditions[found].experience >= traditions[found].milestoneXp
+		if found >= 0 and exactNaturalCompare(traditions[found].experience, I2S(traditions[found].milestoneXp)) >= 0
 			return traditions[found].milestoneAbilityId
 		return 0
 	function instantiate(RuntimeForce runtimeForce)
@@ -809,7 +784,7 @@ public class MilitarySettlementRuntime
 			return false
 		let loss = victim.strength
 		var track = -1
-		var experience = 0
+		var experience = "0"
 		let source = contributionIndex("enemy_kill")
 		if contributorIndex >= 0 and source >= 0
 			let contributor = forces[contributorIndex]
@@ -817,15 +792,13 @@ public class MilitarySettlementRuntime
 			// The headless contract also requires an eligible enemy controller.
 			if track >= 0 and contributor.controllerId != victim.controllerId and traditionIndex(victim.controllerId, contributor.categoryId) >= 0
 				experience = contributions[source].weighted(loss)
-				if experience < 0 or traditions[track].experience > 2147483647 - experience
-					return false
 		let city = settlementForForce(victim)
 		if victim.kind == FORCE_GARRISON and city >= 0
 			settlements[city].lastCombatAt = now
 			settlements[city].garrisonStrength = IMaxBJ(0, settlements[city].garrisonStrength - loss)
 		victim.strength = 0
 		victim.active = false
-		if experience > 0
+		if experience != "0"
 			awardTradition(traditions[track].controllerId, traditions[track].categoryId, experience)
 		adapter.removeRepresentation(victim.id)
 		if victim.kind == FORCE_GARRISON and city >= 0 and rpg != null
@@ -847,10 +820,13 @@ public class MilitarySettlementRuntime
 				orderCallbacks.reconstruct()
 			resumeCallbacks()
 	function awardTradition(string controllerId, string categoryId, int experience)
+		if experience > 0
+			awardTradition(controllerId, categoryId, I2S(experience))
+	function awardTradition(string controllerId, string categoryId, string experience)
 		let found = traditionIndex(controllerId, categoryId)
-		if found < 0 or experience <= 0
+		if found < 0 or not exactNaturalValid(experience) or experience == "0"
 			return
-		traditions[found].experience = traditions[found].experience + experience
+		traditions[found].experience = exactNaturalAdd(traditions[found].experience, experience)
 		for i = 0 to forceCount - 1
 			if forces[i].active and forces[i].strength > 0 and forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and militaryMapMatches(forces[i].regionId, activeRegionId)
 				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
@@ -1065,7 +1041,7 @@ public class MilitarySettlementRuntime
 		result += conflictSnapshot()
 		for i = 0 to traditionCount - 1
 			let t = traditions[i]
-			result += "|t," + t.controllerId + "," + t.categoryId + "," + t.experience.toString() + "," + t.lifePermillePerHundredXp.toString() + "," + t.milestoneXp.toString() + "," + t.milestoneAbilityId.toString()
+			result += "|t," + t.controllerId + "," + t.categoryId + "," + t.experience + "," + t.lifePermillePerHundredXp.toString() + "," + t.milestoneXp.toString() + "," + t.milestoneAbilityId.toString()
 		return result
 	function deadlineReal(string value) returns real
 		if legacyDeadlines
@@ -1202,13 +1178,15 @@ public class MilitarySettlementRuntime
 		if kind == "t"
 			if record.count != 7 or target.traditionCount >= 256 or target.traditionIndex(record.field(1), record.field(2)) >= 0 or not militaryOrderAtom(record.field(1)) or not militaryOrderAtom(record.field(2))
 				return false
-			for i = 3 to 6
+			if not exactNaturalValid(record.field(3)) or (target.legacyIntegerExperience and exactNaturalCompare(record.field(3), "2147483647") > 0)
+				return false
+			for i = 4 to 6
 				if record.field(i) != "0" and campaignSlotNumber(record.field(i)) == 0
 					return false
 			let t = new TraditionState(record.field(1), record.field(2), S2I(record.field(4)), S2I(record.field(5)), S2I(record.field(6)))
-			t.experience = S2I(record.field(3))
+			t.experience = record.field(3)
 			target.registerTradition(t)
-			return t.controllerId != "" and t.categoryId != "" and t.experience >= 0
+			return true
 		return false
 	function dispose()
 		for i = 0 to forceCount - 1
@@ -1223,10 +1201,11 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
-		parsed.legacyTraditions = not candidate.startsWith("v7|")
+		parsed.legacyIntegerExperience = not candidate.startsWith("v8|")
+		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
 		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
 		parsed.legacyConflicts = candidate.startsWith("v1|")
 		parsed.legacyDeadlines = candidate.startsWith("v1|") or candidate.startsWith("v2|")
@@ -1346,7 +1325,11 @@ public class MilitarySettlementRuntime
 		let f = forceIndex(subjectId)
 		if f >= 0
 			let runtimeForce = forces[f]
-			return "Controller: " + runtimeForce.controllerId + " | Strength: " + runtimeForce.strength.toString() + "/" + runtimeForce.maximumStrength.toString() + " | Supply: " + runtimeForce.supply.toString() + " | Region: " + runtimeForce.regionId
+			var result = "Controller: " + runtimeForce.controllerId + " | Strength: " + runtimeForce.strength.toString() + "/" + runtimeForce.maximumStrength.toString() + " | Supply: " + runtimeForce.supply.toString() + " | Region: " + runtimeForce.regionId
+			let track = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
+			if track >= 0
+				result += " | Tradition XP: " + traditions[track].experience
+			return result
 		let s = settlementIndex(subjectId)
 		if s >= 0
 			let state = settlements[s]

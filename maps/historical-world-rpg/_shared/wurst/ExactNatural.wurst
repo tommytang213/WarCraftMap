@@ -1,0 +1,91 @@
+package ExactNatural
+
+/** Expandable nonnegative integers, stored as canonical decimal strings.
+ * Zero is "0"; every other value starts with 1-9. No fixed digit count, real
+ * conversion, or whole-value S2I participates in authoritative arithmetic.
+ * Validate external input once; arithmetic operands must already be canonical.
+ * Strings are immutable, so checkpoints cannot alias mutable number storage. */
+public function exactNaturalValid(string value) returns boolean
+	let length = StringLength(value)
+	if length == 0 or (length > 1 and SubString(value, 0, 1) == "0")
+		return false
+	for i = 0 to length - 1
+		if "0123456789".indexOf(SubString(value, i, i + 1)) < 0
+			return false
+	return true
+
+/** Compare by length, then digits; never coerce the entire value to a native. */
+public function exactNaturalCompare(string first, string second) returns int
+	if StringLength(first) < StringLength(second)
+		return -1
+	if StringLength(first) > StringLength(second)
+		return 1
+	for i = 0 to StringLength(first) - 1
+		let difference = S2I(SubString(first, i, i + 1)) - S2I(SubString(second, i, i + 1))
+		if difference != 0
+			return difference
+	return 0
+
+public function exactNaturalAdd(string first, string second) returns string
+	var a = StringLength(first) - 1
+	var b = StringLength(second) - 1
+	var carry = 0
+	var result = ""
+	while a >= 0 or b >= 0 or carry > 0
+		var digit = carry
+		if a >= 0
+			digit += S2I(SubString(first, a, a + 1))
+		if b >= 0
+			digit += S2I(SubString(second, b, b + 1))
+		result = I2S(digit mod 10) + result
+		carry = digit div 10
+		a--
+		b--
+	return result
+
+/** Binary doubling keeps every intermediate exact even for MAX_INT weights. */
+public function exactNaturalMultiply(string value, int multiplier) returns string
+	var remaining = multiplier
+	var addend = value
+	var result = "0"
+	while remaining > 0
+		if remaining mod 2 == 1
+			result = exactNaturalAdd(result, addend)
+		remaining = remaining div 2
+		if remaining > 0
+			addend = exactNaturalAdd(addend, addend)
+	return result
+
+/** Decimal long division. Ten bounded remainder additions avoid overflowing
+ * remainder * 10 even when divisor is MAX_INT. The quotient digit is <= 9. */
+public function exactNaturalDivide(string value, int divisor) returns string
+	var result = ""
+	var remainder = 0
+	for i = 0 to StringLength(value) - 1
+		let digit = S2I(SubString(value, i, i + 1))
+		var next = digit mod divisor
+		var quotient = digit div divisor
+		for j = 1 to 10
+			if next >= divisor - remainder
+				next -= divisor - remainder
+				quotient++
+			else
+				next += remainder
+		remainder = next
+		if result != "" or quotient > 0
+			result += I2S(quotient)
+	if result == ""
+		return "0"
+	return result
+
+public function exactNaturalScaleFloor(string value, int numerator, int denominator) returns string
+	if value == "0" or numerator <= 0 or denominator <= 0
+		return "0"
+	return exactNaturalDivide(exactNaturalMultiply(value, numerator), denominator)
+
+/** Lossy NATIVE PROJECTION ONLY. Never use this result as XP authority or an
+ * award. Bounded native presentation cannot veto a committed contribution. */
+public function exactNaturalNativeInt(string value) returns int
+	if exactNaturalCompare(value, "2147483647") > 0
+		return 2147483647
+	return S2I(value)

@@ -1,0 +1,39 @@
+package ExactNaturalTests
+
+import ExactNatural
+import Wurstunit
+
+@test function exactNaturalsGrowCarryAndCompareWithoutNativePrecision()
+	var nines = "9"
+	var power = "10"
+	for i = 1 to 511
+		nines += "9"
+		power += "0"
+	exactNaturalValid(nines).assertTrue()
+	exactNaturalAdd(nines, "1").assertEquals(power)
+	exactNaturalAdd("0", power).assertEquals(power)
+	(exactNaturalCompare(nines, power) < 0).assertTrue()
+	exactNaturalCompare("9007199254740992", "9007199254740993").assertEquals(-1)
+	exactNaturalScaleFloor("2147483647", 2147483647, 2147483646).assertEquals("2147483648")
+	exactNaturalScaleFloor("2147483647", 2147483647, 1).assertEquals("4611686014132420609")
+	exactNaturalScaleFloor("13", 3, 4).assertEquals("9")
+	exactNaturalScaleFloor("1", 1, 2147483647).assertEquals("0")
+	exactNaturalScaleFloor(power, 0, 100).assertEquals("0")
+	exactNaturalScaleFloor(power, 10, 10).assertEquals(power)
+	// Only the explicit native adapter conversion is bounded.
+	exactNaturalNativeInt(power).assertEquals(2147483647)
+	exactNaturalAdd(power, "1").assertEquals(SubString(power, 0, StringLength(power) - 1) + "1")
+
+@test function exactNaturalExternalNumbersRequireCanonicalDigits()
+	exactNaturalValid("0").assertTrue()
+	exactNaturalValid("2147483648").assertTrue()
+	exactNaturalValid("").assertFalse()
+	exactNaturalValid("00").assertFalse()
+	exactNaturalValid("01").assertFalse()
+	exactNaturalValid("-1").assertFalse()
+	exactNaturalValid("+1").assertFalse()
+	exactNaturalValid("1.0").assertFalse()
+	exactNaturalValid("1e3").assertFalse()
+	exactNaturalValid(" 1").assertFalse()
+	exactNaturalValid("1 ").assertFalse()
+	exactNaturalValid("12oops").assertFalse()

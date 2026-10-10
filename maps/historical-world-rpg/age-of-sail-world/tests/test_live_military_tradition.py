@@ -39,15 +39,38 @@ class LiveMilitaryTraditionTests(unittest.TestCase):
     def test_callback_fixture_values_match_weighted_oracle_for_each_controller_category(self):
         for controller in ("player", "france"):
             for category in ("land_formation", "sailing_naval"):
-                for numerator, denominator, amount, expected in ((1, 1, 40, 40), (1, 1, 13, 13), (1, 1, 17, 17), (1, 1, 19, 19), (3, 4, 13, 9), (5, 2, 13, 32), (3, 4, 2000000000, 1500000000)):
+                for numerator, denominator, amount, expected in ((1, 1, 40, 40), (1, 1, 13, 13), (1, 1, 17, 17), (1, 1, 19, 19), (3, 4, 13, 9), (5, 2, 13, 32), (3, 4, 2000000000, 1500000000), (5, 2, 2000000000, 5000000000), (2147483647, 1, 2147483647, 4611686014132420609), (2147483647, 2147483646, 2147483647, 2147483648), (1, 2147483647, 1, 0)):
                     with self.subTest(controller=controller, category=category, weight=(numerator, denominator), amount=amount):
                         definitions = copy.deepcopy(self.definitions)
                         definitions["experienceSources"][0].update(weightNumerator=numerator, weightDenominator=denominator)
                         definitions["unitAssignments"][0].update(controllerId=controller, categoryId=category)
                         runtime = MilitaryTraditionRuntime(definitions, RecordingTraditionAdapter())
-                        self.assertEqual(expected, runtime.award([dict(sourceId="enemy_kill", unitId="english_guard_formation", enemyControllerId="england", amount=amount)]))
+                        event = dict(sourceId="enemy_kill", unitId="english_guard_formation", enemyControllerId="england", amount=amount)
+                        if expected == 0:
+                            with self.assertRaisesRegex(TraditionError, "rounds to zero"):
+                                runtime.award([event])
+                        else:
+                            self.assertEqual(expected, runtime.award([event]))
                         self.assertEqual(expected, runtime.view(controller, category).experience)
                         self.assertEqual(0, runtime.view("england", category).experience)
+
+    def test_unbounded_totals_round_trip_and_continue_without_rounding(self):
+        for before in (2147483647, 9007199254740991, 9007199254740992, 10**60 - 1, 10**512):
+            with self.subTest(before=before):
+                runtime = MilitaryTraditionRuntime(self.definitions, RecordingTraditionAdapter())
+                runtime.change_unit("english_guard_formation", controller_id="player")
+                checkpoint = runtime.snapshot()
+                track = next(row for row in checkpoint["tracks"]
+                             if row["controllerId"] == "player" and row["categoryId"] == "land_formation")
+                track["experience"] = before
+                runtime.restore(checkpoint)
+                event = dict(sourceId="enemy_kill", unitId="english_guard_formation", enemyControllerId="france", amount=1)
+                self.assertEqual(1, runtime.award([event]))
+                self.assertEqual(before + 1, runtime.view("player", "land_formation").experience)
+                fresh = MilitaryTraditionRuntime(self.definitions, RecordingTraditionAdapter())
+                fresh.restore(runtime.snapshot())
+                self.assertEqual(before + 1, fresh.view("player", "land_formation").experience)
+                self.assertEqual(before, track["experience"])
 
     def test_v1_migrates_only_missing_player_tracks_and_rejects_bad_saves_atomically(self):
         runtime = MilitaryTraditionRuntime(self.definitions, RecordingTraditionAdapter())

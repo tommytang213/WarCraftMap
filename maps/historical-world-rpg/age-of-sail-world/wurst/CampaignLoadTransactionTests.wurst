@@ -609,7 +609,7 @@ public class LoadFixture
 	f.military.atWar("england", "portugal").assertTrue()
 	f.military.settlements[0].legalOwnerId.assertEquals("free_port")
 	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
-	f.military.snapshot().startsWith("v7|").assertTrue()
+	f.military.snapshot().startsWith("v8|").assertTrue()
 	f.campaign.countries.captureState().startsWith("v2|").assertTrue()
 	let migrated = f.campaign.state.captureAuthoritativeState()
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()

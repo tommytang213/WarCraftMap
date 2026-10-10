@@ -266,7 +266,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 /** Recreate the pre-policy settlement layout when exercising old save versions. */
 public function withoutMilitarySettlementPolicy(string input) returns string
 	var candidate = input
-	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|")
+	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|") and not candidate.startsWith("v8|")
 		candidate = withoutMilitaryOrderTargets(candidate)
 	var result = ""
 	var start = 0
