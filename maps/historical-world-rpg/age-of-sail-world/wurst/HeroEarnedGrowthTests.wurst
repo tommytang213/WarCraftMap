@@ -1,0 +1,178 @@
+package HeroEarnedGrowthTests
+
+import HeroProgression
+import WarcraftRpgRuntime
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import PlayableCampaignRuntime
+
+public function assertBalances(RpgHero hero, int level, int xp, int skills, int masteries, int choices)
+	hero.level.assertEquals(level)
+	hero.experience.assertEquals(xp)
+	hero.skillPoints.assertEquals(skills)
+	hero.masteryPoints.assertEquals(masteries)
+	hero.choicePoints.assertEquals(choices)
+
+@test function earnedExperienceRejectsInvalidAndOverflowingAwardsBeforeMutation()
+	let rpg = new WarcraftRpgRuntime(null)
+	let hero = new RpgHero("hero", "Hero", 'Hpal')
+	rpg.heroes.register(hero)
+	hero.awardExperience(300).assertTrue()
+	assertBalances(hero, 2, 200, 1, 0, 0)
+	hero.progressionSummary().contains("Experience 200/225 | Remaining experience 25").assertTrue()
+	hero.progressionSummary().contains("Choice points 0").assertTrue()
+	let before = rpg.captureState()
+	hero.awardExperience(0).assertFalse()
+	hero.awardExperience(-1).assertFalse()
+	hero.awardExperience(-2147483647 - 1).assertFalse()
+	hero.awardExperience(2147483647).assertFalse()
+	rpg.captureState().assertEquals(before)
+	hero.awardExperience(2147483347).assertTrue()
+	assertBalances(hero, 300, 1921357422, 299, 60, 30)
+	hero.cumulativeExperience().assertEquals(2147483647)
+	hero.progressionSummary().contains("Level cap reached | Remaining experience 0").assertTrue()
+	let capped = rpg.captureState()
+	hero.awardExperience(1).assertFalse()
+	rpg.captureState().assertEquals(capped)
+	rpg.restoreState(capped).assertTrue()
+	rpg.captureState().assertEquals(capped)
+	heroExperienceForLevel(0).assertEquals(-1)
+	heroExperienceForLevel(301).assertEquals(-1)
+	heroLevelForExperience(-1).assertEquals(-1)
+
+@test function growthCadenceAndBalanceOverflowAreValidatedBeforeAnyGrant()
+	let rpg = new WarcraftRpgRuntime(null)
+	let hero = new RpgHero("hero", "Hero", 'Hpal')
+	rpg.heroes.register(hero)
+	hero.level = 9
+	for axis = 0 to 2
+		hero.skillPoints = 0
+		hero.masteryPoints = 0
+		hero.choicePoints = 0
+		if axis == 0
+			hero.skillPoints = 2147483647
+		else if axis == 1
+			hero.masteryPoints = 2147483647
+		else
+			hero.choicePoints = 2147483647
+		let axisBefore = rpg.captureState()
+		hero.awardExperience(2500).assertFalse()
+		rpg.captureState().assertEquals(axisBefore)
+	hero.choicePoints = 0
+	hero.choicePointEveryLevels = 0
+	let before = rpg.captureState()
+	hero.awardExperience(2500).assertFalse()
+	rpg.captureState().assertEquals(before)
+	// Cadence is definition data, usable by other scenarios as well.
+	hero.skillPointEveryLevels = 2
+	hero.masteryPointEveryLevels = 3
+	hero.choicePointEveryLevels = 4
+	hero.awardExperience(heroExperienceForLevel(20) - heroExperienceForLevel(9)).assertTrue()
+	assertBalances(hero, 20, 0, 6, 3, 3)
+
+@test function multipleHeroesResumeBetweenThresholdsWithoutReplayingPoints()
+	let rpg = new WarcraftRpgRuntime(null)
+	let first = new RpgHero("first", "First", 'Hpal')
+	let second = new RpgHero("second", "Second", 'Hpal')
+	rpg.heroes.register(first)
+	rpg.heroes.register(second)
+	first.awardExperience(300).assertTrue()
+	second.level = 9
+	second.recruited = true
+	second.assignment = "reserve"
+	second.skillRanks = "navigation:47~"
+	second.skillIds = "~navigation~"
+	second.chosenPerks = "~retained~"
+	second.awardExperience(2499).assertTrue()
+	let saved = rpg.captureState()
+	for attempt = 1 to 3
+		rpg.restoreState(saved).assertTrue()
+		rpg.reconstruct(null, 0., 0., "player")
+		rpg.captureState().assertEquals(saved)
+		assertBalances(first, 2, 200, 1, 0, 0)
+		assertBalances(second, 9, 2499, 0, 0, 0)
+	second.awardExperience(1).assertTrue()
+	assertBalances(second, 10, 0, 1, 1, 1)
+	assertBalances(first, 2, 200, 1, 0, 0)
+	second.skillRank("navigation").assertEquals(47)
+	second.chosenPerks.assertEquals("~retained~")
+	first.awardExperience(25).assertTrue()
+	assertBalances(first, 3, 0, 2, 0, 0)
+
+@test function legacyGrowthRebasesSavedLevelsAndPreservesAllocationsWithoutReplay()
+	for schema = 2 to 5
+		let rpg = new WarcraftRpgRuntime(null)
+		let hero = new RpgHero("hero", "Hero", 'Hpal')
+		hero.startingProfile = new HeroStartingProfile(115, "", "", "")
+		hero.skillIds = "~navigation~"
+		hero.masteryIds = "~sea_command~"
+		rpg.heroes.register(hero)
+		var prefix = "v" + schema.toString()
+		if schema >= 3
+			prefix += "|p,hero"
+		// Level 3 was reached with 300 XP by the old implementation. Preserve
+		// its recorded level even though that is now a 325-XP floor.
+		var legacy = prefix + "|h,hero,1,3,0,2,7,321,90,0,0,0,reserve,remote,profession,quest,tree,~allocated~"
+		if schema >= 4
+			legacy += ",navigation:71~,sea_command:48~"
+		legacy += "|j,,37"
+		rpg.restoreState(legacy).assertTrue()
+		assertBalances(hero, 3, 0, 2, 7, 0)
+		hero.cumulativeExperience().assertEquals(325)
+		hero.commandExperience.assertEquals(321)
+		hero.signatureProgressionId.assertEquals("tree")
+		hero.chosenPerks.assertEquals("~allocated~")
+		if schema >= 4
+			hero.skillRank("navigation").assertEquals(71)
+			hero.masteryRank("sea_command").assertEquals(48)
+		let migrated = rpg.captureState()
+		migrated.startsWith("v6|").assertTrue()
+		for attempt = 1 to 3
+			rpg.restoreState(migrated).assertTrue()
+			rpg.reconstruct(null, 0., 0., "player")
+			hero.initializeStartingProfile()
+			rpg.captureState().assertEquals(migrated)
+		hero.awardExperience(heroExperienceForLevel(10) - 325).assertTrue()
+		assertBalances(hero, 10, 0, 9, 9, 1)
+
+function rejectGrowthRecord(WarcraftRpgRuntime rpg, string level, string xp, string skills, string masteries, string choices)
+	let before = rpg.captureState()
+	let candidate = "v6|p,hero|h,hero,1," + level + "," + xp + "," + skills + "," + masteries + ",0,50,0,0,0,field,,,,,,,," + choices + "|j,,0"
+	rpg.restoreState(candidate).assertFalse()
+	rpg.captureState().assertEquals(before)
+
+@test function invalidGrowthRestorationAndLateLoadFailureRetainAuthorityAndProjections()
+	let rpg = new WarcraftRpgRuntime(null)
+	let hero = new RpgHero("hero", "Hero", 'Hpal')
+	rpg.heroes.register(hero)
+	hero.awardExperience(300).assertTrue()
+	rejectGrowthRecord(rpg, "2", "225", "1", "0", "0")
+	rejectGrowthRecord(rpg, "2", "-1", "1", "0", "0")
+	rejectGrowthRecord(rpg, "300", "1921357423", "1", "0", "0")
+	rejectGrowthRecord(rpg, "2", "200", "-1", "0", "0")
+	rejectGrowthRecord(rpg, "2", "200", "1", "-1", "0")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "-1")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "2147483648")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "01")
+	rejectGrowthRecord(rpg, "2147483648", "0", "1", "0", "0")
+	rejectGrowthRecord(rpg, "2", "2147483648", "1", "0", "0")
+	rejectGrowthRecord(rpg, "2", "200", "2147483648", "0", "0")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "-2147483649")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "invalid")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "+1")
+	rejectGrowthRecord(rpg, "2", "200", "1", "0", "999999999999999999999")
+	let f = new LoadFixture()
+	let invested = f.rpg.heroes.get("hero")
+	invested.awardExperience(heroExperienceForLevel(30) - heroExperienceForLevel(20) + 73).assertTrue()
+	assertBalances(invested, 30, 73, 10, 2, 1)
+	f.rpg.reconcile("player")
+	let expected = f.rpg.captureState()
+	let candidate = f.candidate()
+	f.rejectAndVerify(replaceCampaignField(candidate, "rpg", "v6|p,hero|h,broken"))
+	f.ports.failParty = true
+	f.rejectAndVerify(candidate)
+	f.rpg.captureState().assertEquals(expected)
+	f.ports.failParty = false
+	f.recordingTimer.expected = f.candidateClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	invested.choicePoints.assertEquals(0)

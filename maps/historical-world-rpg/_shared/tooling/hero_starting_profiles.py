@@ -56,6 +56,16 @@ def recovery_days(catalog):
                    1, 3652059, "hero recovery days")
 
 
+def growth_cadence(catalog):
+    """Scenario-owned cadence; generic defaults also serve catalogue-less maps."""
+    defaults = {"skillPointEveryLevels": 1, "masteryPointEveryLevels": 5,
+                "choicePointEveryLevels": 10}
+    growth = defaults if catalog is None else catalog.get("growth")
+    if not isinstance(growth, dict) or set(growth) != set(defaults):
+        raise ValueError("invalid hero growth cadence")
+    return {key: integer(growth[key], 1, 300, key) for key in defaults}
+
+
 def starting_definitions(world, catalog=None):
     profiles = {}
     skills, masteries, trees = {}, {}, {}
@@ -101,7 +111,7 @@ def starting_definitions(world, catalog=None):
             "level": integer(profile.get("startingLevel", 1), 1, 300, "starting level"),
             # Headless starts exactly at experience_for_level(level). Live XP
             # is the residual toward the next level, not that cumulative sum.
-            "experience": 0, "skillPoints": 0, "masteryPoints": 0,
+            "experience": 0, "skillPoints": 0, "masteryPoints": 0, "choicePoints": 0,
             "skills": ranks(profile.get("startingSkills", []), "skillId", skills),
             "masteries": ranks(profile.get("startingMasteries", []), "masteryId", masteries),
             "personalTreeId": tree,

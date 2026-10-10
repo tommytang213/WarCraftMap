@@ -10,6 +10,8 @@ import CampaignSaveManager
 import PlayableCampaignRuntime
 import WarcraftRegionalRuntime
 import CampaignLoadTransactionTests
+import HeroProgression
+import HeroEarnedGrowthTests
 
 /** Recording domain receipt boundary: it supplies no stage mutation. Tests
  * dispatch ordinary commands and use production validation, graph and codec. */
@@ -27,10 +29,11 @@ class RecordedQuestConditions implements QuestConditionAuthority
 		return questId == this.questId and stageId == this.stageId and objective.id == objectiveId and objective.conditionId == conditionId and objective.entityRefs == refs and receipt == receiptId
 
 class QuestActors implements InteractionActors
+	int selected = 0
 	real px = 0.
 	real py = 0.
 	override function present(int actor, player owner) returns boolean
-		return actor == 0
+		return actor == selected
 	override function x(int actor) returns real
 		return px
 	override function y(int actor) returns real
@@ -88,7 +91,6 @@ class AuthoredFixture
 		state.authority = replaceCampaignField(state.authority, "map", "europe_west")
 		state.setRpgRuntime(rpg)
 		rpg.interactions.maps = new CampaignInteractionMaps(state)
-		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
 		move("lisbon")
 	function move(string id)
 		let target = rpg.interactions.get(id)
@@ -120,6 +122,15 @@ class AuthoredFixture
 		compact.graph.completedObjectiveIds.assertEquals("reach_london~")
 		command("/interact london", false)
 		command("/queststage europe_printed_compact return_compact", false)
+	function readyForGrowth()
+		reachFork()
+		command("/queststage europe_printed_compact secure_archive", true)
+		receipt("secure_archive", "preserve_copy", "quest_institution_satisfied", "institution:movable_type_printing~", "growth_receipt")
+		rpg.questEvent(compact.id, "preserve_copy", "growth_receipt").assertTrue()
+		command("/turnin europe_printed_compact hero", false)
+		move("lisbon")
+		command("/interact lisbon", true)
+		compact.state.assertEquals(QUEST_READY)
 	function returnAndTurnIn()
 		compact.state.assertEquals(QUEST_ACTIVE)
 		compact.graph.activeStageId.assertEquals("return_compact")
@@ -145,6 +156,7 @@ class AuthoredFixture
 		let decoded = codec.decodeMigrateAndValidate(encoded, "manual_01")
 		(decoded != "").assertTrue()
 		let destination = new AuthoredFixture()
+		registerRpgRuntimeCommands(destination.commands, destination.rpg).assertEquals("")
 		for i = 1 to 2
 			destination.state.reconstructRuntime(decoded).assertTrue()
 			destination.state.activateAuthoritativeState(decoded)
@@ -154,6 +166,7 @@ class AuthoredFixture
 
 @test function printedCompactLisbonAloneCannotCompleteAndUnscopedEventsCannotProveObjectives()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.command("/interact lisbon", true)
 	f.compact.graph.activeStageId.assertEquals("carry_compact")
 	f.compact.graph.completedObjectiveIds.assertEquals("")
@@ -170,6 +183,7 @@ class AuthoredFixture
 
 @test function printedCompactNegotiationBranchRequiresMatchingReceiptAndPhysicalReturn()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.reachFork()
 	f.receipt("negotiate", "win_recognition", "quest_diplomacy_satisfied", "polity:england~", "recognition_one")
 	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
@@ -201,6 +215,7 @@ class AuthoredFixture
 
 @test function printedCompactArchiveBranchRetainsChoiceAndRejectsOtherBranchAfterRestore()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.reachFork()
 	f.command("/queststage europe_printed_compact secure_archive", true)
 	f.command("/queststage europe_printed_compact negotiate", false)
@@ -216,6 +231,7 @@ class AuthoredFixture
 
 @test function authoredAcceptanceRejectsUnavailableAndMissingPrerequisites()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.rpg.journal.count = 2
 	f.command("/accept ocean_of_accounts", false)
 	f.compact.state = QUEST_COMPLETE
@@ -232,6 +248,7 @@ class AuthoredFixture
 
 @test function authoredSettlementReturnRequiresActualTargetAndSeparateTurnIn()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.rpg.journal.quests[0] = f.salvage
 	f.command("/accept licensed_salvage", true)
 	// Initial licensing work is a domain condition, never a visit to its port.
@@ -264,6 +281,7 @@ class AuthoredFixture
 
 @test function authoredJournalPreservesApproximateHiddenAndTerminalGuidance()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.rpg.journal.quests[0] = f.archive
 	f.command("/accept africa_niger_manuscripts", true)
 	f.archive.precision.assertEquals("approximate")
@@ -273,6 +291,7 @@ class AuthoredFixture
 
 @test function questCandidateRejectsForgedPathsObjectivesAndPrematureReadinessAtomically()
 	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.reachFork()
 	let before = f.rpg.captureState()
 	let prefix = "v5|p,hero|h,hero,1,1,0,0,0,0,50,0,0,0,field,,,,,,,|q,europe_printed_compact,"
@@ -286,6 +305,7 @@ class AuthoredFixture
 @test function legacyQuestCountersMigrateWithoutInventedEvidenceOrRepeatedRewards()
 	for schema = 2 to 4
 		let f = new AuthoredFixture()
+		registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 		var prefix = "v" + schema.toString()
 		if schema >= 3
 			prefix += "|p,hero"
@@ -326,6 +346,7 @@ class AuthoredFixture
 
 function loadBranch(LoadFixture fixture, string branch)
 	let authored = new AuthoredFixture()
+	registerRpgRuntimeCommands(authored.commands, authored.rpg).assertEquals("")
 	let q = authored.compact
 	fixture.rpg.journal.quests[0] = q
 	fixture.rpg.journal.trackedId = q.id
@@ -352,3 +373,96 @@ function loadBranch(LoadFixture fixture, string branch)
 		source.rpg.journal.quests[0].graph.completedObjectiveIds.assertEquals("reach_london~")
 		source.rpg.journal.currency.assertEquals(77)
 		source.rpg.journal.quests[0].completions.assertEquals(0)
+
+function growthReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"REQ-0091.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"live-earned-hero-growth\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+@test function registeredQuestGrowthUsesConvexExperienceAndEarnsCapPointsOnce()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	let hero = f.rpg.heroes.get("hero")
+	f.compact.rewardExperience = 300
+	f.readyForGrowth()
+	f.command("/turnin europe_printed_compact hero", true)
+	assertBalances(hero, 2, 200, 1, 0, 0)
+	f.roundTrip()
+	f.command("/turnin europe_printed_compact hero", false)
+	assertBalances(hero, 2, 200, 1, 0, 0)
+	let cap = new AuthoredFixture()
+	registerRpgRuntimeCommands(cap.commands, cap.rpg).assertEquals("")
+	cap.compact.rewardExperience = 226126225
+	cap.readyForGrowth()
+	cap.command("/turnin europe_printed_compact hero", true)
+	assertBalances(cap.rpg.heroes.get("hero"), 300, 0, 299, 60, 30)
+	cap.roundTrip()
+	cap.command("/turnin europe_printed_compact hero", false)
+	assertBalances(cap.rpg.heroes.get("hero"), 300, 0, 299, 60, 30)
+	growthReceipt("success")
+
+@test function invalidRegisteredQuestGrowthLeavesQuestCurrencyAndProgressionIntact()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	let hero = f.rpg.heroes.get("hero")
+	f.readyForGrowth()
+	hero.awardExperience(2147483647).assertTrue()
+	f.command("/turnin europe_printed_compact hero", false)
+	assertBalances(hero, 300, 1921357422, 299, 60, 30)
+	f.compact.rewardExperience = -1
+	f.command("/turnin europe_printed_compact hero", false)
+	f.compact.completions.assertEquals(0)
+	f.rpg.journal.currency.assertEquals(0)
+	f.roundTrip()
+	assertBalances(hero, 300, 1921357422, 299, 60, 30)
+	// A legitimate zero-XP quest still commits its other existing reward.
+	f.compact.rewardExperience = 0
+	f.command("/turnin europe_printed_compact hero", true)
+	assertBalances(hero, 300, 1921357422, 299, 60, 30)
+	f.rpg.journal.currency.assertEquals(37)
+	growthReceipt("failure")
+
+@test function registeredGrowthResumesReadyQuestAndRejectsRemoteStaleTurnin()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	let hero = f.rpg.heroes.get("hero")
+	hero.level = 299
+	hero.experience = heroNextLevelExperience(299) - 100
+	f.readyForGrowth()
+	f.roundTrip()
+	f.move("london")
+	f.command("/turnin europe_printed_compact hero", false)
+	f.move("lisbon")
+	f.command("/turnin europe_printed_compact hero", true)
+	assertBalances(hero, 300, 0, 1, 1, 1)
+	f.roundTrip()
+	f.command("/turnin europe_printed_compact hero", false)
+	assertBalances(hero, 300, 0, 1, 1, 1)
+	growthReceipt("stale")
+
+@test function registeredGrowthBelongsToSelectedCharacterAcrossRepeatedReconstruction()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	let hero = f.rpg.heroes.get("hero")
+	let companion = new RpgHero("companion", "Companion", 'Hpal')
+	companion.recruited = true
+	companion.assignment = "field"
+	companion.level = 9
+	companion.experience = 2400
+	f.rpg.heroes.register(companion)
+	f.readyForGrowth()
+	f.command("/turnin europe_printed_compact companion", false)
+	f.actors.selected = 1
+	f.command("/turnin europe_printed_compact companion", true)
+	assertBalances(companion, 10, 0, 1, 1, 1)
+	assertBalances(hero, 1, 0, 0, 0, 0)
+	let saved = f.rpg.captureState()
+	for attempt = 1 to 3
+		f.rpg.restoreState(saved).assertTrue()
+		// Abstract the companion so reconstruction needs no native unit.
+		companion.assignment = "reserve"
+		f.rpg.reconstruct(null, 0., 0., "player")
+		companion.assignment = "field"
+		f.command("/turnin europe_printed_compact companion", false)
+		f.rpg.captureState().assertEquals(saved)
+	assertBalances(companion, 10, 0, 1, 1, 1)
+	assertBalances(hero, 1, 0, 0, 0, 0)
+	growthReceipt("replay")

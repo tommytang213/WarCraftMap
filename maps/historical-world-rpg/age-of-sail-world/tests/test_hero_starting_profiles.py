@@ -12,7 +12,7 @@ sys.path[:0] = [str(PROJECT / "tooling"), str(PROJECT.parent / "_shared/tooling"
                str(PROJECT.parent / "_shared/engine")]
 from hero_progression_catalog import load_catalog
 from hero_progression import HeroProgressionRuntime
-from hero_starting_profiles import starting_definitions, rank_text, recovery_days
+from hero_starting_profiles import starting_definitions, rank_text, recovery_days, growth_cadence
 from package_wurst_map import generate, load_config, verify_generated, PackagingError
 
 
@@ -40,10 +40,13 @@ class HeroStartingProfilesTests(unittest.TestCase):
         for i, hero in enumerate(self.world["characters"]):
             ident = hero["id"]
             start, profile = headless.require(ident), headless.profiles[ident]
-            expected = {k: start[k] for k in ("level", "skillPoints", "masteryPoints", "skills", "masteries")}
+            expected = {k: start[k] for k in ("level", "skillPoints", "masteryPoints", "choicePoints", "skills", "masteries")}
             expected["experience"] = start["experience"] - headless.experience_for_level(start["level"])
             expected["personalTreeId"] = profile["personalTreeId"]
             self.assertEqual(expected, data["profiles"][ident], ident)
+            self.assertEqual(self.catalog["growth"], runtime_data["heroGrowthCadence"])
+            for field, value in self.catalog["growth"].items():
+                self.assertIn(f'hero{i}.{field}={value}', source)
             self.assertIn(f'hero{i}.startingProfile=new HeroStartingProfile({start["level"]},'
                           f'"{rank_text(start["skills"])}","{rank_text(start["masteries"])}",'
                           f'"{profile["personalTreeId"]}")', source)
@@ -84,6 +87,17 @@ class HeroStartingProfilesTests(unittest.TestCase):
                 recovery_days({"defeatRecovery": {"recoveryDays": value}})
         with self.assertRaises(ValueError):
             recovery_days({})
+
+    def test_growth_cadence_is_generated_and_validated(self):
+        self.assertEqual(self.catalog["growth"], growth_cadence(self.catalog))
+        self.assertEqual(self.catalog["growth"], growth_cadence(None))
+        for field in self.catalog["growth"]:
+            for value in (None, True, 0, -1, 1.5, "10", 301):
+                with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                    growth_cadence({"growth": {**self.catalog["growth"], field: value}})
+        for value in (None, {}, [], {"unexpected": 1}):
+            with self.assertRaises(ValueError):
+                growth_cadence({"growth": value})
 
     def test_invalid_profiles_fail_generation_before_writing_scenario_data(self):
         profile = self.catalog["characterProfiles"][0]

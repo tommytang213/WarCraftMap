@@ -1,0 +1,44 @@
+package HeroProgression
+
+/** Integer counterpart of engine/hero_progression.py. Live heroes store the
+ * residual above this cumulative floor. No Warcraft objects or scenario IDs. */
+public constant int HERO_LEVEL_CAP = 300
+public constant int HERO_EXPERIENCE_LIMIT = 2147483647
+
+public function heroExperienceForLevel(int level) returns int
+	if level < 1 or level > HERO_LEVEL_CAP
+		return -1
+	let n = level - 1
+	// Divide the sum of squares before multiplying; every intermediate fits.
+	return 50 * n * (n + 1) + (n * (n - 1) * (2 * n - 1) div 6) * 25
+
+public function heroLevelForExperience(int experience) returns int
+	if experience < 0
+		return -1
+	var low = 1
+	var high = HERO_LEVEL_CAP
+	while low < high
+		let middle = (low + high + 1) div 2
+		if heroExperienceForLevel(middle) <= experience
+			low = middle
+		else
+			high = middle - 1
+	return low
+
+public function heroNextLevelExperience(int level) returns int
+	if level < 1 or level >= HERO_LEVEL_CAP
+		return 0
+	return 100 * level + 25 * (level - 1) * (level - 1)
+
+public function heroValidExperience(int level, int residual) returns boolean
+	if level < 1 or level > HERO_LEVEL_CAP or residual < 0
+		return false
+	if residual > HERO_EXPERIENCE_LIMIT - heroExperienceForLevel(level)
+		return false
+	return level == HERO_LEVEL_CAP or residual < heroNextLevelExperience(level)
+
+public function heroValidCadence(int cadence) returns boolean
+	return cadence >= 1 and cadence <= HERO_LEVEL_CAP
+
+public function heroEarnedPoints(int oldLevel, int newLevel, int cadence) returns int
+	return newLevel div cadence - oldLevel div cadence

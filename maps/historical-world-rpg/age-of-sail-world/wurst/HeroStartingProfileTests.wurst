@@ -1,6 +1,7 @@
 package HeroStartingProfileTests
 
 import WarcraftRpgRuntime
+import HeroProgression
 import RecruitmentWindowTests
 import CampaignLoadTransactionTests
 import CampaignTimeline
@@ -31,6 +32,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	f.hero.experience.assertEquals(0)
 	f.hero.skillPoints.assertEquals(0)
 	f.hero.masteryPoints.assertEquals(0)
+	f.hero.choicePoints.assertEquals(0)
 	f.hero.skillRanks.assertEquals(skills)
 	f.hero.masteryRanks.assertEquals(masteries)
 	f.hero.signatureProgressionId.assertEquals(tree)
@@ -49,7 +51,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	equipment.requiredLevel = level
 	f.commands.dispatch(null, "/equip " + id + " token").assertTrue()
 	f.rpg.inventory.equippedCount.assertEquals(1)
-	f.hero.awardExperience(level * 100 - 1)
+	f.hero.awardExperience(heroNextLevelExperience(level) - 1).assertTrue()
 	f.hero.level.assertEquals(level)
 	f.hero.skillPoints.assertEquals(0)
 	f.hero.awardExperience(1)
@@ -57,6 +59,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	f.hero.experience.assertEquals(0)
 	f.hero.skillPoints.assertEquals(1)
 	f.hero.masteryPoints.assertEquals((level + 1) div 5 - level div 5)
+	f.hero.choicePoints.assertEquals((level + 1) div 10 - level div 10)
 	f.hero.skillRanks.assertEquals(skills)
 	f.hero.masteryRanks.assertEquals(masteries)
 	f.reject("/hire " + id, "That character is already recruited.")
@@ -109,7 +112,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
 	f.clock.advanceTo(f.hero.availabilityStartDay).assertTrue()
 	f.recruit()
-	f.hero.awardExperience(11507)
+	f.hero.awardExperience(heroNextLevelExperience(115) + 7).assertTrue()
 	f.hero.skillRanks = "command:83~navigation:84~"
 	f.hero.masteryRanks = "land_warfare:54~sea_command:55~"
 	f.hero.skillPoints = 9
