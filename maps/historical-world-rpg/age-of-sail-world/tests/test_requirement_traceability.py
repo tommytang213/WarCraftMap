@@ -489,7 +489,7 @@ class TraceabilityTests(unittest.TestCase):
                     "Metadata/release-blocker-audit.json": release.canonical(blocker_report),
                     "Metadata/requirement-traceability.json": release.canonical(trace_report)}
         manifest = {"format": release.MANIFEST_FORMAT, "releaseCandidateId": config["releaseCandidateId"],
-                    "sourceRevision": "a"*40, "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5, 6, 7, 8]},
+                    "sourceRevision": "a"*40, "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5, 6, 7, 8, 9]},
                     "artifactValidation": runtime_report["evidenceLevels"]["builtArtifact"],
                     "artifacts": [{"kind": "campaign" if name.endswith(".w3n") else "evidence", "archivePath": name,
                                    "bytes": len(value), "sha256": trace.sha(value)} for name, value in payloads.items()]}

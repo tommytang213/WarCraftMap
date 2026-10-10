@@ -1,6 +1,7 @@
 package CampaignLoadTransactionTests
 
 import CampaignSaveManager
+import FrameworkPorts
 import CampaignTimeline
 import CampaignTimelineTests
 import CampaignHandoff
@@ -281,7 +282,7 @@ public class LoadFixture
 		clock.addOccurrence("late", "late", 50, 1)
 		clock.advanceElapsed(10.125).assertTrue()
 		clock.setSpeed(1.125).assertTrue()
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
+		campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), clock, "europe_west", religion, storage, new CampaignHandoff(new LoadStorage(), ports), ports, ports)
 		campaign.state.startupLocked = false
 		campaign.state.arrivalPathing = ports
 		campaign.state.partyNavigation = new PartyNavigation("europe_west", -1024., -1024., 16, 16)

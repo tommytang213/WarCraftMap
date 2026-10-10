@@ -1,4 +1,6 @@
 package MilitarySettlementRuntime
+import ScenarioSettings
+
 import RuntimeProtection
 
 import WC3Compatibility
@@ -9,6 +11,9 @@ import CampaignTimeline
 import PrizeCombat
 import WarcraftRecoveryRuntime
 import PartyLocations
+
+public function militaryMapMatches(string locationId, string mapId) returns boolean
+	return locationId == mapId or (mapId != "" and scenarioAuthorityMap(locationId) == mapId)
 
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
@@ -646,7 +651,7 @@ public class MilitarySettlementRuntime
 			return traditions[found].milestoneAbilityId
 		return 0
 	function instantiate(RuntimeForce runtimeForce)
-		if not runtimeForce.active or runtimeForce.regionId != activeRegionId
+		if not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
 			return
 		let city = settlementForForce(runtimeForce)
 		if city >= 0 and (not settlements[city].projectMilitary or not settlements[city].capturable)
@@ -683,7 +688,7 @@ public class MilitarySettlementRuntime
 		suspendCallbacks()
 		if activeRegionId != ""
 			for i = 0 to forceCount - 1
-				if forces[i].regionId == activeRegionId
+				if militaryMapMatches(forces[i].regionId, activeRegionId)
 					adapter.removeRepresentation(forces[i].id)
 		activeRegionId = regionId
 		for i = 0 to forceCount - 1
@@ -733,7 +738,7 @@ public class MilitarySettlementRuntime
 			return
 		traditions[found].experience = traditions[found].experience + experience
 		for i = 0 to forceCount - 1
-			if forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and forces[i].regionId == activeRegionId
+			if forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and militaryMapMatches(forces[i].regionId, activeRegionId)
 				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
 	function beginSettlementAttack(string settlementId, string attackerId, real now) returns boolean
 		let found = settlementIndex(settlementId)
@@ -1178,7 +1183,7 @@ public class MilitarySettlementRuntime
 			restoredRegion = activeRegionId
 		if project and activeRegionId != ""
 			for i = 0 to forceCount - 1
-				if forces[i].regionId == activeRegionId
+				if militaryMapMatches(forces[i].regionId, activeRegionId)
 					adapter.removeRepresentation(forces[i].id)
 		for i = 0 to forceCount - 1
 			destroy forces[i]

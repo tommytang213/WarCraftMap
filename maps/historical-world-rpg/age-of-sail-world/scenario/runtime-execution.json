@@ -165,6 +165,14 @@
     "order_registration": {
       "path": "wurst/MilitaryOrderEvents.wurst",
       "signature": "public function installMilitaryOrderEvents(PlayableCampaignServices campaign, MilitaryOrderNatives natives) returns MilitaryOrderEvents"
+    },
+    "command_departure": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function depart(string document, string mapId) returns boolean"
+    },
+    "command_restore": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function restore(CampaignRecoveryRequest request) returns boolean"
     }
   },
   "systems": {
@@ -252,7 +260,9 @@
     ],
     "remote_management": [
       "region_registration",
-      "region_select"
+      "region_select",
+      "command_departure",
+      "command_restore"
     ],
     "religion": [
       "religion_registration",

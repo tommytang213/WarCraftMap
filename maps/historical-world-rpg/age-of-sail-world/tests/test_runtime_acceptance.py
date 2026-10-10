@@ -193,7 +193,7 @@ class RuntimeAcceptanceTests(unittest.TestCase):
                 "format": release.MANIFEST_FORMAT,
                 "releaseCandidateId": config["releaseCandidateId"],
                 "sourceRevision": revision,
-                "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5, 6, 7, 8]},
+                "schemaCompatibility": {"supportedSaveSchemas": [1, 2, 3, 4, 5, 6, 7, 8, 9]},
                 "artifacts": [{"kind": "campaign", "archivePath": config["archive"]["campaignPath"],
                                "bytes": len(payload), "sha256": release.sha_bytes(payload)}]
                              + release._campaign_rows(archive, campaign),

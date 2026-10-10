@@ -77,7 +77,7 @@ public class MilitaryOrderEvents implements MilitaryOrderCallbacks
 		let index = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(token))
 		if index >= 0
 			let f = runtime.forces[index]
-			if f.active and f.strength > 0 and f.regionId == runtime.activeRegionId and runtime.adapter.representationId(f.id) == token
+			if f.active and f.strength > 0 and militaryMapMatches(f.regionId, runtime.activeRegionId) and runtime.adapter.representationId(f.id) == token
 				return index
 		return -1
 	function polity(string controller) returns string
@@ -178,7 +178,7 @@ public class MilitaryOrderEvents implements MilitaryOrderCallbacks
 			return
 		for i = 0 to runtime.forceCount - 1
 			let f = runtime.forces[i]
-			if f.mobileForce() and f.active and f.regionId == runtime.activeRegionId
+			if f.mobileForce() and f.active and militaryMapMatches(f.regionId, runtime.activeRegionId)
 				let token = runtime.adapter.representationId(f.id)
 				if represented(token) == i and natives.ownedBy(token, runtime.adapter.playerForController(f.controllerId, false))
 					let kind = natives.movement(token)
@@ -195,7 +195,7 @@ public class MilitaryOrderEvents implements MilitaryOrderCallbacks
 					if not validDestination(f, token) or (current != nativeOrder(f) and not (current == COMPAT_ORDER_SMART and (f.orderId == "move" or f.orderId == "attack")))
 						f.cancelOrder()
 	function apply(RuntimeForce f)
-		if not f.mobileForce() or not f.active or f.regionId != runtime.activeRegionId
+		if not f.mobileForce() or not f.active or not militaryMapMatches(f.regionId, runtime.activeRegionId)
 			return
 		let token = runtime.adapter.representationId(f.id)
 		if not f.mobileForce() or represented(token) < 0 or not natives.ownedBy(token, runtime.adapter.playerForController(f.controllerId, false))

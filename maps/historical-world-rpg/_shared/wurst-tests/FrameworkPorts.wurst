@@ -10,6 +10,16 @@ import MilitarySettlementRuntime
 import ReligionRuntime
 import PartyLocations
 import PhysicalInteraction
+import WarcraftRegionalRuntime
+
+public class StartupRegionalAdapter extends WarcraftRegionalAdapter
+	real cameraX = 0.
+	real cameraY = 0.
+	int cameraChanges = 0
+	override function focus(player owner, real x, real y)
+		cameraX = x
+		cameraY = y
+		cameraChanges++
 
 public class StartupStorage implements CampaignSaveStorage
 	string array[32] keys
@@ -95,7 +105,11 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 	override function commitLoad(WarcraftRpgRuntime rpg)
 		skip
 	override function load(string path)
-		if handoff.contains(CAMPAIGN_RECOVERY_REQUEST)
+		if handoff.contains(CAMPAIGN_COMMAND_REQUEST) and path == scenarioPhysicalMapPath(decodeCampaignRecoveryRequest(handoff.read(CAMPAIGN_COMMAND_REQUEST)).mapId)
+			let request = decodeCampaignRecoveryRequest(handoff.read(CAMPAIGN_COMMAND_REQUEST))
+			(request != null).assertTrue()
+			path.assertEquals(scenarioPhysicalMapPath(request.mapId))
+		else if handoff.contains(CAMPAIGN_RECOVERY_REQUEST)
 			// Recovery must be durable before the physical loader is invoked and
 			// must not require (or start) a fresh origin selection.
 			let request = decodeCampaignRecoveryRequest(handoff.read(CAMPAIGN_RECOVERY_REQUEST))

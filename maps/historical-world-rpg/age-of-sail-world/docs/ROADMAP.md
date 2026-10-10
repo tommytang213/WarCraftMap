@@ -79,7 +79,7 @@
 - [x] <!-- req:ROAD-0059 --> Multi-map campaign packaging and per-region/subregion physical map build pipeline
 - [x] <!-- req:ROAD-0060 --> Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer
 - [x] <!-- req:ROAD-0061 --> Regional instance activation, boundary transitions, and cross-map/cross-region travel
-- [x] <!-- req:ROAD-0062 --> Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime)
+- [x] <!-- req:ROAD-0062 --> Cross-region troop command and remote regional building management (authoritative simulation and physical command-map handoff; native launch acceptance remains separate)
 - [x] <!-- req:ROAD-0063 --> World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs
 - [x] <!-- req:ROAD-0064 --> Custom quest journal and quest-to-map tracking integration
 - [x] <!-- req:ROAD-0065 --> Europe

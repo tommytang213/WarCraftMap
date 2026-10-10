@@ -63,4 +63,19 @@ def write_settings(project, destination):
                 lines += ["\tif mapId == " + json.dumps(physical["id"]),
                           "\t\treturn " + json.dumps(physical["packagePath"])]
     lines += ['\treturn ""', ""]
+    # Transport needs a physical identity, not just a logical authorization
+    # region. Ambiguous logical locations deliberately have no destination.
+    destinations = {}
+    if physical_maps:
+        for physical in physical_maps["physicalMaps"]:
+            if physical["assignments"]["logicalRegionIds"] and not physical.get("bootstrap", False):
+                for location in [physical["id"], *physical["assignments"]["regionalInstanceIds"],
+                                 *physical["assignments"]["logicalRegionIds"]]:
+                    destinations.setdefault(location, set()).add(physical["id"])
+    lines += ["public function scenarioAuthorityMap(string locationId) returns string"]
+    for location, maps in sorted(destinations.items()):
+        if len(maps) == 1:
+            lines += ["\tif locationId == " + json.dumps(location),
+                      "\t\treturn " + json.dumps(next(iter(maps)))]
+    lines += ['\treturn ""', ""]
     (destination / "ScenarioSettings.wurst").write_text("\n".join(lines))

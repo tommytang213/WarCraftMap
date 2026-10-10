@@ -215,6 +215,8 @@ function bothBoundaries(RecruitmentFixture f)
 			authority += ";clock=" + f.clock.captureState()
 		if schema >= 7
 			authority += ";partyLocations=v1"
+		if schema >= 9
+			authority += ";commandContext=" + commandContext("world-map", false, initialCommandKnowledge("world-map"))
 		if schema >= 8
 			authority += ";autosave=1|1|8:1001011"
 		let payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority)

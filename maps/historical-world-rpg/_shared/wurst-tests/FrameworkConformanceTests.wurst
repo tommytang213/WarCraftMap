@@ -36,7 +36,7 @@ class ConformanceSession
 		selector = new NewCampaignOriginController(8, ports, ports.selectorIdentity)
 		selector.setObserver(handoff)
 		configureGeneratedOrigins(selector)
-		campaign = new PlayableCampaignServices(new WarcraftRegionalAdapter(), clock, mapId, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), clock, mapId, new ReligionRuntime(ports), saves, handoff, ports, ports)
 		campaign.state.arrivalPathing = ports
 		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
 		trade = registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)

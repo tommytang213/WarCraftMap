@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7144**.
+Candidate ready: **False**; blockers: **7078**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -435,17 +435,17 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0294.01 | combination | The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0295.01 | combination | Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0296.01 | combination | The player can manage owned or authorized holdings in other regions without physically traveling there. | artifact-missing, integration-missing, static-only |
-| REQ-0297.01 | combination | Remote regional access supports both management and active command. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0297.02 | combination | Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0298.01 | combination | Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0299.01 | combination | Remote regional management is modal and follows the existing campaign pause policy. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0300.01 | combination | If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0300.02 | combination | The main character's authoritative location remains unchanged unless the character actually travels. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0301.01 | combination | The player's main character keeps a separate physical-region/map location from the current command/view region. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0301.02 | combination | Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0302.01 | combination | Multiple regions may contain player-owned troops and holdings at the same campaign time. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0297.01 | combination | Remote regional access supports both management and active command. | artifact-missing, integration-missing, static-only |
+| REQ-0297.02 | combination | Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there. | artifact-missing, integration-missing, static-only |
+| REQ-0298.01 | combination | Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location. | artifact-missing, integration-missing, static-only |
+| REQ-0299.01 | combination | Remote regional management is modal and follows the existing campaign pause policy. | artifact-missing, integration-missing, static-only |
+| REQ-0300.01 | combination | If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. | artifact-missing, integration-missing, static-only |
+| REQ-0300.02 | combination | The main character's authoritative location remains unchanged unless the character actually travels. | artifact-missing, integration-missing, static-only |
+| REQ-0301.01 | combination | The player's main character keeps a separate physical-region/map location from the current command/view region. | artifact-missing, integration-missing, static-only |
+| REQ-0301.02 | combination | Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model. | artifact-missing, integration-missing, static-only |
+| REQ-0302.01 | combination | Multiple regions may contain player-owned troops and holdings at the same campaign time. | artifact-missing, integration-missing, static-only |
 | REQ-0302.02 | combination | Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0303.01 | combination | Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0303.01 | combination | Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world. | artifact-missing, integration-missing, static-only |
 | REQ-0304.01 | combination | The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0305.01 | combination | Remote management shows only campaign information the player is already authorized to know. | artifact-missing, integration-missing, static-only |
 | REQ-0306.01 | combination | The player remains an individual. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -563,7 +563,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0059.01 | combination | Multi-map campaign packaging and per-region/subregion physical map build pipeline | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0060.01 | combination | Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0061.01 | combination | Regional instance activation, boundary transitions, and cross-map/cross-region travel | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0062.01 | combination | Cross-region troop command and remote regional building management (authoritative simulation layer; physical cross-map command loading still integrates with the multi-map runtime) | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0062.01 | combination | Cross-region troop command and remote regional building management (authoritative simulation and physical command-map handoff; native launch acceptance remains separate) | artifact-missing, integration-missing, static-only |
 | ROAD-0063.01 | combination | World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0064.01 | combination | Custom quest journal and quest-to-map tracking integration | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0065.01 | combination | Europe | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -5551,113 +5551,59 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0296.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0296.01 [static-only]: source references cannot establish executed integration
 - REQ-0296.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0297.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0297.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0297.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0297.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0297.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0297.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0297.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0297.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0297.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0297.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0297.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0297.01 [static-only]: source references cannot establish executed integration
 - REQ-0297.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0297.02 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0297.02 [authority-missing]: scenario content authority is absent or stale
-- REQ-0297.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0297.02 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0297.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0297.02 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0297.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0297.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0297.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0297.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0297.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0297.02 [static-only]: source references cannot establish executed integration
 - REQ-0297.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0298.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0298.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0298.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0298.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0298.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0298.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0298.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0298.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0298.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0298.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0298.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0298.01 [static-only]: source references cannot establish executed integration
 - REQ-0298.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0299.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0299.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0299.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0299.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0299.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0299.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0299.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0299.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0299.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0299.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0299.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0299.01 [static-only]: source references cannot establish executed integration
 - REQ-0299.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0300.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0300.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0300.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0300.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0300.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0300.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0300.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0300.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0300.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0300.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0300.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0300.01 [static-only]: source references cannot establish executed integration
 - REQ-0300.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0300.02 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0300.02 [authority-missing]: scenario content authority is absent or stale
-- REQ-0300.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0300.02 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0300.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0300.02 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0300.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0300.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0300.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0300.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0300.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0300.02 [static-only]: source references cannot establish executed integration
 - REQ-0300.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0301.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0301.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0301.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0301.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0301.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0301.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0301.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0301.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0301.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0301.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0301.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0301.01 [static-only]: source references cannot establish executed integration
 - REQ-0301.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0301.02 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0301.02 [authority-missing]: scenario content authority is absent or stale
-- REQ-0301.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0301.02 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0301.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0301.02 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0301.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0301.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0301.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0301.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0301.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0301.02 [static-only]: source references cannot establish executed integration
 - REQ-0301.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0302.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0302.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0302.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0302.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0302.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0302.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0302.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0302.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0302.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0302.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0302.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0302.01 [static-only]: source references cannot establish executed integration
 - REQ-0302.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0302.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0302.02 [authority-missing]: scenario content authority is absent or stale
@@ -5671,17 +5617,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0302.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0302.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0302.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0303.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0303.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0303.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0303.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0303.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0303.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0303.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0303.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0303.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0303.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0303.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0303.01 [static-only]: source references cannot establish executed integration
 - REQ-0303.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0304.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0304.01 [authority-missing]: scenario content authority is absent or stale
@@ -6922,15 +6862,9 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0061.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0061.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0061.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0062.01 [unmapped]: no explicit requirement-to-production mapping
-- ROAD-0062.01 [authority-missing]: scenario content authority is absent or stale
-- ROAD-0062.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- ROAD-0062.01 [unreachable]: production entry/registration/call chain is absent or stale
-- ROAD-0062.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- ROAD-0062.01 [unpersisted]: persistence behavior/path is absent or stale
-- ROAD-0062.01 [unpersisted]: transition behavior/path is absent or stale
 - ROAD-0062.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0062.01 [integration-missing]: failure: current executable production-adapter evidence is absent
+- ROAD-0062.01 [static-only]: source references cannot establish executed integration
 - ROAD-0062.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0063.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0063.01 [authority-missing]: scenario content authority is absent or stale
