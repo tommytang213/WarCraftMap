@@ -61,3 +61,21 @@ Container validation mounts the worktree read-only and builds a private copy as
 `wurstuser`. No commits, publication, global tooling changes or player QA are part
 of this work. The disposable validation container was removed after retaining
 its results. `validate-container.sh` records its private-copy build commands.
+
+## Integration with authored quest stages
+
+The merge repair preserves the recovery policy and main's quest generation,
+including both quest traceability mappings. The lifecycle test fixture now
+completes the authored stage graph before earning its initial reward, so its
+existing save/load and reward checks also preserve RPG v5 quest history.
+Hero conditions, deadlines and party-location fields retain their existing
+representation and migration behavior.
+
+`merge-validation.json` records validation of the integrated source tree;
+`merge-scoped-evidence.json` binds the lifecycle receipts and packaged campaign
+to that same tree. The `merge-` transcripts and compressed reports retain the
+fresh execution and framework evidence separately from the original results.
+The pinned compiler was extracted from the cached immutable image with no
+network or worktree mounts, then run locally with a cached standard library.
+No global tools or native-launch status changed. The outer worker performs the
+authoritative repository validation.

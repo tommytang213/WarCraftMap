@@ -74,7 +74,7 @@ def main():
               "scope": "recruited-hero defeat, campaign-time recovery and incapacitated-party persistence",
               "artifactSha256": report["artifact"]["sha256"],
               "executionLogSha256": execution["logSha256"], "maps": checked,
-              "receipts": len(receipts), "recoveryDays": duration, "rpgSchemaVersion": 4,
+              "receipts": len(receipts), "recoveryDays": duration, "rpgSchemaVersion": 5,
               "partyLocationVersion": 1, "campaignSchemaVersions": list(range(1, 9)),
               "remainingPublicationBlockers": report["blockerCount"], "candidateReady": False,
               "realClientExecuted": False, "releaseCandidate": False,

@@ -6,18 +6,18 @@
   },
   "blockerClasses": {
     "artifact-missing": 644,
-    "authority-missing": 519,
+    "authority-missing": 517,
     "census-mismatch": 69,
     "dependency-uncovered": 49,
     "integration-missing": 2268,
-    "mechanism-missing": 578,
-    "state-unmapped": 604,
-    "static-only": 45,
-    "unmapped": 598,
-    "unpersisted": 1204,
-    "unreachable": 602
+    "mechanism-missing": 576,
+    "state-unmapped": 602,
+    "static-only": 47,
+    "unmapped": 596,
+    "unpersisted": 1200,
+    "unreachable": 600
   },
-  "blockerCount": 7180,
+  "blockerCount": 7168,
   "blockers": [
     {
       "class": "artifact-missing",
@@ -30465,41 +30465,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "ROAD-0054.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "authority-missing",
-      "id": "ROAD-0054.01",
-      "message": "scenario content authority is absent or stale"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "ROAD-0054.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "ROAD-0054.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "ROAD-0054.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "ROAD-0054.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "ROAD-0054.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "ROAD-0054.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -30518,6 +30483,11 @@
       "class": "integration-missing",
       "id": "ROAD-0054.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "ROAD-0054.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -34455,41 +34425,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "ROAD-0130.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "authority-missing",
-      "id": "ROAD-0130.01",
-      "message": "scenario content authority is absent or stale"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "ROAD-0130.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "ROAD-0130.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "ROAD-0130.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "ROAD-0130.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "ROAD-0130.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "ROAD-0130.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -34508,6 +34443,11 @@
       "class": "integration-missing",
       "id": "ROAD-0130.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "ROAD-0130.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -38120,7 +38060,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "d12d6ed0c1c02bf9862802741954be81faebab6cef9b3cc4be2342fed3c5b661",
-  "mappingSha256": "598d90b0b629e4907a29f11fa29d0a16c0d05822af32319510ee294aed1fe7c5",
+  "mappingSha256": "34b98d4edabd4f13cbde811287e09a5d9ee09df077ff1ae04665857bc099f7b2",
   "requirements": [
     {
       "authority": {
@@ -42422,7 +42362,7 @@
             "symbol": "applyRecord"
           },
           "mode": "persisted",
-          "reason": "Existing RPG v4 wounded/deadline fields and party location v1 records persist without a schema change; supported older domains retain progression and migrate missing positions once.",
+          "reason": "RPG v5 retains existing wounded/deadline fields alongside quest-stage history; party location v1 records are unchanged. Supported older domains retain progression and migrate missing positions once.",
           "references": [
             {
               "contains": [
@@ -63071,18 +63011,170 @@
       },
       "blockerClasses": [
         "artifact-missing",
-        "authority-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "combination",
       "id": "ROAD-0054.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\bQuestGraph_QuestGraph_addStage\\(",
+            "\\bQuestGraph_QuestGraph_addObjective\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "europe_printed_compact",
+              "prerequisiteQuestIds"
+            ],
+            "path": "scenario/campaign-quests.json"
+          },
+          {
+            "contains": [
+              "physical_visit",
+              "domain_receipt",
+              "blocker"
+            ],
+            "path": "scenario/quest-condition-bindings.json"
+          },
+          {
+            "contains": [
+              "validate_graphs",
+              "emit_quests"
+            ],
+            "path": "../_shared/tooling/quest_codegen.py"
+          }
+        ],
+        "entry": {
+          "id": "live-authored-quest",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerRpgRuntimeCommands(commands,rpgRuntime)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "runtime.acceptQuest(first)",
+                "runtime.advanceQuest(first,second)",
+                "runtime.interact(sender,first,getCampaignDay())"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "commands.register(\"accept\"",
+              "commands.register(\"queststage\"",
+              "commands.register(\"interact\"",
+              "commands.register(\"turnin\""
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "registerRpgRuntimeCommands"
+          },
+          "testInvocation": ".command("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "activeStageId",
+              "completedObjectiveIds",
+              "nextStageIds",
+              "validProgress"
+            ],
+            "path": "../_shared/wurst/QuestStages.wurst"
+          },
+          {
+            "contains": [
+              "prerequisiteQuestIds",
+              "conditions.validates",
+              "terminalComplete()"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "record.schema >= 5",
+              "q.graph.legacyTerminal = true"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "applyRecord"
+          },
+          "mode": "persisted",
+          "reason": "RPG v5 stores active stage, ordered reached stages, completed objectives, receipts and an explicit legacy-terminal flag. v1–v4 migration preserves rewards without invented objectives.",
+          "references": [
+            {
+              "contains": [
+                "RPG domain **v5**"
+              ],
+              "path": "docs/LIVE_QUEST_STAGES.md"
+            }
+          ],
+          "save": {
+            "contains": [
+              "q.graph.reachedStageIds",
+              "q.graph.completedObjectiveIds"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          }
+        },
+        "scope": "Authored live quest stage mechanism only (#445). Domain condition adapters, authored reward batches, local random quests and the remaining event/exploration breadth are unresolved; these broad obligations remain blocked.",
+        "state": {
+          "mutation": "Accept after prerequisites; consume matching active-stage physical observations or validated domain receipts; follow legal graph edges; turn in a completed terminal stage once.",
+          "outcome": "Journal follows the active objective or required return. Missing condition integrations remain explicit blockers.",
+          "owner": "RuntimeQuest and QuestGraph stable-ID authority, independent of Warcraft representations.",
+          "references": [
+            {
+              "contains": [
+                "journal.visit(q, target)",
+                "q.graph.legacyTerminal",
+                "journal.turnIn"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+            },
+            {
+              "contains": [
+                "processedReceiptIds",
+                "completedObjectiveIds"
+              ],
+              "path": "../_shared/wurst/QuestStages.wurst"
+            }
+          ],
+          "rejection": "Wrong target, inactive objective, missing adapter/prerequisite, duplicate receipt and premature/remote turn-in preserve progress and rewards."
+        },
+        "tests": {},
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "The campaign codec and rollback checkpoint restore graph authority before projection. Reconstruction never replays receipts.",
+          "references": [
+            {
+              "contains": [
+                "rpg.restoreState"
+              ],
+              "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "applyRuntime"
+            },
+            {
+              "contains": [
+                "restoredCompact.graph.activeStageId.assertEquals(\"secure_archive\")"
+              ],
+              "path": "wurst/CampaignStartupTests.wurst"
+            }
+          ]
+        }
+      },
       "parent": "ROAD-0054",
       "status": "fail",
       "text": "Quests/events/exploration"
@@ -64853,18 +64945,170 @@
       },
       "blockerClasses": [
         "artifact-missing",
-        "authority-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "combination",
       "id": "ROAD-0130.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\bQuestGraph_QuestGraph_addStage\\(",
+            "\\bQuestGraph_QuestGraph_addObjective\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "europe_printed_compact",
+              "prerequisiteQuestIds"
+            ],
+            "path": "scenario/campaign-quests.json"
+          },
+          {
+            "contains": [
+              "physical_visit",
+              "domain_receipt",
+              "blocker"
+            ],
+            "path": "scenario/quest-condition-bindings.json"
+          },
+          {
+            "contains": [
+              "validate_graphs",
+              "emit_quests"
+            ],
+            "path": "../_shared/tooling/quest_codegen.py"
+          }
+        ],
+        "entry": {
+          "id": "live-authored-quest",
+          "kind": "command",
+          "path": [
+            {
+              "contains": [
+                "registerRpgRuntimeCommands(commands,rpgRuntime)"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "runtime.acceptQuest(first)",
+                "runtime.advanceQuest(first,second)",
+                "runtime.interact(sender,first,getCampaignDay())"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "commands.register(\"accept\"",
+              "commands.register(\"queststage\"",
+              "commands.register(\"interact\"",
+              "commands.register(\"turnin\""
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "registerRpgRuntimeCommands"
+          },
+          "testInvocation": ".command("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "activeStageId",
+              "completedObjectiveIds",
+              "nextStageIds",
+              "validProgress"
+            ],
+            "path": "../_shared/wurst/QuestStages.wurst"
+          },
+          {
+            "contains": [
+              "prerequisiteQuestIds",
+              "conditions.validates",
+              "terminalComplete()"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "record.schema >= 5",
+              "q.graph.legacyTerminal = true"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "applyRecord"
+          },
+          "mode": "persisted",
+          "reason": "RPG v5 stores active stage, ordered reached stages, completed objectives, receipts and an explicit legacy-terminal flag. v1–v4 migration preserves rewards without invented objectives.",
+          "references": [
+            {
+              "contains": [
+                "RPG domain **v5**"
+              ],
+              "path": "docs/LIVE_QUEST_STAGES.md"
+            }
+          ],
+          "save": {
+            "contains": [
+              "q.graph.reachedStageIds",
+              "q.graph.completedObjectiveIds"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          }
+        },
+        "scope": "Authored live quest stage mechanism only (#445). Domain condition adapters, authored reward batches, local random quests and the remaining event/exploration breadth are unresolved; these broad obligations remain blocked.",
+        "state": {
+          "mutation": "Accept after prerequisites; consume matching active-stage physical observations or validated domain receipts; follow legal graph edges; turn in a completed terminal stage once.",
+          "outcome": "Journal follows the active objective or required return. Missing condition integrations remain explicit blockers.",
+          "owner": "RuntimeQuest and QuestGraph stable-ID authority, independent of Warcraft representations.",
+          "references": [
+            {
+              "contains": [
+                "journal.visit(q, target)",
+                "q.graph.legacyTerminal",
+                "journal.turnIn"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
+            },
+            {
+              "contains": [
+                "processedReceiptIds",
+                "completedObjectiveIds"
+              ],
+              "path": "../_shared/wurst/QuestStages.wurst"
+            }
+          ],
+          "rejection": "Wrong target, inactive objective, missing adapter/prerequisite, duplicate receipt and premature/remote turn-in preserve progress and rewards."
+        },
+        "tests": {},
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "The campaign codec and rollback checkpoint restore graph authority before projection. Reconstruction never replays receipts.",
+          "references": [
+            {
+              "contains": [
+                "rpg.restoreState"
+              ],
+              "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "applyRuntime"
+            },
+            {
+              "contains": [
+                "restoredCompact.graph.activeStageId.assertEquals(\"secure_archive\")"
+              ],
+              "path": "wurst/CampaignStartupTests.wurst"
+            }
+          ]
+        }
+      },
       "parent": "ROAD-0130",
       "status": "fail",
       "text": "Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content."

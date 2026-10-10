@@ -1,6 +1,7 @@
 package RpgInteractionTests
 
 import WarcraftRpgRuntime
+import QuestStages
 import PhysicalInteraction
 import ScenarioData
 import CommandRouter
@@ -87,11 +88,8 @@ class InteractionFixture
 		rpg.heroes.count = 2
 		rpg.heroes.heroes[1].recruited = true
 		rpg.heroes.heroes[1].assignment = "reserve"
-		for i = 0 to rpg.journal.count - 1
-			if rpg.journal.quests[i].turnInId == "lisbon"
-				questDefinition = rpg.journal.quests[i]
-			if rpg.journal.quests[i].turnInId == "timbuktu"
-				remoteQuest = rpg.journal.quests[i]
+		questDefinition = rpg.journal.get("europe_printed_compact")
+		remoteQuest = rpg.journal.get("africa_niger_manuscripts")
 		rpg.journal.quests[0] = questDefinition
 		rpg.journal.count = 1
 		questDefinition.rewardCurrency = 37
@@ -116,8 +114,7 @@ class InteractionFixture
 		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
 		actors.moveTo(rpg.interactions.get("lisbon"))
 	function ready()
-		rpg.journal.accept(questDefinition.id).assertTrue()
-		rpg.journal.progress(questDefinition.id, questDefinition.objectiveTarget).assertTrue()
+		readyQuest(rpg.journal, questDefinition)
 	function turnIn() returns string
 		return "/turnin " + questDefinition.id + " " + hero.id
 	function reject(string command)
@@ -180,8 +177,7 @@ class InteractionFixture
 	let f = new InteractionFixture()
 	(f.remoteQuest != null).assertTrue()
 	f.rpg.journal.register(f.remoteQuest)
-	f.rpg.journal.accept(f.remoteQuest.id).assertTrue()
-	f.rpg.journal.progress(f.remoteQuest.id, f.remoteQuest.objectiveTarget).assertTrue()
+	readyQuest(f.rpg.journal, f.remoteQuest)
 	f.reject("/turnin " + f.remoteQuest.id + " " + f.hero.id)
 	// An unrecruited or remote recipient cannot borrow the local actor's presence.
 	let recipient = f.rpg.heroes.heroes[1]
@@ -217,6 +213,10 @@ class InteractionFixture
 	f.rpg.heroes.heroes[1].assignment = "governor"
 	let remote = f.rpg.heroes.heroes[1]
 	let before = remote.experience
+	f.accept("/interact quest_location_lisbon")
+	f.questDefinition.state.assertEquals(QUEST_ACTIVE)
+	f.reject("/interact quest_location_lisbon")
+	f.ready()
 	f.accept("/interact quest_location_lisbon")
 	f.questDefinition.state.assertEquals(QUEST_COMPLETE)
 	remote.experience.assertEquals(before)
@@ -332,3 +332,19 @@ class InteractionFixture
 	f.reject("/interact africa")
 	f.reject("/interact timbuktu")
 	f.accept(f.turnIn())
+
+/** Physical rejection tests begin with explicitly prepared terminal authority.
+ * Authored event progression is exercised separately by AuthoredQuestTests. */
+function readyQuest(QuestJournalRuntime journal, RuntimeQuest q)
+	if q.state == QUEST_OFFERED
+		journal.accept(q.id).assertTrue()
+	while q.state == QUEST_ACTIVE
+		let stage = q.graph.stage(q.graph.activeStageId)
+		for i = 0 to q.graph.objectiveCount - 1
+			let objective = q.graph.objectives[i]
+			if questHas(stage.objectiveIds, objective.id)
+				q.graph.completeObjective(objective.id)
+		if q.graph.activeStageId == stage.id and stage.nextStageIds != ""
+			let cut = stage.nextStageIds.indexOf("~")
+			q.graph.advance(SubString(stage.nextStageIds, 0, cut)).assertTrue()
+		q.settleProgress()

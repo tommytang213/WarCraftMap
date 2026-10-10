@@ -1,0 +1,354 @@
+package AuthoredQuestTests
+
+import QuestStages
+import WarcraftRpgRuntime
+import PhysicalInteraction
+import ScenarioData
+import CommandRouter
+import CampaignTimeline
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
+import CampaignLoadTransactionTests
+
+/** Recording domain receipt boundary: it supplies no stage mutation. Tests
+ * dispatch ordinary commands and use production validation, graph and codec. */
+class RecordedQuestConditions implements QuestConditionAuthority
+	string questId = ""
+	string stageId = ""
+	string objectiveId = ""
+	string conditionId = ""
+	string refs = ""
+	string receipt = ""
+	boolean available = true
+	override function supports(string conditionId) returns boolean
+		return available and (conditionId == "quest_diplomacy_satisfied" or conditionId == "quest_institution_satisfied" or conditionId == "quest_discovery_satisfied")
+	override function validates(string questId, string stageId, QuestObjective objective, string receiptId) returns boolean
+		return questId == this.questId and stageId == this.stageId and objective.id == objectiveId and objective.conditionId == conditionId and objective.entityRefs == refs and receipt == receiptId
+
+class QuestActors implements InteractionActors
+	real px = 0.
+	real py = 0.
+	override function present(int actor, player owner) returns boolean
+		return actor == 0
+	override function x(int actor) returns real
+		return px
+	override function y(int actor) returns real
+		return py
+	override function movement(int actor) returns int
+		return 0
+
+class QuestOutput implements CommandOutput
+	string last = ""
+	override function show(player sender, string message)
+		last = message
+
+class AuthoredFixture
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
+	RuntimeQuest compact
+	RuntimeQuest accounts
+	RuntimeQuest archive
+	RuntimeQuest salvage
+	QuestActors actors = new QuestActors()
+	QuestOutput output = new QuestOutput()
+	RecordedQuestConditions conditions = new RecordedQuestConditions()
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), output)
+	PlayableCampaignState state
+	construct()
+		configureGeneratedRpg(rpg)
+		configureGeneratedInteractions(rpg.interactions)
+		compact = rpg.journal.get("europe_printed_compact")
+		accounts = rpg.journal.get("ocean_of_accounts")
+		archive = rpg.journal.get("africa_niger_manuscripts")
+		salvage = rpg.journal.get("licensed_salvage")
+		for i = 0 to rpg.journal.count - 1
+			let q = rpg.journal.quests[i]
+			if q != compact and q != accounts and q != archive and q != salvage
+				destroy q
+		rpg.journal.quests[0] = compact
+		rpg.journal.quests[1] = accounts
+		rpg.journal.quests[2] = archive
+		rpg.journal.quests[3] = salvage
+		rpg.journal.count = 1
+		rpg.treasures.count = 0
+		rpg.heroes.count = 0
+		let hero = new RpgHero("hero", "Traveler", 'Hpal')
+		hero.recruited = true
+		hero.assignment = "field"
+		rpg.heroes.register(hero)
+		rpg.heroes.mainCharacterId = "hero"
+		compact.rewardCurrency = 37
+		rpg.journal.conditions = conditions
+		rpg.interactions.actors = actors
+		state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1450, 1820, 1450, 1.))
+		installCampaignClock(state.clock)
+		state.identity = new PlayerCampaignIdentity()
+		state.identity.startCampaign("portugal", "europe_west", "europe_iberia_western_med", "lisbon").assertTrue()
+		state.loadedPhysicalMap = "europe_west"
+		state.authority = replaceCampaignField(state.authority, "map", "europe_west")
+		state.setRpgRuntime(rpg)
+		rpg.interactions.maps = new CampaignInteractionMaps(state)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		move("lisbon")
+	function move(string id)
+		let target = rpg.interactions.get(id)
+		actors.px = target.x
+		actors.py = target.y
+	function command(string text, boolean accepted)
+		let before = rpg.captureState()
+		commands.dispatch(null, text).assertTrue()
+		if accepted
+			output.last.assertEquals("Action completed.")
+		else
+			output.last.assertEquals("Requirements are not met here.")
+			rpg.captureState().assertEquals(before)
+	function receipt(string stageId, string objectiveId, string conditionId, string refs, string receiptId)
+		conditions.questId = compact.id
+		conditions.stageId = stageId
+		conditions.objectiveId = objectiveId
+		conditions.conditionId = conditionId
+		conditions.refs = refs
+		conditions.receipt = receiptId
+	function reachFork()
+		command("/accept europe_printed_compact", true)
+		command("/interact lisbon", false)
+		command("/turnin europe_printed_compact hero", false)
+		command("/queststage europe_printed_compact negotiate", false)
+		move("london")
+		command("/interact quest_location_london", true)
+		compact.graph.activeStageId.assertEquals("carry_compact")
+		compact.graph.completedObjectiveIds.assertEquals("reach_london~")
+		command("/interact london", false)
+		command("/queststage europe_printed_compact return_compact", false)
+	function returnAndTurnIn()
+		compact.state.assertEquals(QUEST_ACTIVE)
+		compact.graph.activeStageId.assertEquals("return_compact")
+		compact.destinationId.assertEquals("quest_location_lisbon")
+		command("/turnin europe_printed_compact hero", false)
+		command("/interact london", false)
+		move("lisbon")
+		command("/interact lisbon", true)
+		compact.state.assertEquals(QUEST_READY)
+		rpg.journal.currency.assertEquals(0)
+		command("/turnin europe_printed_compact hero", true)
+		compact.state.assertEquals(QUEST_COMPLETE)
+		compact.precision.assertEquals("hidden")
+		compact.destinationId.assertEquals("")
+		rpg.journal.currency.assertEquals(37)
+		command("/turnin europe_printed_compact hero", false)
+		command("/interact lisbon", false)
+		rpg.heroes.get("hero").level.assertEquals(2)
+	function roundTrip()
+		let expected = rpg.captureState()
+		let codec = new PlayableCampaignCodec(state.clock)
+		let encoded = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "quest", state.captureAuthoritativeState())
+		let decoded = codec.decodeMigrateAndValidate(encoded, "manual_01")
+		(decoded != "").assertTrue()
+		let destination = new AuthoredFixture()
+		for i = 1 to 2
+			destination.state.reconstructRuntime(decoded).assertTrue()
+			destination.state.activateAuthoritativeState(decoded)
+			destination.rpg.reconcile("player")
+			destination.rpg.captureState().assertEquals(expected)
+		rpg.restoreState(destination.rpg.captureState()).assertTrue()
+
+@test function printedCompactLisbonAloneCannotCompleteAndUnscopedEventsCannotProveObjectives()
+	let f = new AuthoredFixture()
+	f.command("/interact lisbon", true)
+	f.compact.graph.activeStageId.assertEquals("carry_compact")
+	f.compact.graph.completedObjectiveIds.assertEquals("")
+	f.compact.destinationId.assertEquals("quest_location_london")
+	for i = 1 to 3
+		f.command("/interact quest_location_lisbon", false)
+		f.command("/turnin europe_printed_compact hero", false)
+		f.rpg.worldEventAt("combat", "london", 100, 0).assertFalse()
+		f.rpg.worldEventAt("settlement", "lisbon", 1, 0).assertFalse()
+		f.rpg.journal.progress(f.compact.id, 999).assertFalse()
+	f.compact.graph.completedObjectiveIds.assertEquals("")
+	f.rpg.journal.currency.assertEquals(0)
+	f.roundTrip()
+
+@test function printedCompactNegotiationBranchRequiresMatchingReceiptAndPhysicalReturn()
+	let f = new AuthoredFixture()
+	f.reachFork()
+	f.receipt("negotiate", "win_recognition", "quest_diplomacy_satisfied", "polity:england~", "recognition_one")
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
+	f.command("/queststage europe_printed_compact negotiate", true)
+	f.compact.precision.assertEquals("hidden")
+	f.compact.destinationId.assertEquals("")
+	f.command("/interact london", false)
+	f.conditions.refs = "polity:portugal~"
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
+	f.conditions.refs = "polity:england~"
+	f.conditions.conditionId = "quest_institution_satisfied"
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
+	f.conditions.conditionId = "quest_diplomacy_satisfied"
+	f.rpg.questEvent(f.compact.id, "preserve_copy", "recognition_one").assertFalse()
+	f.rpg.questEvent(f.compact.id, "win_recognition", "unknown_receipt").assertFalse()
+	f.conditions.available = false
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
+	(f.rpg.journal.lastDiagnostic.indexOf("integration unavailable") >= 0).assertTrue()
+	(journalText(f.rpg).indexOf("condition integration pending") >= 0).assertTrue()
+	f.conditions.available = true
+	f.roundTrip()
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertTrue()
+	f.rpg.questEvent(f.compact.id, "win_recognition", "recognition_one").assertFalse()
+	questHas(f.compact.graph.completedObjectiveIds, "preserve_copy").assertFalse()
+	f.roundTrip()
+	f.returnAndTurnIn()
+	f.roundTrip()
+	f.command("/turnin europe_printed_compact hero", false)
+
+@test function printedCompactArchiveBranchRetainsChoiceAndRejectsOtherBranchAfterRestore()
+	let f = new AuthoredFixture()
+	f.reachFork()
+	f.command("/queststage europe_printed_compact secure_archive", true)
+	f.command("/queststage europe_printed_compact negotiate", false)
+	f.roundTrip()
+	f.receipt("secure_archive", "preserve_copy", "quest_institution_satisfied", "institution:movable_type_printing~", "archive_one")
+	f.rpg.questEvent(f.compact.id, "win_recognition", "archive_one").assertFalse()
+	f.rpg.questEvent(f.compact.id, "preserve_copy", "archive_one").assertTrue()
+	f.compact.graph.reachedStageIds.assertEquals("carry_compact~secure_archive~return_compact~")
+	f.roundTrip()
+	f.rpg.questEvent(f.compact.id, "preserve_copy", "archive_one").assertFalse()
+	f.returnAndTurnIn()
+	questHas(f.compact.graph.completedObjectiveIds, "win_recognition").assertFalse()
+
+@test function authoredAcceptanceRejectsUnavailableAndMissingPrerequisites()
+	let f = new AuthoredFixture()
+	f.rpg.journal.count = 2
+	f.command("/accept ocean_of_accounts", false)
+	f.compact.state = QUEST_COMPLETE
+	f.compact.graph.legacyTerminal = true
+	f.compact.completions = 1
+	f.command("/accept ocean_of_accounts", false)
+	f.rpg.journal.count = 3
+	f.command("/accept ocean_of_accounts", false)
+	f.archive.state = QUEST_COMPLETE
+	f.archive.graph.legacyTerminal = true
+	f.archive.completions = 1
+	f.command("/accept ocean_of_accounts", true)
+	f.accounts.graph.completedObjectiveIds.assertEquals("")
+
+@test function authoredSettlementReturnRequiresActualTargetAndSeparateTurnIn()
+	let f = new AuthoredFixture()
+	f.rpg.journal.quests[0] = f.salvage
+	f.command("/accept licensed_salvage", true)
+	// Initial licensing work is a domain condition, never a visit to its port.
+	f.command("/interact lisbon", false)
+	f.salvage.graph.completedObjectiveIds.assertEquals("")
+	f.conditions.questId = f.salvage.id
+	f.conditions.stageId = "take_contract"
+	f.conditions.objectiveId = "record_contract"
+	f.conditions.conditionId = "quest_institution_satisfied"
+	f.conditions.refs = "institution:naval_administration~"
+	f.conditions.receipt = "license_one"
+	f.rpg.questEvent(f.salvage.id, "record_contract", "license_one").assertTrue()
+	f.conditions.stageId = "recover_cargo"
+	f.conditions.objectiveId = "search_known_waters"
+	f.conditions.conditionId = "quest_discovery_satisfied"
+	f.conditions.refs = "navigation_zone:iberian_atlantic~"
+	// Even a correctly scoped receipt cannot be consumed twice at a new stage.
+	f.rpg.questEvent(f.salvage.id, "search_known_waters", "license_one").assertFalse()
+	f.conditions.receipt = "recovery_one"
+	f.rpg.questEvent(f.salvage.id, "search_known_waters", "recovery_one").assertTrue()
+	f.move("london")
+	f.command("/interact london", false)
+	f.command("/turnin licensed_salvage hero", false)
+	f.move("lisbon")
+	f.command("/interact quest_location_lisbon", true)
+	f.salvage.state.assertEquals(QUEST_READY)
+	f.salvage.completions.assertEquals(0)
+	f.command("/turnin licensed_salvage hero", true)
+	f.command("/turnin licensed_salvage hero", false)
+
+@test function authoredJournalPreservesApproximateHiddenAndTerminalGuidance()
+	let f = new AuthoredFixture()
+	f.rpg.journal.quests[0] = f.archive
+	f.command("/accept africa_niger_manuscripts", true)
+	f.archive.precision.assertEquals("approximate")
+	f.archive.destinationId.assertEquals("")
+	(f.rpg.journal.track(f.archive.id).indexOf("radius") >= 0).assertTrue()
+	(journalText(f.rpg).indexOf(f.archive.graph.objectives[0].description) >= 0).assertTrue()
+
+@test function questCandidateRejectsForgedPathsObjectivesAndPrematureReadinessAtomically()
+	let f = new AuthoredFixture()
+	f.reachFork()
+	let before = f.rpg.captureState()
+	let prefix = "v5|p,hero|h,hero,1,1,0,0,0,0,50,0,0,0,field,,,,,,,|q,europe_printed_compact,"
+	f.rpg.restoreState(prefix + "ready_to_turn_in,0,0,0,carry_compact,carry_compact~,reach_london~,,0|j,,0").assertFalse()
+	f.rpg.restoreState(prefix + "active,0,0,0,return_compact,carry_compact~return_compact~,reach_london~,,0|j,,0").assertFalse()
+	f.rpg.restoreState(prefix + "active,0,0,0,negotiate,carry_compact~negotiate~,reach_london~preserve_copy~,,0|j,,0").assertFalse()
+	f.rpg.restoreState(prefix + "active,0,0,0,negotiate,carry_compact~negotiate~,win_recognition~,,0|j,,0").assertFalse()
+	f.rpg.restoreState(prefix + "active,0,0,0,negotiate,carry_compact~negotiate~,reach_london~,same~same~,0|j,,0").assertFalse()
+	f.rpg.captureState().assertEquals(before)
+
+@test function legacyQuestCountersMigrateWithoutInventedEvidenceOrRepeatedRewards()
+	for schema = 2 to 4
+		let f = new AuthoredFixture()
+		var prefix = "v" + schema.toString()
+		if schema >= 3
+			prefix += "|p,hero"
+		prefix += "|h,hero,1,2,7,1,0,0,50,0,0,0,field,,,,,"
+		if schema >= 4
+			prefix += ",,"
+		let active = prefix + "|q,europe_printed_compact,ready_to_turn_in,1,90,0|j,europe_printed_compact,37"
+		let codec = new PlayableCampaignCodec(f.state.clock)
+		let authority = f.state.captureAuthoritativeState() + ";rpg=" + active
+		let decoded = codec.decodeMigrateAndValidate(codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "legacy", authority), "manual_01")
+		f.state.reconstructRuntime(decoded).assertTrue()
+		f.state.activateAuthoritativeState(decoded)
+		f.compact.state.assertEquals(QUEST_ACTIVE)
+		f.compact.graph.activeStageId.assertEquals("carry_compact")
+		f.compact.graph.completedObjectiveIds.assertEquals("")
+		f.rpg.journal.currency.assertEquals(37)
+		f.command("/turnin europe_printed_compact hero", false)
+		f.roundTrip()
+		f.rpg.restoreState(prefix + "|q,europe_printed_compact,complete,1,90,1|j,europe_printed_compact,37").assertTrue()
+		f.compact.graph.legacyTerminal.assertTrue()
+		f.compact.graph.reachedStageIds.assertEquals("")
+		f.compact.graph.completedObjectiveIds.assertEquals("")
+		f.roundTrip()
+		f.command("/turnin europe_printed_compact hero", false)
+		f.rpg.journal.currency.assertEquals(37)
+		f.rpg.heroes.get("hero").experience.assertEquals(7)
+		f.rpg.restoreState(prefix + "|q,europe_printed_compact,complete,1,0,0|j,europe_printed_compact,37").assertTrue()
+		f.command("/interact lisbon", false)
+		f.rpg.journal.refill(100)
+		f.compact.state.assertEquals(QUEST_COMPLETE)
+		f.compact.completions.assertEquals(0)
+		f.rpg.journal.currency.assertEquals(37)
+		f.roundTrip()
+		f.rpg.restoreState(prefix + "|q,europe_printed_compact,failed,1,90,0|j,,37").assertTrue()
+		f.compact.state.assertEquals(QUEST_FAILED)
+		f.compact.graph.legacyTerminal.assertTrue()
+		f.roundTrip()
+
+function loadBranch(LoadFixture fixture, string branch)
+	let authored = new AuthoredFixture()
+	let q = authored.compact
+	fixture.rpg.journal.quests[0] = q
+	fixture.rpg.journal.trackedId = q.id
+	fixture.rpg.journal.accept(q.id).assertTrue()
+	q.graph.completeObjective("reach_london").assertTrue()
+	fixture.rpg.journal.advance(q.id, branch).assertTrue()
+	fixture.rpg.reconcile("player")
+
+@test function failedCampaignLoadRollsBackQuestBranchAndRewardsWithoutReplayingProgress()
+	let source = new LoadFixture()
+	loadBranch(source, "negotiate")
+	let other = new LoadFixture()
+	loadBranch(other, "secure_archive")
+	other.rpg.journal.currency = 77
+	let candidate = other.campaign.state.captureAuthoritativeState()
+	source.ports.failParty = true
+	source.rejectAndVerify(candidate)
+	source.rpg.journal.quests[0].graph.activeStageId.assertEquals("negotiate")
+	source.rpg.journal.quests[0].graph.completedObjectiveIds.assertEquals("reach_london~")
+	source.ports.failParty = false
+	for i = 1 to 2
+		source.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		source.rpg.journal.quests[0].graph.activeStageId.assertEquals("secure_archive")
+		source.rpg.journal.quests[0].graph.completedObjectiveIds.assertEquals("reach_london~")
+		source.rpg.journal.currency.assertEquals(77)
+		source.rpg.journal.quests[0].completions.assertEquals(0)

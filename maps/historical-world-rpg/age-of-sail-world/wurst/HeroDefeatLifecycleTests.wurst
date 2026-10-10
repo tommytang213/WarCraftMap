@@ -11,6 +11,7 @@ import MilitaryCombatEvents
 import ManagementScreenPauseController
 import ManagementCommandTests
 import PartyLocations
+import QuestStages
 import CommandRouter
 import Wurstunit
 
@@ -172,8 +173,15 @@ class DefeatFixture
 		objects.life[main].assertEquals(107)
 		// Populate earned reward history before the lifecycle under test.
 		let completed = rpg.journal.quests[0]
-		completed.state = QUEST_READY
-		completed.objective = completed.objectiveTarget
+		rpg.acceptQuest(completed.id).assertTrue()
+		while completed.state == QUEST_ACTIVE
+			let stage = completed.graph.stage(completed.graph.activeStageId)
+			for i = 0 to completed.graph.objectiveCount - 1
+				if questHas(stage.objectiveIds, completed.graph.objectives[i].id)
+					completed.graph.completeObjective(completed.graph.objectives[i].id)
+			if completed.graph.activeStageId == stage.id and stage.nextStageIds != ""
+				completed.graph.advance(SubString(stage.nextStageIds, 0, stage.nextStageIds.indexOf("~"))).assertTrue()
+			completed.settleProgress()
 		rpg.journal.turnIn(completed.id, hero(), startup.clock.campaignDay(), 30).assertTrue()
 		completed.completions.assertEquals(1)
 

@@ -1,0 +1,215 @@
+{
+  "authoritativeFinalValidation": "Outer worker runs the configured repository validation on the final tree. No native-client or publication gate is waived.",
+  "checks": [
+    {
+      "archiveSha256": "3f69d31c2d66da5597c0263cee21ddbdeaab2b86a3c9020d0e9b4e19319722da",
+      "command": "package_wurst_map.build(package.json, grill=worktree-local pinned Grill, clean_first=True)",
+      "compiler": {
+        "executionImage": null,
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "inputSetSha256": "f74365de4c5a72a667422973052f5462e4a5cfb29d8482ed3e963756c308bf54",
+      "scope": "Real pinned interpreter and actual compiled W3X; no native execution.",
+      "sourceIdentity": {
+        "sourceRevision": "f7655a7dc64de470cc0a8734039ea5bc8b787cb6",
+        "sourceTreeSha256": "a38492a4bcba2dfedf05bb6f528e1078886a04b36dd8debf7849cae3c6a68575"
+      },
+      "status": "pass",
+      "typecheck": "pass",
+      "wurstTests": 375
+    },
+    {
+      "command": "python3 reports/issue-445/inspect_compiled.py _build/release/AgeOfSailWorld.w3x --output reports/issue-445/compiled-quests.json",
+      "details": "compiled-quests.json",
+      "objectives": 943,
+      "quests": 304,
+      "stages": 943,
+      "status": "pass"
+    },
+    {
+      "command": "PATH=<worktree-local tools>:$PATH python3 ../_shared/tooling/validate_framework_fixture.py ../conformance-campaign",
+      "frameworkSourcesUnchanged": true,
+      "mutatedArchiveSha256": "27f8ff2910faa961d37f775db2ac616ded4c1294daa39bb6ee28984105d06ce5",
+      "originalArchiveSha256": "b90a676b63c931f6b0ac015fc584b4409d765437e6ea443ac0efddda27f19d86",
+      "status": "pass",
+      "wurstTests": [
+        2,
+        2
+      ]
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*quest*.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 40
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_rpg_interactions.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 4
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*generation.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 22
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*persistence.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 6
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*save*.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 42
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_packag*.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 12
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_framework*.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 8
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_requirement_traceability.py'",
+      "scope": "Python/headless regressions; discovery patterns overlap. Packaging/framework Python tests use their existing fake compiler controls.",
+      "status": "pass",
+      "tests": 48
+    },
+    {
+      "command": "python3 tooling/requirement_traceability_audit.py --check",
+      "obligations": 643,
+      "retainedPublicationBlockers": 7172,
+      "status": "pass"
+    },
+    {
+      "command": "python3 ../_shared/tooling/audit_framework_boundary.py",
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "externalWrites": [],
+  "implementationStatus": "ready_for_repository_validation",
+  "issue": 445,
+  "nativeStatus": "not_run",
+  "playerTestRequested": false,
+  "questContract": {
+    "campaignEnvelopeSupport": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "generatorVersion": 23,
+    "legacyRpgVersions": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "rpgDomainVersion": 5
+  },
+  "releaseBlocked": true,
+  "remainingIntegrationBlockers": {
+    "authoredRewardBatches": "separate work",
+    "localRandomQuests": "separate work",
+    "objectiveConditionAdapters": 920
+  },
+  "retainedEvidence": [
+    {
+      "path": "wurst-results.json.gz",
+      "sha256": "c4e296935b4ff9d5030c4010ab659b77a33fbe58321fea3c27d55b13f61c3ec1",
+      "uncompressedBytes": 191870,
+      "uncompressedSha256": "c158eb96586691ae946147d0c13fdcaabb83844da799ea1f9c4bc451383aba81"
+    },
+    {
+      "path": "wurst-execution.log.gz",
+      "sha256": "638b75f15c8f1a888548f28f086c0d1344499ab162faec193ac0cb7e60c82725",
+      "uncompressedBytes": 2942312,
+      "uncompressedSha256": "afde936c5517425e1c632c0331b0d8c7f2cd0e02572d1c67f947266137184edb"
+    },
+    {
+      "path": "build.log.gz",
+      "sha256": "388424cd530c42b24666432e01e91ad6f27f2cab1d42fe5158717da07c817d24",
+      "uncompressedBytes": 502,
+      "uncompressedSha256": "0abf18292f19d58ac8a25b15c2d67983e1e67b86d3c17d863999348d3eac4771"
+    },
+    {
+      "path": "framework-conformance.json.gz",
+      "sha256": "6bbb7b370d90a0ec3114762f6be857e2fc369f41c9b382f8af589ead7c957e7a",
+      "uncompressedBytes": 18140,
+      "uncompressedSha256": "20bfddd609e8a834b49c9e74e4714ee52e079f6e8ba8d686898f9aabc911cc60"
+    },
+    {
+      "path": "framework-original-results.json.gz",
+      "sha256": "458fe54baab9c7ba6e5c2e9abd36c511c2063798c4fa48f077b277a099836f41",
+      "uncompressedBytes": 6843,
+      "uncompressedSha256": "a7089d2e04495f93b5ea69fe225dee804d6f293d5681413bca84fb83257f9dc7"
+    },
+    {
+      "path": "framework-original-execution.log.gz",
+      "sha256": "971bed3d269de375946b01c8080058953da1d280a7dadf20f7936d00f6ee76af",
+      "uncompressedBytes": 33897,
+      "uncompressedSha256": "01253047799583e52591103ef9f31d6a237b280ff6e463cf3efa901f13eac37a"
+    },
+    {
+      "path": "framework-mutated-results.json.gz",
+      "sha256": "a50e7ac39231a965f39d71fcb811247990775203985b4e10cb314e38d77cb490",
+      "uncompressedBytes": 6843,
+      "uncompressedSha256": "8a4d773c5dd5882f6092b0713e4092caf8cc95a14e75efd207ef9515d3abc31b"
+    },
+    {
+      "path": "framework-mutated-execution.log.gz",
+      "sha256": "ea61f5b1cde44bf65fcc30207c7a6da2664884346568a7fb1ebf01df70be73d0",
+      "uncompressedBytes": 33947,
+      "uncompressedSha256": "3dd3c946d1fc5e62d134bfa4d2c761f2bf0707b5a3b043e6f7ee1c3266a1a5c6"
+    },
+    {
+      "path": "python-checks.log.gz",
+      "sha256": "520c2f1639118fa7f02b17d509870cd3971be1e6e166a20493a75b96bac93b27",
+      "uncompressedBytes": 6028,
+      "uncompressedSha256": "8c9730f67817842c5756bf415166068550828f0d3d5b57e6a84f545ca7d51600"
+    }
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "f7655a7dc64de470cc0a8734039ea5bc8b787cb6",
+    "sourceTreeSha256": "a38492a4bcba2dfedf05bb6f528e1078886a04b36dd8debf7849cae3c6a68575"
+  },
+  "toolchain": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "coreJassSha256": {
+      "blizzard.j": "b6db172525d7b106781337252efcba4f56bceb16bb4832680ad07dea052e6e26",
+      "common.j": "7561e8be53a01c7105aec9a09b707ac168495a412d059e68e39e24dcf92f8fbb"
+    },
+    "execution": "Host process using binaries copied into ignored worktree build storage; no writable container mount and no global tooling changes.",
+    "extractedFromImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "java": "Temurin 25.0.4+7-LTS",
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+    "wc3Patch": "v3.0"
+  }
+}

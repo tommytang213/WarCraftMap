@@ -1,6 +1,7 @@
 package WarcraftRpgRuntime
 
 import ResearchCost
+import QuestStages
 
 import WC3Compatibility
 import ManagementScreenPauseController
@@ -12,7 +13,7 @@ import WarcraftRecoveryRuntime
 
 public constant int RPG_LEVEL_CAP = 300
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
-public constant int RPG_STATE_SCHEMA_VERSION = 4
+public constant int RPG_STATE_SCHEMA_VERSION = 5
 // Equipment assignments reserve owned copies, so they share the item budget.
 public constant int RPG_INVENTORY_CAPACITY = 4096
 public constant string QUEST_OFFERED = "offered"
@@ -35,7 +36,7 @@ function textContains(string haystack,string needle) returns boolean
  * Twenty fields is the largest supported record (a v4 hero). */
 class RpgSnapshotRecord
 	string array[20] fields
-	int schema = 4
+	int schema = 5
 	int count = 0
 	int nextHero = 0
 	int nextQuest = 0
@@ -596,6 +597,7 @@ public class PlayerInventory
 		return result
 
 public class RuntimeQuest
+	QuestGraph graph = null
 	string id
 	string title
 	string kind
@@ -617,12 +619,52 @@ public class RuntimeQuest
 		this.title=title
 		this.kind=kind
 
+	function ready() returns boolean
+		if graph != null
+			return graph.terminalComplete()
+		return objective >= objectiveTarget
+	function canRefill(int day) returns boolean
+		// A recorded legacy completion is terminal even if its old count was
+		// absent/zero. Preserve that outcome without granting another reward.
+		if graph != null and graph.legacyTerminal and state == QUEST_COMPLETE
+			return false
+		return (state == QUEST_COMPLETE or state == QUEST_FAILED) and completions < completionCap and day >= cooldownUntil
+	function resetProgress()
+		objective = 0
+		if graph != null
+			graph.reset()
+	function updateGuidance()
+		if graph == null
+			return
+		precision = "hidden"
+		regionId = ""
+		destinationId = ""
+		let guide = graph.guidance(state == QUEST_READY)
+		// Clue-gated destinations remain hidden until a knowledge adapter exists.
+		if guide != null and guide.requiredClues == ""
+			precision = guide.precision
+			if precision != "hidden"
+				regionId = guide.regionId
+				if precision == "exact"
+					destinationId = guide.destinationId
+	function settleProgress()
+		if graph != null and graph.terminalComplete()
+			state = QUEST_READY
+		updateGuidance()
+
+	ondestroy
+		if graph != null
+			destroy graph
+
 public class QuestJournalRuntime
 	RuntimeQuest array[2048] quests
 	int count = 0
 	string trackedId = ""
 	int currency = 0
+	QuestConditionAuthority conditions = null
+	string lastDiagnostic = ""
 	function register(RuntimeQuest questDefinition)
+		questDefinition.updateGuidance()
 		quests[count]=questDefinition
 		count++
 	function get(string id) returns RuntimeQuest
@@ -641,18 +683,70 @@ public class QuestJournalRuntime
 		return null
 	function accept(string id) returns boolean
 		let questDefinition=get(id)
-		if questDefinition == null or questDefinition.state != QUEST_OFFERED
+		if questDefinition == null or questDefinition.state != QUEST_OFFERED or questDefinition.completions >= questDefinition.completionCap
 			return false
+		if questDefinition.graph != null
+			let required = new QuestIds(questDefinition.graph.prerequisiteQuestIds)
+			var available = required.valid
+			for i = 0 to required.count - 1
+				let prerequisite = get(required.ids[i])
+				if prerequisite == null or prerequisite.state != QUEST_COMPLETE
+					available = false
+			destroy required
+			if not available
+				lastDiagnostic = "Quest prerequisites are not satisfied."
+				return false
+			questDefinition.graph.activate()
 		questDefinition.state=QUEST_ACTIVE
+		questDefinition.updateGuidance()
 		return true
 	function progress(string id, int amount) returns boolean
 		let questDefinition=get(id)
-		if questDefinition == null or questDefinition.state != QUEST_ACTIVE or amount <= 0
+		if questDefinition == null or questDefinition.state != QUEST_ACTIVE or questDefinition.graph != null or amount <= 0
 			return false
 		questDefinition.objective=IMinBJ(questDefinition.objectiveTarget,questDefinition.objective+amount)
 		if questDefinition.objective >= questDefinition.objectiveTarget
 			questDefinition.state=QUEST_READY
 		return true
+	function advance(string id, string target) returns boolean
+		let q = get(id)
+		if q == null or q.state != QUEST_ACTIVE or q.graph == null or not q.graph.advance(target)
+			return false
+		q.settleProgress()
+		return true
+	function recordEvent(string id, string objectiveId, string receiptId) returns boolean
+		let q = get(id)
+		if q == null or q.state != QUEST_ACTIVE or q.graph == null or not questId(receiptId)
+			return false
+		let graph = q.graph
+		let objective = graph.objective(objectiveId)
+		if objective == null or not graph.activeObjective(objectiveId) or questHas(graph.processedReceiptIds, receiptId) or objective.binding != "domain_receipt"
+			return false
+		if conditions == null or not conditions.supports(objective.conditionId)
+			lastDiagnostic = "Condition integration unavailable: " + objective.conditionId
+			return false
+		if not conditions.validates(id, graph.activeStageId, objective, receiptId)
+			return false
+		graph.processedReceiptIds += receiptId + "~"
+		graph.completeObjective(objectiveId)
+		q.settleProgress()
+		lastDiagnostic = ""
+		return true
+	/** The caller has just revalidated physical presence. Process the stage
+	 * that was active at entry only; a visit cannot cascade through a chain. */
+	function visit(RuntimeQuest q, InteractionLocation target) returns boolean
+		if q.state != QUEST_ACTIVE or q.graph == null or (target.kind != "settlement" and target.kind != "quest")
+			return false
+		let graph = q.graph
+		let active = graph.activeStageId
+		var changed = false
+		for i = 0 to graph.objectiveCount - 1
+			let objective = graph.objectives[i]
+			if graph.activeStageId == active and graph.activeObjective(objective.id) and objective.binding == "physical_visit" and objective.entityRefs == "settlement:" + target.eventId + "~"
+				if graph.completeObjective(objective.id)
+					changed = true
+		q.settleProgress()
+		return changed
 	function fail(string id, int day, int cooldownDays) returns boolean
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_ACTIVE
@@ -662,9 +756,10 @@ public class QuestJournalRuntime
 		return true
 	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
 		let questDefinition=get(id)
-		if questDefinition == null or questDefinition.state != QUEST_READY or questDefinition.objective < questDefinition.objectiveTarget or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
+		if questDefinition == null or questDefinition.state != QUEST_READY or not questDefinition.ready() or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
 			return false
 		questDefinition.state=QUEST_COMPLETE
+		questDefinition.updateGuidance()
 		questDefinition.completions++
 		questDefinition.cooldownUntil=day+cooldownDays
 		currency+=questDefinition.rewardCurrency
@@ -673,16 +768,20 @@ public class QuestJournalRuntime
 		return true
 	function refill(int day)
 		for i = 0 to count - 1
-			if (quests[i].state == QUEST_COMPLETE or quests[i].state == QUEST_FAILED) and quests[i].completions < quests[i].completionCap and day >= quests[i].cooldownUntil
+			if quests[i].canRefill(day)
 				quests[i].state=QUEST_OFFERED
-				quests[i].objective=0
+				quests[i].resetProgress()
+				quests[i].updateGuidance()
 	function track(string id) returns string
 		let questDefinition=get(id)
 		if questDefinition == null
 			return "Quest is unknown."
 		trackedId=id
+		questDefinition.updateGuidance()
 		if questDefinition.precision == "hidden"
 			return "No destination is revealed yet."
+		if questDefinition.graph != null and questDefinition.precision == "approximate"
+			return "approximate:" + questDefinition.regionId + ":" + questDefinition.graph.guidance(questDefinition.state == QUEST_READY).searchAreas
 		return questDefinition.precision + ":" + questDefinition.regionId + ":" + questDefinition.destinationId
 
 public class RuntimeTreasure
@@ -925,24 +1024,19 @@ public class WarcraftRpgRuntime
 			journal.track(id)
 			reconcile("player")
 		return accepted
-	/** Trusted strategic combat/settlement notifications advance objectives.
-	 * Local rewards and discovery require the physical command entry points. */
+	/** Legacy unscoped signals contain no objective identity or validated
+	 * condition receipt. Keep callers compatible, but never invent evidence. */
 	function worldEvent(string eventKind,string locationId,int amount) returns boolean
 		return worldEventAt(eventKind,locationId,amount,0)
 	function worldEventAt(string eventKind,string locationId,int amount,int day) returns boolean
-		if eventKind != "combat" and eventKind != "settlement"
-			return false
-		var changed=false
-		journal.refill(day)
-		for i=0 to journal.count-1
-			let q=journal.quests[i]
-			if q.state == QUEST_OFFERED and q.giverId != "" and q.giverId == locationId
-				if journal.accept(q.id)
-					journal.track(q.id)
-					changed=true
-			if q.state == QUEST_ACTIVE and (q.destinationId == locationId or q.giverId == locationId or eventKind == "combat" and q.kind == "combat")
-				if journal.progress(q.id,IMaxBJ(1,amount))
-					changed=true
+		return false
+	function questEvent(string id, string objectiveId, string receiptId) returns boolean
+		let changed = journal.recordEvent(id, objectiveId, receiptId)
+		if changed
+			reconcile("player")
+		return changed
+	function advanceQuest(string id, string stageId) returns boolean
+		let changed = journal.advance(id, stageId)
 		if changed
 			reconcile("player")
 		return changed
@@ -967,19 +1061,19 @@ public class WarcraftRpgRuntime
 		for i = 0 to journal.count - 1
 			let q = journal.quests[i]
 			let atGiver = target.matches(q.giverId)
-			let atObjective = target.matches(q.destinationId)
 			let atTurnIn = target.matches(q.turnInId)
 			// Refill only an eligible local offer, never unrelated quests during
 			// a rejected request or a repeated treasure collection.
-			if atGiver and (q.state == QUEST_COMPLETE or q.state == QUEST_FAILED) and q.completions < q.completionCap and day >= q.cooldownUntil
+			if atGiver and q.canRefill(day)
 				q.state = QUEST_OFFERED
-				q.objective = 0
+				q.resetProgress()
 			if atGiver and q.state == QUEST_OFFERED and journal.accept(q.id)
 				journal.track(q.id)
 				changed = true
-			if (atGiver or atObjective) and journal.progress(q.id, 1)
-				changed = true
-			if atTurnIn and journal.turnIn(q.id, heroes.heroes[actor], day, 30)
+			else if q.state == QUEST_READY
+				if atTurnIn and journal.turnIn(q.id, heroes.heroes[actor], day, 30)
+					changed = true
+			else if journal.visit(q, target)
 				changed = true
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
@@ -1016,7 +1110,7 @@ public class WarcraftRpgRuntime
 			return record.count == 2 and (id == "" or heroes.get(id) != null)
 		if kind == "h"
 			let hero = record.resolveHero(heroes)
-			if hero == null or (record.schema == 4 and (record.count != 20 or not validProgressionRanks(record.field(18), hero.skillIds) or not validProgressionRanks(record.field(19), hero.masteryIds))) or (record.schema < 4 and record.count != 18)
+			if hero == null or (record.schema >= 4 and (record.count != 20 or not validProgressionRanks(record.field(18), hero.skillIds) or not validProgressionRanks(record.field(19), hero.masteryIds))) or (record.schema < 4 and record.count != 18)
 				return false
 			return rpgValidBool(record.field(2)) and rpgValidInt(record.field(3)) and S2I(record.field(3)) >= 1 and S2I(record.field(3)) <= RPG_LEVEL_CAP and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5)) and rpgValidInt(record.field(6)) and rpgValidInt(record.field(7)) and rpgValidInt(record.field(8)) and S2I(record.field(8)) >= 0 and S2I(record.field(8)) <= 100 and rpgValidBool(record.field(9)) and rpgValidBool(record.field(10)) and rpgValidInt(record.field(11)) and rpgStableText(record.field(12)) and rpgStableText(record.field(13)) and rpgStableText(record.field(14)) and rpgStableText(record.field(15)) and rpgStableText(record.field(16)) and rpgStableText(record.field(17))
 		if kind == "i"
@@ -1026,7 +1120,30 @@ public class WarcraftRpgRuntime
 		if kind == "u"
 			return record.count == 3 and id != "" and technologies.get(record.field(2)) != null
 		if kind == "q"
-			return record.count == 6 and record.resolveQuest(journal) != null and validQuestState(record.field(2)) and rpgValidInt(record.field(3)) and rpgValidInt(record.field(4)) and rpgValidInt(record.field(5))
+			let q = record.resolveQuest(journal)
+			if q == null or not validQuestState(record.field(2)) or not rpgValidInt(record.field(3)) or S2I(record.field(3)) < 0 or not rpgValidInt(record.field(4)) or not rpgValidInt(record.field(5)) or S2I(record.field(5)) < 0
+				return false
+			if record.schema < 5
+				return record.count == 6
+			if record.count != 11 or not rpgValidBool(record.field(10))
+				return false
+			let empty = record.field(6) == "" and record.field(7) == "" and record.field(8) == "" and record.field(9) == ""
+			if q.graph == null
+				return empty and record.field(10) == "0"
+			if S2I(record.field(3)) != 0
+				return false
+			let status = record.field(2)
+			if record.field(10) == "1"
+				return empty and (status == QUEST_COMPLETE or status == QUEST_FAILED)
+			if status == QUEST_OFFERED
+				return empty
+			if not q.graph.validProgress(record.field(6), record.field(7), record.field(8), record.field(9))
+				return false
+			let stage = q.graph.stage(record.field(6))
+			let terminal = stage.nextStageIds == "" and q.graph.stageComplete(stage.id, record.field(8))
+			if status == QUEST_READY or status == QUEST_COMPLETE
+				return terminal and (status != QUEST_COMPLETE or S2I(record.field(5)) > 0)
+			return status != QUEST_ACTIVE or not terminal
 		if kind == "j"
 			return record.count == 3 and (id == "" or journal.get(id) != null) and rpgValidInt(record.field(2))
 		if kind == "t"
@@ -1050,6 +1167,10 @@ public class WarcraftRpgRuntime
 		for i=0 to journal.count-1
 			let q=journal.quests[i]
 			result+="|q,"+q.id+","+q.state+","+q.objective.toString()+","+q.cooldownUntil.toString()+","+q.completions.toString()
+			if q.graph == null
+				result+=",,,,,0"
+			else
+				result+=","+q.graph.activeStageId+","+q.graph.reachedStageIds+","+q.graph.completedObjectiveIds+","+q.graph.processedReceiptIds+","+rpgBoolText(q.graph.legacyTerminal)
 		result+="|j,"+journal.trackedId+","+journal.currency.toString()
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
@@ -1099,6 +1220,24 @@ public class WarcraftRpgRuntime
 			q.objective=S2I(record.field(3))
 			q.cooldownUntil=S2I(record.field(4))
 			q.completions=S2I(record.field(5))
+			if q.graph != null
+				q.graph.reset()
+				q.objective = 0
+				if record.schema >= 5
+					q.graph.activeStageId = record.field(6)
+					q.graph.reachedStageIds = record.field(7)
+					q.graph.completedObjectiveIds = record.field(8)
+					q.graph.processedReceiptIds = record.field(9)
+					q.graph.legacyTerminal = rpgBool(record.field(10))
+				else if q.state == QUEST_ACTIVE or q.state == QUEST_READY
+					// Legacy counters identify no objectives. Restart the authored
+					// initial stage without fabricating any completion evidence.
+					q.state = QUEST_ACTIVE
+					q.graph.activate()
+				else if q.state == QUEST_COMPLETE or q.state == QUEST_FAILED
+					// Preserve terminal outcomes and rewards, with unknown history.
+					q.graph.legacyTerminal = true
+			q.updateGuidance()
 		else if kind == "j"
 			journal.trackedId=id
 			journal.currency=S2I(record.field(2))
@@ -1135,7 +1274,8 @@ public class WarcraftRpgRuntime
 			for i=0 to journal.count-1
 				let q=journal.quests[i]
 				q.state=QUEST_OFFERED
-				q.objective=0
+				q.resetProgress()
+				q.updateGuidance()
 				q.cooldownUntil=0
 				q.completions=0
 			journal.trackedId=""
@@ -1146,6 +1286,7 @@ public class WarcraftRpgRuntime
 			lastDiagnostic=""
 			return true
 		let record = new RpgSnapshotRecord()
+		record.schema = S2I(SubString(candidate, 1, 2))
 		var start=3
 		while start < StringLength(candidate)
 			start=record.read(candidate,start)
@@ -1168,7 +1309,7 @@ public class WarcraftRpgRuntime
 		if candidate == "v1"
 			lastDiagnostic=""
 			return true
-		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|")
+		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|") and not candidate.startsWith("v5|")
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
 		let keys = new RpgSnapshotKeys()
@@ -1312,12 +1453,26 @@ public function showInventory(player viewer, WarcraftRpgRuntime runtime, string 
 public function showInventory(player viewer, WarcraftRpgRuntime runtime)
 	showInventory(viewer,runtime,"")
 
-function journalText(WarcraftRpgRuntime runtime) returns string
+public function journalText(WarcraftRpgRuntime runtime) returns string
 	var rows="Quest Journal"
 	for i=0 to runtime.journal.count-1
 		let questDefinition=runtime.journal.quests[i]
 		if questDefinition.state != QUEST_OFFERED
+			questDefinition.updateGuidance()
 			rows += "\n"+questDefinition.title+" - "+questDefinition.state+" ["+questDefinition.precision+"]"
+			let graph = questDefinition.graph
+			if graph != null and graph.stage(graph.activeStageId) != null
+				rows += "\n" + graph.stage(graph.activeStageId).title
+				for j = 0 to graph.objectiveCount - 1
+					let objective = graph.objectives[j]
+					if graph.activeObjective(objective.id)
+						rows += "\n" + objective.description
+						if objective.binding == "domain_receipt" and (runtime.journal.conditions == null or not runtime.journal.conditions.supports(objective.conditionId))
+							rows += " (Progress unavailable: condition integration pending.)"
+				if questDefinition.state == QUEST_READY
+					rows += "\nReturn to " + questDefinition.turnInId + " to turn in."
+				else if graph.stageComplete(graph.activeStageId, graph.completedObjectiveIds)
+					rows += "\nChoose the next stage with /queststage " + questDefinition.id + " STAGE: " + graph.stage(graph.activeStageId).nextStageIds
 	return rows
 
 public function showJournal(player viewer, WarcraftRpgRuntime runtime)
@@ -1417,6 +1572,8 @@ class RpgActionCommand implements CommandHandler
 					resources.setGold(sender,available-cost)
 		else if action == "accept"
 			ok=runtime.acceptQuest(first)
+		else if action == "queststage"
+			ok=runtime.advanceQuest(first,second)
 		else if action == "turnin"
 			ok=runtime.turnInQuest(sender,first,second,getCampaignDay(),30)
 		else if action == "interact"
@@ -1459,6 +1616,9 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	if problem != ""
 		return problem
 	problem=commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("queststage","","queststage QUEST STAGE","Choose a quest branch.","Requires all current objectives and an authored successor stage. The journal lists available choices.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"queststage",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Requires the named field character at the authored turn-in location, then awards persistent rewards.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin",commands.output))

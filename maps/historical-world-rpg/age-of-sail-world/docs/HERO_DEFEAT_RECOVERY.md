@@ -35,8 +35,9 @@ clock continues. Reconstructing a wounded or reserve location does not pathing-
 nudge it. A later field deployment still requires the existing connected-pathing
 validation. Map arrivals carry only explicitly recorded local travelers.
 
-There are no new persisted fields: RPG v4, party location v1 and campaign
-envelopes 1–8 are unchanged. Existing RPG v2/v3 wounded flags and deadlines are
+Defeat and recovery add no persisted fields. RPG v5 adds quest-stage history
+while retaining the existing hero fields; party location v1 and campaign
+envelopes 1–8 are unchanged. Existing RPG v2–v4 wounded flags and deadlines are
 retained without starting grants. Coordinate-less legacy campaigns use their
 existing origin/boundary migration once, including existing incapacitated heroes;
 legacy v2 identity fallback can select an already recruited wounded character
