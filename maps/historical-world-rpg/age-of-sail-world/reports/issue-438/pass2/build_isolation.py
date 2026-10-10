@@ -116,7 +116,7 @@ def build(campaign: Path, reader_path: Path, control_root: Path, output: Path):
     revised_campaign = replace_member(original, MAP_PATH, revised_map)
     revised_campaign = replace_member(revised_campaign, "campaign-manifest.json", revised_manifest)
     outer_after, _ = verified_members(revised_campaign, reader)
-    if changed_members(outer_before, outer_after) != [MAP_PATH.lower(), "campaign-manifest.json"]:
+    if changed_members(outer_before, outer_after) != sorted([MAP_PATH.lower(), "campaign-manifest.json"]):
         raise ValueError("unexpected campaign member change")
     for row in json.loads(revised_manifest)["maps"]:
         if sha(outer_after[row["packagePath"].lower()]) != row["sha256"]:
