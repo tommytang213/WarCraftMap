@@ -29,7 +29,7 @@ DEPENDENCY = re.compile(r"(?im)^\s*Depends on:\s*#(\d+)\b")
 # One explicit issue-body nonce authorizes a single follow-up; reopening alone
 # must not trigger an endless loop of merged, unverified native investigations.
 NATIVE_FOLLOWUP_TOKEN = re.compile(
-    r"(?m)^Native investigation resume: ([a-z0-9][a-z0-9._-]{0,63})[ \\t]*$"
+    r"(?m)^Native investigation resume: ([a-z0-9][a-z0-9._-]{0,63}) *$"
 )
 QUEUE_REFILL_THRESHOLD = 3
 QUEUE_TARGET = 10
