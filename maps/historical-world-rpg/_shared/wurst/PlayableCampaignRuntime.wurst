@@ -191,6 +191,7 @@ public interface CampaignPartyProjection
 	function x(WarcraftRpgRuntime rpg, int index) returns real
 	function y(WarcraftRpgRuntime rpg, int index) returns real
 	function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
+	function retire(WarcraftRpgRuntime rpg, int index)
 	function clear(WarcraftRpgRuntime rpg)
 
 public class WarcraftBoundaryPathing implements BoundaryPathing
@@ -234,19 +235,23 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
 		return GetUnitY(rpg.heroes.projected[index])
 	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
 		rpg.heroes.loseRuntimeObjects()
+		var expected = 0
 		for i = 0 to locations.count - 1
 			let value = locations.entries[i]
 			let index = rpg.heroes.indexOf(value.id)
-			let target = compatCreateUnit(Player(0), rpg.heroes.heroes[index].unitTypeId, value.x, value.y, 0.)
-			rpg.heroes.projected[index] = target
-			if not present(rpg, index)
-				return false
-			// CreateUnit can nudge colliding spawns. These coordinates have already
-			// passed topology/native validation, so restore the recorded point.
-			compatSetUnitCoordinates(target, value.x, value.y)
-			rpg.heroes.bindRecovery(index)
+			if rpg.eligibleActor(index)
+				expected++
+				let target = compatCreateUnit(Player(0), rpg.heroes.heroes[index].unitTypeId, value.x, value.y, 0.)
+				rpg.heroes.projected[index] = target
+				if not present(rpg, index)
+					return false
+				// CreateUnit can nudge colliding spawns. Restore the verified point.
+				compatSetUnitCoordinates(target, value.x, value.y)
+				rpg.heroes.bindRecovery(index)
 		rpg.reconcile("player")
-		return locations.count > 0 and rpg.heroes.activeCount() == locations.count
+		return rpg.heroes.activeCount() == expected
+	override function retire(WarcraftRpgRuntime rpg, int index)
+		rpg.heroes.retireProjection(index)
 	override function clear(WarcraftRpgRuntime rpg)
 		rpg.heroes.loseRuntimeObjects()
 
@@ -255,7 +260,7 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
  * gameplay systems (quests, settlements, inventory, fleets, orders and discovery); Warcraft
  * handles and UI state never enter this document.
  */
-public class PlayableCampaignState implements CampaignStatePort
+public class PlayableCampaignState implements CampaignStatePort, CampaignDayListener
 	string authority = "v2;map=world-map;region=" + scenarioRegionId(0) + ";boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
 	string staged = ""
 	boolean startupLocked = false
@@ -324,6 +329,32 @@ public class PlayableCampaignState implements CampaignStatePort
 		rpg = runtime
 		// The same clock is restored transactionally by campaign save/load.
 		rpg.heroes.clock = clock
+		clock.subscribeDays(this)
+	override function onCampaignDay(int day)
+		if not loading and not startupLocked and not transitionOpen
+			recoverHeroes(day)
+	function recoverHeroes(int day)
+		if rpg == null
+			return
+		// Recovery changes only condition and assignment, never starting grants,
+		// rewards, locations or equipment. No automatic field deployment.
+		for i = 0 to rpg.heroes.count - 1
+			let hero = rpg.heroes.heroes[i]
+			if hero.recruited
+				hero.advanceRecovery(day)
+	function defeatHero(int index)
+		if not isSaveSafe() or rpg == null or party == null or index < 0 or index >= rpg.heroes.count or rpg.heroes.recoveryDays <= 0
+			return
+		let hero = rpg.heroes.heroes[index]
+		if not localHero(hero, lastAuthorityValue(authority, "region"))
+			return
+		// Sample the corpse before retiring it. If native position sampling fails,
+		// the last committed physical location remains authority.
+		rememberDefeatedLocation(index)
+		hero.wound(clock.campaignDay(), rpg.heroes.recoveryDays)
+		rpg.heroes.retireRecovery(hero.id)
+		party.retire(rpg, index)
+		rpg.reconcile("player")
 	function setMilitarySettlementRuntime(MilitarySettlementRuntime runtime)
 		militarySettlements = runtime
 		if countries != null
@@ -388,36 +419,69 @@ public class PlayableCampaignState implements CampaignStatePort
 		return fieldHeroAt(hero, loadedPhysicalMap, regionId)
 	function fieldHeroAt(RpgHero hero, string mapId, string regionId) returns boolean
 		return hero.recruited and hero.assignment == "field" and not hero.incapacitated and (hero.regionId == "" or hero.regionId == mapId or hero.regionId == regionId)
+	function locatedHeroAt(RpgHero hero, string mapId, string regionId) returns boolean
+		return hero.recruited and (hero.assignment == "field" or hero.assignment == "recovering" or hero.assignment == "reserve") and (hero.regionId == "" or hero.regionId == mapId or hero.regionId == regionId)
+	function samplePartyLocation(int index, PartyLocation old) returns PartyLocation
+		if not party.present(rpg, index) or partyNavigation == null or arrivalPathing == null
+			return null
+		let x = party.x(rpg, index)
+		let y = party.y(rpg, index)
+		let component = partyNavigation.componentAt(x, y)
+		var safeX = x
+		var safeY = y
+		if not arrivalPathing.pathable(x, y, 0)
+			if old == null or old.mapId != loadedPhysicalMap or old.component != component
+				return null
+			safeX = old.safeX
+			safeY = old.safeY
+		let value = new PartyLocation(rpg.heroes.heroes[index].id, loadedPhysicalMap, x, y, component, safeX, safeY)
+		if not partyNavigation.accepts(value)
+			destroy value
+			return null
+		return value
+	function rememberDefeatedLocation(int index)
+		let locations = parsePartyLocations(committedLocations)
+		if locations == null
+			return
+		let old = locations.get(rpg.heroes.heroes[index].id)
+		let value = samplePartyLocation(index, old)
+		if value != null
+			if old == null
+				locations.add(value)
+			else
+				old.x = value.x
+				old.y = value.y
+				old.component = value.component
+				old.safeX = value.safeX
+				old.safeY = value.safeY
+				destroy value
+			committedLocations = locations.encode()
+		destroy locations
 	function capturePartyLocations(string document) returns string
 		let previous = parsePartyLocations(committedLocations)
 		let captured = new PartyLocationSet()
 		var valid = previous != null and partyNavigation != null and arrivalPathing != null
+		var fieldCount = 0
 		for i = 0 to rpg.heroes.count - 1
 			let hero = rpg.heroes.heroes[i]
-			if localHero(hero, lastAuthorityValue(document, "region"))
-				PartyLocation old = null
-				if previous != null
-					old = previous.get(hero.id)
-				if party.present(rpg, i) and partyNavigation != null and arrivalPathing != null
-					let x = party.x(rpg, i)
-					let y = party.y(rpg, i)
-					let component = partyNavigation.componentAt(x, y)
-					var safeX = x
-					var safeY = y
-					if not arrivalPathing.pathable(x, y, 0)
-						if old == null or old.mapId != loadedPhysicalMap or old.component != component
-							valid = false
-						else
-							safeX = old.safeX
-							safeY = old.safeY
-					let value = new PartyLocation(hero.id, loadedPhysicalMap, x, y, component, safeX, safeY)
-					valid = partyNavigation.accepts(value) and valid
-					captured.add(value)
+			PartyLocation old = null
+			if previous != null
+				old = previous.get(hero.id)
+			let field = localHero(hero, lastAuthorityValue(document, "region"))
+			if field and (old != null or party.present(rpg, i))
+				fieldCount++
+			if field or (old != null and locatedHeroAt(hero, loadedPhysicalMap, lastAuthorityValue(document, "region")))
+				if field and party.present(rpg, i) and partyNavigation != null and arrivalPathing != null
+					let value = samplePartyLocation(i, old)
+					if value == null
+						valid = false
+					else
+						captured.add(value)
 				else if old != null
 					// Representation loss cannot erase the last committed location.
 					captured.add(new PartyLocation(old.id, old.mapId, old.x, old.y, old.component, old.safeX, old.safeY))
 		var result = ""
-		if valid and captured.count > 0 and captured.count <= rpg.heroes.activeLimit
+		if valid and captured.count > 0 and fieldCount <= rpg.heroes.activeLimit
 			result = captured.encode()
 			committedLocations = result
 		else
@@ -609,6 +673,9 @@ public class PlayableCampaignState implements CampaignStatePort
 			if lastDiagnostic == ""
 				lastDiagnostic = "local player representation could not be created"
 			return false
+		// Apply elapsed deadlines against the restored clock inside the rollback
+		// transaction. Reconstruction never starts a new recovery period.
+		recoverHeroes(clock.campaignDay())
 		return true
 	function projectParty(string candidate) returns boolean
 		if rpg == null or militarySettlements == null or party == null
@@ -655,7 +722,7 @@ public class PlayableCampaignState implements CampaignStatePort
 				for i = 0 to travelers.count - 1
 					let value = travelers.entries[i]
 					let hero = rpg.heroes.get(value.id)
-					if value.mapId != sourceMapId or hero == null or not fieldHeroAt(hero, sourceMapId, scenarioLogicalRegion(sourceMapId))
+					if value.mapId != sourceMapId or hero == null or not locatedHeroAt(hero, sourceMapId, scenarioLogicalRegion(sourceMapId))
 						lastDiagnostic = "pending arrival contains a nonlocal traveler"
 						destroy travelers
 						destroy locations
@@ -665,12 +732,13 @@ public class PlayableCampaignState implements CampaignStatePort
 				// Coordinate-less saves used reconstructField: every eligible field
 				// member (up to capacity) was local, regardless of the authored home
 				// region left in its RPG row. Preserve that deterministic legacy
-				// membership; governor/reserve/recovering assignments stay abstract.
-				if saved == "legacy" and hero.recruited and hero.assignment == "field" and not hero.incapacitated and locations.count < rpg.heroes.activeLimit
+				// membership, retaining wounded members without creating new heroes.
+				let legacyMember = saved == "legacy" and hero.recruited and (hero.assignment == "field" or hero.incapacitated or hero.id == rpg.heroes.mainCharacterId) and locations.count < rpg.heroes.activeLimit
+				if legacyMember
 					hero.regionId = ""
 				if travelers != null and travelers.get(hero.id) != null and hero.regionId != ""
 					hero.regionId = loadedPhysicalMap
-				if localHero(hero, lastAuthorityValue(candidate, "region")) and locations.count < rpg.heroes.activeLimit
+				if (localHero(hero, lastAuthorityValue(candidate, "region")) or ((legacyMember or travelers != null) and locatedHeroAt(hero, loadedPhysicalMap, lastAuthorityValue(candidate, "region")))) and (saved != "legacy" or locations.count < rpg.heroes.activeLimit) and locations.count < 2048
 					if travelers == null or travelers.get(hero.id) != null
 						locations.add(new PartyLocation(hero.id, loadedPhysicalMap, x, y, partyNavigation.componentAt(x, y), x, y))
 			if travelers != null
@@ -681,12 +749,20 @@ public class PlayableCampaignState implements CampaignStatePort
 					return false
 		if locations == null
 			return false
-		var valid = locations.count > 0 and locations.count <= rpg.heroes.activeLimit and partyNavigation != null
+		var valid = locations.count > 0 and partyNavigation != null
+		var fieldCount = 0
 		for i = 0 to locations.count - 1
 			let value = locations.entries[i]
 			let hero = rpg.heroes.get(value.id)
-			if hero == null or not localHero(hero, lastAuthorityValue(candidate, "region")) or partyNavigation == null or not partyNavigation.resolve(value, arrivalPathing)
+			if hero == null or not locatedHeroAt(hero, loadedPhysicalMap, lastAuthorityValue(candidate, "region")) or partyNavigation == null or not partyNavigation.accepts(value)
 				valid = false
+			else if localHero(hero, lastAuthorityValue(candidate, "region"))
+				fieldCount++
+				if not partyNavigation.resolve(value, arrivalPathing)
+					valid = false
+		// Incapacitated/reserve positions stay authoritative even if currently
+		// blocked. Only an actual field projection needs native pathing recovery.
+		valid = valid and fieldCount <= rpg.heroes.activeLimit
 		if valid
 			valid = party.project(rpg, locations)
 		if valid

@@ -1,0 +1,131 @@
+{
+  "additionalChecks": {
+    "frameworkBoundary": "pass",
+    "gitDiffCheck": "pass",
+    "mapSource": "pass",
+    "sourceTraceabilityFreshness": "pass",
+    "worldContracts": "pass"
+  },
+  "campaign": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "artifactSha256": "92c4e1cd178446f9cc53ebd4157ea8e50623dc4059c466952965d347c9f8a595",
+    "artifactTracked": false,
+    "status": "pass",
+    "transcript": "campaign.log.gz",
+    "typecheckedAndBuiltMaps": [
+      "bootstrap_runtime_validation",
+      "europe_west",
+      "europe_central_east",
+      "africa",
+      "middle_east_india",
+      "southeast_asia",
+      "east_asia",
+      "americas_north_central",
+      "americas_caribbean",
+      "americas_south",
+      "americas_pacific_transition",
+      "pacific_north",
+      "pacific_west",
+      "pacific_melanesia",
+      "pacific_polynesia",
+      "pacific_new_zealand",
+      "pacific_open_ocean_encounter"
+    ]
+  },
+  "committed": false,
+  "environment": {
+    "buildLocation": "container-private /tmp/issue444",
+    "containerUser": "wurstuser (UID 1001)",
+    "globalToolsChanged": false,
+    "servicesInstalled": false,
+    "temporaryDependencies": "python3 installed only inside the disposable container",
+    "validationContainersRemoved": true,
+    "worktreeMount": "read-only at /source"
+  },
+  "framework": {
+    "evidence": "framework-conformance.json",
+    "mapsBuiltPerVariant": 3,
+    "sharedSourcesUnchanged": 167,
+    "status": "pass",
+    "transcript": "framework.log.gz",
+    "variants": [
+      "original",
+      "content-mutated"
+    ],
+    "wurstTestsPerVariant": 2
+  },
+  "issue": 444,
+  "playerQARequested": false,
+  "published": false,
+  "pushed": false,
+  "python": {
+    "releaseAudit": {
+      "nativeLaunchStatusUnchanged": true,
+      "unresolvedCampaignBlockers": 21
+    },
+    "status": "pass",
+    "tests": {
+      "clock": 5,
+      "framework-python": 8,
+      "packaging-python": 23,
+      "party-locations": 8,
+      "persistence": 22,
+      "progression": 13,
+      "recruitment": 5,
+      "traceability": 48
+    },
+    "total": 132,
+    "transcript": "python-checks.log.gz"
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "saveCompatibility": {
+    "legacyWoundedCoverage": "RPG v2/v3 and campaign v6-v8; existing legacy origin/boundary migration retains recruited wounded characters and deadlines",
+    "newPersistedFields": false,
+    "partyLocationVersion": 1,
+    "rpgSchemaVersion": 4,
+    "supportedCampaignSchemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  "sourceIdentity": {
+    "sourceRevision": "f7655a7dc64de470cc0a8734039ea5bc8b787cb6",
+    "sourceTreeSha256": "72e7ae8ed369d0f34afd564b4db6a6f49bb26009b5db068a72296004449a6d02"
+  },
+  "sourceState": "uncommitted worktree; source-tree digest binds the tested implementation independently of the base revision",
+  "status": "ready_for_repository_validation",
+  "traceability": {
+    "artifactCheck": "artifact-verification.log.gz",
+    "evidence": "scoped-evidence.json",
+    "receipts": 4,
+    "regionalMaps": 16,
+    "remainingPublicationBlockers": 8716,
+    "requirement": "REQ-0096.01",
+    "sourceReportRegenerated": true,
+    "status": "pass_for_issue_scope"
+  },
+  "wurst": {
+    "compiler": {
+      "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 371,
+    "executionLogSha256": "1b45c4ff1592de6eba2cca743b10349a0f76ba934353a6e21bddc86615e3b85c",
+    "inputSetSha256": "c8b0f0e1866ede4d7a30a8f568a1c8c01c1b4d42b5848c1f6b6507d85bfe5673",
+    "results": "pinned-results.json.gz",
+    "status": "pass",
+    "succeeded": 371,
+    "transcript": "pinned-execution.log.gz"
+  }
+}

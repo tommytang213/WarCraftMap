@@ -1,5 +1,7 @@
 package LiveRecoveryTests
 
+import MilitaryCombatEvents
+import ManagementScreenPauseController
 import CampaignStartupTests
 import CampaignUnstuck
 import CampaignSaveManager
@@ -458,3 +460,77 @@ function legacyRecoveryRpg(string current) returns string
 	let reassigned = military.snapshot()
 	(reassigned.indexOf("|n,migrating,") < 0).assertTrue()
 	military.validateSnapshot(reassigned).assertTrue()
+
+/** Native event installation/timers are recorded; representation and recovery
+ * ownership still use the production Warcraft adapters above. */
+class HeroDeathRecoveryNatives extends WarcraftMilitaryCombatNatives
+	override function install(MilitaryCombatEvents events, int generation)
+		this.events = events
+		this.generation = generation
+	override function uninstall()
+		skip
+	override function armTimer(real seconds, int serial)
+		skip
+	override function stopTimer()
+		skip
+	override function timerElapsed() returns real
+		return 0.
+	function death(int representation)
+		events.onDeath(generation, representation, 0)
+
+@test function nativeHeroDefeatRetiresRecoveryRegistrationAndKeepsPhysicalAuthority()
+	let f = new LiveRecoveryFixture("europe_west", "england")
+	let campaign = f.startup.campaign
+	let natives = new HeroDeathRecoveryNatives()
+	let pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+	let events = installMilitaryCombatEvents(campaign, natives, pauses)
+	(events != null).assertTrue()
+	f.natives.count.assertEquals(1)
+	let unitBefore = f.hero()
+	let token = GetHandleId(unitBefore)
+	let index = campaign.state.rpg.heroes.indexOf(f.main)
+	let hero = campaign.state.rpg.heroes.heroes[index]
+	let day = f.startup.clock.campaignDay()
+	let savedPositions = campaign.state.committedLocations
+	KillUnit(unitBefore)
+	natives.death(token)
+	hero.incapacitated.assertTrue()
+	hero.recoveryDay.assertEquals(day + 30)
+	f.natives.count.assertEquals(0)
+	(f.hero() == null).assertTrue()
+	campaign.state.committedLocations.assertEquals(savedPositions)
+	natives.death(token)
+	campaign.saves.save(SAVE_SLOT_MANUAL, 1, "native-wounded").assertTrue()
+	campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	(f.hero() == null).assertTrue()
+	f.natives.count.assertEquals(0)
+	campaign.state.committedLocations.assertEquals(savedPositions)
+	// Supported pre-coordinate saves retain the original wounded character,
+	// including v2's missing main ID, without invoking a recruitment grant.
+	let woundedAuthority = campaign.state.captureAuthoritativeState()
+	let legacy = legacyRecoveryRpg(campaign.state.rpg.captureState())
+	for schema = 6 to 8
+		var rpgState = legacy
+		if schema == 8
+			rpgState = "v3|p," + f.main + SubString(legacy, 2, StringLength(legacy))
+		let authority = replaceCampaignField(replaceCampaignField(woundedAuthority, "rpg", rpgState), "partyLocations", "legacy")
+		let encoded = campaignSaveEnvelope(schema, "manual_03", SAVE_SLOT_MANUAL, 3, "legacy-wounded", authority)
+		f.startup.saves.writeTransactional("manual_03", encoded).assertTrue()
+		campaign.saves.load(SAVE_SLOT_MANUAL, 3).assertTrue()
+		hero.incapacitated.assertTrue()
+		hero.recoveryDay.assertEquals(day + 30)
+		campaign.state.rpg.heroes.mainCharacterId.assertEquals(f.main)
+		campaign.state.rpg.heroes.strategicRosterSize().assertEquals(1)
+		f.natives.count.assertEquals(0)
+		(f.hero() == null).assertTrue()
+		f.startup.saves.read("manual_03").assertEquals(encoded)
+	f.startup.clock.advanceElapsed(30. / f.startup.clock.daysPerSecond).assertTrue()
+	hero.incapacitated.assertFalse()
+	hero.assignment.assertEquals("reserve")
+	(f.hero() == null).assertTrue()
+	campaign.saves.save(SAVE_SLOT_MANUAL, 2, "native-recovered").assertTrue()
+	campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	(f.hero() == null).assertTrue()
+	f.natives.count.assertEquals(0)
+	campaign.state.committedLocations.assertEquals(savedPositions)
+	events.stop()

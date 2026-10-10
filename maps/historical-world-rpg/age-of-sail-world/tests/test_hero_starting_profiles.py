@@ -12,7 +12,7 @@ sys.path[:0] = [str(PROJECT / "tooling"), str(PROJECT.parent / "_shared/tooling"
                str(PROJECT.parent / "_shared/engine")]
 from hero_progression_catalog import load_catalog
 from hero_progression import HeroProgressionRuntime
-from hero_starting_profiles import starting_definitions, rank_text
+from hero_starting_profiles import starting_definitions, rank_text, recovery_days
 from package_wurst_map import generate, load_config, verify_generated, PackagingError
 
 
@@ -31,9 +31,12 @@ class HeroStartingProfilesTests(unittest.TestCase):
             generate(config, output)
             verify_generated(config, output)
             source = (output / "ScenarioData.wurst").read_text()
-            data = json.loads((output / "scenario-runtime.json").read_text())["heroStartingDefinitions"]
+            runtime_data = json.loads((output / "scenario-runtime.json").read_text())
+            data = runtime_data["heroStartingDefinitions"]
             provenance = json.loads((output / "provenance.json").read_text())
         self.assertEqual(set(ids), set(data["profiles"]))
+        self.assertEqual(self.catalog["defeatRecovery"]["recoveryDays"], runtime_data["heroRecoveryDays"])
+        self.assertIn(f'\truntime.heroes.recoveryDays = {runtime_data["heroRecoveryDays"]}', source)
         for i, hero in enumerate(self.world["characters"]):
             ident = hero["id"]
             start, profile = headless.require(ident), headless.profiles[ident]
@@ -71,6 +74,16 @@ class HeroStartingProfilesTests(unittest.TestCase):
             self.assertEqual(starts["authored"]["skills"], {"craft": 42})
             self.assertEqual(starts["authored"]["masteries"], {"artisan": 13})
             self.assertEqual(starts["authored"]["personalTreeId"], "local_tree")
+
+    def test_defeat_duration_is_scenario_owned_and_validated(self):
+        self.assertEqual(0, recovery_days(None))
+        self.assertEqual(30, recovery_days(self.catalog))
+        self.assertEqual(47, recovery_days({"defeatRecovery": {"recoveryDays": 47}}))
+        for value in (None, True, 0, -1, 1.5, "30", 3652060):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                recovery_days({"defeatRecovery": {"recoveryDays": value}})
+        with self.assertRaises(ValueError):
+            recovery_days({})
 
     def test_invalid_profiles_fail_generation_before_writing_scenario_data(self):
         profile = self.catalog["characterProfiles"][0]

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
-from hero_starting_profiles import starting_definitions, rank_text
+from hero_starting_profiles import starting_definitions, rank_text, recovery_days
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
@@ -290,6 +290,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             progression_catalog = payload["catalog"]
             progression_sources += [builder_path, *(content_path(config.project, p) for p in payload["sources"])]
         hero_starts = starting_definitions(world, progression_catalog)
+        hero_recovery_days = recovery_days(progression_catalog)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         raise _fail("hero starting profiles", error) from error
     quest_sources = [Path(__file__).with_name("quest_codegen.py")]
@@ -343,6 +344,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         for ident, (start, end) in recruitment_windows.items()
     }
     runtime["heroStartingDefinitions"] = hero_starts
+    runtime["heroRecoveryDays"] = hero_recovery_days
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -395,7 +397,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
     timeline_lines.append("\treturn clock")
     def ws(value):
         return str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
-    rpg = ["\npublic function configureGeneratedRpg(WarcraftRpgRuntime runtime)"]
+    rpg = ["\npublic function configureGeneratedRpg(WarcraftRpgRuntime runtime)",
+           f"\truntime.heroes.recoveryDays = {hero_recovery_days}"]
     for index, row in enumerate(world.get("characters", ())):
         loyalty = row.get("loyalty", {})
         start, end = recruitment_windows[row["id"]]

@@ -164,6 +164,8 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		return not failParty
 	override function clear(WarcraftRpgRuntime rpg)
 		partyState = ""
+	override function retire(WarcraftRpgRuntime rpg, int index)
+		partyState = rpg.captureState()
 	override function load(string path)
 		skip
 	override function afterCampaignLoad()
@@ -797,6 +799,9 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 	override function clear(WarcraftRpgRuntime rpg)
 		identity = 0
 		ports.clear(rpg)
+	override function retire(WarcraftRpgRuntime rpg, int index)
+		identity = 0
+		ports.retire(rpg, index)
 
 @test function rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects()
 	let f = new LoadFixture()

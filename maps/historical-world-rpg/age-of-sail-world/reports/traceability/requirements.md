@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7174**.
+Candidate ready: **False**; blockers: **7168**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -139,7 +139,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0094.01 | combination | The recruited strategic hero roster has no arbitrary gameplay cap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0094.02 | combination | Physical co-location is a runtime/performance concern separate from ownership; the initial target for simultaneously instantiated player-side heroes in one active field group is at least 32, and may be raised after performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0095.01 | combination | Recruited heroes may instead serve as governors, advisers, army commanders, fleet commanders, specialists, or other remote assignments while retaining one authoritative physical location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0096.01 | combination | Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0096.01 | combination | Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default. | artifact-missing, integration-missing, static-only |
 | REQ-0097.01 | mechanism | Do not use native WC3 food as the strategic ownership cap. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0098.01 | mechanism | Strategic armies/fleets may represent many soldiers/ships without spawning every represented entity simultaneously. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0099.01 | mechanism | Economic/logistical cost is the intended practical limiter. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -2311,17 +2311,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0095.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0095.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0095.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0096.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0096.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0096.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0096.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0096.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0096.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0096.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0096.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0096.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0096.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0096.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0096.01 [static-only]: source references cannot establish executed integration
 - REQ-0096.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0097.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0097.01 [mechanism-missing]: reusable mechanism evidence is absent or stale

@@ -66,6 +66,39 @@ class HeroProgressionTests(unittest.TestCase):
         r.assign(ident,"field",None,"map_a"); snap=r.snapshot(); r.restore(snap)
         self.assertEqual({ident},set(r.instantiate_local_group("map_a",lambda i,s:{"id":i})))
 
+    def test_defeat_keeps_deadline_location_and_progression_across_resume(self):
+        runtime = self.runtime()
+        first, second = self.ids[:2]
+        for ident in (first, second):
+            runtime.assign(ident, "field", None, "battle_location")
+            runtime.award_experience(ident, "command_victory", multiplier=3)
+        before = runtime.require(first)
+        runtime.instantiate_local_group("battle_location", lambda i, s: object())
+        duration = self.catalog["defeatRecovery"]["recoveryDays"]
+        runtime.defeat(first, 100, recovery_days=duration)
+        self.assertNotIn(first, runtime._runtime_objects)
+        wounded = runtime.snapshot()
+        runtime.defeat(first, 115, recovery_days=duration)
+        self.assertEqual(wounded, runtime.snapshot())
+        self.assertEqual({second}, set(runtime.instantiate_local_group("battle_location", lambda i, s: object())))
+        runtime.defeat(second, 100, recovery_days=duration)
+        self.assertEqual({}, runtime.instantiate_local_group("battle_location", lambda i, s: object()))
+        self.assertEqual((), runtime.recover(115))
+        resumed = self.runtime()
+        resumed.restore(runtime.snapshot())
+        self.assertEqual((), resumed.recover(129))
+        self.assertEqual(tuple(sorted((first, second))), resumed.recover(130))
+        runtime.recover(1000)
+        self.assertEqual(runtime.snapshot(), resumed.snapshot())
+        recovered = resumed.snapshot()
+        self.assertEqual((), resumed.recover(1000))
+        self.assertEqual(recovered, resumed.snapshot())
+        for key in ("level", "experience", "skills", "masteries", "perkIds", "commandExperience", "locationId"):
+            self.assertEqual(before[key], resumed.require(first)[key], key)
+        self.assertIsNone(resumed.require(first)["recoveryUntilDay"])
+        self.assertEqual("reserve", resumed.require(first)["assignment"]["kind"])
+        self.assertEqual({}, resumed.instantiate_local_group("battle_location", lambda i, s: object()))
+
     def test_save_load_migration_checkpoint_resume_equivalence(self):
         uninterrupted=self.runtime(); resumed=self.runtime(); ident=self.ids[1]
         for _ in range(10): uninterrupted.award_experience(ident,"command_victory")
