@@ -726,11 +726,12 @@ def reconcile_native_followup(
     for issue in issues:
         number = issue.get("number")
         if (number not in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC
-                or not is_open(issue) or not READY.match(issue.get("title") or "")):
+                or not is_open(issue) or not READY.match(issue.get("title") or "")
+                or "Native launch status: failed" not in (issue.get("body") or "").splitlines()):
             continue
         record = state["issues"].get(str(number))
         if (not record or record.get("status") != "merged"
-                or record.get("native_validation") != "pending"
+                or record.get("native_validation") not in (None, "pending")
                 or not record.get("pr") or record.get("cleanup_errors")):
             continue
         tokens = NATIVE_FOLLOWUP_TOKEN.findall(issue.get("body") or "")
@@ -741,6 +742,7 @@ def reconcile_native_followup(
         prior_pr = int(record.pop("pr"))
         record.setdefault("native_previous_prs", []).append(prior_pr)
         record["native_followup_token"] = tokens[0]
+        record["native_validation"] = "pending"
         record["status"] = "queued"
         for key in ("repair_kind", "last_failure", "validation_failure",
                     "validation_base_oid", "validation_repair_attempts",
