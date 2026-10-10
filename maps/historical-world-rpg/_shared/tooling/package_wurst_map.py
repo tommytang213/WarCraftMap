@@ -508,22 +508,42 @@ def generate(config: BuildConfig, generated: Path) -> None:
         '\truntime.definitions = new GeneratedSettlementDefinitions()',
         '\truntime.definitions.reconcile(runtime, true)']
     traditions_path = config.project / "scenario/military-traditions.json"
+    tradition_data = {"unitAssignments": []}
     if traditions_path.is_file():
+        from validate_military_traditions import validate as validate_traditions
+        validate_traditions(traditions_path, config.scenario_file)
         tradition_data = json.loads(traditions_path.read_text(encoding="utf-8"))
+        runtime["militaryTraditions"] = tradition_data
+        military_lines += ['\truntime.traditionDefinitions = new GeneratedMilitaryTraditions()',
+                           '\truntime.traditionDefinitions.reconcile(runtime, true)']
+        tradition_lines = ['\npublic function configureGeneratedMilitaryTraditions(MilitarySettlementRuntime runtime, boolean migrate) returns boolean']
+        for source in tradition_data["experienceSources"]:
+            tradition_lines.append(f'\truntime.registerContribution("{ws(source["id"])}", {source["weightNumerator"]}, {source["weightDenominator"]})')
         for controller in tradition_data.get("eligibleControllerIds", []):
             for tradition in tradition_data.get("traditions", []):
                 milestone = (tradition.get("milestones") or [{}])[0]
-                military_lines.append(f'\truntime.registerTradition(new TraditionState("{ws(controller)}", "{ws(tradition["categoryId"])}", 1, {int(milestone.get("threshold", 0))}, 0))')
+                # Earned XP is supported. Authored attack/discipline/etc. and
+                # qualitative effects still need their own projection adapters;
+                # do not substitute an invented maximum-life coefficient.
+                tradition_lines += [f'\tif not runtime.reconcileTradition("{ws(controller)}", "{ws(tradition["categoryId"])}", {tradition["startingExperience"]}, 0, {int(milestone.get("threshold", 0))}, 0, migrate)', '\t\treturn false']
+        track_count = len(tradition_data["eligibleControllerIds"]) * len(tradition_data["traditions"])
+        tradition_lines += [f'\treturn runtime.traditionCount == {track_count}',
+                            '', 'class GeneratedMilitaryTraditions implements MilitaryTraditionDefinitions',
+                            '\toverride function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean',
+                            '\t\treturn configureGeneratedMilitaryTraditions(runtime, migrate)']
+    assignments = {row["id"]: row for row in tradition_data["unitAssignments"]}
     for row in world.get("strategicUnits", []):
         template = templates[row["runtimeInstantiation"]["runtimeTemplateId"]]
         kind = "FORCE_FLEET" if row["kind"] == "ship" else "FORCE_ARMY"
-        category = "sailing_naval" if row["kind"] == "ship" else "land_formation"
+        category = assignments.get(row["id"], {}).get("categoryId", "")
         type_id = template["warcraftUnitTypeId"]
         supply = row.get("operationalState", {}).get("supply", 0)
         location = next((item for item in settlement_runtime if item["id"] == row["currentLocationId"]), settlement_runtime[0])
         military_lines.append(f'\truntime.registerForce(new RuntimeForce("{row["id"]}", "{row["controllerPolityId"]}", "{location["regionId"]}", "{category}", {kind}, \'{type_id}\', {row["representedStrength"]}, {supply}, {location["x"]}, {location["y"]}))')
     if len(military_lines) == 1:
         military_lines.append("\tskip")
+    if traditions_path.is_file():
+        military_lines += tradition_lines
     countries = ["\npublic function configureGeneratedCountryInteractions(PlayableCountryInteractionRuntime runtime)"]
     for row in country_runtime["polities"]:
         countries.append(f'\truntime.registerPolityResources("{ws(row["id"])}", {row["treasury"]}, {row["stock"]})')

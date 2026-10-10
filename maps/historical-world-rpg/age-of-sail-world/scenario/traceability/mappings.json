@@ -13183,6 +13183,849 @@
           }
         ]
       }
+    },
+    "REQ-0154.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*MilitaryCombatEvents[\\w]*onDeath[\\w]*\\s*\\(",
+          "\\b[\\w.]*MilitarySettlementRuntime[\\w]*commitCombatLoss[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"eligibleControllerIds\": [\"england\", \"france\", \"player\"]",
+            "\"id\": \"enemy_kill\", \"weightNumerator\": 1, \"weightDenominator\": 1",
+            "\"unitAssignments\""
+          ],
+          "path": "scenario/military-traditions.json"
+        }
+      ],
+      "entry": {
+        "id": "combat-earned-tradition",
+        "kind": "combat",
+        "path": [
+          {
+            "contains": [
+              "installMilitaryCombatEvents("
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "port.events.onDeath("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "militaryDeathEvent"
+          },
+          {
+            "contains": [
+              "runtime.commitCombatLoss("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "onDeath"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "events.campaign = campaign.state",
+            "events.install()"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents",
+          "symbol": "installMilitaryCombatEvents"
+        },
+        "testInvocation": ".natives.death("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "representedForce(target)",
+            "not legalTarget(found, attacker)",
+            "runtime.commitCombatLoss(found, representedForce(killer), runtime.gameplaySeconds)"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "symbol": "onDeath"
+        },
+        {
+          "contains": [
+            "let loss = victim.strength",
+            "contributions[source].weighted(loss)",
+            "victim.active = false",
+            "awardTradition("
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "commitCombatLoss"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "t.experience = S2I(record.field(3))",
+            "f.active = record.field(12) == \"1\""
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "restoreSnapshotRecord"
+        },
+        "mode": "persisted",
+        "reason": "Military v7 stores XP with consumed force records; v1-v6 migration preserves existing XP and seeds only missing tracks. Campaign envelopes 1-8 remain supported.",
+        "references": [
+          {
+            "contains": [
+              "parsed.legacyTraditions = not candidate.startsWith(\"v7|\")",
+              "traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          {
+            "contains": [
+              "if found < 0",
+              "state.experience = startingExperience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "reconcileTradition"
+          }
+        ],
+        "save": {
+          "contains": [
+            "t.experience.toString()",
+            "boolText(f.active)",
+            "f.strength.toString()"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "snapshot"
+        }
+      },
+      "scope": "Issue #450: earned enemy-kill experience and its persistence only. Authored coefficients, milestones, non-kill contribution adapters and unbounded live numeric representation remain unfinished; native launch remains unverified.",
+      "state": {
+        "mutation": "A legal current native death consumes remaining strength and increments the matching eligible controller track with authored integer-floor weight before any native projection calls.",
+        "outcome": "Earned controller XP and consumed troop losses remain queryable campaign authority; no invented coefficient or milestone reward is projected.",
+        "owner": "Controller/category TraditionState and persistent RuntimeForce loss authority. Player identity is independent of diplomatic allegiance.",
+        "references": [
+          {
+            "contains": [
+              "traditionIndex(contributor.controllerId, contributor.categoryId)",
+              "victim.strength = 0",
+              "victim.active = false"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "commitCombatLoss"
+          },
+          {
+            "contains": [
+              "traditions[found].experience = traditions[found].experience + experience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "awardTradition"
+          },
+          {
+            "contains": [
+              "runtimeForce.active and runtimeForce.strength > 0"
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "representedForce"
+          }
+        ],
+        "rejection": "Duplicates, obsolete handles/generations, friendly/illegal outcomes, missing attacker context and projection retirement cannot earn XP. Failed load restores the whole checkpoint."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(before)",
+            "f.runtime.snapshot().assertEquals(protectedState)",
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(0)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0154.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(saved)",
+            "f.runtime.snapshot().assertEquals(current)",
+            "f.token(\"player_fleet\").assertEquals(retainedKiller)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0154.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(after)",
+            "f.events.onDeath(epoch,",
+            "f.runtime.snapshot().assertEquals(transferred)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0154.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(40)",
+            "traditionXp(f, \"france\", \"land_formation\").assertEquals(17)",
+            "f.representations.retiredAuthority.assertEquals(f.runtime.snapshot())"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0154.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "The active physical map derives local objects from global XP/loss authority. Retired units remain consumed in inactive maps; failed restoration retains original native projections and authority.",
+        "references": [
+          {
+            "contains": [
+              "suspendCallbacks()",
+              "instantiate(forces[i])",
+              "resumeCallbacks()"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "activateRegion"
+          },
+          {
+            "contains": [
+              "let parsed = parseSnapshot(candidate)",
+              "traditions[i] = parsed.traditions[i]",
+              "activateRegion(restoredRegion)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "signature": "function restore(string candidate, boolean project) returns boolean",
+            "symbol": "restore"
+          },
+          {
+            "contains": [
+              "checkpoint.restore(this)",
+              "militarySettlements.adapter.rollbackLoad()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "rollbackRuntime"
+          }
+        ]
+      }
+    },
+    "REQ-0164.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*MilitaryCombatEvents[\\w]*onDeath[\\w]*\\s*\\(",
+          "\\b[\\w.]*MilitarySettlementRuntime[\\w]*commitCombatLoss[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"eligibleControllerIds\": [\"england\", \"france\", \"player\"]",
+            "\"id\": \"enemy_kill\", \"weightNumerator\": 1, \"weightDenominator\": 1",
+            "\"unitAssignments\""
+          ],
+          "path": "scenario/military-traditions.json"
+        }
+      ],
+      "entry": {
+        "id": "combat-earned-tradition",
+        "kind": "combat",
+        "path": [
+          {
+            "contains": [
+              "installMilitaryCombatEvents("
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "port.events.onDeath("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "militaryDeathEvent"
+          },
+          {
+            "contains": [
+              "runtime.commitCombatLoss("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "onDeath"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "events.campaign = campaign.state",
+            "events.install()"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents",
+          "symbol": "installMilitaryCombatEvents"
+        },
+        "testInvocation": ".natives.death("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "representedForce(target)",
+            "not legalTarget(found, attacker)",
+            "runtime.commitCombatLoss(found, representedForce(killer), runtime.gameplaySeconds)"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "symbol": "onDeath"
+        },
+        {
+          "contains": [
+            "let loss = victim.strength",
+            "contributions[source].weighted(loss)",
+            "victim.active = false",
+            "awardTradition("
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "commitCombatLoss"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "t.experience = S2I(record.field(3))",
+            "f.active = record.field(12) == \"1\""
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "restoreSnapshotRecord"
+        },
+        "mode": "persisted",
+        "reason": "Military v7 stores XP with consumed force records; v1-v6 migration preserves existing XP and seeds only missing tracks. Campaign envelopes 1-8 remain supported.",
+        "references": [
+          {
+            "contains": [
+              "parsed.legacyTraditions = not candidate.startsWith(\"v7|\")",
+              "traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          {
+            "contains": [
+              "if found < 0",
+              "state.experience = startingExperience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "reconcileTradition"
+          }
+        ],
+        "save": {
+          "contains": [
+            "t.experience.toString()",
+            "boolText(f.active)",
+            "f.strength.toString()"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "snapshot"
+        }
+      },
+      "scope": "Issue #450: earned enemy-kill experience and its persistence only. Authored coefficients, milestones, non-kill contribution adapters and unbounded live numeric representation remain unfinished; native launch remains unverified.",
+      "state": {
+        "mutation": "A legal current native death consumes remaining strength and increments the matching eligible controller track with authored integer-floor weight before any native projection calls.",
+        "outcome": "Earned controller XP and consumed troop losses remain queryable campaign authority; no invented coefficient or milestone reward is projected.",
+        "owner": "Controller/category TraditionState and persistent RuntimeForce loss authority. Player identity is independent of diplomatic allegiance.",
+        "references": [
+          {
+            "contains": [
+              "traditionIndex(contributor.controllerId, contributor.categoryId)",
+              "victim.strength = 0",
+              "victim.active = false"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "commitCombatLoss"
+          },
+          {
+            "contains": [
+              "traditions[found].experience = traditions[found].experience + experience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "awardTradition"
+          },
+          {
+            "contains": [
+              "runtimeForce.active and runtimeForce.strength > 0"
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "representedForce"
+          }
+        ],
+        "rejection": "Duplicates, obsolete handles/generations, friendly/illegal outcomes, missing attacker context and projection retirement cannot earn XP. Failed load restores the whole checkpoint."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(before)",
+            "f.runtime.snapshot().assertEquals(protectedState)",
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(0)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0164.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(saved)",
+            "f.runtime.snapshot().assertEquals(current)",
+            "f.token(\"player_fleet\").assertEquals(retainedKiller)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0164.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(after)",
+            "f.events.onDeath(epoch,",
+            "f.runtime.snapshot().assertEquals(transferred)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0164.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(40)",
+            "traditionXp(f, \"france\", \"land_formation\").assertEquals(17)",
+            "f.representations.retiredAuthority.assertEquals(f.runtime.snapshot())"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0164.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "The active physical map derives local objects from global XP/loss authority. Retired units remain consumed in inactive maps; failed restoration retains original native projections and authority.",
+        "references": [
+          {
+            "contains": [
+              "suspendCallbacks()",
+              "instantiate(forces[i])",
+              "resumeCallbacks()"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "activateRegion"
+          },
+          {
+            "contains": [
+              "let parsed = parseSnapshot(candidate)",
+              "traditions[i] = parsed.traditions[i]",
+              "activateRegion(restoredRegion)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "signature": "function restore(string candidate, boolean project) returns boolean",
+            "symbol": "restore"
+          },
+          {
+            "contains": [
+              "checkpoint.restore(this)",
+              "militarySettlements.adapter.rollbackLoad()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "rollbackRuntime"
+          }
+        ]
+      }
+    },
+    "ROAD-0052.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*MilitaryCombatEvents[\\w]*onDeath[\\w]*\\s*\\(",
+          "\\b[\\w.]*MilitarySettlementRuntime[\\w]*commitCombatLoss[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"eligibleControllerIds\": [\"england\", \"france\", \"player\"]",
+            "\"id\": \"enemy_kill\", \"weightNumerator\": 1, \"weightDenominator\": 1",
+            "\"unitAssignments\""
+          ],
+          "path": "scenario/military-traditions.json"
+        }
+      ],
+      "entry": {
+        "id": "combat-earned-tradition",
+        "kind": "combat",
+        "path": [
+          {
+            "contains": [
+              "installMilitaryCombatEvents("
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "port.events.onDeath("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "militaryDeathEvent"
+          },
+          {
+            "contains": [
+              "runtime.commitCombatLoss("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "onDeath"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "events.campaign = campaign.state",
+            "events.install()"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents",
+          "symbol": "installMilitaryCombatEvents"
+        },
+        "testInvocation": ".natives.death("
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "representedForce(target)",
+            "not legalTarget(found, attacker)",
+            "runtime.commitCombatLoss(found, representedForce(killer), runtime.gameplaySeconds)"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "symbol": "onDeath"
+        },
+        {
+          "contains": [
+            "let loss = victim.strength",
+            "contributions[source].weighted(loss)",
+            "victim.active = false",
+            "awardTradition("
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "commitCombatLoss"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "t.experience = S2I(record.field(3))",
+            "f.active = record.field(12) == \"1\""
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "restoreSnapshotRecord"
+        },
+        "mode": "persisted",
+        "reason": "Military v7 stores XP with consumed force records; v1-v6 migration preserves existing XP and seeds only missing tracks. Campaign envelopes 1-8 remain supported.",
+        "references": [
+          {
+            "contains": [
+              "parsed.legacyTraditions = not candidate.startsWith(\"v7|\")",
+              "traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          {
+            "contains": [
+              "if found < 0",
+              "state.experience = startingExperience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "reconcileTradition"
+          }
+        ],
+        "save": {
+          "contains": [
+            "t.experience.toString()",
+            "boolText(f.active)",
+            "f.strength.toString()"
+          ],
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "symbol": "snapshot"
+        }
+      },
+      "scope": "Issue #450: earned enemy-kill experience and its persistence only. Authored coefficients, milestones, non-kill contribution adapters and unbounded live numeric representation remain unfinished; native launch remains unverified.",
+      "state": {
+        "mutation": "A legal current native death consumes remaining strength and increments the matching eligible controller track with authored integer-floor weight before any native projection calls.",
+        "outcome": "Earned controller XP and consumed troop losses remain queryable campaign authority; no invented coefficient or milestone reward is projected.",
+        "owner": "Controller/category TraditionState and persistent RuntimeForce loss authority. Player identity is independent of diplomatic allegiance.",
+        "references": [
+          {
+            "contains": [
+              "traditionIndex(contributor.controllerId, contributor.categoryId)",
+              "victim.strength = 0",
+              "victim.active = false"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "commitCombatLoss"
+          },
+          {
+            "contains": [
+              "traditions[found].experience = traditions[found].experience + experience"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "awardTradition"
+          },
+          {
+            "contains": [
+              "runtimeForce.active and runtimeForce.strength > 0"
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "representedForce"
+          }
+        ],
+        "rejection": "Duplicates, obsolete handles/generations, friendly/illegal outcomes, missing attacker context and projection retirement cannot earn XP. Failed load restores the whole checkpoint."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(before)",
+            "f.runtime.snapshot().assertEquals(protectedState)",
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(0)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "ROAD-0052.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(saved)",
+            "f.runtime.snapshot().assertEquals(current)",
+            "f.token(\"player_fleet\").assertEquals(retainedKiller)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "ROAD-0052.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.runtime.snapshot().assertEquals(after)",
+            "f.events.onDeath(epoch,",
+            "f.runtime.snapshot().assertEquals(transferred)"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "ROAD-0052.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "traditionXp(f, \"player\", \"land_formation\").assertEquals(40)",
+            "traditionXp(f, \"france\", \"land_formation\").assertEquals(17)",
+            "f.representations.retiredAuthority.assertEquals(f.runtime.snapshot())"
+          ],
+          "entryPoint": "combat-earned-tradition",
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "combat-earned-tradition",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "ROAD-0052.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "The active physical map derives local objects from global XP/loss authority. Retired units remain consumed in inactive maps; failed restoration retains original native projections and authority.",
+        "references": [
+          {
+            "contains": [
+              "suspendCallbacks()",
+              "instantiate(forces[i])",
+              "resumeCallbacks()"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "activateRegion"
+          },
+          {
+            "contains": [
+              "let parsed = parseSnapshot(candidate)",
+              "traditions[i] = parsed.traditions[i]",
+              "activateRegion(restoredRegion)"
+            ],
+            "path": "wurst/MilitarySettlementRuntime.wurst",
+            "signature": "function restore(string candidate, boolean project) returns boolean",
+            "symbol": "restore"
+          },
+          {
+            "contains": [
+              "checkpoint.restore(this)",
+              "militarySettlements.adapter.rollbackLoad()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "rollbackRuntime"
+          }
+        ]
+      }
     }
   }
 }

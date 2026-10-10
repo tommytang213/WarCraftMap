@@ -1,0 +1,148 @@
+{
+  "completedAtUtc": "2026-10-10T12:12:16.820333+00:00",
+  "diagnosticCampaign": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "buildExitCode": 0,
+    "bytes": 56441914,
+    "checks": [
+      "pinned typecheck",
+      "map assembly",
+      "map archive inspection",
+      "campaign inspection",
+      "same-source identity"
+    ],
+    "entryPoint": "package_wurst_campaign.build_campaign(physical-maps.json, local pinned Grill, clean_first=False)",
+    "physicalMaps": 17,
+    "regionalMapsAudited": 16,
+    "sha256": "58d45d05f0f5b7f852e7d38b73c5488641b6f8bc1fb4421fa18b39f310f3647a",
+    "status": "pass"
+  },
+  "framework": {
+    "mutatedTestsPassed": 2,
+    "originalTestsPassed": 2,
+    "physicalMapsPerCampaign": 3,
+    "report": "framework-conformance.json.gz",
+    "sourceHashesMatchFinalTree": true,
+    "status": "pass",
+    "unchangedSharedSourceFiles": 170
+  },
+  "outerRepositoryValidation": "performed by the outer worker after return",
+  "pinnedWurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 397,
+    "installedCombatTests": 19,
+    "logSha256": "fd64a235ca01e53667237bbdc3c64c4b6bf28e27c3b0f230787fd62f9a9a7714",
+    "passed": 397,
+    "productionTraditionJourneys": 5,
+    "report": "pinned-results.json.gz",
+    "status": "pass",
+    "transcript": "pinned-execution.log.gz"
+  },
+  "playerQaRequired": false,
+  "python": {
+    "broadChecks": 192,
+    "broadModules": [
+      "test_military_tradition",
+      "test_live_military_tradition",
+      "test_military",
+      "test_warcraft_military_runtime",
+      "test_settlement_defense",
+      "test_settlement",
+      "test_settlement_integration",
+      "test_cross_map_persistence",
+      "test_campaign_save",
+      "test_campaign_save_manager",
+      "test_release_save_compatibility",
+      "test_framework_conformance",
+      "test_packaging",
+      "test_campaign_packaging",
+      "test_wurst_execution",
+      "test_integration_evidence",
+      "test_requirement_traceability"
+    ],
+    "finalModules": [
+      "test_live_military_tradition",
+      "test_requirement_traceability"
+    ],
+    "finalRechecks": 52,
+    "note": "Final rechecks overlap the broad suite. Compiler-protocol Python fixtures do not substitute for the pinned Wurst execution.",
+    "status": "pass",
+    "transcripts": [
+      "python-checks.log.gz",
+      "python-final-checks.log.gz"
+    ]
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingWork": [
+    "authored live coefficients",
+    "qualitative milestone effects",
+    "non-kill contribution adapters",
+    "unbounded live numeric representation"
+  ],
+  "saveCompatibility": {
+    "acceptedHeadlessTraditionVersions": [
+      1,
+      2
+    ],
+    "acceptedMilitaryVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "campaignEnvelopeVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "headlessTraditionVersion": 2,
+    "militaryVersion": 7,
+    "rejectedLoadIsAtomic": true
+  },
+  "scope": "Issue #450 combat-earned military tradition and persistence",
+  "sourceChecks": {
+    "frameworkBoundary": "pass",
+    "gitDiffCheck": "pass",
+    "mapSourceValidation": "pass",
+    "worldValidation": "pass"
+  },
+  "sourceRevision": "486e798152f6a95cd333c41130b4417801d910c2",
+  "sourceTreeSha256": "d607333ab5a590cab90a53b69633ef86017006df682787f2cf4d7f8ca10d83f3",
+  "status": "pass",
+  "traceability": {
+    "productionReceipts": 12,
+    "remainingPublicationBlockers": 8635,
+    "report": "scoped-evidence.json",
+    "requirements": [
+      "ROAD-0052.01",
+      "REQ-0154.01",
+      "REQ-0164.01"
+    ],
+    "sourceReportCurrent": true,
+    "status": "pass",
+    "weightedOracleVectors": [
+      {
+        "amount": 13,
+        "denominator": 4,
+        "earned": 9,
+        "numerator": 3
+      }
+    ]
+  }
+}

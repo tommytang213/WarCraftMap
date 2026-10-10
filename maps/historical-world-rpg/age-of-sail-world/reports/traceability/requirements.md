@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7168**.
+Candidate ready: **False**; blockers: **7150**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -227,7 +227,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0152.01 | combination | Player-controlled forces and AI-controlled polities maintain independent persistent military-tradition progression rather than sharing one global combat-experience value. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0153.01 | combination | Traditions are controller-scoped and category-specific. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0153.02 | combination | Scenario data may define tracks such as infantry, cavalry, artillery, naval, marine/boarding, siege, or other appropriate military categories without hardcoding those names into the shared engine. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | artifact-missing, integration-missing, static-only |
 | REQ-0154.02 | combination | Enemy kills are a primary supported source; scenario/balance data may also award weighted experience for other meaningful combat contribution so the system is not tied only to literal last-hit ownership. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0155.01 | combination | Tradition progression benefits all currently controlled units that qualify for that tradition category, including units represented abstractly while another physical map is active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -245,7 +245,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | artifact-missing, integration-missing, static-only |
 | REQ-0165.01 | combination | AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0166.01 | combination | Religion is a reusable, scenario-neutral system. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0166.02 | combination | Faith traditions, denominations, reforms, schisms, syncretic and local traditions, their relationships, labels, influence curves, and benefit profiles are scenario data; the engine contains no closed list of religions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -553,7 +553,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0049.01 | combination | City capture/rebuild | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0050.01 | combination | Titles/land/taxation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0051.01 | combination | Characters/relationships | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, integration-missing, static-only |
 | ROAD-0053.01 | combination | Equipment set definitions and partial/full threshold-bonus resolution | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, integration-missing, static-only |
 | ROAD-0055.01 | mechanism | Early performance stress harness and provisional budgets | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -3357,17 +3357,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0153.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0153.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0153.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0154.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0154.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0154.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0154.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0154.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0154.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0154.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0154.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0154.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0154.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0154.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0154.01 [static-only]: source references cannot establish executed integration
 - REQ-0154.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0154.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0154.02 [authority-missing]: scenario content authority is absent or stale
@@ -3573,17 +3567,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0163.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0163.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0163.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0164.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0164.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0164.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0164.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0164.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0164.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0164.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0164.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0164.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0164.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0164.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0164.01 [static-only]: source references cannot establish executed integration
 - REQ-0164.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0165.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0165.01 [authority-missing]: scenario content authority is absent or stale
@@ -6849,17 +6837,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0051.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0051.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0051.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0052.01 [unmapped]: no explicit requirement-to-production mapping
-- ROAD-0052.01 [authority-missing]: scenario content authority is absent or stale
-- ROAD-0052.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- ROAD-0052.01 [unreachable]: production entry/registration/call chain is absent or stale
-- ROAD-0052.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- ROAD-0052.01 [unpersisted]: persistence behavior/path is absent or stale
-- ROAD-0052.01 [unpersisted]: transition behavior/path is absent or stale
 - ROAD-0052.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0052.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0052.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0052.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0052.01 [static-only]: source references cannot establish executed integration
 - ROAD-0052.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0053.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0053.01 [authority-missing]: scenario content authority is absent or stale

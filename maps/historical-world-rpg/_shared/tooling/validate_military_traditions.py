@@ -17,8 +17,14 @@ def validate(path: str | Path, world_path: str | Path) -> None:
     controllers = set(definitions.get("eligibleControllerIds", []))
     polity_ids = {x.get("id") for x in world.get("polities", [])}
     unit_ids = {x.get("id") for x in world.get("strategicUnits", [])}
-    if not controllers <= polity_ids:
-        raise TraditionError("eligible tradition controller is not a world polity")
+    if not controllers <= polity_ids | {"player"}:
+        raise TraditionError("eligible tradition controller is not a world polity or the player")
+    if len(controllers) * len(definitions.get("categories", [])) > 256 or len(definitions.get("experienceSources", [])) > 32:
+        raise TraditionError("tradition definitions exceed runtime registration capacity")
+    for source in definitions.get("experienceSources", []):
+        for field in ("weightNumerator", "weightDenominator"):
+            if isinstance(source.get(field), int) and source[field] > 2147483647:
+                raise TraditionError("tradition weight exceeds runtime integer representation")
     for assignment in definitions.get("unitAssignments", []):
         if assignment.get("id") not in unit_ids:
             raise TraditionError("tradition assignment names an unknown strategic unit")
