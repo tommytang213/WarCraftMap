@@ -1,0 +1,116 @@
+package EquipmentSets
+
+/** Immutable scenario definitions. Effects are references, never numeric power.
+ * Limits are checked by the source validator before generation. */
+public class EquipmentSetPiece
+	string id
+	string array[64] itemIds
+	int itemCount = 0
+	string array[64] slotIds
+	int slotCount = 0
+	construct(string id)
+		this.id = id
+	function addItem(string id)
+		itemIds[itemCount] = id
+		itemCount++
+	function addSlot(string id)
+		slotIds[slotCount] = id
+		slotCount++
+	function matches(string itemId, string slotId) returns boolean
+		var allowed = slotCount == 0
+		for i = 0 to slotCount - 1
+			if slotIds[i] == slotId
+				allowed = true
+		if allowed
+			for i = 0 to itemCount - 1
+				if itemIds[i] == itemId
+					return true
+		return false
+
+public class EquipmentSetThreshold
+	string id
+	int pieceCount
+	string tierPolicy
+	string array[64] effectIds
+	int effectCount = 0
+	string array[64] replacesThresholdIds
+	int replacementCount = 0
+	construct(string id, int pieceCount, string tierPolicy)
+		this.id = id
+		this.pieceCount = pieceCount
+		this.tierPolicy = tierPolicy
+	function addEffect(string id)
+		effectIds[effectCount] = id
+		effectCount++
+	function addReplacement(string id)
+		replacesThresholdIds[replacementCount] = id
+		replacementCount++
+
+/** Complete typed delivery for one wearer/set layer. The recipient owns this
+ * result; threshold references remain owned by the regenerated definitions. */
+public class ResolvedEquipmentSet
+	string heroId
+	string setId
+	int pieceCount
+	EquipmentSetThreshold array[64] thresholds
+	int thresholdCount = 0
+	ResolvedEquipmentSet next = null
+	boolean observed = true
+	construct(string heroId, string setId, int pieceCount)
+		this.heroId = heroId
+		this.setId = setId
+		this.pieceCount = pieceCount
+	function add(EquipmentSetThreshold threshold)
+		thresholds[thresholdCount] = threshold
+		thresholdCount++
+	function active(string thresholdId) returns boolean
+		for i = 0 to thresholdCount - 1
+			if thresholds[i].id == thresholdId
+				return true
+		return false
+	function effectIdentities() returns string
+		var result = ""
+		for i = 0 to thresholdCount - 1
+			let threshold = thresholds[i]
+			for j = 0 to threshold.effectCount - 1
+				result += heroId + "|" + setId + "|" + threshold.id + "|" + threshold.effectIds[j] + ";"
+		return result
+
+public class EquipmentSet
+	string id
+	boolean allowDuplicatePieces = false
+	EquipmentSetPiece array[64] pieces
+	int pieceCount = 0
+	EquipmentSetThreshold array[64] thresholds
+	int thresholdCount = 0
+	construct(string id)
+		this.id = id
+	function addPiece(EquipmentSetPiece piece)
+		pieces[pieceCount] = piece
+		pieceCount++
+	function addThreshold(EquipmentSetThreshold threshold)
+		// Counts are unique; sort even definitions registered out of order.
+		var index = thresholdCount
+		while index > 0 and thresholds[index - 1].pieceCount > threshold.pieceCount
+			thresholds[index] = thresholds[index - 1]
+			index--
+		thresholds[index] = threshold
+		thresholdCount++
+	function replaced(string thresholdId, int count) returns boolean
+		// All replacement targets must be lower thresholds. Every reached tier
+		// participates, including replaced tiers, preserving transitive removal.
+		for i = 0 to thresholdCount - 1
+			let threshold = thresholds[i]
+			if threshold.pieceCount <= count
+				for j = 0 to threshold.replacementCount - 1
+					if threshold.replacesThresholdIds[j] == thresholdId
+						return true
+		return false
+	function resolve(string heroId, int count) returns ResolvedEquipmentSet
+		let result = new ResolvedEquipmentSet(heroId, id, count)
+		for i = 0 to thresholdCount - 1
+			let threshold = thresholds[i]
+			if threshold.pieceCount <= count and not replaced(threshold.id, count)
+				if threshold.tierPolicy != "exclusive" or i == thresholdCount - 1 or thresholds[i + 1].pieceCount > count
+					result.add(threshold)
+		return result

@@ -11,7 +11,7 @@ import ManagementScreenPauseController
 import ManagementCommandTests
 import ScenarioData
 
-class EquipmentCommandOutput implements CommandOutput
+public class EquipmentCommandOutput implements CommandOutput
 	string last = ""
 	int calls = 0
 	override function show(player recipient, string message)
@@ -20,10 +20,10 @@ class EquipmentCommandOutput implements CommandOutput
 
 /** Records native recipients, live values and representation replacement. The
  * production projector, resolver, inventory actions and codecs remain intact. */
-class EquipmentNatives implements RpgEquipmentNatives
-	int array[32] identities
-	int array[32] life
-	int array[32] writes
+public class EquipmentNatives implements RpgEquipmentNatives
+	int array[2048] identities
+	int array[2048] life
+	int array[2048] writes
 	int totalWrites = 0
 	override function representationId(int heroIndex) returns int
 		return identities[heroIndex]
@@ -39,9 +39,10 @@ class EquipmentNatives implements RpgEquipmentNatives
 		identities[index] = identity
 		life[index] = baseLife
 
-class EquipmentFixture
+public class EquipmentFixture
 	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
 	EquipmentNatives natives = new EquipmentNatives()
+	WarcraftRpgProjections projections
 	construct()
 		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		addHero("alpha", "Alpha", 0)
@@ -54,8 +55,23 @@ class EquipmentFixture
 		addItem("relic", "chest", 9, "", true, 1)
 		addItem("stored", "hand", 20, "", false, 0)
 		addItem("token", "", 20, "", false, 1)
-		rpg.inventory.registerSet(new EquipmentSet("uniform", 2, 3, 3, 7))
-		rpg.setProjectionPort(new WarcraftRpgProjections(rpg.heroes, natives))
+		let definition = new EquipmentSet("uniform")
+		addPiece(definition, "coat")
+		addPiece(definition, "hat")
+		addPiece(definition, "boots")
+		let partial = new EquipmentSetThreshold("pieces_2", 2, "cumulative")
+		partial.addEffect("guard")
+		definition.addThreshold(partial)
+		let full = new EquipmentSetThreshold("pieces_3", 3, "cumulative")
+		full.addEffect("command")
+		definition.addThreshold(full)
+		rpg.inventory.registerSet(definition)
+		projections = new WarcraftRpgProjections(rpg.heroes, natives)
+		rpg.setProjectionPort(projections)
+	function addPiece(EquipmentSet definition, string id)
+		let piece = new EquipmentSetPiece(id)
+		piece.addItem(id)
+		definition.addPiece(piece)
 	function addHero(string id, string name, int index)
 		let hero = new RpgHero(id, name, 'Hpal')
 		hero.recruited = true
@@ -210,19 +226,19 @@ class EquipmentFixture
 	f.equip("beta", "hat")
 	f.rpg.inventory.setPieceCount("alpha", "uniform").assertEquals(1)
 	f.rpg.inventory.setPieceCount("beta", "uniform").assertEquals(1)
-	f.rpg.inventory.setBonusPower("alpha").assertEquals(0)
-	f.rpg.inventory.setBonusPower("beta").assertEquals(0)
+	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("")
+	f.projections.setEffectIdentities("beta", "uniform").assertEquals("")
 	f.natives.life[0].assertEquals(105)
 	f.natives.life[1].assertEquals(204)
 	f.natives.life[2].assertEquals(300)
 	f.rpg.unequipItem("beta", "head").assertTrue()
 	f.equip("alpha", "hat")
-	f.natives.life[0].assertEquals(112)
+	f.natives.life[0].assertEquals(109)
 	f.equip("alpha", "boots")
-	f.rpg.inventory.setBonusPower("alpha").assertEquals(10)
+	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")
 	for i = 1 to 3
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(121)
+		f.natives.life[0].assertEquals(111)
 		f.natives.life[1].assertEquals(200)
 		f.natives.life[2].assertEquals(300)
 	f.natives.writes[2].assertEquals(0)
@@ -232,8 +248,8 @@ class EquipmentFixture
 	(f.rpg.inventory.comparison("alpha", "coat").indexOf("0 power") >= 0).assertTrue()
 	(f.rpg.inventorySummary("alpha").indexOf("Alpha (alpha)") >= 0).assertTrue()
 	(f.rpg.inventorySummary("alpha").indexOf("Set uniform: 3 pieces") >= 0).assertTrue()
-	(f.rpg.inventorySummary("alpha").indexOf("Active set bonus for Alpha: +10 power") >= 0).assertTrue()
-	(f.rpg.inventorySummary("gamma").indexOf("Active set bonus for Gamma: +0 power") >= 0).assertTrue()
+	(f.rpg.inventorySummary("alpha").indexOf("pieces_3 (3 pieces): active | Effects: command") >= 0).assertTrue()
+	(f.rpg.inventorySummary("gamma").indexOf("pieces_2 (2 pieces): unmet | Effects: guard") >= 0).assertTrue()
 
 @test function replacementRemovalAndRepresentationRecreationPreserveOtherLayers()
 	let f = new EquipmentFixture()
@@ -246,10 +262,10 @@ class EquipmentFixture
 	f.natives.life[0] += 40
 	f.natives.life[1] += 60
 	f.rpg.reconcile("player")
-	f.natives.life[0].assertEquals(161)
+	f.natives.life[0].assertEquals(151)
 	f.natives.life[1].assertEquals(265)
 	f.equip("alpha", "replacement")
-	f.natives.life[0].assertEquals(157)
+	f.natives.life[0].assertEquals(154)
 	f.natives.life[1].assertEquals(265)
 	f.rpg.unequipItem("alpha", "head").assertTrue()
 	f.natives.life[0].assertEquals(150)
@@ -268,14 +284,14 @@ class EquipmentFixture
 	// Reconstruction has different base life and existing unrelated modifiers.
 	f.natives.represent(0, 4, 500)
 	f.rpg.reconcile("player")
-	f.natives.life[0].assertEquals(521)
+	f.natives.life[0].assertEquals(511)
 	f.natives.life[1].assertEquals(265)
 	// Destruction/recreation may happen entirely between reconciliations.
 	f.natives.represent(0, 5, 700)
 	f.natives.represent(1, 6, 800)
 	for i = 1 to 2
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(721)
+		f.natives.life[0].assertEquals(711)
 		f.natives.life[1].assertEquals(805)
 		f.natives.life[2].assertEquals(300)
 	f.rpg.unequipItem("alpha", "chest").assertTrue()
@@ -295,7 +311,7 @@ class EquipmentFixture
 	restored.rpg.restoreState(saved).assertTrue()
 	restored.rpg.captureState().assertEquals(saved)
 	restored.rpg.reconcile("player")
-	restored.natives.life[0].assertEquals(112)
+	restored.natives.life[0].assertEquals(109)
 	restored.natives.life[1].assertEquals(205)
 	restored.natives.life[2].assertEquals(300)
 	restored.rejectSnapshot(saved + "|e,chest,replacement,alpha")
@@ -326,7 +342,7 @@ class EquipmentFixture
 	restored.natives.life[0].assertEquals(100)
 	restored.natives.life[1].assertEquals(200)
 
-class EquipmentStorage implements CampaignSaveStorage
+public class EquipmentStorage implements CampaignSaveStorage
 	string payload = ""
 	override function contains(string slotId) returns boolean
 		return payload != ""
@@ -355,7 +371,7 @@ class EquipmentStorage implements CampaignSaveStorage
 		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 		f.rpg.captureState().assertEquals(saved)
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(112)
+		f.natives.life[0].assertEquals(109)
 		f.natives.life[1].assertEquals(205)
 		f.natives.life[2].assertEquals(300)
 	let before = state.captureAuthoritativeState()
@@ -426,7 +442,7 @@ class EquipmentStorage implements CampaignSaveStorage
 	inventory.ownedQuantity("copy").assertEquals(RPG_INVENTORY_CAPACITY)
 
 /** Same controller/date boundary as production research; no cached UI unlocks. */
-class EquipmentResearchResources implements ResearchCommandResources
+public class EquipmentResearchResources implements ResearchCommandResources
 	string controller = "player"
 	int currentYear = 1820
 	override function controllerId(player sender) returns string
