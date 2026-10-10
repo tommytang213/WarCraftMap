@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 24
+GENERATOR_VERSION = 25
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -278,7 +278,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
     recruitment_windows = _character_recruitment_windows(world)
-    progression_sources = [Path(__file__).with_name("hero_starting_profiles.py")]
+    from hero_allocations import allocation_definitions, allocation_wurst
+    progression_sources = [Path(__file__).with_name(name) for name in
+                           ("hero_starting_profiles.py", "hero_allocations.py")]
     progression_catalog = None
     builder = configuration(config.project)["scenario"].get("heroProgressionBuilder")
     try:
@@ -292,6 +294,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         hero_starts = starting_definitions(world, progression_catalog)
         hero_recovery_days = recovery_days(progression_catalog)
         hero_growth = growth_cadence(progression_catalog)
+        hero_allocations = allocation_definitions(progression_catalog, hero_starts)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         raise _fail("hero starting profiles", error) from error
     quest_sources = [Path(__file__).with_name("quest_codegen.py")]
@@ -347,6 +350,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime["heroStartingDefinitions"] = hero_starts
     runtime["heroRecoveryDays"] = hero_recovery_days
     runtime["heroGrowthCadence"] = hero_growth
+    runtime["heroAllocationDefinitions"] = hero_allocations
     # These catalogues are optional for reusable scenarios, but when present
     # they are compiled into both the runtime payload and Warcraft bootstrap.
     # Source JSON remains authoritative; no release catalogue is duplicated in
@@ -401,6 +405,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         return str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
     rpg = ["\npublic function configureGeneratedRpg(WarcraftRpgRuntime runtime)",
            f"\truntime.heroes.recoveryDays = {hero_recovery_days}"]
+    rpg += allocation_wurst(hero_allocations, ws)
     for index, row in enumerate(world.get("characters", ())):
         loyalty = row.get("loyalty", {})
         start, end = recruitment_windows[row["id"]]

@@ -405,7 +405,7 @@ function originLifecycle(string origin, string mapId)
 	companion.skillPoints = 9
 	companion.masteryPoints = 4
 	companion.signatureProgressionId = "retained_personal_tree"
-	companion.choosePerk("earned_perk", 60).assertTrue()
+	companion.chosenPerks = "~earned_perk~" // Pre-allocation legacy entitlement fixture.
 	rpg.journal.currency = 123
 	let compact = rpg.journal.get("europe_printed_compact")
 	rpg.journal.accept(compact.id).assertTrue()

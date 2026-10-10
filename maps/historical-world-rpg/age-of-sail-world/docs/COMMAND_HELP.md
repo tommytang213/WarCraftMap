@@ -1,5 +1,10 @@
 # Installed command help
 
+Hero allocation actions are registered in the RPG runtime: `/progression HERO`,
+`/improveskill HERO SKILL`, `/improvemastery HERO MASTERY`, and
+`/chooseperk HERO PERK`. See [hero allocation](HERO_ALLOCATIONS.md) for eligibility,
+pause behavior, save compatibility and the pending ability-effect integration.
+
 `_shared/wurst/CommandRouter.wurst` owns command registration, help, installation
 and the chat callback for both the minimal selector and regional maps. The
 selector's seven-package dependency graph is unchanged. Gameplay registrations

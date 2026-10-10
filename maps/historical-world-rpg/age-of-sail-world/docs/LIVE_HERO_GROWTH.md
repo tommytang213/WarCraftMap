@@ -62,7 +62,8 @@ atomically, including residuals at/above the next threshold below the cap and
 cumulative totals beyond the live integer limit.
 
 This repairs earned-growth arithmetic, registered reward delivery, inspection
-and persistence under ROAD-0051, REQ-0091 and REQ-0092. Broader reward-source
-bindings, point spending, perk/ability effects, independent progression axes and
+and persistence under ROAD-0051, REQ-0091 and REQ-0092. Point spending and selected
+entitlements are now available through [hero allocation commands](HERO_ALLOCATIONS.md).
+Broader reward-source bindings, perk/ability effects, independent progression axes and
 relationship integration remain outside this closure claim. Native launch and
 other release blockers remain in force. Automated validation needs no player QA.

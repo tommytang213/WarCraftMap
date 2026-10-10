@@ -2,6 +2,13 @@
 
 Automated and developer-side verification for the Age of Sail scenario.
 
+`HeroAllocationTests.wurst` and `HeroAllocationVectorsTests.wurst` dispatch registered
+allocation commands after registered quest rewards. The vectors are compared with
+`hero_progression.py` by `test_hero_allocations.py`. Coverage includes rank caps,
+personal-tree prerequisites, repeated selection, malformed input, ownership,
+pause lifecycle, accomplished starts, legacy and wounded saves, and failed-load
+rollback. See [HERO_ALLOCATIONS.md](../docs/HERO_ALLOCATIONS.md).
+
 `MilitaryOrderEventsTests.wurst` drives installed production order callbacks on
 an initialized campaign, with generated land/naval navigation and ordinary
 military representations. Recording native ports verify moved positions,

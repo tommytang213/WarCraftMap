@@ -1,0 +1,74 @@
+package HeroAllocationDefinitions
+
+/** Definition-only catalogue. Selected ability references are entitlements;
+ * no native ability/effect is granted by this allocation system. */
+public class HeroRankDefinition
+	string id
+	string name
+	string kind
+	construct(string kind, string id, string name)
+		this.kind = kind
+		this.id = id
+		this.name = name
+
+public class HeroPerkDefinition
+	string id
+	string abilityId
+	int minimumLevel
+	string prerequisites
+	construct(string id, string abilityId, int minimumLevel, string prerequisites)
+		this.id = id
+		this.abilityId = abilityId
+		this.minimumLevel = minimumLevel
+		this.prerequisites = prerequisites
+
+public class HeroAllocationDefinitions
+	HeroRankDefinition array[512] ranks
+	int rankCount = 0
+	HeroRankDefinition array[256] abilities
+	int abilityCount = 0
+	HeroPerkDefinition array[256] perks
+	int perkCount = 0
+	string array[256] treeIds
+	string array[256] treePerks
+	int treeCount = 0
+	function rank(string kind, string id) returns HeroRankDefinition
+		for i = 0 to rankCount - 1
+			if ranks[i].kind == kind and ranks[i].id == id
+				return ranks[i]
+		return null
+	function addRank(string kind, string id, string name)
+		if rankCount < 512 and rank(kind, id) == null
+			ranks[rankCount] = new HeroRankDefinition(kind, id, name)
+			rankCount++
+	function getAbility(string id) returns HeroRankDefinition
+		for i = 0 to abilityCount - 1
+			if abilities[i].id == id
+				return abilities[i]
+		return null
+	function addAbility(string id, string name)
+		if abilityCount < 256 and getAbility(id) == null
+			abilities[abilityCount] = new HeroRankDefinition("ability", id, name)
+			abilityCount++
+	function perk(string id) returns HeroPerkDefinition
+		for i = 0 to perkCount - 1
+			if perks[i].id == id
+				return perks[i]
+		return null
+	function addPerk(string id, string abilityId, int minimumLevel, string prerequisites)
+		if perkCount < 256 and perk(id) == null
+			perks[perkCount] = new HeroPerkDefinition(id, abilityId, minimumLevel, prerequisites)
+			perkCount++
+	function treeIndex(string id) returns int
+		for i = 0 to treeCount - 1
+			if treeIds[i] == id
+				return i
+		return -1
+	function addTree(string id, string nodes)
+		if treeCount < 256 and treeIndex(id) < 0
+			treeIds[treeCount] = id
+			treePerks[treeCount] = nodes
+			treeCount++
+	function inTree(string treeId, string perkId) returns boolean
+		let index = treeIndex(treeId)
+		return index >= 0 and treePerks[index].contains("~" + perkId + "~")

@@ -8,11 +8,12 @@ is used. Text disappearing from the chat display does not close management.
 | Remote command | `/region REGION`, map, holding or force ID | `/region return` |
 | Roster | `/roster` (`/heroes`, `/companions`) | `/rpg-close` |
 | Inventory/equipment | `/inventory [HERO]` (`/equipment`, `/items`) | `/rpg-close` |
+| Hero progression | `/progression HERO` | `/rpg-close` |
 | Journal | `/journal` (`/quests`) | `/rpg-close` |
 | Technology/institutions | `/technology` (`/institutions`) | `/rpg-close` |
 | Settlement market | `/trade inspect`, `/trade open`, `/trade markets`, `/trade commodities MARKET`, `/trade stores` (`/market`) | `/trade close` |
 
-The four RPG views share one session. Reopening a view, selecting another hero,
+The five RPG views share one session. Reopening a view, selecting another hero,
 or switching between those views retains that session's single pause owner.
 The market has its own session; reopening it retains one owner. Opening both
 RPG and market management requires closing both. Existing army/fleet/settlement
@@ -22,7 +23,7 @@ pause state from before the first management screen opened.
 
 `/trade select MARKET COMMODITY`, `/trade store STORE`, `/trade move SOURCE DESTINATION QUANTITY`,
 `/trade buy QUANTITY`, `/trade sell QUANTITY`, recruitment, equipment actions,
-research, quest actions, help, and passive notifications do not acquire ownership.
+research, hero allocation actions, quest actions, help, and passive notifications do not acquire ownership.
 Actions issued inside management leave the existing session open. Screen output
 and command help describe the available close and switch actions. Registration
 errors stop bootstrap; RPG registration installs the close action before any

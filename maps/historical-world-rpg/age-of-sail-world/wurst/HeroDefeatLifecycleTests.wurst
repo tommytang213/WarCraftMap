@@ -195,7 +195,7 @@ function defeatReceipt(string caseName)
 	let hero = f.hero()
 	hero.awardExperience(7003)
 	hero.becomeOathbound()
-	hero.choosePerk("earned", 1).assertTrue()
+	hero.chosenPerks = "~earned~" // Pre-allocation legacy entitlement fixture.
 	let progression = hero.progressionSummary()
 	let identity = f.rpg.heroes.mainCharacterId
 	let earnedCurrency = f.rpg.journal.currency
