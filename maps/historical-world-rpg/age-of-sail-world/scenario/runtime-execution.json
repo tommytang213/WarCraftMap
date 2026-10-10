@@ -165,6 +165,18 @@
     "order_registration": {
       "path": "wurst/MilitaryOrderEvents.wurst",
       "signature": "public function installMilitaryOrderEvents(PlayableCampaignServices campaign, MilitaryOrderNatives natives) returns MilitaryOrderEvents"
+    },
+    "combat_install": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents"
+    },
+    "combat_death": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "function onDeath(int epoch, int target, int killer)"
+    },
+    "combat_loss": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function commitCombatLoss(int victimIndex, int contributorIndex, real now) returns boolean"
     }
   },
   "systems": {
@@ -272,6 +284,15 @@
       "unstuck_recover",
       "unstuck_safe_export",
       "unstuck_reconstructed"
+    ],
+    "military_tradition": [
+      "domains",
+      "startup",
+      "combat_install",
+      "combat_death",
+      "combat_loss",
+      "save",
+      "load"
     ]
   }
 }

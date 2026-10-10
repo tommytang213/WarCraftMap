@@ -361,7 +361,7 @@ class OrderFixture
 		f.natives.orders[f.natives.slot(f.token("legacy"))].assertEquals(COMPAT_ORDER_MOVE)
 		f.natives.xs[f.natives.slot(f.token("legacy"))].assertEquals(f.sea.x + 40.)
 		let migrated = f.runtime.snapshot()
-		migrated.startsWith("v6|").assertTrue()
+		migrated.startsWith("v7|").assertTrue()
 		f.runtime.restore(migrated).assertTrue()
 		f.runtime.snapshot().assertEquals(migrated)
 	let saved = f.runtime.snapshot()

@@ -98,10 +98,7 @@ class ConformanceSession
 			destroy m.administrators[i]
 			m.administrators[i] = null
 		m.administratorCount = 0
-		for i = 0 to m.traditionCount - 1
-			destroy m.traditions[i]
-			m.traditions[i] = null
-		m.traditionCount = 0
+		// Keep the small authored track set: current saves require every track.
 		for i = 0 to m.conflictCount - 1
 			destroy m.conflicts[i]
 			m.conflicts[i] = null

@@ -195,10 +195,11 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		let city = runtime.settlementForForce(runtimeForce)
 		if runtimeForce.kind == FORCE_CITY_CORE
 			runtime.capture(runtime.settlements[city].id, attacker, runtime.gameplaySeconds)
-		else if runtimeForce.kind == FORCE_GARRISON
-			runtime.recordGarrisonLoss(runtime.settlements[city].id, runtimeForce.id, runtimeForce.strength, runtime.gameplaySeconds)
 		else
-			runtime.recordLoss(runtimeForce.id, runtimeForce.strength)
+			// The force controller owns progression; allegiance above is only the
+			// diplomatic identity. Heroes have no authored military category.
+			if not runtime.commitCombatLoss(found, representedForce(killer), runtime.gameplaySeconds)
+				runtime.instantiate(runtimeForce)
 		schedule()
 
 WarcraftMilitaryCombatNatives activeCombatNatives = null

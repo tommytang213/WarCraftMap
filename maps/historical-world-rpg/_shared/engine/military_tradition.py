@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any, Mapping, Protocol, Sequence
 
-STATE_VERSION = 1
+STATE_VERSION = 2
 WORLD_STATE_KEY = "militaryTraditionState"
 _ID = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
@@ -179,8 +179,8 @@ class MilitaryTraditionRuntime:
         return self._tradition(category_id)["startingExperience"]
 
     def validate_snapshot(self, candidate: Any) -> dict[str, Any]:
-        if not isinstance(candidate, Mapping) or set(candidate) != {"schemaVersion", "tracks"} or candidate.get("schemaVersion") != STATE_VERSION:
-            raise TraditionError("tradition state must use schemaVersion 1 and contain tracks")
+        if not isinstance(candidate, Mapping) or set(candidate) != {"schemaVersion", "tracks"} or type(candidate.get("schemaVersion")) is not int or candidate["schemaVersion"] not in (1, STATE_VERSION):
+            raise TraditionError("tradition state must use schemaVersion 1 or 2 and contain tracks")
         tracks, result, seen = candidate.get("tracks"), [], set()
         if not isinstance(tracks, list):
             raise TraditionError("tradition tracks must be an array")
@@ -196,6 +196,14 @@ class MilitaryTraditionRuntime:
             result.append({"controllerId": controller, "categoryId": category,
                            "experience": _integer(track.get("experience"), "track.experience")})
         expected = {(c, k) for c in self._controllers for k in self._categories}
+        # v1 scenarios omitted the independent player controller. Preserve all
+        # polity experience; only the newly supported player tracks are seeded.
+        if candidate["schemaVersion"] == 1:
+            for controller, category in sorted(expected - seen):
+                if controller == "player":
+                    result.append({"controllerId": controller, "categoryId": category,
+                                   "experience": self._starting(category)})
+                    seen.add((controller, category))
         if seen != expected:
             raise TraditionError("tradition state must cover every eligible controller/category")
         return {"schemaVersion": STATE_VERSION, "tracks": sorted(result, key=lambda x: (x["controllerId"], x["categoryId"]))}
