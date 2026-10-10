@@ -1,9 +1,9 @@
 {
-  "completedAtUtc": "2026-10-10T12:12:16.820333+00:00",
+  "completedAtUtc": "2026-10-10T13:25:46.632754+00:00",
   "diagnosticCampaign": {
     "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
     "buildExitCode": 0,
-    "bytes": 56441914,
+    "bytes": 47072463,
     "checks": [
       "pinned typecheck",
       "map assembly",
@@ -14,8 +14,9 @@
     "entryPoint": "package_wurst_campaign.build_campaign(physical-maps.json, local pinned Grill, clean_first=False)",
     "physicalMaps": 17,
     "regionalMapsAudited": 16,
-    "sha256": "58d45d05f0f5b7f852e7d38b73c5488641b6f8bc1fb4421fa18b39f310f3647a",
-    "status": "pass"
+    "sha256": "f1b1ce07207799a170d5597a837d0110d36e3f7798669024ac5c9c6fdf7f92ea",
+    "status": "pass",
+    "transcript": "diagnostic-build.log.gz"
   },
   "framework": {
     "mutatedTestsPassed": 2,
@@ -24,7 +25,28 @@
     "report": "framework-conformance.json.gz",
     "sourceHashesMatchFinalTree": true,
     "status": "pass",
-    "unchangedSharedSourceFiles": 170
+    "unchangedSharedSourceFiles": 171
+  },
+  "integrationRepair": {
+    "changedSimulationOutcomes": false,
+    "completeSoak": {
+      "profile": "complete_multi_century",
+      "report": "full-world-soak.json",
+      "seeds": [
+        1450,
+        1588,
+        1701,
+        1815
+      ],
+      "status": "pass"
+    },
+    "diagnosticRebuild": "Cleared only stale generated _build/maps output after the initial 418/418 suite passed; the clean map rebuild reran the complete standard gate.",
+    "fixtureRefreshEvidence": "soak-fixture-refresh.json",
+    "fixtureVersion": 2,
+    "mergeHead": "bac9d0c29e83fc677ea38ec6acdbd44745270022",
+    "releaseAuditSnapshotRefreshed": true,
+    "releaseGateStatus": "release_blocked",
+    "traceability": "Retained both combat-tradition and incoming hero-growth mappings; regenerated both source reports."
   },
   "outerRepositoryValidation": "performed by the outer worker after return",
   "pinnedWurst": {
@@ -35,10 +57,10 @@
       "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
       "version": "1.9.0.0-nightly-1-gedd2e5e74"
     },
-    "discovered": 397,
+    "discovered": 418,
     "installedCombatTests": 19,
-    "logSha256": "fd64a235ca01e53667237bbdc3c64c4b6bf28e27c3b0f230787fd62f9a9a7714",
-    "passed": 397,
+    "logSha256": "e9f77c4d92f189b1deedd97723332b5a0b911491a117b7236268da8c5b52e071",
+    "passed": 418,
     "productionTraditionJourneys": 5,
     "report": "pinned-results.json.gz",
     "status": "pass",
@@ -46,8 +68,8 @@
   },
   "playerQaRequired": false,
   "python": {
-    "broadChecks": 192,
-    "broadModules": [
+    "elapsedSeconds": 993.742,
+    "modules": [
       "test_military_tradition",
       "test_live_military_tradition",
       "test_military",
@@ -64,18 +86,17 @@
       "test_campaign_packaging",
       "test_wurst_execution",
       "test_integration_evidence",
-      "test_requirement_traceability"
+      "test_requirement_traceability",
+      "test_full_world_soak",
+      "test_release_blocker_audit",
+      "test_live_hero_progression",
+      "test_hero_starting_profiles"
     ],
-    "finalModules": [
-      "test_live_military_tradition",
-      "test_requirement_traceability"
-    ],
-    "finalRechecks": 52,
-    "note": "Final rechecks overlap the broad suite. Compiler-protocol Python fixtures do not substitute for the pinned Wurst execution.",
+    "note": "Merged-source integration revalidation, including the previously failing soak and release-blocker audit. Synthetic compiler fixtures do not substitute for the separate pinned Wurst execution.",
     "status": "pass",
+    "targetedChecks": 215,
     "transcripts": [
-      "python-checks.log.gz",
-      "python-final-checks.log.gz"
+      "python-checks.log.gz"
     ]
   },
   "realClientExecuted": false,
@@ -122,12 +143,12 @@
     "mapSourceValidation": "pass",
     "worldValidation": "pass"
   },
-  "sourceRevision": "486e798152f6a95cd333c41130b4417801d910c2",
-  "sourceTreeSha256": "d607333ab5a590cab90a53b69633ef86017006df682787f2cf4d7f8ca10d83f3",
+  "sourceRevision": "3e9bd74e437b29b0649ab107cf0888ff96dc1815",
+  "sourceTreeSha256": "201320b2ac326d063460dc8915abbece55f6a9b27e8607b918397fbbe0b75b56",
   "status": "pass",
   "traceability": {
     "productionReceipts": 12,
-    "remainingPublicationBlockers": 8635,
+    "remainingPublicationBlockers": 8602,
     "report": "scoped-evidence.json",
     "requirements": [
       "ROAD-0052.01",

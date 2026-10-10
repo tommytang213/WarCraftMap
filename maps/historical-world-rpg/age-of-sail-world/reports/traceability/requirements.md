@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7150**.
+Candidate ready: **False**; blockers: **7126**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -132,9 +132,9 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0089.01 | combination | Recruited named heroes persist after their historical initial-availability window closes; the historical window gates first availability/recruitment rather than removing an already recruited hero. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0090.01 | combination | Recruited heroes must not disappear merely because the historical death/end date is reached. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0090.02 | combination | Once recruited, they belong to the campaign's alternate-history state unless removed by an explicit gameplay rule chosen for that campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0091.01 | combination | The target named-hero level cap is 300 for the long campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0091.02 | combination | Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0092.01 | combination | Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0091.01 | combination | The target named-hero level cap is 300 for the long campaign. | artifact-missing, integration-missing, static-only |
+| REQ-0091.02 | combination | Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers. | artifact-missing, integration-missing, static-only |
+| REQ-0092.01 | combination | Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently. | artifact-missing, integration-missing, static-only |
 | REQ-0093.01 | combination | Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1. | artifact-missing, integration-missing, static-only |
 | REQ-0094.01 | combination | The recruited strategic hero roster has no arbitrary gameplay cap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0094.02 | combination | Physical co-location is a runtime/performance concern separate from ownership; the initial target for simultaneously instantiated player-side heroes in one active field group is at least 32, and may be raised after performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -552,7 +552,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | ROAD-0049.01 | combination | City capture/rebuild | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0050.01 | combination | Titles/land/taxation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0051.01 | combination | Characters/relationships | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0051.01 | combination | Characters/relationships | artifact-missing, integration-missing, static-only |
 | ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, integration-missing, static-only |
 | ROAD-0053.01 | combination | Equipment set definitions and partial/full threshold-bonus resolution | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, integration-missing, static-only |
@@ -2233,41 +2233,23 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0090.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0090.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0090.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0091.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0091.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0091.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0091.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0091.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0091.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0091.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0091.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0091.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0091.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0091.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0091.01 [static-only]: source references cannot establish executed integration
 - REQ-0091.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0091.02 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0091.02 [authority-missing]: scenario content authority is absent or stale
-- REQ-0091.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0091.02 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0091.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0091.02 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0091.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0091.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0091.02 [static-only]: source references cannot establish executed integration
 - REQ-0091.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0092.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0092.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0092.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0092.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0092.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0092.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0092.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0092.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0092.01 [static-only]: source references cannot establish executed integration
 - REQ-0092.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0093.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0093.01 [integration-missing]: failure: current executable production-adapter evidence is absent
@@ -6825,17 +6807,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0050.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0050.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0050.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0051.01 [unmapped]: no explicit requirement-to-production mapping
-- ROAD-0051.01 [authority-missing]: scenario content authority is absent or stale
-- ROAD-0051.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- ROAD-0051.01 [unreachable]: production entry/registration/call chain is absent or stale
-- ROAD-0051.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- ROAD-0051.01 [unpersisted]: persistence behavior/path is absent or stale
-- ROAD-0051.01 [unpersisted]: transition behavior/path is absent or stale
 - ROAD-0051.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0051.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0051.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0051.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0051.01 [static-only]: source references cannot establish executed integration
 - ROAD-0051.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0052.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0052.01 [integration-missing]: failure: current executable production-adapter evidence is absent
