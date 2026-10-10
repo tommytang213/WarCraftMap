@@ -133,6 +133,14 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
         self.assertNotIn("ci_repair_attempts", record)
         self.assertEqual([{"tokens": 1234}], state["runs"])
         self.assertEqual(438, select_issue([crash], state, 3, closure=gate)["number"])
+        self.assertEqual(1, record["native_followup_start_attempts"])
+        # A blocked, no-evidence follow-up cannot burn the other initial slots.
+        record.update({"status": "repair", "attempts": 2})
+        self.assertIsNone(select_issue([crash], state, 3, closure=gate))
+        # A real failed implementation's validation lane remains repairable.
+        record["repair_kind"] = "validation"
+        self.assertEqual(438, select_issue([crash], state, 3, closure=gate)["number"])
+        record.pop("repair_kind")
 
         # A second merged PR must not start a third investigation just because
         # the GitHub issue is still open with the same request token.
