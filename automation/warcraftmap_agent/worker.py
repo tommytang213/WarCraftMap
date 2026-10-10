@@ -682,6 +682,16 @@ def select_issue(
         record = state["issues"].get(str(issue["number"]), {})
         if record.get("status") in {"pr_open", "needs_design", "merged"}:
             continue
+        # A no-evidence native follow-up gets one new implementation attempt,
+        # not automatic repeats of the same blocked diagnosis. Genuine
+        # validation/CI/conflict repairs still use their independent lanes.
+        if (issue.get("number") in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC
+                and record.get("native_followup_token")
+                and record.get("status") in {"repair", "failed"}
+                and not repair_kind(record)
+                and int(record.get("attempts", 0)) >
+                    int(record.get("native_followup_start_attempts", 0))):
+            continue
         _attempt_key, attempts, limit = attempt_budget(
             record, max_attempts, max_validation_repair_attempts,
             max_ci_repair_attempts, max_conflict_attempts
@@ -742,6 +752,7 @@ def reconcile_native_followup(
         prior_pr = int(record.pop("pr"))
         record.setdefault("native_previous_prs", []).append(prior_pr)
         record["native_followup_token"] = tokens[0]
+        record["native_followup_start_attempts"] = int(record.get("attempts", 0))
         record["native_validation"] = "pending"
         record["status"] = "queued"
         for key in ("repair_kind", "last_failure", "validation_failure",
