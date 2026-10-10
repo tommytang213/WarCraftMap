@@ -3335,7 +3335,7 @@
           "symbol": "reconstructed"
         },
         "mode": "persisted",
-        "reason": "Campaign envelope 8 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v5 combines settlement policy with validated map/class/component hints and migrates both historical v4 layouts (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
+        "reason": "Campaign envelope 8 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v6 retains v5 settlement policy and validated map/class/component hints while adding live order identity; it migrates v1-v5 including both historical v4 layouts (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
         "references": [
           {
             "contains": [
@@ -5002,7 +5002,7 @@
           "symbol": "reconstructed"
         },
         "mode": "persisted",
-        "reason": "Campaign envelope 8 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v5 combines settlement policy with validated map/class/component hints and migrates both historical v4 layouts (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
+        "reason": "Campaign envelope 8 retains nested versioned domains: RPG v3 stores the main ID (v1/v2 migrate); military v6 retains v5 settlement policy and validated map/class/component hints while adding live order identity; it migrates v1-v5 including both historical v4 layouts (v1-v3 begin without hints). PartyLocation v1 remains the sole party position authority.",
         "references": [
           {
             "contains": [
@@ -11694,6 +11694,891 @@
           }
         ]
       }
+    },
+    "ROAD-0048.01": {
+      "liveOrders": {
+        "artifact": {
+          "callPatterns": [
+            "\\binstallMilitaryOrderEvents\\(",
+            "\\bTriggerRegisterPlayerUnitEvent\\(",
+            "\\bTriggerAddAction\\(",
+            "\\b[\\w.]*MilitaryOrderEvents[\\w]*onOrder[\\w]*\\s*\\(",
+            "\\bIssueImmediateOrderById\\(",
+            "\\bIssuePointOrderById\\(",
+            "\\bIssueTargetOrderById\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ],
+          "nativeEvents": [
+            "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "\"militaryRuntimeTemplates\"",
+              "\"strategicUnits\"",
+              "\"armies\"",
+              "\"fleets\""
+            ],
+            "path": "scenario/world/world.json"
+          },
+          {
+            "contains": [
+              "\"regionalInstanceIds\"",
+              "\"physicalMaps\""
+            ],
+            "path": "physical-maps.json"
+          }
+        ],
+        "entry": {
+          "id": "wc3-military-order",
+          "kind": "event",
+          "path": [
+            {
+              "contains": [
+                "installMilitaryOrderEvents(campaign, new WarcraftMilitaryOrderNatives())"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER",
+                "TriggerAddAction(listener, action)"
+              ],
+              "path": "../_shared/wurst/WC3Compatibility.wurst",
+              "symbol": "compatInstallOrderEvents"
+            },
+            {
+              "contains": [
+                "compatOrderTriggerIs(port.orderTrigger)",
+                "port.events.onOrder(port.generation"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "militaryOrderEvent"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "campaign.started",
+              "runtime.orderCallbacks",
+              "events.install()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "installMilitaryOrderEvents"
+          },
+          "testInvocation": "f.point("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "epoch != generation",
+              "f.controllerId != \"player\"",
+              "not f.mobileForce()",
+              "pointAllowed(f, source, px, py)",
+              "eligibleTarget(f, targetId)",
+              "f.orderTargetId = targetId"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "onOrder"
+          },
+          {
+            "contains": [
+              "navigation.zoneAt(kind, px, py)",
+              "natives.currentOrder(token)",
+              "f.x = px",
+              "f.cancelOrder()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "capture"
+          },
+          {
+            "contains": [
+              "pendingReconstruction",
+              "apply(runtime.forces[i])"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "reconstruct"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "v6|",
+              "parsed.legacyOrders"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          "mode": "persisted",
+          "reason": "Nested military schema v6 adds stable target/controller fields. v1-v5 migrate point aliases and cancel unresolvable legacy orders without inventing targets. Campaign envelopes 1-8 and existing recovery hints remain supported.",
+          "references": [
+            {
+              "contains": [
+                "target.legacyOrders",
+                "f.orderTargetId = record.field(16)",
+                "f.validOrder()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "restoreSnapshotRecord"
+            }
+          ],
+          "save": {
+            "contains": [
+              "orderCallbacks.capture()",
+              "f.orderTargetId",
+              "f.orderControllerId"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "snapshot"
+          }
+        },
+        "state": {
+          "mutation": "Supported installed callbacks validate current player control, force category, map, movement arguments and existing conflict/target rules before replacing one committed order.",
+          "outcome": "Local armies and fleets resume saved destinations and existing target identities after all representations have been rebuilt.",
+          "owner": "RuntimeForce stable force ID, map, coordinates, current order, stable target ID and issuing controller. Native handles and listener generations are transient.",
+          "references": [
+            {
+              "contains": [
+                "orderTargetId != \"\"",
+                "mobileForce()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "validOrder"
+            },
+            {
+              "contains": [
+                "f.cancelOrder()",
+                "natives.target(token",
+                "applying = true"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "apply"
+            }
+          ],
+          "rejection": "Defenders, other players, stale or unrelated representations, bad arguments and reconstruction callbacks leave orders unchanged. Missing/obsolete targets and completed/cancelled commands settle to stop."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.runtime.snapshot().assertEquals(before)",
+              "f.runtime.transferControl(\"army\", \"enemy\")",
+              "f.record(\"army\").orderId.assertEquals(\"stop\")"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersRejectDefendersOwnershipMapsAndUnsupportedArguments",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "ROAD-0048.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()",
+              "f.startup.campaign.state.captureAuthoritativeState().assertEquals(before)",
+              "f.token(\"army\").assertEquals(retainedArmy)",
+              "f.natives.targets[f.natives.slot(f.token(\"fleet\"))].assertEquals(retainedTarget)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:rejectedCampaignLoadRetainsCommittedOrdersAndNativeTargetBindings",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "ROAD-0048.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.installs.assertEquals(installs)",
+              "f.natives.applications.assertEquals(applications + 4)",
+              "f.runtime.snapshot().assertEquals(before)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersIgnoreStaleAndReentrantCallbacksOnRepeatedReconstruction",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "ROAD-0048.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.record(\"army\").x.assertEquals(f.land.x + 16.)",
+              "f.record(\"fleet\").orderId.assertEquals(\"patrol\")",
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "ROAD-0048.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Retirement captures safe local observations; nested suspensions defer replay until complete reconstruction or load rollback restores all bindings. The physical map is not changed by replay; remote transport remains a separate blocker.",
+          "references": [
+            {
+              "contains": [
+                "orderCallbacks.capture()",
+                "instantiate(forces[i])",
+                "orderCallbacks.reconstruct()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "activateRegion"
+            },
+            {
+              "contains": [
+                "checkpoint.restore(this)",
+                "militarySettlements.adapter.rollbackLoad()",
+                "militarySettlements.resumeCallbacks()"
+              ],
+              "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "rollbackRuntime"
+            }
+          ]
+        }
+      },
+      "scope": "Issue #443 covers live army/fleet order capture, local position capture and reconstruction only. This supplementary mapping cannot close the entire military/cross-map obligation, physical remote-command transport, other campaign domains or native-client release validation."
+    },
+    "REQ-0233.01": {
+      "liveOrders": {
+        "artifact": {
+          "callPatterns": [
+            "\\binstallMilitaryOrderEvents\\(",
+            "\\bTriggerRegisterPlayerUnitEvent\\(",
+            "\\bTriggerAddAction\\(",
+            "\\b[\\w.]*MilitaryOrderEvents[\\w]*onOrder[\\w]*\\s*\\(",
+            "\\bIssueImmediateOrderById\\(",
+            "\\bIssuePointOrderById\\(",
+            "\\bIssueTargetOrderById\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ],
+          "nativeEvents": [
+            "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "\"militaryRuntimeTemplates\"",
+              "\"strategicUnits\"",
+              "\"armies\"",
+              "\"fleets\""
+            ],
+            "path": "scenario/world/world.json"
+          },
+          {
+            "contains": [
+              "\"regionalInstanceIds\"",
+              "\"physicalMaps\""
+            ],
+            "path": "physical-maps.json"
+          }
+        ],
+        "entry": {
+          "id": "wc3-military-order",
+          "kind": "event",
+          "path": [
+            {
+              "contains": [
+                "installMilitaryOrderEvents(campaign, new WarcraftMilitaryOrderNatives())"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER",
+                "TriggerAddAction(listener, action)"
+              ],
+              "path": "../_shared/wurst/WC3Compatibility.wurst",
+              "symbol": "compatInstallOrderEvents"
+            },
+            {
+              "contains": [
+                "compatOrderTriggerIs(port.orderTrigger)",
+                "port.events.onOrder(port.generation"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "militaryOrderEvent"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "campaign.started",
+              "runtime.orderCallbacks",
+              "events.install()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "installMilitaryOrderEvents"
+          },
+          "testInvocation": "f.point("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "epoch != generation",
+              "f.controllerId != \"player\"",
+              "not f.mobileForce()",
+              "pointAllowed(f, source, px, py)",
+              "eligibleTarget(f, targetId)",
+              "f.orderTargetId = targetId"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "onOrder"
+          },
+          {
+            "contains": [
+              "navigation.zoneAt(kind, px, py)",
+              "natives.currentOrder(token)",
+              "f.x = px",
+              "f.cancelOrder()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "capture"
+          },
+          {
+            "contains": [
+              "pendingReconstruction",
+              "apply(runtime.forces[i])"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "reconstruct"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "v6|",
+              "parsed.legacyOrders"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          "mode": "persisted",
+          "reason": "Nested military schema v6 adds stable target/controller fields. v1-v5 migrate point aliases and cancel unresolvable legacy orders without inventing targets. Campaign envelopes 1-8 and existing recovery hints remain supported.",
+          "references": [
+            {
+              "contains": [
+                "target.legacyOrders",
+                "f.orderTargetId = record.field(16)",
+                "f.validOrder()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "restoreSnapshotRecord"
+            }
+          ],
+          "save": {
+            "contains": [
+              "orderCallbacks.capture()",
+              "f.orderTargetId",
+              "f.orderControllerId"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "snapshot"
+          }
+        },
+        "state": {
+          "mutation": "Supported installed callbacks validate current player control, force category, map, movement arguments and existing conflict/target rules before replacing one committed order.",
+          "outcome": "Local armies and fleets resume saved destinations and existing target identities after all representations have been rebuilt.",
+          "owner": "RuntimeForce stable force ID, map, coordinates, current order, stable target ID and issuing controller. Native handles and listener generations are transient.",
+          "references": [
+            {
+              "contains": [
+                "orderTargetId != \"\"",
+                "mobileForce()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "validOrder"
+            },
+            {
+              "contains": [
+                "f.cancelOrder()",
+                "natives.target(token",
+                "applying = true"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "apply"
+            }
+          ],
+          "rejection": "Defenders, other players, stale or unrelated representations, bad arguments and reconstruction callbacks leave orders unchanged. Missing/obsolete targets and completed/cancelled commands settle to stop."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.runtime.snapshot().assertEquals(before)",
+              "f.runtime.transferControl(\"army\", \"enemy\")",
+              "f.record(\"army\").orderId.assertEquals(\"stop\")"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersRejectDefendersOwnershipMapsAndUnsupportedArguments",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0233.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()",
+              "f.startup.campaign.state.captureAuthoritativeState().assertEquals(before)",
+              "f.token(\"army\").assertEquals(retainedArmy)",
+              "f.natives.targets[f.natives.slot(f.token(\"fleet\"))].assertEquals(retainedTarget)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:rejectedCampaignLoadRetainsCommittedOrdersAndNativeTargetBindings",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0233.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.installs.assertEquals(installs)",
+              "f.natives.applications.assertEquals(applications + 4)",
+              "f.runtime.snapshot().assertEquals(before)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersIgnoreStaleAndReentrantCallbacksOnRepeatedReconstruction",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0233.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.record(\"army\").x.assertEquals(f.land.x + 16.)",
+              "f.record(\"fleet\").orderId.assertEquals(\"patrol\")",
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0233.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Retirement captures safe local observations; nested suspensions defer replay until complete reconstruction or load rollback restores all bindings. The physical map is not changed by replay; remote transport remains a separate blocker.",
+          "references": [
+            {
+              "contains": [
+                "orderCallbacks.capture()",
+                "instantiate(forces[i])",
+                "orderCallbacks.reconstruct()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "activateRegion"
+            },
+            {
+              "contains": [
+                "checkpoint.restore(this)",
+                "militarySettlements.adapter.rollbackLoad()",
+                "militarySettlements.resumeCallbacks()"
+              ],
+              "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "rollbackRuntime"
+            }
+          ]
+        }
+      },
+      "scope": "Issue #443 covers live army/fleet order capture, local position capture and reconstruction only. This supplementary mapping cannot close the entire military/cross-map obligation, physical remote-command transport, other campaign domains or native-client release validation."
+    },
+    "REQ-0234.01": {
+      "liveOrders": {
+        "artifact": {
+          "callPatterns": [
+            "\\binstallMilitaryOrderEvents\\(",
+            "\\bTriggerRegisterPlayerUnitEvent\\(",
+            "\\bTriggerAddAction\\(",
+            "\\b[\\w.]*MilitaryOrderEvents[\\w]*onOrder[\\w]*\\s*\\(",
+            "\\bIssueImmediateOrderById\\(",
+            "\\bIssuePointOrderById\\(",
+            "\\bIssueTargetOrderById\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ],
+          "nativeEvents": [
+            "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+            "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "\"militaryRuntimeTemplates\"",
+              "\"strategicUnits\"",
+              "\"armies\"",
+              "\"fleets\""
+            ],
+            "path": "scenario/world/world.json"
+          },
+          {
+            "contains": [
+              "\"regionalInstanceIds\"",
+              "\"physicalMaps\""
+            ],
+            "path": "physical-maps.json"
+          }
+        ],
+        "entry": {
+          "id": "wc3-military-order",
+          "kind": "event",
+          "path": [
+            {
+              "contains": [
+                "installMilitaryOrderEvents(campaign, new WarcraftMilitaryOrderNatives())"
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "EVENT_PLAYER_UNIT_ISSUED_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER",
+                "EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER",
+                "TriggerAddAction(listener, action)"
+              ],
+              "path": "../_shared/wurst/WC3Compatibility.wurst",
+              "symbol": "compatInstallOrderEvents"
+            },
+            {
+              "contains": [
+                "compatOrderTriggerIs(port.orderTrigger)",
+                "port.events.onOrder(port.generation"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "militaryOrderEvent"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "campaign.started",
+              "runtime.orderCallbacks",
+              "events.install()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "installMilitaryOrderEvents"
+          },
+          "testInvocation": "f.point("
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "epoch != generation",
+              "f.controllerId != \"player\"",
+              "not f.mobileForce()",
+              "pointAllowed(f, source, px, py)",
+              "eligibleTarget(f, targetId)",
+              "f.orderTargetId = targetId"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "onOrder"
+          },
+          {
+            "contains": [
+              "navigation.zoneAt(kind, px, py)",
+              "natives.currentOrder(token)",
+              "f.x = px",
+              "f.cancelOrder()"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "capture"
+          },
+          {
+            "contains": [
+              "pendingReconstruction",
+              "apply(runtime.forces[i])"
+            ],
+            "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+            "symbol": "reconstruct"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "v6|",
+              "parsed.legacyOrders"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "parseSnapshot"
+          },
+          "mode": "persisted",
+          "reason": "Nested military schema v6 adds stable target/controller fields. v1-v5 migrate point aliases and cancel unresolvable legacy orders without inventing targets. Campaign envelopes 1-8 and existing recovery hints remain supported.",
+          "references": [
+            {
+              "contains": [
+                "target.legacyOrders",
+                "f.orderTargetId = record.field(16)",
+                "f.validOrder()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "restoreSnapshotRecord"
+            }
+          ],
+          "save": {
+            "contains": [
+              "orderCallbacks.capture()",
+              "f.orderTargetId",
+              "f.orderControllerId"
+            ],
+            "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+            "symbol": "snapshot"
+          }
+        },
+        "state": {
+          "mutation": "Supported installed callbacks validate current player control, force category, map, movement arguments and existing conflict/target rules before replacing one committed order.",
+          "outcome": "Local armies and fleets resume saved destinations and existing target identities after all representations have been rebuilt.",
+          "owner": "RuntimeForce stable force ID, map, coordinates, current order, stable target ID and issuing controller. Native handles and listener generations are transient.",
+          "references": [
+            {
+              "contains": [
+                "orderTargetId != \"\"",
+                "mobileForce()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "validOrder"
+            },
+            {
+              "contains": [
+                "f.cancelOrder()",
+                "natives.target(token",
+                "applying = true"
+              ],
+              "path": "../_shared/wurst/MilitaryOrderEvents.wurst",
+              "symbol": "apply"
+            }
+          ],
+          "rejection": "Defenders, other players, stale or unrelated representations, bad arguments and reconstruction callbacks leave orders unchanged. Missing/obsolete targets and completed/cancelled commands settle to stop."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.runtime.snapshot().assertEquals(before)",
+              "f.runtime.transferControl(\"army\", \"enemy\")",
+              "f.record(\"army\").orderId.assertEquals(\"stop\")"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersRejectDefendersOwnershipMapsAndUnsupportedArguments",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0234.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()",
+              "f.startup.campaign.state.captureAuthoritativeState().assertEquals(before)",
+              "f.token(\"army\").assertEquals(retainedArmy)",
+              "f.natives.targets[f.natives.slot(f.token(\"fleet\"))].assertEquals(retainedTarget)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:rejectedCampaignLoadRetainsCommittedOrdersAndNativeTargetBindings",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0234.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.installs.assertEquals(installs)",
+              "f.natives.applications.assertEquals(applications + 4)",
+              "f.runtime.snapshot().assertEquals(before)"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersIgnoreStaleAndReentrantCallbacksOnRepeatedReconstruction",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0234.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "f.record(\"army\").x.assertEquals(f.land.x + 16.)",
+              "f.record(\"fleet\").orderId.assertEquals(\"patrol\")",
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()"
+            ],
+            "entryPoint": "wc3-military-order",
+            "id": "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "wc3-military-order",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "persistence",
+                "transition",
+                "outcome"
+              ],
+              "requirement": "REQ-0234.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Retirement captures safe local observations; nested suspensions defer replay until complete reconstruction or load rollback restores all bindings. The physical map is not changed by replay; remote transport remains a separate blocker.",
+          "references": [
+            {
+              "contains": [
+                "orderCallbacks.capture()",
+                "instantiate(forces[i])",
+                "orderCallbacks.reconstruct()"
+              ],
+              "path": "../_shared/wurst/MilitarySettlementRuntime.wurst",
+              "symbol": "activateRegion"
+            },
+            {
+              "contains": [
+                "checkpoint.restore(this)",
+                "militarySettlements.adapter.rollbackLoad()",
+                "militarySettlements.resumeCallbacks()"
+              ],
+              "path": "../_shared/wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "rollbackRuntime"
+            }
+          ]
+        }
+      },
+      "scope": "Issue #443 covers live army/fleet order capture, local position capture and reconstruction only. This supplementary mapping cannot close the entire military/cross-map obligation, physical remote-command transport, other campaign domains or native-client release validation."
     }
   }
 }

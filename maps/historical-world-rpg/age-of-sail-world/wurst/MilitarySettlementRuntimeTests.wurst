@@ -202,7 +202,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	restored.atWar("england", "france").assertTrue()
 	restored.forces[restored.forceIndex("army:one")].strength.assertEquals(29)
 	restored.forces[restored.forceIndex("fleet:channel")].strength.assertEquals(43)
-	restored.forces[restored.forceIndex("fleet:channel")].orderId.assertEquals("sail")
+	restored.forces[restored.forceIndex("fleet:channel")].orderId.assertEquals("move")
 	restored.settlements[0].garrisonStrength.assertEquals(24)
 	restored.settlements[0].reserves.assertEquals(10)
 	restored.settlements[0].nextWaveAt.assertEquals(20.)
@@ -264,7 +264,10 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 		runtime.snapshot().assertEquals(saved)
 
 /** Recreate the pre-policy settlement layout when exercising old save versions. */
-public function withoutMilitarySettlementPolicy(string candidate) returns string
+public function withoutMilitarySettlementPolicy(string input) returns string
+	var candidate = input
+	if not candidate.startsWith("v6|")
+		candidate = withoutMilitaryOrderTargets(candidate)
 	var result = ""
 	var start = 0
 	let length = StringLength(candidate)
@@ -283,6 +286,29 @@ public function withoutMilitarySettlementPolicy(string candidate) returns string
 			policyStart = finish
 		result += SubString(candidate, start, policyStart)
 		if finish < length
+			result += "|"
+		start = finish + 1
+	return result
+
+/** Old military payloads had sixteen force fields and no target identity. */
+public function withoutMilitaryOrderTargets(string candidate) returns string
+	var result = ""
+	var start = 0
+	while start < StringLength(candidate)
+		var finish = candidate.indexOf("|", start)
+		if finish < 0
+			finish = StringLength(candidate)
+		var record = SubString(candidate, start, finish)
+		if record.startsWith("f,")
+			var fields = 0
+			for i = 0 to StringLength(record) - 1
+				if SubString(record, i, i + 1) == ","
+					fields++
+					if fields == 16
+						record = SubString(record, 0, i)
+						break
+		result += record
+		if finish < StringLength(candidate)
 			result += "|"
 		start = finish + 1
 	return result

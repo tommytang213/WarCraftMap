@@ -155,6 +155,72 @@ public function compatSetUnitMaxLife(unit target, int life)
 	BlzSetUnitMaxHP(target, life)
 public function compatSetUnitOwner(unit target, player owner, boolean changeColor)
 	SetUnitOwner(target, owner, changeColor)
+
+// Stable Warcraft order IDs; argument shape is independently validated by the
+// military authority. Do not persist a handle or a localized order name.
+public constant int COMPAT_ORDER_SMART = 851971
+public constant int COMPAT_ORDER_STOP = 851972
+public constant int COMPAT_ORDER_ATTACK = 851983
+public constant int COMPAT_ORDER_MOVE = 851986
+public constant int COMPAT_ORDER_PATROL = 851990
+public constant int COMPAT_ORDER_HOLD = 851993
+
+public function compatInstallOrderEvents(code action) returns trigger
+	let listener = CreateTrigger()
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		TriggerRegisterPlayerUnitEvent(listener, Player(i), EVENT_PLAYER_UNIT_ISSUED_ORDER, null)
+		TriggerRegisterPlayerUnitEvent(listener, Player(i), EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER, null)
+		TriggerRegisterPlayerUnitEvent(listener, Player(i), EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER, null)
+	TriggerAddAction(listener, action)
+	return listener
+public function compatRemoveOrderEvents(trigger listener)
+	DestroyTrigger(listener)
+public function compatOrderTriggerIs(trigger listener) returns boolean
+	return GetTriggeringTrigger() == listener
+public function compatOrderPlayer() returns player
+	return GetTriggerPlayer()
+public function compatOrderSource() returns int
+	return GetHandleId(GetTriggerUnit())
+public function compatOrderArguments() returns int
+	if GetTriggerEventId() == EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER
+		return 1
+	if GetTriggerEventId() == EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER
+		return 2
+	return 0
+public function compatIssuedOrder() returns int
+	return GetIssuedOrderId()
+public function compatOrderX() returns real
+	if compatOrderArguments() == 1
+		return GetOrderPointX()
+	return 0.
+public function compatOrderY() returns real
+	if compatOrderArguments() == 1
+		return GetOrderPointY()
+	return 0.
+public function compatOrderTarget() returns int
+	if compatOrderArguments() == 2
+		return GetHandleId(GetOrderTargetUnit())
+	return 0
+public function compatOrderUnitOwnedBy(unit target, player owner) returns boolean
+	return target != null and GetUnitTypeId(target) != 0 and not IsUnitType(target, UNIT_TYPE_DEAD) and GetOwningPlayer(target) == owner
+public function compatOrderUnitX(unit target) returns real
+	return GetUnitX(target)
+public function compatOrderUnitY(unit target) returns real
+	return GetUnitY(target)
+public function compatCurrentOrder(unit target) returns int
+	return GetUnitCurrentOrder(target)
+public function compatOrderPointPathable(int kind, real x, real y) returns boolean
+	if kind == 3
+		return not compatIsTerrainPathable(x, y, PATHING_TYPE_FLYABILITY)
+	let land = not compatIsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY)
+	let sea = not compatIsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY)
+	return (kind == 0 and land) or (kind == 1 and sea) or (kind == 2 and (land or sea))
+public function compatIssueImmediateOrder(unit target, int order) returns boolean
+	return IssueImmediateOrderById(target, order)
+public function compatIssuePointOrder(unit target, int order, real x, real y) returns boolean
+	return IssuePointOrderById(target, order, x, y)
+public function compatIssueTargetOrder(unit target, int order, unit destination) returns boolean
+	return IssueTargetOrderById(target, order, destination)
 public function compatSetUnitInvulnerable(unit target, boolean shouldProtect)
 	compatSetUnitProtection(target, PROTECTION_SCRIPT, shouldProtect)
 public function compatSetUnitProtection(unit target, int source, boolean shouldProtect)

@@ -12,6 +12,7 @@ import WarcraftRpgRuntime
 import WarcraftRpgProjections
 import MilitarySettlementRuntime
 import MilitaryCombatEvents
+import MilitaryOrderEvents
 import CampaignHandoff
 import CampaignSaveManager
 import CampaignRegistration
@@ -109,6 +110,7 @@ function initializeRegionalCampaign()
 	if campaign.started
 		militarySettlementRuntime.activateRegion(PHYSICAL_MAP_ID)
 		installMilitaryCombatEvents(campaign, new WarcraftMilitaryCombatNatives())
+		installMilitaryOrderEvents(campaign, new WarcraftMilitaryOrderNatives())
 		let physicalBoundaries = new PhysicalBoundaryRegistry(campaign.travel, campaign.regionAccess)
 		configureGeneratedPhysicalBoundaries(physicalBoundaries)
 		physicalBoundaries.install()
