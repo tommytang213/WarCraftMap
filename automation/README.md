@@ -40,6 +40,20 @@ worktree, then its local agent branch, and separately tries to delete the remote
 agent branch. Dirty worktrees are preserved. Cleanup errors are logged and
 recorded without changing the issue's successful merged state.
 
+A merged native-launch investigation is **not** a successful retail test.
+An unresolved native incident such as #438 intentionally retains
+`native_validation=pending`. If a genuinely new investigation is authorized,
+add exactly one line `Native investigation resume: <new-unique-token>` to its
+**open [agent-ready] GitHub issue body**. On the next worker wake, the controller
+may reopen the local implementation queue **once per token**, provided the prior
+PR was merged and cleaned up and the initial attempt budget still permits a
+run. It archives the previous PR reference, preserves consumed attempts/token
+quotas, and starts from current main rather than reusing the merged PR.
+Merely reopening an issue, leaving it open, or reusing the same token does
+**not** launch Codex. This is not permission to waive native validation or
+rerun the same failing W3N with a different filename. Keep any requested
+Windows testing opt-in and evidence-driven.
+
 ## Preview and installation
 
 No installation is needed for a safe queue preview:
