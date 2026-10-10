@@ -142,6 +142,21 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
         self.assertEqual(449, record["pr"])
         self.assertEqual([442], record["native_previous_prs"])
 
+    def test_legacy_merged_438_with_no_native_flag_is_recoverable(self):
+        # Exact shape reported by the VM: status=merged, pr=442,
+        # attempts=1, native_validation absent (older worker transition).
+        issue = {**self.crash, "body": self.crash["body"] +
+                 "Native investigation resume: 20261010-legacy-438\n"}
+        record = {"status": "merged", "pr": 442, "attempts": 1}
+        state = {"issues": {"438": record}}
+        reconcile_native_followup([issue], state, 3)
+        self.assertEqual("queued", record["status"])
+        self.assertEqual("pending", record["native_validation"])
+        self.assertEqual([442], record["native_previous_prs"])
+        self.assertNotIn("pr", record)
+        self.assertEqual(438, select_issue([issue], state, 3,
+                                          closure=closure())["number"])
+
     def test_native_followup_refuses_implicit_or_unsafe_requeues(self):
         good = self.crash["body"] + "Native investigation resume: second-pass\n"
         for label, issue_change, record_change, max_attempts in (
@@ -150,6 +165,7 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
             ("wrong issue", {"number": 439, "body": good}, {}, 3),
             ("closed", {"state": "CLOSED", "body": good}, {}, 3),
             ("not ready", {"title": "[planned] Launch", "body": good}, {}, 3),
+            ("no confirmed failure", {"body": good.replace("Native launch status: failed", "Native launch status: unknown")}, {}, 3),
             ("not pending", {"body": good}, {"native_validation": "passed"}, 3),
             ("still in PR", {"body": good}, {"status": "pr_open"}, 3),
             ("dirty cleanup", {"body": good}, {"cleanup_errors": ["dirty worktree"]}, 3),
