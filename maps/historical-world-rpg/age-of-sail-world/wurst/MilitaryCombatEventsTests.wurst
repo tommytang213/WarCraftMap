@@ -7,6 +7,8 @@ import CampaignStartupTests
 import CampaignSaveManager
 import CampaignTimeline
 import CampaignRegistration
+import ScenarioData
+import PlayableCampaignRuntime
 import CommandRouter
 import ManagementScreenPauseController
 import Wurstunit
@@ -22,6 +24,8 @@ class CombatRepresentations extends RecordingMilitaryAdapter
 	int nextToken = 100
 	MilitaryCombatEvents cleanupEvents = null
 	int cleanupKiller = 0
+	string observeRetirement = ""
+	string retiredAuthority = ""
 	function index(string id) returns int
 		for i = 0 to count - 1
 			if ids[i] == id
@@ -52,6 +56,8 @@ class CombatRepresentations extends RecordingMilitaryAdapter
 	override function removeRepresentation(string id)
 		let found = index(id)
 		if found >= 0
+			if id == observeRetirement and cleanupEvents != null
+				retiredAuthority = cleanupEvents.runtime.snapshot()
 			let obsolete = tokens[found]
 			tokens[found] = 0
 			if cleanupEvents != null and obsolete != 0
@@ -328,7 +334,7 @@ class CombatFixture
 	f.captureViaNatives()
 	f.natives.advance(0.0625)
 	let saved = f.runtime.snapshot()
-	saved.startsWith("v6|k,").assertTrue()
+	saved.startsWith("v7|k,").assertTrue()
 	f.runtime.restore(saved).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	f.runtime.restore(saved + "|k,0").assertFalse()
@@ -421,3 +427,376 @@ class CombatFixture
 	runtime.settlements[0].underAttack.assertFalse()
 	runtime.settlements[0].reserves.assertEquals(10)
 	events.stop()
+
+function traditionCombatFixture() returns CombatFixture
+	let f = new CombatFixture()
+	// Production startup has registered the authored sources and all six tracks.
+	f.runtime.traditionCount.assertEquals(6)
+	f.runtime.contributionCount.assertEquals(3)
+	f.runtime.forces[f.runtime.forceIndex("player_army")].categoryId = "land_formation"
+	f.runtime.forces[f.runtime.forceIndex("enemy")].categoryId = "land_formation"
+	f.runtime.registerForce(new RuntimeForce("player_fleet", "player", "europe_west", "sailing_naval", FORCE_FLEET, 'hdes', 40, 20, 0., 0.))
+	f.runtime.registerForce(new RuntimeForce("enemy_fleet", "france", "europe_west", "sailing_naval", FORCE_FLEET, 'hdes', 13, 20, 0., 0.))
+	f.runtime.registerForce(new RuntimeForce("english_army", "england", "europe_west", "land_formation", FORCE_ARMY, 'hfoo', 17, 20, 0., 0.))
+	f.runtime.registerForce(new RuntimeForce("abstract_army", "player", "europe_central_east", "land_formation", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+	f.runtime.activateRegion("europe_west")
+	return f
+
+function traditionXp(CombatFixture f, string controller, string category) returns int
+	return f.runtime.traditions[f.runtime.traditionIndex(controller, category)].experience
+
+@test function combatOnMappedTerrainPreservesCaptureAndEarnedTradition()
+	let f = traditionCombatFixture()
+	// Authored locations can name a subregion while command activation names
+	// its physical chapter. Both combat participants and holdings use that map.
+	f.runtime.settlements[0].regionId = "europe_atlantic_isles"
+	for i = 0 to f.runtime.forceCount - 1
+		if f.runtime.forces[i].regionId == "europe_west"
+			f.runtime.forces[i].regionId = "europe_atlantic_isles"
+	f.runtime.activateRegion("europe_west")
+	(f.core() != 0).assertTrue()
+	f.token("abstract_army").assertEquals(0)
+	f.captureViaNatives()
+	let victim = f.token("enemy")
+	f.representations.tradition = -1
+	f.natives.damage(victim, f.token("player_army")).assertEquals(1)
+	f.natives.death(victim, f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	// Reconcile the surviving local projection without reviving the casualty
+	// or projecting forces from the other physical map in the same region.
+	f.representations.tradition.assertEquals(0)
+	f.token("enemy").assertEquals(0)
+	f.token("abstract_army").assertEquals(0)
+	let committed = f.runtime.snapshot()
+	f.natives.death(victim, f.token("player_army"))
+	f.runtime.snapshot().assertEquals(committed)
+	f.close()
+
+function traditionReceiptFor(string requirement, string caseName)
+	print("TRACEABILITY {\"requirement\":\"" + requirement + "\",\"case\":\"" + caseName + "\",\"entryPoint\":\"combat-earned-tradition\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+function traditionReceipt(string caseName)
+	traditionReceiptFor("REQ-0154.01", caseName)
+	traditionReceiptFor("REQ-0164.01", caseName)
+	traditionReceiptFor("ROAD-0052.01", caseName)
+
+@test function installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition()
+	let f = traditionCombatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pause) == f.events).assertTrue()
+	f.representations.observeRetirement = "enemy"
+	f.natives.damage(f.token("enemy"), f.token("player_army")).assertEquals(1)
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	f.runtime.forces[f.runtime.forceIndex("enemy")].strength.assertEquals(0)
+	f.runtime.forces[f.runtime.forceIndex("enemy")].active.assertFalse()
+	// A synchronous native cleanup callback sees loss AND earned XP committed.
+	f.representations.retiredAuthority.assertEquals(f.runtime.snapshot())
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	traditionXp(f, "player", "sailing_naval").assertEquals(13)
+	traditionXp(f, "england", "land_formation").assertEquals(0)
+	traditionXp(f, "france", "land_formation").assertEquals(0)
+	// Transfer changes future attribution, never the previous controller's XP.
+	f.runtime.transferControl("player_army", "france")
+	f.natives.death(f.token("english_army"), f.token("player_army"))
+	traditionXp(f, "france", "land_formation").assertEquals(17)
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	traditionXp(f, "france", "sailing_naval").assertEquals(0)
+	f.runtime.transferControl("player_fleet", "france")
+	f.runtime.registerForce(new RuntimeForce("english_fleet", "england", "europe_west", "sailing_naval", FORCE_FLEET, 'hdes', 19, 20, 0., 0.))
+	f.runtime.instantiate(f.runtime.forces[f.runtime.forceIndex("english_fleet")])
+	f.natives.death(f.token("english_fleet"), f.token("player_fleet"))
+	traditionXp(f, "france", "sailing_naval").assertEquals(19)
+	traditionXp(f, "player", "sailing_naval").assertEquals(13)
+	f.startup.campaign.identity.changeAllegiance("portugal")
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	f.runtime.activateRegion("europe_central_east")
+	(f.token("abstract_army") != 0).assertTrue()
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	f.runtime.activateRegion("europe_west")
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "earned-tradition").assertTrue()
+	let saved = f.runtime.snapshot()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.runtime.snapshot().assertEquals(saved)
+	f.close()
+	traditionReceipt("success")
+
+@test function weightedNativeKillsUseCommittedStrengthAndFloorEachContribution()
+	let f = traditionCombatFixture()
+	let weight = f.runtime.contributions[f.runtime.contributionIndex("enemy_kill")]
+	weight.numerator = 3
+	weight.denominator = 4
+	// Prior casualties cannot be awarded a second time by the final death.
+	f.runtime.recordLoss("enemy", 27)
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(9)
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	traditionXp(f, "player", "sailing_naval").assertEquals(9)
+	print("TRADITION_ORACLE {\"amount\":13,\"numerator\":3,\"denominator\":4,\"earned\":" + traditionXp(f, "player", "land_formation").toString() + "}")
+	f.runtime.registerForce(new RuntimeForce("tiny", "france", "europe_west", "land_formation", FORCE_ARMY, 'hfoo', 1, 20, 0., 0.))
+	f.runtime.instantiate(f.runtime.forces[f.runtime.forceIndex("tiny")])
+	f.natives.death(f.token("tiny"), f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(9)
+	f.runtime.forces[f.runtime.forceIndex("tiny")].active.assertFalse()
+	// Authored assist/objective weights remain available but have no dispatcher.
+	f.runtime.contributions[f.runtime.contributionIndex("combat_assist")].denominator.assertEquals(2)
+	f.runtime.contributions[f.runtime.contributionIndex("battle_objective")].numerator.assertEquals(3)
+	weight.weighted(2000000000).assertEquals(1500000000)
+	weight.numerator = 5
+	weight.denominator = 2
+	weight.weighted(13).assertEquals(32)
+	weight.weighted(2000000000).assertEquals(-1)
+	f.close()
+
+@test function rejectedCombatAndMissingContributionContextCannotEarnTradition()
+	let f = traditionCombatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pause) == f.events).assertTrue()
+	let before = f.runtime.snapshot()
+	f.natives.damage(f.token("enemy"), 0).assertEquals(-1)
+	f.natives.death(f.token("enemy"), 0)
+	f.runtime.snapshot().assertEquals(before)
+	f.natives.death(f.token("enemy"), 999999)
+	f.runtime.snapshot().assertEquals(before)
+	f.natives.death(f.token("player_army"), f.token("english_army"))
+	f.runtime.snapshot().assertEquals(before)
+	f.pause.setManuallyPaused(true)
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	f.pause.setManuallyPaused(false)
+	f.runtime.snapshot().assertEquals(before)
+	// A legal hero kill commits casualties but has no authored military category.
+	f.natives.death(f.token("enemy"), f.natives.heroToken)
+	traditionXp(f, "player", "land_formation").assertEquals(0)
+	f.runtime.forces[f.runtime.forceIndex("enemy")].active.assertFalse()
+	// An ineligible enemy controller also has no headless contribution contract.
+	f.runtime.setWar("england", "portugal", true)
+	f.natives.death(f.token("ally"), f.token("player_army"))
+	traditionXp(f, "player", "land_formation").assertEquals(0)
+	// Capturing a core has no committed troop loss and no objective adapter.
+	f.runtime.transferControl("player_army", "france")
+	f.natives.death(f.core(), f.token("player_army"))
+	traditionXp(f, "france", "land_formation").assertEquals(0)
+	let protectedState = f.runtime.snapshot()
+	f.natives.death(f.core(), f.token("english_army"))
+	f.runtime.snapshot().assertEquals(protectedState)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "rejected-tradition").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	traditionXp(f, "player", "land_formation").assertEquals(0)
+	f.close()
+	traditionReceipt("failure")
+
+@test function duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition()
+	let f = traditionCombatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pause) == f.events).assertTrue()
+	let victim = f.token("enemy")
+	let killer = f.token("player_army")
+	let epoch = f.natives.epoch
+	f.natives.death(victim, killer)
+	let after = f.runtime.snapshot()
+	f.natives.death(victim, killer)
+	f.runtime.snapshot().assertEquals(after)
+	f.runtime.activateRegion("europe_west")
+	f.natives.death(victim, f.token("player_army"))
+	f.natives.death(f.token("enemy_fleet"), killer)
+	f.events.onDeath(epoch, f.token("enemy_fleet"), f.token("player_fleet"))
+	f.runtime.snapshot().assertEquals(after)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "consumed-death").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.natives.death(victim, f.token("player_army"))
+	f.runtime.snapshot().assertEquals(after)
+	// A still-current killer changes controller between damage and death.
+	f.natives.damage(f.token("enemy_fleet"), f.token("player_fleet")).assertEquals(1)
+	f.runtime.transferControl("player_fleet", "france")
+	let transferred = f.runtime.snapshot()
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	f.runtime.snapshot().assertEquals(transferred)
+	traditionXp(f, "player", "sailing_naval").assertEquals(0)
+	f.runtime.transferControl("player_fleet", "england")
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	traditionXp(f, "england", "sailing_naval").assertEquals(13)
+	traditionXp(f, "player", "sailing_naval").assertEquals(0)
+	f.close()
+	traditionReceipt("stale")
+
+@test function earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore()
+	let first = traditionCombatFixture()
+	(installMilitaryCombatEvents(first.startup.campaign, first.natives, first.pause) == first.events).assertTrue()
+	first.natives.death(first.token("enemy"), first.token("player_army"))
+	first.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "earned").assertTrue()
+	let encoded = first.startup.saves.read("manual_01")
+	let saved = first.runtime.snapshot()
+	first.close()
+	let f = traditionCombatFixture()
+	let obsoleteVictim = f.token("enemy")
+	f.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
+	for attempt = 1 to 2
+		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.natives.death(obsoleteVictim, f.token("player_army"))
+		f.runtime.snapshot().assertEquals(saved)
+		f.token("enemy").assertEquals(0)
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	let current = f.runtime.snapshot()
+	let retainedKiller = f.token("player_fleet")
+	let epoch = f.natives.epoch
+	f.startup.ports.failProjection = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failProjection = false
+	f.runtime.snapshot().assertEquals(current)
+	f.token("player_fleet").assertEquals(retainedKiller)
+	f.events.onDeath(epoch, f.token("player_army"), retainedKiller)
+	f.runtime.snapshot().assertEquals(current)
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	traditionXp(f, "player", "sailing_naval").assertEquals(13)
+	f.runtime.activateRegion("europe_central_east")
+	f.runtime.restore(current).assertTrue()
+	f.runtime.activeRegionId.assertEquals("europe_central_east")
+	traditionXp(f, "player", "land_formation").assertEquals(40)
+	f.runtime.activateRegion("europe_west")
+	f.runtime.snapshot().assertEquals(current)
+	f.close()
+	traditionReceipt("replay")
+
+@test function traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves()
+	let f = traditionCombatFixture()
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	let saved = f.runtime.snapshot()
+	let playerLand = "|t,player,land_formation,40,0,1000,0"
+	let playerSea = "|t,player,sailing_naval,0,0,1200,0"
+	(saved.contains(playerLand) and saved.contains(playerSea)).assertTrue()
+	string array[6] malformed
+	malformed[0] = saved.replace(playerLand, "")
+	malformed[1] = saved + playerLand
+	malformed[2] = saved.replace(playerLand, "|t,player,land_formation,40oops,0,1000,0")
+	malformed[3] = saved.replace(playerLand, "|t,player,land_formation,-1,0,1000,0")
+	malformed[4] = saved.replace(playerLand, "|t,unknown,land_formation,40,0,1000,0")
+	malformed[5] = saved.replace(playerLand, "|t,player,land_formation,2147483648,0,1000,0")
+	for i = 0 to 5
+		f.runtime.restore(malformed[i]).assertFalse()
+		f.runtime.snapshot().assertEquals(saved)
+	// v6 retains force orders and XP; absent player tracks begin at authored XP.
+	let legacy = ("v6" + SubString(saved, 2, StringLength(saved))).replace(playerLand, "").replace(playerSea, "").replace("|t,england,land_formation,0,", "|t,england,land_formation,73,")
+	f.runtime.restore(legacy).assertTrue()
+	traditionXp(f, "england", "land_formation").assertEquals(73)
+	traditionXp(f, "player", "land_formation").assertEquals(0)
+	f.runtime.forces[f.runtime.forceIndex("enemy")].active.assertFalse()
+	f.runtime.contributions[f.runtime.contributionIndex("enemy_kill")].numerator.assertEquals(1)
+	configureGeneratedMilitaryTraditions(f.runtime, true).assertTrue()
+	traditionXp(f, "england", "land_formation").assertEquals(73)
+	let migrated = f.runtime.snapshot()
+	f.runtime.restore(migrated).assertTrue()
+	f.runtime.snapshot().assertEquals(migrated)
+	f.close()
+
+@test function committedGarrisonAndDefenseLossesEarnOnlyTheirOwnEnemyKillContribution()
+	let f = traditionCombatFixture()
+	f.natives.damage(f.core(), f.token("enemy")).assertEquals(1)
+	f.natives.advance(1.)
+	let wave = "garrison:" + f.city + ":0"
+	let obsolete = f.token(wave)
+	(obsolete != 0).assertTrue()
+	f.natives.death(obsolete, f.token("enemy"))
+	f.runtime.settlements[0].garrisonStrength.assertEquals(20)
+	traditionXp(f, "france", "land_formation").assertEquals(10)
+	f.natives.death(obsolete, f.token("enemy"))
+	traditionXp(f, "france", "land_formation").assertEquals(10)
+	f.natives.death(f.token("defense:" + f.city + ":gate"), f.token("enemy"))
+	traditionXp(f, "france", "land_formation").assertEquals(110)
+	f.captureViaNatives()
+	traditionXp(f, "france", "land_formation").assertEquals(110)
+	f.close()
+
+@test function unassignedIneligibleAndOverflowingContributionsDoNotInventExperience()
+	let f = traditionCombatFixture()
+	// Portugal may fight France but has no authored tradition track here.
+	f.runtime.forces[f.runtime.forceIndex("ally")].categoryId = "land_formation"
+	f.natives.death(f.token("enemy"), f.token("ally"))
+	traditionXp(f, "player", "land_formation").assertEquals(0)
+	traditionXp(f, "england", "land_formation").assertEquals(0)
+	f.runtime.forces[f.runtime.forceIndex("player_fleet")].categoryId = "unassigned"
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	traditionXp(f, "player", "sailing_naval").assertEquals(0)
+	f.runtime.transferControl("player_army", "france")
+	let track = f.runtime.traditions[f.runtime.traditionIndex("france", "land_formation")]
+	track.experience = 2147483640
+	let before = f.runtime.snapshot()
+	f.natives.death(f.token("english_army"), f.token("player_army"))
+	f.runtime.snapshot().assertEquals(before)
+	f.runtime.forces[f.runtime.forceIndex("english_army")].strength.assertEquals(17)
+	f.close()
+
+class TraditionNativeRepresentations extends WarcraftMilitarySettlementAdapter
+	int lastLife = 0
+	override function maximumLife(unit target) returns int
+		return 100
+	override function setMaximumLife(unit target, int value)
+		lastLife = value
+
+@test function earnedTraditionReconcilesRealLocalObjectsWithoutRevivingDeadAuthority()
+	let objects = new TraditionNativeRepresentations()
+	let runtime = new MilitarySettlementRuntime(objects)
+	configureGeneratedMilitaryTraditions(runtime, true).assertTrue()
+	runtime.registerForce(new RuntimeForce("first", "england", "map", "land_formation", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+	runtime.registerForce(new RuntimeForce("second", "france", "map", "land_formation", FORCE_ARMY, 'hfoo', 13, 20, 0., 0.))
+	runtime.setWar("england", "france", true)
+	runtime.activateRegion("map")
+	let natives = new RecordingCombatNatives()
+	let events = new MilitaryCombatEvents(runtime, new PlayerCampaignIdentity(), new ManagementScreenPauseController(new RecordingCombatPause(), false), natives)
+	events.install()
+	let obsolete = objects.representationId("second")
+	natives.death(obsolete, objects.representationId("first"))
+	runtime.traditions[runtime.traditionIndex("england", "land_formation")].experience.assertEquals(13)
+	objects.representationId("second").assertEquals(0)
+	// The pending authored coefficient adapters do not grant invented HP.
+	objects.lastLife.assertEquals(100)
+	let saved = runtime.snapshot()
+	runtime.restore(saved).assertTrue()
+	natives.death(obsolete, objects.representationId("first"))
+	runtime.snapshot().assertEquals(saved)
+	runtime.forces[runtime.forceIndex("second")].active.assertFalse()
+	objects.representationId("second").assertEquals(0)
+	events.stop()
+
+function traditionLandCrossing(BoundaryCorrespondence boundary) returns real
+	for i = 0 to 100
+		let position = i / 100.
+		if boundary.destination.resolve(boundary.destinationPosition(position), 0, null)
+			return position
+	return -1.
+
+@test function combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint()
+	let f = traditionCombatFixture()
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
+	let boundary = f.startup.campaign.state.boundary("europe_west_to_europe_central_east")
+	let departed = f.startup.campaign.travel.transition(boundary, traditionLandCrossing(boundary), "earned-travel")
+	if not departed
+		print("Earned travel: " + f.startup.campaign.travel.diagnostic())
+	departed.assertTrue()
+	let destination = new StartupFixture(f.startup.cache, f.startup.saves, "europe_central_east")
+	destination.register()
+	let arrived = destination.campaign.startup()
+	if not arrived
+		print("Earned arrival: " + destination.campaign.diagnostic())
+	arrived.assertTrue()
+	let military = destination.campaign.state.militarySettlements
+	military.activeRegionId.assertEquals("europe_central_east")
+	military.traditions[military.traditionIndex("player", "land_formation")].experience.assertEquals(40)
+	military.traditions[military.traditionIndex("player", "sailing_naval")].experience.assertEquals(13)
+	military.forces[military.forceIndex("enemy")].active.assertFalse()
+	military.forces[military.forceIndex("enemy_fleet")].strength.assertEquals(0)
+	destination.ports.selectorIdentity = destination.campaign.identity
+	let returnBoundary = destination.campaign.state.boundary("europe_central_east_to_europe_west")
+	let returning = destination.campaign.travel.transition(returnBoundary, traditionLandCrossing(returnBoundary), "earned-return")
+	if not returning
+		print("Earned return: " + destination.campaign.travel.diagnostic())
+	returning.assertTrue()
+	let revisited = new StartupFixture(f.startup.cache, f.startup.saves, "europe_west")
+	revisited.register()
+	let returned = revisited.campaign.startup()
+	if not returned
+		print("Earned return arrival: " + revisited.campaign.diagnostic())
+	returned.assertTrue()
+	let restored = revisited.campaign.state.militarySettlements
+	restored.traditions[restored.traditionIndex("player", "land_formation")].experience.assertEquals(40)
+	restored.traditions[restored.traditionIndex("player", "sailing_naval")].experience.assertEquals(13)
+	restored.forces[restored.forceIndex("enemy")].active.assertFalse()
+	restored.forces[restored.forceIndex("enemy_fleet")].active.assertFalse()
+	f.close()

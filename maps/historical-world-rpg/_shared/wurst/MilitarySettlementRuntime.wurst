@@ -8,6 +8,7 @@ import CommandRouter
 import ManagementScreenPauseController
 import WarcraftRpgRuntime
 import CampaignTimeline
+import CampaignSaveManager
 import PrizeCombat
 import WarcraftRecoveryRuntime
 import PartyLocations
@@ -26,7 +27,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 6
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 7
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -175,6 +176,55 @@ public class TraditionState
 		lifePermillePerHundredXp = rate
 		this.milestoneXp = milestoneXp
 		this.milestoneAbilityId = milestoneAbilityId
+
+/** Immutable scenario weights. Only enemy_kill has a production outcome
+ * adapter; retaining another source here does not make it awardable. */
+public class TraditionContribution
+	string id
+	int numerator
+	int denominator
+	construct(string id, int numerator, int denominator)
+		this.id = id
+		this.numerator = numerator
+		this.denominator = denominator
+	/** floor(amount * numerator / denominator), like military_tradition.award.
+	 * Keep the remainder separately to avoid overflowing the product. */
+	function weighted(int amount) returns int
+		if amount <= 0 or numerator <= 0 or denominator <= 0
+			return 0
+		var whole = numerator div denominator
+		var fraction = numerator mod denominator
+		var result = 0
+		var remainder = 0
+		var multiplier = amount
+		while multiplier > 0
+			if multiplier mod 2 == 1
+				if whole < 0 or result > 2147483647 - whole
+					return -1
+				result += whole
+				if remainder >= denominator - fraction
+					if result == 2147483647
+						return -1
+					result++
+					remainder -= denominator - fraction
+				else
+					remainder += fraction
+			multiplier = multiplier div 2
+			if multiplier > 0
+				if whole < 0 or whole > 2147483647 div 2
+					whole = -1
+				else
+					whole *= 2
+				if fraction >= denominator - fraction
+					if whole >= 0
+						whole++
+					fraction -= denominator - fraction
+				else
+					fraction *= 2
+		return result
+
+public interface MilitaryTraditionDefinitions
+	function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
 
 /** Scenario definitions reconcile presentation and seed missing legacy authority.
  * Implementations must never reset an existing mutable record. */
@@ -416,9 +466,13 @@ public class MilitarySettlementRuntime
 	boolean legacyRecovery = false
 	boolean legacyMilitaryVersion4 = false
 	boolean legacyOrders = false
+	boolean legacyTraditions = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
 	TraditionState array[256] traditions
+	TraditionContribution array[32] contributions
+	int contributionCount = 0
+	MilitaryTraditionDefinitions traditionDefinitions = null
 	SettlementRuntimeState array[1024] settlements
 	AdministratorState array[1024] administrators
 	string array[1024] administratorSettlementIds
@@ -440,6 +494,8 @@ public class MilitarySettlementRuntime
 		this.adapter = adapter
 	ondestroy
 		endRegistration()
+		for i = 0 to contributionCount - 1
+			destroy contributions[i]
 		if prizeCombat != null
 			prizeCombat.retire()
 			destroy prizeCombat
@@ -504,6 +560,30 @@ public class MilitarySettlementRuntime
 		if state != null and state.controllerId != "" and state.categoryId != "" and traditionIndex(state.controllerId, state.categoryId) < 0
 			traditions[traditionCount] = state
 			traditionCount++
+	function contributionIndex(string id) returns int
+		for i = 0 to contributionCount - 1
+			if contributions[i].id == id
+				return i
+		return -1
+	function registerContribution(string id, int numerator, int denominator)
+		if contributionIndex(id) < 0 and contributionCount < 32 and numerator > 0 and denominator > 0
+			contributions[contributionCount] = new TraditionContribution(id, numerator, denominator)
+			contributionCount++
+	/** Definitions may repair presentation and seed absent legacy tracks. Earned
+	 * XP is never copied from a unit, a polity allegiance, or a starting value. */
+	function reconcileTradition(string controllerId, string categoryId, int startingExperience, int rate, int milestoneXp, int abilityId, boolean migrate) returns boolean
+		var found = traditionIndex(controllerId, categoryId)
+		if found < 0
+			if not migrate or traditionCount >= 256
+				return false
+			let state = new TraditionState(controllerId, categoryId, rate, milestoneXp, abilityId)
+			state.experience = startingExperience
+			registerTradition(state)
+			found = traditionIndex(controllerId, categoryId)
+		traditions[found].lifePermillePerHundredXp = rate
+		traditions[found].milestoneXp = milestoneXp
+		traditions[found].milestoneAbilityId = abilityId
+		return true
 	function registerSettlement(SettlementRuntimeState state)
 		if state != null and state.id != "" and settlementIndex(state.id) < 0
 			if registrationSettlements != null
@@ -717,6 +797,40 @@ public class MilitarySettlementRuntime
 		if forces[found].strength == 0
 			forces[found].active = false
 			adapter.removeRepresentation(forceId)
+	/** Called only after the combat adapter resolves current participants and
+	 * legal hostility. A death consumes the victim's remaining authoritative
+	 * strength. Loss and earned XP commit before any native projection or RPG
+	 * notification can reenter. The inactive, zero-strength force is the durable
+	 * receipt; no native handle or transient callback ID is saved. */
+	@noinline
+	function commitCombatLoss(int victimIndex, int contributorIndex, real now) returns boolean
+		let victim = forces[victimIndex]
+		if not victim.active or victim.strength <= 0 or victim.kind == FORCE_CITY_CORE
+			return false
+		let loss = victim.strength
+		var track = -1
+		var experience = 0
+		let source = contributionIndex("enemy_kill")
+		if contributorIndex >= 0 and source >= 0
+			let contributor = forces[contributorIndex]
+			track = traditionIndex(contributor.controllerId, contributor.categoryId)
+			// The headless contract also requires an eligible enemy controller.
+			if track >= 0 and contributor.controllerId != victim.controllerId and traditionIndex(victim.controllerId, contributor.categoryId) >= 0
+				experience = contributions[source].weighted(loss)
+				if experience < 0 or traditions[track].experience > 2147483647 - experience
+					return false
+		let city = settlementForForce(victim)
+		if victim.kind == FORCE_GARRISON and city >= 0
+			settlements[city].lastCombatAt = now
+			settlements[city].garrisonStrength = IMaxBJ(0, settlements[city].garrisonStrength - loss)
+		victim.strength = 0
+		victim.active = false
+		if experience > 0
+			awardTradition(traditions[track].controllerId, traditions[track].categoryId, experience)
+		adapter.removeRepresentation(victim.id)
+		if victim.kind == FORCE_GARRISON and city >= 0 and rpg != null
+			rpg.worldEventAt("combat", settlements[city].id, loss, getCampaignDay())
+		return true
 	function transferControl(string forceId, string controllerId)
 		let found = forceIndex(forceId)
 		if found >= 0
@@ -738,7 +852,7 @@ public class MilitarySettlementRuntime
 			return
 		traditions[found].experience = traditions[found].experience + experience
 		for i = 0 to forceCount - 1
-			if forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and militaryMapMatches(forces[i].regionId, activeRegionId)
+			if forces[i].active and forces[i].strength > 0 and forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and militaryMapMatches(forces[i].regionId, activeRegionId)
 				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
 	function beginSettlementAttack(string settlementId, string attackerId, real now) returns boolean
 		let found = settlementIndex(settlementId)
@@ -1086,8 +1200,11 @@ public class MilitarySettlementRuntime
 			target.setWar(record.field(1), record.field(2), true)
 			return true
 		if kind == "t"
-			if target.traditionCount >= 256 or target.traditionIndex(record.field(1), record.field(2)) >= 0
+			if record.count != 7 or target.traditionCount >= 256 or target.traditionIndex(record.field(1), record.field(2)) >= 0 or not militaryOrderAtom(record.field(1)) or not militaryOrderAtom(record.field(2))
 				return false
+			for i = 3 to 6
+				if record.field(i) != "0" and campaignSlotNumber(record.field(i)) == 0
+					return false
 			let t = new TraditionState(record.field(1), record.field(2), S2I(record.field(4)), S2I(record.field(5)), S2I(record.field(6)))
 			t.experience = S2I(record.field(3))
 			target.registerTradition(t)
@@ -1106,10 +1223,11 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
-		parsed.legacyOrders = not candidate.startsWith("v6|")
+		parsed.legacyTraditions = not candidate.startsWith("v7|")
+		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
 		parsed.legacyConflicts = candidate.startsWith("v1|")
 		parsed.legacyDeadlines = candidate.startsWith("v1|") or candidate.startsWith("v2|")
 		parsed.legacyRecovery = parsed.legacyDeadlines or candidate.startsWith("v3|")
@@ -1131,6 +1249,9 @@ public class MilitarySettlementRuntime
 			parsed.dispose()
 			return null
 		if definitions != null and not definitions.reconcile(parsed, parsed.legacySettlements)
+			parsed.dispose()
+			return null
+		if traditionDefinitions != null and not traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)
 			parsed.dispose()
 			return null
 		for i = 0 to parsed.conflictCount - 1

@@ -28,7 +28,7 @@ class MilitaryTraditionTests(unittest.TestCase):
 
     def test_contract_and_cross_references(self):
         validate(DEFINITIONS, WORLD)
-        self.assertEqual(4, len(self.runtime.snapshot()["tracks"]))
+        self.assertEqual(6, len(self.runtime.snapshot()["tracks"]))
 
     def test_controller_category_isolation_weighting_and_rejections_are_atomic(self):
         self.runtime.award([self.contribution(amount=100), self.contribution(source="combat_assist", amount=100)])

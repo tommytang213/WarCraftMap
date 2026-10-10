@@ -122,7 +122,7 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		let found = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(representation))
 		if found >= 0
 			let runtimeForce = runtime.forces[found]
-			if runtimeForce.active and runtimeForce.strength > 0 and runtimeForce.regionId == runtime.activeRegionId
+			if runtimeForce.active and runtimeForce.strength > 0 and militaryMapMatches(runtimeForce.regionId, runtime.activeRegionId)
 				return found
 		return -1
 	function controller(string owner) returns string
@@ -146,7 +146,7 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 			return false
 		if city >= 0
 			let state = runtime.settlements[city]
-			return state.controllerId == runtimeForce.controllerId and state.regionId == runtime.activeRegionId and runtime.gameplaySeconds >= state.captureImmuneUntil
+			return state.controllerId == runtimeForce.controllerId and militaryMapMatches(state.regionId, runtime.activeRegionId) and runtime.gameplaySeconds >= state.captureImmuneUntil
 		return runtimeForce.kind == FORCE_ARMY or runtimeForce.kind == FORCE_FLEET
 	/** -1 cancels illegal damage before it kills a represented unit; 0 leaves
 	 * unrelated Warcraft objects alone; 1 routes an authorized combat event. */
@@ -195,10 +195,11 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		let city = runtime.settlementForForce(runtimeForce)
 		if runtimeForce.kind == FORCE_CITY_CORE
 			runtime.capture(runtime.settlements[city].id, attacker, runtime.gameplaySeconds)
-		else if runtimeForce.kind == FORCE_GARRISON
-			runtime.recordGarrisonLoss(runtime.settlements[city].id, runtimeForce.id, runtimeForce.strength, runtime.gameplaySeconds)
 		else
-			runtime.recordLoss(runtimeForce.id, runtimeForce.strength)
+			// The force controller owns progression; allegiance above is only the
+			// diplomatic identity. Heroes have no authored military category.
+			if not runtime.commitCombatLoss(found, representedForce(killer), runtime.gameplaySeconds)
+				runtime.instantiate(runtimeForce)
 		schedule()
 
 WarcraftMilitaryCombatNatives activeCombatNatives = null

@@ -25,6 +25,13 @@ Priority areas:
 
 Player testing is a late release gate, not the routine development loop.
 
+`MilitaryCombatEventsTests.wurst` also drives earned tradition through installed
+death callbacks, including weighted land/naval kills for player and AI controllers,
+transfers, duplicate/stale delivery, cleanup reentry and campaign load rollback.
+`test_live_military_tradition.py` checks generated definitions and the weighted
+headless oracle. See [LIVE_COMBAT_TRADITION.md](../docs/LIVE_COMBAT_TRADITION.md)
+for military v7 migration and the remaining contribution/effect adapters.
+
 `ManagementCommandTests.wurst` opens roster, inventory/equipment, journal,
 technology and market views through production command registration with
 recording output, pause, clock and gameplay-timer boundaries. It checks repeat

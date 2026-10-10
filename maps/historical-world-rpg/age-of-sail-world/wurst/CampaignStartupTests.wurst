@@ -93,9 +93,6 @@ public class StartupFixture
 		for i = 1 to military.administratorCount - 1
 			destroy military.administrators[i]
 			military.administrators[i] = null
-		for i = 1 to military.traditionCount - 1
-			destroy military.traditions[i]
-			military.traditions[i] = null
 		for i = 0 to military.conflictCount - 1
 			destroy military.conflicts[i]
 			military.conflicts[i] = null
@@ -103,7 +100,6 @@ public class StartupFixture
 		military.settlementCount = 1
 		military.forceCount = 2
 		military.administratorCount = 1
-		military.traditionCount = 1
 		military.conflictCount = 0
 		let countries = campaign.countries
 		string array[6] selected
