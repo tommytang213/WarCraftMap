@@ -11,7 +11,8 @@ from subprocess import CompletedProcess
 from unittest import mock
 
 from automation.warcraftmap_agent.closure import Blocker, Closure
-from automation.warcraftmap_agent.worker import Config, finish_merged_issue, publish, select_issue
+from automation.warcraftmap_agent.worker import (Config, finish_merged_issue,
+                                            publish, reconcile_native_followup, select_issue)
 
 
 REVISION = "a" * 40
@@ -111,6 +112,58 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
         self.assertFalse(gate.permits_issue(optional))
         self.assertEqual(select_issue([optional, self.crash],
                                       {"issues": {}}, 3, closure=gate)["number"], 438)
+
+
+    def test_explicit_native_followup_resumes_once_without_losing_history(self):
+        crash = {**self.crash, "body": self.crash["body"] +
+                 "Native investigation resume: 20261010-campaign-438-pass2\\n"}
+        record = {"status": "merged", "pr": 442, "attempts": 1,
+                  "native_validation": "pending", "repair_kind": "ci",
+                  "ci_repair_attempts": 3, "last_failure": "old CI incident"}
+        state = {"issues": {"438": record}, "runs": [{"tokens": 1234}]}
+        gate = closure()
+        self.assertIsNone(select_issue([crash], state, 3, closure=gate))
+        reconcile_native_followup([crash], state, 3)
+        self.assertEqual("queued", record["status"])
+        self.assertEqual(1, record["attempts"])
+        self.assertEqual("pending", record["native_validation"])
+        self.assertEqual([442], record["native_previous_prs"])
+        self.assertNotIn("pr", record)
+        self.assertNotIn("repair_kind", record)
+        self.assertNotIn("ci_repair_attempts", record)
+        self.assertEqual([{"tokens": 1234}], state["runs"])
+        self.assertEqual(438, select_issue([crash], state, 3, closure=gate)["number"])
+
+        # A second merged PR must not start a third investigation just because
+        # the GitHub issue is still open with the same request token.
+        record.update({"status": "merged", "pr": 449})
+        reconcile_native_followup([crash], state, 3)
+        self.assertEqual("merged", record["status"])
+        self.assertEqual(449, record["pr"])
+        self.assertEqual([442], record["native_previous_prs"])
+
+    def test_native_followup_refuses_implicit_or_unsafe_requeues(self):
+        good = self.crash["body"] + "Native investigation resume: second-pass\\n"
+        for label, issue_change, record_change, max_attempts in (
+            ("no token", {"body": self.crash["body"]}, {}, 3),
+            ("multiple tokens", {"body": good + "Native investigation resume: extra\\n"}, {}, 3),
+            ("wrong issue", {"number": 439, "body": good}, {}, 3),
+            ("closed", {"state": "CLOSED", "body": good}, {}, 3),
+            ("not ready", {"title": "[planned] Launch", "body": good}, {}, 3),
+            ("not pending", {"body": good}, {"native_validation": "passed"}, 3),
+            ("still in PR", {"body": good}, {"status": "pr_open"}, 3),
+            ("dirty cleanup", {"body": good}, {"cleanup_errors": ["dirty worktree"]}, 3),
+            ("initial budget exhausted", {"body": good}, {"attempts": 3}, 3),
+            ("same token", {"body": good}, {"native_followup_token": "second-pass"}, 3),
+        ):
+            with self.subTest(label=label):
+                record = {"status": "merged", "pr": 442, "attempts": 1,
+                          "native_validation": "pending", **record_change}
+                state = {"issues": {str(self.crash["number"]): record}}
+                reconcile_native_followup([{**self.crash, **issue_change}], state, max_attempts)
+                self.assertEqual("merged", record["status"])
+                self.assertEqual(442, record["pr"])
+                self.assertNotIn("native_previous_prs", record)
 
 
     def test_native_code_merge_does_not_auto_close_unverified_incident(self):
