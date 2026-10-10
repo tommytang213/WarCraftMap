@@ -116,7 +116,7 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
 
     def test_explicit_native_followup_resumes_once_without_losing_history(self):
         crash = {**self.crash, "body": self.crash["body"] +
-                 "Native investigation resume: 20261010-campaign-438-pass2\\n"}
+                 "Native investigation resume: 20261010-campaign-438-pass2\n"}
         record = {"status": "merged", "pr": 442, "attempts": 1,
                   "native_validation": "pending", "repair_kind": "ci",
                   "ci_repair_attempts": 3, "last_failure": "old CI incident"}
@@ -143,10 +143,10 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
         self.assertEqual([442], record["native_previous_prs"])
 
     def test_native_followup_refuses_implicit_or_unsafe_requeues(self):
-        good = self.crash["body"] + "Native investigation resume: second-pass\\n"
+        good = self.crash["body"] + "Native investigation resume: second-pass\n"
         for label, issue_change, record_change, max_attempts in (
             ("no token", {"body": self.crash["body"]}, {}, 3),
-            ("multiple tokens", {"body": good + "Native investigation resume: extra\\n"}, {}, 3),
+            ("multiple tokens", {"body": good + "Native investigation resume: extra\n"}, {}, 3),
             ("wrong issue", {"number": 439, "body": good}, {}, 3),
             ("closed", {"state": "CLOSED", "body": good}, {}, 3),
             ("not ready", {"title": "[planned] Launch", "body": good}, {}, 3),
