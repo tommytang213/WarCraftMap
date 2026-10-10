@@ -1,5 +1,9 @@
 # Issue 443: Live army and fleet order persistence
 
+The PR #446 CI repair is recorded at the end of this report. The implementation
+evidence below predates that repair; `repair-validation.json` identifies the
+current verification inputs and results.
+
 Production regional startup now installs immediate, point and target order
 callbacks through the shared compatibility boundary. Stable force and target
 identities own committed orders. Current ownership, force category, physical map,
@@ -74,3 +78,42 @@ compiler and archive inspection functions. It builds all physical maps after the
 separate complete interpreter gate. Generated archives remain in ignored build
 storage. No commits, pushes, GitHub changes, services or global tooling changes
 were made.
+
+## PR #446 CI repair
+
+The [failed campaign build](https://github.com/tommytang213/WarCraftMap/actions/runs/38007400920/job/114079254940)
+passed all 373 Wurst tests and built both campaign archives, then failed runtime
+acceptance: no single passing `army_fleet_control` test exercised military
+management registration, command dispatch, order installation and order delivery.
+The order journeys exercised the native callbacks while the old management
+journey still used direct `issueOrder()` calls. Neither satisfied the complete
+production-entry contract.
+
+The moved army/fleet save journey now registers production management commands,
+opens `/army` before saving and `/fleet` after loading, and checks distinct
+retained losses and unchanged resumed orders through recording native ports.
+The runtime manifest names the installed-callback journeys. No coverage
+requirements, runtime rules, save migrations or publication gates were relaxed.
+
+`verify-evidence.py` now runs the same complete runtime acceptance used by
+candidate packaging against the interpreter transcript and diagnostic campaign,
+before verifying scoped order receipts and compiled registrations. It retains
+`runtime-acceptance.json` and the army/fleet test identity alongside the scoped
+evidence. `repair-validation.json` and the `repair-*` transcripts record the
+recheck; generated campaign archives remain in ignored build storage. The
+diagnostic campaign is not a player release. Physical remote-command transport,
+the full traceability obligations and native-client execution remain separate.
+
+The repair passes **373/373** pinned Wurst tests, **186/186** selected Python tests,
+both framework variants (**2/2** pinned tests each), and all **17** physical map
+builds. All **21** production systems have a complete passing journey. Runtime
+acceptance and the release-blocker audit pass with the current execution and
+artifact evidence. The scoped audit verifies **12** receipts and order
+registrations in all **16** gameplay maps. Their common source-tree digest is
+`7c0b519905a897bfa17389b001e8940f7b327e134bcacf187bbdcb8c3189b081`.
+
+Canonical traceability retains **8,730** publication blockers and explicitly
+unresolved remote-command obligations. The native-save oracle passes; no native
+client runner is available. The diagnostic build and exact failing acceptance
+gate were rerun locally; the full two-build release-candidate pipeline remains
+for authoritative repository validation. No player QA or GitHub writes occurred.

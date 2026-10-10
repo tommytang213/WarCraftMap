@@ -11,6 +11,7 @@ PROJECT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(PROJECT / 'tooling'), str(PROJECT.parent / '_shared/tooling')]
 import requirement_traceability_audit as scenario
 import requirement_traceability as trace
+import runtime_acceptance
 from integration_evidence import source_identity
 from wurst_execution import source_revision
 
@@ -71,6 +72,12 @@ def main():
     identity = source_identity(PROJECT, revision)
     evidence = trace.load(args.execution_dir / 'results.json')
     transcript = (args.execution_dir / 'execution.log').read_bytes()
+    # PR #446 passed the scoped order receipts but failed the campaign gate:
+    # no single journey also exercised military management registration and
+    # dispatch. Verify the same complete acceptance used by candidate packaging.
+    acceptance = runtime_acceptance.audit_acceptance(
+        execution=evidence, execution_log=transcript, revision=revision, campaign=args.artifact)
+    assert acceptance['status'] == 'pass', acceptance['failures']
     full = scenario.build_report(args.artifact, evidence, transcript, revision)
     scenario.write_report(full, args.output_dir / 'requirement-traceability')
     assert not full['executionErrors'], full['executionErrors']
@@ -110,11 +117,15 @@ def main():
               'wholeRequirementStatus': 'fail', 'receipts': 12,
               'artifactSha256': full['artifact']['sha256'],
               'executionLogSha256': evidence['logSha256'],
+              'runtimeAcceptanceStatus': acceptance['status'],
+              'armyFleetExecutedTests': next(row['executedTests'] for row in acceptance['systems']
+                                            if row['id'] == 'army_fleet_control'),
               'compiledRegistrations': registrations, 'candidateReady': False,
               'remainingPublicationBlockers': full['blockerCount'],
               'downstreamObligations': list(downstream), 'realClientExecuted': False,
               'releaseStatus': 'blocked_pending_remote_transport_and_native_launch'}
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    (args.output_dir / 'runtime-acceptance.json').write_text(json.dumps(acceptance, indent=2, sort_keys=True) + '\n')
     (args.output_dir / 'scoped-evidence.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
     print('PASS: live order callbacks, saves, reconstruction and compiled registrations; unrelated blockers retained')
 

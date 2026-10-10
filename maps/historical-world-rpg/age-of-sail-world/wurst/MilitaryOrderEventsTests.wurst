@@ -5,6 +5,8 @@ import MilitarySettlementRuntime
 import MilitarySettlementRuntimeTests
 import CampaignStartupTests
 import CampaignSaveManager
+import CommandRouter
+import ManagementScreenPauseController
 import PlayableCampaignRuntime
 import PartyLocations
 import UnstuckRecovery
@@ -12,10 +14,15 @@ import WC3Compatibility
 import Wurstunit
 
 class OrderRepresentations extends WarcraftMilitarySettlementAdapter
+	string heading = ""
+	string management = ""
 	override function maximumLife(unit target) returns int
 		return 100
 	override function setMaximumLife(unit target, int value)
 		skip
+	override function showManagement(player viewer, string heading, string body)
+		this.heading = heading
+		management = body
 
 /** Real interpreter units go through the production military projection.
  * Only event delivery, current native orders and native issuance are recorded. */
@@ -145,10 +152,24 @@ class OrderFixture
 @test function installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations()
 	let f = new OrderFixture()
 	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	// The player management entry and installed native order entry must observe
+	// the same authority within this save/reload journey (PR #446 regression).
+	let presentation = new RecordingMilitaryAdapter()
+	let pauses = getManagementScreenPauseController()
+	let previousPause = pauses.runtime
+	pauses.runtime = presentation
+	let commands = new CommandRegistry(false, 8, new CommandText(), presentation)
+	registerMilitarySettlementCommands(commands, f.runtime)
 	f.point("army", COMPAT_ORDER_SMART, f.land.x + 48., f.land.y)
 	f.point("fleet", COMPAT_ORDER_PATROL, f.sea.x + 48., f.sea.y)
 	f.position("army", f.land.x + 16., f.land.y + 16.)
 	f.position("fleet", f.sea.x + 16., f.sea.y + 16.)
+	f.runtime.recordLoss("army", 7)
+	f.runtime.recordLoss("fleet", 11)
+	commands.dispatch(Player(0), "/army army").assertTrue()
+	f.objects.heading.assertEquals("Campaign management: army")
+	f.objects.management.contains("Controller: player | Strength: 33/40").assertTrue()
+	commands.dispatch(Player(0), "/management-close").assertTrue()
 	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "moving-forces").assertTrue()
 	f.record("army").x.assertEquals(f.land.x + 16.)
 	f.record("fleet").y.assertEquals(f.sea.y + 16.)
@@ -161,6 +182,13 @@ class OrderFixture
 	f.natives.y(f.token("fleet")).assertEquals(f.sea.y + 16.)
 	f.natives.orders[f.natives.slot(f.token("army"))].assertEquals(COMPAT_ORDER_MOVE)
 	f.natives.xs[f.natives.slot(f.token("fleet"))].assertEquals(f.sea.x + 48.)
+	let resumed = f.runtime.snapshot()
+	commands.dispatch(Player(0), "/fleet fleet").assertTrue()
+	f.objects.heading.assertEquals("Campaign management: fleet")
+	f.objects.management.contains("Controller: player | Strength: 29/40").assertTrue()
+	commands.dispatch(Player(0), "/management-close").assertTrue()
+	f.runtime.snapshot().assertEquals(resumed)
+	f.natives.orders[f.natives.slot(f.token("fleet"))].assertEquals(COMPAT_ORDER_PATROL)
 	f.point("army", COMPAT_ORDER_ATTACK, f.land.x + 40., f.land.y)
 	f.position("army", f.land.x + 24., f.land.y)
 	f.runtime.activateRegion("inactive")
@@ -173,6 +201,7 @@ class OrderFixture
 	f.startup.campaign.identity.physicalMapId().assertEquals("europe_west")
 	f.receipt("success")
 	f.close()
+	pauses.runtime = previousPause
 
 @test function installedTargetOrdersRebindThenCancelCompletedAndObsoleteTargets()
 	let f = new OrderFixture()
