@@ -1,0 +1,303 @@
+package HeroAllocationTests
+
+import AuthoredQuestTests
+import WarcraftRpgRuntime
+import HeroProgression
+import HeroEarnedGrowthTests
+import ScenarioData
+import CommandRouter
+import CampaignSaveManager
+import CampaignLoadTransactionTests
+import PlayableCampaignRuntime
+import ManagementCommandTests
+import ManagementScreenPauseController
+
+/** All earned balances come from registered, physically validated turn-in.
+ * AuthoredFixture replaces only condition receipts, location and output ports. */
+public class AllocationFixture
+	AuthoredFixture journey = new AuthoredFixture()
+	WarcraftRpgRuntime rpg
+	RpgHero hero
+	RecordingManagementPorts pausePort = new RecordingManagementPorts()
+	ManagementScreenPauseController pauses
+	construct(int level, string skills, string masteries, string tree)
+		rpg = journey.rpg
+		hero = rpg.heroes.get("hero")
+		hero.level = level
+		hero.skillIds = "~command~navigation~diplomacy~administration~engineering~scholarship~commerce~"
+		hero.masteryIds = "~land_warfare~sea_command~statecraft~wayfinding~learned_arts~enterprise~"
+		hero.skillRanks = skills
+		hero.masteryRanks = masteries
+		hero.signatureProgressionId = tree
+		pauses = new ManagementScreenPauseController(pausePort, false)
+		rpg.management.pauses = pauses
+		journey.state.clock.bindManagementPause(pauses)
+		registerRpgRuntimeCommands(journey.commands, rpg).assertEquals("")
+	function earn(int amount)
+		journey.compact.rewardExperience = amount
+		journey.readyForGrowth()
+		journey.command("/turnin europe_printed_compact hero", true)
+		journey.command("/turnin europe_printed_compact hero", false)
+	function action(string line, boolean accepted)
+		let before = rpg.captureState()
+		journey.commands.dispatch(Player(0), line).assertTrue()
+		journey.output.last.contains("Selected perks:").assertEquals(accepted)
+		if not accepted
+			rpg.captureState().assertEquals(before)
+	function check(int skills, int masteries, int choices, int skillRank, int masteryRank, boolean initiate, boolean veteran)
+		hero.skillPoints.assertEquals(skills)
+		hero.masteryPoints.assertEquals(masteries)
+		hero.choicePoints.assertEquals(choices)
+		hero.skillRank("navigation").assertEquals(skillRank)
+		hero.masteryRank("sea_command").assertEquals(masteryRank)
+		hero.hasPerk("martial_initiate").assertEquals(initiate)
+		hero.hasPerk("martial_veteran").assertEquals(veteran)
+		rpg.hasSelectedAbility("hero", "rally_company").assertEquals(initiate)
+		rpg.hasSelectedAbility("hero", "coordinated_broadside").assertEquals(veteran)
+
+@test function registeredAllocationInspectionPauseOwnershipMalformedInputAndCollisions()
+	let f = new AllocationFixture(1, "", "", "martial_signature")
+	f.earn(heroExperienceForLevel(30))
+	let before = f.rpg.captureState()
+	let outsider = new RpgHero("outsider", "Outsider", 'Hpal')
+	f.rpg.heroes.register(outsider)
+	f.action("/chooseperk missing martial_initiate", false)
+	f.action("/chooseperk outsider martial_initiate", false)
+	f.action("/improveskill missing navigation", false)
+	f.action("/improvemastery outsider sea_command", false)
+	let roster = f.rpg.captureState()
+	for i = 0 to 2
+		var action = "/improveskill hero navigation"
+		if i == 1
+			action = "/improvemastery hero sea_command"
+		else if i == 2
+			action = "/chooseperk hero martial_initiate"
+		f.journey.commands.dispatch(Player(1), action).assertTrue()
+		f.journey.output.last.contains("Only the campaign player").assertTrue()
+		f.rpg.captureState().assertEquals(roster)
+	f.journey.commands.dispatch(Player(1), "/progression hero").assertTrue()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	f.journey.commands.dispatch(Player(0), "/progression").assertFalse()
+	f.journey.commands.dispatch(Player(0), "/progression hero extra").assertFalse()
+	f.journey.commands.dispatch(Player(0), "/improveskill hero").assertFalse()
+	f.journey.commands.dispatch(Player(0), "/improveskill hero navigation 2").assertFalse()
+	f.journey.commands.dispatch(Player(0), "/improvemastery hero sea_command -1").assertFalse()
+	f.journey.commands.dispatch(Player(0), "/chooseperk hero martial_initiate 1").assertFalse()
+	f.action("/chooseperk hero ~martial_initiate~", false)
+	f.action("/chooseperk hero martial_initiate,", false)
+	f.action("/chooseperk hero unknown", false)
+	f.action("/improveskill hero navigation:100", false)
+	f.action("/improvemastery hero 1", false)
+	f.rpg.captureState().assertEquals(roster)
+	f.action("/progression hero", true)
+	f.journey.output.last.contains("Requires perk martial_initiate").assertTrue()
+	f.journey.output.last.contains("ability rally_company").assertTrue()
+	f.journey.output.last.contains("ability effects are pending").assertTrue()
+	f.journey.output.last.contains("Respecialization is unavailable").assertTrue()
+	f.journey.output.last.contains("/rpg-close").assertTrue()
+	f.action("/progression hero", true)
+	f.journey.commands.dispatch(Player(0), "/inventory hero").assertTrue()
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	let clock = f.journey.state.clock.captureState()
+	f.journey.state.clock.advanceElapsed(20.).assertTrue()
+	f.journey.state.clock.captureState().assertEquals(clock)
+	let nested = f.pauses.openModalManagementScreen()
+	f.action("/improveskill hero navigation", true)
+	f.pauses.getModalOwnerCount().assertEquals(2)
+	f.journey.commands.dispatch(Player(0), "/rpg-close").assertTrue()
+	f.journey.commands.dispatch(Player(0), "/rpg-close").assertTrue()
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	nested.close()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	f.pausePort.pauseWrites.assertEquals(2)
+	f.pauses.setManuallyPaused(true)
+	f.action("/progression hero", true)
+	f.journey.commands.dispatch(Player(0), "/rpg-close").assertTrue()
+	f.pauses.getModalOwnerCount().assertEquals(0)
+	f.pauses.isCampaignPaused().assertTrue()
+	f.pauses.setManuallyPaused(false)
+	f.pauses.isCampaignPaused().assertFalse()
+	// Each new canonical token can collide with another command's alias.
+	string array[4] names
+	names[0] = "progression"
+	names[1] = "improveskill"
+	names[2] = "improvemastery"
+	names[3] = "chooseperk"
+	for i = 0 to 3
+		let commands = new CommandRegistry(false, 8, new CommandText(), f.journey.output)
+		commands.register("occupied", names[i], "occupied", "Occupied", "Occupied", 0, 0, COMMAND_RELEASE, null).assertEquals("")
+		registerRpgRuntimeCommands(commands, f.rpg).contains(names[i]).assertTrue()
+		(commands.find("rpg-close") != null).assertTrue()
+	f.rpg.heroes.count = 1
+	(f.rpg.captureState() != before).assertTrue()
+
+@test function allocationUsesEveryPrerequisiteAndDoesNotGrantEffects()
+	let f = new AllocationFixture(1, "", "", "martial_signature")
+	f.earn(heroExperienceForLevel(40))
+	// A definition-bound two-parent node verifies ALL requirements, beyond the
+	// authored single-parent chains. No command supplies requirements or cost.
+	f.rpg.allocations.addPerk("branch", "rally_company", 30, "~martial_initiate~")
+	f.rpg.allocations.addPerk("combined", "coordinated_broadside", 30, "~martial_initiate~~branch~")
+	let tree = f.rpg.allocations.treeIndex("martial_signature")
+	f.rpg.allocations.treePerks[tree] += "~branch~~combined~"
+	f.action("/chooseperk hero combined", false)
+	f.action("/chooseperk hero martial_initiate", true)
+	f.action("/chooseperk hero combined", false)
+	f.action("/chooseperk hero branch", true)
+	f.action("/chooseperk hero combined", true)
+	f.hero.choicePoints.assertEquals(1)
+	f.action("/chooseperk hero combined", false)
+	(f.rpg.heroes.projected[0] == null).assertTrue()
+
+@test function accomplishedProfilesAndOtherCharactersKeepIndependentAllocations()
+	let generated = new WarcraftRpgRuntime(null)
+	configureGeneratedRpg(generated)
+	let f = new AllocationFixture(1, "", "", "")
+	let profile = generated.heroes.get("horatio_nelson")
+	f.hero.recruited = false
+	f.hero.startingProfile = profile.startingProfile
+	f.hero.personalTreeIds = profile.personalTreeIds
+	// This fixture's generic traveler has a full-date recruitment window;
+	// the composed accomplished profile supplies its starting progression.
+	f.journey.commands.dispatch(Player(0), "/recruit hero").assertTrue()
+	f.hero.level.assertEquals(115)
+	f.hero.skillRank("navigation").assertEquals(82)
+	f.hero.masteryRank("sea_command").assertEquals(53)
+	f.action("/improveskill hero navigation", false)
+	f.action("/chooseperk hero martial_initiate", false)
+	f.hero.assignment = "field"
+	f.earn(heroExperienceForLevel(120) - heroExperienceForLevel(115) + 73)
+	let other = generated.heroes.get("leonardo_da_vinci")
+	other.initializeStartingProfile()
+	other.recruited = true
+	other.assignment = "reserve"
+	f.rpg.heroes.register(other)
+	f.action("/improveskill leonardo_da_vinci navigation", false)
+	f.action("/chooseperk leonardo_da_vinci martial_initiate", false)
+	f.action("/improveskill hero navigation", true)
+	f.action("/improvemastery hero sea_command", true)
+	f.action("/chooseperk hero martial_initiate", true)
+	assertBalances(f.hero, 120, 73, 4, 0, 0)
+	f.hero.skillRank("command").assertEquals(82)
+	f.hero.skillRank("navigation").assertEquals(83)
+	f.hero.masteryRank("sea_command").assertEquals(54)
+	assertBalances(other, 64, 0, 0, 0, 0)
+	other.skillRank("engineering").assertEquals(57)
+	other.hasPerk("martial_initiate").assertFalse()
+
+@test function investedWoundedCharactersRestoreWithoutReplayingGrantsOrRecovery()
+	let f = new AllocationFixture(1, "", "", "martial_signature")
+	f.earn(heroExperienceForLevel(30) + 73)
+	f.action("/improveskill hero navigation", true)
+	f.action("/improvemastery hero sea_command", true)
+	f.action("/chooseperk hero martial_initiate", true)
+	let deadline = f.journey.state.clock.campaignDay() + 30
+	f.hero.wound(deadline - 30, 30)
+	f.action("/progression hero", true)
+	f.action("/chooseperk hero martial_veteran", true)
+	f.journey.commands.dispatch(Player(0), "/rpg-close").assertTrue()
+	let saved = f.rpg.captureState()
+	let destination = new AllocationFixture(1, "", "", "martial_signature")
+	let codec = new PlayableCampaignCodec(f.journey.state.clock)
+	let encoded = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "invested", f.journey.state.captureAuthoritativeState())
+	let authority = codec.decodeMigrateAndValidate(encoded, "manual_01")
+	(authority != "").assertTrue()
+	for attempt = 1 to 3
+		destination.journey.state.reconstructRuntime(authority).assertTrue()
+		destination.journey.state.activateAuthoritativeState(authority)
+		destination.rpg.captureState().assertEquals(saved)
+		destination.hero.incapacitated.assertTrue()
+		destination.hero.recoveryDay.assertEquals(deadline)
+		destination.hero.assignment.assertEquals("recovering")
+		destination.hero.level.assertEquals(30)
+		destination.hero.experience.assertEquals(73)
+		destination.check(28, 5, 1, 1, 1, true, true)
+		destination.action("/chooseperk hero martial_veteran", false)
+	destination.hero.advanceRecovery(deadline - 1)
+	destination.hero.incapacitated.assertTrue()
+	destination.hero.advanceRecovery(deadline)
+	destination.hero.assignment.assertEquals("reserve")
+	destination.check(28, 5, 1, 1, 1, true, true)
+
+@test function legacyAllocationsRemainWithoutRetrospectiveChargesRefundsOrGrants()
+	let f = new AllocationFixture(1, "", "", "martial_signature")
+	f.rpg.journal.count = 0
+	for schema = 2 to 6
+		var legacy = "v" + schema.toString()
+		if schema >= 3
+			legacy += "|p,hero"
+		legacy += "|h,hero,1,30,73,2,1,777,90,0,1,130,recovering,remote,profession,journey,martial_signature,~martial_initiate~~opaque_legacy~"
+		if schema >= 4
+			legacy += ",navigation:99~,sea_command:99~"
+		if schema >= 6
+			legacy += ",1"
+		legacy += "|j,,37"
+		f.rpg.restoreState(legacy).assertTrue()
+		f.hero.hasPerk("opaque_legacy").assertTrue()
+		f.hero.hasPerk("martial_initiate").assertTrue()
+		f.hero.commandExperience.assertEquals(777)
+		f.hero.incapacitated.assertTrue()
+		f.hero.recoveryDay.assertEquals(130)
+		f.hero.choicePoints.assertEquals(IMaxBJ(0, schema - 5))
+		f.action("/chooseperk hero martial_initiate", false)
+		f.action("/chooseperk hero martial_veteran", schema == 6)
+		f.action("/improveskill hero navigation", true)
+		f.action("/improvemastery hero sea_command", true)
+		if schema >= 4
+			f.hero.skillRank("navigation").assertEquals(100)
+			f.hero.masteryRank("sea_command").assertEquals(100)
+		else
+			f.hero.skillRank("navigation").assertEquals(1)
+			f.hero.masteryRank("sea_command").assertEquals(1)
+		let saved = f.rpg.captureState()
+		for attempt = 1 to 2
+			f.rpg.restoreState(saved).assertTrue()
+			f.rpg.reconstruct(null, 0., 0., "player")
+			f.rpg.captureState().assertEquals(saved)
+		f.hero.skillPoints.assertEquals(1)
+		f.hero.masteryPoints.assertEquals(0)
+		f.hero.choicePoints.assertEquals(0)
+
+@test function allocationRestorationFailureRollsBackCompleteAuthorityAndEntitlements()
+	let invested = new AllocationFixture(20, "navigation:99~", "sea_command:99~", "martial_signature")
+	invested.earn(heroExperienceForLevel(40) - heroExperienceForLevel(20))
+	invested.action("/improveskill hero navigation", true)
+	invested.action("/improvemastery hero sea_command", true)
+	invested.action("/chooseperk hero martial_initiate", true)
+	let f = new LoadFixture()
+	let hero = f.rpg.heroes.get("hero")
+	f.rpg.allocations = invested.rpg.allocations
+	hero.skillIds = invested.hero.skillIds
+	hero.masteryIds = invested.hero.masteryIds
+	// Keep the transaction fixture's other durable domains and projections.
+	hero.level = invested.hero.level
+	hero.skillRanks = invested.hero.skillRanks
+	hero.masteryRanks = invested.hero.masteryRanks
+	hero.skillPoints = invested.hero.skillPoints
+	hero.masteryPoints = invested.hero.masteryPoints
+	hero.choicePoints = invested.hero.choicePoints
+	hero.signatureProgressionId = invested.hero.signatureProgressionId
+	hero.chosenPerks = invested.hero.chosenPerks
+	let before = f.rpg.captureState()
+	invested.action("/chooseperk hero martial_veteran", true)
+	hero.chosenPerks = invested.hero.chosenPerks
+	hero.choicePoints = invested.hero.choicePoints
+	let changed = f.rpg.captureState()
+	f.rpg.restoreState(before).assertTrue()
+	let candidate = replaceCampaignField(f.candidate(), "rpg", changed)
+	f.ports.failParty = true
+	f.rejectAndVerify(candidate)
+	f.rpg.captureState().assertEquals(before)
+	f.rpg.hasSelectedAbility("hero", "coordinated_broadside").assertFalse()
+	f.ports.failParty = false
+	f.recordingTimer.expected = f.candidateClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.captureState().assertEquals(changed)
+	f.rpg.hasSelectedAbility("hero", "coordinated_broadside").assertTrue()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.captureState().assertEquals(changed)
+	let commands = new CommandRegistry(false, 8, new CommandText(), invested.journey.output)
+	registerRpgRuntimeCommands(commands, f.rpg).assertEquals("")
+	commands.dispatch(Player(0), "/chooseperk hero martial_veteran").assertTrue()
+	invested.journey.output.last.assertEquals("Perk is already selected.")
+	f.rpg.captureState().assertEquals(changed)

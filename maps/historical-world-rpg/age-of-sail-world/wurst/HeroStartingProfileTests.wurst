@@ -118,7 +118,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	f.hero.skillPoints = 9
 	f.hero.masteryPoints = 4
 	f.hero.signatureProgressionId = "retained_signature"
-	f.hero.choosePerk("earned_perk", 100).assertTrue()
+	f.hero.chosenPerks = "~earned_perk~" // Pre-allocation legacy entitlement fixture.
 	f.rpg.heroes.assignRemote(f.hero.id, "fleet_command", "remote_region").assertTrue()
 	f.clock.advanceTo(f.hero.availabilityEndDay + 1).assertTrue()
 	f.reject("/hire horatio_nelson", "That character is already recruited.")
