@@ -47,7 +47,9 @@ add exactly one line `Native investigation resume: <new-unique-token>` to its
 **open [agent-ready] GitHub issue body**. On the next worker wake, the controller
 may reopen the local implementation queue **once per token**, provided the prior
 PR was merged and cleaned up and the initial attempt budget still permits a
-run. It archives the previous PR reference, preserves consumed attempts/token
+run. Each token allows one new initial Codex attempt, while genuinely failed
+validation, CI and merge-conflict repairs retain their normal bounded lanes.
+It archives the previous PR reference, preserves consumed attempts/token
 quotas, and starts from current main rather than reusing the merged PR.
 Merely reopening an issue, leaving it open, or reusing the same token does
 **not** launch Codex. This is not permission to waive native validation or
