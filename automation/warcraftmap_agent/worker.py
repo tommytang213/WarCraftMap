@@ -26,6 +26,11 @@ NEEDS_DESIGN = re.compile(r"^\[needs-design\]\s+", re.IGNORECASE)
 PLANNED = re.compile(r"^\[planned\]\s+", re.IGNORECASE)
 PLANNED_PHASE = re.compile(r"^\[planned\]\s+Phase\s+(\d+)\s*:", re.IGNORECASE)
 DEPENDENCY = re.compile(r"(?im)^\s*Depends on:\s*#(\d+)\b")
+# One explicit issue-body nonce authorizes a single follow-up; reopening alone
+# must not trigger an endless loop of merged, unverified native investigations.
+NATIVE_FOLLOWUP_TOKEN = re.compile(
+    r"(?m)^Native investigation resume: ([a-z0-9][a-z0-9._-]{0,63})[ \\t]*$"
+)
 QUEUE_REFILL_THRESHOLD = 3
 QUEUE_TARGET = 10
 
@@ -709,6 +714,41 @@ def refresh_validation_repair_bases(config: Config, state: dict[str, Any]) -> No
                 record["status"] = "repair"
 
 
+def reconcile_native_followup(
+    issues: list[dict[str, Any]], state: dict[str, Any], max_attempts: int,
+) -> None:
+    """Resume merged native work once, only on a new explicit issue request.
+
+    A PR merge is not proof of retail startup. Do not infer renewed work solely
+    from an issue remaining open, or repeatedly consume the same retry token.
+    Preserve consumed initial attempts and historical merged PR references.
+    """
+    for issue in issues:
+        number = issue.get("number")
+        if (number not in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC
+                or not is_open(issue) or not READY.match(issue.get("title") or "")):
+            continue
+        record = state["issues"].get(str(number))
+        if (not record or record.get("status") != "merged"
+                or record.get("native_validation") != "pending"
+                or not record.get("pr") or record.get("cleanup_errors")):
+            continue
+        tokens = NATIVE_FOLLOWUP_TOKEN.findall(issue.get("body") or "")
+        if (len(tokens) != 1 or tokens[0] == record.get("native_followup_token")
+                or int(record.get("attempts", 0)) >= max_attempts):
+            continue
+        # Archive the merged PR, never reuse it or reset quota/run history.
+        prior_pr = int(record.pop("pr"))
+        record.setdefault("native_previous_prs", []).append(prior_pr)
+        record["native_followup_token"] = tokens[0]
+        record["status"] = "queued"
+        for key in ("repair_kind", "last_failure", "validation_failure",
+                    "validation_base_oid", "validation_repair_attempts",
+                    "ci_base_oid", "ci_repair_attempts",
+                    "conflict_base_oid", "conflict_attempts"):
+            record.pop(key, None)
+
+
 def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, Any]) -> None:
     """Allow externally resolved design issues to re-enter the implementation queue."""
     for issue in issues:
@@ -1318,6 +1358,7 @@ def main(argv: list[str] | None = None) -> int:
         issues = sorted((item for item in open_issues if READY.match(item["title"])),
                         key=lambda item: (item["createdAt"], item["number"]))
         reconcile_ready_issue_states(issues, state)
+        reconcile_native_followup(issues, state, config.max_attempts)
         refresh_validation_repair_bases(config, state)
         needs_design = [item for item in open_issues if NEEDS_DESIGN.match(item["title"])]
         design_numbers = {int(item["number"]) for item in needs_design}
