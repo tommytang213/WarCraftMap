@@ -234,7 +234,17 @@ class Closure:
         keys = self.keys_for(issue)
         if not keys:
             return False
-        return all(not any(self.dependency_pending(dep) for dep in self.blockers[key].dependencies - keys)
+        # Owner-approved #438 investigates an independently confirmed native
+        # crash. Headless coverage is not a prerequisite to investigating it.
+        # This affects issue routing only: blocker sets, audits, release/merge
+        # gates and all other prerequisite edges remain unchanged.
+        # A stale checkout still needs current audits before using the exemption.
+        exemptions = set()
+        if (self.fresh and issue.get("number") == 438 and keys == {"runtime:campaign_launch"}
+                and re.match(r"^\[agent-ready\]\s+", issue.get("title") or "", re.IGNORECASE)
+                and re.search(r"(?m)^Native launch status: failed\s*$", issue.get("body") or "")):
+            exemptions.add("runtime:evidence")
+        return all(not any(self.dependency_pending(dep) for dep in self.blockers[key].dependencies - keys - exemptions)
                    for key in keys if key in self.blockers)
 
     def planning_view(self, limit: int = 10) -> dict:

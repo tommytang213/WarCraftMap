@@ -1,0 +1,135 @@
+{
+  "afterChecks": [
+    {
+      "command": "PYTHONPATH=build/issue-438/ci-repair:. python3 -m unittest test_native_launch_diagnostic_routing.NativeLaunchDiagnosticRoutingTests.test_other_dependencies_and_stale_checkout_remain_blocking",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "command": "python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 138
+    },
+    {
+      "command": "cd build/issue-438/ci-repair/integration && python3 -m unittest discover -s automation/tests -p 'test_*.py'",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 146
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_launch_diagnostics.py",
+      "exitCode": 0,
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "command": "bash -n automation/run_agent.sh automation/run_checks.sh automation/install-user-service.sh automation/uninstall-user-service.sh",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py --check",
+      "exitCode": 0,
+      "scope": "Inventory consistency only; 643 obligations and 7190 publication blockers. No release acceptance.",
+      "status": "passed"
+    }
+  ],
+  "baselineRechecked": {
+    "extractedSelectorSha256": "3c953659969c956e509093cb2732aaf1e2d94ed6355556a98204637ab1cb1f16",
+    "originalFilesChanged": false,
+    "sourceRevision": "1bdfe32feae8775979735d89a379ecfdd0b28c83",
+    "w3nSha256": "4f2f9cf8ca56f81aaeca524f257ae15e273c2366e52adfaa1eafdf5b996ff9ad"
+  },
+  "beforeControls": [
+    {
+      "command": "PYTHONPATH=build/issue-438/ci-repair:. python3 -m unittest test_native_launch_diagnostic_routing.NativeLaunchDiagnosticRoutingTests.test_other_dependencies_and_stale_checkout_remain_blocking",
+      "exitCode": 1,
+      "failures": 1,
+      "status": "expected_failure",
+      "tests": 1
+    },
+    {
+      "command": "python3 -m unittest automation.tests.test_closure.ClosureTests.test_confirmed_438_crash_exemption_requires_current_regenerated_checkout",
+      "exitCode": 1,
+      "failedSubtests": [
+        "stale checkout",
+        "stale revision",
+        "missing regeneration"
+      ],
+      "status": "expected_failure",
+      "tests": 1
+    }
+  ],
+  "changedImplementationFiles": {
+    "automation/tests/test_closure.py": "6264bea0fd4d3741369fd09f6dce47fcc8966da61911f1dc5bf111d6f54841ea",
+    "automation/warcraftmap_agent/closure.py": "0e659abc5564d201cea225fe25b6a65704608ad4dc244fe58780e64146eb0413"
+  },
+  "checkoutRevision": "893ef74e430c39dc7765bb1d6d15166ab78a7f9d",
+  "ciFailure": {
+    "assertion": "self.assertFalse(closure(fresh=False).permits_issue(self.crash)): True is not false",
+    "automationTests": {
+      "failures": 1,
+      "tests": 145
+    },
+    "baseRevision": "da7f8918002b394c934c3cb479c636f5c39ca1ab",
+    "failedStep": "Python tests",
+    "headRevision": "893ef74e430c39dc7765bb1d6d15166ab78a7f9d",
+    "mergeRevision": "d8ec79c74e58fe76669c4bb36bdcc77e220c5d62",
+    "otherChecksAtInspectedRevision": {
+      "age-of-sail-world": "passed",
+      "build-age-of-sail-campaign": "passed",
+      "validate": "passed"
+    },
+    "scenarioTests": {
+      "status": "passed",
+      "tests": 957
+    },
+    "scope": "Historical PR merge checks; not final-revision or native execution evidence",
+    "test": "test_native_launch_diagnostic_routing.NativeLaunchDiagnosticRoutingTests.test_other_dependencies_and_stale_checkout_remain_blocking",
+    "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/37974187994/job/113968158564"
+  },
+  "implementationStatus": "ready_for_repository_validation",
+  "integrationPreparation": {
+    "commonBase": "b27e1bf76c0e2aed24ae85f0d48db0fb5f05162d",
+    "main": "da7f8918002b394c934c3cb479c636f5c39ca1ab",
+    "mergedClosureSha256": "08c711e145a81c6ed2b67458db63d509ea590cfc39d1768ddac2e47a38b805c9",
+    "method": "Copy current automation/ and .github/ into a new build/issue-438/ci-repair/integration directory. Read base and main closure.py with git show; git merge-file -p CURRENT BASE MAIN produces the snapshot closure.py. Read worker.py and test_native_launch_diagnostic_routing.py from main into the snapshot. Run unittest discovery from that directory. No checkout, merge commit, fetch, or ref mutation.",
+    "upstreamRegressionSha256": "73123353551325069901807981592f94eec6d888226d3dc990bfed024c2b0de4"
+  },
+  "issue": 438,
+  "issueShouldRemainOpen": true,
+  "nativeStatus": {
+    "campaign_native": "failed",
+    "diagnosis": "diagnosis_unconfirmed",
+    "latestFailingClient": "3.0.0.24268",
+    "map_standalone_native": "not_run",
+    "nativeRunner": "native_runner_unavailable",
+    "precedingFailingClient": "3.0.1.24342",
+    "real_client_launch": "failed"
+  },
+  "newW3nProduced": false,
+  "nextSingleExperiment": "Unchanged: qualify the local WGC adapter on same-client positive Lua and corrupt negative controls, then compare the exact extracted selector at 1x; full retail W3N acceptance remains separate.",
+  "playerTestRequested": false,
+  "pullRequest": 442,
+  "remainingValidation": "Outer worker runs the required final-tree repository command. No repeated full Wurst/campaign rebuild was performed for this automation-only repair. No hosted CI or native launch was triggered.",
+  "repair": "Require self.fresh before granting the narrow #438 runtime:evidence routing exemption.",
+  "retainedLog": {
+    "path": "ci-repair-tests.log.gz",
+    "sanitized": true,
+    "sha256": "3f907b91a7859b547b0b41c91fc35b0a47e5a8406a70716506cc7a04b729d91d"
+  },
+  "uncommittedRepair": true,
+  "verifiedDefect": "The branch exemption removed runtime:evidence even when Closure.fresh was false, bypassing stale-checkout routing. This is an automation defect, not the cause of the native null read."
+}

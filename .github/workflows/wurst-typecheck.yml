@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "maps/historical-world-rpg/**"
+      - "automation/prepare_wurst_image.sh"
       - ".github/workflows/wurst-typecheck.yml"
   pull_request:
     paths:
       - "maps/historical-world-rpg/**"
+      - "automation/prepare_wurst_image.sh"
       - ".github/workflows/wurst-typecheck.yml"
   workflow_dispatch:
 
@@ -31,14 +33,20 @@ jobs:
       - name: Validate canonical map source
         run: python maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
 
+      - name: Prepare pinned Wurst image
+        run: |
+          WURST_RUN_IMAGE=$(bash automation/prepare_wurst_image.sh "$WURST_IMAGE")
+          echo "WURST_RUN_IMAGE=$WURST_RUN_IMAGE" >> "$GITHUB_ENV"
+
       - name: Execute complete suite, typecheck, and package fixture and content mutation
         run: |
           docker run --rm \
+            --pull=never \
             --user root \
             -e WURST_IMAGE \
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
-            "$WURST_IMAGE" \
+            "$WURST_RUN_IMAGE" \
             /bin/sh -lc '
               set -eu
               apt-get update

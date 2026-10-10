@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from automation.warcraftmap_agent.closure import build_closure, marked_keys
+from automation.warcraftmap_agent.closure import Blocker, build_closure, marked_keys
 from automation.warcraftmap_agent import worker
 
 A, B = "a" * 40, "b" * 40
@@ -51,6 +51,49 @@ def plan(keys=(KEY,), kind="agent-ready", **kwargs):
 
 
 class ClosureTests(unittest.TestCase):
+    def test_confirmed_438_crash_investigation_bypasses_only_headless_routing_dependency(self):
+        closure = self.closure(findings=())
+        closure.blockers["runtime:evidence"] = Blocker("runtime:evidence", "Execute headless coverage")
+        launch = Blocker("runtime:campaign_launch", "Investigate launch", dependencies={"runtime:evidence"})
+        closure.blockers[launch.key] = launch
+        repair = issue(438, keys=(launch.key,))
+        repair["body"] += "\nNative launch status: failed\n"
+        self.assertTrue(closure.permits_issue(repair))
+        self.assertEqual(worker.select_issue([repair], {"issues": {}}, 3, closure=closure), repair)
+        self.assertTrue(closure.active)
+        self.assertEqual(launch.dependencies, {"runtime:evidence"})
+        self.assertNotIn(launch.key, closure.actionable)
+        self.assertFalse(closure.permits_issue(RELEASE))
+        for change in ({"number": 439}, {"title": "[planned] Launch"},
+                       {"body": repair["body"].replace("failed", "passed")},
+                       {"body": repair["body"] + "\nClosure blocker: runtime:trade"}):
+            with self.subTest(change=change):
+                self.assertFalse(closure.permits_issue(repair | change))
+        launch.dependencies.add(KEY)
+        closure.blockers[KEY] = Blocker(KEY, "Another required repair")
+        self.assertFalse(closure.permits_issue(repair))
+
+    def test_confirmed_438_crash_exemption_requires_current_regenerated_checkout(self):
+        repair = issue(438, keys=("runtime:campaign_launch",))
+        repair["body"] += "\nNative launch status: failed\n"
+        unregenerated = bundle() | {"regenerated": False}
+        for reason, data, revision, current in (
+            ("stale checkout", bundle(), A, False),
+            ("stale revision", bundle(), B, True),
+            ("missing regeneration", unregenerated, A, True),
+        ):
+            with self.subTest(reason=reason):
+                closure = build_closure(data, revision, issues=[repair], checkout_current=current)
+                launch = Blocker("runtime:campaign_launch", "Investigate launch",
+                                 dependencies={"runtime:evidence"})
+                closure.blockers[launch.key] = launch
+                closure.blockers["runtime:evidence"] = Blocker("runtime:evidence", "Execute headless coverage")
+                self.assertFalse(closure.fresh)
+                self.assertFalse(closure.permits_issue(repair))
+                self.assertIsNone(worker.select_issue([repair], {"issues": {}}, 3, closure=closure))
+                self.assertEqual(launch.dependencies, {"runtime:evidence"})
+                self.assertTrue(closure.active)
+
     def closure(self, findings=("REQ-0002.01",), **kwargs):
         return build_closure(bundle(findings=findings), A, **kwargs)
 

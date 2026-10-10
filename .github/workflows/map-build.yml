@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "maps/historical-world-rpg/**"
+      - "automation/prepare_wurst_image.sh"
       - ".github/workflows/map-build.yml"
   pull_request:
     paths:
       - "maps/historical-world-rpg/**"
+      - "automation/prepare_wurst_image.sh"
       - ".github/workflows/map-build.yml"
   workflow_dispatch:
 
@@ -41,6 +43,11 @@ jobs:
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py
           python3 maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py --check
 
+      - name: Prepare pinned Wurst image
+        run: |
+          WURST_RUN_IMAGE=$(bash automation/prepare_wurst_image.sh "$WURST_IMAGE")
+          echo "WURST_RUN_IMAGE=$WURST_RUN_IMAGE" >> "$GITHUB_ENV"
+
       - name: Execute complete Wurst suite and package with pinned compiler
         id: candidate
         run: |
@@ -48,6 +55,7 @@ jobs:
           mkdir -p "$artifact_dir"
 
           docker run --rm \
+            --pull=never \
             --user root \
             -e MAP_PROJECT \
             -e RELEASE_ARTIFACT \
@@ -55,7 +63,7 @@ jobs:
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \
-            "$WURST_IMAGE" \
+            "$WURST_RUN_IMAGE" \
             /bin/sh -lc '
               set -eu
               apt-get update
