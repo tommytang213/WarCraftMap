@@ -22,6 +22,7 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 	PlayerCampaignIdentity identity
 	ManagementScreenPauseController pause
 	MilitaryCombatNatives natives
+	PlayableCampaignState campaign = null
 	boolean installed = false
 	boolean paused = false
 	int suspension = 0
@@ -178,6 +179,11 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		synchronize()
 		let found = representedForce(target)
 		if found < 0
+			if target != 0 and campaign != null and runtime.rpg != null
+				for i = 0 to runtime.rpg.heroes.count - 1
+					if natives.heroRepresentationId(i) == target
+						campaign.defeatHero(i)
+						return
 			return
 		let runtimeForce = runtime.forces[found]
 		let attacker = attackerController(killer)
@@ -275,5 +281,6 @@ public function installMilitaryCombatEvents(PlayableCampaignServices campaign, M
 	if runtime.callbacks != null
 		return runtime.callbacks castTo MilitaryCombatEvents
 	let events = new MilitaryCombatEvents(runtime, campaign.identity, pause, natives)
+	events.campaign = campaign.state
 	events.install()
 	return events

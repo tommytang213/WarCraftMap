@@ -6,6 +6,11 @@ import ManagementScreenPauseController
 public interface CampaignTimelineListener
 	function onCampaignEvent(string eventId, string scheduleId, int occurrence, int campaignDay)
 
+/** Deadline consumers run once at the committed day, even across empty schedules
+ * and large jumps. Restoring a clock alone never delivers gameplay mutations. */
+public interface CampaignDayListener
+	function onCampaignDay(int day)
+
 /** Warcraft timers wake the clock but never own authoritative campaign time. */
 public interface CampaignTimerAdapter
 	function start(CampaignClock clock, real interval)
@@ -116,6 +121,8 @@ public class CampaignClock implements CampaignPauseListener
 	int nextOccurrence = 0
 	CampaignTimelineListener array[32] listeners
 	int listenerCount = 0
+	CampaignDayListener array[32] dayListeners
+	int dayListenerCount = 0
 	CampaignTimerAdapter timerAdapter = null
 	real timerInterval = 0.
 	int scheduleFingerprint
@@ -141,6 +148,13 @@ public class CampaignClock implements CampaignPauseListener
 	function subscribe(CampaignTimelineListener listener)
 		listeners[listenerCount] = listener
 		listenerCount++
+
+	function subscribeDays(CampaignDayListener listener)
+		for i = 0 to dayListenerCount - 1
+			if dayListeners[i] == listener
+				return
+		dayListeners[dayListenerCount] = listener
+		dayListenerCount++
 
 	function campaignDay() returns int
 		return currentDay
@@ -246,6 +260,8 @@ public class CampaignClock implements CampaignPauseListener
 		currentDay = target
 		if currentDay == endDay
 			fractionalDays = 0.
+		for i = 0 to dayListenerCount - 1
+			dayListeners[i].onCampaignDay(currentDay)
 		advancing = false
 		lastDiagnostic = ""
 		return true

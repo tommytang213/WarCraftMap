@@ -1,0 +1,382 @@
+package HeroDefeatLifecycleTests
+
+import CampaignStartupTests
+import CampaignTimelineTests
+import CampaignTimeline
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import WarcraftRpgProjections
+import MilitaryCombatEvents
+import ManagementScreenPauseController
+import ManagementCommandTests
+import PartyLocations
+import CommandRouter
+import Wurstunit
+
+/** Opaque representation tokens, native positions and max-life writes only.
+ * All authority, startup, event installation, clock, codec and rollback logic
+ * is production code. Retirement deliberately delivers a reentrant death. */
+class DefeatObjects implements CampaignPartyProjection, RpgEquipmentNatives
+	StartupPorts ports
+	MilitaryCombatEvents events = null
+	int nextToken = 100
+	int array[2048] tokens
+	int array[2048] life
+	int array[2048] retained
+	int array[2048] retainedLife
+	int cleanupDeaths = 0
+	construct(StartupPorts ports)
+		this.ports = ports
+	override function representationId(int index) returns int
+		return tokens[index]
+	override function maxLife(int index) returns int
+		(tokens[index] != 0).assertTrue()
+		return life[index]
+	override function setMaxLife(int index, int value)
+		(tokens[index] != 0).assertTrue()
+		life[index] = value
+	function cleanup(int obsolete)
+		if events != null and obsolete != 0
+			cleanupDeaths++
+			events.onDeath(events.generation, obsolete, 7000)
+	override function retire(WarcraftRpgRuntime rpg, int index)
+		let obsolete = tokens[index]
+		tokens[index] = 0
+		ports.retire(rpg, index)
+		cleanup(obsolete)
+	override function beginLoad(WarcraftRpgRuntime rpg)
+		ports.beginLoad(rpg)
+		for i = 0 to rpg.heroes.count - 1
+			retained[i] = tokens[i]
+			retainedLife[i] = life[i]
+			tokens[i] = 0
+			cleanup(retained[i])
+	override function rollbackLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			retire(rpg, i)
+		ports.rollbackLoad(rpg)
+		for i = 0 to rpg.heroes.count - 1
+			tokens[i] = retained[i]
+			life[i] = retainedLife[i]
+			retained[i] = 0
+	override function commitLoad(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			cleanup(retained[i])
+			retained[i] = 0
+		ports.commitLoad(rpg)
+	override function present(WarcraftRpgRuntime rpg, int index) returns boolean
+		return tokens[index] != 0
+	override function x(WarcraftRpgRuntime rpg, int index) returns real
+		return ports.x(rpg, index)
+	override function y(WarcraftRpgRuntime rpg, int index) returns real
+		return ports.y(rpg, index)
+	override function project(WarcraftRpgRuntime rpg, PartyLocationSet locations) returns boolean
+		for i = 0 to rpg.heroes.count - 1
+			retire(rpg, i)
+		for i = 0 to locations.count - 1
+			let index = rpg.heroes.indexOf(locations.entries[i].id)
+			if rpg.eligibleActor(index)
+				nextToken++
+				tokens[index] = nextToken
+				life[index] = 100
+		return ports.project(rpg, locations)
+	override function clear(WarcraftRpgRuntime rpg)
+		for i = 0 to rpg.heroes.count - 1
+			retire(rpg, i)
+		ports.clear(rpg)
+
+class DefeatNatives implements MilitaryCombatNatives
+	DefeatObjects objects
+	MilitaryCombatEvents events
+	int epoch = 0
+	int installs = 0
+	boolean installed = false
+	construct(DefeatObjects objects)
+		this.objects = objects
+	override function install(MilitaryCombatEvents events, int generation)
+		this.events = events
+		objects.events = events
+		epoch = generation
+		installs++
+		installed = true
+	override function uninstall()
+		installed = false
+	override function armTimer(real seconds, int serial)
+		skip
+	override function stopTimer()
+		skip
+	override function timerElapsed() returns real
+		return 0.
+	override function heroRepresentationId(int index) returns int
+		return objects.tokens[index]
+	function death(int target)
+		installed.assertTrue()
+		events.onDeath(epoch, target, 7000)
+
+class DefeatFixture
+	StartupFixture startup = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	RecordingManagementPorts output = new RecordingManagementPorts()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(output, false)
+	RecordingClockTimer clockTimer = new RecordingClockTimer()
+	DefeatObjects objects
+	DefeatNatives natives
+	MilitaryCombatEvents events
+	PlayableCampaignState state
+	WarcraftRpgRuntime rpg
+	CommandRegistry commands
+	int main
+	construct()
+		startup.start("england")
+		state = startup.campaign.state
+		rpg = state.rpg
+		main = rpg.heroes.indexOf(rpg.heroes.mainCharacterId)
+		objects = new DefeatObjects(startup.ports)
+		natives = new DefeatNatives(objects)
+		// Use production projection ownership with recording native identities.
+		rpg.setProjectionPort(new WarcraftRpgProjections(rpg.heroes, objects))
+		let authority = state.captureAuthoritativeState()
+		state.party = objects
+		state.projectParty(authority).assertTrue()
+		startup.clock.bindManagementPause(pauses)
+		rpg.management.pauses = pauses
+		startup.campaign.enableClockTimer(clockTimer, 1.).assertTrue()
+		events = installMilitaryCombatEvents(startup.campaign, natives, pauses)
+		(events != null).assertTrue()
+		commands = new CommandRegistry(false, 8, new CommandText(), output)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		rpg.heroes.recoveryDays.assertEquals(30)
+	function hero() returns RpgHero
+		return rpg.heroes.heroes[main]
+	function days(real days)
+		clockTimer.tick(days / startup.clock.daysPerSecond)
+	function defeat()
+		natives.death(objects.tokens[main])
+	function move(int index)
+		let x = startup.ports.memberX[index]
+		let y = startup.ports.memberY[index]
+		let component = state.partyNavigation.componentAt(x, y)
+		for distanceStep = 1 to 16
+			let px = x + distanceStep * 32.
+			if state.partyNavigation.componentAt(px, y) == component
+				startup.ports.memberX[index] = px
+				return
+		false.assertTrue()
+	function close()
+		events.stop()
+		startup.clock.detachTimer()
+	function equip()
+		rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1, 7))
+		rpg.inventory.grant("defeat_coat").assertTrue()
+		rpg.equipItem(hero().id, "defeat_coat", startup.clock.campaignYear()).assertTrue()
+		objects.life[main].assertEquals(107)
+		// Populate earned reward history before the lifecycle under test.
+		let completed = rpg.journal.quests[0]
+		completed.state = QUEST_READY
+		completed.objective = completed.objectiveTarget
+		rpg.journal.turnIn(completed.id, hero(), startup.clock.campaignDay(), 30).assertTrue()
+		completed.completions.assertEquals(1)
+
+function defeatReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"REQ-0096.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"hero-defeat-lifecycle\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"outcome\",\"persistence\",\"transition\"]}")
+
+@test function installedHeroDeathAndClockRecoverWithoutReplacingProgression()
+	let f = new DefeatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pauses) == f.events).assertTrue()
+	f.equip()
+	let hero = f.hero()
+	hero.awardExperience(7003)
+	hero.becomeOathbound()
+	hero.choosePerk("earned", 1).assertTrue()
+	let progression = hero.progressionSummary()
+	let identity = f.rpg.heroes.mainCharacterId
+	let earnedCurrency = f.rpg.journal.currency
+	let originalLocations = f.state.committedLocations
+	let day = f.startup.clock.campaignDay()
+	let token = f.objects.tokens[f.main]
+	f.move(f.main)
+	f.defeat()
+	let savedLocations = f.state.committedLocations
+	(savedLocations != originalLocations).assertTrue()
+	let positions = parsePartyLocations(savedLocations)
+	(RAbsBJ(positions.get(hero.id).x - f.startup.ports.memberX[f.main]) < .01).assertTrue()
+	destroy positions
+	hero.incapacitated.assertTrue()
+	hero.recoveryDay.assertEquals(day + 30)
+	hero.assignment.assertEquals("recovering")
+	f.objects.tokens[f.main].assertEquals(0)
+	f.state.committedLocations.assertEquals(savedLocations)
+	f.rpg.heroes.mainCharacterId.assertEquals(identity)
+	hero.progressionSummary().assertEquals(progression)
+	f.rpg.journal.currency.assertEquals(earnedCurrency)
+	f.rpg.journal.quests[0].completions.assertEquals(1)
+	hero.loyalty.assertEquals(100)
+	hero.oathbound.assertTrue()
+	(f.state.recovery.adapter.service.entity("party:" + identity) == null).assertTrue()
+	f.natives.death(token)
+	hero.recoveryDay.assertEquals(day + 30)
+	f.days(10.)
+	f.commands.dispatch(null, "/inventory " + hero.id).assertTrue()
+	f.output.output.contains("Condition: wounded").assertTrue()
+	f.output.output.contains("20 campaign days remaining").assertTrue()
+	f.days(500.) // Management pause owns the production clock.
+	f.startup.clock.campaignDay().assertEquals(day + 10)
+	f.commands.dispatch(null, "/rpg-close").assertTrue()
+	f.days(19.)
+	hero.incapacitated.assertTrue()
+	f.days(1.)
+	hero.incapacitated.assertFalse()
+	hero.recoveryDay.assertEquals(0)
+	hero.assignment.assertEquals("reserve")
+	hero.progressionSummary().assertEquals(progression)
+	f.rpg.journal.currency.assertEquals(earnedCurrency)
+	f.rpg.journal.quests[0].completions.assertEquals(1)
+	f.rpg.heroes.strategicRosterSize().assertEquals(1)
+	f.objects.tokens[f.main].assertEquals(0)
+	f.state.committedLocations.assertEquals(savedLocations)
+	let recovered = f.rpg.captureState()
+	f.days(500.)
+	f.rpg.captureState().assertEquals(recovered)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "recovered-reserve").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.captureState().assertEquals(recovered)
+	f.objects.tokens[f.main].assertEquals(0)
+	f.commands.dispatch(null, "/inventory " + hero.id).assertTrue()
+	f.output.output.contains("Condition: ready").assertTrue()
+	f.commands.dispatch(null, "/rpg-close").assertTrue()
+	f.close()
+	defeatReceipt("success")
+
+@test function obsoleteHeroDeathsRetirementAndReconstructionAreHarmless()
+	let f = new DefeatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pauses) == f.events).assertTrue()
+	let state = f.rpg.captureState()
+	let epoch = f.events.generation
+	let obsolete = f.objects.tokens[f.main]
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pauses) == f.events).assertTrue()
+	f.natives.installs.assertEquals(1)
+	f.state.setRpgRuntime(f.rpg)
+	f.startup.clock.dayListenerCount.assertEquals(1)
+	f.objects.retire(f.rpg, f.main)
+	f.rpg.captureState().assertEquals(state)
+	f.natives.death(obsolete)
+	f.natives.death(0)
+	f.natives.death(999999)
+	f.rpg.captureState().assertEquals(state)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "missing-representation").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.events.onDeath(epoch, f.objects.tokens[f.main], 7000)
+	f.natives.death(obsolete)
+	f.rpg.captureState().assertEquals(state)
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.captureState().assertEquals(state)
+	(f.objects.cleanupDeaths > 0).assertTrue()
+	f.defeat()
+	let wounded = f.rpg.captureState()
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "wounded").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	f.rpg.captureState().assertEquals(wounded)
+	f.close()
+	defeatReceipt("stale")
+
+@test function entirelyIncapacitatedSaveResumesAgainstTheSameDeadline()
+	let f = new DefeatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pauses) == f.events).assertTrue()
+	f.equip()
+	f.hero().awardExperience(23456)
+	f.hero().changeLoyalty(13)
+	f.defeat()
+	f.days(15.)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "mid-recovery").assertTrue()
+	let encoded = f.startup.saves.read("manual_01")
+	let wounded = f.rpg.captureState()
+	let savedLocations = f.state.committedLocations
+	let deadline = f.hero().recoveryDay
+	f.days(500.)
+	let uninterrupted = f.rpg.captureState()
+	f.close()
+	let resumed = new DefeatFixture()
+	// Immutable item definition, without replaying the original grant/equip.
+	resumed.rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1, 7))
+	resumed.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
+	for attempt = 1 to 2
+		resumed.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		resumed.rpg.captureState().assertEquals(wounded)
+		resumed.hero().recoveryDay.assertEquals(deadline)
+		resumed.objects.tokens[resumed.main].assertEquals(0)
+		resumed.state.committedLocations.assertEquals(savedLocations)
+	resumed.days(14.)
+	resumed.hero().incapacitated.assertTrue()
+	resumed.days(1.)
+	resumed.rpg.captureState().assertEquals(uninterrupted)
+	resumed.days(485.)
+	resumed.rpg.captureState().assertEquals(uninterrupted)
+	resumed.startup.saves.read("manual_01").assertEquals(encoded)
+	resumed.rpg.heroes.strategicRosterSize().assertEquals(1)
+	// An already elapsed saved deadline completes inside reconstruction, not
+	// after another clock tick, and never restarts from the load date.
+	let overdue = replaceCampaignField(resumed.state.captureAuthoritativeState(), "rpg", wounded)
+	resumed.startup.saves.writeTransactional("manual_02", campaignSaveEnvelope(8, "manual_02", SAVE_SLOT_MANUAL, 2, "overdue", overdue)).assertTrue()
+	resumed.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	resumed.rpg.captureState().assertEquals(uninterrupted)
+	resumed.objects.tokens[resumed.main].assertEquals(0)
+	// Redeploying the same recovered character applies its equipment once.
+	resumed.hero().assignment = "field"
+	resumed.state.projectParty(resumed.state.captureAuthoritativeState()).assertTrue()
+	resumed.objects.life[resumed.main].assertEquals(107)
+	resumed.rpg.reconcile("player")
+	resumed.objects.life[resumed.main].assertEquals(107)
+	resumed.close()
+	defeatReceipt("replay")
+
+@test function rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections()
+	let f = new DefeatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pauses) == f.events).assertTrue()
+	f.equip()
+	// Recruitment remains gated by the real authored window and starting profile.
+	let companion = f.rpg.heroes.heroes[0]
+	f.startup.clock.advanceTo(companion.availabilityStartDay).assertTrue()
+	f.rpg.heroes.recruit(companion.id).assertTrue()
+	let beforeDeployment = f.state.captureAuthoritativeState()
+	companion.assignment = "field"
+	companion.regionId = ""
+	let locations = parsePartyLocations(f.state.committedLocations)
+	let mainPosition = locations.get(f.hero().id)
+	locations.add(new PartyLocation(companion.id, mainPosition.mapId, mainPosition.x, mainPosition.y, mainPosition.component, mainPosition.safeX, mainPosition.safeY))
+	f.state.projectParty(replaceCampaignField(beforeDeployment, "partyLocations", locations.encode())).assertTrue()
+	destroy locations
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "healthy").assertTrue()
+	f.defeat()
+	f.days(12.)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "mixed").assertTrue()
+	let candidate = f.startup.saves.read("manual_01")
+	f.days(3.)
+	companion.awardExperience(150)
+	f.move(0)
+	let authority = f.state.captureAuthoritativeState()
+	let token = f.objects.tokens[0]
+	let life = f.objects.life[0]
+	let savedLocations = f.state.committedLocations
+	let deadline = f.hero().recoveryDay
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.state.captureAuthoritativeState().assertEquals(authority)
+	f.hero().recoveryDay.assertEquals(deadline)
+	f.state.committedLocations.assertEquals(savedLocations)
+	f.objects.tokens[0].assertEquals(token)
+	f.objects.life[0].assertEquals(life)
+	f.objects.tokens[f.main].assertEquals(0)
+	f.startup.saves.read("manual_01").assertEquals(candidate)
+	f.startup.ports.failAfterFirstMember = false
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	companion.incapacitated.assertFalse()
+	f.hero().incapacitated.assertTrue()
+	f.natives.death(f.objects.tokens[0])
+	companion.incapacitated.assertTrue()
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 3, "all-wounded").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 3).assertTrue()
+	f.objects.tokens[0].assertEquals(0)
+	f.objects.tokens[f.main].assertEquals(0)
+	f.rpg.heroes.strategicRosterSize().assertEquals(2)
+	f.close()
+	defeatReceipt("failure")

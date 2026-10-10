@@ -48,6 +48,14 @@ def rank_text(values):
     return "".join(f"{ident}:{rank}~" for ident, rank in sorted(values.items()))
 
 
+def recovery_days(catalog):
+    """No live defeat policy is assumed for scenarios without a catalogue."""
+    if catalog is None:
+        return 0
+    return integer(catalog.get("defeatRecovery", {}).get("recoveryDays"),
+                   1, 3652059, "hero recovery days")
+
+
 def starting_definitions(world, catalog=None):
     profiles = {}
     skills, masteries, trees = {}, {}, {}

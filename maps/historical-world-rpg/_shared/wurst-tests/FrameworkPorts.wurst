@@ -122,18 +122,24 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 		this.y = locations.entries[0].y
 		for i = 0 to rpg.heroes.count - 1
 			represented[i] = false
+		activePlayers = 0
 		for i = 0 to locations.count - 1
 			let value = locations.entries[i]
 			let index = rpg.heroes.indexOf(value.id)
-			represented[index] = true
+			represented[index] = rpg.eligibleActor(index)
+			if represented[index]
+				activePlayers++
 			memberX[index] = value.x
 			memberY[index] = value.y
 			if failAfterFirstMember
 				return false
-		activePlayers = locations.count
 		spawns++
 		rpg.reconcile("player")
-		return activePlayers > 0
+		return true
+	override function retire(WarcraftRpgRuntime rpg, int index)
+		if represented[index]
+			activePlayers--
+		represented[index] = false
 	override function clear(WarcraftRpgRuntime rpg)
 		activePlayers = 0
 		for i = 0 to rpg.heroes.count - 1

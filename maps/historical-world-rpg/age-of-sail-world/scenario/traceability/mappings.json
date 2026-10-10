@@ -11694,6 +11694,294 @@
           }
         ]
       }
+    },
+    "REQ-0096.01": {
+      "artifact": {
+        "callPatterns": [
+          "\\b[\\w.]*MilitaryCombatEvents[\\w]*onDeath[\\w]*\\s*\\(",
+          "\\b[\\w.]*PlayableCampaignState[\\w]*rememberDefeatedLocation[\\w]*\\s*\\(",
+          "\\b[\\w.]*CampaignDayListener[\\w]*onCampaignDay[\\w]*\\s*\\("
+        ],
+        "mapIds": [
+          "@regional"
+        ]
+      },
+      "content": [
+        {
+          "contains": [
+            "\"defeatRecovery\": {\"recoveryDays\": 30}"
+          ],
+          "path": "scenario/progression/hero-progression.json"
+        }
+      ],
+      "entry": {
+        "id": "hero-defeat-lifecycle",
+        "kind": "event",
+        "path": [
+          {
+            "contains": [
+              "installMilitaryCombatEvents("
+            ],
+            "path": "wurst/Bootstrap.wurst",
+            "symbol": "initializeRegionalCampaign"
+          },
+          {
+            "contains": [
+              "port.events.onDeath("
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "militaryDeathEvent"
+          },
+          {
+            "contains": [
+              "natives.heroRepresentationId(i) == target",
+              "campaign.defeatHero(i)"
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "symbol": "onDeath"
+          },
+          {
+            "contains": [
+              "clock.subscribeDays(this)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "setRpgRuntime"
+          },
+          {
+            "contains": [
+              "dayListeners[i].onCampaignDay(currentDay)"
+            ],
+            "path": "wurst/CampaignTimeline.wurst",
+            "symbol": "advanceTo"
+          }
+        ],
+        "registration": {
+          "contains": [
+            "events.campaign = campaign.state",
+            "events.install()"
+          ],
+          "path": "wurst/MilitaryCombatEvents.wurst",
+          "symbol": "installMilitaryCombatEvents",
+          "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents"
+        },
+        "testInvocation": "f.defeat()"
+      },
+      "mechanism": [
+        {
+          "contains": [
+            "rememberDefeatedLocation(index)",
+            "hero.wound(clock.campaignDay(), rpg.heroes.recoveryDays)",
+            "party.retire(rpg, index)"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "defeatHero"
+        },
+        {
+          "contains": [
+            "hero.advanceRecovery(day)"
+          ],
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "symbol": "recoverHeroes"
+        },
+        {
+          "contains": [
+            "projected[index] = null",
+            "compatRemoveUnit(obsolete)"
+          ],
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "retireProjection"
+        }
+      ],
+      "persistence": {
+        "load": {
+          "contains": [
+            "h.incapacitated=rpgBool(record.field(10))",
+            "h.recoveryDay=S2I(record.field(11))"
+          ],
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "applyRecord"
+        },
+        "mode": "persisted",
+        "reason": "Existing RPG v4 wounded/deadline fields and party location v1 records persist without a schema change; supported older domains retain progression and migrate missing positions once.",
+        "references": [
+          {
+            "contains": [
+              "locatedHeroAt(hero, loadedPhysicalMap",
+              "captured.encode()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "capturePartyLocations"
+          },
+          {
+            "contains": [
+              "recoverHeroes(clock.campaignDay())"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "applyRuntime"
+          }
+        ],
+        "save": {
+          "contains": [
+            "rpgBoolText(h.incapacitated)",
+            "h.recoveryDay"
+          ],
+          "path": "wurst/WarcraftRpgRuntime.wurst",
+          "symbol": "captureState"
+        }
+      },
+      "scope": "Issue #444: current recruited representation defeat, campaign-time recovery and incapacitated-party persistence; native launch remains unverified.",
+      "state": {
+        "mutation": "Current native defeat sets incapacitation and an absolute scenario-configured deadline once. Deadline completion clears it and returns the same hero to reserve.",
+        "outcome": "Existing inspection shows wounded/ready condition and remaining campaign days; zero living field heroes is saveable.",
+        "owner": "Existing recruited RpgHero, campaign clock and PartyLocation authority.",
+        "references": [
+          {
+            "contains": [
+              "if incapacitated",
+              "recoveryDay = currentDay +"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "wound"
+          },
+          {
+            "contains": [
+              "recoveryDay = 0",
+              "assignment = \"reserve\""
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "advanceRecovery"
+          },
+          {
+            "contains": [
+              "campaign days remaining"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "conditionSummary"
+          }
+        ],
+        "rejection": "Stale generations/handles, retired representations and reconstruction callbacks do not wound authority. Rejected load rolls back the whole campaign."
+      },
+      "tests": {
+        "failure": {
+          "assertions": [
+            "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()",
+            "f.state.captureAuthoritativeState().assertEquals(authority)",
+            "f.objects.tokens[0].assertEquals(token)"
+          ],
+          "entryPoint": "hero-defeat-lifecycle",
+          "id": "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "failure",
+            "entryPoint": "hero-defeat-lifecycle",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0096.01"
+          }
+        },
+        "replay": {
+          "assertions": [
+            "resumed.rpg.captureState().assertEquals(uninterrupted)",
+            "resumed.hero().recoveryDay.assertEquals(deadline)",
+            "resumed.objects.life[resumed.main].assertEquals(107)"
+          ],
+          "entryPoint": "hero-defeat-lifecycle",
+          "id": "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "replay",
+            "entryPoint": "hero-defeat-lifecycle",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0096.01"
+          }
+        },
+        "stale": {
+          "assertions": [
+            "f.natives.death(obsolete)",
+            "f.rpg.captureState().assertEquals(state)",
+            "f.startup.clock.dayListenerCount.assertEquals(1)"
+          ],
+          "entryPoint": "hero-defeat-lifecycle",
+          "id": "wurst/HeroDefeatLifecycleTests.wurst:obsoleteHeroDeathsRetirementAndReconstructionAreHarmless",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "stale",
+            "entryPoint": "hero-defeat-lifecycle",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0096.01"
+          }
+        },
+        "success": {
+          "assertions": [
+            "hero.recoveryDay.assertEquals(day + 30)",
+            "hero.progressionSummary().assertEquals(progression)",
+            "hero.assignment.assertEquals(\"reserve\")"
+          ],
+          "entryPoint": "hero-defeat-lifecycle",
+          "id": "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+          "level": "production_adapter",
+          "receipt": {
+            "case": "success",
+            "entryPoint": "hero-defeat-lifecycle",
+            "observed": [
+              "registration",
+              "adapter",
+              "validation",
+              "mutation",
+              "outcome",
+              "persistence",
+              "transition"
+            ],
+            "requirement": "REQ-0096.01"
+          }
+        }
+      },
+      "transition": {
+        "mode": "reconstructed",
+        "reason": "Healthy field projections are derived from retained physical locations; wounded and recovered reserve members need no live object. Checkpoint rollback restores deadlines and projections.",
+        "references": [
+          {
+            "contains": [
+              "locatedHeroAt(hero, loadedPhysicalMap",
+              "fieldCount <= rpg.heroes.activeLimit"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "projectParty"
+          },
+          {
+            "contains": [
+              "checkpoint.restore(this)",
+              "party.rollbackLoad(rpg)",
+              "militarySettlements.resumeCallbacks()"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "rollbackRuntime"
+          }
+        ]
+      }
     }
   }
 }

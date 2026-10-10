@@ -203,8 +203,10 @@ class HeroProgressionRuntime:
         if not isinstance(current_day, int) or not isinstance(recovery_days, int) or recovery_days <= 0: raise HeroProgressionError("invalid recovery schedule")
         candidate = copy.deepcopy(self._state); state = candidate.get(character_id)
         if state is None: raise HeroProgressionError("unknown character")
+        if state["condition"] == "wounded": return
         state["condition"] = "wounded"; state["recoveryUntilDay"] = current_day + recovery_days
         state["assignment"] = {"kind": "reserve", "targetId": None}; self._state = candidate
+        self._runtime_objects.pop(character_id, None)
 
     def recover(self, through_day):
         candidate = copy.deepcopy(self._state); recovered = []

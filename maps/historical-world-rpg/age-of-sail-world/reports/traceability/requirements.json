@@ -6,18 +6,18 @@
   },
   "blockerClasses": {
     "artifact-missing": 644,
-    "authority-missing": 520,
+    "authority-missing": 519,
     "census-mismatch": 69,
     "dependency-uncovered": 49,
     "integration-missing": 2268,
-    "mechanism-missing": 579,
-    "state-unmapped": 603,
-    "static-only": 41,
-    "unmapped": 602,
-    "unpersisted": 1206,
-    "unreachable": 603
+    "mechanism-missing": 578,
+    "state-unmapped": 602,
+    "static-only": 42,
+    "unmapped": 601,
+    "unpersisted": 1204,
+    "unreachable": 602
   },
-  "blockerCount": 7184,
+  "blockerCount": 7178,
   "blockers": [
     {
       "class": "artifact-missing",
@@ -7655,41 +7655,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "REQ-0096.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
-      "class": "authority-missing",
-      "id": "REQ-0096.01",
-      "message": "scenario content authority is absent or stale"
-    },
-    {
-      "class": "mechanism-missing",
-      "id": "REQ-0096.01",
-      "message": "reusable mechanism evidence is absent or stale"
-    },
-    {
-      "class": "unreachable",
-      "id": "REQ-0096.01",
-      "message": "production entry/registration/call chain is absent or stale"
-    },
-    {
-      "class": "state-unmapped",
-      "id": "REQ-0096.01",
-      "message": "owner, mutation, rejection and player-visible outcome must be explicit"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0096.01",
-      "message": "persistence behavior/path is absent or stale"
-    },
-    {
-      "class": "unpersisted",
-      "id": "REQ-0096.01",
-      "message": "transition behavior/path is absent or stale"
-    },
-    {
       "class": "integration-missing",
       "id": "REQ-0096.01",
       "message": "success: current executable production-adapter evidence is absent"
@@ -7708,6 +7673,11 @@
       "class": "integration-missing",
       "id": "REQ-0096.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "REQ-0096.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -36672,7 +36642,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 6,
       "sourceHashes": {
-        "scenario/progression/hero-progression.json": "85b062da2e1f6b1cbdefaf8ede1ef0f9bd5529c58bc3a6ad539d7ff1395e07d9"
+        "scenario/progression/hero-progression.json": "7467b639494775b500d162f16c80d424dd4cbb465822cf5e8617a4a3ebb9cc94"
       },
       "sourceIdsSha256": "f53d7ba518f5d2ba6b73314909782eb0cbc58c3b07b2bdf1f54f6ceb55ab4618",
       "sources": [
@@ -36692,7 +36662,7 @@
       "packagedUniqueCount": null,
       "sourceCount": 6,
       "sourceHashes": {
-        "scenario/progression/hero-progression.json": "85b062da2e1f6b1cbdefaf8ede1ef0f9bd5529c58bc3a6ad539d7ff1395e07d9"
+        "scenario/progression/hero-progression.json": "7467b639494775b500d162f16c80d424dd4cbb465822cf5e8617a4a3ebb9cc94"
       },
       "sourceIdsSha256": "1e9c76b638acc65492c66a52a514e2dd696231c67e69c3a1ff4a50e602e5f4dd",
       "sources": [
@@ -38140,7 +38110,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "d12d6ed0c1c02bf9862802741954be81faebab6cef9b3cc4be2342fed3c5b661",
-  "mappingSha256": "9f5f01f42e830830dd80245d2d670faad8313f94aeef5e2b630e27a1c29f6383",
+  "mappingSha256": "0644c2eb5d5b0f67843fbcae6de6dee6a58c1f51867e78778afbd11fdd870a5d",
   "requirements": [
     {
       "authority": {
@@ -42329,18 +42299,300 @@
       },
       "blockerClasses": [
         "artifact-missing",
-        "authority-missing",
         "integration-missing",
-        "mechanism-missing",
-        "state-unmapped",
-        "unmapped",
-        "unpersisted",
-        "unreachable"
+        "static-only"
       ],
       "classification": "combination",
       "id": "REQ-0096.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "artifact": {
+          "callPatterns": [
+            "\\b[\\w.]*MilitaryCombatEvents[\\w]*onDeath[\\w]*\\s*\\(",
+            "\\b[\\w.]*PlayableCampaignState[\\w]*rememberDefeatedLocation[\\w]*\\s*\\(",
+            "\\b[\\w.]*CampaignDayListener[\\w]*onCampaignDay[\\w]*\\s*\\("
+          ],
+          "mapIds": [
+            "@regional"
+          ]
+        },
+        "content": [
+          {
+            "contains": [
+              "\"defeatRecovery\": {\"recoveryDays\": 30}"
+            ],
+            "path": "scenario/progression/hero-progression.json"
+          }
+        ],
+        "entry": {
+          "id": "hero-defeat-lifecycle",
+          "kind": "event",
+          "path": [
+            {
+              "contains": [
+                "installMilitaryCombatEvents("
+              ],
+              "path": "wurst/Bootstrap.wurst",
+              "symbol": "initializeRegionalCampaign"
+            },
+            {
+              "contains": [
+                "port.events.onDeath("
+              ],
+              "path": "wurst/MilitaryCombatEvents.wurst",
+              "symbol": "militaryDeathEvent"
+            },
+            {
+              "contains": [
+                "natives.heroRepresentationId(i) == target",
+                "campaign.defeatHero(i)"
+              ],
+              "path": "wurst/MilitaryCombatEvents.wurst",
+              "symbol": "onDeath"
+            },
+            {
+              "contains": [
+                "clock.subscribeDays(this)"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "setRpgRuntime"
+            },
+            {
+              "contains": [
+                "dayListeners[i].onCampaignDay(currentDay)"
+              ],
+              "path": "wurst/CampaignTimeline.wurst",
+              "symbol": "advanceTo"
+            }
+          ],
+          "registration": {
+            "contains": [
+              "events.campaign = campaign.state",
+              "events.install()"
+            ],
+            "path": "wurst/MilitaryCombatEvents.wurst",
+            "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents",
+            "symbol": "installMilitaryCombatEvents"
+          },
+          "testInvocation": "f.defeat()"
+        },
+        "mechanism": [
+          {
+            "contains": [
+              "rememberDefeatedLocation(index)",
+              "hero.wound(clock.campaignDay(), rpg.heroes.recoveryDays)",
+              "party.retire(rpg, index)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "defeatHero"
+          },
+          {
+            "contains": [
+              "hero.advanceRecovery(day)"
+            ],
+            "path": "wurst/PlayableCampaignRuntime.wurst",
+            "symbol": "recoverHeroes"
+          },
+          {
+            "contains": [
+              "projected[index] = null",
+              "compatRemoveUnit(obsolete)"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "retireProjection"
+          }
+        ],
+        "persistence": {
+          "load": {
+            "contains": [
+              "h.incapacitated=rpgBool(record.field(10))",
+              "h.recoveryDay=S2I(record.field(11))"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "applyRecord"
+          },
+          "mode": "persisted",
+          "reason": "Existing RPG v4 wounded/deadline fields and party location v1 records persist without a schema change; supported older domains retain progression and migrate missing positions once.",
+          "references": [
+            {
+              "contains": [
+                "locatedHeroAt(hero, loadedPhysicalMap",
+                "captured.encode()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "capturePartyLocations"
+            },
+            {
+              "contains": [
+                "recoverHeroes(clock.campaignDay())"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "applyRuntime"
+            }
+          ],
+          "save": {
+            "contains": [
+              "rpgBoolText(h.incapacitated)",
+              "h.recoveryDay"
+            ],
+            "path": "wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "captureState"
+          }
+        },
+        "scope": "Issue #444: current recruited representation defeat, campaign-time recovery and incapacitated-party persistence; native launch remains unverified.",
+        "state": {
+          "mutation": "Current native defeat sets incapacitation and an absolute scenario-configured deadline once. Deadline completion clears it and returns the same hero to reserve.",
+          "outcome": "Existing inspection shows wounded/ready condition and remaining campaign days; zero living field heroes is saveable.",
+          "owner": "Existing recruited RpgHero, campaign clock and PartyLocation authority.",
+          "references": [
+            {
+              "contains": [
+                "if incapacitated",
+                "recoveryDay = currentDay +"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "wound"
+            },
+            {
+              "contains": [
+                "recoveryDay = 0",
+                "assignment = \"reserve\""
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "advanceRecovery"
+            },
+            {
+              "contains": [
+                "campaign days remaining"
+              ],
+              "path": "wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "conditionSummary"
+            }
+          ],
+          "rejection": "Stale generations/handles, retired representations and reconstruction callbacks do not wound authority. Rejected load rolls back the whole campaign."
+        },
+        "tests": {
+          "failure": {
+            "assertions": [
+              "f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()",
+              "f.state.captureAuthoritativeState().assertEquals(authority)",
+              "f.objects.tokens[0].assertEquals(token)"
+            ],
+            "entryPoint": "hero-defeat-lifecycle",
+            "id": "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "failure",
+              "entryPoint": "hero-defeat-lifecycle",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0096.01"
+            }
+          },
+          "replay": {
+            "assertions": [
+              "resumed.rpg.captureState().assertEquals(uninterrupted)",
+              "resumed.hero().recoveryDay.assertEquals(deadline)",
+              "resumed.objects.life[resumed.main].assertEquals(107)"
+            ],
+            "entryPoint": "hero-defeat-lifecycle",
+            "id": "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "replay",
+              "entryPoint": "hero-defeat-lifecycle",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0096.01"
+            }
+          },
+          "stale": {
+            "assertions": [
+              "f.natives.death(obsolete)",
+              "f.rpg.captureState().assertEquals(state)",
+              "f.startup.clock.dayListenerCount.assertEquals(1)"
+            ],
+            "entryPoint": "hero-defeat-lifecycle",
+            "id": "wurst/HeroDefeatLifecycleTests.wurst:obsoleteHeroDeathsRetirementAndReconstructionAreHarmless",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "stale",
+              "entryPoint": "hero-defeat-lifecycle",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0096.01"
+            }
+          },
+          "success": {
+            "assertions": [
+              "hero.recoveryDay.assertEquals(day + 30)",
+              "hero.progressionSummary().assertEquals(progression)",
+              "hero.assignment.assertEquals(\"reserve\")"
+            ],
+            "entryPoint": "hero-defeat-lifecycle",
+            "id": "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+            "level": "production_adapter",
+            "receipt": {
+              "case": "success",
+              "entryPoint": "hero-defeat-lifecycle",
+              "observed": [
+                "registration",
+                "adapter",
+                "validation",
+                "mutation",
+                "outcome",
+                "persistence",
+                "transition"
+              ],
+              "requirement": "REQ-0096.01"
+            }
+          }
+        },
+        "transition": {
+          "mode": "reconstructed",
+          "reason": "Healthy field projections are derived from retained physical locations; wounded and recovered reserve members need no live object. Checkpoint rollback restores deadlines and projections.",
+          "references": [
+            {
+              "contains": [
+                "locatedHeroAt(hero, loadedPhysicalMap",
+                "fieldCount <= rpg.heroes.activeLimit"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "projectParty"
+            },
+            {
+              "contains": [
+                "checkpoint.restore(this)",
+                "party.rollbackLoad(rpg)",
+                "militarySettlements.resumeCallbacks()"
+              ],
+              "path": "wurst/PlayableCampaignRuntime.wurst",
+              "symbol": "rollbackRuntime"
+            }
+          ]
+        }
+      },
       "parent": "REQ-0096",
       "status": "fail",
       "text": "Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default."

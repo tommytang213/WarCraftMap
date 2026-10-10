@@ -291,15 +291,24 @@ public class RpgHero
 		oathbound = true
 		loyalty = 100
 	function wound(int currentDay, int recoveryDays)
+		if incapacitated
+			return
 		incapacitated = true
 		recoveryDay = currentDay + IMaxBJ(1, recoveryDays)
 		assignment = "recovering"
 	function advanceRecovery(int currentDay)
 		if incapacitated and currentDay >= recoveryDay
 			incapacitated = false
+			recoveryDay = 0
 			assignment = "reserve"
+	function conditionSummary(int day) returns string
+		if incapacitated
+			return "Condition: wounded | Recovery: " + IMaxBJ(0, recoveryDay - day) + " campaign days remaining (day " + recoveryDay + ")"
+		return "Condition: ready | Recovery: none"
 
 public class HeroRoster
+	// Generated scenario policy; zero means defeat handling is unconfigured.
+	int recoveryDays = 0
 	WarcraftRecoveryAdapter recovery = null
 	string mainCharacterId = ""
 	string physicalMapId = ""
@@ -312,6 +321,10 @@ public class HeroRoster
 		if recovery != null
 			recovery.unbind("party:" + id)
 	CampaignClock clock = null
+	function campaignDay() returns int
+		if clock == null
+			return 0
+		return clock.campaignDay()
 	string lastRecruitmentProblem = ""
 	RpgHero array[2048] heroes
 	unit array[2048] projected
@@ -382,24 +395,24 @@ public class HeroRoster
 		let i = indexOf(id)
 		if i < 0 or not heroes[i].recruited or heroes[i].incapacitated or assignment == ""
 			return false
-		retireRecovery(id)
-		if projected[i] != null
-			compatRemoveUnit(projected[i])
-			projected[i] = null
+		retireProjection(i)
 		heroes[i].assignment = assignment
 		heroes[i].regionId = regionId
 		return true
+	function retireProjection(int index)
+		retireRecovery(heroes[index].id)
+		let obsolete = projected[index]
+		// Detach BEFORE removal can deliver a death callback.
+		projected[index] = null
+		if obsolete != null and GetUnitTypeId(obsolete) != 0
+			compatRemoveUnit(obsolete)
 	function loseRuntimeObjects()
 		for i = 0 to count - 1
-			retireRecovery(heroes[i].id)
-			if projected[i] != null and GetUnitTypeId(projected[i]) != 0
-				compatRemoveUnit(projected[i])
-			projected[i] = null
+			retireProjection(i)
 	function reconstructField(player owner, real x, real y)
 		for i = 0 to count - 1
 			if heroes[i].recruited and heroes[i].assignment == "field" and not heroes[i].incapacitated and activeCount() < activeLimit
-				if projected[i] != null
-					compatRemoveUnit(projected[i])
+				retireProjection(i)
 				projected[i] = compatCreateUnit(owner, heroes[i].unitTypeId, x, y, 0.)
 				bindRecovery(i)
 
@@ -1145,6 +1158,10 @@ public class WarcraftRpgRuntime
 				let hero = heroes.heroes[i]
 				if heroes.mainCharacterId == "" and hero.recruited and hero.assignment == "field" and not hero.incapacitated
 					heroes.mainCharacterId = hero.id
+			// A legacy all-wounded roster still owns its original characters.
+			for i = 0 to heroes.count - 1
+				if heroes.mainCharacterId == "" and heroes.heroes[i].recruited and heroes.heroes[i].incapacitated
+					heroes.mainCharacterId = heroes.heroes[i].id
 		lastDiagnostic=""
 		return true
 	function validateState(string candidate) returns boolean
@@ -1256,6 +1273,7 @@ public class WarcraftRpgRuntime
 		if hero == null
 			return "Choose a character with /inventory HERO."
 		var rows="Inventory and Equipment - "+hero.name+" ("+hero.id+")\n"+hero.progressionSummary()
+		rows += "\n" + hero.conditionSummary(heroes.campaignDay())
 		for i=0 to inventory.ownedCount-1
 			rows+="\n"+inventory.comparison(heroId,inventory.owned[i])
 		for i=0 to inventory.setCount-1
@@ -1272,7 +1290,7 @@ function rosterText(WarcraftRpgRuntime runtime) returns string
 	for i=0 to runtime.heroes.count-1
 		let hero=runtime.heroes.heroes[i]
 		if hero.recruited
-			rows += "\n"+hero.name+" - level "+hero.level+", "+hero.assignment+", loyalty "+hero.loyalty
+			rows += "\n"+hero.name+" - level "+hero.level+", "+hero.assignment+", loyalty "+hero.loyalty+" | "+hero.conditionSummary(runtime.heroes.campaignDay())
 	return rows
 
 public function showRoster(player viewer, WarcraftRpgRuntime runtime)
