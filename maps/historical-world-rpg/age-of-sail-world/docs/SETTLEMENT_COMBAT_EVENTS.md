@@ -38,7 +38,8 @@ receive whatever capture protection remains in authority.
 
 The campaign envelope is schema 8. The independently versioned
 `militarySettlements` payload advances to **v3**, adding one `k` record for elapsed
-unpaused gameplay seconds. Deadline and interval fields use the campaign clock's
+unpaused gameplay seconds. The current military v6 payload retains this clock
+contract and adds [live order persistence](LIVE_MILITARY_ORDERS.md). Deadline and interval fields use the campaign clock's
 exact binary-real encoding rather than rounded decimal formatting. Saves sample
 the partial native tick, so loading on a fresh map neither restarts protection
 nor compares saved deadlines to that map's uptime. Timer handles, registration

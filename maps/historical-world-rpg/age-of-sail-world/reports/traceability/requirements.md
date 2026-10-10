@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7178**.
+Candidate ready: **False**; blockers: **7180**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -272,8 +272,8 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0178.01 | combination | On capture, controller changes, old military defenses are cleaned up, and the city's predefined defensive layout respawns at its original locations under the new controller. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0179.01 | combination | New defenses receive exactly 5 seconds of post-capture immunity/capture cooldown to prevent immediate hostile survivor/third-party recapture loops. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0180.01 | combination | City functionality must not become irrecoverably broken because an object was unexpectedly destroyed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0181.01 | combination | Persistent city state is authoritative; | artifact-missing, integration-missing, static-only |
-| REQ-0181.02 | combination | Warcraft object instances are representations of that state. | artifact-missing, integration-missing, static-only |
+| REQ-0181.01 | combination | Persistent city state is authoritative; | artifact-missing, integration-missing, state-unmapped, static-only |
+| REQ-0181.02 | combination | Warcraft object instances are representations of that state. | artifact-missing, integration-missing, state-unmapped, static-only |
 | REQ-0182.01 | mechanism | Native Warcraft save/load must be regression-tested and must not intentionally be broken. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0183.01 | mechanism | Separate versioned campaign persistence is required for long-term compatibility. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | artifact-missing, integration-missing, static-only |
@@ -336,9 +336,9 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0231.02 | combination | Empty distance may be compressed, but splitting into maps should be preferred over crushing an entire continent into an implausibly small area merely to fit one map. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0232.01 | combination | Regions/maps not currently loaded remain authoritative abstract campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0232.02 | combination | Their armies, fleets, settlements, characters, economy, wars, and events continue through strategic simulation without keeping their Warcraft object representations loaded. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0233.01 | combination | Cross-map transitions must preserve authoritative character, unit, party, fleet, quest, inventory, settlement, diplomacy, economy, technology, and campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0233.01 | combination | Cross-map transitions must preserve authoritative character, unit, party, fleet, quest, inventory, settlement, diplomacy, economy, technology, and campaign state. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | REQ-0233.02 | combination | Transient Warcraft objects are reconstructed from stable IDs/state after a map loads. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0234.01 | combination | Revisiting a previously visited physical map should restore/reconstruct its authoritative changed state rather than reset conquered cities, destroyed/rebuilt defenses, moved armies, completed quests, market state, or other persistent campaign changes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0234.01 | combination | Revisiting a previously visited physical map should restore/reconstruct its authoritative changed state rather than reset conquered cities, destroyed/rebuilt defenses, moved armies, completed quests, market state, or other persistent campaign changes. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | REQ-0235.01 | combination | Prefer versioned authoritative campaign-state serialization/reconstruction over depending on opaque raw Warcraft map-save state as the sole source of truth. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0235.02 | combination | Native campaign/game-cache or map-transition facilities may be used as transport/bootstrap mechanisms where reliable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0236.01 | combination | Transition boundaries, physical-map IDs, adjacency, entry points, and map-package paths must be explicit scenario data so geography/navigation remains reusable and testable. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -549,7 +549,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0045.01 | combination | Technology/institutions | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0046.01 | combination | Economy/trade | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0047.01 | combination | Diplomacy/war | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | ROAD-0049.01 | combination | City capture/rebuild | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0050.01 | combination | Titles/land/taxation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0051.01 | combination | Characters/relationships | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -3897,12 +3897,14 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0180.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0180.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0180.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0181.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
 - REQ-0181.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0181.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0181.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0181.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0181.01 [static-only]: source references cannot establish executed integration
 - REQ-0181.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0181.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
 - REQ-0181.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0181.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0181.02 [integration-missing]: stale: current executable production-adapter evidence is absent
@@ -4445,7 +4447,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0232.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0232.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0232.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0233.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0233.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0233.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0233.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -4456,6 +4457,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0233.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0233.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0233.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0233.01 [static-only]: source references cannot establish executed integration
 - REQ-0233.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0233.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0233.02 [authority-missing]: scenario content authority is absent or stale
@@ -4469,7 +4471,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0233.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0233.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0233.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0234.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0234.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0234.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0234.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -4480,6 +4481,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0234.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0234.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0234.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0234.01 [static-only]: source references cannot establish executed integration
 - REQ-0234.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0235.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0235.01 [authority-missing]: scenario content authority is absent or stale
@@ -6799,7 +6801,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0047.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0047.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0047.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0048.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0048.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0048.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - ROAD-0048.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -6810,6 +6811,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0048.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0048.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0048.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0048.01 [static-only]: source references cannot establish executed integration
 - ROAD-0048.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0049.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0049.01 [authority-missing]: scenario content authority is absent or stale

@@ -1,0 +1,117 @@
+{
+  "diagnosticCampaign": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "artifactSha256": "c8cb25034a699ceec312d0226707c4d5d5b74ed981f1e4c788daae658585faaf",
+    "checks": [
+      "pinned_typecheck",
+      "pinned_compile",
+      "archive_inspection",
+      "packaged_navigation",
+      "compiled_order_event_registrations",
+      "callback_attachment",
+      "native_replay_calls"
+    ],
+    "gameplayMaps": 16,
+    "physicalMaps": 17,
+    "sourceIdentity": {
+      "sourceRevision": "55dda06916a930e0f0ccbe67bae8ee4083015d84",
+      "sourceTreeSha256": "16df8c17a1702adde7cc7438833f98b10dc9d9f70d61ece330302a13650a3aa7"
+    },
+    "status": "pass"
+  },
+  "format": "warcraftmap_issue443_validation_v1",
+  "framework": {
+    "mutatedArchiveSha256": "45c3f930ce60562fe69e643d2db63b9e83812fa351e27e8c14996df154b259a7",
+    "mutatedTests": 2,
+    "originalArchiveSha256": "83abaab1e5091e5919e1947db9b23d94c32c0c3a56d4cd23d297797f33e4da4a",
+    "originalTests": 2,
+    "sharedSourcesVerified": true,
+    "status": "pass"
+  },
+  "issue": 443,
+  "nativeClient": {
+    "environmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+    "executed": false,
+    "nativeSaveOracle": "pass",
+    "releaseStatus": "blocked_pending_remote_transport_and_native_launch",
+    "status": "runtime_unavailable"
+  },
+  "playerQARequired": false,
+  "python": {
+    "automation": {
+      "status": "pass",
+      "tests": 144
+    },
+    "broadInitialRun": {
+      "failure": "test_release_manifest_matches_compiled_live_codec_contract",
+      "failures": 1,
+      "passed": 945,
+      "resolution": "Updated the already-imported v1-v5 expectation to include v6; all six compatibility tests and the final 25 persistence tests pass.",
+      "tests": 946,
+      "unresolvedFailures": 0
+    },
+    "compatibilityRerun": {
+      "status": "pass",
+      "tests": 6
+    },
+    "finalPersistenceAndCompatibility": {
+      "status": "pass",
+      "tests": 25
+    },
+    "targetedMilitaryNavigationRecoveryPersistenceFramework": {
+      "status": "pass",
+      "tests": 76
+    }
+  },
+  "remainingScope": [
+    "Physical remote-command transport: REQ-0300.01 and ROAD-0062.01",
+    "Existing release blockers and native-client launch"
+  ],
+  "scope": "Live army/fleet order and local position persistence; prerequisite for physical remote command",
+  "sourceRevision": "55dda06916a930e0f0ccbe67bae8ee4083015d84",
+  "sourceTreeSha256": "16df8c17a1702adde7cc7438833f98b10dc9d9f70d61ece330302a13650a3aa7",
+  "status": "pass",
+  "tooling": {
+    "containerWorktreeMounts": false,
+    "globalToolingChanged": false,
+    "storage": "worktree-local ignored _build/issue443-tools"
+  },
+  "traceability": {
+    "candidateReady": false,
+    "receipts": 12,
+    "remainingPublicationBlockers": 8730,
+    "requirements": [
+      "ROAD-0048.01",
+      "REQ-0233.01",
+      "REQ-0234.01"
+    ],
+    "scope": "Live army/fleet order and local position persistence only",
+    "sourceReportFresh": true,
+    "status": "pass",
+    "unrelatedCampaignBlockers": 21,
+    "wholeRequirementStatus": "fail"
+  },
+  "worldAndFrameworkBoundary": {
+    "campaigns": [
+      "age-of-sail-world",
+      "conformance-campaign"
+    ],
+    "status": "pass"
+  },
+  "wurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 373,
+    "logSha256": "0577191436709f0cb15dff1ff3496e4354fd09ec168a11eb13bcb214ad934b15",
+    "newOrderJourneys": 7,
+    "productionCoverage": "verified_against_current_source",
+    "status": "pass",
+    "stdlibRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+    "succeeded": 373
+  }
+}

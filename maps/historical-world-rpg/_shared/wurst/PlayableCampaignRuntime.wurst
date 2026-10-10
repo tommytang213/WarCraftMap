@@ -806,6 +806,9 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		loading = false
 		if recovery != null
 			recovery.reconstructed()
+		// All fallible work has committed. Restore political identity before
+		// order replay validates hostility; load observers run after callbacks.
+		restoreCampaignPlayerIdentity(identity, authority)
 		if militarySettlements != null
 			militarySettlements.resumeCallbacks()
 	override function diagnostic() returns string
@@ -1747,21 +1750,26 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		let document = state.authorityDocument()
 		let loadedMap = lastAuthorityValue(document, "map")
 		let loadedRegion = lastAuthorityValue(document, "region")
-		let loadedOrigin = playerAuthorityValue(document, "origin")
-		var loadedAllegiance = playerAuthorityValue(document, "allegiance")
 		let loadedSettlement = playerAuthorityValue(document, "settlement")
-		var instance = lastAuthorityValue(document, "world")
-		if instance.startsWith("instance:")
-			instance = SubString(instance, 9, StringLength(instance))
-		if loadedAllegiance == ""
-			loadedAllegiance = loadedOrigin
-		identity.restore(loadedOrigin, loadedAllegiance, loadedMap, instance, loadedSettlement)
+		restoreCampaignPlayerIdentity(identity, document)
 		travel.startAt(loadedMap, loadedRegion)
 		regionAccess.reveal(loadedRegion)
 		regionSelector.afterCampaignLoad(loadedRegion)
 		mapPresentation.setKnowledge(loadedRegion, loadedSettlement, "", "")
 		maps.setPhysicalRegion(loadedRegion)
 		maps.setCommandRegion(loadedRegion)
+
+function restoreCampaignPlayerIdentity(PlayerCampaignIdentity identity, string document)
+	if identity == null
+		return
+	let origin = playerAuthorityValue(document, "origin")
+	var allegiance = playerAuthorityValue(document, "allegiance")
+	var instance = lastAuthorityValue(document, "world")
+	if instance.startsWith("instance:")
+		instance = SubString(instance, 9, StringLength(instance))
+	if allegiance == ""
+		allegiance = origin
+	identity.restore(origin, allegiance, lastAuthorityValue(document, "map"), instance, playerAuthorityValue(document, "settlement"))
 
 public PlayableCampaignServices campaignServices = null
 
