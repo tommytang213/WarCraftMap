@@ -35,7 +35,7 @@ No symbol or trace identifies that engine object. `Played` is not acceptance.
 | Empty authored config or omitted generic slot helpers loses player setup | Exact generated config has player/team/controller/start-location calls. Pinned Wurst/wc3libs deliberately emits custom setup; generic BJ helpers are not dropped by transpilation. | No demonstrated config-generation defect. Native acceptance remains separate. |
 | Lua package/global ordering or missing cache handle fails before origins | Execute exact Lua in installed Lua 5.4 with explicit typed native substitutes. 230 origins/page 1 of 29 appear, with no recorded Lua error; nil cache still reaches the page. Missing timer, nil player, missing Bootstrap and missing diagnostic marker are rejected controls. | New bounded execution evidence, not engine emulation. Does not rule out native initialization sensitivity or renderer failure. |
 | A custom model, unit or frame created by selector startup crashes | Executed trace reaches no frame, unit/item creation or custom model API before origins. Selector physical members retain stock terrain, no doodads and one `sloc`. | Those specific application paths are not reached. Native stock asset/terrain loading is still opaque. |
-| Wurst package execution is required for the crash | New W3N retains exact Lua root/config/functions and existing main prelude, then replaces only 35 package init calls with immediate/deferred markers. | Native outcome pending. Stable markers would implicate the omitted execution path; matching failure would show that path is unnecessary. Neither identifies a particular native by itself. |
+| Wurst package execution is required for the crash | New W3N retains exact Lua root/config/functions and existing main prelude, then replaces only 35 package init calls with immediate/deferred markers. | Native outcome pending. With qualified controls and unchanged confirmed-failing client/graphics context, stable markers support investigating omitted execution. A crash in this variant shows it can fail without package execution, not necessarily at the same native fault site. |
 
 Detailed executable evidence and all eight assertions are in
 [`lua-startup/README.md`](lua-startup/README.md) and `lua-startup/results.json`.
@@ -92,7 +92,8 @@ Native interpretation is conditional on controls, observed markers and the
 confirmed-failing client/graphics context. A pass after an update or graphics
 change does not isolate package execution as causal; do not rerun the old build
 to fill that evidence gap. A familiar crash dialog does not prove a matching
-exception signature. Changed
+exception signature; even a matching null-read/opcode alone does not locate the
+same fault site across different client binaries. Changed
 compressed Lua bytes still require Blizzard's decoder to accept them; independent
 decoding cannot prove that. If a result is ambiguous, do not diagnose package
 code solely from that ambiguity. No original full campaign retest is requested.
@@ -126,7 +127,7 @@ new evidence.
 
 ## Shortest remaining path
 
-One owner-initiated controlled session distinguishes package execution from
+One owner-initiated controlled session can narrow package execution versus
 retained loading/native initialization. Then narrow that side using a specific
 failing call or field, implement its evidence-supported repair, rebuild and run
 required CI, and finally establish retail origin selection and campaign handoff.

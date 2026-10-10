@@ -1,0 +1,45 @@
+{
+  "automationTests": {
+    "status": "passed",
+    "tests": 154
+  },
+  "determinism": {
+    "status": "passed",
+    "twoIndependentBuilderInvocations": "byte_identical_zip"
+  },
+  "format": "issue438_pass2_validation_v1",
+  "fullRepositoryValidation": {
+    "command": "bash automation/run_checks.sh",
+    "dockerAvailable": false,
+    "grillAvailable": false,
+    "invoked": true,
+    "outcomeLocation": "PR validation comment; not replaced by historical PR442 results"
+  },
+  "gameplayRepairEstablished": false,
+  "independentReview": {
+    "bothMpqReaders": "passed_except_documented_encrypted_listfile",
+    "packageInventoryChecksumsAndRecipePins": "passed",
+    "rawByteRangesAndBlockTables": "passed"
+  },
+  "luaBoundaryControls": {
+    "checks": 8,
+    "nativeExecution": false,
+    "receipt": "lua-startup/results.json",
+    "status": "passed"
+  },
+  "native": {
+    "baselineRetailLaunch": "failed",
+    "diagnosticRetailLaunch": "not_run",
+    "positiveControlLocalQualification": "not_run",
+    "wgc": "not_used_unreviewed"
+  },
+  "packageZipSha256": "1ad04b762c6ce505406d3fb17ec578c905bc79e7e1670382cfc555efa8f422b7",
+  "productionSourceModified": false,
+  "recipeRevision": "e4e4d848e139051d97ea7c7a74f9c1bd1aa919c9",
+  "releaseGateChanges": false,
+  "targetedPatchTests": {
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p test_launch_isolation.py -v",
+    "status": "passed",
+    "tests": 12
+  }
+}
