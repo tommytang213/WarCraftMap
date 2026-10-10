@@ -31,7 +31,7 @@ mount. Interpreter checks and static archive inspection do not establish native
 Warcraft launch/gameplay success. The outer worker still runs its authoritative
 repository validation.
 
-The final clean build passed typechecking and **375/375 pinned Wurst tests**.
+The initial clean build passed typechecking and **375/375 pinned Wurst tests**.
 The original and content-renamed conformance campaigns each passed **2/2 tests**
 and produced W3N archives without changes to shared framework sources. Quest,
 journal, physical interaction, generation, persistence/save, packaging, framework
@@ -51,3 +51,25 @@ The compressed result JSON and execution transcripts retain the compiler identit
 test membership, input hashes and original transcript hashes. Python packaging
 tests use their existing fake compiler controls; the separate pinned Wurst run
 and actual archive inspection supply the compiler evidence.
+
+## Validation repair after merging main
+
+The merge repair preserves both authored-quest mappings and all incoming
+military-order mappings. The generated traceability reports retain the same
+**7,162 unrelated blockers** as incoming main. No quest implementation or
+release-gate policy changed.
+
+The repository validation failure came from a stale `package.json` hash in
+`reports/release-blocker-audit.json`. The audit correctly rejected that stale
+snapshot before emitting its JSON summary. Regenerating the snapshot fixes the
+freshness test; the audit still reports the expected 21 campaign blockers without
+execution and artifact inputs. All nine release-blocker regression tests pass.
+
+[repair-validation.json](repair-validation.json) records validation of the merged
+tree, including pinned Wurst execution and typechecking, targeted Python checks,
+the framework mutation check and actual compiled quest definitions.
+[repair-scoped-traceability.json](repair-scoped-traceability.json) binds the quest
+evidence and preserved blockers to that same source identity. The original
+implementation evidence above remains available separately. The outer worker
+performs the final repository validation; native-client and broader quest
+integration blockers remain open.

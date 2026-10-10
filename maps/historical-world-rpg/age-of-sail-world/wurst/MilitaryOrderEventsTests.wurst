@@ -1,0 +1,394 @@
+package MilitaryOrderEventsTests
+
+import MilitaryOrderEvents
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignStartupTests
+import CampaignSaveManager
+import CommandRouter
+import ManagementScreenPauseController
+import PlayableCampaignRuntime
+import PartyLocations
+import UnstuckRecovery
+import WC3Compatibility
+import Wurstunit
+
+class OrderRepresentations extends WarcraftMilitarySettlementAdapter
+	string heading = ""
+	string management = ""
+	override function maximumLife(unit target) returns int
+		return 100
+	override function setMaximumLife(unit target, int value)
+		skip
+	override function showManagement(player viewer, string heading, string body)
+		this.heading = heading
+		management = body
+
+/** Real interpreter units go through the production military projection.
+ * Only event delivery, current native orders and native issuance are recorded. */
+class RecordingOrderNatives extends WarcraftMilitaryOrderNatives
+	int epoch = 0
+	int installs = 0
+	int applications = 0
+	int suppressed = 0
+	boolean listening = false
+	boolean rejectIssue = false
+	int wrongMovement = 0
+	int array[256] tokens
+	int array[256] orders
+	int array[256] targets
+	real array[256] xs
+	real array[256] ys
+	int count = 0
+	function slot(int token) returns int
+		for i = 0 to count - 1
+			if tokens[i] == token
+				return i
+		tokens[count] = token
+		count++
+		return count - 1
+	override function install(MilitaryOrderEvents events, int generation)
+		this.events = events
+		epoch = generation
+		installs++
+		listening = true
+	override function uninstall()
+		listening = false
+	override function movement(int token) returns int
+		if token == wrongMovement
+			return MOVE_NAVAL
+		if GetUnitTypeId(object(token)) == 'hdes'
+			return MOVE_NAVAL
+		return MOVE_LAND
+	override function currentOrder(int token) returns int
+		return orders[slot(token)]
+	override function pathable(int kind, real x, real y) returns boolean
+		return true
+	function remember(int token, int order, real x, real y, int target)
+		let found = slot(token)
+		orders[found] = order
+		xs[found] = x
+		ys[found] = y
+		targets[found] = target
+	function observeReplay(int token)
+		applications++
+		// Native Issue* calls can synchronously emit new order callbacks. Even
+		// a forged current-generation callback cannot overwrite the saved order.
+		events.onOrder(events.generation, Player(0), token, FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+		suppressed++
+	override function immediate(int token, int order) returns boolean
+		observeReplay(token)
+		remember(token, order, 0., 0., 0)
+		return true
+	override function point(int token, int order, real x, real y) returns boolean
+		observeReplay(token)
+		if rejectIssue
+			return false
+		remember(token, order, x, y, 0)
+		return true
+	override function target(int token, int order, int target) returns boolean
+		observeReplay(token)
+		(events.runtime.adapter.forceIdForRepresentation(target) != "").assertTrue()
+		remember(token, order, 0., 0., target)
+		return true
+	function deliver(player sender, int token, int arguments, int order, real x, real y, int target) returns boolean
+		listening.assertTrue()
+		let accepted = events.onOrder(epoch, sender, token, arguments, order, x, y, target)
+		if accepted
+			remember(token, order, x, y, target)
+		return accepted
+
+class OrderFixture
+	StartupFixture startup = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	OrderRepresentations objects = new OrderRepresentations()
+	RecordingOrderNatives natives = new RecordingOrderNatives()
+	MilitarySettlementRuntime runtime
+	MilitaryOrderEvents events
+	RecoveryPoint land
+	RecoveryPoint sea
+	construct()
+		(installMilitaryOrderEvents(startup.campaign, natives) == null).assertTrue()
+		startup.start("england")
+		runtime = startup.campaign.state.militarySettlements
+		runtime.adapter = objects
+		let service = startup.campaign.state.recovery.adapter.service
+		for i = 0 to service.pointCount - 1
+			if land == null and service.points[i].movement[MOVE_LAND]
+				land = service.points[i]
+			if sea == null and service.points[i].movement[MOVE_NAVAL]
+				sea = service.points[i]
+		(land != null and sea != null).assertTrue()
+		runtime.registerForce(new RuntimeForce("army", "player", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 40, land.x, land.y))
+		runtime.registerForce(new RuntimeForce("fleet", "player", "europe_west", "ship", FORCE_FLEET, 'hdes', 40, 40, sea.x, sea.y))
+		// Targets follow issuers in catalogue order; one-pass reconstruction
+		// cannot bind these targets when the source representation is created.
+		runtime.registerForce(new RuntimeForce("enemy_army", "enemy", "europe_west", "infantry", FORCE_ARMY, 'hfoo', 40, 40, land.x + 32., land.y))
+		runtime.registerForce(new RuntimeForce("enemy_fleet", "enemy", "europe_west", "ship", FORCE_FLEET, 'hdes', 40, 40, sea.x + 32., sea.y))
+		runtime.registerForce(new RuntimeForce("local_defense", "player", "europe_west", "siege", FORCE_DEFENSE, 'hgtw', 40, 40, land.x, land.y))
+		runtime.registerForce(new RuntimeForce("local_garrison", "player", "europe_west", "infantry", FORCE_GARRISON, 'hfoo', 40, 40, land.x, land.y))
+		runtime.setWar("england", "enemy", true)
+		runtime.activateRegion("europe_west")
+		events = installMilitaryOrderEvents(startup.campaign, natives)
+		(events != null).assertTrue()
+	function record(string id) returns RuntimeForce
+		return runtime.forces[runtime.forceIndex(id)]
+	function token(string id) returns int
+		return objects.representationId(id)
+	function point(string id, int order, real x, real y)
+		natives.deliver(Player(0), token(id), FORCE_ORDER_POINT, order, x, y, 0).assertTrue()
+	function immediate(string id, int order)
+		natives.deliver(Player(0), token(id), FORCE_ORDER_IMMEDIATE, order, 0., 0., 0).assertTrue()
+	function attack(string id, string target)
+		natives.deliver(Player(0), token(id), FORCE_ORDER_TARGET, COMPAT_ORDER_ATTACK, 0., 0., token(target)).assertTrue()
+	function position(string id, real x, real y)
+		compatSetUnitCoordinates(objects.handles[objects.indexOf(id)], x, y)
+	function receipt(string caseName)
+		print("TRACEABILITY {\"requirement\":\"ROAD-0048.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"wc3-military-order\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+		print("TRACEABILITY {\"requirement\":\"REQ-0233.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"wc3-military-order\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+		print("TRACEABILITY {\"requirement\":\"REQ-0234.01\",\"case\":\"" + caseName + "\",\"entryPoint\":\"wc3-military-order\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+	function close()
+		events.stop()
+
+@test function installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	// The player management entry and installed native order entry must observe
+	// the same authority within this save/reload journey (PR #446 regression).
+	let presentation = new RecordingMilitaryAdapter()
+	let pauses = getManagementScreenPauseController()
+	let previousPause = pauses.runtime
+	pauses.runtime = presentation
+	let commands = new CommandRegistry(false, 8, new CommandText(), presentation)
+	registerMilitarySettlementCommands(commands, f.runtime)
+	f.point("army", COMPAT_ORDER_SMART, f.land.x + 48., f.land.y)
+	f.point("fleet", COMPAT_ORDER_PATROL, f.sea.x + 48., f.sea.y)
+	f.position("army", f.land.x + 16., f.land.y + 16.)
+	f.position("fleet", f.sea.x + 16., f.sea.y + 16.)
+	f.runtime.recordLoss("army", 7)
+	f.runtime.recordLoss("fleet", 11)
+	commands.dispatch(Player(0), "/army army").assertTrue()
+	f.objects.heading.assertEquals("Campaign management: army")
+	f.objects.management.contains("Controller: player | Strength: 33/40").assertTrue()
+	commands.dispatch(Player(0), "/management-close").assertTrue()
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "moving-forces").assertTrue()
+	f.record("army").x.assertEquals(f.land.x + 16.)
+	f.record("fleet").y.assertEquals(f.sea.y + 16.)
+	f.immediate("army", COMPAT_ORDER_STOP)
+	f.immediate("fleet", COMPAT_ORDER_HOLD)
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.record("army").orderId.assertEquals("move")
+	f.record("fleet").orderId.assertEquals("patrol")
+	f.natives.x(f.token("army")).assertEquals(f.land.x + 16.)
+	f.natives.y(f.token("fleet")).assertEquals(f.sea.y + 16.)
+	f.natives.orders[f.natives.slot(f.token("army"))].assertEquals(COMPAT_ORDER_MOVE)
+	f.natives.xs[f.natives.slot(f.token("fleet"))].assertEquals(f.sea.x + 48.)
+	let resumed = f.runtime.snapshot()
+	commands.dispatch(Player(0), "/fleet fleet").assertTrue()
+	f.objects.heading.assertEquals("Campaign management: fleet")
+	f.objects.management.contains("Controller: player | Strength: 29/40").assertTrue()
+	commands.dispatch(Player(0), "/management-close").assertTrue()
+	f.runtime.snapshot().assertEquals(resumed)
+	f.natives.orders[f.natives.slot(f.token("fleet"))].assertEquals(COMPAT_ORDER_PATROL)
+	f.point("army", COMPAT_ORDER_ATTACK, f.land.x + 40., f.land.y)
+	f.position("army", f.land.x + 24., f.land.y)
+	f.runtime.activateRegion("inactive")
+	f.record("army").x.assertEquals(f.land.x + 24.)
+	f.token("army").assertEquals(0)
+	f.runtime.activateRegion("europe_west")
+	f.record("army").orderId.assertEquals("attack-move")
+	f.natives.orders[f.natives.slot(f.token("army"))].assertEquals(COMPAT_ORDER_ATTACK)
+	f.natives.xs[f.natives.slot(f.token("army"))].assertEquals(f.land.x + 40.)
+	f.startup.campaign.identity.physicalMapId().assertEquals("europe_west")
+	f.receipt("success")
+	f.close()
+	pauses.runtime = previousPause
+
+@test function installedTargetOrdersRebindThenCancelCompletedAndObsoleteTargets()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	f.attack("army", "enemy_army")
+	f.attack("fleet", "enemy_fleet")
+	let oldTarget = f.token("enemy_fleet")
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "targets").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	(f.token("enemy_fleet") != oldTarget).assertTrue()
+	f.record("army").orderTargetId.assertEquals("enemy_army")
+	f.record("fleet").orderTargetId.assertEquals("enemy_fleet")
+	f.natives.targets[f.natives.slot(f.token("army"))].assertEquals(f.token("enemy_army"))
+	f.natives.targets[f.natives.slot(f.token("fleet"))].assertEquals(f.token("enemy_fleet"))
+	let saved = f.runtime.snapshot()
+	f.runtime.restore(saved.replace(",enemy_army,player", ",missing_target,player")).assertTrue()
+	f.record("army").orderId.assertEquals("stop")
+	f.token("missing_target").assertEquals(0)
+	f.attack("army", "enemy_army")
+	// A destroyed target disappears without manufacturing a replacement ID.
+	f.runtime.recordLoss("enemy_fleet", 40)
+	f.runtime.activateRegion("europe_west")
+	f.record("fleet").orderId.assertEquals("stop")
+	f.record("fleet").orderTargetId.assertEquals("")
+	f.natives.orders[f.natives.slot(f.token("fleet"))].assertEquals(COMPAT_ORDER_STOP)
+	f.runtime.setWar("england", "enemy", false)
+	f.runtime.activateRegion("europe_west")
+	f.record("army").orderId.assertEquals("stop")
+	f.point("army", COMPAT_ORDER_MOVE, f.land.x + 48., f.land.y)
+	// Warcraft reports zero after reaching a point without a new issued event.
+	f.position("army", f.land.x + 48., f.land.y)
+	f.natives.remember(f.token("army"), 0, 0., 0., 0)
+	f.runtime.snapshot()
+	f.record("army").orderId.assertEquals("stop")
+	f.record("army").x.assertEquals(f.land.x + 48.)
+	f.immediate("army", COMPAT_ORDER_HOLD)
+	f.immediate("fleet", COMPAT_ORDER_STOP)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "cancelled").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	f.record("army").orderId.assertEquals("hold")
+	f.natives.orders[f.natives.slot(f.token("army"))].assertEquals(COMPAT_ORDER_HOLD)
+	f.natives.orders[f.natives.slot(f.token("fleet"))].assertEquals(COMPAT_ORDER_STOP)
+	f.close()
+
+@test function installedOrdersRejectDefendersOwnershipMapsAndUnsupportedArguments()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	f.point("army", COMPAT_ORDER_MOVE, f.land.x + 40., f.land.y)
+	let before = f.runtime.snapshot()
+	for kind = FORCE_GARRISON to FORCE_DEFENSE
+		for i = 0 to f.runtime.forceCount - 1
+			if f.runtime.forces[i].kind == kind
+				f.natives.deliver(Player(0), f.token(f.runtime.forces[i].id), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_HOLD, 0., 0., 0).assertFalse()
+	f.natives.deliver(Player(0), f.token("enemy_army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_HOLD, 0., 0., 0).assertFalse()
+	f.natives.deliver(Player(1), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_HOLD, 0., 0., 0).assertFalse()
+	f.natives.deliver(Player(0), 987654, FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_HOLD, 0., 0., 0).assertFalse()
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_POINT, COMPAT_ORDER_MOVE, 999999., 0., 0).assertFalse()
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_POINT, COMPAT_ORDER_STOP, f.land.x, f.land.y, 0).assertFalse()
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 1., 0., 0).assertFalse()
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_TARGET, COMPAT_ORDER_ATTACK, 0., 0., f.token("fleet")).assertFalse()
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_TARGET, COMPAT_ORDER_SMART, 0., 0., 987654).assertFalse()
+	f.natives.deliver(Player(0), f.token("fleet"), FORCE_ORDER_POINT, COMPAT_ORDER_MOVE, f.land.x, f.land.y, 0).assertFalse()
+	f.natives.wrongMovement = f.token("army")
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+	f.natives.wrongMovement = 0
+	f.record("army").regionId = "inactive"
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+	f.record("army").regionId = "europe_west"
+	f.objects.changeRepresentationOwner("army", Player(1))
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+	f.objects.changeRepresentationOwner("army", Player(0))
+	f.runtime.snapshot().assertEquals(before)
+	f.runtime.transferControl("army", "enemy")
+	f.record("army").orderId.assertEquals("stop")
+	f.natives.orders[f.natives.slot(f.token("army"))].assertEquals(COMPAT_ORDER_STOP)
+	f.natives.deliver(Player(0), f.token("army"), FORCE_ORDER_POINT, COMPAT_ORDER_MOVE, f.land.x, f.land.y, 0).assertFalse()
+	f.runtime.transferControl("army", "player")
+	f.record("army").orderId.assertEquals("stop")
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "rejected").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.record("army").orderId.assertEquals("stop")
+	f.receipt("failure")
+	f.close()
+
+@test function installedOrdersIgnoreStaleAndReentrantCallbacksOnRepeatedReconstruction()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	f.attack("fleet", "enemy_fleet")
+	f.point("army", COMPAT_ORDER_MOVE, f.land.x + 40., f.land.y)
+	let before = f.runtime.snapshot()
+	let installs = f.natives.installs
+	(installMilitaryOrderEvents(f.startup.campaign, new RecordingOrderNatives()) == f.events).assertTrue()
+	f.natives.installs.assertEquals(installs)
+	let oldEpoch = f.natives.epoch
+	let oldToken = f.token("army")
+	f.runtime.suspendCallbacks()
+	f.events.onOrder(oldEpoch, Player(0), oldToken, FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+	f.runtime.resumeCallbacks()
+	for repeat = 0 to 2
+		let applications = f.natives.applications
+		f.runtime.activateRegion("europe_west")
+		// Exactly one order per mobile representation, including both targets.
+		f.natives.applications.assertEquals(applications + 4)
+		f.events.onOrder(oldEpoch, Player(0), f.token("army"), FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+		f.natives.deliver(Player(0), oldToken, FORCE_ORDER_IMMEDIATE, COMPAT_ORDER_STOP, 0., 0., 0).assertFalse()
+		f.point("army", COMPAT_ORDER_MOVE, f.land.x + 40., f.land.y)
+		f.runtime.snapshot().assertEquals(before)
+		f.natives.targets[f.natives.slot(f.token("fleet"))].assertEquals(f.token("enemy_fleet"))
+	(f.natives.suppressed > 0).assertTrue()
+	f.receipt("stale")
+	f.close()
+
+@test function rejectedCampaignLoadRetainsCommittedOrdersAndNativeTargetBindings()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	f.point("army", COMPAT_ORDER_MOVE, f.land.x + 40., f.land.y)
+	f.attack("fleet", "enemy_fleet")
+	f.position("army", f.land.x + 16., f.land.y)
+	let original = f.startup.campaign.state.captureAuthoritativeState()
+	let armyToken = f.token("army")
+	let targetToken = f.token("enemy_fleet")
+	f.immediate("army", COMPAT_ORDER_HOLD)
+	f.point("fleet", COMPAT_ORDER_MOVE, f.sea.x + 48., f.sea.y)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "candidate").assertTrue()
+	// Restore the original through the complete campaign transaction first.
+	f.startup.campaign.state.reconstructRuntime(original).assertTrue()
+	f.startup.campaign.state.activateAuthoritativeState(original)
+	let before = f.startup.campaign.state.captureAuthoritativeState()
+	let retainedArmy = f.token("army")
+	let retainedTarget = f.token("enemy_fleet")
+	(retainedArmy != armyToken and retainedTarget != targetToken).assertTrue()
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failAfterFirstMember = false
+	f.startup.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.token("army").assertEquals(retainedArmy)
+	f.token("enemy_fleet").assertEquals(retainedTarget)
+	f.natives.orders[f.natives.slot(retainedArmy)].assertEquals(COMPAT_ORDER_MOVE)
+	f.natives.xs[f.natives.slot(retainedArmy)].assertEquals(f.land.x + 40.)
+	f.natives.targets[f.natives.slot(f.token("fleet"))].assertEquals(retainedTarget)
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.record("army").orderId.assertEquals("hold")
+	f.record("fleet").orderId.assertEquals("move")
+	f.receipt("replay")
+	f.close()
+
+@test function militaryOrderMigrationRetainsLegacyDestinationsAndRejectsMalformedV6()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	for schema = 1 to 5
+		var legacy = "v" + schema.toString()
+		if schema >= 3
+			legacy += "|k,0"
+		legacy += "|a,europe_west|f,legacy,player,europe_west,ship,2," + I2S('hdes') + ",40,40,40," + f.sea.x.toString() + "," + f.sea.y.toString() + ",1,sail," + (f.sea.x + 40.).toString() + "," + f.sea.y.toString()
+		f.runtime.restore(legacy).assertTrue()
+		f.record("legacy").orderId.assertEquals("move")
+		f.natives.orders[f.natives.slot(f.token("legacy"))].assertEquals(COMPAT_ORDER_MOVE)
+		f.natives.xs[f.natives.slot(f.token("legacy"))].assertEquals(f.sea.x + 40.)
+		let migrated = f.runtime.snapshot()
+		migrated.startsWith("v6|").assertTrue()
+		f.runtime.restore(migrated).assertTrue()
+		f.runtime.snapshot().assertEquals(migrated)
+	let saved = f.runtime.snapshot()
+	f.runtime.restore(saved.replace(",move,", ",unrecognized,")).assertFalse()
+	f.runtime.restore(saved + ",extra").assertFalse()
+	f.runtime.restore(saved.replace(",,player", ",unknown,player")).assertFalse()
+	f.runtime.restore(saved.replace(",move,", ",attack,")).assertFalse()
+	f.runtime.snapshot().assertEquals(saved)
+	// Native refusal cannot preserve an order that never actually resumed.
+	f.natives.rejectIssue = true
+	f.runtime.activateRegion("europe_west")
+	f.record("legacy").orderId.assertEquals("stop")
+	f.natives.orders[f.natives.slot(f.token("legacy"))].assertEquals(COMPAT_ORDER_STOP)
+	f.close()
+
+@test function loadedAllegiancePrecedesTargetOrderReplay()
+	let f = new OrderFixture()
+	(installMilitaryOrderEvents(f.startup.campaign, f.natives) == f.events).assertTrue()
+	f.attack("army", "enemy_army")
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "hostile-allegiance").assertTrue()
+	let identity = f.startup.campaign.identity
+	identity.restore("england", "portugal", "europe_west", identity.regionalInstanceId(), identity.settlementId())
+	f.immediate("army", COMPAT_ORDER_HOLD)
+	f.runtime.atWar("portugal", "enemy").assertFalse()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	identity.allegianceId().assertEquals("england")
+	f.record("army").orderId.assertEquals("attack")
+	f.record("army").orderTargetId.assertEquals("enemy_army")
+	f.natives.targets[f.natives.slot(f.token("army"))].assertEquals(f.token("enemy_army"))
+	f.close()

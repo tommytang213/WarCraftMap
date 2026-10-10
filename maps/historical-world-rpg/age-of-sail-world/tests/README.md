@@ -2,6 +2,13 @@
 
 Automated and developer-side verification for the Age of Sail scenario.
 
+`MilitaryOrderEventsTests.wurst` drives installed production order callbacks on
+an initialized campaign, with generated land/naval navigation and ordinary
+military representations. Recording native ports verify moved positions,
+destinations and stable targets through save, retirement, reconstruction and
+failed-load rollback. See [LIVE_MILITARY_ORDERS.md](../docs/LIVE_MILITARY_ORDERS.md)
+for the supported commands and military v6 migration contract.
+
 Priority areas:
 
 - data integrity

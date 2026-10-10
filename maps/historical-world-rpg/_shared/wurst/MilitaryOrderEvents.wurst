@@ -1,0 +1,300 @@
+package MilitaryOrderEvents
+
+import WC3Compatibility
+import MilitarySettlementRuntime
+import PlayableCampaignRuntime
+import CommandRouter
+import PartyLocations
+import UnstuckRecovery
+
+public constant int FORCE_ORDER_IMMEDIATE = 0
+public constant int FORCE_ORDER_POINT = 1
+public constant int FORCE_ORDER_TARGET = 2
+
+/** Only native registration, observation and issuance are replaceable. Stable
+ * identity, validation, capture and replay execute in the production bridge. */
+public interface MilitaryOrderNatives
+	function install(MilitaryOrderEvents events, int generation)
+	function uninstall()
+	function ownedBy(int representation, player owner) returns boolean
+	function x(int representation) returns real
+	function y(int representation) returns real
+	function movement(int representation) returns int
+	function currentOrder(int representation) returns int
+	function pathable(int kind, real x, real y) returns boolean
+	function immediate(int representation, int order) returns boolean
+	function point(int representation, int order, real x, real y) returns boolean
+	function target(int representation, int order, int target) returns boolean
+
+public class MilitaryOrderEvents implements MilitaryOrderCallbacks
+	MilitarySettlementRuntime runtime
+	PlayerCampaignIdentity identity
+	RecoveryNavigation navigation
+	MilitaryOrderNatives natives
+	boolean installed = false
+	boolean applying = false
+	boolean pendingReconstruction = false
+	int suspension = 0
+	int generation = 0
+	construct(MilitarySettlementRuntime runtime, PlayerCampaignIdentity identity, RecoveryNavigation navigation, MilitaryOrderNatives natives)
+		this.runtime = runtime
+		this.identity = identity
+		this.navigation = navigation
+		this.natives = natives
+	function install()
+		if installed
+			return
+		installed = true
+		runtime.orderCallbacks = this
+		reconstruct()
+		generation++
+		natives.install(this, generation)
+	function stop()
+		if not installed
+			return
+		capture()
+		installed = false
+		generation++
+		natives.uninstall()
+		runtime.orderCallbacks = null
+	override function suspend()
+		if suspension == 0
+			generation++
+			natives.uninstall()
+		suspension++
+	override function resume()
+		if suspension <= 0
+			return
+		suspension--
+		if suspension == 0 and installed
+			if pendingReconstruction
+				reconstruct()
+			generation++
+			natives.install(this, generation)
+	function represented(int token) returns int
+		if token == 0 or navigation == null or runtime.activeRegionId != navigation.mapId
+			return -1
+		let index = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(token))
+		if index >= 0
+			let f = runtime.forces[index]
+			if f.active and f.strength > 0 and f.regionId == runtime.activeRegionId and runtime.adapter.representationId(f.id) == token
+				return index
+		return -1
+	function polity(string controller) returns string
+		if controller == "player"
+			return identity.allegianceId()
+		return controller
+	function eligibleTarget(RuntimeForce source, string id) returns boolean
+		let found = runtime.forceIndex(id)
+		if found < 0 or id == source.id
+			return false
+		let f = runtime.forces[found]
+		if represented(runtime.adapter.representationId(id)) != found or not runtime.atWar(polity(source.controllerId), polity(f.controllerId))
+			return false
+		if not natives.ownedBy(runtime.adapter.representationId(id), runtime.adapter.playerForController(f.controllerId, not f.mobileForce()))
+			return false
+		let city = runtime.settlementForForce(f)
+		if city >= 0
+			let state = runtime.settlements[city]
+			return state.capturable and state.projectMilitary and state.controllerId == f.controllerId and runtime.gameplaySeconds >= state.captureImmuneUntil
+		return f.mobileForce()
+	function movementMatches(RuntimeForce f, int kind) returns boolean
+		return (f.kind == FORCE_ARMY and (kind == MOVE_LAND or kind == MOVE_AMPHIBIOUS or kind == MOVE_FLYING)) or (f.kind == FORCE_FLEET and kind == MOVE_NAVAL)
+	function pointAllowed(RuntimeForce f, int token, real px, real py) returns boolean
+		if not locationNumber(px.toString()) or not locationNumber(py.toString())
+			return false
+		let kind = natives.movement(token)
+		if not movementMatches(f, kind)
+			return false
+		var origin = navigation.zoneAt(kind, natives.x(token), natives.y(token))
+		if origin == "" and f.recoveryMap == navigation.mapId and f.recoveryClass == kind and f.recoveryComponent > 0
+			let saved = navigation.mapId + ":" + kind.toString() + ":" + f.recoveryComponent.toString()
+			if navigation.zoneAt(kind, f.safeX, f.safeY) == saved
+				origin = saved
+		return origin != "" and navigation.zoneAt(kind, px, py) == origin and natives.pathable(kind, px, py)
+	/** Events are observations of one supported current command, not an order
+	 * queue. Unsupported native abilities/transport never acquire authority. */
+	function onOrder(int epoch, player sender, int source, int arguments, int order, real px, real py, int target) returns boolean
+		if not installed or applying or suspension > 0 or epoch != generation or sender != Player(0)
+			return false
+		let found = represented(source)
+		if found < 0
+			return false
+		let f = runtime.forces[found]
+		if not f.mobileForce() or f.controllerId != "player" or not natives.ownedBy(source, sender) or not movementMatches(f, natives.movement(source))
+			return false
+		var command = ""
+		var targetId = ""
+		if arguments == FORCE_ORDER_IMMEDIATE and target == 0 and px == 0. and py == 0.
+			if order == COMPAT_ORDER_STOP
+				command = "stop"
+			else if order == COMPAT_ORDER_HOLD
+				command = "hold"
+		else if arguments == FORCE_ORDER_POINT and target == 0
+			if order == COMPAT_ORDER_MOVE or order == COMPAT_ORDER_SMART
+				command = "move"
+			else if order == COMPAT_ORDER_PATROL
+				command = "patrol"
+			else if order == COMPAT_ORDER_ATTACK
+				command = "attack-move"
+			if command != "" and not pointAllowed(f, source, px, py)
+				return false
+		else if arguments == FORCE_ORDER_TARGET and px == 0. and py == 0. and (order == COMPAT_ORDER_ATTACK or order == COMPAT_ORDER_SMART)
+			let targetIndex = represented(target)
+			if targetIndex < 0
+				return false
+			targetId = runtime.forces[targetIndex].id
+			if not eligibleTarget(f, targetId)
+				return false
+			command = "attack"
+		if command == ""
+			return false
+		f.orderId = command
+		f.orderX = px
+		f.orderY = py
+		f.orderTargetId = targetId
+		f.orderControllerId = f.controllerId
+		return true
+	function nativeOrder(RuntimeForce f) returns int
+		if f.orderId == "move"
+			return COMPAT_ORDER_MOVE
+		if f.orderId == "patrol"
+			return COMPAT_ORDER_PATROL
+		if f.orderId == "attack" or f.orderId == "attack-move"
+			return COMPAT_ORDER_ATTACK
+		if f.orderId == "hold"
+			return COMPAT_ORDER_HOLD
+		return COMPAT_ORDER_STOP
+	function validDestination(RuntimeForce f, int token) returns boolean
+		if not f.validOrder() or f.orderControllerId != f.controllerId
+			return false
+		if f.orderId == "attack"
+			return eligibleTarget(f, f.orderTargetId)
+		if f.orderId == "move" or f.orderId == "patrol" or f.orderId == "attack-move"
+			return pointAllowed(f, token, f.orderX, f.orderY)
+		return true
+	override function capture()
+		if not installed or suspension > 0 or applying
+			return
+		for i = 0 to runtime.forceCount - 1
+			let f = runtime.forces[i]
+			if f.mobileForce() and f.active and f.regionId == runtime.activeRegionId
+				let token = runtime.adapter.representationId(f.id)
+				if represented(token) == i and natives.ownedBy(token, runtime.adapter.playerForController(f.controllerId, false))
+					let kind = natives.movement(token)
+					let px = natives.x(token)
+					let py = natives.y(token)
+					// Reuse the physical map's movement raster and existing recovery
+					// hints. Unknown/blocked observations never replace safe authority.
+					if movementMatches(f, kind) and locationNumber(px.toString()) and locationNumber(py.toString()) and navigation.zoneAt(kind, px, py) != "" and natives.pathable(kind, px, py)
+						f.x = px
+						f.y = py
+					// Completion and unsupported/cancelled native activity must not
+					// resurrect an earlier destination on the next load.
+					let current = natives.currentOrder(token)
+					if not validDestination(f, token) or (current != nativeOrder(f) and not (current == COMPAT_ORDER_SMART and (f.orderId == "move" or f.orderId == "attack")))
+						f.cancelOrder()
+	function apply(RuntimeForce f)
+		if not f.mobileForce() or not f.active or f.regionId != runtime.activeRegionId
+			return
+		let token = runtime.adapter.representationId(f.id)
+		if not f.mobileForce() or represented(token) < 0 or not natives.ownedBy(token, runtime.adapter.playerForController(f.controllerId, false))
+			return
+		if not validDestination(f, token)
+			f.cancelOrder()
+		applying = true
+		var accepted = false
+		if f.orderId == "attack"
+			accepted = natives.target(token, nativeOrder(f), runtime.adapter.representationId(f.orderTargetId))
+		else if f.orderId == "move" or f.orderId == "patrol" or f.orderId == "attack-move"
+			accepted = natives.point(token, nativeOrder(f), f.orderX, f.orderY)
+		else
+			accepted = natives.immediate(token, nativeOrder(f))
+		if not accepted
+			f.cancelOrder()
+			natives.immediate(token, COMPAT_ORDER_STOP)
+		applying = false
+	override function reconstruct()
+		pendingReconstruction = true
+		if not installed or suspension > 0
+			return
+		// Every local representation exists before resolving any target binding.
+		pendingReconstruction = false
+		for i = 0 to runtime.forceCount - 1
+			apply(runtime.forces[i])
+	override function reconstructedForce(string id)
+		if not installed or suspension > 0
+			return
+		for i = 0 to runtime.forceCount - 1
+			let f = runtime.forces[i]
+			if f.id == id or f.orderTargetId == id
+				apply(f)
+
+WarcraftMilitaryOrderNatives activeOrderNatives = null
+
+function militaryOrderEvent()
+	let port = activeOrderNatives
+	if port != null and compatOrderTriggerIs(port.orderTrigger)
+		port.events.onOrder(port.generation, compatOrderPlayer(), compatOrderSource(), compatOrderArguments(), compatIssuedOrder(), compatOrderX(), compatOrderY(), compatOrderTarget())
+
+public class WarcraftMilitaryOrderNatives implements MilitaryOrderNatives
+	MilitaryOrderEvents events
+	int generation = 0
+	trigger orderTrigger = null
+	override function install(MilitaryOrderEvents events, int generation)
+		uninstall()
+		if activeOrderNatives != null
+			activeOrderNatives.events.stop()
+		activeOrderNatives = this
+		this.events = events
+		this.generation = generation
+		orderTrigger = compatInstallOrderEvents(function militaryOrderEvent)
+	override function uninstall()
+		if orderTrigger != null
+			compatRemoveOrderEvents(orderTrigger)
+			orderTrigger = null
+		if activeOrderNatives == this
+			activeOrderNatives = null
+	function object(int token) returns unit
+		if events.runtime.adapter instanceof WarcraftMilitarySettlementAdapter
+			let objects = events.runtime.adapter castTo WarcraftMilitarySettlementAdapter
+			let id = objects.forceIdForRepresentation(token)
+			let found = objects.indexOf(id)
+			if found >= 0
+				return objects.handles[found]
+		return null
+	override function ownedBy(int token, player owner) returns boolean
+		return compatOrderUnitOwnedBy(object(token), owner)
+	override function x(int token) returns real
+		return compatOrderUnitX(object(token))
+	override function y(int token) returns real
+		return compatOrderUnitY(object(token))
+	override function movement(int token) returns int
+		return compatInteractionMovement(object(token))
+	override function currentOrder(int token) returns int
+		return compatCurrentOrder(object(token))
+	override function pathable(int kind, real x, real y) returns boolean
+		return compatOrderPointPathable(kind, x, y)
+	override function immediate(int token, int order) returns boolean
+		return compatIssueImmediateOrder(object(token), order)
+	override function point(int token, int order, real x, real y) returns boolean
+		return compatIssuePointOrder(object(token), order, x, y)
+	override function target(int token, int order, int target) returns boolean
+		return compatIssueTargetOrder(object(token), order, object(target))
+
+/** Production startup and recording journeys use the same idempotent entry. */
+public function installMilitaryOrderEvents(PlayableCampaignServices campaign, MilitaryOrderNatives natives) returns MilitaryOrderEvents
+	if not campaign.started or campaign.state.startupLocked or campaign.state.loading or campaign.state.militarySettlements == null or campaign.state.recovery == null
+		return null
+	let runtime = campaign.state.militarySettlements
+	if runtime.orderCallbacks != null
+		return runtime.orderCallbacks castTo MilitaryOrderEvents
+	let navigation = campaign.state.recovery.adapter.service.navigation
+	if navigation == null or navigation.mapId != campaign.state.loadedPhysicalMap
+		return null
+	let events = new MilitaryOrderEvents(runtime, campaign.identity, navigation, natives)
+	// Bind before initial reconstruction; native getters need this authority.
+	if natives instanceof WarcraftMilitaryOrderNatives
+		(natives castTo WarcraftMilitaryOrderNatives).events = events
+	events.install()
+	return events

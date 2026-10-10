@@ -1,0 +1,124 @@
+{
+  "ciFailure": {
+    "job": "build-age-of-sail-campaign",
+    "message": "army_fleet_control: no passing test exercised all required production entry points",
+    "repair": "Exercise registered military management and installed native order callbacks in the same moved-force save/reload journey; verify the full runtime acceptance gate.",
+    "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/38007400920/job/114079254940"
+  },
+  "diagnosticCampaign": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "artifactSha256": "1b416df0f68ff19df9805f6a0825f0634116b743bcdb87134a4d3ff0e556f4a8",
+    "checks": [
+      "pinned_typecheck",
+      "pinned_compile",
+      "archive_inspection",
+      "packaged_navigation",
+      "compiled_order_event_registrations",
+      "callback_attachment",
+      "native_replay_calls"
+    ],
+    "gameplayMaps": 16,
+    "physicalMaps": 17,
+    "sourceIdentity": {
+      "sourceRevision": "2dc6343a8414e7fc7e159f6af49f45ed977cda06",
+      "sourceTreeSha256": "7c0b519905a897bfa17389b001e8940f7b327e134bcacf187bbdcb8c3189b081"
+    },
+    "status": "pass"
+  },
+  "format": "warcraftmap_issue443_ci_repair_v1",
+  "framework": {
+    "mutatedArchiveSha256": "f47aaf1c4d5c6e82da03c29eeb99fc9d344c1063cec868e8944c563f6a68c7ae",
+    "mutatedTests": 2,
+    "originalArchiveSha256": "d01fee88d11006773d2fa97ef27269ed518747cc47c23fb78b1bc8279997f1be",
+    "originalTests": 2,
+    "sharedSourcesVerified": true,
+    "status": "pass"
+  },
+  "fullCandidateDoubleBuildRerun": false,
+  "issue": 443,
+  "nativeClient": {
+    "environmentVariable": "WC3_NATIVE_SAVE_RUNNER",
+    "executed": false,
+    "nativeSaveOracle": "pass",
+    "status": "runtime_unavailable"
+  },
+  "playerQARequired": false,
+  "pullRequest": 446,
+  "python": {
+    "releaseBlockerRegression": {
+      "status": "pass",
+      "tests": 9
+    },
+    "targeted": {
+      "status": "pass",
+      "tests": 177
+    },
+    "total": 186
+  },
+  "releaseBlockerAuditWithExecution": {
+    "scope": "Runtime/campaign acceptance; exhaustive requirement traceability and native-client release remain separate.",
+    "status": "pass",
+    "unresolvedCampaignBlockers": 0
+  },
+  "runtimeAcceptance": {
+    "armyFleetExecutedTests": [
+      "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations"
+    ],
+    "requiredArmyFleetProbes": [
+      "military_registration",
+      "dispatch",
+      "order",
+      "order_registration"
+    ],
+    "status": "pass",
+    "systemsWithCompleteProductionCoverage": 21
+  },
+  "sourceChecks": {
+    "canonicalMapSource": "pass",
+    "conformanceWorldContracts": "pass",
+    "frameworkBoundary": "pass",
+    "traceabilityFreshness": "pass",
+    "worldContracts": "pass"
+  },
+  "sourceRevision": "2dc6343a8414e7fc7e159f6af49f45ed977cda06",
+  "sourceTreeSha256": "7c0b519905a897bfa17389b001e8940f7b327e134bcacf187bbdcb8c3189b081",
+  "status": "pass",
+  "tooling": {
+    "containersUsed": false,
+    "githubWrites": false,
+    "globalToolingChanged": false,
+    "localPinnedToolchain": "_build/issue443-tools"
+  },
+  "traceability": {
+    "candidateReady": false,
+    "downstreamObligations": [
+      "REQ-0300.01",
+      "ROAD-0062.01"
+    ],
+    "receipts": 12,
+    "remainingPublicationBlockers": 8730,
+    "requirements": [
+      "ROAD-0048.01",
+      "REQ-0233.01",
+      "REQ-0234.01"
+    ],
+    "scope": "Live army/fleet order and local position persistence only",
+    "status": "pass",
+    "wholeRequirementStatus": "fail"
+  },
+  "validationScope": "Local pinned interpreter, diagnostic campaign, and the exact failing acceptance gate; outer worker performs authoritative repository validation.",
+  "wurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "inputSetSha256": "f041c941506b8df24070bf95ffbbf8230e5381e3c801967d648dea721630673e",
+    "logSha256": "eb43168c10b9b8a72a9534f9f1ad82ac0af63e29771bbd8974b690c21dfaaebd",
+    "status": "pass",
+    "succeeded": 373,
+    "tests": 373
+  }
+}
