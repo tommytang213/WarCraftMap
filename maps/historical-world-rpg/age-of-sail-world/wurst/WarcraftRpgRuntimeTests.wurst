@@ -1,5 +1,6 @@
 package WarcraftRpgRuntimeTests
 import WarcraftRpgRuntime
+import QuestStages
 import ScenarioData
 import CampaignTimeline
 
@@ -394,7 +395,14 @@ function generatedRpgWithProgress() returns WarcraftRpgRuntime
 	let q=runtime.journal.quests[0]
 	runtime.acceptQuest(q.id).assertTrue()
 	// Catalogue/codec unit coverage; physical commands execute in RpgInteractionTests.
-	runtime.journal.progress(q.id,1).assertTrue()
+	while q.state == QUEST_ACTIVE
+		let stage = q.graph.stage(q.graph.activeStageId)
+		for i = 0 to q.graph.objectiveCount - 1
+			if questHas(stage.objectiveIds, q.graph.objectives[i].id)
+				q.graph.completeObjective(q.graph.objectives[i].id)
+		if q.graph.activeStageId == stage.id and stage.nextStageIds != ""
+			q.graph.advance(SubString(stage.nextStageIds, 0, stage.nextStageIds.indexOf("~"))).assertTrue()
+		q.settleProgress()
 	runtime.journal.turnIn(q.id,hero,1,30).assertTrue()
 	q.state.assertEquals(QUEST_COMPLETE)
 	let treasure=runtime.treasures.treasures[0]

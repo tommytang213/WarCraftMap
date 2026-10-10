@@ -193,8 +193,11 @@ def project(source, world):
 
 
 def main():
-    parser = argparse.ArgumentParser(); parser.add_argument("--write", action="store_true"); args = parser.parse_args()
+    parser = argparse.ArgumentParser(); parser.add_argument("--write", action="store_true"); parser.add_argument("--runtime-catalog", action="store_true"); args = parser.parse_args()
     source, world = load(SOURCE), load(WORLD); validate(source, world); expected = project(source, world)
+    if args.runtime_catalog:
+        print(json.dumps({"quests": expected["quests"], "sources": ["scenario/campaign-quests.json"]}))
+        return
     if args.write:
         WORLD.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
     elif expected != world:

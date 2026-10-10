@@ -177,7 +177,13 @@ class ConformanceSession
 	f.atSettlement()
 	// The local RPG action uses generated positions and the physical adapter.
 	rpg.interact(Player(0), CONTRACT_SETTLEMENT, f.clock.campaignDay()).assertTrue()
-	rpg.journal.get(CONTRACT_QUEST).state.assertEquals(QUEST_COMPLETE)
+	let acceptedQuest = rpg.journal.get(CONTRACT_QUEST)
+	acceptedQuest.state.assertEquals(QUEST_ACTIVE)
+	acceptedQuest.graph.activeStageId.assertEquals(acceptedQuest.graph.initialStageId)
+	acceptedQuest.graph.completedObjectiveIds.assertEquals("")
+	// Scenario-specific objectives are not proven by accepting at the board.
+	// The partial graph then survives the shared save and travel contract below.
+	rpg.turnInQuest(Player(0), CONTRACT_QUEST, CONTRACT_HERO, f.clock.campaignDay(), 30).assertFalse()
 	let itemId = CONTRACT_ITEM
 	rpg.inventory.grant(itemId).assertTrue()
 	f.trade.chooseMarket(Player(0), CONTRACT_SETTLEMENT, CONTRACT_GOOD)
@@ -227,7 +233,10 @@ class ConformanceSession
 	destination.campaign.identity.physicalMapId().assertEquals(CONTRACT_DESTINATION_MAP)
 	destination.clock.campaignDay().assertEquals(savedDay)
 	destination.trade.hold.cargo.assertEquals(1)
-	destination.campaign.state.rpg.journal.get(CONTRACT_QUEST).state.assertEquals(QUEST_COMPLETE)
+	let resumedQuest = destination.campaign.state.rpg.journal.get(CONTRACT_QUEST)
+	resumedQuest.state.assertEquals(QUEST_ACTIVE)
+	resumedQuest.graph.activeStageId.assertEquals(acceptedQuest.graph.activeStageId)
+	resumedQuest.graph.completedObjectiveIds.assertEquals("")
 	destination.campaign.state.rpg.inventory.owns(itemId).assertTrue()
 	let restored = destination.campaign.state.militarySettlements
 	restored.settlements[restored.settlementIndex(CONTRACT_SETTLEMENT)].controllerId.assertEquals(CONTRACT_CAPTOR)

@@ -11,6 +11,7 @@ import PlayableCampaignRuntime
 import PlayableTrade
 import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
+import QuestStages
 import MilitarySettlementRuntime
 import ReligionRuntime
 import PlayablePiracy
@@ -69,9 +70,12 @@ public class StartupFixture
 			rpg.heroes.heroes[i] = null
 		rpg.heroes.heroes[1] = companion
 		rpg.heroes.count = 2
-		for i = 2 to rpg.journal.count - 1
-			destroy rpg.journal.quests[i]
+		let compact = rpg.journal.get("europe_printed_compact")
+		for i = 1 to rpg.journal.count - 1
+			if rpg.journal.quests[i] != compact
+				destroy rpg.journal.quests[i]
 			rpg.journal.quests[i] = null
+		rpg.journal.quests[1] = compact
 		rpg.journal.count = 2
 		for i = 1 to rpg.treasures.count - 1
 			destroy rpg.treasures.treasures[i]
@@ -406,6 +410,10 @@ function originLifecycle(string origin, string mapId)
 	companion.signatureProgressionId = "retained_personal_tree"
 	companion.choosePerk("earned_perk", 60).assertTrue()
 	rpg.journal.currency = 123
+	let compact = rpg.journal.get("europe_printed_compact")
+	rpg.journal.accept(compact.id).assertTrue()
+	compact.graph.completeObjective("reach_london").assertTrue()
+	rpg.journal.advance(compact.id, "secure_archive").assertTrue()
 	let military = f.campaign.state.militarySettlements
 	military.settlements[0].reserves = 17
 	military.forces[0].supply = 13
@@ -453,6 +461,11 @@ function originLifecycle(string origin, string mapId)
 	transferred.signatureProgressionId.assertEquals("retained_personal_tree")
 	transferred.chosenPerks.assertEquals("~earned_perk~")
 	resumed.state.rpg.journal.currency.assertEquals(123)
+	let restoredCompact = resumed.state.rpg.journal.get("europe_printed_compact")
+	restoredCompact.graph.activeStageId.assertEquals("secure_archive")
+	restoredCompact.graph.reachedStageIds.assertEquals("carry_compact~secure_archive~")
+	restoredCompact.graph.completedObjectiveIds.assertEquals("reach_london~")
+	restoredCompact.completions.assertEquals(0)
 	resumed.state.militarySettlements.settlements[0].reserves.assertEquals(17)
 	resumed.state.militarySettlements.forces[0].supply.assertEquals(13)
 	resumed.countries.treasury[0].assertEquals(876)
