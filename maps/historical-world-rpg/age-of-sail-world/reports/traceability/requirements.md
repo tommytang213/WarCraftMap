@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7186**.
+Candidate ready: **False**; blockers: **7174**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -555,7 +555,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0051.01 | combination | Characters/relationships | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0053.01 | combination | Equipment set definitions and partial/full threshold-bonus resolution | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, integration-missing, static-only |
 | ROAD-0055.01 | mechanism | Early performance stress harness and provisional budgets | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0056.01 | mechanism | Synthetic large-world simulation tests before full content population | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0057.01 | mechanism | Maximum-reasonable local battle performance test | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -633,7 +633,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0127.01 | combination | Expand historical rulers, commanders, admirals, recruitable characters, generated officials, personal quests, relationships, and office/command assignments. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0128.01 | combination | Expand the prototype goods catalogue into the authored settlement-level global commodity/trade set with production, consumption, availability, pricing, logistics, and regional differentiation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0129.01 | combination | Expand technology/institution progression and historical/conditional event coverage across 1450–1820. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | artifact-missing, integration-missing, static-only |
 | ROAD-0131.01 | combination | Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0132.01 | combination | Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0133.01 | combination | Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -6879,17 +6879,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0053.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0053.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0053.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0054.01 [unmapped]: no explicit requirement-to-production mapping
-- ROAD-0054.01 [authority-missing]: scenario content authority is absent or stale
-- ROAD-0054.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- ROAD-0054.01 [unreachable]: production entry/registration/call chain is absent or stale
-- ROAD-0054.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- ROAD-0054.01 [unpersisted]: persistence behavior/path is absent or stale
-- ROAD-0054.01 [unpersisted]: transition behavior/path is absent or stale
 - ROAD-0054.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0054.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0054.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0054.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0054.01 [static-only]: source references cannot establish executed integration
 - ROAD-0054.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0055.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0055.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -7677,17 +7671,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0129.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0129.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0129.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0130.01 [unmapped]: no explicit requirement-to-production mapping
-- ROAD-0130.01 [authority-missing]: scenario content authority is absent or stale
-- ROAD-0130.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- ROAD-0130.01 [unreachable]: production entry/registration/call chain is absent or stale
-- ROAD-0130.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- ROAD-0130.01 [unpersisted]: persistence behavior/path is absent or stale
-- ROAD-0130.01 [unpersisted]: transition behavior/path is absent or stale
 - ROAD-0130.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0130.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0130.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0130.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0130.01 [static-only]: source references cannot establish executed integration
 - ROAD-0130.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0131.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0131.01 [authority-missing]: scenario content authority is absent or stale

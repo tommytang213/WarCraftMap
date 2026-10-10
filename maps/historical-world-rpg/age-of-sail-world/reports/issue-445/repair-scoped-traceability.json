@@ -1,0 +1,150 @@
+{
+  "broaderAuthoredRewardsAndLocalRandomQuests": "separately accountable; not closed by this repair",
+  "compiledDefinitions": "repair-compiled-quests.json",
+  "coverage": [
+    "All authored graph definitions and prerequisites compared in generated Wurst/JSON and actual MPQ Lua",
+    "Both Printed Compact branches via production command dispatch and validated recording domain receipts",
+    "Lisbon-only interactions, unavailable prerequisites, wrong targets, out-of-order and duplicate receipts, unsupported adapters and premature/repeated turn-in",
+    "Partial branch codec round trips, legacy migrations, failed-load rollback, reconstruction without replay and existing physical interaction rejection suite",
+    "CampaignStartupTests populated transition preserves secure_archive branch and completed reach_london objective through travel and destination startup"
+  ],
+  "domainBoundary": "Recording receipts prove state-machine validation. They do not implement the missing diplomacy, archive, trade, protection or other domain actions.",
+  "executedQuestTests": [
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:printedCompactLisbonAloneCannotCompleteAndUnscopedEventsCannotProveObjectives",
+      "line": 155,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:printedCompactNegotiationBranchRequiresMatchingReceiptAndPhysicalReturn",
+      "line": 171,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:printedCompactArchiveBranchRetainsChoiceAndRejectsOtherBranchAfterRestore",
+      "line": 202,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:authoredAcceptanceRejectsUnavailableAndMissingPrerequisites",
+      "line": 217,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:authoredSettlementReturnRequiresActualTargetAndSeparateTurnIn",
+      "line": 233,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:authoredJournalPreservesApproximateHiddenAndTerminalGuidance",
+      "line": 265,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:questCandidateRejectsForgedPathsObjectivesAndPrematureReadinessAtomically",
+      "line": 274,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:legacyQuestCountersMigrateWithoutInventedEvidenceOrRepeatedRewards",
+      "line": 286,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/AuthoredQuestTests.wurst:failedCampaignLoadRollsBackQuestBranchAndRewardsWithoutReplayingProgress",
+      "line": 337,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgCommandsRejectRemoteDistantUnknownAndInvalidRecipientsWithoutMutation",
+      "line": 129,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgTurnInRejectsAnotherAuthoredDestinationDespiteLocalPartyAndReadyObjectives",
+      "line": 176,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgLocalTurnInUsesAuthoredDestinationAndSurvivesMissingBuildings",
+      "line": 190,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgLocalInteractionUsesQuestAliasesAndEligibleActorForAutomaticTurnIn",
+      "line": 211,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgTreasureCommandsRequireLocalCluesAndResolvedGeneratedCandidate",
+      "line": 226,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgCommitRechecksCoordinatesAndLoadedMapWithoutRetainingAuthorization",
+      "line": 260,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgRevalidatesActorAtCommitAndPhysicalMapDuringReconstruction",
+      "line": 282,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/RpgInteractionTests.wurst:rpgRemoteCommandAndTrackingNeverConferPhysicalPresence",
+      "line": 317,
+      "status": "pass"
+    }
+  ],
+  "fullExecutionEvidence": "repair-wurst-results.json.gz",
+  "fullExecutionTranscript": "repair-wurst-execution.log.gz",
+  "issue": 445,
+  "nativeExecution": "not_run",
+  "productionPath": [
+    "configureGeneratedRpg",
+    "registerRpgRuntimeCommands",
+    "accept / interact / queststage / turnin",
+    "QuestJournalRuntime",
+    "QuestGraph",
+    "RPG v5 codec and PlayableCampaignState reconstruction"
+  ],
+  "releaseReady": false,
+  "remainingConditionAdapterObjectives": 920,
+  "requirements": [
+    {
+      "fullRequirementStatus": "fail",
+      "id": "ROAD-0054.01",
+      "remainingBlockerClasses": [
+        "artifact-missing",
+        "integration-missing",
+        "static-only"
+      ],
+      "scopedStateMachineStatus": "pass"
+    },
+    {
+      "fullRequirementStatus": "fail",
+      "id": "ROAD-0130.01",
+      "remainingBlockerClasses": [
+        "artifact-missing",
+        "integration-missing",
+        "static-only"
+      ],
+      "scopedStateMachineStatus": "pass"
+    }
+  ],
+  "scope": "Live authored quest state-machine portion only",
+  "sourceIdentity": {
+    "sourceRevision": "733d06db225c280bb27ca07c139ac3aa01e5f57e",
+    "sourceTreeSha256": "9a28c5d44544e822d1310497af3c709209811831559b3e7a42618be3d7b2b73c"
+  },
+  "status": "pass",
+  "traceability": {
+    "comparedWithIncomingRevision": "f3d9e2803490dbc8b2c316175815c21b077ff8d4",
+    "publicationBlockers": 7174,
+    "report": "../traceability/requirements.json",
+    "totalObligations": 643,
+    "unrelatedBlockerCount": 7162,
+    "unrelatedBlockersSha256": "9a4256110c355646b5952f7f30b5f21e10478f0daf7bd365bc8075bf7ff6d842",
+    "unrelatedBlockersUnchanged": true
+  }
+}

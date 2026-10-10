@@ -1,0 +1,204 @@
+package QuestStages
+
+/** The live counterpart of engine/quest_event.py. Definitions and condition
+ * bindings are generated from scenario data. No Warcraft handle is authority. */
+public function questHas(string values, string id) returns boolean
+	return id != "" and ("~" + values).indexOf("~" + id + "~") >= 0
+
+public function questId(string value) returns boolean
+	if StringLength(value) < 1 or StringLength(value) > 64
+		return false
+	for i = 0 to StringLength(value) - 1
+		let c = SubString(value, i, i + 1)
+		if "abcdefghijklmnopqrstuvwxyz".indexOf(c) < 0 and (i == 0 or "0123456789_".indexOf(c) < 0)
+			return false
+	return true
+
+public class QuestIds
+	string array[64] ids
+	int count = 0
+	boolean valid = true
+	construct(string value)
+		parse(value)
+	function parse(string value)
+		var remaining = value
+		var seen = ""
+		while remaining != ""
+			let cut = remaining.indexOf("~")
+			if cut < 1 or count >= 64
+				valid = false
+				return
+			let id = SubString(remaining, 0, cut)
+			if not questId(id) or questHas(seen, id)
+				valid = false
+				return
+			ids[count] = id
+			count++
+			seen += id + "~"
+			remaining = SubString(remaining, cut + 1, StringLength(remaining))
+
+public class QuestGuidance
+	string precision
+	string regionId
+	string destinationId
+	string searchAreas
+	string requiredClues
+	construct(string precision, string regionId, string destinationId, string searchAreas, string requiredClues)
+		this.precision = precision
+		this.regionId = regionId
+		this.destinationId = destinationId
+		this.searchAreas = searchAreas
+		this.requiredClues = requiredClues
+
+public class QuestObjective
+	string id
+	string description
+	string conditionId
+	// Canonical sorted kind:id tokens retain every reference, including secondary targets.
+	string entityRefs
+	string binding
+	QuestGuidance guidance = null
+	construct(string id, string description, string conditionId, string entityRefs, string binding)
+		this.id = id
+		this.description = description
+		this.conditionId = conditionId
+		this.entityRefs = entityRefs
+		this.binding = binding
+
+	ondestroy
+		if guidance != null
+			destroy guidance
+
+public class QuestStage
+	string id
+	string title
+	string objectiveIds
+	string nextStageIds
+	construct(string id, string title, string objectiveIds, string nextStageIds)
+		this.id = id
+		this.title = title
+		this.objectiveIds = objectiveIds
+		this.nextStageIds = nextStageIds
+
+/** Installed only by a domain integration. A receipt must match the quest,
+ * active stage, objective, condition and ALL entity references. Command text,
+ * a location signal, or a generic combat count is never such a receipt. */
+public interface QuestConditionAuthority
+	function supports(string conditionId) returns boolean
+	function validates(string questId, string stageId, QuestObjective objective, string receiptId) returns boolean
+
+public class QuestGraph
+	string initialStageId
+	string prerequisiteQuestIds
+	QuestStage array[16] stages
+	int stageCount = 0
+	QuestObjective array[32] objectives
+	int objectiveCount = 0
+	QuestGuidance turnInGuidance = null
+	string activeStageId = ""
+	string reachedStageIds = ""
+	string completedObjectiveIds = ""
+	string processedReceiptIds = ""
+	boolean legacyTerminal = false
+	construct(string initialStageId, string prerequisiteQuestIds)
+		this.initialStageId = initialStageId
+		this.prerequisiteQuestIds = prerequisiteQuestIds
+	function addStage(QuestStage stage)
+		stages[stageCount] = stage
+		stageCount++
+	function addObjective(QuestObjective objective)
+		objectives[objectiveCount] = objective
+		objectiveCount++
+	function stage(string id) returns QuestStage
+		for i = 0 to stageCount - 1
+			if stages[i].id == id
+				return stages[i]
+		return null
+	function objective(string id) returns QuestObjective
+		for i = 0 to objectiveCount - 1
+			if objectives[i].id == id
+				return objectives[i]
+		return null
+	function reset()
+		activeStageId = ""
+		reachedStageIds = ""
+		completedObjectiveIds = ""
+		processedReceiptIds = ""
+		legacyTerminal = false
+	function activate()
+		reset()
+		activeStageId = initialStageId
+		reachedStageIds = initialStageId + "~"
+	function stageComplete(string id, string completed) returns boolean
+		let current = stage(id)
+		if current == null
+			return false
+		for i = 0 to objectiveCount - 1
+			if questHas(current.objectiveIds, objectives[i].id) and not questHas(completed, objectives[i].id)
+				return false
+		return true
+	function terminalComplete() returns boolean
+		let current = stage(activeStageId)
+		return current != null and current.nextStageIds == "" and stageComplete(activeStageId, completedObjectiveIds) and not legacyTerminal
+	function advance(string target) returns boolean
+		let current = stage(activeStageId)
+		if current == null or not questHas(current.nextStageIds, target) or questHas(reachedStageIds, target) or not stageComplete(activeStageId, completedObjectiveIds)
+			return false
+		activeStageId = target
+		reachedStageIds += target + "~"
+		return true
+	function activeObjective(string id) returns boolean
+		let current = stage(activeStageId)
+		return current != null and questHas(current.objectiveIds, id) and not questHas(completedObjectiveIds, id) and not legacyTerminal
+	function completeObjective(string id) returns boolean
+		if not activeObjective(id)
+			return false
+		completedObjectiveIds += id + "~"
+		// A single successor is unambiguous. Forks require an explicit legal
+		// choice. Never evaluate the new stage in the same event delivery.
+		let current = stage(activeStageId)
+		if stageComplete(activeStageId, completedObjectiveIds) and current.nextStageIds != ""
+			let cut = current.nextStageIds.indexOf("~")
+			if cut == StringLength(current.nextStageIds) - 1
+				advance(SubString(current.nextStageIds, 0, cut))
+		return true
+	function guidance(boolean ready) returns QuestGuidance
+		if ready
+			return turnInGuidance
+		for i = 0 to objectiveCount - 1
+			if activeObjective(objectives[i].id)
+				return objectives[i].guidance
+		return null
+	/** Validate the entire candidate without mutating current authority. Earlier
+	 * stages must be proven, and no unselected branch can contribute objectives. */
+	function validProgress(string active, string reached, string completed, string receipts) returns boolean
+		let path = new QuestIds(reached)
+		let done = new QuestIds(completed)
+		let events = new QuestIds(receipts)
+		var valid = path.valid and done.valid and events.valid and path.count > 0 and path.count <= stageCount and done.count <= objectiveCount
+		if valid
+			valid = path.ids[0] == initialStageId and path.ids[path.count - 1] == active
+		var allowed = ""
+		for i = 0 to path.count - 1
+			let entry = stage(path.ids[i])
+			if entry == null
+				valid = false
+			else
+				allowed += entry.objectiveIds
+				if i < path.count - 1 and (not questHas(entry.nextStageIds, path.ids[i + 1]) or not stageComplete(entry.id, completed))
+					valid = false
+		for i = 0 to done.count - 1
+			if not questHas(allowed, done.ids[i])
+				valid = false
+		destroy path
+		destroy done
+		destroy events
+		return valid
+
+	ondestroy
+		for i = 0 to stageCount - 1
+			destroy stages[i]
+		for i = 0 to objectiveCount - 1
+			destroy objectives[i]
+		if turnInGuidance != null
+			destroy turnInGuidance

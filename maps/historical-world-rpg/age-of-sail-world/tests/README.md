@@ -337,3 +337,12 @@ deferred retries through the manager, storage failure, coalescing, stale callbac
 load rollback/abort, successful-load cleanup and metadata migration/rejection.
 No sleeps or player QA are required. The schema 8 compatibility matrix retains
 all supported historical envelopes and does not change release blocking policy.
+
+Authored quest stages are covered by `AuthoredQuestTests.wurst`, the retained
+physical interaction suite, populated startup travel and
+`test_quest_generation.py`. Tests dispatch production commands, validate recorded
+domain receipts, exercise both Printed Compact branches and round-trip partial,
+terminal and legacy RPG state through the live codec. RPG v5 preserves stage paths,
+objective IDs and deduplication without converting old counters into evidence.
+See [LIVE_QUEST_STAGES.md](../docs/LIVE_QUEST_STAGES.md) for the migration table and
+explicit condition, reward and local-random-quest integration blockers.
