@@ -11,6 +11,7 @@ sys.path[:0] = [str(PROJECT.parent / "_shared/tooling"), str(PROJECT.parent / "_
 from military_tradition import MilitaryTraditionRuntime, RecordingTraditionAdapter, TraditionError
 from package_wurst_map import generate, load_config
 from requirement_traceability import records
+from validate_military_traditions import verify_generated_definitions
 
 
 class LiveMilitaryTraditionTests(unittest.TestCase):
@@ -32,7 +33,16 @@ class LiveMilitaryTraditionTests(unittest.TestCase):
             self.assertIn(f'runtime.registerContribution("{row["id"]}", {row["weightNumerator"]}, {row["weightDenominator"]})', source)
         for controller in self.definitions["eligibleControllerIds"]:
             for tradition in self.definitions["traditions"]:
-                self.assertIn(f'runtime.reconcileTradition("{controller}", "{tradition["categoryId"]}", {tradition["startingExperience"]}, 0,', source)
+                self.assertIn(f'runtime.reconcileTradition("{controller}", "{tradition["categoryId"]}", "{tradition["startingExperience"]}", traditionDefinition_{tradition["id"]}(), migrate)', source)
+        verify_generated_definitions(source, self.definitions)
+        for mutation in (
+            source.replace('definition.coefficient("attack_basis_points", "1", "10")', ''),
+            source.replace('"discipline_basis_points", "1", "20"', '"discipline_basis_points", "0", "20"'),
+            source.replace('definition.milestone("land_drill_two", "3000", "platoon_fire", "upgrade", "ordered_volley")', ''),
+            source.replace('"replacement", "disciplined_gunnery"', '"replacement", "unknown_effect"'),
+        ):
+            with self.assertRaises(TraditionError):
+                verify_generated_definitions(mutation, self.definitions)
         for row in self.definitions["unitAssignments"]:
             self.assertRegex(source, rf'new RuntimeForce\("{row["id"]}", "{row["controllerId"]}", "[^"]+", "{row["categoryId"]}"')
 
@@ -53,6 +63,19 @@ class LiveMilitaryTraditionTests(unittest.TestCase):
                             self.assertEqual(expected, runtime.award([event]))
                         self.assertEqual(expected, runtime.view(controller, category).experience)
                         self.assertEqual(0, runtime.view("england", category).experience)
+
+    def test_replacements_validate_in_threshold_order_and_reject_forward_or_unknown_references(self):
+        definitions = copy.deepcopy(self.definitions)
+        definitions["traditions"][0]["milestones"].reverse()
+        runtime = MilitaryTraditionRuntime(definitions, RecordingTraditionAdapter())
+        self.assertEqual(("platoon_fire",), runtime._resolve("land_formation", 3000)[1])
+        for replaced, threshold in (("unknown", 3000), ("ordered_volley", 500)):
+            broken = copy.deepcopy(self.definitions)
+            milestone = broken["traditions"][0]["milestones"][1]
+            milestone["threshold"] = threshold
+            milestone["effect"]["replacesEffectId"] = replaced
+            with self.assertRaisesRegex(TraditionError, "earlier effect"):
+                MilitaryTraditionRuntime(broken, RecordingTraditionAdapter())
 
     def test_unbounded_totals_round_trip_and_continue_without_rounding(self):
         for before in (2147483647, 9007199254740991, 9007199254740992, 10**60 - 1, 10**512):

@@ -1,0 +1,38 @@
+package ExactRationalTests
+import ExactRational
+import MilitaryTraditionLayer
+import Wurstunit
+
+function rationalVector(string xp, string top, string bottom, string expected)
+	let value = new ExactRational(xp, top, bottom)
+	value.display().assertEquals(expected)
+	print("RATIONAL_TRADITION_ORACLE {\"xp\":\"" + xp + "\",\"coefficient\":[\"" + top + "\",\"" + bottom + "\"],\"value\":[\"" + value.numerator + "\",\"" + value.denominator + "\"]}")
+	destroy value
+
+@test function exactRationalValuesKeepSignsFractionsAndExpandableCoefficients()
+	rationalVector("0", "-17", "23", "0")
+	rationalVector("123", "0", "99999999999999999999999999999", "0")
+	rationalVector("1", "-1", "20", "-1/20")
+	rationalVector("3001", "1", "10", "3001/10")
+	rationalVector("9007199254740993", "-3", "20", "-27021597764222979/20")
+	rationalVector("2147483648", "2147483648", "4294967296", "1073741824")
+	rationalVector("9007199254740993", "-2147483648", "2147483647", "-19342813113834068942782464/2147483647")
+	rationalVector("99999999999999999999999999999999999999", "99999999999999999999999999999999999999", "99999999999999999999999999999999999999", "99999999999999999999999999999999999999")
+	rationalVector("1", "100000000000000000000000000000000000000", "300000000000000000000000000000000000000", "1/3")
+
+@test function milestoneThresholdsBeyondNativePrecisionRemainDistinct()
+	let definition = new TraditionDefinition("expandable")
+	definition.coefficient("attribute", "-1", "20")
+	definition.milestone("later", "9007199254740993", "upgraded", "upgrade", "first_effect")
+	definition.milestone("earlier", "9007199254740992", "first_effect", "additive", "")
+	let before = definition.resolve("controller", "category", "9007199254740991")
+	let first = definition.resolve("controller", "category", "9007199254740992")
+	let later = definition.resolve("controller", "category", "9007199254740993")
+	before.effects().assertEquals("")
+	first.effects().assertEquals("first_effect")
+	later.effects().assertEquals("upgraded")
+	later.modifier("attribute").display().assertEquals("-9007199254740993/20")
+	destroy before
+	destroy first
+	destroy later
+	destroy definition

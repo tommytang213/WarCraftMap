@@ -1,0 +1,123 @@
+package ExactRational
+import ExactNatural
+
+/** Exact decimal arithmetic for derived values. Neither signed coefficients nor
+ * denominators pass through a whole-value native integer or real conversion. */
+function subtractNatural(string first, string second) returns string
+	var b = StringLength(second) - 1
+	var borrow = 0
+	var result = ""
+	for a = StringLength(first) - 1 downto 0
+		var digit = S2I(SubString(first, a, a + 1)) - borrow
+		if b >= 0
+			digit -= S2I(SubString(second, b, b + 1))
+		borrow = 0
+		if digit < 0
+			digit += 10
+			borrow = 1
+		result = I2S(digit) + result
+		b--
+	var start = 0
+	while start < StringLength(result) - 1 and SubString(result, start, start + 1) == "0"
+		start++
+	return SubString(result, start, StringLength(result))
+
+public function exactNaturalProduct(string first, string second) returns string
+	var result = "0"
+	for i = 0 to StringLength(second) - 1
+		if result != "0"
+			result += "0"
+		result = exactNaturalAdd(result, exactNaturalMultiply(first, S2I(SubString(second, i, i + 1))))
+	return result
+
+/** Long division, with at most nine subtractions per digit. Caller supplies a
+ * positive canonical divisor. All temporary values are expandable strings. */
+class NaturalDivision
+	string quotient = ""
+	string remainder = "0"
+	construct(string value, string divisor)
+		for i = 0 to StringLength(value) - 1
+			let digit = SubString(value, i, i + 1)
+			if remainder == "0"
+				remainder = digit
+			else
+				remainder += digit
+			var q = 0
+			while exactNaturalCompare(remainder, divisor) >= 0
+				remainder = subtractNatural(remainder, divisor)
+				q++
+			if quotient != "" or q > 0
+				quotient += I2S(q)
+		if quotient == ""
+			quotient = "0"
+
+function naturalGcd(string first, string second) returns string
+	var a = first
+	var b = second
+	while b != "0"
+		let division = new NaturalDivision(a, b)
+		a = b
+		b = division.remainder
+		destroy division
+	return a
+
+/** A bounded denominator permits a bounded remainder, never a bounded XP.
+ * Avoid string division in the common small-coefficient reconstruction path. */
+function boundedRemainder(string value, int divisor) returns int
+	var remainder = 0
+	for i = 0 to StringLength(value) - 1
+		let digit = S2I(SubString(value, i, i + 1))
+		if divisor <= 214748364
+			remainder = (remainder * 10 + digit) mod divisor
+		else
+			var next = digit mod divisor
+			for j = 1 to 10
+				if next >= divisor - remainder
+					next -= divisor - remainder
+				else
+					next += remainder
+			remainder = next
+	return remainder
+
+/** Reduced signed numerator / positive denominator. The value is authority for
+ * a derived layer; future native consumers must report their own limitations. */
+public class ExactRational
+	string numerator
+	string denominator
+	construct(string experience, string coefficientNumerator, string coefficientDenominator)
+		numerator = "0"
+		denominator = "1"
+		if experience != "0" and coefficientNumerator != "0"
+			let negative = coefficientNumerator.startsWith("-")
+			var magnitude = coefficientNumerator
+			if negative
+				magnitude = SubString(magnitude, 1, StringLength(magnitude))
+			var product = experience
+			if magnitude != "1"
+				product = exactNaturalProduct(experience, magnitude)
+			if exactNaturalCompare(coefficientDenominator, "2147483647") <= 0
+				let bounded = S2I(coefficientDenominator)
+				var divisor = bounded
+				var remainder = boundedRemainder(product, bounded)
+				while remainder != 0
+					let previous = divisor
+					divisor = remainder
+					remainder = previous mod remainder
+				numerator = product
+				if divisor != 1
+					numerator = exactNaturalDivide(product, divisor)
+				denominator = I2S(bounded div divisor)
+			else
+				let divisor = naturalGcd(product, coefficientDenominator)
+				let top = new NaturalDivision(product, divisor)
+				let bottom = new NaturalDivision(coefficientDenominator, divisor)
+				numerator = top.quotient
+				denominator = bottom.quotient
+				destroy top
+				destroy bottom
+			if negative
+				numerator = "-" + numerator
+	function display() returns string
+		if denominator == "1"
+			return numerator
+		return numerator + "/" + denominator

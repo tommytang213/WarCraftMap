@@ -7,6 +7,7 @@ import CommandRouter
 import PlayableCampaignRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
+import MilitaryTraditionLayer
 import ReligionRuntime
 import PartyLocations
 import PhysicalInteraction
@@ -208,6 +209,9 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 		skip
 	override function changeRepresentationOwner(string stableId, player owner)
 		skip
+	override function replaceTraditionLayer(string stableId, TraditionLayer layer)
+		if layer != null
+			destroy layer
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		skip
 	override function protectRepresentation(string stableId, boolean shouldProtect)

@@ -1,0 +1,215 @@
+{
+  "completedAtUtc": "2026-10-11T11:28:55.051199+00:00",
+  "diagnosticCampaign": {
+    "artifact": "_build/release/AgeOfSailWorldCampaign.w3n",
+    "bytes": 48752220,
+    "checks": [
+      "pinned typecheck for every map",
+      "map and campaign archive inspection",
+      "same-source identity",
+      "all compiled authored coefficients and milestones"
+    ],
+    "physicalMaps": 17,
+    "regionalMapsAudited": 16,
+    "sha256": "9ad7ecc0e716a5466ee5dd001b886a4721a61c99de854c058cc12c8696aaf6a8",
+    "status": "pass",
+    "transcript": "diagnostic-build.log.gz"
+  },
+  "framework": {
+    "mutatedTestsPassed": 2,
+    "originalTestsPassed": 2,
+    "physicalMapsPerCampaign": 3,
+    "report": "framework-conformance.json.gz",
+    "sourceHashesMatchFinalTree": true,
+    "status": "pass",
+    "transcript": "framework-build.log.gz",
+    "unchangedSharedSourceFiles": 179
+  },
+  "gameplayConsumerBlockers": [
+    {
+      "categoryId": "land_formation",
+      "id": "attack_basis_points",
+      "kind": "attribute",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "land_formation",
+      "id": "discipline_basis_points",
+      "kind": "attribute",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "land_formation",
+      "id": "ordered_volley",
+      "kind": "effect",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "land_formation",
+      "id": "platoon_fire",
+      "kind": "effect",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "sailing_naval",
+      "id": "naval_damage_basis_points",
+      "kind": "attribute",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "sailing_naval",
+      "id": "maneuver_basis_points",
+      "kind": "attribute",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "sailing_naval",
+      "id": "disciplined_gunnery",
+      "kind": "effect",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    },
+    {
+      "categoryId": "sailing_naval",
+      "id": "line_of_battle",
+      "kind": "effect",
+      "reason": "No gameplay-effect consumer; exact typed resolution only"
+    }
+  ],
+  "outerRepositoryValidation": "performed by the outer worker after return",
+  "pinnedWurst": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 463,
+    "inputSetSha256": "4b96ad85696c3cf6637869a5f259b4a79695c99f3a875734bca2b12c44af7d5d",
+    "logSha256": "d5f028377955afe44f47399abeaaaabf552fe9c032456cc6ac6127522e763b0c",
+    "passed": 463,
+    "report": "pinned-results.json.gz",
+    "status": "pass",
+    "transcript": "pinned-execution.log.gz",
+    "typecheck": "pass",
+    "typecheckTranscript": "pinned-typecheck.log.gz"
+  },
+  "placeholderHealthBonusEnabled": false,
+  "playerQaRequired": false,
+  "python": {
+    "checks": 168,
+    "initialPassed": 167,
+    "modules": [
+      "test_military_tradition",
+      "test_military",
+      "test_live_military_tradition",
+      "test_warcraft_military_runtime",
+      "test_cross_map_persistence",
+      "test_campaign_save",
+      "test_campaign_save_manager",
+      "test_release_save_compatibility",
+      "test_settlement_defense",
+      "test_settlement",
+      "test_settlement_integration",
+      "test_framework_conformance",
+      "test_requirement_traceability",
+      "test_integration_evidence",
+      "test_wurst_execution",
+      "test_release_blocker_audit"
+    ],
+    "recheck": {
+      "checks": 1,
+      "reason": "Refreshed the generated release-audit hash for scenario/runtime-execution.json; the sole failed freshness test now passes.",
+      "status": "pass",
+      "transcript": "python-recheck.log.gz"
+    },
+    "status": "pass",
+    "traceabilityRecheck": {
+      "checks": 60,
+      "status": "pass",
+      "transcript": "traceability-recheck.log.gz"
+    },
+    "transcript": "python-checks.log.gz"
+  },
+  "realClientExecuted": false,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingWork": [
+    "authored attribute gameplay consumers",
+    "named milestone gameplay consumers",
+    "non-kill contribution dispatchers",
+    "balance and native launch validation"
+  ],
+  "saveCompatibility": {
+    "acceptedHeadlessTraditionVersions": [
+      1,
+      2
+    ],
+    "acceptedMilitaryVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "campaignEnvelopeVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "derivedLayersSerialized": false,
+    "headlessTraditionVersion": 2,
+    "militaryVersion": 8,
+    "rejectedLoadIsAtomic": true
+  },
+  "scope": "Issue #464: exact authored tradition resolution, typed delivery, inspection and reconstruction",
+  "sourceChecks": {
+    "frameworkBoundary": "pass",
+    "gitDiffCheck": "pass",
+    "sourceTraceability": "pass"
+  },
+  "sourceRevision": "db6112cc72c13cc1e11292c6f9a216e96869981a",
+  "sourceTreeSha256": "89b67512f1ad792f3b70b5b3bbb050385a62701a60add18efef129fcee68e484",
+  "status": "pass",
+  "traceability": {
+    "productionJourneys": 4,
+    "rationalVectors": 9,
+    "remainingObligations": [
+      "REQ-0154.02",
+      "REQ-0155.01",
+      "REQ-0157.01",
+      "REQ-0158.02",
+      "REQ-0158.03",
+      "REQ-0159.01"
+    ],
+    "remainingPublicationBlockers": 8340,
+    "report": "scoped-evidence.json",
+    "requirements": [
+      "REQ-0155.02",
+      "REQ-0156.01",
+      "REQ-0156.02",
+      "REQ-0157.02",
+      "REQ-0160.01",
+      "REQ-0160.02",
+      "REQ-0161.01",
+      "REQ-0162.01",
+      "REQ-0163.01",
+      "REQ-0163.02",
+      "ROAD-0052.01",
+      "REQ-0154.01",
+      "REQ-0158.01",
+      "REQ-0164.01"
+    ],
+    "resolvedLayerVectors": 40,
+    "status": "pass"
+  }
+}
