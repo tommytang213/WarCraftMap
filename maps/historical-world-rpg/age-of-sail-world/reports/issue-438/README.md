@@ -1,5 +1,10 @@
 # Issue #438: persistent Begin Campaign crash
 
+**2026-10-10 follow-up:** [pass2/README.md](pass2/README.md) records new executed
+Lua-boundary controls and a package-initialization isolation diagnostic. The
+following report preserves PR #442's historical findings; native acceptance
+remains failed and no gameplay repair is claimed.
+
 **Diagnosis: `diagnosis_unconfirmed`. Real-client launch: FAILED. Do not close
 #438 as repaired.** This change implements investigation evidence, versioned
 diagnostic identity and an opt-in local WGC adapter. It makes no gameplay,
