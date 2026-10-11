@@ -1,5 +1,6 @@
 """Compare compiled research definitions with every authoritative graph node."""
 import json
+import copy
 from decimal import Decimal
 from dataclasses import replace
 from pathlib import Path
@@ -27,6 +28,8 @@ def generated_research(source):
             "kind": re.search(rf'{variable}\.kind="([^"]+)"', body)[1],
             "prerequisites": re.findall(rf'{variable}\.addPrerequisite\("([^"]+)"\)', body),
             "timeCost": re.search(r'RuntimeTechnology\("[^"]+","[^"]+",(-?\d+),"([^"]+)","([^"]+)","([^"]+)"\)', body).groups(),
+            "unlocks": re.findall(rf'{variable}\.addUnlock\("([^"]+)","([^"]+)","([^"]+)"\)', body),
+            "unlockCount": int(re.search(rf'{variable}\.expectedUnlockCount=(\d+)', body)[1]),
         }
     return definitions
 
@@ -41,8 +44,12 @@ class ResearchGenerationTests(unittest.TestCase):
         generate(cls.config, generated)
         cls.source = (generated / "ScenarioData.wurst").read_text(encoding="utf-8")
         world = json.loads(cls.config.scenario_file.read_text(encoding="utf-8"))
+        cls.world = world
+        cls.runtime = json.loads((generated / 'scenario-runtime.json').read_text())
         cls.expected = {
             row["id"]: {"kind": kind, "prerequisites": row["prerequisiteIds"],
+                        "unlocks": [(row["id"], u["kind"], u["contentId"]) for u in row["unlocks"]],
+                        "unlockCount": len(row["unlocks"]),
                         "timeCost": tuple(str(row["timeCost"][key]) for key in
                             ("preferredYear", "baseCost", "aheadOfTimeCostMultiplier", "additionalMultiplierPerYearAhead"))}
             for kind, records in (("technology", world["technologies"]),
@@ -90,6 +97,66 @@ class ResearchGenerationTests(unittest.TestCase):
         generated = Path(self.temp.name) / "again"
         generate(self.config, generated)
         self.assertEqual(self.source, (generated / "ScenarioData.wurst").read_text(encoding="utf-8"))
+
+    def test_all_220_typed_unlocks_and_13_multi_unlock_nodes_are_retained(self):
+        self.assert_complete(self.source)
+        expected = [entry for row in self.expected.values() for entry in row['unlocks']]
+        self.assertEqual(220, len(expected))
+        self.assertEqual(13, sum(row['unlockCount'] > 1 for row in self.expected.values()))
+        self.assertEqual(expected, [(u['nodeId'], u['kind'], u['contentId'])
+                                   for u in self.runtime['researchUnlockDefinitions']])
+        self.assertEqual(self.runtime['researchIntegrationBlockers'], [
+            dict(nodeId=n, kind=k, contentId=c, bindingStatus='unbound', reason='missing_gameplay_consumer')
+            for n, k, c in expected])
+        self.assertNotIn('effectMagnitude', self.source)
+
+    def test_production_adapter_cannot_substitute_native_food_capacity(self):
+        bootstrap=(PROJECT.parent / '_shared/wurst/Bootstrap.wurst').read_text()
+        effects=(PROJECT.parent / '_shared/wurst/ResearchEntitlements.wurst').read_text()
+        self.assertIn('new WarcraftRpgRuntime(new UnboundResearchEffects())',bootstrap)
+        self.assertNotIn('PLAYER_STATE_RESOURCE_FOOD_CAP',bootstrap+effects)
+        self.assertNotIn('SetPlayerState',effects)
+        self.assertIn('return RESEARCH_UNBOUND',effects)
+
+    def test_dropped_unlocks_kinds_provenance_and_order_are_detected(self):
+        pattern = r'\t(technology\d+)\.addUnlock\("[^"]+","[^"]+","[^"]+"\)\n'
+        seen = set()
+        def truncate(match):
+            if match[1] in seen: return ''
+            seen.add(match[1]); return match[0]
+        dropped = re.sub(pattern, truncate, self.source)
+        actual = generated_research(dropped)
+        self.assertEqual({n for n, r in self.expected.items() if r['unlockCount'] > 1},
+                         {n for n, r in actual.items() if r != self.expected[n]})
+        mass = re.findall(r'[^\n]*\.addUnlock\("mass_army_logistics",[^\n]*\n', self.source)
+        self.assertEqual(3, len(mass))
+        for fixture in (dropped,
+            self.source.replace('"policy","mass_conscription"', '"modifier","mass_conscription"'),
+            self.source.replace('addUnlock("mass_army_logistics",', 'addUnlock("lost_node",'),
+            self.source.replace(''.join(mass), ''.join(reversed(mass)))):
+            with self.assertRaises(AssertionError): self.assert_complete(fixture)
+
+    def test_malformed_research_references_reject_before_generation(self):
+        mutations = [
+            lambda w: w['technologies'][0].update(unlocks=None),
+            lambda w: w['technologies'][0]['unlocks'][0].pop('kind'),
+            lambda w: w['technologies'][0]['unlocks'][0].update(kind='food'),
+            lambda w: w['technologies'][0]['unlocks'][0].update(contentId=''),
+            lambda w: w['technologies'][0]['unlocks'][0].update(contentId='bad,id'),
+            lambda w: w['technologies'][0]['unlocks'][0].update(magnitude=1),
+            lambda w: w['technologies'][0]['unlocks'].append(w['technologies'][0]['unlocks'][0]),
+            lambda w: w['technologies'][0].update(unlocks=[dict(kind='unit',contentId=f'unit_{i}') for i in range(65)]),
+            lambda w: w['technologies'][0].update(prerequisiteIds=['missing_node']),
+            lambda w: w['technologies'].append(w['technologies'][0]),
+            lambda w: w['institutions'][0].update(id=w['technologies'][0]['id']),
+        ]
+        for index, mutate in enumerate(mutations):
+            world = copy.deepcopy(self.world); mutate(world)
+            source = Path(self.temp.name) / 'invalid-world.json'; source.write_text(json.dumps(world))
+            target = Path(self.temp.name) / f'invalid-{index}'
+            with self.subTest(index=index), self.assertRaises(PackagingError):
+                generate(replace(self.config, scenario_file=source), target)
+            self.assertFalse(target.exists())
 
     def test_exact_fractional_tokens_survive_generation_for_both_kinds(self):
         world = json.loads(self.config.scenario_file.read_text())

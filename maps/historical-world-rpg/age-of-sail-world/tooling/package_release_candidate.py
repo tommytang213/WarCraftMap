@@ -41,7 +41,7 @@ PUBLICATION_BLOCKED_EXIT = 3
 
 
 class CandidatePublicationBlocked(PackagingError):
-    """A validated final build has reported traceability gaps; no ZIP is published."""
+    """A validated final build has accountable release gaps; no ZIP is published."""
 
 
 def sha_bytes(value: bytes) -> str:
@@ -493,8 +493,9 @@ def build_release_candidate(config_path: Path = CONFIG, grill: str | None = None
     # Do not leave a previous candidate at the publication path after a failed
     # attempt. Diagnostic W3N packaging remains available independently.
     clean(config_path)
-    for suffix in (".json", ".md"):
-        (PROJECT / "_build/release/requirement-traceability").with_suffix(suffix).unlink(missing_ok=True)
+    for report in ("requirement-traceability", "release-blocker-audit"):
+        for suffix in (".json", ".md"):
+            (PROJECT / "_build/release" / report).with_suffix(suffix).unlink(missing_ok=True)
     source_trace = traceability.build_report()
     traceability.write_report(source_trace, PROJECT / "_build/requirement-traceability-source")
     if any(row["class"] in {"authority-drift", "invalid-mapping"} for row in source_trace["blockers"]):
@@ -545,13 +546,24 @@ def _build_release_candidate(config: dict, grill: str | None, revision: str | No
             execution=json.loads(execution_bytes), execution_log=execution_log, revision=revision, campaign=second)
         require_candidate_ready(runtime_report)
         artifact_validation = runtime_report["evidenceLevels"]["builtArtifact"]
-        from release_blocker_audit import build_report
+        from release_blocker_audit import build_report, only_unbound_research_blocks, render_markdown
         blocker_report = build_report(execution=json.loads(execution_bytes), execution_log=execution_log,
                                       revision=revision, campaign=second)
-        if blocker_report["status"] != "pass" or not blocker_report["candidateReady"]:
-            raise PackagingError("gate stage failed: release-blocker audit does not pass")
         if source_identity(PROJECT, revision) != identity:
             raise PackagingError("authoritative sources changed during candidate build")
+        if blocker_report["status"] != "pass" or not blocker_report["candidateReady"]:
+            if (only_unbound_research_blocks(blocker_report)
+                    and blocker_report.get("runtimeAcceptance") == runtime_report
+                    and all(blocker_report.get(key) == value for key, value in identity.items())):
+                # Retain every missing typed consumer. CI can report a completed
+                # validation with publication blocked, but must publish no ZIP.
+                base = PROJECT / "_build/release/release-blocker-audit"
+                base.with_suffix(".json").write_bytes(canonical(blocker_report))
+                base.with_suffix(".md").write_text(render_markdown(blocker_report), encoding="utf-8")
+                raise CandidatePublicationBlocked(
+                    f"{blocker_report['unresolvedCampaignBlockers']} research unlocks have no gameplay consumers; "
+                    "see release-blocker-audit.json and requirement-traceability.json")
+            raise PackagingError("gate stage failed: release-blocker audit does not pass")
         try:
             traceability.trace.require_ready(trace_report)
         except ValueError as error:

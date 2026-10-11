@@ -118,6 +118,7 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
             with self.subTest(mode=mode), \
                  patch.object(audit, "_audit_reports", return_value=([], [])), \
                  patch.object(audit, "_audit_inputs", return_value=({}, [])), \
+                 patch.object(audit, "_audit_research_bindings", return_value=[]), \
                  patch.object(audit, "_audit_release_save_compatibility", return_value=self.report["releaseSaveCompatibility"]), \
                  patch.object(audit, "_run_journeys", return_value=(self.report["journeys"], self.report["soak"])), \
                  patch.object(audit.runtime_acceptance, "audit_acceptance", return_value=current):
@@ -125,6 +126,15 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
                 self.assertEqual(mode == "complete", report["candidateReady"])
                 self.assertEqual("pass" if mode == "complete" else "fail", report["status"])
                 self.assertEqual("not_run", report["evidenceLevels"]["realClient"]["executionStatus"])
+
+    def test_all_unbound_research_consumers_block_release_independently(self):
+        rows=audit._audit_research_bindings()
+        self.assertEqual(220,len(rows))
+        self.assertEqual(220,len({r['id'] for r in rows}))
+        self.assertTrue(all(r['severity']=='campaign_blocker' and r['disposition']=='unresolved' for r in rows))
+        self.assertTrue(all(r in self.report['findings'] for r in rows))
+        for content in ('mass_conscription','common_wagon_train','supply_efficiency'):
+            self.assertTrue(any(f'mass_army_logistics:' in r['message'] and content in r['message'] for r in rows))
 
     def test_unknown_critical_class_cannot_escape_unclassified_gate(self):
         finding = audit._finding("INJECT-UNKNOWN-CRITICAL", "start_failure", "fixture/unknown",

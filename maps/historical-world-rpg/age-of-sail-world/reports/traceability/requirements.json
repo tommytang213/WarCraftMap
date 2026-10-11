@@ -12,8 +12,8 @@
     "integration-missing": 2268,
     "mechanism-missing": 547,
     "state-unmapped": 573,
-    "static-only": 77,
-    "unmapped": 566,
+    "static-only": 78,
+    "unmapped": 565,
     "unpersisted": 1142,
     "unreachable": 571
   },
@@ -29145,11 +29145,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "ROAD-0045.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
       "class": "authority-missing",
       "id": "ROAD-0045.01",
       "message": "scenario content authority is absent or stale"
@@ -29198,6 +29193,11 @@
       "class": "integration-missing",
       "id": "ROAD-0045.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "ROAD-0045.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -37190,7 +37190,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "fdd8761caaa29bebff6e898a7ff6c536d1abc6ca2da0771fb44a44dc28a8317b",
-  "mappingSha256": "80e631e13c63850757518a961aea5e24478d7b0c7c9064acfb2bcadfb20115ad",
+  "mappingSha256": "7d7ef9586996f83ed1868ed25c198465a91ec17e833574bf3ad8c5e53c1b2fc4",
   "requirements": [
     {
       "authority": {
@@ -38466,7 +38466,7 @@
             "symbol": "applyRuntime"
           },
           "mode": "persisted",
-          "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1–8 are unchanged; old completions remain earned.",
+          "reason": "Cost definitions and quotes are not persisted. RPG v6 u/controller/id records, clock state and supported campaign envelopes 1–9 retain their contracts; old completions remain earned.",
           "references": [
             {
               "contains": [
@@ -38492,7 +38492,7 @@
           }
         },
         "state": {
-          "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+          "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, replace its controller entitlement set and debit once.",
           "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
           "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
           "references": [
@@ -38617,17 +38617,17 @@
         },
         "transition": {
           "mode": "reconstructed",
-          "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+          "reason": "Stable controller completion records reconstruct typed entitlement layers; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
           "references": [
             {
               "contains": [
-                "technologies.reconstruct(controllerId)"
+                "technologies.reconstructAll()"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
             },
             {
               "contains": [
-                "effects.clearTechnologyLayer(controllerId)"
+                "effects.replaceResearchEntitlements(result)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "reconstruct"
@@ -38777,7 +38777,7 @@
             "symbol": "applyRuntime"
           },
           "mode": "persisted",
-          "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1–8 are unchanged; old completions remain earned.",
+          "reason": "Cost definitions and quotes are not persisted. RPG v6 u/controller/id records, clock state and supported campaign envelopes 1–9 retain their contracts; old completions remain earned.",
           "references": [
             {
               "contains": [
@@ -38803,7 +38803,7 @@
           }
         },
         "state": {
-          "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+          "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, replace its controller entitlement set and debit once.",
           "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
           "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
           "references": [
@@ -38928,17 +38928,17 @@
         },
         "transition": {
           "mode": "reconstructed",
-          "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+          "reason": "Stable controller completion records reconstruct typed entitlement layers; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
           "references": [
             {
               "contains": [
-                "technologies.reconstruct(controllerId)"
+                "technologies.reconstructAll()"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
             },
             {
               "contains": [
-                "effects.clearTechnologyLayer(controllerId)"
+                "effects.replaceResearchEntitlements(result)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "reconstruct"
@@ -69450,14 +69450,94 @@
         "integration-missing",
         "mechanism-missing",
         "state-unmapped",
-        "unmapped",
+        "static-only",
         "unpersisted",
         "unreachable"
       ],
       "classification": "combination",
       "id": "ROAD-0045.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "researchEntitlements": {
+          "authority": "RPG v6 u,controller,node completion records and headless research schema 1 remain unchanged. Definitions and derived entitlement layers are never persisted.",
+          "content": [
+            {
+              "contains": [
+                "\"mass_army_logistics\"",
+                "\"mass_conscription\"",
+                "\"common_wagon_train\"",
+                "\"supply_efficiency\""
+              ],
+              "path": "scenario/world/world.json"
+            },
+            {
+              "contains": [
+                "research_unlock_definitions(world)",
+                "expectedUnlockCount",
+                "addUnlock",
+                "researchIntegrationBlockers"
+              ],
+              "path": "../_shared/tooling/package_wurst_map.py"
+            }
+          ],
+          "effectBindings": {
+            "gate": "tooling/release_blocker_audit.py:_audit_research_bindings",
+            "reason": "All authored unlocks are references without implemented consumers. No unit, building, ability, policy or modifier is converted to food capacity.",
+            "status": "blocked_pending_gameplay_consumers"
+          },
+          "entry": {
+            "commands": [
+              "research",
+              "unlock",
+              "institution",
+              "technology",
+              "institutions"
+            ],
+            "handlers": [
+              "RpgActionCommand.execute",
+              "RpgScreenCommand.execute"
+            ],
+            "id": "live-typed-research-entitlements",
+            "registration": "registerRpgRuntimeCommands"
+          },
+          "mechanism": [
+            {
+              "contains": [
+                "research_unlocks(self.nodes[node])",
+                "content_unlocked"
+              ],
+              "path": "../_shared/engine/technology_institutions.py",
+              "symbol": "advance_research"
+            },
+            {
+              "contains": [
+                "result.add(definition.unlocks[j])"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "entitlements"
+            },
+            {
+              "contains": [
+                "result.controllerId",
+                "destroy layer"
+              ],
+              "path": "../_shared/wurst/ResearchEntitlements.wurst",
+              "symbol": "replaceResearchEntitlements"
+            }
+          ],
+          "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+          "validation": {
+            "definitions": "tests/test_research_generation.py:ResearchGenerationTests",
+            "failure": "wurst/ResearchRuntimeTests.wurst:malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion",
+            "headless": "tests/test_technology_institutions.py:TechnologyInstitutionTests",
+            "replay": "wurst/ResearchRuntimeTests.wurst:typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers",
+            "rollback": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsRestoreTypedResearchLayersForEveryController",
+            "stale": "wurst/ResearchRuntimeTests.wurst:institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds",
+            "success": "wurst/ResearchRuntimeTests.wurst:generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController"
+          }
+        },
+        "scope": "Issue #463 retains complete typed definitions and delivers controller entitlements only. Existing prerequisite and historical cost contracts remain intact. Missing gameplay consumers and native launch remain release blockers."
+      },
       "parent": "ROAD-0045",
       "status": "fail",
       "text": "Technology/institutions"

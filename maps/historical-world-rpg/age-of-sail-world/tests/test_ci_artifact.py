@@ -66,6 +66,7 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         copy = self.workflow.index('cp "/tmp/workspace/$RELEASE_ARTIFACT"')
         self.assertLess(stop, copy)
         self.assertIn('requirement-traceability.*', self.workflow)
+        self.assertIn('release-blocker-audit.*', self.workflow)
         self.assertIn('requirement_traceability_audit.py --check', self.workflow)
 
     def test_candidate_shell_only_exposes_a_verified_ready_archive(self):
@@ -92,8 +93,9 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                 out = root / 'out'
                 out.mkdir()
                 if reports:
-                    for suffix in ('.json', '.md'):
-                        (release_dir / ('requirement-traceability' + suffix)).write_text('current diagnostics')
+                    for report in ('requirement-traceability', 'release-blocker-audit'):
+                        for suffix in ('.json', '.md'):
+                            (release_dir / (report + suffix)).write_text('current diagnostics')
                 if candidate:
                     (release_dir / 'candidate.zip').write_bytes(b'verifier input')
                 script = container.replace('/tmp/workspace', str(root / 'workspace')).replace('/out', str(out))
@@ -111,7 +113,9 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                 self.assertEqual(build_exit == 0, (out / 'verified').exists())
                 self.assertEqual(build_exit == 0, (out / 'AgeOfSailWorld-phase9-rc1.zip').exists())
                 if reports:
-                    self.assertTrue((out / 'diagnostics/requirement-traceability.json').exists())
+                    for report in ('requirement-traceability', 'release-blocker-audit'):
+                        for suffix in ('.json', '.md'):
+                            self.assertEqual('current diagnostics', (out / 'diagnostics' / (report + suffix)).read_text())
                 if expected:
                     self.assertEqual(expected, status.read_text().strip())
                     output = out / 'github-output'

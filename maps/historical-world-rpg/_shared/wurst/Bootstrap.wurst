@@ -36,30 +36,9 @@ function openBootstrapOriginSelection()
 		PauseGame(true)
 		bootstrapOriginSelection.showPage(1)
 
-/** Applies the replaceable technology layer to live Warcraft dependants.  The
- * strategic technology state remains authoritative and rebuilds this layer. */
-class WarcraftTechnologyEffects implements TechnologyEffectPort
-	string array[4096] keys
-	int array[4096] magnitudes
-	int count=0
-	int appliedFood=0
-	override function applyTechnology(string controllerId,string effectId,int magnitude)
-		keys[count]=controllerId+":"+effectId
-		magnitudes[count]=magnitude
-		count++
-		if controllerId == "player"
-			SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)+magnitude)
-			appliedFood+=magnitude
-	override function clearTechnologyLayer(string controllerId)
-		if controllerId == "player" and appliedFood > 0
-			SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,IMaxBJ(0,GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)-appliedFood))
-			appliedFood=0
-		for i=0 to count-1
-			if SubString(keys[i],0,StringLength(controllerId)+1) == controllerId+":"
-				keys[i]=""
-
-
-public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new WarcraftTechnologyEffects())
+// Retain complete typed research entitlements. Gameplay consumers are explicitly
+// unbound; research never substitutes a native food-cap bonus.
+public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new UnboundResearchEffects())
 public PiracyRuntime piracyRuntime
 
 /** Replaceable projection only; authoritative totals remain in ReligionRuntime. */
