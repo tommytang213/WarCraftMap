@@ -99,13 +99,90 @@ def validate_catalog(data: Mapping[str, Any], *, bulk_good_ids=()) -> None:
             if evidence_id not in evidence: raise PlayerItemError(f"item {item_id}: unknown evidence {evidence_id}")
         if item["provenance"]["kind"] in {"historical","legendary"} and not item.get("evidenceIds"):
             raise PlayerItemError(f"item {item_id}: historical identity lacks evidence")
-    for set_id, row in sets.items():
-        piece_ids=row.get("itemTypeIds",[])
-        if not piece_ids or set(piece_ids)-set(items): raise PlayerItemError(f"set {set_id}: invalid pieces")
-        counts=[x["pieceCount"] for x in row.get("thresholds",[])]
-        if not counts or counts != sorted(set(counts)) or max(counts)>len(piece_ids): raise PlayerItemError(f"set {set_id}: invalid thresholds")
-        for threshold in row["thresholds"]:
-            if set(threshold.get("effectIds",[]))-set(effects): raise PlayerItemError(f"set {set_id}: unknown threshold effect")
+    equipment_set_definitions(data)
+
+
+def equipment_set_definitions(data: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize player catalogue sets to the inventory authority's contract.
+
+    A legacy itemTypeIds member is a distinct piece named by its item identity.
+    Count-derived tier IDs are stable definition IDs, never saved bonus state.
+    Name-only effects retain their IDs without fabricating modifier payloads.
+    """
+    from inventory import validate_equipment_set_definitions, InventoryError
+    items = _ids(data.get("items", []), "items")
+    sets = _ids(data.get("equipmentSets", []), "equipmentSets")
+    effects = _ids(data.get("effects", []), "effects")
+    def ids(value, label, *, nonempty=False):
+        if (not isinstance(value, list) or len(value) > 64 or
+                (nonempty and not value) or
+                any(not isinstance(x, str) or not RESEARCH_ID.fullmatch(x) for x in value) or
+                len(set(value)) != len(value)):
+            raise PlayerItemError(f"{label}: expected unique stable IDs within the 64-reference budget")
+        return value
+    def slots_for(item):
+        # Preserve the existing live slot contract for equipable tools/artifacts.
+        return item["comparison"].get("slotIds") or [item.get("category", "item")]
+    for item in items.values():
+        ids(slots_for(item), f"item {item['id']} slots", nonempty=True)
+    pieces = copy.deepcopy(data.get("equipmentSetPieces", []))
+    if not isinstance(pieces, list) or any(not isinstance(piece, dict) for piece in pieces):
+        raise PlayerItemError("equipmentSetPieces: expected an array of piece definitions")
+    explicit = _ids(pieces, "equipmentSetPieces")
+    normalized = []
+    if len(sets) > 256:
+        raise PlayerItemError("equipment sets exceed the 256-set runtime budget")
+    for set_id, row in sorted(sets.items()):
+        if "pieceIds" in row:
+            piece_ids = ids(row["pieceIds"], f"set {set_id} pieces", nonempty=True)
+        else:
+            piece_ids = ids(row.get("itemTypeIds"), f"set {set_id} pieces", nonempty=True)
+            for item_id in piece_ids:
+                if item_id not in items:
+                    raise PlayerItemError(f"set {set_id}: missing item {item_id}")
+                if item_id not in explicit:
+                    piece = {"id": item_id, "itemTypeIds": [item_id],
+                             "equipmentSlotTypes": slots_for(items[item_id])}
+                    pieces.append(piece)
+                    explicit[item_id] = piece
+                elif explicit[item_id]["itemTypeIds"] != [item_id]:
+                    raise PlayerItemError(f"set {set_id}: ambiguous implicit piece {item_id}")
+        tiers = row.get("thresholds")
+        if not isinstance(tiers, list) or not 1 <= len(tiers) <= 64:
+            raise PlayerItemError(f"set {set_id}: thresholds exceed the 1..64 runtime budget")
+        thresholds = []
+        for tier in tiers:
+            if not isinstance(tier, dict):
+                raise PlayerItemError(f"set {set_id}: invalid threshold")
+            count = tier.get("pieceCount")
+            if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+                raise PlayerItemError(f"set {set_id}: invalid threshold piece count")
+            threshold = {"id": tier.get("id", f"pieces_{count}"), "pieceCount": count,
+                         "effectIds": ids(tier.get("effectIds"), f"set {set_id} effects", nonempty=True),
+                         "tierPolicy": tier.get("tierPolicy", "cumulative"),
+                         "replacesThresholdIds": ids(tier.get("replacesThresholdIds", []), f"set {set_id} replacements")}
+            ids([threshold["id"]], f"set {set_id} threshold ID")
+            thresholds.append(threshold)
+        normalized.append({"id": set_id, "pieceIds": sorted(piece_ids),
+                           "allowDuplicatePieces": row.get("allowDuplicatePieces", False),
+                           "thresholds": sorted(thresholds, key=lambda t: (t["pieceCount"], t["id"]))})
+    for piece in pieces:
+        ids(piece.get("itemTypeIds"), f"piece {piece['id']} items", nonempty=True)
+        ids(piece.get("equipmentSlotTypes", []), f"piece {piece['id']} slots")
+    slots = sorted({slot for item in items.values() for slot in slots_for(item)})
+    result = {
+        "itemTypes": [{"id": ident, "category": "equipment",
+                       "equipmentSlotTypes": slots_for(item)} for ident, item in sorted(items.items())],
+        "equipmentSlots": [{"id": slot, "slotType": slot} for slot in slots],
+        "derivedEffects": [{"id": ident} for ident in sorted(effects)],
+        "equipmentSetPieces": sorted(pieces, key=lambda p: p["id"]),
+        "equipmentSets": normalized,
+    }
+    try:
+        validate_equipment_set_definitions(result)
+    except (InventoryError, TypeError, KeyError) as error:
+        raise PlayerItemError(f"equipment sets: {error}") from error
+    return result
 
 
 def validate_equipment_research(data: Mapping[str, Any], technologies, institutions) -> None:

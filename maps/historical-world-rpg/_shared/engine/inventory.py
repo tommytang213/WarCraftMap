@@ -95,8 +95,6 @@ def validate_catalog(catalog: Mapping[str, Any]) -> None:
     equipment_slots = _index(catalog.get("equipmentSlots", []), "equipmentSlots")
     unlock_tiers = _index(catalog.get("backpackUnlockTiers", []), "backpackUnlockTiers")
     effects = _index(catalog.get("derivedEffects", []), "derivedEffects")
-    pieces = _index(catalog.get("equipmentSetPieces", []), "equipmentSetPieces")
-    sets = _index(catalog.get("equipmentSets", []), "equipmentSets")
     if not unlock_tiers:
         _fail("backpackUnlockTiers: at least one tier is required")
     allowed_categories = {
@@ -136,6 +134,47 @@ def validate_catalog(catalog: Mapping[str, Any]) -> None:
             _fail(f"derived effect {effect_id}: unknown fields")
         if not isinstance(effect.get("modifiers"), Mapping) or not effect["modifiers"]:
             _fail(f"derived effect {effect_id}.modifiers: must be a non-empty object")
+    validate_equipment_set_definitions(catalog)
+    for backpack_id, backpack in backpack_types.items():
+        capacity = _positive_int(backpack.get("capacity"), f"backpack type {backpack_id}.capacity")
+        if capacity > MAX_BACKPACK_CAPACITY:
+            _fail(f"backpack type {backpack_id}: capacity exceeds {MAX_BACKPACK_CAPACITY}")
+        categories = backpack.get("allowedCategories", [])
+        if not isinstance(categories, list) or not categories or len(categories) != len(set(categories)):
+            _fail(f"backpack type {backpack_id}.allowedCategories: must be a unique non-empty array")
+        unknown = set(categories) - allowed_categories
+        if unknown:
+            _fail(f"backpack type {backpack_id}: invalid allowed categories {sorted(unknown)!r}")
+        if "backpack" in categories:
+            _fail(f"backpack type {backpack_id}: nested backpacks are not supported")
+        traits = backpack.get("traitIds", [])
+        if not isinstance(traits, list) or len(traits) != len(set(traits)):
+            _fail(f"backpack type {backpack_id}.traitIds: must contain unique IDs")
+        for trait in traits:
+            _id(trait, f"backpack type {backpack_id}.traitIds")
+    tier_numbers = set()
+    previous_number, previous_active, previous_slots = 0, 0, 0
+    for tier_id, tier in unlock_tiers.items():
+        number = _positive_int(tier.get("tier"), f"unlock tier {tier_id}.tier")
+        active = _positive_int(tier.get("activeBackpackSlots"), f"unlock tier {tier_id}.activeBackpackSlots", minimum=0)
+        slots = _positive_int(tier.get("maxUnlockedSlotsPerBackpack"), f"unlock tier {tier_id}.maxUnlockedSlotsPerBackpack", minimum=0)
+        if number in tier_numbers:
+            _fail(f"backpackUnlockTiers: duplicate tier {number}")
+        if active > MAX_ACTIVE_BACKPACKS or slots > MAX_BACKPACK_CAPACITY:
+            _fail(f"unlock tier {tier_id}: exceeds v1 backpack limits")
+        if number <= previous_number or active < previous_active or slots < previous_slots:
+            _fail("backpackUnlockTiers: tiers must be ordered and non-decreasing")
+        tier_numbers.add(number)
+        previous_number, previous_active, previous_slots = number, active, slots
+
+
+def validate_equipment_set_definitions(catalog: Mapping[str, Any]) -> None:
+    """Validate set references/policies independently of effect payload bindings."""
+    item_types = _index(catalog.get("itemTypes", []), "itemTypes")
+    equipment_slot_types = {slot["slotType"] for slot in catalog.get("equipmentSlots", [])}
+    effects = _index(catalog.get("derivedEffects", []), "derivedEffects")
+    pieces = _index(catalog.get("equipmentSetPieces", []), "equipmentSetPieces")
+    sets = _index(catalog.get("equipmentSets", []), "equipmentSets")
     item_piece_ids: dict[str, set[str]] = {item_id: set() for item_id in item_types}
     for piece_id, piece in pieces.items():
         item_ids = piece.get("itemTypeIds")
@@ -223,37 +262,6 @@ def validate_catalog(catalog: Mapping[str, Any]) -> None:
             for replaced_id in replaced_ids:
                 if thresholds[replaced_id]["pieceCount"] >= thresholds[threshold_id]["pieceCount"]:
                     _fail(f"equipment set {set_id} threshold {threshold_id}: replacement target must be a lower threshold")
-    for backpack_id, backpack in backpack_types.items():
-        capacity = _positive_int(backpack.get("capacity"), f"backpack type {backpack_id}.capacity")
-        if capacity > MAX_BACKPACK_CAPACITY:
-            _fail(f"backpack type {backpack_id}: capacity exceeds {MAX_BACKPACK_CAPACITY}")
-        categories = backpack.get("allowedCategories", [])
-        if not isinstance(categories, list) or not categories or len(categories) != len(set(categories)):
-            _fail(f"backpack type {backpack_id}.allowedCategories: must be a unique non-empty array")
-        unknown = set(categories) - allowed_categories
-        if unknown:
-            _fail(f"backpack type {backpack_id}: invalid allowed categories {sorted(unknown)!r}")
-        if "backpack" in categories:
-            _fail(f"backpack type {backpack_id}: nested backpacks are not supported")
-        traits = backpack.get("traitIds", [])
-        if not isinstance(traits, list) or len(traits) != len(set(traits)):
-            _fail(f"backpack type {backpack_id}.traitIds: must contain unique IDs")
-        for trait in traits:
-            _id(trait, f"backpack type {backpack_id}.traitIds")
-    tier_numbers = set()
-    previous_number, previous_active, previous_slots = 0, 0, 0
-    for tier_id, tier in unlock_tiers.items():
-        number = _positive_int(tier.get("tier"), f"unlock tier {tier_id}.tier")
-        active = _positive_int(tier.get("activeBackpackSlots"), f"unlock tier {tier_id}.activeBackpackSlots", minimum=0)
-        slots = _positive_int(tier.get("maxUnlockedSlotsPerBackpack"), f"unlock tier {tier_id}.maxUnlockedSlotsPerBackpack", minimum=0)
-        if number in tier_numbers:
-            _fail(f"backpackUnlockTiers: duplicate tier {number}")
-        if active > MAX_ACTIVE_BACKPACKS or slots > MAX_BACKPACK_CAPACITY:
-            _fail(f"unlock tier {tier_id}: exceeds v1 backpack limits")
-        if number <= previous_number or active < previous_active or slots < previous_slots:
-            _fail("backpackUnlockTiers: tiers must be ordered and non-decreasing")
-        tier_numbers.add(number)
-        previous_number, previous_active, previous_slots = number, active, slots
 
 
 def _catalog_indexes(catalog: Mapping[str, Any]):

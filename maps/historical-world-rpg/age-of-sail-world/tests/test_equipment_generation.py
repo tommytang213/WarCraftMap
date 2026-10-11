@@ -28,6 +28,32 @@ def generated_equipment(source):
     return result
 
 
+def generated_sets(source):
+    """Read emitted calls, not the JSON copy of the source catalogue."""
+    result = {}
+    for match in re.finditer(r'let (equipmentSet\d+)=new EquipmentSet\("([^"]+)"\).*?'
+                             r'runtime\.inventory\.registerSet\(\1\)', source, re.S):
+        variable, ident = match.group(1, 2)
+        if ident in result:
+            raise AssertionError(f'duplicate set: {ident}')
+        block = match[0]
+        pieces = []
+        for piece in re.finditer(rf'let ({variable}Piece\d+)=new EquipmentSetPiece\("([^"]+)"\)(.*?)'
+                                 rf'{variable}\.addPiece\(\1\)', block, re.S):
+            pieces.append({'id': piece[2],
+                           'itemTypeIds': re.findall(rf'{piece[1]}\.addItem\("([^"]+)"\)', piece[3]),
+                           'equipmentSlotTypes': re.findall(rf'{piece[1]}\.addSlot\("([^"]+)"\)', piece[3])})
+        thresholds = []
+        for tier in re.finditer(rf'let ({variable}Tier\d+)=new EquipmentSetThreshold\("([^"]+)",(\d+),"([^"]+)"\)(.*?)'
+                                rf'{variable}\.addThreshold\(\1\)', block, re.S):
+            thresholds.append({'id': tier[2], 'pieceCount': int(tier[3]), 'tierPolicy': tier[4],
+                               'effectIds': re.findall(rf'{tier[1]}\.addEffect\("([^"]+)"\)', tier[5]),
+                               'replacesThresholdIds': re.findall(rf'{tier[1]}\.addReplacement\("([^"]+)"\)', tier[5])})
+        result[ident] = {'pieces': pieces, 'thresholds': thresholds,
+                         'allowDuplicatePieces': f'{variable}.allowDuplicatePieces=true' in block}
+    return result
+
+
 class EquipmentGenerationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -110,6 +136,72 @@ class EquipmentGenerationTests(unittest.TestCase):
         destination = Path(self.temp.name) / 'again'
         generate(self.config, destination)
         self.assertEqual(self.source, (destination / 'ScenarioData.wurst').read_text())
+
+    def expected_sets(self):
+        items = {row['id']: row for row in self.catalogue['items']}
+        return {row['id']: {
+            'allowDuplicatePieces': False,
+            'pieces': [{'id': ident, 'itemTypeIds': [ident],
+                        'equipmentSlotTypes': sorted(items[ident]['comparison'].get('slotIds') or [items[ident]['category']])}
+                       for ident in sorted(row['itemTypeIds'])],
+            'thresholds': [{'id': f'pieces_{tier["pieceCount"]}', 'tierPolicy': 'cumulative',
+                            'replacesThresholdIds': [], **tier} for tier in row['thresholds']],
+        } for row in self.catalogue['equipmentSets']}
+
+    def test_all_51_sets_retain_all_151_tiers_pieces_and_effect_identities(self):
+        expected = self.expected_sets()
+        self.assertEqual(51, len(expected))
+        self.assertEqual(49, sum(len(row['thresholds']) > 2 for row in expected.values()))
+        self.assertEqual(151, sum(len(row['thresholds']) for row in expected.values()))
+        self.assertEqual(expected, generated_sets(self.source))
+        payload = json.loads((self.generated / 'scenario-runtime.json').read_text())
+        self.assertEqual(51, len(payload['equipmentSetDefinitions']['equipmentSets']))
+
+    def test_negative_fixtures_detect_middle_tier_and_effect_identity_loss(self):
+        expected = self.expected_sets()
+        def truncate(match):
+            if len(re.findall(r'new EquipmentSetThreshold', match[0])) < 3:
+                return match[0]
+            return re.sub(r'\tlet (equipmentSet\d+Tier1)=new EquipmentSetThreshold\([^\n]+\)\n'
+                          r'.*?\t(equipmentSet\d+)\.addThreshold\(\1\)\n', '', match[0], flags=re.S)
+        dropped = re.sub(r'let (equipmentSet\d+)=new EquipmentSet\("[^\"]+"\).*?'
+                         r'runtime\.inventory\.registerSet\(\1\)', truncate, self.source, flags=re.S)
+        actual = generated_sets(dropped)
+        self.assertEqual(49, sum(expected[ident] != actual[ident] for ident in expected))
+        counts = re.sub(r'(\.addEffect\(")[^"]+("\))', r'\g<1>1\2', self.source)
+        self.assertNotEqual(expected, generated_sets(counts))
+
+    def test_set_reference_and_policy_validation_rejects_bad_definitions(self):
+        def check(mutate):
+            data = copy.deepcopy(self.catalogue)
+            mutate(data['equipmentSets'][0])
+            with self.assertRaises(PlayerItemError):
+                validate_catalog(data)
+        for value in (['missing'], [], ['set_resilience', 'set_resilience'], ['bad|id'], None):
+            check(lambda row: row['thresholds'][0].update(effectIds=value))
+        for value in (['missing'], [], ['buff_coat', 'buff_coat'], None):
+            check(lambda row: row.update(itemTypeIds=value))
+        for value in (0, True, '2', 5):
+            check(lambda row: row['thresholds'][0].update(pieceCount=value))
+        check(lambda row: row['thresholds'][1].update(pieceCount=2))
+        check(lambda row: row['thresholds'][1].update(id='pieces_2'))
+        check(lambda row: row.update(allowDuplicatePieces='yes'))
+        check(lambda row: row.update(thresholds=row['thresholds'] * 22))
+        check(lambda row: row['thresholds'][0].update(effectIds=[f'effect_{i}' for i in range(65)]))
+        check(lambda row: row['thresholds'][1].update(tierPolicy='invented'))
+        check(lambda row: row['thresholds'][1].update(tierPolicy='exclusive'))
+        check(lambda row: row['thresholds'][1].update(tierPolicy='replacement'))
+        check(lambda row: row['thresholds'][1].update(tierPolicy='replacement', replacesThresholdIds=['missing']))
+        check(lambda row: row['thresholds'][0].update(tierPolicy='replacement', replacesThresholdIds=['pieces_3']))
+
+    def test_generator_rejects_unresolved_effect_references(self):
+        data = copy.deepcopy(self.catalogue)
+        data['equipmentSets'][0]['thresholds'][1]['effectIds'] = ['missing_effect']
+        path = Path(self.temp.name) / 'bad-set.json'
+        path.write_text(json.dumps(data))
+        with patch('package_wurst_map.catalogue_paths', return_value={**self.paths, 'inventory': path}):
+            with self.assertRaisesRegex(PackagingError, 'missing effect'):
+                generate(self.config, Path(self.temp.name) / 'bad-set-generated')
 
 
 if __name__ == '__main__':

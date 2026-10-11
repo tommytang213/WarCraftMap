@@ -41,6 +41,8 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 	int array[2048] appliedLife
 	int array[2048] retainedLife
 	boolean partyLoading = false
+	ResolvedEquipmentSet setLayers = null
+	ResolvedEquipmentSet retainedSetLayers = null
 	quest array[1024] guidance
 	int guidanceCount = 0
 	quest array[512] knowledge
@@ -53,6 +55,8 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 		this.natives = natives
 	override function beginPartyLoad()
 		partyLoading = true
+		retainedSetLayers = setLayers
+		setLayers = null
 		for i = 0 to heroes.count - 1
 			retainedLife[i] = 0
 			if appliedRepresentation[i] != 0 and appliedRepresentation[i] == natives.representationId(i)
@@ -66,8 +70,13 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 			// Observing a reattached handle may assign a new projection identity.
 			appliedRepresentation[i] = natives.representationId(i)
 			appliedLife[i] = retainedLife[i]
+		destroySetLayers(setLayers)
+		setLayers = retainedSetLayers
+		retainedSetLayers = null
 		commitPartyLoad()
 	override function commitPartyLoad()
+		destroySetLayers(retainedSetLayers)
+		retainedSetLayers = null
 		for i = 0 to heroes.count - 1
 			retainedLife[i] = 0
 		partyLoading = false
@@ -93,8 +102,66 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 		appliedLife[found] += power
 	override function applyEquipment(string heroId, string itemId, int power)
 		applyPower(heroId, power)
-	override function applyEquipmentSet(string heroId, string setId, int power)
-		applyPower(heroId, power)
+	function destroySetLayers(ResolvedEquipmentSet first)
+		var current = first
+		while current != null
+			let following = current.next
+			destroy current
+			current = following
+	function setLayer(string heroId, string setId) returns ResolvedEquipmentSet
+		var current = setLayers
+		while current != null
+			if current.heroId == heroId and current.setId == setId
+				return current
+			current = current.next
+		return null
+	function setEffectIdentities(string heroId, string setId) returns string
+		let layer = setLayer(heroId, setId)
+		if layer == null
+			return ""
+		return layer.effectIdentities()
+	function setEffectBindingStatus() returns string
+		return "blocked_pending_gameplay_effect_bindings"
+	override function beginEquipmentSetReconciliation()
+		var current = setLayers
+		while current != null
+			current.observed = false
+			current = current.next
+	override function finishEquipmentSetReconciliation()
+		ResolvedEquipmentSet previous = null
+		var current = setLayers
+		while current != null
+			let following = current.next
+			if current.observed
+				previous = current
+			else
+				if previous == null
+					setLayers = following
+				else
+					previous.next = following
+				destroy current
+			current = following
+	override function replaceEquipmentSet(ResolvedEquipmentSet result)
+		// Replace only this wearer/set layer, including removal by empty result.
+		// These are explicit unbound references. No health writes or gameplay
+		// success claim is possible until scenario effect consumers are supplied.
+		ResolvedEquipmentSet previous = null
+		var current = setLayers
+		while current != null
+			if current.heroId == result.heroId and current.setId == result.setId
+				if previous == null
+					setLayers = current.next
+				else
+					previous.next = current.next
+				destroy current
+				break
+			previous = current
+			current = current.next
+		if result.thresholdCount == 0
+			destroy result
+		else
+			result.next = setLayers
+			setLayers = result
 	override function clearGuidanceLayer()
 		for i=0 to guidanceCount-1
 			DestroyQuest(guidance[i])
