@@ -168,8 +168,12 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 		skip
 	override function applyEquipment(string heroId, string itemId, int power)
 		skip
-	override function applyEquipmentSet(string heroId,string setId, int power)
+	override function beginEquipmentSetReconciliation()
 		skip
+	override function finishEquipmentSetReconciliation()
+		skip
+	override function replaceEquipmentSet(ResolvedEquipmentSet result)
+		destroy result
 	override function clearGuidanceLayer()
 		skip
 	override function applyQuestGuidance(string questId, string precision, string regionId, string destinationId)

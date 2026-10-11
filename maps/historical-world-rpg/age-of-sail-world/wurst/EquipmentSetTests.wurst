@@ -1,0 +1,174 @@
+package EquipmentSetTests
+
+import WarcraftRpgRuntime
+import WarcraftRpgProjections
+import CharacterEquipmentTests
+import ManagementCommandTests
+import ManagementScreenPauseController
+import CommandRouter
+import ScenarioData
+
+/** Used by Python-authored parity vectors. Actions use the registered command
+ * route; assertions observe the actual production projector's typed layers. */
+public class SetParityFixture
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
+	EquipmentNatives natives = new EquipmentNatives()
+	WarcraftRpgProjections projections
+	EquipmentCommandOutput output = new EquipmentCommandOutput()
+	CommandRegistry commands
+	construct()
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		rpg.researchResources = new EquipmentResearchResources()
+		projections = new WarcraftRpgProjections(rpg.heroes, natives)
+		rpg.setProjectionPort(projections)
+		commands = new CommandRegistry(false, 6, new CommandText(), output)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+	function addHero(string id)
+		let index = rpg.heroes.count
+		let hero = new RpgHero(id, id, 'Hpal')
+		hero.recruited = true
+		hero.level = 300
+		rpg.heroes.register(hero)
+		natives.represent(index, index + 1, 100)
+	function action(string command)
+		commands.dispatch(null, command).assertTrue()
+		output.last.assertEquals("Action completed.")
+	function check(string heroId, string setId, int pieces, string expected)
+		let resolved = rpg.inventory.resolveSet(heroId, setId)
+		resolved.pieceCount.assertEquals(pieces)
+		resolved.effectIdentities().assertEquals(expected)
+		destroy resolved
+		projections.setEffectIdentities(heroId, setId).assertEquals(expected)
+		projections.setEffectBindingStatus().assertEquals("blocked_pending_gameplay_effect_bindings")
+	function inspect(string heroId, string expected)
+		commands.dispatch(null, "/equipment " + heroId).assertTrue()
+		(output.last.indexOf(expected) >= 0).assertTrue()
+
+function akanEffects(string heroId, int count) returns string
+	var result = ""
+	if count >= 2
+		result += heroId + "|akan_diplomat_set|pieces_2|set_resilience;"
+	if count >= 3
+		result += heroId + "|akan_diplomat_set|pieces_3|set_mobility;"
+	if count >= 4
+		result += heroId + "|akan_diplomat_set|pieces_4|set_mastery;"
+	return result
+
+@test function generatedAkanTiersResolveThroughRegisteredEquipmentActions()
+	let f = new SetParityFixture()
+	configureGeneratedRpg(f.rpg)
+	f.addHero("wearer")
+	f.addHero("other")
+	let inventory = f.rpg.inventory
+	let definition = inventory.getSet("akan_diplomat_set")
+	definition.thresholdCount.assertEquals(3)
+	definition.pieceCount.assertEquals(4)
+	for p = 0 to definition.pieceCount - 1
+		inventory.grant(definition.pieces[p].itemIds[0]).assertTrue()
+	f.action("/equip wearer akan_diplomat_ceremonial_sword")
+	f.action("/equip other akan_diplomat_woven_robe")
+	f.check("wearer", definition.id, 1, "")
+	f.check("other", definition.id, 1, "")
+	f.action("/unequip other " + inventory.getItem("akan_diplomat_woven_robe").slotId)
+	f.action("/equip wearer akan_diplomat_woven_robe")
+	f.check("wearer", definition.id, 2, akanEffects("wearer", 2))
+	f.inspect("wearer", "pieces_2 (2 pieces): active | Effects: set_resilience")
+	f.inspect("wearer", "pieces_3 (3 pieces): unmet | Effects: set_mobility")
+	f.action("/equip wearer akan_diplomat_goldweight_scale")
+	f.check("wearer", definition.id, 3, akanEffects("wearer", 3))
+	f.inspect("wearer", "pieces_3 (3 pieces): active | Effects: set_mobility")
+	f.inspect("wearer", "pieces_4 (4 pieces): unmet | Effects: set_mastery")
+	f.action("/equip wearer akan_diplomat_state_emblem")
+	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+	f.inspect("wearer", "pieces_4 (4 pieces): active | Effects: set_mastery")
+	f.inspect("other", "pieces_2 (2 pieces): unmet | Effects: set_resilience")
+	f.inspect("wearer", "Set gameplay effects pending binding.")
+	let saved = f.rpg.captureState()
+	(saved.indexOf("set_resilience") < 0).assertTrue()
+	(saved.indexOf("pieces_3") < 0).assertTrue()
+	let index = f.rpg.heroes.indexOf("wearer")
+	var itemPower = 0
+	for p = 0 to definition.pieceCount - 1
+		itemPower += inventory.getItem(definition.pieces[p].itemIds[0]).power
+	f.natives.life[index].assertEquals(100 + itemPower)
+	f.natives.life[index] += 40 // An unrelated modifier remains intact.
+	for repeat = 1 to 3
+		f.rpg.reconcile("player")
+		f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+		f.natives.life[index].assertEquals(140 + itemPower)
+	f.action("/unequip wearer " + inventory.getItem("akan_diplomat_state_emblem").slotId)
+	f.check("wearer", definition.id, 3, akanEffects("wearer", 3))
+	f.action("/unequip wearer " + inventory.getItem("akan_diplomat_goldweight_scale").slotId)
+	f.check("wearer", definition.id, 2, akanEffects("wearer", 2))
+	f.action("/unequip wearer " + inventory.getItem("akan_diplomat_woven_robe").slotId)
+	f.check("wearer", definition.id, 1, "")
+	f.rpg.restoreState(saved).assertTrue()
+	f.rpg.reconcile("player")
+	f.rpg.captureState().assertEquals(saved)
+	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+	f.natives.life[index].assertEquals(140 + itemPower)
+	f.natives.identities[index] = 0
+	let writes = f.natives.totalWrites
+	f.rpg.reconcile("player")
+	f.natives.totalWrites.assertEquals(writes)
+	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+	f.natives.represent(index, 500, 700)
+	f.rpg.reconcile("player")
+	f.natives.life[index].assertEquals(700 + itemPower)
+	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+	let bad = saved + "|e,forged,akan_diplomat_woven_robe,wearer"
+	let beforeWrites = f.natives.totalWrites
+	f.rpg.restoreState(bad).assertFalse()
+	f.rpg.captureState().assertEquals(saved)
+	f.natives.totalWrites.assertEquals(beforeWrites)
+	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
+	for p = 0 to definition.pieceCount - 1
+		inventory.ownedQuantity(definition.pieces[p].itemIds[0]).assertEquals(1)
+
+@test function replacingOneTypedSetLayerPreservesOtherWearersSetsAndModifiers()
+	let f = new SetParityFixture()
+	f.addHero("alpha")
+	f.addHero("beta")
+	let tier = new EquipmentSetThreshold("tier", 1, "cumulative")
+	tier.addEffect("unbound_effect")
+	let alpha = new ResolvedEquipmentSet("alpha", "first", 1)
+	alpha.add(tier)
+	f.projections.replaceEquipmentSet(alpha)
+	let other = new ResolvedEquipmentSet("alpha", "second", 1)
+	other.add(tier)
+	f.projections.replaceEquipmentSet(other)
+	let beta = new ResolvedEquipmentSet("beta", "first", 1)
+	beta.add(tier)
+	f.projections.replaceEquipmentSet(beta)
+	f.natives.life[0] += 40
+	f.projections.replaceEquipmentSet(new ResolvedEquipmentSet("alpha", "first", 0))
+	f.projections.setEffectIdentities("alpha", "first").assertEquals("")
+	f.projections.setEffectIdentities("alpha", "second").assertEquals("alpha|second|tier|unbound_effect;")
+	f.projections.setEffectIdentities("beta", "first").assertEquals("beta|first|tier|unbound_effect;")
+	f.natives.life[0].assertEquals(140)
+	f.natives.life[1].assertEquals(100)
+	f.natives.totalWrites.assertEquals(0)
+
+@test function legacyLoadoutsRebuildAllSetIdentitiesWithoutPersistingBonuses()
+	let f = new EquipmentFixture()
+	let legacy = "v2|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,coat|i,hat|i,boots|e,chest,coat,alpha|e,head,hat,alpha|e,feet,boots,alpha|j,,0"
+	f.rpg.restoreState(legacy).assertTrue()
+	let saved = f.rpg.captureState()
+	saved.startsWith("v6|").assertTrue()
+	(saved.indexOf("guard") < 0).assertTrue()
+	(saved.indexOf("pieces_2") < 0).assertTrue()
+	for repeat = 1 to 2
+		f.rpg.reconcile("player")
+		f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")
+		f.projections.setEffectIdentities("beta", "uniform").assertEquals("")
+		f.natives.life[0].assertEquals(111)
+		f.rpg.captureState().assertEquals(saved)
+	f.rejectSnapshot(saved + "|e,chest,coat,beta")
+	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")
+	f.rpg.restoreState("v1").assertTrue()
+	f.rpg.reconcile("player")
+	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("")
+	f.natives.life[0].assertEquals(100)
+	f.rpg.restoreState(saved).assertTrue()
+	f.rpg.reconcile("player")
+	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")

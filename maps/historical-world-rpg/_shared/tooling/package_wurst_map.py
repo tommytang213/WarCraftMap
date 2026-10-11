@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 25
+GENERATOR_VERSION = 26
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -364,7 +364,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             runtime[catalogue_id] = catalogues[catalogue_id]
     if "inventory" in catalogues:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
-        from player_items import validate_catalog, validate_equipment_research, PlayerItemError
+        from player_items import validate_catalog, validate_equipment_research, equipment_set_definitions, PlayerItemError
         goods = json.loads((config.project / "scenario/economy/global-goods.json").read_text())
         try:
             validate_catalog(catalogues["inventory"], bulk_good_ids={row["id"] for row in goods["goods"]})
@@ -373,6 +373,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 {row["id"] for row in world.get("institutions", ())})
         except PlayerItemError as error:
             raise _fail("generation", str(error)) from error
+        runtime["equipmentSetDefinitions"] = equipment_set_definitions(catalogues["inventory"])
     if config.custom_2d_source:
         custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
         runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
@@ -452,9 +453,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
         for institution_id in requirements.get("institutionIds", ()):
             rpg.append(f'\titem{index}.addInstitution("{ws(institution_id)}")')
         rpg.append(f'\truntime.inventory.registerItem(item{index})')
-    for index, row in enumerate(inventory.get("equipmentSets", ())):
-        thresholds = row.get("thresholds", []); first = thresholds[0] if thresholds else {}; last = thresholds[-1] if thresholds else {}
-        rpg.append(f'\truntime.inventory.registerSet(new EquipmentSet("{ws(row["id"])}",{int(first.get("pieceCount", 0))},{len(first.get("effectIds", []))},{int(last.get("pieceCount", 0))},{len(last.get("effectIds", []))}))')
+    if "equipmentSetDefinitions" in runtime:
+        from equipment_sets import equipment_sets_wurst
+        rpg += equipment_sets_wurst(runtime["equipmentSetDefinitions"], ws)
     treasure_data = catalogues.get("treasures", {}); candidates = {row["id"]: row for row in treasure_data.get("candidateLocations", ())}
     for index, row in enumerate(treasure_data.get("treasures", ())):
         choices = row.get("candidateLocationIds", []); resolved = choices[len(row["id"]) % len(choices)] if choices else ""
@@ -719,6 +720,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
         ) if path.is_file()),
         *(config.project.parent / '_shared/wurst').glob('*.wurst'),
         *(config.project.parent / '_shared/wurst-bootstrap').glob('*.wurst'),
+        Path(__file__).with_name("equipment_sets.py"),
+        Path(__file__).resolve().parents[1] / "engine/player_items.py",
+        Path(__file__).resolve().parents[1] / "engine/inventory.py",
         Path(__file__).with_name("scenario_inputs.py"),
         Path(__file__).with_name("scenario_settings.py"),
     )
@@ -729,7 +733,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         except ValueError:
             # Unit tests load this shared module before copying a fixture project.
             # The reserved key also avoids encoding machine-specific absolute paths.
-            key = f"@generator/{path.name}"
+            prefix = "@engine" if path.parent.name == "engine" else "@generator"
+            key = f"{prefix}/{path.name}"
         inputs[key] = _sha(path)
     outputs = {name: _sha(generated / name) for name in (GENERATED_WURST, GENERATED_DATA, *terrain_outputs.values())}
     if config.custom_2d_source:
@@ -745,6 +750,8 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
     for relative, expected in provenance.get("inputs", {}).items():
         if relative.startswith("@generator/"):
             path = Path(__file__).resolve().with_name(relative.removeprefix("@generator/"))
+        elif relative.startswith("@engine/"):
+            path = Path(__file__).resolve().parents[1] / "engine" / relative.removeprefix("@engine/")
         else:
             path = config.project.parent / relative
         if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: input changed: {relative}")

@@ -1,5 +1,6 @@
 package WarcraftRpgRuntime
 
+import public EquipmentSets
 import ResearchCost
 import QuestStages
 import HeroProgression
@@ -508,19 +509,6 @@ public class RpgItem
 		institutionIds[institutionCount]=id
 		institutionCount++
 
-public class EquipmentSet
-	string id
-	int partialPieces
-	int partialPower
-	int fullPieces
-	int fullPower
-	construct(string id, int partialPieces, int partialPower, int fullPieces, int fullPower)
-		this.id=id
-		this.partialPieces=partialPieces
-		this.partialPower=partialPower
-		this.fullPieces=fullPieces
-		this.fullPower=fullPower
-
 public class PlayerInventory
 	RpgItem array[4096] definitions
 	int definitionCount = 0
@@ -630,30 +618,37 @@ public class PlayerInventory
 		else if delta < 0
 			color = "|cffff4040"
 		return value.name + " | Item level " + value.itemLevel + " | " + value.rarity + " | " + color + delta + " power|r | Set: " + value.setId
-	function firstSetPieceIndex(string heroId, string setId) returns int
-		for i = 0 to equippedCount - 1
-			if equippedHeroes[i] == heroId and getItem(equippedItems[i]).setId == setId
-				return i
-		return -1
+	function getSet(string id) returns EquipmentSet
+		for i = 0 to setCount - 1
+			if sets[i].id == id
+				return sets[i]
+		return null
 	function setPieceCount(string heroId, string setId) returns int
+		return setPieceCount(heroId, getSet(setId))
+	function setPieceCount(string heroId, EquipmentSet definition) returns int
+		if definition == null
+			return 0
 		var result = 0
+		for p = 0 to definition.pieceCount - 1
+			var matches = 0
+			for i = 0 to equippedCount - 1
+				if equippedHeroes[i] == heroId and definition.pieces[p].matches(equippedItems[i], equippedSlots[i])
+					matches++
+			if definition.allowDuplicatePieces
+				result += matches
+			else if matches > 0
+				result++
+		return result
+	function firstWearerIndex(string heroId) returns int
 		for i = 0 to equippedCount - 1
 			if equippedHeroes[i] == heroId
-				let value = getItem(equippedItems[i])
-				// Each named piece has one slot; the character-slot key prevents
-				// duplicate copies of that identity counting on the same wearer.
-				if value != null and value.setId == setId
-					result++
-		return result
-	function setBonusPower(string heroId) returns int
-		var result = 0
-		for i = 0 to setCount - 1
-			let pieces = setPieceCount(heroId, sets[i].id)
-			if pieces >= sets[i].partialPieces
-				result += sets[i].partialPower
-			if pieces >= sets[i].fullPieces
-				result += sets[i].fullPower
-		return result
+				return i
+		return -1
+	function resolveSet(string heroId, string setId) returns ResolvedEquipmentSet
+		let definition = getSet(setId)
+		if definition == null
+			return null
+		return definition.resolve(heroId, setPieceCount(heroId, setId))
 
 public class RuntimeQuest
 	QuestGraph graph = null
@@ -897,7 +892,9 @@ public interface RpgProjectionPort
 	function commitPartyLoad()
 	function clearEquipmentLayer()
 	function applyEquipment(string heroId,string itemId,int power)
-	function applyEquipmentSet(string heroId,string setId,int power)
+	function beginEquipmentSetReconciliation()
+	function replaceEquipmentSet(ResolvedEquipmentSet result)
+	function finishEquipmentSetReconciliation()
 	function clearGuidanceLayer()
 	function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
 	function clearTreasureKnowledgeLayer()
@@ -1567,21 +1564,20 @@ public class WarcraftRpgRuntime
 		if projections == null
 			return
 		projections.clearEquipmentLayer()
+		projections.beginEquipmentSetReconciliation()
 		for i=0 to inventory.equippedCount-1
 			let equippedItem=inventory.getItem(inventory.equippedItems[i])
 			let heroId=inventory.equippedHeroes[i]
 			projections.applyEquipment(heroId,equippedItem.id,equippedItem.power)
-			// Resolve only equipped sets, once per wearer, including inactive
-			// characters. The projection decides whether a representation exists.
-			if equippedItem.setId != "" and inventory.firstSetPieceIndex(heroId,equippedItem.setId) == i
-				let pieces=inventory.setPieceCount(heroId,equippedItem.setId)
+			// Resolve each equipped wearer once, including inactive characters.
+			// The projector retires unseen old layers after the complete pass.
+			if inventory.firstWearerIndex(heroId) == i
 				for j=0 to inventory.setCount-1
-					let setDefinition=inventory.sets[j]
-					if setDefinition.id == equippedItem.setId
-						if pieces >= setDefinition.partialPieces
-							projections.applyEquipmentSet(heroId,setDefinition.id,setDefinition.partialPower)
-						if pieces >= setDefinition.fullPieces
-							projections.applyEquipmentSet(heroId,setDefinition.id,setDefinition.fullPower)
+					let definition=inventory.sets[j]
+					let count=inventory.setPieceCount(heroId,definition)
+					if count > 0
+						projections.replaceEquipmentSet(definition.resolve(heroId,count))
+		projections.finishEquipmentSetReconciliation()
 		projections.clearGuidanceLayer()
 		if journal.trackedId != ""
 			let q=journal.get(journal.trackedId)
@@ -1604,10 +1600,20 @@ public class WarcraftRpgRuntime
 			rows+="\n"+inventory.comparison(heroId,inventory.owned[i])
 		for i=0 to inventory.setCount-1
 			let definition=inventory.sets[i]
-			let pieces=inventory.setPieceCount(heroId,definition.id)
-			if pieces > 0
-				rows+="\nSet "+definition.id+": "+pieces+" pieces | "+definition.partialPieces+" pieces: +"+definition.partialPower+" | "+definition.fullPieces+" pieces: +"+definition.fullPower
-		return rows+"\nActive set bonus for "+hero.name+": +"+inventory.setBonusPower(heroId)+" power"
+			let resolved=inventory.resolveSet(heroId,definition.id)
+			rows+="\nSet "+definition.id+": "+resolved.pieceCount+" pieces"
+			for j=0 to definition.thresholdCount-1
+				let threshold=definition.thresholds[j]
+				var status="unmet"
+				if resolved.active(threshold.id)
+					status="active"
+				else if resolved.pieceCount >= threshold.pieceCount
+					status="superseded"
+				rows+="\n  "+threshold.id+" ("+threshold.pieceCount+" pieces): "+status+" | Effects:"
+				for e=0 to threshold.effectCount-1
+					rows+=" "+threshold.effectIds[e]
+			destroy resolved
+		return rows+"\nSet gameplay effects pending binding."
 
 /** Player-facing fallback presentation. Frame screens can implement the same
  * controller calls; these commands ensure every system is usable in-game. */

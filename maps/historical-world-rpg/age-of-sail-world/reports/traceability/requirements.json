@@ -12,8 +12,8 @@
     "integration-missing": 2268,
     "mechanism-missing": 558,
     "state-unmapped": 584,
-    "static-only": 65,
-    "unmapped": 578,
+    "static-only": 66,
+    "unmapped": 577,
     "unpersisted": 1164,
     "unreachable": 582
   },
@@ -29895,11 +29895,6 @@
       "message": "compiled implementation/registration evidence is absent"
     },
     {
-      "class": "unmapped",
-      "id": "ROAD-0053.01",
-      "message": "no explicit requirement-to-production mapping"
-    },
-    {
       "class": "authority-missing",
       "id": "ROAD-0053.01",
       "message": "scenario content authority is absent or stale"
@@ -29948,6 +29943,11 @@
       "class": "integration-missing",
       "id": "ROAD-0053.01",
       "message": "replay: current executable production-adapter evidence is absent"
+    },
+    {
+      "class": "static-only",
+      "id": "ROAD-0053.01",
+      "message": "source references cannot establish executed integration"
     },
     {
       "class": "artifact-missing",
@@ -37520,7 +37520,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "fdd8761caaa29bebff6e898a7ff6c536d1abc6ca2da0771fb44a44dc28a8317b",
-  "mappingSha256": "cd3b72409a7b29dc4b7968a40fd098fa8794b76c49a2fa485214b5450d2430b9",
+  "mappingSha256": "0d0043bc83539457372c95b2688f0b9504eec4f3c344cb95d3aa400a0de24b9d",
   "requirements": [
     {
       "authority": {
@@ -67164,14 +67164,112 @@
         "integration-missing",
         "mechanism-missing",
         "state-unmapped",
-        "unmapped",
+        "static-only",
         "unpersisted",
         "unreachable"
       ],
       "classification": "combination",
       "id": "ROAD-0053.01",
       "kind": "runtime",
-      "mapping": {},
+      "mapping": {
+        "equipmentSetResolution": {
+          "authority": "Saved item quantities and (wearer, slot, item) assignments in RPG v6; no derived set bonuses are persisted.",
+          "content": [
+            {
+              "contains": [
+                "\"akan_diplomat_set\"",
+                "\"set_resilience\"",
+                "\"set_mobility\"",
+                "\"set_mastery\""
+              ],
+              "path": "scenario/inventory/player-use-catalog.json"
+            },
+            {
+              "contains": [
+                "validate_equipment_set_definitions(result)",
+                "f\"pieces_{count}\""
+              ],
+              "path": "../_shared/engine/player_items.py",
+              "symbol": "equipment_set_definitions"
+            },
+            {
+              "contains": [
+                "for t, tier in enumerate(row['thresholds'])",
+                "EquipmentSetThreshold",
+                "addEffect"
+              ],
+              "path": "../_shared/tooling/equipment_sets.py",
+              "symbol": "equipment_sets_wurst"
+            }
+          ],
+          "effectBindings": {
+            "reason": "Authored effect definitions contain names/kinds only. Resolved identities are not numeric power and never become health bonuses.",
+            "status": "blocked_pending_gameplay_effect_bindings"
+          },
+          "entry": {
+            "commands": [
+              "equip",
+              "unequip",
+              "inventory",
+              "equipment",
+              "items"
+            ],
+            "handlers": {
+              "equipmentActions": "RpgActionCommand.execute",
+              "inspection": "RpgScreenCommand.execute"
+            },
+            "id": "registered-equipment-actions",
+            "registration": "registerRpgRuntimeCommands"
+          },
+          "mechanism": [
+            {
+              "contains": [
+                "threshold.pieceCount <= count",
+                "not replaced(threshold.id, count)",
+                "exclusive",
+                "result.add(threshold)"
+              ],
+              "path": "../_shared/wurst/EquipmentSets.wurst",
+              "symbol": "resolve"
+            },
+            {
+              "contains": [
+                "equippedHeroes[i] == heroId",
+                "definition.pieces[p].matches",
+                "definition.allowDuplicatePieces"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "setPieceCount"
+            },
+            {
+              "contains": [
+                "projections.replaceEquipmentSet(definition.resolve"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "reconcile"
+            },
+            {
+              "contains": [
+                "current.heroId == result.heroId and current.setId == result.setId",
+                "result.thresholdCount == 0"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgProjections.wurst",
+              "symbol": "replaceEquipmentSet"
+            }
+          ],
+          "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+          "validation": {
+            "generation": "tests/test_equipment_generation.py:EquipmentGenerationTests",
+            "headlessParity": "tests/test_equipment_sets.py:EquipmentSetParityTests",
+            "legacySaves": "wurst/CharacterEquipmentTests.wurst:characterEquipmentSnapshotsValidateCopiesPairsAndLegacyWearers",
+            "policies": "wurst/EquipmentSetVectorsTests.wurst",
+            "productionActions": "wurst/EquipmentSetTests.wurst:generatedAkanTiersResolveThroughRegisteredEquipmentActions",
+            "rollback": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects",
+            "typedProjection": "wurst/EquipmentSetTests.wurst:replacingOneTypedSetLayerPreservesOtherWearersSetsAndModifiers"
+          }
+        },
+        "scope": "Issue #459 retains and resolves every equipment-set definition and delivers typed wearer/set/threshold/effect references. Gameplay-effect bindings and native launch remain blocked; no passing gameplay-effect claim."
+      },
       "parent": "ROAD-0053",
       "status": "fail",
       "text": "Equipment set definitions and partial/full threshold-bonus resolution"
