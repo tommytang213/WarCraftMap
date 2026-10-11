@@ -196,10 +196,16 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		knowledge = ""
 	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered)
 		knowledge += treasureId + clueStage.toString()
-	override function clearTechnologyLayer(string controllerId)
+	UnboundResearchEffects researchLayers = new UnboundResearchEffects()
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		researchLayers.replaceResearchEntitlements(result)
 		technology = ""
-	override function applyTechnology(string controllerId, string effectId, int magnitude)
-		technology += controllerId + effectId + magnitude.toString()
+		var layer = researchLayers.layers
+		while layer != null
+			technology += layer.identities()
+			layer = layer.next
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
 	override function clearReligionModifiers(string characterId)
 		religion = ""
 	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)
@@ -310,8 +316,8 @@ public class LoadFixture
 		rpg.inventory.grant("coat").assertTrue()
 		rpg.inventory.equip("hero", "coat", hero, 1600, null, "player").assertTrue()
 		let tech = new RuntimeTechnology("printing", "Printing", 1450, 100)
-		tech.effectId = "stock"
-		tech.effectMagnitude = 2
+		tech.addUnlock("printing", "building", "printing_house")
+		tech.addUnlock("printing", "modifier", "stock")
 		rpg.technologies.register(tech)
 		rpg.technologies.unlock("player", "printing", 1450, 100, 0, 0).assertTrue()
 		let questDefinition = new RuntimeQuest("quest", "Quest", "regional")
@@ -1066,3 +1072,26 @@ function legacyPirateFounding() returns string
 	f.rejectAndVerify(candidate + ";piracy=" + f.piracy.captureAuthority() + "|territories=port")
 	f.rejectAndVerify(candidate + ";piracy=" + legacyPirateFounding() + "|foundingTerritories=port")
 	f.polity.applications.assertEquals(beforeCalls)
+
+@test function rejectedLoadsRestoreTypedResearchLayersForEveryController()
+	let f=new LoadFixture()
+	let before=f.rpg.captureState()
+	let earned=f.ports.researchLayers.get("player").identities()
+	earned.assertEquals("player|printing|building|printing_house;player|printing|modifier|stock;")
+	f.rpg.technologies.unlockedKeys[0]="other:printing"
+	let changed=f.rpg.captureState()
+	f.rpg.restoreState(before).assertTrue()
+	let candidate=f.candidate()+";rpg="+changed
+	for failure=1 to 2
+		f.extension.fail=failure==1
+		f.ports.failParty=failure==2
+		f.rejectAndVerify(candidate)
+		f.ports.researchLayers.get("player").identities().assertEquals(earned)
+		f.ports.researchLayers.get("other").count.assertEquals(0)
+		f.rpg.reconcile("player")
+		f.ports.researchLayers.get("player").identities().assertEquals(earned)
+	f.ports.failParty=false
+	f.recordingTimer.expected=f.candidateClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
+	f.ports.researchLayers.get("player").count.assertEquals(0)
+	f.ports.researchLayers.get("other").identities().assertEquals("other|printing|building|printing_house;other|printing|modifier|stock;")

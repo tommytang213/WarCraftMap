@@ -11,6 +11,7 @@ WORLD_STATE_KEY="technologyInstitutionState"
 UNITS_PER_POINT=1_000_000
 MAX_PERCENT_UNITS=100*UNITS_PER_POINT
 _ID=re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
+UNLOCK_KINDS=frozenset({"unit","building","ability","policy","modifier"})
 
 class ResearchError(ValueError): pass
 
@@ -26,7 +27,7 @@ class ResearchEvent:
         return result
 
 def _id(value,context):
-    if not isinstance(value,str) or not _ID.fullmatch(value): raise ResearchError(f"{context}: invalid stable ID {value!r}")
+    if not isinstance(value,str) or len(value)>64 or not _ID.fullmatch(value): raise ResearchError(f"{context}: invalid stable ID {value!r}")
     return value
 
 def _decimal(value,context,minimum=None,maximum=None):
@@ -57,6 +58,60 @@ def _index(values,domain):
         result[ident]=record
     return result
 
+def research_unlocks(node):
+    """Retain every authored typed reference in order; mechanics are not inferred.
+
+    Content IDs are declared by these records, not a universal content catalogue.
+    Missing gameplay bindings are a separate release blocker, not invalid IDs.
+    """
+    node_id=_id(node.get("id"),"research node")
+    values=node.get("unlocks")
+    if not isinstance(values,list) or len(values)>64:
+        raise ResearchError(f"research node {node_id}: invalid unlocks or runtime budget exceeded")
+    result=[]; seen=set()
+    for unlock in values:
+        if not isinstance(unlock,Mapping) or set(unlock)!={"kind","contentId"} or not isinstance(unlock.get("kind"),str) or unlock["kind"] not in UNLOCK_KINDS:
+            raise ResearchError(f"research node {node_id}: invalid unlock kind or fields")
+        content=_id(unlock.get("contentId"),f"{node_id}.unlock content")
+        key=(unlock["kind"],content)
+        if key in seen: raise ResearchError(f"research node {node_id}: duplicate unlock {key!r}")
+        seen.add(key)
+        result.append({"nodeId":node_id,"kind":key[0],"contentId":content})
+    return result
+
+def research_unlock_definitions(world):
+    technologies=_index(world.get("technologies",[]),"technologies")
+    institutions=_index(world.get("institutions",[]),"institutions")
+    if set(technologies)&set(institutions): raise ResearchError("research graph: duplicate node")
+    nodes={**technologies,**institutions}
+    if len(nodes)>512: raise ResearchError("research graph: runtime definition budget exceeded")
+    result=[]
+    for node_id,node in nodes.items():
+        prerequisites=node.get("prerequisiteIds")
+        if not isinstance(prerequisites,list) or len(prerequisites)>512:
+            raise ResearchError(f"research node {node_id}: invalid prerequisites")
+        seen=set()
+        for prerequisite in prerequisites:
+            _id(prerequisite,f"{node_id}.prerequisite")
+            if prerequisite not in nodes or prerequisite in seen or prerequisite==node_id:
+                raise ResearchError(f"research node {node_id}: duplicate or unknown prerequisite")
+            seen.add(prerequisite)
+        result.extend(research_unlocks(node))
+    visiting,visited=set(),set()
+    def visit(node_id):
+        if node_id in visiting: raise ResearchError(f"research graph: cycle at {node_id}")
+        if node_id in visited: return
+        visiting.add(node_id)
+        for prerequisite in nodes[node_id]["prerequisiteIds"]: visit(prerequisite)
+        visiting.remove(node_id); visited.add(node_id)
+    for node_id in nodes: visit(node_id)
+    return result
+
+def research_integration_blockers(world):
+    """The production adapter currently retains references only, for every kind."""
+    return [{**entry,"bindingStatus":"unbound","reason":"missing_gameplay_consumer"}
+            for entry in research_unlock_definitions(world)]
+
 class TechnologyInstitutionRuntime:
     """Authoritative fixed-point polity research and province adoption."""
     def __init__(self,world,current_date):
@@ -69,6 +124,7 @@ class TechnologyInstitutionRuntime:
         if overlap: raise ResearchError(f"research graph: duplicate node {sorted(overlap)[0]!r}")
         self.nodes={**technologies,**institutions}
         self.node_kinds={x:"technology" for x in technologies}|{x:"institution" for x in institutions}
+        research_unlock_definitions(data)
         for node_id,node in self.nodes.items():
             prerequisites=node.get("prerequisiteIds")
             if not isinstance(prerequisites,list) or len(prerequisites)!=len(set(prerequisites)): raise ResearchError(f"research node {node_id}: invalid prerequisites")
@@ -78,10 +134,6 @@ class TechnologyInstitutionRuntime:
             _units(cost.get("baseCost"),f"{node_id}.baseCost",Decimal("0.000001"))
             _decimal(cost.get("aheadOfTimeCostMultiplier"),f"{node_id}.ahead multiplier",1)
             _decimal(cost.get("additionalMultiplierPerYearAhead"),f"{node_id}.year multiplier",0)
-            if not isinstance(node.get("unlocks"),list): raise ResearchError(f"research node {node_id}: invalid unlocks")
-            for unlock in node["unlocks"]:
-                if not isinstance(unlock,Mapping): raise ResearchError(f"research node {node_id}: invalid unlock")
-                _id(unlock.get("kind"),f"{node_id}.unlock kind"); _id(unlock.get("contentId"),f"{node_id}.unlock content")
         self.research={x:{"completed":set(),"progress":{}} for x in self.polity_ids}
         self.adoption={x:{} for x in self.province_ids}; self._events=[]; self.next_sequence=1
         self._load_initial(data)
@@ -120,6 +172,12 @@ class TechnologyInstitutionRuntime:
     def _node(self,value):
         if value not in self.nodes: raise ResearchError(f"unknown research node {value!r}")
     def completed(self,polity): self._polity(polity); return tuple(sorted(self.research[polity]["completed"]))
+    def entitlements(self,polity):
+        """Derived from completions, including legacy completions; never replay events."""
+        self._polity(polity)
+        return tuple({"controllerId":polity,**unlock,"bindingStatus":"unbound"}
+                     for node_id,node in self.nodes.items() if node_id in self.research[polity]["completed"]
+                     for unlock in research_unlocks(node))
     def progress_units(self,polity,node): self._polity(polity); self._node(node); return self.research[polity]["progress"].get(node,0)
     def adoption_units(self,province,node): self._province(province); self._node(node); return self.adoption[province].get(node,0)
 
@@ -131,6 +189,7 @@ class TechnologyInstitutionRuntime:
 
     def advance_research(self,polity,node,points,current_date):
         self._polity(polity); self._node(node); amount=_units(points,"research points",Decimal("0.000001"))
+        unlocks=research_unlocks(self.nodes[node])
         state=self.research[polity]
         if node in state["completed"]: raise ResearchError(f"research node {node!r} is already complete")
         missing=sorted(set(self.nodes[node]["prerequisiteIds"])-state["completed"])
@@ -140,7 +199,9 @@ class TechnologyInstitutionRuntime:
         state["progress"].pop(node,None); state["completed"].add(node)
         kind="technology_completed" if self.node_kinds[node]=="technology" else "institution_established"
         emitted=[ResearchEvent(self.next_sequence,kind,polity_id=polity,node_id=node)]; sequence=self.next_sequence+1
-        for unlock in sorted(self.nodes[node]["unlocks"],key=lambda x:(x["kind"],x["contentId"])):
+        # Keep the historical event order and durable schema. Entitlement views
+        # retain authored order independently of this append-only history.
+        for unlock in sorted(unlocks,key=lambda x:(x["kind"],x["contentId"])):
             emitted.append(ResearchEvent(sequence,"content_unlocked",polity_id=polity,node_id=node,unlock_kind=unlock["kind"],content_id=unlock["contentId"])); sequence+=1
         self._events.extend(emitted); self.next_sequence=sequence; return tuple(emitted)
 
@@ -167,6 +228,7 @@ class TechnologyInstitutionRuntime:
             if not isinstance(raw,Mapping) or set(raw)!={"polityId","completedNodeIds","progress"} or p not in self.research or p in research: raise ResearchError("invalid polity research record")
             done=raw["completedNodeIds"]
             if not isinstance(done,list) or done!=sorted(set(done)) or any(x not in self.nodes for x in done): raise ResearchError(f"polity {p}: malformed completions")
+            for node in done: research_unlocks(self.nodes[node])
             progress={}
             if not isinstance(raw["progress"],list): raise ResearchError(f"polity {p}: malformed progress")
             for item in raw["progress"]:

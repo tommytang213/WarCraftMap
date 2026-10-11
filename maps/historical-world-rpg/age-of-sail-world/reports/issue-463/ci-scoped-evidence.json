@@ -1,0 +1,1754 @@
+{
+  "broaderRoadmapStatus": "fail",
+  "compiledDefinitions": {
+    "archiveSha256": "46cdb37b62d4b28af9883989ca662d145665c4478752c5949da6fc0f6cb486e6",
+    "foodCapacityFallback": false,
+    "gameplayConsumers": "blocked_pending_gameplay_consumers",
+    "luaSha256": "4ae2f018ffed83f40c128b350b868d13a33a0473a565dee9f5e9056deba0095a",
+    "multiUnlockNodes": 13,
+    "nativeClient": "not_run",
+    "negativeControls": [
+      "dropped_compiled_unlock",
+      "lost_compiled_kind"
+    ],
+    "nodes": 206,
+    "prerequisiteEdges": 264,
+    "releaseReady": false,
+    "sourceIdentity": {
+      "sourceRevision": "c119e280764655f7862559fa349793eb4dcc4249",
+      "sourceTreeSha256": "6357ba97a0664f7b7744335ceb6f1060bda7e7482aa403f25d1439b97e0804ed"
+    },
+    "status": "pass",
+    "unboundConsumers": 220,
+    "unlocks": 220
+  },
+  "executedTests": [
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsRestoreTypedResearchLayersForEveryController",
+      "line": 1076,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable",
+      "line": 124,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionRpgRegistrationReportsNameAndAliasConflicts",
+      "line": 154,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit",
+      "line": 193,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites",
+      "line": 196,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired",
+      "line": 199,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility",
+      "line": 229,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce",
+      "line": 287,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates",
+      "line": 306,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRepricesAfterClockAndDefinitionChanges",
+      "line": 340,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions",
+      "line": 367,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController",
+      "line": 398,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion",
+      "line": 420,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds",
+      "line": 453,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers",
+      "line": 478,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:typedIdentitySeparatesKindsEvenWhenContentIdsAreShared",
+      "line": 515,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchRuntimeTests.wurst:productionUnboundResearchNeverChangesWarcraftFoodCapacity",
+      "line": 528,
+      "status": "pass"
+    }
+  ],
+  "fullPinnedSuite": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "discovered": 462,
+    "passed": 462
+  },
+  "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "receipts": [
+    {
+      "case": "success",
+      "entryPoint": "live-typed-research-entitlements",
+      "observed": [
+        "registration",
+        "adapter",
+        "validation",
+        "mutation",
+        "persistence",
+        "transition",
+        "outcome"
+      ],
+      "requirement": "ROAD-0045.01",
+      "scope": "definitions_and_entitlement_delivery"
+    },
+    {
+      "case": "failure",
+      "entryPoint": "live-typed-research-entitlements",
+      "observed": [
+        "registration",
+        "adapter",
+        "validation",
+        "mutation",
+        "persistence",
+        "transition",
+        "outcome"
+      ],
+      "requirement": "ROAD-0045.01",
+      "scope": "definitions_and_entitlement_delivery"
+    },
+    {
+      "case": "stale",
+      "entryPoint": "live-typed-research-entitlements",
+      "observed": [
+        "registration",
+        "adapter",
+        "validation",
+        "mutation",
+        "persistence",
+        "transition",
+        "outcome"
+      ],
+      "requirement": "ROAD-0045.01",
+      "scope": "definitions_and_entitlement_delivery"
+    },
+    {
+      "case": "replay",
+      "entryPoint": "live-typed-research-entitlements",
+      "observed": [
+        "registration",
+        "adapter",
+        "validation",
+        "mutation",
+        "persistence",
+        "transition",
+        "outcome"
+      ],
+      "requirement": "ROAD-0045.01",
+      "scope": "definitions_and_entitlement_delivery"
+    }
+  ],
+  "releaseReady": false,
+  "remainingConsumers": [
+    {
+      "bindingStatus": "unbound",
+      "contentId": "army_discipline",
+      "kind": "modifier",
+      "nodeId": "pike_and_shot",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "arsenal",
+      "kind": "building",
+      "nodeId": "trace_italienne",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "flintlock_infantry",
+      "kind": "unit",
+      "nodeId": "flintlock_drill",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "line_infantry",
+      "kind": "unit",
+      "nodeId": "linear_tactics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "field_artillery",
+      "kind": "ability",
+      "nodeId": "mobile_field_artillery",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "common_sapper_corps",
+      "kind": "unit",
+      "nodeId": "siege_engineering_corps",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "siege_engineering",
+      "kind": "ability",
+      "nodeId": "siege_engineering_corps",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "standing_army_reform",
+      "kind": "policy",
+      "nodeId": "standing_army_system",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "garrison_readiness",
+      "kind": "modifier",
+      "nodeId": "standing_army_system",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "mass_conscription",
+      "kind": "policy",
+      "nodeId": "mass_army_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "common_wagon_train",
+      "kind": "unit",
+      "nodeId": "mass_army_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "supply_efficiency",
+      "kind": "modifier",
+      "nodeId": "mass_army_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "open_water_navigation",
+      "kind": "ability",
+      "nodeId": "oceanic_seamanship",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_celestial_navigation",
+      "kind": "modifier",
+      "nodeId": "celestial_navigation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "fleet_navigation_efficiency",
+      "kind": "modifier",
+      "nodeId": "standardized_charts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "galleon",
+      "kind": "unit",
+      "nodeId": "galleon_design",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "ship_of_the_line",
+      "kind": "unit",
+      "nodeId": "battlefleet_doctrine",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "scientific_survey",
+      "kind": "ability",
+      "nodeId": "marine_chronometer",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "dry_dock",
+      "kind": "building",
+      "nodeId": "dockyard_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "coastal_patrol_sloop",
+      "kind": "unit",
+      "nodeId": "dockyard_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "east_asian_war_junk",
+      "kind": "unit",
+      "nodeId": "naval_gunnery",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "shipbuilding_capacity",
+      "kind": "modifier",
+      "nodeId": "naval_gunnery",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "ocean_cruising_frigate",
+      "kind": "unit",
+      "nodeId": "frigate_cruising",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "convoy_escort",
+      "kind": "ability",
+      "nodeId": "frigate_cruising",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "steam_vessel",
+      "kind": "unit",
+      "nodeId": "steam_navigation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "trade_efficiency",
+      "kind": "modifier",
+      "nodeId": "double_entry_bookkeeping",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_bill_of_exchange_networks",
+      "kind": "modifier",
+      "nodeId": "bill_of_exchange_networks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "stock_exchange",
+      "kind": "building",
+      "nodeId": "joint_stock_enterprise",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_insurance_markets",
+      "kind": "modifier",
+      "nodeId": "insurance_markets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "armed_indiaman",
+      "kind": "unit",
+      "nodeId": "chartered_companies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "commercial_courts",
+      "kind": "policy",
+      "nodeId": "chartered_companies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "credit_liquidity",
+      "kind": "modifier",
+      "nodeId": "commodity_exchanges",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "customs_house",
+      "kind": "building",
+      "nodeId": "commodity_exchanges",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "trade_efficiency",
+      "kind": "modifier",
+      "nodeId": "integrated_world_markets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "global_expedition",
+      "kind": "ability",
+      "nodeId": "integrated_world_markets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "central_records",
+      "kind": "policy",
+      "nodeId": "professional_bureaucracy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_cadastral_survey",
+      "kind": "modifier",
+      "nodeId": "cadastral_survey",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "public_credit",
+      "kind": "policy",
+      "nodeId": "military_fiscal_state",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "provincial_governors",
+      "kind": "policy",
+      "nodeId": "provincial_governance",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "administrative_reach",
+      "kind": "modifier",
+      "nodeId": "provincial_governance",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "postal_station",
+      "kind": "building",
+      "nodeId": "postal_networks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "standard_measures",
+      "kind": "policy",
+      "nodeId": "statistical_administration",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_scholastic_natural_philosophy",
+      "kind": "modifier",
+      "nodeId": "scholastic_natural_philosophy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "research_exchange",
+      "kind": "modifier",
+      "nodeId": "experimental_method",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_newtonian_science",
+      "kind": "modifier",
+      "nodeId": "newtonian_science",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "epidemic_control",
+      "kind": "ability",
+      "nodeId": "anatomy_and_medicine",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "academy",
+      "kind": "building",
+      "nodeId": "systematic_natural_history",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "scientific_survey",
+      "kind": "ability",
+      "nodeId": "systematic_natural_history",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "patent_law",
+      "kind": "policy",
+      "nodeId": "precision_engineering",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "agricultural_output",
+      "kind": "modifier",
+      "nodeId": "intensive_crop_rotation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "population_growth",
+      "kind": "modifier",
+      "nodeId": "new_world_crops",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_selective_breeding",
+      "kind": "modifier",
+      "nodeId": "selective_breeding",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "harvest_resilience",
+      "kind": "modifier",
+      "nodeId": "irrigation_hydraulics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "granary",
+      "kind": "building",
+      "nodeId": "agrarian_improvement",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "land_tenure_reform",
+      "kind": "policy",
+      "nodeId": "agrarian_improvement",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "enclosure",
+      "kind": "policy",
+      "nodeId": "agricultural_mechanization",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_water_powered_machinery",
+      "kind": "modifier",
+      "nodeId": "water_powered_machinery",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_cast_cannon",
+      "kind": "modifier",
+      "nodeId": "cast_cannon",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_coke_smelted_iron",
+      "kind": "modifier",
+      "nodeId": "coke_smelted_iron",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "factory",
+      "kind": "building",
+      "nodeId": "rotative_steam_power",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "common_siege_battery",
+      "kind": "unit",
+      "nodeId": "standardized_ordnance",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "workshop_output",
+      "kind": "modifier",
+      "nodeId": "textile_mechanization",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "industrial_output",
+      "kind": "modifier",
+      "nodeId": "industrial_manufacture",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_arquebus_volley_drill",
+      "kind": "modifier",
+      "nodeId": "arquebus_volley_drill",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_field_entrenchment",
+      "kind": "modifier",
+      "nodeId": "field_entrenchment",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_regimental_organization",
+      "kind": "modifier",
+      "nodeId": "regimental_organization",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_countermarch_fire",
+      "kind": "modifier",
+      "nodeId": "countermarch_fire",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_bayonet_system",
+      "kind": "modifier",
+      "nodeId": "bayonet_system",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_officer_academies",
+      "kind": "modifier",
+      "nodeId": "officer_academies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_horse_artillery",
+      "kind": "modifier",
+      "nodeId": "horse_artillery",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_skirmisher_doctrine",
+      "kind": "modifier",
+      "nodeId": "skirmisher_doctrine",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_general_staff_methods",
+      "kind": "modifier",
+      "nodeId": "general_staff_methods",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_rifled_infantry_trials",
+      "kind": "modifier",
+      "nodeId": "rifled_infantry_trials",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_reserve_mobilization",
+      "kind": "modifier",
+      "nodeId": "reserve_mobilization",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_combined_arms_columns",
+      "kind": "modifier",
+      "nodeId": "combined_arms_columns",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_carvel_hull_construction",
+      "kind": "modifier",
+      "nodeId": "carvel_hull_construction",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_lateen_square_rig",
+      "kind": "modifier",
+      "nodeId": "lateen_square_rig",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_shipboard_artillery_decks",
+      "kind": "modifier",
+      "nodeId": "shipboard_artillery_decks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_naval_signal_books",
+      "kind": "modifier",
+      "nodeId": "naval_signal_books",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_copper_sheathing",
+      "kind": "modifier",
+      "nodeId": "copper_sheathing",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_careening_stations",
+      "kind": "modifier",
+      "nodeId": "careening_stations",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_fleet_victualling",
+      "kind": "modifier",
+      "nodeId": "fleet_victualling",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_naval_hospitals",
+      "kind": "modifier",
+      "nodeId": "naval_hospitals",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_rated_warships",
+      "kind": "modifier",
+      "nodeId": "rated_warships",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_carronade_batteries",
+      "kind": "modifier",
+      "nodeId": "carronade_batteries",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_merchant_correspondence",
+      "kind": "modifier",
+      "nodeId": "merchant_correspondence",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_warehouse_warrants",
+      "kind": "modifier",
+      "nodeId": "warehouse_warrants",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_consular_trade_networks",
+      "kind": "modifier",
+      "nodeId": "consular_trade_networks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_auction_markets",
+      "kind": "modifier",
+      "nodeId": "auction_markets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_central_banking",
+      "kind": "modifier",
+      "nodeId": "central_banking",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_commercial_statistics",
+      "kind": "modifier",
+      "nodeId": "commercial_statistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_canal_tolls_finance",
+      "kind": "modifier",
+      "nodeId": "canal_tolls_finance",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_brokerage_houses",
+      "kind": "modifier",
+      "nodeId": "brokerage_houses",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_manufacturing_credit",
+      "kind": "modifier",
+      "nodeId": "manufacturing_credit",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_global_price_bulletins",
+      "kind": "modifier",
+      "nodeId": "global_price_bulletins",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_savings_banks",
+      "kind": "modifier",
+      "nodeId": "savings_banks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_chancery_archives",
+      "kind": "modifier",
+      "nodeId": "chancery_archives",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_trained_magistracy",
+      "kind": "modifier",
+      "nodeId": "trained_magistracy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_fiscal_cadastres",
+      "kind": "modifier",
+      "nodeId": "fiscal_cadastres",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_provincial_audits",
+      "kind": "modifier",
+      "nodeId": "provincial_audits",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_civil_service_examinations",
+      "kind": "modifier",
+      "nodeId": "civil_service_examinations",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_population_census",
+      "kind": "modifier",
+      "nodeId": "population_census",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_municipal_charters",
+      "kind": "modifier",
+      "nodeId": "municipal_charters",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_codified_law",
+      "kind": "modifier",
+      "nodeId": "codified_law",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_ministerial_cabinets",
+      "kind": "modifier",
+      "nodeId": "ministerial_cabinets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_merit_civil_service",
+      "kind": "modifier",
+      "nodeId": "merit_civil_service",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_national_accounts",
+      "kind": "modifier",
+      "nodeId": "national_accounts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_printed_observation_tables",
+      "kind": "modifier",
+      "nodeId": "printed_observation_tables",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_surveying_instruments",
+      "kind": "modifier",
+      "nodeId": "surveying_instruments",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_microscopy",
+      "kind": "modifier",
+      "nodeId": "microscopy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_barometric_measurement",
+      "kind": "modifier",
+      "nodeId": "barometric_measurement",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_calculus_methods",
+      "kind": "modifier",
+      "nodeId": "calculus_methods",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_electrical_experimentation",
+      "kind": "modifier",
+      "nodeId": "electrical_experimentation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_chemical_classification",
+      "kind": "modifier",
+      "nodeId": "chemical_classification",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_geological_survey",
+      "kind": "modifier",
+      "nodeId": "geological_survey",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_metric_metrology",
+      "kind": "modifier",
+      "nodeId": "metric_metrology",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_comparative_linguistics",
+      "kind": "modifier",
+      "nodeId": "comparative_linguistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_electromagnetic_experiment",
+      "kind": "modifier",
+      "nodeId": "electromagnetic_experiment",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_probability_statistics",
+      "kind": "modifier",
+      "nodeId": "probability_statistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_terrace_conservation",
+      "kind": "modifier",
+      "nodeId": "terrace_conservation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_regional_seed_exchange",
+      "kind": "modifier",
+      "nodeId": "regional_seed_exchange",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_market_gardening",
+      "kind": "modifier",
+      "nodeId": "market_gardening",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_drainage_reclamation",
+      "kind": "modifier",
+      "nodeId": "drainage_reclamation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_fodder_crop_systems",
+      "kind": "modifier",
+      "nodeId": "fodder_crop_systems",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_plantation_processing",
+      "kind": "modifier",
+      "nodeId": "plantation_processing",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_seed_drill",
+      "kind": "modifier",
+      "nodeId": "seed_drill",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_veterinary_husbandry",
+      "kind": "modifier",
+      "nodeId": "veterinary_husbandry",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_soil_chemistry",
+      "kind": "modifier",
+      "nodeId": "soil_chemistry",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_iron_ploughs",
+      "kind": "modifier",
+      "nodeId": "iron_ploughs",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_blast_furnace_practice",
+      "kind": "modifier",
+      "nodeId": "blast_furnace_practice",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_wire_drawing_mills",
+      "kind": "modifier",
+      "nodeId": "wire_drawing_mills",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_deep_mine_drainage",
+      "kind": "modifier",
+      "nodeId": "deep_mine_drainage",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_boring_mills",
+      "kind": "modifier",
+      "nodeId": "boring_mills",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_puddling_iron",
+      "kind": "modifier",
+      "nodeId": "puddling_iron",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_machine_tools",
+      "kind": "modifier",
+      "nodeId": "machine_tools",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_interchangeable_parts",
+      "kind": "modifier",
+      "nodeId": "interchangeable_parts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_gas_lighting",
+      "kind": "modifier",
+      "nodeId": "gas_lighting",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_high_pressure_steam",
+      "kind": "modifier",
+      "nodeId": "high_pressure_steam",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_mechanized_paper_making",
+      "kind": "modifier",
+      "nodeId": "mechanized_paper_making",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_steam_hammer_concepts",
+      "kind": "modifier",
+      "nodeId": "steam_hammer_concepts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_pack_train_contracts",
+      "kind": "modifier",
+      "nodeId": "pack_train_contracts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_military_magazines",
+      "kind": "modifier",
+      "nodeId": "military_magazines",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_road_waystations",
+      "kind": "modifier",
+      "nodeId": "road_waystations",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_river_transport_bureaus",
+      "kind": "modifier",
+      "nodeId": "river_transport_bureaus",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_standard_supply_weights",
+      "kind": "modifier",
+      "nodeId": "standard_supply_weights",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_contract_victualling",
+      "kind": "modifier",
+      "nodeId": "contract_victualling",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_campaign_bakeries",
+      "kind": "modifier",
+      "nodeId": "campaign_bakeries",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_artillery_train",
+      "kind": "modifier",
+      "nodeId": "artillery_train",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_turnpike_networks",
+      "kind": "modifier",
+      "nodeId": "turnpike_networks",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_canal_logistics",
+      "kind": "modifier",
+      "nodeId": "canal_logistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_quartermaster_corps",
+      "kind": "modifier",
+      "nodeId": "quartermaster_corps",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_preserved_rations",
+      "kind": "modifier",
+      "nodeId": "preserved_rations",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_steam_towage",
+      "kind": "modifier",
+      "nodeId": "steam_towage",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_strategic_depots",
+      "kind": "modifier",
+      "nodeId": "strategic_depots",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_pilot_books",
+      "kind": "modifier",
+      "nodeId": "pilot_books",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_coastal_triangulation",
+      "kind": "modifier",
+      "nodeId": "coastal_triangulation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_trade_wind_routes",
+      "kind": "modifier",
+      "nodeId": "trade_wind_routes",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_monsoon_route_almanacs",
+      "kind": "modifier",
+      "nodeId": "monsoon_route_almanacs",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_overland_caravan_surveys",
+      "kind": "modifier",
+      "nodeId": "overland_caravan_surveys",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_botanical_collecting",
+      "kind": "modifier",
+      "nodeId": "botanical_collecting",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_longitude_lunar_distance",
+      "kind": "modifier",
+      "nodeId": "longitude_lunar_distance",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_polar_navigation",
+      "kind": "modifier",
+      "nodeId": "polar_navigation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_geodetic_arcs",
+      "kind": "modifier",
+      "nodeId": "geodetic_arcs",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_pacific_charting",
+      "kind": "modifier",
+      "nodeId": "pacific_charting",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_global_hydrography",
+      "kind": "modifier",
+      "nodeId": "global_hydrography",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_expeditionary_ethnography",
+      "kind": "modifier",
+      "nodeId": "expeditionary_ethnography",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_deep_sea_sounding",
+      "kind": "modifier",
+      "nodeId": "deep_sea_sounding",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_continental_interiors",
+      "kind": "modifier",
+      "nodeId": "continental_interiors",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_quarantine_practice",
+      "kind": "modifier",
+      "nodeId": "quarantine_practice",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_herbal_pharmacopoeia",
+      "kind": "modifier",
+      "nodeId": "herbal_pharmacopoeia",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_surgical_anatomy",
+      "kind": "modifier",
+      "nodeId": "surgical_anatomy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_military_field_hospitals",
+      "kind": "modifier",
+      "nodeId": "military_field_hospitals",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_smallpox_inoculation",
+      "kind": "modifier",
+      "nodeId": "smallpox_inoculation",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_obstetric_training",
+      "kind": "modifier",
+      "nodeId": "obstetric_training",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_clinical_case_records",
+      "kind": "modifier",
+      "nodeId": "clinical_case_records",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_naval_scurvy_prevention",
+      "kind": "modifier",
+      "nodeId": "naval_scurvy_prevention",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_vaccination",
+      "kind": "modifier",
+      "nodeId": "vaccination",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_pathological_anatomy",
+      "kind": "modifier",
+      "nodeId": "pathological_anatomy",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_emergency_triage",
+      "kind": "modifier",
+      "nodeId": "emergency_triage",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_public_mortality_statistics",
+      "kind": "modifier",
+      "nodeId": "public_mortality_statistics",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_courier_relays",
+      "kind": "modifier",
+      "nodeId": "courier_relays",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_ciphered_dispatches",
+      "kind": "modifier",
+      "nodeId": "ciphered_dispatches",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_printed_broadsheets",
+      "kind": "modifier",
+      "nodeId": "printed_broadsheets",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_semaphore_signals",
+      "kind": "modifier",
+      "nodeId": "semaphore_signals",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_scheduled_post",
+      "kind": "modifier",
+      "nodeId": "scheduled_post",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_newspaper_exchanges",
+      "kind": "modifier",
+      "nodeId": "newspaper_exchanges",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_optical_telegraph",
+      "kind": "modifier",
+      "nodeId": "optical_telegraph",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_naval_flag_signals",
+      "kind": "modifier",
+      "nodeId": "naval_flag_signals",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_lithographic_printing",
+      "kind": "modifier",
+      "nodeId": "lithographic_printing",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_mass_postal_service",
+      "kind": "modifier",
+      "nodeId": "mass_postal_service",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_field_signal_corps",
+      "kind": "modifier",
+      "nodeId": "field_signal_corps",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_electrical_telegraph_concepts",
+      "kind": "modifier",
+      "nodeId": "electrical_telegraph_concepts",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_signal_intelligence_bureaus",
+      "kind": "modifier",
+      "nodeId": "signal_intelligence_bureaus",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_civic_pest_hospitals",
+      "kind": "modifier",
+      "nodeId": "civic_pest_hospitals",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "printing_house",
+      "kind": "building",
+      "nodeId": "movable_type_printing",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_renaissance_humanism",
+      "kind": "policy",
+      "nodeId": "renaissance_humanism",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "religious_toleration",
+      "kind": "policy",
+      "nodeId": "confessional_state",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "research_exchange",
+      "kind": "modifier",
+      "nodeId": "scientific_societies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "public_credit",
+      "kind": "policy",
+      "nodeId": "public_credit",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "free_press",
+      "kind": "policy",
+      "nodeId": "enlightenment_public_sphere",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "public_health",
+      "kind": "policy",
+      "nodeId": "urban_public_health",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "permanent_naval_board",
+      "kind": "policy",
+      "nodeId": "naval_administration",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "dry_dock",
+      "kind": "building",
+      "nodeId": "naval_administration",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "constitutional_government",
+      "kind": "policy",
+      "nodeId": "constitutionalism",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_merchant_diasporas",
+      "kind": "policy",
+      "nodeId": "merchant_diasporas",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_chartered_municipalities",
+      "kind": "policy",
+      "nodeId": "chartered_municipalities",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_artillery_offices",
+      "kind": "policy",
+      "nodeId": "artillery_offices",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_royal_dockyards",
+      "kind": "policy",
+      "nodeId": "royal_dockyards",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_commercial_courts_institution",
+      "kind": "policy",
+      "nodeId": "commercial_courts_institution",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_colonial_councils",
+      "kind": "policy",
+      "nodeId": "colonial_councils",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_standing_army_establishment",
+      "kind": "policy",
+      "nodeId": "standing_army_establishment",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_central_bank_institution",
+      "kind": "policy",
+      "nodeId": "central_bank_institution",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_agricultural_societies",
+      "kind": "policy",
+      "nodeId": "agricultural_societies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_professional_medical_colleges",
+      "kind": "policy",
+      "nodeId": "professional_medical_colleges",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_patent_offices",
+      "kind": "policy",
+      "nodeId": "patent_offices",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_abolitionist_public_sphere",
+      "kind": "policy",
+      "nodeId": "abolitionist_public_sphere",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_representative_assemblies",
+      "kind": "policy",
+      "nodeId": "representative_assemblies",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_metric_standardization",
+      "kind": "policy",
+      "nodeId": "metric_standardization",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_mass_education",
+      "kind": "policy",
+      "nodeId": "mass_education",
+      "reason": "missing_gameplay_consumer"
+    },
+    {
+      "bindingStatus": "unbound",
+      "contentId": "progression_professional_civil_service",
+      "kind": "policy",
+      "nodeId": "professional_civil_service",
+      "reason": "missing_gameplay_consumer"
+    }
+  ],
+  "researchProductionTests": [
+    "wurst/ManagementCommandTests.wurst:actionResultsHelpInvalidCommandsAndPassiveNotificationsDoNotOpenManagement",
+    "wurst/ResearchRuntimeTests.wurst:generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit",
+    "wurst/ResearchRuntimeTests.wurst:generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites",
+    "wurst/ResearchRuntimeTests.wurst:generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController",
+    "wurst/ResearchRuntimeTests.wurst:generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility",
+    "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce",
+    "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates",
+    "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandRepricesAfterClockAndDefinitionChanges",
+    "wurst/ResearchRuntimeTests.wurst:historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions",
+    "wurst/ResearchRuntimeTests.wurst:institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds",
+    "wurst/ResearchRuntimeTests.wurst:malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion",
+    "wurst/ResearchRuntimeTests.wurst:productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable",
+    "wurst/ResearchRuntimeTests.wurst:productionUnboundResearchNeverChangesWarcraftFoodCapacity",
+    "wurst/ResearchRuntimeTests.wurst:typedIdentitySeparatesKindsEvenWhenContentIdsAreShared",
+    "wurst/ResearchRuntimeTests.wurst:typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers",
+    "wurst/ResearchRuntimeTests.wurst:unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired"
+  ],
+  "scope": "ROAD-0045.01 definitions and entitlement delivery only",
+  "sourceIdentity": {
+    "sourceRevision": "c119e280764655f7862559fa349793eb4dcc4249",
+    "sourceTreeSha256": "6357ba97a0664f7b7744335ceb6f1060bda7e7482aa403f25d1439b97e0804ed"
+  },
+  "status": "pass",
+  "unrelatedBlockersUnchanged": true
+}
