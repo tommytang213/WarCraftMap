@@ -2,6 +2,7 @@ package MilitaryCombatEventsTests
 
 import MilitaryCombatEvents
 import ExactNatural
+import MilitaryTraditionLayer
 import MilitarySettlementRuntime
 import MilitarySettlementRuntimeTests
 import CampaignStartupTests
@@ -55,6 +56,7 @@ class CombatRepresentations extends RecordingMilitaryAdapter
 			return 0
 		return tokens[found]
 	override function removeRepresentation(string id)
+		super.removeRepresentation(id)
 		let found = index(id)
 		if found >= 0
 			if id == observeRetirement and cleanupEvents != null
@@ -70,6 +72,7 @@ class CombatRepresentations extends RecordingMilitaryAdapter
 	function isProtected(string id) returns boolean
 		return protection[index(id)]
 	override function beginLoad()
+		super.beginLoad()
 		for i = 0 to count - 1
 			retained[i] = tokens[i]
 			tokens[i] = 0
@@ -78,11 +81,13 @@ class CombatRepresentations extends RecordingMilitaryAdapter
 			removeRepresentation(ids[i])
 			tokens[i] = retained[i]
 			retained[i] = 0
+		super.rollbackLoad()
 	override function commitLoad()
 		for i = 0 to count - 1
 			if cleanupEvents != null and retained[i] != 0
 				cleanupEvents.onDeath(cleanupEvents.generation, retained[i], cleanupKiller)
 			retained[i] = 0
+		super.commitLoad()
 
 class RecordingCombatNatives implements MilitaryCombatNatives
 	MilitaryCombatEvents events
@@ -465,7 +470,7 @@ function traditionXp(CombatFixture f, string controller, string category) return
 	traditionXp(f, "player", "land_formation").assertEquals("40")
 	// Reconcile the surviving local projection without reviving the casualty
 	// or projecting forces from the other physical map in the same region.
-	f.representations.tradition.assertEquals(0)
+	f.representations.tradition.assertEquals(-1)
 	f.token("enemy").assertEquals(0)
 	f.token("abstract_army").assertEquals(0)
 	let committed = f.runtime.snapshot()
@@ -553,6 +558,7 @@ function traditionReceipt(string caseName)
 	f.runtime.awardTradition("player", "land_formation", "9007199254740993")
 	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pause) == f.events).assertTrue()
 	let before = f.runtime.snapshot()
+	let beforeLayer = f.representations.traditionLayers.get("player_army").inspection()
 	f.natives.damage(f.token("enemy"), 0).assertEquals(-1)
 	f.natives.death(f.token("enemy"), 0)
 	f.runtime.snapshot().assertEquals(before)
@@ -564,6 +570,7 @@ function traditionReceipt(string caseName)
 	f.natives.death(f.token("enemy"), f.token("player_army"))
 	f.pause.setManuallyPaused(false)
 	f.runtime.snapshot().assertEquals(before)
+	f.representations.traditionLayers.get("player_army").inspection().assertEquals(beforeLayer)
 	// A legal hero kill commits casualties but has no authored military category.
 	f.natives.death(f.token("enemy"), f.natives.heroToken)
 	traditionXp(f, "player", "land_formation").assertEquals("9007199254740993")
@@ -584,6 +591,7 @@ function traditionReceipt(string caseName)
 	traditionXp(f, "player", "land_formation").assertEquals("9007199254740993")
 	f.close()
 	traditionReceipt("failure")
+	resolvedTraditionReceipt("failure")
 
 @test function duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition()
 	let f = traditionCombatFixture()
@@ -594,6 +602,7 @@ function traditionReceipt(string caseName)
 	let epoch = f.natives.epoch
 	f.natives.death(victim, killer)
 	let after = f.runtime.snapshot()
+	let afterLayer = f.representations.traditionLayers.get("player_army").inspection()
 	f.natives.death(victim, killer)
 	f.runtime.snapshot().assertEquals(after)
 	f.runtime.activateRegion("europe_west")
@@ -605,6 +614,7 @@ function traditionReceipt(string caseName)
 	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.natives.death(victim, f.token("player_army"))
 	f.runtime.snapshot().assertEquals(after)
+	f.representations.traditionLayers.get("player_army").inspection().assertEquals(afterLayer)
 	// A still-current killer changes controller between damage and death.
 	f.natives.damage(f.token("enemy_fleet"), f.token("player_fleet")).assertEquals(1)
 	f.runtime.transferControl("player_fleet", "france")
@@ -618,6 +628,7 @@ function traditionReceipt(string caseName)
 	traditionXp(f, "player", "sailing_naval").assertEquals("0")
 	f.close()
 	traditionReceipt("stale")
+	resolvedTraditionReceipt("stale")
 	traditionReceiptFor("REQ-0158.01", "stale")
 
 @test function earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore()
@@ -641,6 +652,7 @@ function traditionReceipt(string caseName)
 	f.natives.death(f.token("enemy_fleet"), f.token("player_fleet"))
 	let current = f.runtime.snapshot()
 	let retainedKiller = f.token("player_fleet")
+	let retainedLayer = f.representations.traditionLayers.get("player_fleet").inspection()
 	let epoch = f.natives.epoch
 	f.startup.ports.failProjection = true
 	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
@@ -652,6 +664,7 @@ function traditionReceipt(string caseName)
 	f.startup.saves.read("manual_01").assertEquals(encoded)
 	f.runtime.snapshot().assertEquals(current)
 	f.token("player_fleet").assertEquals(retainedKiller)
+	f.representations.traditionLayers.get("player_fleet").inspection().assertEquals(retainedLayer)
 	f.events.onDeath(epoch, f.token("player_army"), retainedKiller)
 	f.runtime.snapshot().assertEquals(current)
 	traditionXp(f, "player", "land_formation").assertEquals("100000000000000000000000000000000000039")
@@ -664,22 +677,23 @@ function traditionReceipt(string caseName)
 	f.runtime.snapshot().assertEquals(current)
 	f.close()
 	traditionReceipt("replay")
+	resolvedTraditionReceipt("replay")
 	traditionReceiptFor("REQ-0158.01", "replay")
 
 @test function traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves()
 	let f = traditionCombatFixture()
 	f.natives.death(f.token("enemy"), f.token("player_army"))
 	let saved = f.runtime.snapshot()
-	let playerLand = "|t,player,land_formation,40,0,1000,0"
-	let playerSea = "|t,player,sailing_naval,0,0,1200,0"
+	let playerLand = "|t,player,land_formation,40,0,0,0"
+	let playerSea = "|t,player,sailing_naval,0,0,0,0"
 	(saved.contains(playerLand) and saved.contains(playerSea)).assertTrue()
 	string array[6] malformed
 	malformed[0] = saved.replace(playerLand, "")
 	malformed[1] = saved + playerLand
-	malformed[2] = saved.replace(playerLand, "|t,player,land_formation,40oops,0,1000,0")
-	malformed[3] = saved.replace(playerLand, "|t,player,land_formation,-1,0,1000,0")
-	malformed[4] = saved.replace(playerLand, "|t,unknown,land_formation,40,0,1000,0")
-	malformed[5] = saved.replace(playerLand, "|t,player,land_formation,040,0,1000,0")
+	malformed[2] = saved.replace(playerLand, "|t,player,land_formation,40oops,0,0,0")
+	malformed[3] = saved.replace(playerLand, "|t,player,land_formation,-1,0,0,0")
+	malformed[4] = saved.replace(playerLand, "|t,unknown,land_formation,40,0,0,0")
+	malformed[5] = saved.replace(playerLand, "|t,player,land_formation,040,0,0,0")
 	for i = 0 to 5
 		f.runtime.restore(malformed[i]).assertFalse()
 		f.runtime.snapshot().assertEquals(saved)
@@ -756,7 +770,8 @@ class TraditionNativeRepresentations extends WarcraftMilitarySettlementAdapter
 	runtime.traditions[runtime.traditionIndex("england", "land_formation")].experience.assertEquals("13")
 	objects.representationId("second").assertEquals(0)
 	// The pending authored coefficient adapters do not grant invented HP.
-	objects.lastLife.assertEquals(100)
+	objects.lastLife.assertEquals(0)
+	objects.traditionLayers.get("first").modifier("attack_basis_points").display().assertEquals("13/10")
 	let saved = runtime.snapshot()
 	runtime.restore(saved).assertTrue()
 	natives.death(obsolete, objects.representationId("first"))
@@ -828,6 +843,7 @@ function traditionLandCrossing(BoundaryCorrespondence boundary) returns real
 	f.runtime.forces[f.runtime.forceIndex("enemy")].active.assertFalse()
 	f.representations.retiredAuthority.assertEquals(f.runtime.snapshot())
 	let after = f.runtime.snapshot()
+	let afterLayer = f.representations.traditionLayers.get("player_army").inspection()
 	f.natives.death(victim, killer)
 	f.runtime.snapshot().assertEquals(after)
 	let commands = new MilitaryCommandFixture(f.runtime, f.representations)
@@ -907,7 +923,7 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 	let before = f.startup.campaign.state.captureAuthoritativeState()
 	let retained = f.token("player_army")
 	let serial = f.representations.nextToken
-	let track = "|t,player,land_formation,9007199254741033,0,1000,0"
+	let track = "|t,player,land_formation,9007199254741033,0,0,0"
 	before.contains(track).assertTrue()
 	string array[15] bad
 	bad[0] = ""
@@ -926,7 +942,7 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 	bad[13] = "999999999999999999999999999999999999999999x"
 	bad[14] = "1,2"
 	for i = 0 to 14
-		let candidate = before.replace(track, "|t,player,land_formation," + bad[i] + ",0,1000,0")
+		let candidate = before.replace(track, "|t,player,land_formation," + bad[i] + ",0,0,0")
 		let encoded = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "bad-number", candidate)
 		f.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
 		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
@@ -1006,6 +1022,8 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 		let victim = f.token("fresh")
 		f.natives.death(victim, f.token("survivor"))
 		traditionXp(f, "player", "land_formation").assertEquals("2147483648")
+		f.representations.traditionLayers.get("survivor").modifier("attack_basis_points").display().assertEquals("1073741824/5")
+		f.representations.traditionLayers.get("survivor").effects().assertEquals("platoon_fire")
 		let saved = f.runtime.snapshot()
 		saved.startsWith("v8|").assertTrue()
 		f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
@@ -1021,3 +1039,204 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 		f.runtime.snapshot().assertEquals(saved)
 		f.startup.saves.read("manual_01").assertEquals(invalid)
 	f.close()
+
+/** Observe the actual delivered layer after an installed, eligible callback.
+ * The Python verifier compares each field with the independent Fraction oracle. */
+function resolvedTraditionVector(CombatFixture f, string controller, string category, string before)
+	var killer = "player_army"
+	if category == "sailing_naval"
+		killer = "player_fleet"
+	f.runtime.transferControl(killer, controller)
+	f.runtime.traditions[f.runtime.traditionIndex(controller, category)].experience = before
+	var enemy = "france"
+	if controller == "france"
+		enemy = "england"
+	let victimId = "resolution_victim_" + I2S(f.runtime.forceCount)
+	f.runtime.recruit(new RuntimeForce(victimId, enemy, "europe_west", category, FORCE_ARMY, 'hfoo', 1, 1, 0., 0.)).assertTrue()
+	let victim = f.token(victimId)
+	f.natives.death(victim, f.token(killer))
+	let layer = f.representations.traditionLayers.get(killer)
+	(layer != null).assertTrue()
+	layer.experience.assertEquals(exactNaturalAdd(before, "1"))
+	layer.controllerId.assertEquals(controller)
+	layer.categoryId.assertEquals(category)
+	var modifiers = ""
+	var attribute = layer.modifiers
+	while attribute != null
+		if modifiers != ""
+			modifiers += ","
+		modifiers += "\"" + attribute.attributeId + "\":[\"" + attribute.value.numerator + "\",\"" + attribute.value.denominator + "\"]"
+		attribute = attribute.next
+	var reached = ""
+	var milestone = layer.reached
+	while milestone != null
+		if reached != ""
+			reached += ","
+		reached += milestone.id
+		milestone = milestone.next
+	print("RESOLVED_TRADITION_ORACLE {\"controller\":\"" + controller + "\",\"category\":\"" + category + "\",\"before\":\"" + before + "\",\"experience\":\"" + layer.experience + "\",\"modifiers\":{" + modifiers + "},\"reached\":\"" + reached + "\",\"effects\":\"" + layer.effects() + "\"}")
+	let committed = f.runtime.snapshot()
+	let inspection = layer.inspection()
+	f.natives.death(victim, f.token(killer))
+	f.runtime.snapshot().assertEquals(committed)
+	f.runtime.reconcileForceTradition(f.runtime.forces[f.runtime.forceIndex(killer)])
+	f.representations.traditionLayers.get(killer).inspection().assertEquals(inspection)
+
+function resolvedTraditionBoundaries(string category, string first, string second)
+	let f = traditionCombatFixture()
+	for controllerIndex = 0 to 1
+		var controller = "player"
+		if controllerIndex == 1
+			controller = "france"
+		resolvedTraditionVector(f, controller, category, "0")
+		resolvedTraditionVector(f, controller, category, "1")
+		resolvedTraditionVector(f, controller, category, first)
+		resolvedTraditionVector(f, controller, category, second)
+		resolvedTraditionVector(f, controller, category, "2147483647")
+		resolvedTraditionVector(f, controller, category, "9007199254740991")
+		resolvedTraditionVector(f, controller, category, "9007199254740992")
+		resolvedTraditionVector(f, controller, category, "99999999999999999999999999999999999999999999999999999999999999999999")
+	f.close()
+
+@test function installedLandCallbacksDeliverExactResolvedLayers()
+	resolvedTraditionBoundaries("land_formation", "999", "2999")
+
+@test function installedNavalCallbacksDeliverExactResolvedLayers()
+	resolvedTraditionBoundaries("sailing_naval", "1199", "3599")
+
+@test function everyMilestoneBoundaryKeepsAdjacentContinuousProgression()
+	let f = traditionCombatFixture()
+	resolvedTraditionVector(f, "player", "land_formation", "998")
+	resolvedTraditionVector(f, "player", "land_formation", "1000")
+	resolvedTraditionVector(f, "player", "land_formation", "2998")
+	resolvedTraditionVector(f, "player", "land_formation", "3000")
+	resolvedTraditionVector(f, "player", "sailing_naval", "1198")
+	resolvedTraditionVector(f, "player", "sailing_naval", "1200")
+	resolvedTraditionVector(f, "player", "sailing_naval", "3598")
+	resolvedTraditionVector(f, "player", "sailing_naval", "3600")
+	f.close()
+
+@test function resolvedLayersFollowControlCategoriesActivationAndInspection()
+	let f = traditionCombatFixture()
+	(installMilitaryCombatEvents(f.startup.campaign, f.natives, f.pause) == f.events).assertTrue()
+	f.runtime.awardTradition("player", "land_formation", "2961")
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	let layers = f.representations.traditionLayers
+	layers.get("player_army").modifier("attack_basis_points").display().assertEquals("3001/10")
+	layers.get("player_army").effects().assertEquals("platoon_fire")
+	(layers.get("enemy") == null).assertTrue()
+	(layers.get("abstract_army") == null).assertTrue()
+	let commands = new MilitaryCommandFixture(f.runtime, f.representations)
+	commands.show("/army abstract_army")
+	f.representations.management.contains("attack_basis_points: 3001/10").assertTrue()
+	f.representations.management.contains("land_drill_one at 1000 XP (ordered_volley; replaced)").assertTrue()
+	f.representations.management.contains("land_drill_two at 3000 XP (platoon_fire)").assertTrue()
+	f.representations.management.contains("Gameplay effect consumers: pending").assertTrue()
+	f.runtime.awardTradition("france", "land_formation", "1001")
+	f.runtime.transferControl("player_army", "france")
+	layers.get("player_army").modifier("attack_basis_points").display().assertEquals("1001/10")
+	layers.get("player_army").effects().assertEquals("ordered_volley")
+	traditionXp(f, "player", "land_formation").assertEquals("3001")
+	f.runtime.transferControl("player_army", "portugal")
+	(layers.get("player_army") == null).assertTrue()
+	f.runtime.transferControl("player_army", "player")
+	let formation = f.runtime.forces[f.runtime.forceIndex("player_army")]
+	formation.categoryId = "sailing_naval"
+	f.runtime.reconcileForceTradition(formation)
+	(layers.get("player_army").modifier("attack_basis_points") == null).assertTrue()
+	layers.get("player_army").modifier("naval_damage_basis_points").display().assertEquals("0")
+	formation.categoryId = "unassigned"
+	f.runtime.reconcileForceTradition(formation)
+	(layers.get("player_army") == null).assertTrue()
+	formation.categoryId = "land_formation"
+	formation.active = false
+	f.runtime.reconcileForceTradition(formation)
+	(layers.get("player_army") == null).assertTrue()
+	formation.active = true
+	let obsolete = f.token("player_army")
+	f.runtime.instantiate(formation)
+	(f.token("player_army") != obsolete).assertTrue()
+	layers.get("player_army").effects().assertEquals("platoon_fire")
+	f.runtime.activateRegion("europe_central_east")
+	(layers.get("player_army") == null).assertTrue()
+	layers.get("abstract_army").modifier("attack_basis_points").display().assertEquals("3001/10")
+	f.runtime.awardTradition("player", "land_formation", "1")
+	layers.get("abstract_army").modifier("attack_basis_points").display().assertEquals("1501/5")
+	f.runtime.activateRegion("europe_west")
+	layers.get("player_army").modifier("attack_basis_points").display().assertEquals("1501/5")
+	(layers.get("abstract_army") == null).assertTrue()
+	commands.close()
+	f.close()
+	resolvedTraditionReceipt("success")
+
+@test function milestoneReplacementRetainsUnrelatedEarlierEffectsAndExactGrowth()
+	let f = traditionCombatFixture()
+	let track = f.runtime.traditions[f.runtime.traditionIndex("player", "land_formation")]
+	// Deliberately register out of threshold order. This fixture tests policy,
+	// without adding scenario mechanics or an ability for the named effects.
+	track.definition.milestone("later", "4000", "later_effect", "replacement", "platoon_fire")
+	track.definition.milestone("unrelated", "1500", "unrelated_effect", "additive", "")
+	track.experience = "2999"
+	f.runtime.forces[f.runtime.forceIndex("enemy")].strength = 1
+	f.natives.death(f.token("enemy"), f.token("player_army"))
+	f.representations.traditionLayers.get("player_army").effects().assertEquals("unrelated_effect,platoon_fire")
+	f.runtime.awardTradition("player", "land_formation", "1001")
+	let layer = f.representations.traditionLayers.get("player_army")
+	layer.effects().assertEquals("unrelated_effect,later_effect")
+	layer.modifier("attack_basis_points").display().assertEquals("4001/10")
+	let expected = layer.inspection()
+	f.runtime.reconcileForceTradition(f.runtime.forces[f.runtime.forceIndex("player_army")])
+	f.representations.traditionLayers.get("player_army").inspection().assertEquals(expected)
+	// Saved XP resolves with current definitions, never the old derived layer.
+	let saved = f.runtime.snapshot()
+	saved.contains("unrelated_effect").assertFalse()
+	f.runtime.restore(saved).assertTrue()
+	f.representations.traditionLayers.get("player_army").effects().assertEquals("platoon_fire")
+	f.close()
+
+@test function nativeTypedLayerReplacementKeepsUnrelatedModifiersAndLoadCheckpoint()
+	let objects = new TraditionNativeRepresentations()
+	let runtime = new MilitarySettlementRuntime(objects)
+	configureGeneratedMilitaryTraditions(runtime, true).assertTrue()
+	runtime.registerForce(new RuntimeForce("typed_native", "player", "layer_map", "land_formation", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+	runtime.activateRegion("layer_map")
+	let target = objects.handles[objects.indexOf("typed_native")]
+	UnitAddAbility(target, 'Adef')
+	objects.lastLife = 777
+	runtime.awardTradition("player", "land_formation", "9007199254740993")
+	objects.traditionLayers.get("typed_native").modifier("attack_basis_points").display().assertEquals("9007199254740993/10")
+	objects.lastLife.assertEquals(777)
+	GetUnitAbilityLevel(target, 'Adef').assertEquals(1)
+	let before = objects.traditionLayers.get("typed_native").inspection()
+	let saved = runtime.snapshot()
+	objects.beginLoad()
+	runtime.restore(saved).assertTrue()
+	runtime.awardTradition("player", "land_formation", "1")
+	runtime.restore(saved, false).assertTrue()
+	objects.rollbackLoad()
+	objects.traditionLayers.get("typed_native").inspection().assertEquals(before)
+	(objects.handles[objects.indexOf("typed_native")] == target).assertTrue()
+	GetUnitAbilityLevel(target, 'Adef').assertEquals(1)
+	runtime.transferControl("typed_native", "unassigned_controller")
+	(objects.traditionLayers.get("typed_native") == null).assertTrue()
+	objects.lastLife.assertEquals(777)
+	GetUnitAbilityLevel(target, 'Adef').assertEquals(1)
+	runtime.transferControl("typed_native", "player")
+	objects.beginLoad()
+	runtime.restore(saved).assertTrue()
+	objects.commitLoad()
+	objects.traditionLayers.get("typed_native").inspection().assertEquals(before)
+	runtime.recordLoss("typed_native", 40)
+	(objects.traditionLayers.get("typed_native") == null).assertTrue()
+
+function resolvedTraditionReceipt(string caseName)
+	traditionReceiptFor("REQ-0155.02", caseName)
+	traditionReceiptFor("REQ-0156.01", caseName)
+	traditionReceiptFor("REQ-0156.02", caseName)
+	traditionReceiptFor("REQ-0157.02", caseName)
+	traditionReceiptFor("REQ-0160.01", caseName)
+	traditionReceiptFor("REQ-0160.02", caseName)
+	traditionReceiptFor("REQ-0161.01", caseName)
+	traditionReceiptFor("REQ-0162.01", caseName)
+	traditionReceiptFor("REQ-0163.01", caseName)
+	traditionReceiptFor("REQ-0163.02", caseName)

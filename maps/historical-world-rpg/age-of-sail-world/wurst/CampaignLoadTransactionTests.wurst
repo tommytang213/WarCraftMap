@@ -19,6 +19,7 @@ import WarcraftRpgRuntime
 import WarcraftRpgProjections
 import WarcraftRegionalRuntime
 import MilitarySettlementRuntime
+import MilitaryTraditionLayer
 import ReligionRuntime
 import PartyLocations
 import BoundaryArrival
@@ -223,6 +224,11 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		forces[forceIndex(stableId)] = ""
 	override function changeRepresentationOwner(string stableId, player owner)
 		skip
+	override function replaceTraditionLayer(string stableId, TraditionLayer layer)
+		traditions[forceIndex(stableId)] = ""
+		if layer != null
+			traditions[forceIndex(stableId)] = layer.inspection()
+			destroy layer
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		traditions[forceIndex(stableId)] = lifePermille.toString() + milestoneAbilityId.toString()
 	override function protectRepresentation(string stableId, boolean shouldProtect)

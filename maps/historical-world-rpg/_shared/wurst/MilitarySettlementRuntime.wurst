@@ -1,6 +1,7 @@
 package MilitarySettlementRuntime
 import ScenarioSettings
 import ExactNatural
+import MilitaryTraditionLayer
 
 import RuntimeProtection
 
@@ -168,6 +169,7 @@ public class TraditionState
 	string controllerId
 	string categoryId
 	string experience = "0"
+	TraditionDefinition definition = null
 	int lifePermillePerHundredXp
 	int milestoneXp
 	int milestoneAbilityId
@@ -177,6 +179,9 @@ public class TraditionState
 		lifePermillePerHundredXp = rate
 		this.milestoneXp = milestoneXp
 		this.milestoneAbilityId = milestoneAbilityId
+	ondestroy
+		if definition != null
+			destroy definition
 
 /** Immutable scenario weights. Only enemy_kill has a production outcome
  * adapter; retaining another source here does not make it awardable. */
@@ -307,11 +312,15 @@ public interface MilitarySettlementAdapter
 	function removeRepresentation(string stableId)
 	function changeRepresentationOwner(string stableId, player owner)
 	function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
+	/** Takes ownership of the derived layer; null removes ONLY this layer. */
+	function replaceTraditionLayer(string stableId, TraditionLayer layer)
 	function protectRepresentation(string stableId, boolean shouldProtect)
 	function showManagement(player viewer, string heading, string body)
 
 public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdapter
 	WarcraftRecoveryAdapter recovery = null
+	TraditionLayerStore traditionLayers = new TraditionLayerStore()
+	private TraditionLayerStore previousTraditionLayers = null
 	// Native stat boundary; headless journeys still execute this adapter's
 	// creation, retirement, ownership and reconstruction operations.
 	function maximumLife(unit target) returns int
@@ -329,6 +338,8 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 	int array[4096] previousAbility
 	int previousCount = 0
 	override function beginLoad()
+		previousTraditionLayers = traditionLayers
+		traditionLayers = new TraditionLayerStore()
 		previousCount = count
 		for i = 0 to count - 1
 			if recovery != null
@@ -349,12 +360,18 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			appliedMilestoneAbility[i] = previousAbility[i]
 			previousHandles[i] = null
 		previousCount = 0
+		destroy traditionLayers
+		traditionLayers = previousTraditionLayers
+		previousTraditionLayers = null
 	override function commitLoad()
 		for i = 0 to previousCount - 1
 			if previousHandles[i] != null
 				compatRemoveUnit(previousHandles[i])
 			previousHandles[i] = null
 		previousCount = 0
+		if previousTraditionLayers != null
+			destroy previousTraditionLayers
+		previousTraditionLayers = null
 	function indexOf(string id) returns int
 		for i = 0 to count - 1
 			if ids[i] == id
@@ -394,6 +411,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			return GetHandleId(handles[found])
 		return 0
 	override function removeRepresentation(string stableId)
+		traditionLayers.replace(stableId, null)
 		if recovery != null
 			recovery.unbind("force:" + stableId)
 		let found = indexOf(stableId)
@@ -410,6 +428,14 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 				recovery.unbind("force:" + stableId)
 			else if recovery != null and recovery.service.lifecycle != null
 				recovery.service.lifecycle.refresh()
+	override function replaceTraditionLayer(string stableId, TraditionLayer layer)
+		// Exact values remain available to typed consumers without coercion to
+		// native stats. Name-only effects have no invented ability mapping.
+		if representationId(stableId) == 0 and layer != null
+			destroy layer
+			traditionLayers.replace(stableId, null)
+		else
+			traditionLayers.replace(stableId, layer)
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		let found = indexOf(stableId)
 		if found >= 0 and handles[found] != null
@@ -559,6 +585,26 @@ public class MilitarySettlementRuntime
 		traditions[found].milestoneXp = milestoneXp
 		traditions[found].milestoneAbilityId = abilityId
 		return true
+	/** Current definitions replace derived data, never earned XP. The legacy
+	 * snapshot presentation fields stay zero for typed traditions in v8. */
+	function reconcileTradition(string controllerId, string categoryId, string startingExperience, TraditionDefinition definition, boolean migrate) returns boolean
+		var found = traditionIndex(controllerId, categoryId)
+		if found < 0
+			if not migrate or traditionCount >= 256
+				destroy definition
+				return false
+			let state = new TraditionState(controllerId, categoryId, 0, 0, 0)
+			state.experience = startingExperience
+			registerTradition(state)
+			found = traditionIndex(controllerId, categoryId)
+		let track = traditions[found]
+		if track.definition != null
+			destroy track.definition
+		track.definition = definition
+		track.lifePermillePerHundredXp = 0
+		track.milestoneXp = 0
+		track.milestoneAbilityId = 0
+		return true
 	function registerSettlement(SettlementRuntimeState state)
 		if state != null and state.id != "" and settlementIndex(state.id) < 0
 			if registrationSettlements != null
@@ -705,15 +751,34 @@ public class MilitarySettlementRuntime
 		if found >= 0 and exactNaturalCompare(traditions[found].experience, I2S(traditions[found].milestoneXp)) >= 0
 			return traditions[found].milestoneAbilityId
 		return 0
+	/** Caller owns the returned layer, including for abstract/inactive forces. */
+	function resolveTradition(RuntimeForce runtimeForce) returns TraditionLayer
+		let found = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
+		if found < 0 or traditions[found].definition == null
+			return null
+		let track = traditions[found]
+		return track.definition.resolve(track.controllerId, track.categoryId, track.experience)
+	function reconcileForceTradition(RuntimeForce runtimeForce)
+		TraditionLayer layer = null
+		if runtimeForce.active and runtimeForce.strength > 0 and militaryMapMatches(runtimeForce.regionId, activeRegionId)
+			layer = resolveTradition(runtimeForce)
+		adapter.replaceTraditionLayer(runtimeForce.id, layer)
+		// Retain the generic legacy adapter for its existing consumers. Generated
+		// typed definitions never write health or native abilities, including on
+		// transfers to an ineligible controller/category.
+		let track = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
+		if traditionDefinitions == null and (track < 0 or traditions[track].definition == null)
+			adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 	function instantiate(RuntimeForce runtimeForce)
 		if not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
+			adapter.replaceTraditionLayer(runtimeForce.id, null)
 			return
 		let city = settlementForForce(runtimeForce)
 		if city >= 0 and (not settlements[city].projectMilitary or not settlements[city].capturable)
 			return
 		let localDefense = runtimeForce.kind == FORCE_GARRISON or runtimeForce.kind == FORCE_CITY_CORE or runtimeForce.kind == FORCE_DEFENSE
 		adapter.createRepresentation(runtimeForce, adapter.playerForController(runtimeForce.controllerId, localDefense))
-		adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
+		reconcileForceTradition(runtimeForce)
 		if city >= 0 and (runtimeForce.kind == FORCE_CITY_CORE or runtimeForce.kind == FORCE_DEFENSE)
 			adapter.protectRepresentation(runtimeForce.id, settlements[city].captureImmuneUntil > gameplaySeconds)
 		if orderCallbacks != null
@@ -815,7 +880,7 @@ public class MilitarySettlementRuntime
 			forces[found].controllerId = controllerId
 			forces[found].orderControllerId = controllerId
 			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, not forces[found].mobileForce()))
-			adapter.applyTradition(forceId, traditionLifePermille(forces[found]), traditionAbility(forces[found]))
+			reconcileForceTradition(forces[found])
 			if orderCallbacks != null
 				orderCallbacks.reconstruct()
 			resumeCallbacks()
@@ -828,8 +893,8 @@ public class MilitarySettlementRuntime
 			return
 		traditions[found].experience = exactNaturalAdd(traditions[found].experience, experience)
 		for i = 0 to forceCount - 1
-			if forces[i].active and forces[i].strength > 0 and forces[i].controllerId == controllerId and forces[i].categoryId == categoryId and militaryMapMatches(forces[i].regionId, activeRegionId)
-				adapter.applyTradition(forces[i].id, traditionLifePermille(forces[i]), traditionAbility(forces[i]))
+			if forces[i].controllerId == controllerId and forces[i].categoryId == categoryId
+				reconcileForceTradition(forces[i])
 	function beginSettlementAttack(string settlementId, string attackerId, real now) returns boolean
 		let found = settlementIndex(settlementId)
 		if found < 0 or not settlements[found].capturable or now < settlements[found].captureImmuneUntil or not atWar(attackerId, settlements[found].controllerId)
@@ -1204,6 +1269,9 @@ public class MilitarySettlementRuntime
 		if (not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
+		// Borrow the immutable provider while staging; it must not allocate a
+		// fresh provider or touch projections for every validation/load attempt.
+		parsed.traditionDefinitions = traditionDefinitions
 		parsed.legacyIntegerExperience = not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
 		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
@@ -1329,6 +1397,10 @@ public class MilitarySettlementRuntime
 			let track = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 			if track >= 0
 				result += " | Tradition XP: " + traditions[track].experience
+				let layer = resolveTradition(runtimeForce)
+				if layer != null
+					result += layer.inspection()
+					destroy layer
 			return result
 		let s = settlementIndex(subjectId)
 		if s >= 0
