@@ -195,7 +195,7 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		guidance += questId + precision + regionId + destinationId
 	override function clearTreasureKnowledgeLayer()
 		knowledge = ""
-	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered)
+	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered, string regionId, string destinationId)
 		knowledge += treasureId + clueStage.toString()
 	UnboundResearchEffects researchLayers = new UnboundResearchEffects()
 	override function replaceResearchEntitlements(ResearchEntitlements result)

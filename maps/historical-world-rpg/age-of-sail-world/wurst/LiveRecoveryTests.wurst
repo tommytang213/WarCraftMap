@@ -400,8 +400,8 @@ function displaceWithinComponent(LiveRecoveryFixture f, unit target, string id)
 	natives.count.assertEquals(1)
 	natives.moves.assertEquals(2)
 
-/** Make a real v2 fixture: omit the main ID, v4 hero ranks and v5 quest
- * history. Merely relabelling a current snapshot must fail validation. */
+/** Make a real v2 fixture: omit main ID, v4 hero ranks, v5 quest history
+ * and v7 treasure seed/resolutions. Relabelling a current snapshot is invalid. */
 function legacyRecoveryRpg(string current) returns string
 	var result = "v2"
 	var start = 3
@@ -410,10 +410,12 @@ function legacyRecoveryRpg(string current) returns string
 		if finish < 0
 			finish = StringLength(current)
 		let record = SubString(current, start, finish)
-		if record.startsWith("h,") or record.startsWith("q,")
+		if record.startsWith("h,") or record.startsWith("q,") or record.startsWith("t,")
 			var fieldLimit = 18
 			if record.startsWith("q,")
 				fieldLimit = 6
+			if record.startsWith("t,")
+				fieldLimit = 4
 			var commas = 0
 			var limit = StringLength(record)
 			for i = 0 to StringLength(record) - 1
@@ -422,7 +424,7 @@ function legacyRecoveryRpg(string current) returns string
 					if commas == fieldLimit
 						limit = i
 			result += "|" + SubString(record, 0, limit)
-		else if not record.startsWith("p,")
+		else if not record.startsWith("p,") and not record.startsWith("s,")
 			result += "|" + record
 		start = finish + 1
 	return result

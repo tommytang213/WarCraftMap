@@ -186,6 +186,18 @@
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function commitCombatLoss(int victimIndex, int contributorIndex, real now) returns boolean"
     },
+    "treasure_resolution": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function resolveAll(string seed) returns boolean"
+    },
+    "treasure_definitions": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedTreasures(TreasureRuntime runtime)"
+    },
+    "treasure_choice": {
+      "path": "wurst/TreasureResolution.wurst",
+      "signature": "function choose(string seed, string unavailable, string occupied, InteractionCatalog locations) returns TreasureCandidate"
+    },
     "tradition_resolve": {
       "path": "wurst/MilitaryTraditionLayer.wurst",
       "signature": "function resolve(string controllerId, string categoryId, string experience) returns TraditionLayer"

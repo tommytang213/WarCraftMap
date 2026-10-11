@@ -1,0 +1,197 @@
+package TreasureRandom
+
+import Bitwise
+
+/** SHA-256 words use two unsigned halves. Every intermediate fits a signed
+ * integer on both the pinned interpreter and Warcraft's Lua backend. */
+tuple Word(int hi, int lo)
+function Word.plus(Word b) returns Word
+	let low = this.lo + b.lo
+	return Word((this.hi + b.hi + low div 65536) mod 65536, low mod 65536)
+function Word.bitXor(Word b) returns Word
+	return Word(this.hi.xor32(b.hi), this.lo.xor32(b.lo))
+function Word.bitAnd(Word b) returns Word
+	return Word(this.hi.and32(b.hi), this.lo.and32(b.lo))
+function Word.invert() returns Word
+	return Word(65535 - this.hi, 65535 - this.lo)
+function power(int n) returns int
+	var result = 1
+	for i = 1 to n
+		result *= 2
+	return result
+function Word.rotate(int n) returns Word
+	if n >= 16
+		return Word(this.lo, this.hi).rotate(n - 16)
+	let p = power(n)
+	let q = 65536 div p
+	return Word(this.hi div p + (this.lo mod p) * q, this.lo div p + (this.hi mod p) * q)
+function Word.shift(int n) returns Word
+	let p = power(n)
+	return Word(this.hi div p, this.lo div p + (this.hi mod p) * (65536 div p))
+
+/** The seed is canonical positive decimal campaign authority. Namespaces are
+ * authored ASCII stable IDs plus :location/:reward/:guard/:hazard/:encounter.
+ * Feed the separator as a byte: Warcraft strings cannot safely carry NUL. */
+public function treasureSeedValid(string seed) returns boolean
+	if StringLength(seed) < 1 or StringLength(seed) > 10 or SubString(seed, 0, 1) == "0"
+		return false
+	for i = 0 to StringLength(seed) - 1
+		if "0123456789".indexOf(SubString(seed, i, i + 1)) < 0
+			return false
+	return true
+
+class TreasureHash
+	Word array[64] words
+	Word array[64] constants
+	Word array[8] digest
+	construct()
+		constants[0] = Word(17034, 12184)
+		constants[1] = Word(28983, 17553)
+		constants[2] = Word(46528, 64463)
+		constants[3] = Word(59829, 56229)
+		constants[4] = Word(14678, 49755)
+		constants[5] = Word(23025, 4593)
+		constants[6] = Word(37439, 33444)
+		constants[7] = Word(43804, 24277)
+		constants[8] = Word(55303, 43672)
+		constants[9] = Word(4739, 23297)
+		constants[10] = Word(9265, 34238)
+		constants[11] = Word(21772, 32195)
+		constants[12] = Word(29374, 23924)
+		constants[13] = Word(32990, 45566)
+		constants[14] = Word(39900, 1703)
+		constants[15] = Word(49563, 61812)
+		constants[16] = Word(58523, 27073)
+		constants[17] = Word(61374, 18310)
+		constants[18] = Word(4033, 40390)
+		constants[19] = Word(9228, 41420)
+		constants[20] = Word(11753, 11375)
+		constants[21] = Word(19060, 33962)
+		constants[22] = Word(23728, 43484)
+		constants[23] = Word(30457, 35034)
+		constants[24] = Word(38974, 20818)
+		constants[25] = Word(43057, 50797)
+		constants[26] = Word(45059, 10184)
+		constants[27] = Word(48985, 32711)
+		constants[28] = Word(50912, 3059)
+		constants[29] = Word(54695, 37191)
+		constants[30] = Word(1738, 25425)
+		constants[31] = Word(5161, 10599)
+		constants[32] = Word(10167, 2693)
+		constants[33] = Word(11803, 8504)
+		constants[34] = Word(19756, 28156)
+		constants[35] = Word(21304, 3347)
+		constants[36] = Word(25866, 29524)
+		constants[37] = Word(30314, 2747)
+		constants[38] = Word(33218, 51502)
+		constants[39] = Word(37490, 11397)
+		constants[40] = Word(41663, 59553)
+		constants[41] = Word(43034, 26187)
+		constants[42] = Word(49739, 35696)
+		constants[43] = Word(51052, 20899)
+		constants[44] = Word(53650, 59417)
+		constants[45] = Word(54937, 1572)
+		constants[46] = Word(62478, 13701)
+		constants[47] = Word(4202, 41072)
+		constants[48] = Word(6564, 49430)
+		constants[49] = Word(7735, 27656)
+		constants[50] = Word(10056, 30540)
+		constants[51] = Word(13488, 48309)
+		constants[52] = Word(14620, 3251)
+		constants[53] = Word(20184, 43594)
+		constants[54] = Word(23452, 51791)
+		constants[55] = Word(26670, 28659)
+		constants[56] = Word(29839, 33518)
+		constants[57] = Word(30885, 25455)
+		constants[58] = Word(33992, 30740)
+		constants[59] = Word(36039, 520)
+		constants[60] = Word(37054, 65530)
+		constants[61] = Word(42064, 27883)
+		constants[62] = Word(48889, 41975)
+		constants[63] = Word(50801, 30962)
+		digest[0] = Word(27145, 58983)
+		digest[1] = Word(47975, 44677)
+		digest[2] = Word(15470, 62322)
+		digest[3] = Word(42319, 62778)
+		digest[4] = Word(20750, 21119)
+		digest[5] = Word(39685, 26764)
+		digest[6] = Word(8067, 55723)
+		digest[7] = Word(23520, 52505)
+	function byte(string seed, string namespace, int index, int padded) returns int
+		let length = StringLength(seed) + 1 + StringLength(namespace)
+		if index == length
+			return 128
+		if index == padded - 1
+			return (length * 8) mod 256
+		if index == padded - 2
+			return length * 8 div 256
+		if index > length or index == StringLength(seed)
+			return 0
+		var letter = ""
+		if index < StringLength(seed)
+			letter = SubString(seed, index, index + 1)
+		else
+			let offset = index - StringLength(seed) - 1
+			letter = SubString(namespace, offset, offset + 1)
+		let digit = "0123456789".indexOf(letter)
+		if digit >= 0
+			return 48 + digit
+		if letter == "_"
+			return 95
+		if letter == ":"
+			return 58
+		return 97 + "abcdefghijklmnopqrstuvwxyz".indexOf(letter)
+	function run(string seed, string namespace, int total) returns int
+		let length = StringLength(seed) + 1 + StringLength(namespace)
+		let padded = ((length + 9 + 63) div 64) * 64
+		for block = 0 to padded div 64 - 1
+			for i = 0 to 15
+				let offset = block * 64 + i * 4
+				words[i] = Word(byte(seed, namespace, offset, padded) * 256 + byte(seed, namespace, offset + 1, padded), byte(seed, namespace, offset + 2, padded) * 256 + byte(seed, namespace, offset + 3, padded))
+			for i = 16 to 63
+				let prior15 = words[i - 15]
+				let prior2 = words[i - 2]
+				words[i] = words[i - 16].plus(prior15.rotate(7).bitXor(prior15.rotate(18)).bitXor(prior15.shift(3))).plus(words[i - 7]).plus(prior2.rotate(17).bitXor(prior2.rotate(19)).bitXor(prior2.shift(10)))
+			var a = digest[0]
+			var b = digest[1]
+			var c = digest[2]
+			var d = digest[3]
+			var e = digest[4]
+			var f = digest[5]
+			var g = digest[6]
+			var h = digest[7]
+			for i = 0 to 63
+				let t1 = h.plus(e.rotate(6).bitXor(e.rotate(11)).bitXor(e.rotate(25))).plus(e.bitAnd(f).bitXor(e.invert().bitAnd(g))).plus(constants[i]).plus(words[i])
+				let t2 = a.rotate(2).bitXor(a.rotate(13)).bitXor(a.rotate(22)).plus(a.bitAnd(b).bitXor(a.bitAnd(c)).bitXor(b.bitAnd(c)))
+				h = g
+				g = f
+				f = e
+				e = d.plus(t1)
+				d = c
+				c = b
+				b = a
+				a = t1.plus(t2)
+			digest[0] = digest[0].plus(a)
+			digest[1] = digest[1].plus(b)
+			digest[2] = digest[2].plus(c)
+			digest[3] = digest[3].plus(d)
+			digest[4] = digest[4].plus(e)
+			digest[5] = digest[5].plus(f)
+			digest[6] = digest[6].plus(g)
+			digest[7] = digest[7].plus(h)
+		// First eight digest bytes, big endian, without a 64-bit intermediate.
+		var pick = 0
+		for i = 0 to 1
+			pick = (pick * 256 + digest[i].hi div 256) mod total
+			pick = (pick * 256 + digest[i].hi mod 256) mod total
+			pick = (pick * 256 + digest[i].lo div 256) mod total
+			pick = (pick * 256 + digest[i].lo mod 256) mod total
+		return pick
+
+public function treasurePick(string seed, string namespace, int total) returns int
+	if total <= 1
+		return 0
+	let hash = new TreasureHash()
+	let pick = hash.run(seed, namespace, total)
+	destroy hash
+	return pick

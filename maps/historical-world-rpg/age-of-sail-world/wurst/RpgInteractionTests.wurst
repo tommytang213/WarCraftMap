@@ -77,7 +77,7 @@ class InteractionFixture
 	RuntimeTreasure treasure
 	RuntimeTreasure remoteTreasure
 	RpgHero hero
-	construct()
+	construct(string seed)
 		configureGeneratedRpg(rpg)
 		configureGeneratedInteractions(rpg.interactions)
 		// Retain authored records relevant to this lifecycle, as startup tests
@@ -98,6 +98,7 @@ class InteractionFixture
 		rpg.treasures.treasures[0] = treasure
 		rpg.treasures.treasures[1] = remoteTreasure
 		rpg.treasures.count = 2
+		rpg.treasures.resolveAll(seed).assertTrue()
 		let reward = new RpgItem("interaction_fixture_reward", "Recovered archive", "artifact", "rare", 1, 1)
 		rpg.inventory.registerItem(reward)
 		treasure.rewardItemId = reward.id
@@ -127,7 +128,7 @@ class InteractionFixture
 		output.last.assertEquals("Action completed.")
 
 @test function rpgCommandsRejectRemoteDistantUnknownAndInvalidRecipientsWithoutMutation()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.ready()
 	// A refill becoming due must not mutate anything during a rejected request.
 	let due = new RuntimeQuest("due_elsewhere", "Due elsewhere", "local")
@@ -174,7 +175,7 @@ class InteractionFixture
 	f.rpg.captureState().assertEquals(before)
 
 @test function rpgTurnInRejectsAnotherAuthoredDestinationDespiteLocalPartyAndReadyObjectives()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	(f.remoteQuest != null).assertTrue()
 	f.rpg.journal.register(f.remoteQuest)
 	readyQuest(f.rpg.journal, f.remoteQuest)
@@ -188,7 +189,7 @@ class InteractionFixture
 	f.remoteQuest.state.assertEquals(QUEST_READY)
 
 @test function rpgLocalTurnInUsesAuthoredDestinationAndSurvivesMissingBuildings()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.reject(f.turnIn())
 	f.questDefinition.state = QUEST_READY
 	f.reject(f.turnIn())
@@ -209,7 +210,7 @@ class InteractionFixture
 	f.reject(f.turnIn())
 
 @test function rpgLocalInteractionUsesQuestAliasesAndEligibleActorForAutomaticTurnIn()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.rpg.heroes.heroes[1].assignment = "governor"
 	let remote = f.rpg.heroes.heroes[1]
 	let before = remote.experience
@@ -223,8 +224,8 @@ class InteractionFixture
 	f.hero.level.assertEquals(2)
 	f.reject("/interact quest_location_lisbon")
 
-@test function rpgTreasureCommandsRequireLocalCluesAndResolvedGeneratedCandidate()
-	let f = new InteractionFixture()
+function treasurePhysicalCommands(string seed)
+	let f = new InteractionFixture(seed)
 	let target = f.rpg.interactions.get(f.treasure.resolvedLocationId)
 	(target != null).assertTrue()
 	f.actors.moveTo(target)
@@ -238,6 +239,9 @@ class InteractionFixture
 	f.actors.moveTo(otherCandidate)
 	f.reject("/interact " + otherCandidate.id)
 	f.actors.moveTo(target)
+	f.state.loadedPhysicalMap = "africa"
+	f.reject("/interact " + target.id)
+	f.state.loadedPhysicalMap = "europe_west"
 	f.actors.kind = 1
 	f.reject("/interact " + target.id)
 	f.actors.kind = 0
@@ -258,7 +262,7 @@ class InteractionFixture
 	f.rpg.inventory.ownedCount.assertEquals(1)
 
 @test function rpgCommitRechecksCoordinatesAndLoadedMapWithoutRetainingAuthorization()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.ready()
 	f.actors.moveAwayAt = 2
 	f.reject(f.turnIn())
@@ -280,7 +284,7 @@ class InteractionFixture
 	f.reject(f.turnIn())
 
 @test function rpgRevalidatesActorAtCommitAndPhysicalMapDuringReconstruction()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.ready()
 	f.actors.disappearAt = 2
 	f.reject(f.turnIn())
@@ -315,7 +319,7 @@ class InteractionFixture
 	f.accept(f.turnIn())
 
 @test function rpgRemoteCommandAndTrackingNeverConferPhysicalPresence()
-	let f = new InteractionFixture()
+	let f = new InteractionFixture("1")
 	f.ready()
 	let access = new PlayableRegionAccess(f.state)
 	f.state.setMilitarySettlementRuntime(new MilitarySettlementRuntime(null))
@@ -348,3 +352,9 @@ function readyQuest(QuestJournalRuntime journal, RuntimeQuest q)
 			let cut = stage.nextStageIds.indexOf("~")
 			q.graph.advance(SubString(stage.nextStageIds, 0, cut)).assertTrue()
 		q.settleProgress()
+
+@test function rpgTreasureCommandsRequireLocalCluesAndResolvedGeneratedCandidate()
+	treasurePhysicalCommands("1")
+
+@test function rpgTreasureSeedFourCommandsUseAlmourolAndRejectTomar()
+	treasurePhysicalCommands("4")

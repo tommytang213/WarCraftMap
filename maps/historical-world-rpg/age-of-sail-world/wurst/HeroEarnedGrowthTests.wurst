@@ -126,7 +126,7 @@ public function assertBalances(RpgHero hero, int level, int xp, int skills, int 
 			hero.skillRank("navigation").assertEquals(71)
 			hero.masteryRank("sea_command").assertEquals(48)
 		let migrated = rpg.captureState()
-		migrated.startsWith("v6|").assertTrue()
+		migrated.startsWith("v7|").assertTrue()
 		for attempt = 1 to 3
 			rpg.restoreState(migrated).assertTrue()
 			rpg.reconstruct(null, 0., 0., "player")
