@@ -73,11 +73,11 @@ jobs:
               candidate_status=0
               su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release_candidate.sh --source-revision $SOURCE_REVISION" || candidate_status=$?
               mkdir -p /out/diagnostics
-              for report in /tmp/workspace/$MAP_PROJECT/_build/release/requirement-traceability.* /tmp/workspace/$MAP_PROJECT/_build/requirement-traceability-source.*; do
+              for report in /tmp/workspace/$MAP_PROJECT/_build/release/requirement-traceability.* /tmp/workspace/$MAP_PROJECT/_build/release/release-blocker-audit.* /tmp/workspace/$MAP_PROJECT/_build/requirement-traceability-source.*; do
                 if [ -f "$report" ]; then cp "$report" /out/diagnostics/; fi
               done
               # Exit 3 means the completed build passed validation but the
-              # final traceability report blocks publication. Keep diagnostics
+              # final traceability or research-consumer audit blocks publication. Keep diagnostics
               # without producing or uploading any player candidate files.
               if [ "$candidate_status" -eq 3 ]; then
                 test -s /out/diagnostics/requirement-traceability.json
@@ -100,8 +100,8 @@ jobs:
             ready) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
             blocked)
               echo "ready=false" >> "$GITHUB_OUTPUT"
-              echo "::notice::Candidate publication blocked by requirement traceability; see the diagnostics artifact."
-              echo "**Candidate publication: blocked.** Validation completed, but the final W3N traceability audit contains release blockers. No player candidate was published. See the age-of-sail-requirement-diagnostics artifact for the complete report." >> "$GITHUB_STEP_SUMMARY"
+              echo "::notice::Candidate publication blocked by release audits; see the diagnostics artifact."
+              echo "**Candidate publication: blocked.** Validation completed, but the final W3N release audits contain unresolved requirements or research consumers. No player candidate was published. See the age-of-sail-requirement-diagnostics artifact for the complete reports." >> "$GITHUB_STEP_SUMMARY"
               ;;
             *) echo "Invalid candidate publication status" >&2; exit 1 ;;
           esac

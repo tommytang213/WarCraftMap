@@ -1,5 +1,62 @@
 # Issue 463: Complete typed research entitlements
 
+## PR #466 CI repair
+
+The [failed campaign job](https://github.com/tommytang213/WarCraftMap/actions/runs/38129937454/job/114441987933)
+completed both campaign builds and both 462-test Wurst executions, then exited 1
+with `gate stage failed: release-blocker audit does not pass`. The 220 newly
+accountable research consumers were reaching this generic failure before the
+existing publication-blocked result. The [original log](ci-failure.log.gz) is
+retained.
+
+The packager now returns publication-blocked exit 3 only when the audit contains
+exactly the complete current set of unbound research findings, with matching
+validated runtime evidence and source identity. The audit remains failed with
+`candidateReady: false`; every consumer remains release-blocking. CI retains its
+JSON and Markdown alongside the final traceability diagnostics and publishes no
+candidate ZIP. Missing, duplicate, altered or unrelated findings, stale sources,
+invalid evidence and diagnostic-write failures still fail validation. Stale
+candidate files and consumer diagnostics are removed before a new attempt.
+
+Fresh validation at checkpoint `c119e280764655f7862559fa349793eb4dcc4249`, including
+the dirty source digest recorded in [ci-validation.json](ci-validation.json):
+
+- **209 targeted Python tests and 154 automation tests passed**, covering
+  research, exact costs, generation, persistence, framework boundaries,
+  packaging, release auditing, upload verification and the actual CI shell
+  publication branches. Compiler fixtures in these Python tests are synthetic;
+  their intentional failure output is not a failed validation run.
+- **462/462 pinned Wurst tests passed**, plus typecheck, map assembly and archive
+  inspection. The [scoped evidence](ci-scoped-evidence.json) includes 17 passing
+  research/restoration tests and the success, failure, stale and replay receipts.
+- [Compiled registrations](ci-compiled-research.json) retain all **206 nodes,
+  264 prerequisite edges and 220 typed unlocks**, in order, including all 13
+  multi-unlock nodes and the exact historical costs. Dropped-record and
+  changed-kind negative controls are detected. The executable Lua is unchanged
+  from the previous implementation and contains no food-cap fallback.
+- Both framework campaigns passed **2/2 pinned Wurst tests** and built all three
+  maps with unchanged shared sources. World contracts, map source, framework
+  boundaries and source-traceability freshness checks also passed.
+
+The cached pinned compiler, JRE and standard library ran locally. No container,
+global tooling change, service installation, commit, push or GitHub write was
+used. The full two-build Age of Sail CI campaign was not repeated locally; the
+updated publication control flow was exercised with recording fixtures and the
+actual consumer audit. The outer worker retains authoritative repository
+validation. Native launch, all 220 gameplay consumers, and unrelated requirement
+and dependency blockers remain unresolved. No player QA is requested.
+
+Recheck this evidence against the retained build with:
+
+```sh
+python3 reports/issue-463/verify_evidence.py \
+  --artifact _build/release/AgeOfSailWorld.w3x \
+  --execution-dir _build/issue463-ci-map/execution \
+  --output reports/issue-463/ci-scoped-evidence.json
+```
+
+## Earlier checkpoint validation
+
 Revalidated checkpoint `0b08932584cdde5c0f7575417c041b73173bf26c` after the
 worker's 14,400-second repository-check timeout. No implementation changes were
 needed: the authoritative source digest and compiled Lua match the original

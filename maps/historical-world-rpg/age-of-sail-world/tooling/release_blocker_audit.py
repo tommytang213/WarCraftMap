@@ -112,6 +112,22 @@ def _audit_research_bindings():
         for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'))]
 
 
+def only_unbound_research_blocks(report):
+    """Recognize the complete, current consumer gap without accepting other failures.
+
+    This selects a publication-blocked result, never release readiness. The
+    packager must independently validate execution, artifacts and source identity.
+    Exact findings prevent a missing consumer or an unrelated defect from being
+    hidden by a shared class, ID prefix or caller-supplied count.
+    """
+    expected = sorted(_audit_research_bindings(), key=lambda row: row["id"])
+    return (bool(expected) and report.get("format") == REPORT_FORMAT
+            and report.get("status") == "fail" and report.get("candidateReady") is False
+            and report.get("disposition") == "release_blocked"
+            and report.get("unresolvedCampaignBlockers") == len(expected)
+            and report.get("findings") == expected)
+
+
 def _migration_round_trip(state):
     raw = campaign_save.serialize_save(
         build_version="phase8-gate", scenario_id="age_of_sail_world", scenario_version="1",

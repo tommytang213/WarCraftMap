@@ -22,6 +22,7 @@ import requirement_traceability_audit as scenario
 import package_release_candidate as release
 import integration_evidence as integration
 import wurst_execution as execution
+import release_blocker_audit as release_audit
 from warcraft_campaign import write_mpq
 
 
@@ -600,16 +601,107 @@ class TraceabilityTests(unittest.TestCase):
             with self.subTest(error=error), patch.object(release, "build_release_candidate", side_effect=error):
                 self.assertEqual(1, release.main([]))
 
+    def test_unbound_research_blocks_publication_with_complete_diagnostics(self):
+        config = release.load_release_config()
+        evidence_dir = self.project / "_build/wurst-tests"
+        evidence_dir.mkdir(parents=True)
+        (evidence_dir / "results.json").write_bytes(release.canonical(self.evidence))
+        (evidence_dir / "execution.log").write_bytes(self.transcript)
+        output = self.project / "_build/release" / config["archive"]["fileName"]
+        output.parent.mkdir()
+        runtime_report = self.runtime_evidence()
+        identity = integration.source_identity(self.project, "a" * 40)
+        # Use the real audit and all authored consumer findings; only expensive
+        # journey fixtures and the separately tested runtime evidence are stubbed.
+        with patch.object(release_audit, "_audit_reports", return_value=([], [])), \
+             patch.object(release_audit, "_audit_inputs", return_value=({}, [])), \
+             patch.object(release_audit, "_audit_release_save_compatibility", return_value={"schemas": []}), \
+             patch.object(release_audit, "_run_journeys", return_value=([], {"format": "fixture", "passed": True, "runs": []})), \
+             patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report):
+            report = release_audit.build_report()
+        expected_findings = sorted(release_audit._audit_research_bindings(), key=lambda row: row["id"])
+        self.assertEqual(220, len(expected_findings))
+        self.assertEqual(expected_findings, report["findings"])
+        self.assertEqual(220, report["unresolvedCampaignBlockers"])
+
+        with patch.object(release, "PROJECT", self.project), \
+             patch.object(scenario, "PROJECT", self.project), \
+             patch.object(scenario, "build_report", side_effect=lambda *args, **kwargs: self.report()), \
+             patch.object(release, "load_release_config", return_value=config), \
+             patch.object(release, "validate_gates", return_value=({}, {}, {}, [])), \
+             patch.object(release, "load_campaign_config", return_value=SimpleNamespace(maps=[])), \
+             patch.object(release, "authoritative_hashes", return_value={}), \
+             patch.object(release, "build_campaign", return_value=self.artifact), \
+             patch.object(release, "normalized_campaign", return_value={}), \
+             patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report), \
+             patch.object(release_audit, "build_report", return_value=report) as audit, \
+             patch.object(release, "_write_zip") as publish:
+            output.write_bytes(b"stale candidate")
+            self.assertEqual(3, release.main(["--source-revision", "a" * 40]))
+            self.assertFalse(output.exists())
+            recorded = trace.load(output.parent / "release-blocker-audit.json")
+            self.assertEqual(report, recorded)
+            self.assertEqual("fail", recorded["status"])
+            self.assertFalse(recorded["candidateReady"])
+            human = (output.parent / "release-blocker-audit.md").read_text()
+            for row in expected_findings:
+                self.assertIn(row["id"], human)
+            self.assertIn("not executed by this audit", human)
+            self.assertTrue((output.parent / "requirement-traceability.json").is_file())
+
+            for mode in ("missing", "duplicate", "changed", "unrelated", "malformed", "count",
+                         "status", "ready", "source", "runtime"):
+                invalid = copy.deepcopy(report)
+                if mode == "missing":
+                    invalid["findings"].pop()
+                    invalid["unresolvedCampaignBlockers"] -= 1
+                elif mode == "duplicate":
+                    invalid["findings"][1] = invalid["findings"][0]
+                elif mode == "changed":
+                    invalid["findings"][0]["disposition"] = "resolved"
+                elif mode == "unrelated":
+                    invalid["findings"].append(release_audit._finding(
+                        "RESEARCH-UNBOUND-UNRELATED", "missing_runtime_integration", "fixture", "unexpected defect"))
+                    invalid["unresolvedCampaignBlockers"] += 1
+                elif mode == "malformed":
+                    del invalid["findings"]
+                elif mode == "count":
+                    invalid["unresolvedCampaignBlockers"] = 0
+                elif mode == "status":
+                    invalid["status"] = "pass"
+                elif mode == "ready":
+                    invalid["candidateReady"] = True
+                elif mode == "source":
+                    invalid["sourceTreeSha256"] = "f" * 64
+                elif mode == "runtime":
+                    invalid["runtimeAcceptance"]["evidenceLevels"]["builtArtifact"]["status"] = "fail"
+                audit.return_value = invalid
+                with self.subTest(mode=mode):
+                    self.assertEqual(1, release.main(["--source-revision", "a" * 40]))
+                    self.assertFalse(output.exists())
+                    self.assertFalse((output.parent / "release-blocker-audit.json").exists())
+                    self.assertFalse((output.parent / "release-blocker-audit.md").exists())
+            audit.return_value = report
+            with patch.object(release, "source_identity", side_effect=[identity, {**identity, "sourceTreeSha256": "f" * 64}]):
+                self.assertEqual(1, release.main(["--source-revision", "a" * 40]))
+            with patch.object(release_audit, "render_markdown", side_effect=OSError("cannot retain consumer diagnostics")):
+                self.assertEqual(1, release.main(["--source-revision", "a" * 40]))
+            publish.assert_not_called()
+            self.assertFalse(output.exists())
+
     def test_compiler_cleanup_failure_preserves_current_source_diagnostics_only(self):
         config = release.load_release_config()
         build_dir = self.project / "_build"
         final_report = build_dir / "release/requirement-traceability.json"
         final_report.parent.mkdir(parents=True)
         final_report.write_text('{"candidateReady":true}')
+        consumer_report = final_report.with_name("release-blocker-audit.json")
+        consumer_report.write_text('{"candidateReady":true}')
         source_report = self.report()
 
         def compilation_failure(*args):
             self.assertFalse(final_report.exists())
+            self.assertFalse(consumer_report.exists())
             shutil.rmtree(build_dir)
             raise release.PackagingError("compiler failed")
 
