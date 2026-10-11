@@ -1,5 +1,27 @@
 # Issue 463: Complete typed research entitlements
 
+Revalidated checkpoint `0b08932584cdde5c0f7575417c041b73173bf26c` after the
+worker's 14,400-second repository-check timeout. No implementation changes were
+needed: the authoritative source digest and compiled Lua match the original
+evidence below. The new [validation record](repair-validation.json),
+[scoped evidence](repair-scoped-evidence.json), and
+[compiled registrations](repair-compiled-research.json) use the current checkpoint.
+
+All **996 scenario Python tests**, **154 automation tests**, and **462 pinned
+Wurst tests** passed. Typecheck, map assembly, archive inspection, and both
+three-map framework campaigns also passed. The local repository preflight had a
+900-second limit and stopped after 291 successful Python tests; the unchanged
+discovery resumed at the interrupted test and passed all remaining 705. The
+compressed transcripts, per-test results, and continuation runner are retained.
+Python packaging tests deliberately exercise synthetic compiler failures; the
+real pinned compiler evidence is archived separately.
+
+The full repository command remains the outer worker's authoritative next step.
+The supplied timeout alone does not establish its cause. Native launch and all
+220 missing gameplay consumers remain release blockers; this validation repair
+changes only evidence in this directory. The original implementation validation
+record follows.
+
 Generator v27 retains all 220 authored unlocks across 206 research nodes,
 including all 13 nodes with multiple unlocks. Each reference retains its node,
 kind and content ID in authored order. `mass_army_logistics` delivers
@@ -61,8 +83,8 @@ Recheck the scoped evidence after the full pinned suite and map build:
 ```sh
 python3 reports/issue-463/verify_evidence.py \
   --artifact _build/release/AgeOfSailWorld.w3x \
-  --execution-dir _build/issue463-verified-map/execution \
-  --output reports/issue-463/scoped-evidence.json
+  --execution-dir _build/issue463-repair-map/execution \
+  --output reports/issue-463/repair-scoped-evidence.json
 ```
 
 The verifier checks all compiled definitions, registration order, prerequisite
