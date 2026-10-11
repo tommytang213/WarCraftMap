@@ -7,10 +7,12 @@ import CampaignTimeline
 class Effects implements TechnologyEffectPort
 	int applied=0
 	int cleared=0
-	override function applyTechnology(string controllerId,string effectId,int magnitude)
-		applied+=magnitude
-	override function clearTechnologyLayer(string controllerId)
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		applied+=result.count
 		cleared++
+		destroy result
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
 
 class Projections implements RpgProjectionPort
 	int clears=0
@@ -131,14 +133,13 @@ function testEquipmentSet() returns EquipmentSet
 	runtime.treasures.discover("secret","cave",runtime.inventory).assertEquals(true)
 	runtime.inventory.owns("relic").assertEquals(true)
 	let technology=new RuntimeTechnology("printing","Printing",1450,100)
-	technology.effectId="merchant_stock"
-	technology.effectMagnitude=2
+	technology.addUnlock("printing","modifier","merchant_stock")
 	runtime.technologies.register(technology)
 	runtime.technologies.unlock("england","printing",1450,100,0,0).assertEquals(true)
-	effects.applied.assertEquals(2)
+	effects.applied.assertEquals(1)
 	runtime.technologies.reconstruct("england")
-	effects.cleared.assertEquals(1)
-	effects.applied.assertEquals(4)
+	effects.cleared.assertEquals(2)
+	effects.applied.assertEquals(2)
 
 @test function authoritativeStateRoundTripsAndReconcilesExactlyOnce()
 	let effects=new Effects()
@@ -159,8 +160,7 @@ function testEquipmentSet() returns EquipmentSet
 	source.inventory.grant("coat")
 	source.inventory.equip("hero","coat",hero,1600,null,"player")
 	let technology=new RuntimeTechnology("printing","Printing",1450,100)
-	technology.effectId="stock"
-	technology.effectMagnitude=2
+	technology.addUnlock("printing","modifier","stock")
 	source.technologies.register(technology)
 	source.technologies.unlock("player","printing",1450,100,0,0)
 	let questDefinition=new RuntimeQuest("quest","Quest","regional")
@@ -185,8 +185,7 @@ function testEquipmentSet() returns EquipmentSet
 	restored.inventory.registerItem(restoredCoat)
 	restored.inventory.registerSet(testEquipmentSet())
 	let restoredTechnology=new RuntimeTechnology("printing","Printing",1450,100)
-	restoredTechnology.effectId="stock"
-	restoredTechnology.effectMagnitude=2
+	restoredTechnology.addUnlock("printing","modifier","stock")
 	restored.technologies.register(restoredTechnology)
 	let restoredQuest=new RuntimeQuest("quest","Quest","regional")
 	restoredQuest.precision="approximate"
@@ -231,11 +230,10 @@ function testEquipmentSet() returns EquipmentSet
 	runtime.equipItem("hero","blade",1450).assertTrue()
 	projections.equipmentPower.assertEquals(6)
 	let technology=new RuntimeTechnology("navigation","Navigation",1450,10)
-	technology.effectId="range"
-	technology.effectMagnitude=2
+	technology.addUnlock("navigation","modifier","range")
 	runtime.technologies.register(technology)
 	runtime.research("player","navigation",1450,10).assertTrue()
-	effects.applied.assertEquals(2)
+	effects.applied.assertEquals(1)
 	let questDefinition=new RuntimeQuest("harbor_task","Harbor task","regional")
 	questDefinition.destinationId="london"
 	questDefinition.turnInId="london"
@@ -277,7 +275,7 @@ function testEquipmentSet() returns EquipmentSet
 	runtime.equipItem("hero","plain",1450).assertTrue()
 	(runtime.inventory.comparison("hero","plain").indexOf("Plain")>=0).assertTrue()
 	let technology=new RuntimeTechnology("basic","Basic",1450,1)
-	technology.effectId.assertEquals("")
+	technology.unlockCount.assertEquals(0)
 	runtime.technologies.register(technology)
 	runtime.research("player","basic",1450,1).assertTrue()
 	let q=new RuntimeQuest("hidden","Hidden","regional")

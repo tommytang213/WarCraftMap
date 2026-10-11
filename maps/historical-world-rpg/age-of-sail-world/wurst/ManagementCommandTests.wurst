@@ -28,10 +28,10 @@ public class RecordingManagementPorts implements CommandOutput, TradePresentatio
 	override function setCampaignPaused(boolean value)
 		paused = value
 		pauseWrites++
-	override function applyTechnology(string controllerId, string effectId, int magnitude)
-		skip
-	override function clearTechnologyLayer(string controllerId)
-		skip
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		destroy result
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
 	override function controllerId(player sender) returns string
 		return "player"
 	override function year() returns int

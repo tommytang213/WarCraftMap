@@ -1,6 +1,7 @@
 package WarcraftRpgRuntime
 
 import public EquipmentSets
+import public ResearchEntitlements
 import ResearchCost
 import QuestStages
 import HeroProgression
@@ -124,6 +125,10 @@ function rpgValidInt(string value) returns boolean
 
 function rpgStableText(string value) returns boolean
 	return value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0
+
+function researchControllerId(string value) returns boolean
+	// Controller identities predate typed unlocks and need not be content IDs.
+	return value != "" and rpgStableText(value) and value.indexOf(":") < 0
 
 function progressionId(string value) returns boolean
 	if StringLength(value) < 1 or StringLength(value) > 64
@@ -976,10 +981,6 @@ public class TreasureRuntime
 		treasure.discovered=true
 		return true
 
-public interface TechnologyEffectPort
-	function applyTechnology(string controllerId, string effectId, int magnitude)
-	function clearTechnologyLayer(string controllerId)
-
 public interface RpgProjectionPort
 	/** Preserve bookkeeping for retained party objects. Begin before detaching
 	 * them; roll back after the original objects have been reattached. */
@@ -1007,8 +1008,10 @@ public class RuntimeTechnology
 	// Definitions are scenario-owned; saves contain only controller completion IDs.
 	string array[512] prerequisiteIds
 	int prerequisiteCount = 0
-	string effectId = ""
-	int effectMagnitude
+	ResearchUnlock array[64] unlocks
+	int unlockCount = 0
+	int expectedUnlockCount = -1
+	boolean malformed = false
 	construct(string id,string name,int historicalYear,int baseCost)
 		this.id=id
 		this.name=name
@@ -1024,8 +1027,36 @@ public class RuntimeTechnology
 		this.aheadOfTimeCostMultiplier=aheadMultiplier
 		this.additionalMultiplierPerYearAhead=annualMultiplier
 	function addPrerequisite(string id)
+		if prerequisiteCount >= 512
+			malformed = true
+			return
 		prerequisiteIds[prerequisiteCount]=id
 		prerequisiteCount++
+	function addUnlock(string nodeId, string kind, string contentId)
+		if unlockCount >= 64
+			malformed = true
+			return
+		unlocks[unlockCount] = new ResearchUnlock(nodeId, kind, contentId)
+		unlockCount++
+	function valid() returns boolean
+		if malformed or not researchStableId(id) or (kind != "technology" and kind != "institution") or unlockCount < 0 or unlockCount > 64 or prerequisiteCount < 0 or prerequisiteCount > 512
+			return false
+		if expectedUnlockCount >= 0 and expectedUnlockCount != unlockCount
+			return false
+		for i = 0 to unlockCount - 1
+			let entry = unlocks[i]
+			if entry == null or not entry.valid() or entry.nodeId != id
+				return false
+			for j = 0 to i - 1
+				if unlocks[j].kind == entry.kind and unlocks[j].contentId == entry.contentId
+					return false
+		for i = 0 to prerequisiteCount - 1
+			if not researchStableId(prerequisiteIds[i]) or prerequisiteIds[i] == id
+				return false
+			for j = 0 to i - 1
+				if prerequisiteIds[i] == prerequisiteIds[j]
+					return false
+		return true
 
 public class TechnologyRuntime
 	RuntimeTechnology array[512] definitions
@@ -1033,11 +1064,28 @@ public class TechnologyRuntime
 	string array[2048] unlockedKeys
 	int unlockedCount=0
 	TechnologyEffectPort effects
+	boolean malformed = false
+	// Includes old controllers until reconstruction clears their obsolete layers.
+	string knownControllers = "|"
 	construct(TechnologyEffectPort effects)
 		this.effects=effects
-	function register(RuntimeTechnology technology)
+	function register(RuntimeTechnology technology) returns boolean
+		if technology == null or count >= 512 or not technology.valid() or get(technology.id) != null
+			malformed = true
+			return false
 		definitions[count]=technology
 		count++
+		return true
+	function validDefinition(RuntimeTechnology definition) returns boolean
+		if malformed or definition == null or not definition.valid()
+			return false
+		for i = 0 to definition.prerequisiteCount - 1
+			if get(definition.prerequisiteIds[i]) == null
+				return false
+		return true
+	function rememberController(string controllerId)
+		if not textContains(knownControllers, "|" + controllerId + "|")
+			knownControllers += controllerId + "|"
 	function get(string id) returns RuntimeTechnology
 		for i=0 to count-1
 			if definitions[i].id == id
@@ -1059,29 +1107,51 @@ public class TechnologyRuntime
 		return result
 	function cost(string id,int year,int provincialAdoption,int institutionalSupport) returns int
 		let technology=get(id)
-		if technology == null
+		if not validDefinition(technology)
 			return -1
 		return researchGoldCost(technology.baseCost,technology.aheadOfTimeCostMultiplier,technology.additionalMultiplierPerYearAhead,technology.historicalYear,year,provincialAdoption,institutionalSupport)
 	function unlock(string controllerId,string id,int year,int paid,int provincialAdoption,int institutionalSupport) returns boolean
 		let technology=get(id)
 		let required=cost(id,year,provincialAdoption,institutionalSupport)
-		if technology == null or required<1 or controllerId=="" or unlockedCount>=2048 or isUnlocked(controllerId,id) or paid < required
+		if technology == null or required<1 or not researchControllerId(controllerId) or unlockedCount>=2048 or isUnlocked(controllerId,id) or paid < required
 			return false
 		for i=0 to technology.prerequisiteCount-1
 			if not isUnlocked(controllerId,technology.prerequisiteIds[i])
 				return false
 		unlockedKeys[unlockedCount]=controllerId+":"+id
 		unlockedCount++
-		if effects != null
-			effects.applyTechnology(controllerId,technology.effectId,technology.effectMagnitude)
+		reconstruct(controllerId)
 		return true
+	function entitlements(string controllerId) returns ResearchEntitlements
+		let result = new ResearchEntitlements(controllerId)
+		// Definition and authored unlock order, independent of completion order.
+		for i = 0 to count - 1
+			let definition = definitions[i]
+			if isUnlocked(controllerId, definition.id)
+				for j = 0 to definition.unlockCount - 1
+					result.add(definition.unlocks[j])
+		return result
+	function bindingStatus(ResearchUnlock definition) returns string
+		if effects != null and effects.bindingStatus(definition) == RESEARCH_BOUND
+			return RESEARCH_BOUND
+		return RESEARCH_UNBOUND
 	function reconstruct(string controllerId)
+		rememberController(controllerId)
+		let result = entitlements(controllerId)
 		if effects == null
-			return
-		effects.clearTechnologyLayer(controllerId)
-		for i=0 to count-1
-			if isUnlocked(controllerId,definitions[i].id)
-				effects.applyTechnology(controllerId,definitions[i].effectId,definitions[i].effectMagnitude)
+			destroy result
+		else
+			effects.replaceResearchEntitlements(result)
+	function reconstructAll()
+		for i = 0 to unlockedCount - 1
+			let key = unlockedKeys[i]
+			rememberController(SubString(key, 0, key.indexOf(":")))
+		var start = 1
+		while start < StringLength(knownControllers)
+			let remaining = SubString(knownControllers, start, StringLength(knownControllers))
+			let finish = remaining.indexOf("|")
+			reconstruct(SubString(remaining, 0, finish))
+			start += finish + 1
 
 /** Campaign time and native resources used by the production research command. */
 public interface ResearchCommandResources
@@ -1392,7 +1462,7 @@ public class WarcraftRpgRuntime
 		if kind == "e"
 			return record.count == 4 and id != "" and inventory.getItem(record.field(2)) != null and id == inventory.getItem(record.field(2)).slotId and heroes.get(record.field(3)) != null
 		if kind == "u"
-			return record.count == 3 and id != "" and technologies.get(record.field(2)) != null
+			return record.count == 3 and researchControllerId(id) and technologies.validDefinition(technologies.get(record.field(2)))
 		if kind == "q"
 			let q = record.resolveQuest(journal)
 			if q == null or not validQuestState(record.field(2)) or not rpgValidInt(record.field(3)) or S2I(record.field(3)) < 0 or not rpgValidInt(record.field(4)) or not rpgValidInt(record.field(5)) or S2I(record.field(5)) < 0
@@ -1555,6 +1625,9 @@ public class WarcraftRpgRuntime
 		heroes.mainCharacterId = ""
 		inventory.ownedCount=0
 		inventory.equippedCount=0
+		for i = 0 to technologies.unlockedCount - 1
+			let key = technologies.unlockedKeys[i]
+			technologies.rememberController(SubString(key, 0, key.indexOf(":")))
 		technologies.unlockedCount=0
 		if candidate == "v1"
 			for i=0 to heroes.count-1
@@ -1612,6 +1685,9 @@ public class WarcraftRpgRuntime
 		lastDiagnostic=""
 		return true
 	function validateState(string candidate) returns boolean
+		if technologies.malformed
+			lastDiagnostic = "Research definitions are malformed"
+			return false
 		if candidate == "v1"
 			var legacyOccupied = ""
 			for i = 0 to treasures.count - 1
@@ -1738,7 +1814,8 @@ public class WarcraftRpgRuntime
 			destroy record
 		return true
 	function reconcile(string controllerId)
-		technologies.reconstruct(controllerId)
+		technologies.rememberController(controllerId)
+		technologies.reconstructAll()
 		if projections == null
 			return
 		projections.clearEquipmentLayer()
@@ -1859,9 +1936,18 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 	for i=0 to runtime.technologies.count-1
 		let technology=runtime.technologies.definitions[i]
 		rows += "\n"+technology.name+" - cost "+runtime.technologies.cost(technology.id,year,0,0)
-		if runtime.technologies.isUnlocked(controllerId,technology.id)
+		let earned = runtime.technologies.isUnlocked(controllerId,technology.id)
+		if earned
 			rows += " (unlocked)"
-	return rows
+		for j = 0 to technology.unlockCount - 1
+			let entry = technology.unlocks[j]
+			rows += "\n  " + entry.nodeId + ": " + entry.kind + " " + entry.contentId
+			if earned
+				rows += " - earned"
+			else
+				rows += " - not earned"
+			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
+	return rows + "\nUnbound research unlocks have no gameplay effect yet."
 
 public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)
 	runtime.management.open("technology")
@@ -1997,7 +2083,7 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("journal","quests","journal","Open the quest journal; /rpg-close closes it.","Shows tracked campaign, regional, personal, polity, event and local quests and their guidance. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"journal",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("technology","institutions","technology","Open technology; /rpg-close closes it.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
+	problem=commands.register("technology","institutions","technology","Open technology; /rpg-close closes it.","Shows research costs, earned unlocks and gameplay binding status. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("progression","","progression HERO","Inspect hero allocations; /rpg-close closes it.","Shows your recruited character's ranks, personal-tree perks, eligibility, selected ability entitlements and remaining points. Ability effects are pending. "+RPG_MANAGEMENT_HELP,1,1,COMMAND_RELEASE,new HeroAllocationCommand(runtime,"inspect",commands.output))
@@ -2024,7 +2110,7 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("unequip","","unequip HERO SLOT","Remove a character's equipment assignment.","Frees the owned copy and recalculates that wearer's equipment and set effects.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"unequip",commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the displayed gold cost and applies the unlocked Warcraft effect.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research",commands.output))
+	problem=commands.register("research","unlock,institution","research ID","Research a technology or establish an institution.","Pays the current research cost and earns every authored research unlock. Unbound unlocks await gameplay integration.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"research",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept",commands.output))

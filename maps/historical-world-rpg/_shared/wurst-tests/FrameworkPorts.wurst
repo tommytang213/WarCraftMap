@@ -182,10 +182,10 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 		skip
 	override function applyTreasureKnowledge(string treasureId, int clueStage, boolean discovered, string regionId, string destinationId)
 		skip
-	override function applyTechnology(string controllerId, string effectId, int magnitude)
-		skip
-	override function clearTechnologyLayer(string controllerId)
-		skip
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		destroy result
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
 	override function clearReligionModifiers(string characterId)
 		skip
 	override function applyReligionModifier(string characterId, string attributeId, int basisPoints)

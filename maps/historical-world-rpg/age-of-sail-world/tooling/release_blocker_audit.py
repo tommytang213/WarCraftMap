@@ -17,6 +17,7 @@ import campaign_save
 import full_world_soak
 import release_save_compatibility
 import runtime_acceptance
+from technology_institutions import research_integration_blockers
 
 CONFIG = PROJECT / "scenario/release-blocker-gate.json"
 REPORT_JSON = PROJECT / "reports/release-blocker-audit.json"
@@ -99,6 +100,32 @@ def _audit_inputs(config):
                 findings.append(_finding(f"CONTENT-STUB-{token}", "blocking_content_stub", relative,
                                          "release input contains an unresolved blocking marker"))
     return hashes, findings
+
+
+def _audit_research_bindings():
+    # Definition retention and successful entitlement delivery cannot establish
+    # gameplay consumers. Keep each missing typed consumer accountable at release.
+    return [_finding(
+        'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
+        'missing_runtime_integration', 'scenario/world/world.json',
+        f"{row['nodeId']}: {row['kind']} {row['contentId']} is unbound; no gameplay consumer")
+        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'))]
+
+
+def only_unbound_research_blocks(report):
+    """Recognize the complete, current consumer gap without accepting other failures.
+
+    This selects a publication-blocked result, never release readiness. The
+    packager must independently validate execution, artifacts and source identity.
+    Exact findings prevent a missing consumer or an unrelated defect from being
+    hidden by a shared class, ID prefix or caller-supplied count.
+    """
+    expected = sorted(_audit_research_bindings(), key=lambda row: row["id"])
+    return (bool(expected) and report.get("format") == REPORT_FORMAT
+            and report.get("status") == "fail" and report.get("candidateReady") is False
+            and report.get("disposition") == "release_blocked"
+            and report.get("unresolvedCampaignBlockers") == len(expected)
+            and report.get("findings") == expected)
 
 
 def _migration_round_trip(state):
@@ -211,7 +238,7 @@ def build_report(*, injected_findings=(), execution=None, execution_log=None, re
     if runtime["status"] != "pass" or not runtime["candidateReady"]:
         runtime_findings.append(_finding("RUNTIME-EVIDENCE-INCOMPLETE", "missing_runtime_integration",
                                          "runtime-acceptance", "; ".join(runtime["failures"])))
-    findings = sorted([*report_findings, *input_findings, *runtime_findings,
+    findings = sorted([*report_findings, *input_findings, *runtime_findings, *_audit_research_bindings(),
                        *injected_findings], key=lambda x: x["id"])
     for finding in findings:
         if finding.get("severity") not in taxonomy:

@@ -546,7 +546,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0042.01 | combination | Provinces/states | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0043.01 | combination | Settlements | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0044.01 | combination | Timeline/eras | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0045.01 | combination | Technology/institutions | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0045.01 | combination | Technology/institutions | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | ROAD-0046.01 | combination | Economy/trade | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0047.01 | combination | Diplomacy/war | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
@@ -6669,7 +6669,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0044.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0044.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0044.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0045.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0045.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0045.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - ROAD-0045.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -6680,6 +6679,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0045.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0045.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0045.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0045.01 [static-only]: source references cannot establish executed integration
 - ROAD-0045.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0046.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0046.01 [authority-missing]: scenario content authority is absent or stale

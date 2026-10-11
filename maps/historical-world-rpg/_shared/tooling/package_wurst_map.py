@@ -277,6 +277,10 @@ def research_time_cost(cost: dict, node_id: str) -> tuple[int, str, str, str]:
 def generate(config: BuildConfig, generated: Path) -> None:
     try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+    from technology_institutions import research_unlock_definitions, research_integration_blockers, ResearchError
+    try: unlock_definitions = research_unlock_definitions(world)
+    except ResearchError as error: raise _fail("research definitions", error) from error
     recruitment_windows = _character_recruitment_windows(world)
     from hero_allocations import allocation_definitions, allocation_wurst
     progression_sources = [Path(__file__).with_name(name) for name in
@@ -430,14 +434,15 @@ def generate(config: BuildConfig, generated: Path) -> None:
     research_rows = [("technology", row) for row in exact_world.get("technologies", ())] + [("institution", row) for row in exact_world.get("institutions", ())]
     for index, (research_kind, row) in enumerate(research_rows):
         cost = row.get("timeCost", {})
-        unlock = (row.get("unlocks") or [{}])[0]
         year, base, ahead, annual = research_time_cost(cost, row["id"])
         rpg += [f'\tlet technology{index}=new RuntimeTechnology("{ws(row["id"])}","{ws(row.get("name", row["id"]))}",{year},"{base}","{ahead}","{annual}")',
                 f'\ttechnology{index}.kind="{research_kind}"']
         for prerequisite_id in row["prerequisiteIds"]:
             rpg.append(f'\ttechnology{index}.addPrerequisite("{ws(prerequisite_id)}")')
-        rpg += [f'\ttechnology{index}.effectId="{ws(unlock.get("contentId", ""))}"',
-                f'\ttechnology{index}.effectMagnitude=1', f'\truntime.technologies.register(technology{index})']
+        rpg.append(f'\ttechnology{index}.expectedUnlockCount={len(row["unlocks"])}')
+        for unlock in row["unlocks"]:
+            rpg.append(f'\ttechnology{index}.addUnlock("{ws(row["id"])}","{ws(unlock["kind"])}","{ws(unlock["contentId"])}")')
+        rpg.append(f'\truntime.technologies.register(technology{index})')
     rpg += emit_quests(world.get("quests", []), quest_bindings, ws)
     inventory = catalogues.get("inventory", {})
     item_sets = {item_id: row["id"] for row in inventory.get("equipmentSets", ()) for item_id in row.get("itemTypeIds", ())}
@@ -680,6 +685,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime['questDefinitions'] = world.get('quests', [])
     runtime['questConditionBindings'] = quest_bindings
     runtime['questIntegrationBlockers'] = quest_blockers
+    runtime['researchUnlockDefinitions'] = unlock_definitions
+    runtime['researchIntegrationBlockers'] = research_integration_blockers(world)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
     wurst += recovery_configuration(runtime['recoveryNavigation'])
@@ -723,6 +730,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         Path(__file__).resolve().parents[1] / "engine/treasures.py",
         Path(__file__).resolve().parents[1] / "engine/player_items.py",
         Path(__file__).resolve().parents[1] / "engine/inventory.py",
+        Path(__file__).resolve().parents[1] / "engine/technology_institutions.py",
         Path(__file__).with_name("scenario_inputs.py"),
         Path(__file__).with_name("scenario_settings.py"),
     )

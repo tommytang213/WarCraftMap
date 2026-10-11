@@ -206,6 +206,14 @@ transcript and both acceptance reports. Automated candidate readiness never
 claims that Warcraft III or the declared campaign itineraries were executed;
 real-client launch/save/travel validation remains explicitly separate.
 
+After successful execution, artifact, determinism and source-identity checks,
+unbound research consumers block candidate publication with exit code 3. This
+requires the complete current set of typed consumer findings and no other
+release-audit failures. The audit remains failed with `candidateReady: false`;
+its JSON and Markdown diagnostics accompany the final traceability reports in
+CI, and no candidate ZIP is created. Missing or changed findings, unrelated
+defects, invalid evidence and diagnostic-write failures still fail validation.
+
 Failures name their stage (`inputs`, `scenario validation`, `generation`,
 `provenance`, `Wurst compilation`, `map assembly`, or `archive inspection`).
 

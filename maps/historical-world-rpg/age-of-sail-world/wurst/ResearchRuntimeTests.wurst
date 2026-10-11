@@ -32,27 +32,26 @@ class ResearchResources implements ResearchCommandResources
 		balance=amount
 		writes++
 
-class ResearchEffects implements TechnologyEffectPort
+class ResearchEffects extends UnboundResearchEffects
 	int calls=0
-	int clears=0
-	int playerPower=0
+	int playerPower=0 // Recording counts, never a gameplay magnitude.
 	int otherPower=0
+	int unrelatedModifier=47
+	int oneTimeGrants=0
 	string lastController=""
-	string lastEffect=""
-	override function applyTechnology(string controllerId,string effectId,int magnitude)
+	string boundContent=""
+	override function bindingStatus(ResearchUnlock definition) returns string
+		if definition.contentId == boundContent
+			return RESEARCH_BOUND
+		return RESEARCH_UNBOUND
+	override function replaceResearchEntitlements(ResearchEntitlements result)
 		calls++
-		lastController=controllerId
-		lastEffect=effectId
-		if controllerId == "player"
-			playerPower+=magnitude
+		lastController=result.controllerId
+		if result.controllerId == "player"
+			playerPower=result.count
 		else
-			otherPower+=magnitude
-	override function clearTechnologyLayer(string controllerId)
-		clears++
-		if controllerId == "player"
-			playerPower=0
-		else
-			otherPower=0
+			otherPower=result.count
+		super.replaceResearchEntitlements(result)
 
 class ResearchFixture
 	ResearchEffects effects=new ResearchEffects()
@@ -84,7 +83,6 @@ class ResearchFixture
 		let funds=resources.balance
 		let writes=resources.writes
 		let calls=effects.calls
-		let clears=effects.clears
 		let playerPower=effects.playerPower
 		let otherPower=effects.otherPower
 		commands.dispatch(null,command).assertTrue()
@@ -93,7 +91,6 @@ class ResearchFixture
 		resources.balance.assertEquals(funds)
 		resources.writes.assertEquals(writes)
 		effects.calls.assertEquals(calls)
-		effects.clears.assertEquals(clears)
 		effects.playerPower.assertEquals(playerPower)
 		effects.otherPower.assertEquals(otherPower)
 	function succeed(string command,string id)
@@ -113,12 +110,14 @@ class ResearchFixture
 		runtime.technologies.isUnlocked(resources.controller,id).assertTrue()
 		effects.calls.assertEquals(calls+1)
 		effects.lastController.assertEquals(resources.controller)
-		effects.lastEffect.assertEquals(technology.effectId)
+		let earned=runtime.technologies.entitlements(resources.controller)
+		effects.get(resources.controller).identities().assertEquals(earned.identities())
+		destroy earned
 		if resources.controller == "player"
-			effects.playerPower.assertEquals(playerPower+technology.effectMagnitude)
+			effects.playerPower.assertEquals(playerPower+technology.unlockCount)
 			effects.otherPower.assertEquals(otherPower)
 		else
-			effects.otherPower.assertEquals(otherPower+technology.effectMagnitude)
+			effects.otherPower.assertEquals(otherPower+technology.unlockCount)
 			effects.playerPower.assertEquals(playerPower)
 		reject(command)
 
@@ -392,3 +391,162 @@ function historicalResearchReceipt(string caseName)
 	f.effects.playerPower.assertEquals(1)
 	installCampaignClock(previous)
 	historicalResearchReceipt("replay")
+
+function entitlementReceipt(string caseName)
+	print("TRACEABILITY {\"requirement\":\"ROAD-0045.01\",\"case\":\""+caseName+"\",\"entryPoint\":\"live-typed-research-entitlements\",\"scope\":\"definitions_and_entitlement_delivery\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController()
+	let f=new ResearchFixture()
+	f.completions("|u,player,mobile_field_artillery|u,player,statistical_administration|u,player,standing_army_system")
+	f.runtime.technologies.cost("mass_army_logistics",1450,0,0).assertEquals(13884)
+	f.resources.balance=13884
+	f.succeed("/research mass_army_logistics","mass_army_logistics")
+	f.resources.balance.assertEquals(0)
+	let layer=f.effects.get("player")
+	layer.has("policy","mass_conscription").assertTrue()
+	layer.has("unit","common_wagon_train").assertTrue()
+	layer.has("modifier","supply_efficiency").assertTrue()
+	(layer.identities().indexOf("player|mass_army_logistics|policy|mass_conscription;player|mass_army_logistics|unit|common_wagon_train;player|mass_army_logistics|modifier|supply_efficiency;")>=0).assertTrue()
+	f.effects.get("other").count.assertEquals(0)
+	f.commands.dispatch(null,"/technology").assertTrue()
+	(f.output.last.indexOf("mass_army_logistics: unit common_wagon_train - earned (unbound)")>=0).assertTrue()
+	f.resources.controller="other"
+	f.commands.dispatch(null,"/technology").assertTrue()
+	(f.output.last.indexOf("mass_army_logistics: unit common_wagon_train - not earned (unbound)")>=0).assertTrue()
+	f.effects.unrelatedModifier.assertEquals(47)
+	f.effects.oneTimeGrants.assertEquals(0)
+	entitlementReceipt("success")
+
+@test function malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion()
+	let f=new ResearchFixture()
+	let node=f.runtime.technologies.get("pike_and_shot")
+	let entry=node.unlocks[0]
+	let kind=entry.kind
+	let content=entry.contentId
+	entry.kind="food"
+	f.reject("/research pike_and_shot")
+	entry.kind=kind
+	// StringHash is case-insensitive; cached valid IDs must not admit a variant.
+	entry.contentId="Army_Discipline"
+	f.reject("/research pike_and_shot")
+	entry.contentId=""
+	f.reject("/research pike_and_shot")
+	entry.contentId=content
+	entry.nodeId="another_node"
+	f.reject("/research pike_and_shot")
+	entry.nodeId=node.id
+	node.unlockCount=0
+	f.reject("/research pike_and_shot")
+	node.unlockCount=1
+	node.addUnlock(node.id,kind,content)
+	node.expectedUnlockCount=2
+	f.reject("/research pike_and_shot")
+	node.unlockCount=1
+	node.expectedUnlockCount=1
+	node.addPrerequisite("unknown_definition")
+	f.reject("/research pike_and_shot")
+	node.prerequisiteCount=0
+	// Definitions were repaired; a valid action still completes once.
+	f.succeed("/research pike_and_shot","pike_and_shot")
+	entitlementReceipt("failure")
+
+@test function institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds()
+	let f=new ResearchFixture()
+	f.completions("|u,player,military_fiscal_state|u,player,galleon_design|u,player,dockyard_logistics|u,player,trace_italienne|u,player,cadastral_survey")
+	f.runtime.technologies.cost("naval_administration",1450,0,0).assertEquals(5520)
+	f.succeed("/institution naval_administration","naval_administration")
+	f.succeed("/research siege_engineering_corps","siege_engineering_corps")
+	f.succeed("/institution movable_type_printing","movable_type_printing")
+	let layer=f.effects.get("player")
+	layer.has("ability","siege_engineering").assertTrue()
+	layer.has("unit","common_sapper_corps").assertTrue()
+	layer.has("policy","permanent_naval_board").assertTrue()
+	layer.has("building","printing_house").assertTrue()
+	(layer.identities().indexOf("player|dockyard_logistics|building|dry_dock;")>=0).assertTrue()
+	(layer.identities().indexOf("player|naval_administration|building|dry_dock;")>=0).assertTrue()
+	f.effects.boundContent="printing_house"
+	f.commands.dispatch(null,"/institutions").assertTrue()
+	(f.output.last.indexOf("movable_type_printing: building printing_house - earned (bound)")>=0).assertTrue()
+	(f.output.last.indexOf("siege_engineering_corps: ability siege_engineering - earned (unbound)")>=0).assertTrue()
+	let before=layer.identities()
+	f.resources.controller="other"
+	f.succeed("/research movable_type_printing","movable_type_printing")
+	f.effects.get("player").identities().assertEquals(before)
+	f.effects.get("other").identities().assertEquals("other|movable_type_printing|building|printing_house;")
+	entitlementReceipt("stale")
+
+@test function typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers()
+	let f=new ResearchFixture()
+	// Historical completion records remain authoritative without retroactive gates.
+	f.completions("|u,player,mass_army_logistics|u,other,naval_administration")
+	let saved=f.runtime.captureState()
+	let playerLayer=f.effects.get("player").identities()
+	let otherLayer=f.effects.get("other").identities()
+	for schema=CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		codecRestore(f,saved,schema)
+		f.effects.get("player").identities().assertEquals(playerLayer)
+		f.effects.get("other").identities().assertEquals(otherLayer)
+		var layer=f.effects.layers
+		var layerCount=0
+		while layer != null
+			layerCount++
+			layer=layer.next
+		layerCount.assertEquals(2)
+		f.effects.unrelatedModifier.assertEquals(47)
+		f.effects.oneTimeGrants.assertEquals(0)
+		f.reject("/research mass_army_logistics")
+	let before=f.runtime.captureState()
+	let calls=f.effects.calls
+	f.runtime.restoreState(saved+"|u,other,missing_node").assertFalse()
+	f.runtime.restoreState(saved+"|u,player,mass_army_logistics").assertFalse()
+	f.runtime.captureState().assertEquals(before)
+	f.effects.calls.assertEquals(calls)
+	f.effects.get("player").identities().assertEquals(playerLayer)
+	f.effects.get("other").identities().assertEquals(otherLayer)
+	// One reconciliation clears obsolete controllers as well as replacing the current one.
+	f.runtime.restoreState(f.initial).assertTrue()
+	f.runtime.reconcile("player")
+	f.effects.get("player").count.assertEquals(0)
+	f.effects.get("other").count.assertEquals(0)
+	f.effects.unrelatedModifier.assertEquals(47)
+	f.effects.oneTimeGrants.assertEquals(0)
+	entitlementReceipt("replay")
+
+@test function typedIdentitySeparatesKindsEvenWhenContentIdsAreShared()
+	let f=new ResearchFixture()
+	let node=new RuntimeTechnology("typed_fixture","Typed fixture",1450,10)
+	node.addUnlock(node.id,"unit","shared_content")
+	node.addUnlock(node.id,"building","shared_content")
+	node.addUnlock(node.id,"ability","shared_content")
+	node.addUnlock(node.id,"policy","shared_content")
+	node.addUnlock(node.id,"modifier","shared_content")
+	f.runtime.technologies.register(node).assertTrue()
+	f.succeed("/research typed_fixture","typed_fixture")
+	f.effects.get("player").count.assertEquals(5)
+	f.effects.get("player").identities().assertEquals("player|typed_fixture|unit|shared_content;player|typed_fixture|building|shared_content;player|typed_fixture|ability|shared_content;player|typed_fixture|policy|shared_content;player|typed_fixture|modifier|shared_content;")
+
+@test function productionUnboundResearchNeverChangesWarcraftFoodCapacity()
+	let f=new ResearchFixture()
+	let production=new UnboundResearchEffects()
+	f.runtime.technologies.effects=production
+	let previous=GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)
+	SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,80)
+	f.completions("|u,player,mobile_field_artillery|u,player,statistical_administration|u,player,standing_army_system")
+	f.commands.dispatch(null,"/research mass_army_logistics").assertTrue()
+	f.output.last.assertEquals("Action completed.")
+	f.resources.balance.assertEquals(100000-13884)
+	production.get("player").has("policy","mass_conscription").assertTrue()
+	GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(80)
+	// A separately applied resource change survives repeated reconstruction.
+	SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,95)
+	let saved=f.runtime.captureState()
+	for repeat=1 to 3
+		f.runtime.restoreState(saved).assertTrue()
+		f.runtime.reconcile("player")
+		GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(95)
+		production.bindingStatus(f.runtime.technologies.get("mass_army_logistics").unlocks[0]).assertEquals(RESEARCH_UNBOUND)
+	f.runtime.restoreState(f.initial).assertTrue()
+	f.runtime.reconcile("player")
+	production.get("player").count.assertEquals(0)
+	GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(95)
+	SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,previous)
