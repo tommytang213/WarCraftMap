@@ -154,7 +154,7 @@ function akanEffects(string heroId, int count) returns string
 	let legacy = "v2|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,coat|i,hat|i,boots|e,chest,coat,alpha|e,head,hat,alpha|e,feet,boots,alpha|j,,0"
 	f.rpg.restoreState(legacy).assertTrue()
 	let saved = f.rpg.captureState()
-	saved.startsWith("v6|").assertTrue()
+	saved.startsWith("v7|").assertTrue()
 	(saved.indexOf("guard") < 0).assertTrue()
 	(saved.indexOf("pieces_2") < 0).assertTrue()
 	for repeat = 1 to 2

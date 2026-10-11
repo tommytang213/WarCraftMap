@@ -12,11 +12,12 @@ import CommandRouter
 import CampaignTimeline
 import CharacterAvailability
 import PhysicalInteraction
+import public TreasureResolution
 import WarcraftRecoveryRuntime
 
 public constant int RPG_LEVEL_CAP = HERO_LEVEL_CAP
 public constant int RPG_DEFAULT_ACTIVE_HERO_LIMIT = 32
-public constant int RPG_STATE_SCHEMA_VERSION = 6
+public constant int RPG_STATE_SCHEMA_VERSION = 7
 // Equipment assignments reserve owned copies, so they share the item budget.
 public constant int RPG_INVENTORY_CAPACITY = 4096
 public constant string QUEST_OFFERED = "offered"
@@ -849,12 +850,64 @@ public class RuntimeTreasure
 	int clueCount = 1
 	boolean discovered = false
 	string rewardItemId = ""
+	TreasureDefinition definition = null
+	TreasureResult resolution = null
+	string fixedLocationId = ""
 	construct(string id, string regionId, string resolvedLocationId)
 		this.id=id
 		this.regionId=regionId
 		this.resolvedLocationId=resolvedLocationId
+		fixedLocationId = resolvedLocationId
+		if resolvedLocationId != ""
+			resolution = new TreasureResult("fixed", resolvedLocationId)
+	ondestroy
+		if resolution != null
+			destroy resolution
+		if definition != null
+			destroy definition
+	function commit(TreasureResult result)
+		if resolution != null
+			destroy resolution
+		resolution = result
+		resolvedLocationId = ""
+		if result != null
+			resolvedLocationId = result.candidateId
+			if definition != null
+				regionId = definition.get(result.candidateId).regionId
+	function knowledgePrecision() returns int
+		if resolution == null
+			return 0
+		if discovered
+			return 4
+		if definition == null
+			if clueStage >= clueCount
+				return 4
+			return IMinBJ(1, clueStage)
+		var precision = 0
+		for i = 0 to clueStage - 1
+			precision = IMaxBJ(precision, definition.cluePrecisions[i])
+		return precision
+	function resolutionText() returns string
+		if resolution == null
+			return "pending,,,,,"
+		return resolution.encode()
+	function validResult(TreasureResult result, InteractionCatalog locations) returns boolean
+		if definition == null
+			return result.mode == "fixed" and result.candidateId == fixedLocationId and result.rewardId == "" and result.guardId == "" and result.hazardId == "" and result.encounterId == ""
+		return result.valid(definition, locations)
+
+function readTreasureResult(RpgSnapshotRecord record) returns TreasureResult
+	let result = new TreasureResult(record.field(4), record.field(5))
+	result.rewardId = record.field(6)
+	result.guardId = record.field(7)
+	result.hazardId = record.field(8)
+	result.encounterId = record.field(9)
+	return result
 
 public class TreasureRuntime
+	string campaignSeed = ""
+	InteractionCatalog locations = null
+	string unavailableCandidateIds = ""
 	RuntimeTreasure array[512] treasures
 	int count=0
 	function register(RuntimeTreasure treasure)
@@ -865,15 +918,58 @@ public class TreasureRuntime
 			if treasures[i].id == id
 				return treasures[i]
 		return null
+	/** Stage the entire catalogue before publishing any placement or variant.
+	 * The caller supplies durable campaign authority; constructors never seed. */
+	function resolveAll(string seed) returns boolean
+		if not treasureSeedValid(seed) or (campaignSeed != "" and campaignSeed != seed)
+			return false
+		TreasureResult array[512] staged
+		var occupied = ""
+		var valid = true
+		for i = 0 to count - 1
+			let t = treasures[i]
+			if t.definition != null and t.resolution != null
+				let c = t.definition.get(t.resolution.candidateId)
+				if not t.validResult(t.resolution, locations) or (not c.shared and treasureHas(occupied, c.id))
+					valid = false
+				occupied += "|" + t.resolution.candidateId + "|"
+		for i = 0 to count - 1
+			let t = treasures[i]
+			if valid and t.definition != null and t.resolution == null
+				let d = t.definition
+				let c = d.choose(seed, unavailableCandidateIds, occupied, locations)
+				if c == null
+					valid = false
+				else
+					let result = new TreasureResult("seeded", c.id)
+					result.rewardId = d.rewards.choose(seed, t.id + ":reward")
+					result.guardId = d.guards.choose(seed, t.id + ":guard")
+					result.hazardId = d.hazards.choose(seed, t.id + ":hazard")
+					result.encounterId = d.encounters.choose(seed, t.id + ":encounter")
+					staged[i] = result
+					occupied += "|" + c.id + "|"
+		for i = 0 to count - 1
+			if staged[i] != null
+				if valid
+					treasures[i].commit(staged[i])
+				else
+					destroy staged[i]
+		if valid
+			campaignSeed = seed
+		return valid
+	function legacyResult(RuntimeTreasure t) returns TreasureResult
+		if t.definition == null
+			return new TreasureResult("fixed", t.fixedLocationId)
+		return new TreasureResult("legacy", t.definition.legacyLocationId)
 	function advanceClue(string id) returns boolean
 		let treasure=get(id)
-		if treasure == null or treasure.discovered or treasure.clueStage >= treasure.clueCount
+		if treasure == null or treasure.resolution == null or treasure.discovered or treasure.clueStage >= treasure.clueCount
 			return false
 		treasure.clueStage=IMinBJ(treasure.clueCount,treasure.clueStage+1)
 		return true
 	function discover(string id, string locationId, PlayerInventory inventory) returns boolean
 		let treasure=get(id)
-		if treasure == null or treasure.discovered or treasure.clueStage < treasure.clueCount or treasure.resolvedLocationId != locationId
+		if treasure == null or treasure.resolution == null or treasure.discovered or treasure.clueStage < treasure.clueCount or treasure.resolution.candidateId != locationId
 			return false
 		if treasure.rewardItemId != "" and not inventory.grant(treasure.rewardItemId)
 			return false
@@ -898,7 +994,7 @@ public interface RpgProjectionPort
 	function clearGuidanceLayer()
 	function applyQuestGuidance(string questId,string precision,string regionId,string destinationId)
 	function clearTreasureKnowledgeLayer()
-	function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+	function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered,string regionId,string destinationId)
 
 public class RuntimeTechnology
 	string id
@@ -1240,10 +1336,10 @@ public class WarcraftRpgRuntime
 				changed = true
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
-			if target.kind == "region" and t.regionId == target.eventId
+			if t.resolution != null and target.kind == "region" and t.regionId == target.eventId
 				if treasures.advanceClue(t.id)
 					changed=true
-			if t.resolvedLocationId == target.id
+			if t.resolution != null and t.resolution.candidateId == target.id
 				if treasures.discover(t.id,target.id,inventory)
 					changed=true
 		if changed
@@ -1324,12 +1420,30 @@ public class WarcraftRpgRuntime
 			return status != QUEST_ACTIVE or not terminal
 		if kind == "j"
 			return record.count == 3 and (id == "" or journal.get(id) != null) and rpgValidInt(record.field(2))
+		if kind == "s"
+			return record.schema >= 7 and record.count == 2 and (id == "" or treasureSeedValid(id))
 		if kind == "t"
 			let treasure = record.resolveTreasure(treasures)
-			return record.count == 4 and treasure != null and rpgValidInt(record.field(2)) and S2I(record.field(2)) >= 0 and S2I(record.field(2)) <= treasure.clueCount and rpgValidBool(record.field(3))
+			if treasure == null or not rpgValidInt(record.field(2)) or S2I(record.field(2)) < 0 or S2I(record.field(2)) > treasure.clueCount or not rpgValidBool(record.field(3))
+				return false
+			if record.schema < 7
+				let legacy = treasures.legacyResult(treasure)
+				let validLegacy = record.count == 4 and treasure.validResult(legacy, treasures.locations)
+				destroy legacy
+				return validLegacy
+			if record.count != 10
+				return false
+			let result = readTreasureResult(record)
+			var valid = false
+			if result.mode == "pending"
+				valid = treasure.definition != null and record.field(2) == "0" and record.field(3) == "0" and result.encode() == "pending,,,,,"
+			else
+				valid = treasure.validResult(result, treasures.locations)
+			destroy result
+			return valid
 		return false
 	function captureState() returns string
-		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()+"|p,"+heroes.mainCharacterId
+		var result="v"+RPG_STATE_SCHEMA_VERSION.toString()+"|p,"+heroes.mainCharacterId+"|s,"+treasures.campaignSeed
 		for i=0 to heroes.count-1
 			let h=heroes.heroes[i]
 			result+="|h,"+h.id+","+rpgBoolText(h.recruited)+","+h.level.toString()+","+h.experience.toString()+","+h.skillPoints.toString()+","+h.masteryPoints.toString()+","+h.commandExperience.toString()+","+h.loyalty.toString()+","+rpgBoolText(h.oathbound)+","+rpgBoolText(h.incapacitated)+","+h.recoveryDay.toString()+","+h.assignment+","+h.regionId+","+h.professionId+","+h.personalQuestId+","+h.signatureProgressionId+","+h.chosenPerks
@@ -1352,7 +1466,7 @@ public class WarcraftRpgRuntime
 		result+="|j,"+journal.trackedId+","+journal.currency.toString()
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
-			result+="|t,"+t.id+","+t.clueStage.toString()+","+rpgBoolText(t.discovered)
+			result+="|t,"+t.id+","+t.clueStage.toString()+","+rpgBoolText(t.discovered)+","+t.resolutionText()
 		return result
 	function applyRecord(RpgSnapshotRecord record)
 		let kind=record.field(0)
@@ -1422,13 +1536,22 @@ public class WarcraftRpgRuntime
 		else if kind == "j"
 			journal.trackedId=id
 			journal.currency=S2I(record.field(2))
+		else if kind == "s"
+			treasures.campaignSeed = id
 		else if kind == "t"
 			let t=record.resolveTreasure(treasures)
+			if record.schema < 7
+				t.commit(treasures.legacyResult(t))
+			else if record.field(4) == "pending"
+				t.commit(null)
+			else
+				t.commit(readTreasureResult(record))
 			t.clueStage=S2I(record.field(2))
 			t.discovered=rpgBool(record.field(3))
 	function restoreState(string candidate) returns boolean
 		if not validateState(candidate)
 			return false
+		treasures.campaignSeed = "1"
 		heroes.mainCharacterId = ""
 		inventory.ownedCount=0
 		inventory.equippedCount=0
@@ -1463,6 +1586,7 @@ public class WarcraftRpgRuntime
 			journal.trackedId=""
 			journal.currency=0
 			for i=0 to treasures.count-1
+				treasures.treasures[i].commit(treasures.legacyResult(treasures.treasures[i]))
 				treasures.treasures[i].clueStage=0
 				treasures.treasures[i].discovered=false
 			lastDiagnostic=""
@@ -1489,9 +1613,22 @@ public class WarcraftRpgRuntime
 		return true
 	function validateState(string candidate) returns boolean
 		if candidate == "v1"
+			var legacyOccupied = ""
+			for i = 0 to treasures.count - 1
+				let t = treasures.treasures[i]
+				let legacy = treasures.legacyResult(t)
+				var valid = t.validResult(legacy, treasures.locations)
+				if t.definition != null and valid
+					let c = t.definition.get(legacy.candidateId)
+					valid = c.shared or not treasureHas(legacyOccupied, c.id)
+					legacyOccupied += "|" + c.id + "|"
+				destroy legacy
+				if not valid
+					lastDiagnostic = "Legacy treasure placement is unavailable or inconsistent"
+					return false
 			lastDiagnostic=""
 			return true
-		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|") and not candidate.startsWith("v5|") and not candidate.startsWith("v6|")
+		if not candidate.startsWith("v2|") and not candidate.startsWith("v3|") and not candidate.startsWith("v4|") and not candidate.startsWith("v5|") and not candidate.startsWith("v6|") and not candidate.startsWith("v7|")
 			lastDiagnostic="RPG state schema is incompatible"
 			return false
 		let keys = new RpgSnapshotKeys()
@@ -1506,6 +1643,11 @@ public class WarcraftRpgRuntime
 		var questRecords=0
 		var journalRecords=0
 		var treasureRecords=0
+		var seedRecords=0
+		var seed = ""
+		var pending = false
+		var resolved = false
+		var occupied = ""
 		while start < StringLength(candidate)
 			start=record.read(candidate,start)
 			if not validateRecord(record)
@@ -1543,8 +1685,27 @@ public class WarcraftRpgRuntime
 				questRecords++
 			else if kind == "j"
 				journalRecords++
+			else if kind == "s"
+				seedRecords++
+				seed = id
 			else if kind == "t"
 				treasureRecords++
+				let t = treasures.get(id)
+				if t.definition != null
+					var locationId = record.field(5)
+					if record.schema < 7
+						locationId = t.definition.legacyLocationId
+					if locationId == ""
+						pending = true
+					else
+						resolved = true
+						let c = t.definition.get(locationId)
+						if not c.shared and treasureHas(occupied, locationId)
+							destroy record
+							destroy keys
+							lastDiagnostic = "Exclusive treasure placement is duplicated"
+							return false
+						occupied += "|" + locationId + "|"
 		destroy record
 		// Check the entire candidate, independent of record order, before any
 		// authority is changed. Every equipped record reserves one owned copy.
@@ -1557,7 +1718,24 @@ public class WarcraftRpgRuntime
 		if (not candidate.startsWith("v2|") and mainRecords != 1) or (candidate.startsWith("v2|") and mainRecords != 0) or heroRecords != heroes.count or questRecords != journal.count or treasureRecords != treasures.count or journalRecords != 1 or itemRecords > RPG_INVENTORY_CAPACITY or equipmentRecords > RPG_INVENTORY_CAPACITY or unlockRecords > 2048
 			lastDiagnostic="RPG state is incomplete or exceeds runtime budgets"
 			return false
+		if candidate.startsWith("v7|") and (seedRecords != 1 or (resolved and seed == "") or (pending and seed != ""))
+			lastDiagnostic = "Treasure resolution is incomplete or lacks campaign seed authority"
+			return false
 		lastDiagnostic=""
+		return true
+	function validateCampaignState(string candidate) returns boolean
+		if not validateState(candidate)
+			return false
+		if candidate.startsWith("v7|")
+			let record = new RpgSnapshotRecord()
+			var start = 3
+			while start < StringLength(candidate)
+				start = record.read(candidate, start)
+				if record.field(0) == "t" and record.field(4) == "pending"
+					destroy record
+					lastDiagnostic = "Campaign treasure resolution has not committed"
+					return false
+			destroy record
 		return true
 	function reconcile(string controllerId)
 		technologies.reconstruct(controllerId)
@@ -1585,7 +1763,13 @@ public class WarcraftRpgRuntime
 		projections.clearTreasureKnowledgeLayer()
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
-			projections.applyTreasureKnowledge(t.id,t.clueStage,t.discovered)
+			var knownRegion = ""
+			var destination = ""
+			if t.knowledgePrecision() > 0
+				knownRegion = t.regionId
+				if t.knowledgePrecision() >= 4
+					destination = t.resolution.candidateId
+			projections.applyTreasureKnowledge(t.id,t.clueStage,t.discovered,knownRegion,destination)
 	function reconstruct(player owner, real x, real y, string controllerId)
 		heroes.loseRuntimeObjects()
 		heroes.reconstructField(owner,x,y)

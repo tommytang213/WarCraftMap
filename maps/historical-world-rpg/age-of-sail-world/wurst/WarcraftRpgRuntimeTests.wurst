@@ -42,7 +42,7 @@ class Projections implements RpgProjectionPort
 		guidance++
 	override function clearTreasureKnowledgeLayer()
 		knowledge=0
-	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered,string regionId,string destinationId)
 		knowledge+=clueStage
 
 function testEquipmentSet() returns EquipmentSet
@@ -427,6 +427,7 @@ function generatedRpgWithProgress() returns WarcraftRpgRuntime
 		q.settleProgress()
 	runtime.journal.turnIn(q.id,hero,1,30).assertTrue()
 	q.state.assertEquals(QUEST_COMPLETE)
+	runtime.treasures.resolveAll("1").assertTrue()
 	let treasure=runtime.treasures.treasures[0]
 	for i=1 to treasure.clueCount
 		runtime.treasures.advanceClue(treasure.id).assertTrue()

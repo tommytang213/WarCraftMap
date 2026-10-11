@@ -178,11 +178,11 @@ public class WarcraftRpgProjections implements RpgProjectionPort
 		for i=0 to knowledgeCount-1
 			DestroyQuest(knowledge[i])
 		knowledgeCount=0
-	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered)
+	override function applyTreasureKnowledge(string treasureId,int clueStage,boolean discovered,string regionId,string destinationId)
 		if clueStage > 0 or discovered
 			let marker=CreateQuest()
 			QuestSetTitle(marker,"Treasure: "+treasureId)
-			QuestSetDescription(marker,"Clue stage "+clueStage.toString())
+			QuestSetDescription(marker,"Clue stage "+clueStage.toString()+"\nRegion: "+regionId+"\n"+destinationId)
 			QuestSetCompleted(marker,discovered)
 			QuestSetEnabled(marker,true)
 			knowledge[knowledgeCount]=marker

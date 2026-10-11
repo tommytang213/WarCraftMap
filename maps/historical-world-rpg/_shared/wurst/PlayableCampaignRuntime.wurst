@@ -583,7 +583,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";world=") < 0 or candidate.indexOf(";players=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or candidate.indexOf(";trade=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
-		if rpg != null and not rpg.validateState(lastAuthorityValue(candidate,"rpg"))
+		if rpg != null and not rpg.validateCampaignState(lastAuthorityValue(candidate,"rpg"))
 			lastDiagnostic=rpg.diagnostic()
 			return false
 		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
@@ -1906,6 +1906,10 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			initialCountries = countries.captureState()
 		if not state.rpg.restoreState(initialRpg) or not countries.restoreState(initialCountries)
 			return rejectStartup("Campaign defaults could not be restored.")
+		// The origin request sequence was committed before the map load. It is
+		// the campaign seed, including retries before the first checkpoint write.
+		if not state.rpg.treasures.resolveAll(request.sequence.toString())
+			return rejectStartup("Treasure placement could not be resolved from the campaign seed.")
 		identity.restore(request.origin, request.origin, request.mapId, request.instanceId, request.settlementId)
 		extension.newCampaign(request.settlementId)
 		countries.discover(request.origin)

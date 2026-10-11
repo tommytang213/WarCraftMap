@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Sequence
@@ -60,17 +61,19 @@ def validate_catalog(catalog: Mapping[str, Any], references: Mapping[str, Sequen
     encounters = _index(catalog.get("encounters", []), "encounters")
     clues = _index(catalog.get("clues"), "clues")
     treasures = _index(catalog.get("treasures"), "treasures")
-    if not treasures:
-        raise TreasureError("treasures: at least one definition is required")
+    if not 1 <= len(treasures) <= 512:
+        raise TreasureError("treasures: requires 1 through 512 definitions")
     refs = {key: set(value) for key, value in (references or {}).items()}
     for cid, candidate in candidates.items():
+        if type(candidate.get("weight", 1)) is not int or not 1 <= candidate.get("weight", 1) <= 1_000_000:
+            raise TreasureError(f"candidate {cid}: invalid weight")
         for field in ("regionId", "regionalInstanceId", "physicalMapId", "terrainId", "navigationZoneId"):
             if not isinstance(candidate.get(field), str):
                 raise TreasureError(f"candidate {cid}: missing {field}")
         position = candidate.get("position")
-        if not isinstance(position, Mapping) or not all(isinstance(position.get(k), (int, float)) and not isinstance(position.get(k), bool) for k in ("x", "y")):
+        if not isinstance(position, Mapping) or not all(isinstance(position.get(k), (int, float)) and not isinstance(position.get(k), bool) and math.isfinite(position[k]) for k in ("x", "y")):
             raise TreasureError(f"candidate {cid}: invalid position")
-        if candidate.get("accessible") is not True or not isinstance(candidate.get("clearance"), (int, float)) or candidate["clearance"] <= 0:
+        if candidate.get("accessible") is not True or not isinstance(candidate.get("clearance"), (int, float)) or isinstance(candidate["clearance"], bool) or not math.isfinite(candidate["clearance"]) or candidate["clearance"] <= 0:
             raise TreasureError(f"candidate {cid}: inaccessible or lacks placement clearance")
         if candidate.get("inactiveRegionPolicy") not in {"resolve_and_defer_spawn", "abstract_encounter"}:
             raise TreasureError(f"candidate {cid}: unsupported inactive-region behavior")
@@ -79,10 +82,13 @@ def validate_catalog(catalog: Mapping[str, Any], references: Mapping[str, Sequen
                 raise TreasureError(f"candidate {cid}: unknown {field} {candidate[field]!r}")
     for pid, pool in pools.items():
         entries = pool.get("entries")
-        if not isinstance(entries, list) or not entries:
+        if not isinstance(entries, list) or not 1 <= len(entries) <= 64:
             raise TreasureError(f"reward pool {pid}: entries must be non-empty")
+        _index(entries, f"reward pool {pid}")
+        if sum(entry.get("weight", 0) for entry in entries if type(entry.get("weight")) is int) > 1_000_000:
+            raise TreasureError(f"reward pool {pid}: weight budget exceeded")
         for entry in entries:
-            if not isinstance(entry, Mapping) or not isinstance(entry.get("weight"), int) or entry["weight"] < 1 or not isinstance(entry.get("outcomes"), list):
+            if not isinstance(entry, Mapping) or type(entry.get("weight")) is not int or not 1 <= entry["weight"] <= 1_000_000 or not isinstance(entry.get("outcomes"), list):
                 raise TreasureError(f"reward pool {pid}: invalid weighted entry")
     for clue_id, clue in clues.items():
         if clue.get("precision") not in KNOWLEDGE[1:5]:
@@ -95,14 +101,20 @@ def validate_catalog(catalog: Mapping[str, Any], references: Mapping[str, Sequen
         candidate_ids = treasure.get("candidateLocationIds")
         if not isinstance(candidate_ids, list) or not candidate_ids or len(candidate_ids) != len(set(candidate_ids)):
             raise TreasureError(f"treasure {tid}: candidate IDs must be unique and non-empty")
-        for cid in candidate_ids:
+        fallback = treasure.get("fallbackCandidateId")
+        all_candidates = candidate_ids + ([fallback] if fallback and fallback not in candidate_ids else [])
+        if len(all_candidates) > 64 or sum(candidates.get(cid, {}).get("weight", 1) for cid in all_candidates) > 1_000_000:
+            raise TreasureError(f"treasure {tid}: candidate budget exceeded")
+        for cid in all_candidates:
             if cid not in candidates:
                 raise TreasureError(f"treasure {tid}: unknown candidate {cid!r}")
+        if treasure.get("legacyCandidateLocationId") and treasure["legacyCandidateLocationId"] not in all_candidates:
+            raise TreasureError(f"treasure {tid}: legacy placement is not authored")
         if treasure.get("rewardPoolId") not in pools:
             raise TreasureError(f"treasure {tid}: unknown reward pool")
         for field, index in (("guardIds", guards), ("hazardIds", hazards), ("encounterIds", encounters), ("clueIds", clues)):
             values = treasure.get(field, [])
-            if not isinstance(values, list) or len(values) != len(set(values)) or any(x not in index for x in values):
+            if not isinstance(values, list) or len(values) > 64 or len(values) != len(set(values)) or any(x not in index for x in values):
                 raise TreasureError(f"treasure {tid}: invalid {field}")
         policy = treasure.get("collectionPolicy")
         if policy not in {"deplete", "repeatable"}:
@@ -116,7 +128,7 @@ def validate_catalog(catalog: Mapping[str, Any], references: Mapping[str, Sequen
             families = set(treasure.get("locationFamilies", []))
             if not anchors or not families:
                 raise TreasureError(f"unique treasure {tid}: missing historical anchors")
-            for cid in candidate_ids:
+            for cid in all_candidates:
                 c = candidates[cid]
                 if c["regionId"] not in anchors or c.get("locationFamily") not in families:
                     raise TreasureError(f"unique treasure {tid}: candidate {cid!r} violates historical anchor")
@@ -150,14 +162,56 @@ class TreasureCampaign:
         # v3 -> v4 migration cannot invent a scenario's campaign seed. Bootstrap
         # binds it on first use, before any treasure has been resolved.
         if (self.state.get("campaignSeed"), self.state.get("seedFingerprint"), self.state.get("resolved")) == ("", "", {}):
+            if self.state.get("knowledge") != {} or self.state.get("collectionCounts") != {}:
+                raise TreasureError("unbound treasure state contains recorded knowledge or outcomes")
             self.state = empty_state(campaign_seed)
-        if self.state.get("version") != 1 or self.state.get("seedFingerprint") != empty_state(campaign_seed)["seedFingerprint"]:
+        if self.state.get("version") != 1 or self.state.get("campaignSeed") != str(campaign_seed) or self.state.get("seedFingerprint") != empty_state(campaign_seed)["seedFingerprint"]:
             raise TreasureError("treasure state version or campaign seed does not match")
         for key in ("resolved", "knowledge", "collectionCounts"):
             if not isinstance(self.state.get(key), dict):
                 raise TreasureError(f"treasure state {key} must be an object")
-        if set(self.state["resolved"]) - set(self.treasures):
-            raise TreasureError("treasure state references an unknown treasure")
+        for key in ("resolved", "knowledge", "collectionCounts"):
+            if set(self.state[key]) - set(self.treasures):
+                raise TreasureError("treasure state references an unknown treasure")
+        if set(self.state["resolved"]) != set(self.state["knowledge"]) or set(self.state["resolved"]) != set(self.state["collectionCounts"]):
+            raise TreasureError("treasure state has incomplete knowledge or collection authority")
+        occupied = set()
+        for tid, result in self.state["resolved"].items():
+            treasure = self.treasures[tid]
+            required = {"candidateLocationId", "regionId", "regionalInstanceId", "physicalMapId", "rewardVariantId", "outcomes", "guardId", "hazardId", "encounterId"}
+            if not isinstance(result, dict) or set(result) != required:
+                raise TreasureError(f"treasure {tid}: malformed resolution")
+            if any(not isinstance(result[key], str) for key in ("candidateLocationId", "regionId", "regionalInstanceId", "physicalMapId", "rewardVariantId")):
+                raise TreasureError(f"treasure {tid}: malformed resolution identities")
+            cid = result.get("candidateLocationId")
+            authored = treasure["candidateLocationIds"] + [treasure.get("fallbackCandidateId")]
+            if cid not in self.candidates or cid not in authored:
+                raise TreasureError(f"treasure {tid}: unauthored resolution")
+            candidate = self.candidates[cid]
+            if cid in occupied and not candidate.get("allowSharedPlacement", False):
+                raise TreasureError(f"treasure {tid}: exclusive placement conflict")
+            occupied.add(cid)
+            for field in ("regionId", "regionalInstanceId", "physicalMapId"):
+                if result.get(field) != candidate[field]:
+                    raise TreasureError(f"treasure {tid}: inconsistent {field}")
+            rewards = {entry["id"]: entry for entry in self.pools[treasure["rewardPoolId"]]["entries"]}
+            reward = rewards.get(result.get("rewardVariantId"))
+            if reward is None or result.get("outcomes") != treasure.get("fixedOutcomes", []) + reward["outcomes"]:
+                raise TreasureError(f"treasure {tid}: inconsistent reward variant")
+            for kind in ("guard", "hazard", "encounter"):
+                if result.get(kind + "Id") not in (treasure.get(kind + "Ids") or [None]):
+                    raise TreasureError(f"treasure {tid}: unauthored {kind}")
+        for tid in set(self.state["knowledge"]) | set(self.state["collectionCounts"]):
+            precision = self.state["knowledge"].get(tid, "hidden")
+            count = self.state["collectionCounts"].get(tid, 0)
+            treasure = self.treasures[tid]
+            limit = 1 if treasure["collectionPolicy"] == "deplete" else treasure["repeatLimit"]
+            if precision not in KNOWLEDGE or type(count) is not int or not 0 <= count <= limit:
+                raise TreasureError(f"treasure {tid}: invalid knowledge/collection state")
+            if (precision != "hidden" or count > 0) and tid not in self.state["resolved"]:
+                raise TreasureError(f"treasure {tid}: exposed without a resolution")
+            if (precision == "collected") != (count == limit):
+                raise TreasureError(f"treasure {tid}: inconsistent collected state")
 
     def resolve(self, treasure_id: str, *, unavailable_candidate_ids: Sequence[str] = ()) -> dict[str, Any]:
         if treasure_id in self.state["resolved"]:
@@ -170,7 +224,7 @@ class TreasureCampaign:
         valid = [self.candidates[x] for x in treasure["candidateLocationIds"] if x not in unavailable and (x not in occupied or self.candidates[x].get("allowSharedPlacement") is True)]
         if not valid:
             fallback = treasure.get("fallbackCandidateId")
-            if fallback not in self.candidates or fallback in unavailable:
+            if fallback not in self.candidates or fallback in unavailable or (fallback in occupied and not self.candidates[fallback].get("allowSharedPlacement", False)):
                 raise ResolutionError(f"treasure {treasure_id}: no valid candidate and no valid fallback")
             valid = [self.candidates[fallback]]
         seed = self.state["campaignSeed"]

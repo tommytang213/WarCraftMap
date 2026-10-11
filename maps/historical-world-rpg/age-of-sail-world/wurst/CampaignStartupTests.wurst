@@ -671,6 +671,8 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	source.clock.advanceTo(source.clock.startDay + 3000).assertTrue()
 	source.clock.setSpeed(2.125).assertTrue()
 	source.clock.advanceElapsed(.1234567).assertTrue()
+	let treasureSeed = source.campaign.state.rpg.treasures.campaignSeed
+	let treasureResolution = source.campaign.state.rpg.treasures.treasures[0].resolution.encode()
 	let outbound = source.clock.captureState()
 	source.campaign.travel.transition(source.campaign.state.boundary("east_asia_to_pacific_north"), .75, "travel").assertTrue()
 	let destination = new StartupFixture(source.cache, source.saves, "pacific_north")
@@ -681,6 +683,8 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	destination.register()
 	destination.campaign.startup().assertTrue()
 	destination.clock.captureState().assertEquals(outbound)
+	destination.campaign.state.rpg.treasures.campaignSeed.assertEquals(treasureSeed)
+	destination.campaign.state.rpg.treasures.treasures[0].resolution.encode().assertEquals(treasureResolution)
 	// After a restored startup, the loader observes the active campaign identity;
 	// no second origin-selection action occurs on the destination map.
 	destination.ports.selectorIdentity = destination.campaign.identity
@@ -696,6 +700,8 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	revisited.register()
 	revisited.campaign.startup().assertTrue()
 	revisited.clock.captureState().assertEquals(returning)
+	revisited.campaign.state.rpg.treasures.campaignSeed.assertEquals(treasureSeed)
+	revisited.campaign.state.rpg.treasures.treasures[0].resolution.encode().assertEquals(treasureResolution)
 	(revisited.clock != source.clock and revisited.clock != destination.clock).assertTrue()
 	(revisited.clock.timerAdapter == null).assertTrue()
 
