@@ -37490,7 +37490,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "fdd8761caaa29bebff6e898a7ff6c536d1abc6ca2da0771fb44a44dc28a8317b",
-  "mappingSha256": "65db550762c03f88230c22e02e931283c3de02a016630f134bda13945ea97b03",
+  "mappingSha256": "a7c3b9d4482403b6c033e0d9143281a4f7966c85a5cfb7ee86e09b4659d7101a",
   "requirements": [
     {
       "authority": {
@@ -41525,7 +41525,9 @@
         "artifact": {
           "callPatterns": [
             "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
-            "\\bRpgHero_RpgHero_awardExperience\\("
+            "\\bRpgHero_RpgHero_awardExperience\\(",
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"chooseperk\",",
+            "\\bWarcraftRpgRuntime_WarcraftRpgRuntime_allocate\\("
           ],
           "mapIds": [
             "@regional"
@@ -41547,10 +41549,27 @@
               "for field, value in hero_growth.items():"
             ],
             "path": "../_shared/tooling/package_wurst_map.py"
+          },
+          {
+            "contains": [
+              "def allocation_definitions",
+              "def allocation_wurst",
+              "prerequisitePerkIds",
+              "minimumLevel",
+              "abilityId"
+            ],
+            "path": "../_shared/tooling/hero_allocations.py"
+          },
+          {
+            "contains": [
+              "runtime[\"heroAllocationDefinitions\"] = hero_allocations",
+              "rpg += allocation_wurst(hero_allocations, ws)"
+            ],
+            "path": "../_shared/tooling/package_wurst_map.py"
           }
         ],
         "entry": {
-          "id": "live-earned-hero-growth",
+          "id": "hero-point-allocation",
           "kind": "command",
           "path": [
             {
@@ -41562,35 +41581,30 @@
             },
             {
               "contains": [
-                "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+                "class HeroAllocationCommand",
+                "runtime.allocate(sender, heroId, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
             },
             {
               "contains": [
-                "interactions.resolve(actor, sender, q.turnInId)",
-                "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+                "allocationProblem(hero, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnInQuest"
-            },
-            {
-              "contains": [
-                "hero.canAwardExperience(questDefinition.rewardExperience)",
-                "hero.awardExperience(questDefinition.rewardExperience)"
-              ],
-              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnIn"
+              "symbol": "allocate"
             }
           ],
           "registration": {
             "contains": [
-              "commands.register(\"turnin\""
+              "commands.register(\"progression\"",
+              "commands.register(\"improveskill\"",
+              "commands.register(\"improvemastery\"",
+              "commands.register(\"chooseperk\""
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "registerRpgRuntimeCommands"
           },
-          "testInvocation": ".command("
+          "testInvocation": ".action("
         },
         "mechanism": [
           {
@@ -41610,6 +41624,25 @@
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "awardExperience"
+          },
+          {
+            "contains": [
+              "Rank is capped at 100.",
+              "perk.prerequisites",
+              "hero.choicePoints < 1"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocationProblem"
+          },
+          {
+            "contains": [
+              "allocationOwnerProblem(sender, heroId)",
+              "hero.skillPoints--",
+              "hero.masteryPoints--",
+              "hero.choicePoints--"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocate"
           }
         ],
         "persistence": {
@@ -41623,7 +41656,7 @@
             "symbol": "applyRecord"
           },
           "mode": "persisted",
-          "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+          "reason": "Existing RPG v6 fields retain all allocations and balances; no durable contract change. Existing v2-v5 migrations retain recorded selections and ranks where present, with zero missing choice points. No retrospective grants, charges or refunds.",
           "references": [
             {
               "contains": [
@@ -41638,6 +41671,13 @@
                 "without replaying rewards or lowering an earned level"
               ],
               "path": "docs/LIVE_HERO_GROWTH.md"
+            },
+            {
+              "contains": [
+                "The durable contract remains **RPG v6**",
+                "retrospective grants, charges or refunds"
+              ],
+              "path": "docs/HERO_ALLOCATIONS.md"
             }
           ],
           "save": {
@@ -41648,11 +41688,11 @@
             "symbol": "captureState"
           }
         },
-        "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+        "scope": "Starting profiles (#434), earned growth (#449) and validated point allocation/selected entitlements (#457) are implemented. This compound obligation remains blocked on ability-effect consumers, broader reward-source bindings and other independent progression axes/relationships. Allocation receipts do not establish those gameplay effects or native launch.",
         "state": {
-          "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
-          "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
-          "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+          "mutation": "A matching point buys one skill/mastery rank through 100, or one previously unchosen personal-tree perk after the authored level and all prerequisites. Selection records entitlements, without gameplay effects or respecialization.",
+          "outcome": "Registered progression inspection and successful actions show current ranks, selections, eligibility, ability references and remaining balances; inspection uses the shared management pause lifecycle.",
+          "owner": "RpgHero stable-ID authority owns ranks, personal tree, selected perks and skill/mastery/choice balances in the single-player recruited roster, independently of unit handles.",
           "references": [
             {
               "contains": [
@@ -41670,9 +41710,25 @@
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "turnIn"
+            },
+            {
+              "contains": [
+                "Selected perks:",
+                "ability effects are pending"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationSummary"
+            },
+            {
+              "contains": [
+                "sender != Player(0)",
+                "not hero.recruited"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationOwnerProblem"
             }
           ],
-          "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing."
+          "rejection": "Unknown/unowned characters, invalid IDs, missing balances, capped ranks, wrong trees, prerequisites and repeat selections reject before any debit or grant. Registry argument bounds reject malformed requests."
         },
         "tests": {},
         "transition": {
@@ -41692,6 +41748,14 @@
                 "f.rpg.captureState().assertEquals(expected)"
               ],
               "path": "wurst/HeroEarnedGrowthTests.wurst"
+            },
+            {
+              "contains": [
+                "f.rejectAndVerify(candidate)",
+                "destination.hero.recoveryDay.assertEquals(deadline)",
+                "destination.rpg.captureState().assertEquals(saved)"
+              ],
+              "path": "wurst/HeroAllocationTests.wurst"
             }
           ]
         }
@@ -41717,7 +41781,9 @@
         "artifact": {
           "callPatterns": [
             "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
-            "\\bRpgHero_RpgHero_awardExperience\\("
+            "\\bRpgHero_RpgHero_awardExperience\\(",
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"chooseperk\",",
+            "\\bWarcraftRpgRuntime_WarcraftRpgRuntime_allocate\\("
           ],
           "mapIds": [
             "@regional"
@@ -41739,10 +41805,27 @@
               "for field, value in hero_growth.items():"
             ],
             "path": "../_shared/tooling/package_wurst_map.py"
+          },
+          {
+            "contains": [
+              "def allocation_definitions",
+              "def allocation_wurst",
+              "prerequisitePerkIds",
+              "minimumLevel",
+              "abilityId"
+            ],
+            "path": "../_shared/tooling/hero_allocations.py"
+          },
+          {
+            "contains": [
+              "runtime[\"heroAllocationDefinitions\"] = hero_allocations",
+              "rpg += allocation_wurst(hero_allocations, ws)"
+            ],
+            "path": "../_shared/tooling/package_wurst_map.py"
           }
         ],
         "entry": {
-          "id": "live-earned-hero-growth",
+          "id": "hero-point-allocation",
           "kind": "command",
           "path": [
             {
@@ -41754,35 +41837,30 @@
             },
             {
               "contains": [
-                "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+                "class HeroAllocationCommand",
+                "runtime.allocate(sender, heroId, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
             },
             {
               "contains": [
-                "interactions.resolve(actor, sender, q.turnInId)",
-                "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+                "allocationProblem(hero, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnInQuest"
-            },
-            {
-              "contains": [
-                "hero.canAwardExperience(questDefinition.rewardExperience)",
-                "hero.awardExperience(questDefinition.rewardExperience)"
-              ],
-              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnIn"
+              "symbol": "allocate"
             }
           ],
           "registration": {
             "contains": [
-              "commands.register(\"turnin\""
+              "commands.register(\"progression\"",
+              "commands.register(\"improveskill\"",
+              "commands.register(\"improvemastery\"",
+              "commands.register(\"chooseperk\""
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "registerRpgRuntimeCommands"
           },
-          "testInvocation": ".command("
+          "testInvocation": ".action("
         },
         "mechanism": [
           {
@@ -41802,6 +41880,25 @@
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "awardExperience"
+          },
+          {
+            "contains": [
+              "Rank is capped at 100.",
+              "perk.prerequisites",
+              "hero.choicePoints < 1"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocationProblem"
+          },
+          {
+            "contains": [
+              "allocationOwnerProblem(sender, heroId)",
+              "hero.skillPoints--",
+              "hero.masteryPoints--",
+              "hero.choicePoints--"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocate"
           }
         ],
         "persistence": {
@@ -41815,7 +41912,7 @@
             "symbol": "applyRecord"
           },
           "mode": "persisted",
-          "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+          "reason": "Existing RPG v6 fields retain all allocations and balances; no durable contract change. Existing v2-v5 migrations retain recorded selections and ranks where present, with zero missing choice points. No retrospective grants, charges or refunds.",
           "references": [
             {
               "contains": [
@@ -41830,6 +41927,13 @@
                 "without replaying rewards or lowering an earned level"
               ],
               "path": "docs/LIVE_HERO_GROWTH.md"
+            },
+            {
+              "contains": [
+                "The durable contract remains **RPG v6**",
+                "retrospective grants, charges or refunds"
+              ],
+              "path": "docs/HERO_ALLOCATIONS.md"
             }
           ],
           "save": {
@@ -41840,11 +41944,11 @@
             "symbol": "captureState"
           }
         },
-        "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+        "scope": "Starting profiles (#434), earned growth (#449) and validated point allocation/selected entitlements (#457) are implemented. This compound obligation remains blocked on ability-effect consumers, broader reward-source bindings and other independent progression axes/relationships. Allocation receipts do not establish those gameplay effects or native launch.",
         "state": {
-          "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
-          "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
-          "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+          "mutation": "A matching point buys one skill/mastery rank through 100, or one previously unchosen personal-tree perk after the authored level and all prerequisites. Selection records entitlements, without gameplay effects or respecialization.",
+          "outcome": "Registered progression inspection and successful actions show current ranks, selections, eligibility, ability references and remaining balances; inspection uses the shared management pause lifecycle.",
+          "owner": "RpgHero stable-ID authority owns ranks, personal tree, selected perks and skill/mastery/choice balances in the single-player recruited roster, independently of unit handles.",
           "references": [
             {
               "contains": [
@@ -41862,9 +41966,25 @@
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "turnIn"
+            },
+            {
+              "contains": [
+                "Selected perks:",
+                "ability effects are pending"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationSummary"
+            },
+            {
+              "contains": [
+                "sender != Player(0)",
+                "not hero.recruited"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationOwnerProblem"
             }
           ],
-          "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing."
+          "rejection": "Unknown/unowned characters, invalid IDs, missing balances, capped ranks, wrong trees, prerequisites and repeat selections reject before any debit or grant. Registry argument bounds reject malformed requests."
         },
         "tests": {},
         "transition": {
@@ -41884,6 +42004,14 @@
                 "f.rpg.captureState().assertEquals(expected)"
               ],
               "path": "wurst/HeroEarnedGrowthTests.wurst"
+            },
+            {
+              "contains": [
+                "f.rejectAndVerify(candidate)",
+                "destination.hero.recoveryDay.assertEquals(deadline)",
+                "destination.rpg.captureState().assertEquals(saved)"
+              ],
+              "path": "wurst/HeroAllocationTests.wurst"
             }
           ]
         }
@@ -66747,7 +66875,9 @@
         "artifact": {
           "callPatterns": [
             "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"turnin\",",
-            "\\bRpgHero_RpgHero_awardExperience\\("
+            "\\bRpgHero_RpgHero_awardExperience\\(",
+            "\\b[\\w.]*CommandRegistry[\\w]*register[\\w]*\\([^,\\n]+,\\s*\"chooseperk\",",
+            "\\bWarcraftRpgRuntime_WarcraftRpgRuntime_allocate\\("
           ],
           "mapIds": [
             "@regional"
@@ -66769,10 +66899,27 @@
               "for field, value in hero_growth.items():"
             ],
             "path": "../_shared/tooling/package_wurst_map.py"
+          },
+          {
+            "contains": [
+              "def allocation_definitions",
+              "def allocation_wurst",
+              "prerequisitePerkIds",
+              "minimumLevel",
+              "abilityId"
+            ],
+            "path": "../_shared/tooling/hero_allocations.py"
+          },
+          {
+            "contains": [
+              "runtime[\"heroAllocationDefinitions\"] = hero_allocations",
+              "rpg += allocation_wurst(hero_allocations, ws)"
+            ],
+            "path": "../_shared/tooling/package_wurst_map.py"
           }
         ],
         "entry": {
-          "id": "live-earned-hero-growth",
+          "id": "hero-point-allocation",
           "kind": "command",
           "path": [
             {
@@ -66784,35 +66931,30 @@
             },
             {
               "contains": [
-                "runtime.turnInQuest(sender,first,second,getCampaignDay(),30)"
+                "class HeroAllocationCommand",
+                "runtime.allocate(sender, heroId, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
             },
             {
               "contains": [
-                "interactions.resolve(actor, sender, q.turnInId)",
-                "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+                "allocationProblem(hero, kind, id)"
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnInQuest"
-            },
-            {
-              "contains": [
-                "hero.canAwardExperience(questDefinition.rewardExperience)",
-                "hero.awardExperience(questDefinition.rewardExperience)"
-              ],
-              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
-              "symbol": "turnIn"
+              "symbol": "allocate"
             }
           ],
           "registration": {
             "contains": [
-              "commands.register(\"turnin\""
+              "commands.register(\"progression\"",
+              "commands.register(\"improveskill\"",
+              "commands.register(\"improvemastery\"",
+              "commands.register(\"chooseperk\""
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "registerRpgRuntimeCommands"
           },
-          "testInvocation": ".command("
+          "testInvocation": ".action("
         },
         "mechanism": [
           {
@@ -66832,6 +66974,25 @@
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "awardExperience"
+          },
+          {
+            "contains": [
+              "Rank is capped at 100.",
+              "perk.prerequisites",
+              "hero.choicePoints < 1"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocationProblem"
+          },
+          {
+            "contains": [
+              "allocationOwnerProblem(sender, heroId)",
+              "hero.skillPoints--",
+              "hero.masteryPoints--",
+              "hero.choicePoints--"
+            ],
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "allocate"
           }
         ],
         "persistence": {
@@ -66845,7 +67006,7 @@
             "symbol": "applyRecord"
           },
           "mode": "persisted",
-          "reason": "RPG v6 appends choice balances. v2-v5 keep recorded earned levels and residual XP rebased to the new floor, allocations and reward history, with zero missing choice points; v1 stays the first-recruitment path. No retrospective points.",
+          "reason": "Existing RPG v6 fields retain all allocations and balances; no durable contract change. Existing v2-v5 migrations retain recorded selections and ranks where present, with zero missing choice points. No retrospective grants, charges or refunds.",
           "references": [
             {
               "contains": [
@@ -66860,6 +67021,13 @@
                 "without replaying rewards or lowering an earned level"
               ],
               "path": "docs/LIVE_HERO_GROWTH.md"
+            },
+            {
+              "contains": [
+                "The durable contract remains **RPG v6**",
+                "retrospective grants, charges or refunds"
+              ],
+              "path": "docs/HERO_ALLOCATIONS.md"
             }
           ],
           "save": {
@@ -66870,11 +67038,11 @@
             "symbol": "captureState"
           }
         },
-        "scope": "Earned-growth arithmetic, registered quest reward delivery, inspection and persistence only (#449). Broader reward-source bindings, point spending, ability effects and remaining independent axes/relationships remain unresolved. This compound obligation remains blocked; cap/earned-growth receipts cannot establish its broader gameplay integration.",
+        "scope": "Starting profiles (#434), earned growth (#449) and validated point allocation/selected entitlements (#457) are implemented. This compound obligation remains blocked on ability-effect consumers, broader reward-source bindings and other independent progression axes/relationships. Allocation receipts do not establish those gameplay effects or native launch.",
         "state": {
-          "mutation": "Validated cumulative-floor conversion and quotient differences grant only newly earned level boundaries. Registered quest turn-ins commit to the selected eligible character once.",
-          "outcome": "Inventory inspection reports authoritative level, residual and remaining XP, all unspent balances and retained allocations.",
-          "owner": "RpgHero stable-ID authority owns level, residual XP and skill/mastery/choice balances independently of Warcraft objects.",
+          "mutation": "A matching point buys one skill/mastery rank through 100, or one previously unchosen personal-tree perk after the authored level and all prerequisites. Selection records entitlements, without gameplay effects or respecialization.",
+          "outcome": "Registered progression inspection and successful actions show current ranks, selections, eligibility, ability references and remaining balances; inspection uses the shared management pause lifecycle.",
+          "owner": "RpgHero stable-ID authority owns ranks, personal tree, selected perks and skill/mastery/choice balances in the single-player recruited roster, independently of unit handles.",
           "references": [
             {
               "contains": [
@@ -66892,9 +67060,25 @@
               ],
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "turnIn"
+            },
+            {
+              "contains": [
+                "Selected perks:",
+                "ability effects are pending"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationSummary"
+            },
+            {
+              "contains": [
+                "sender != Player(0)",
+                "not hero.recruited"
+              ],
+              "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+              "symbol": "allocationOwnerProblem"
             }
           ],
-          "rejection": "Invalid or overflowing awards reject before XP, points, quest state or currency mutate. Incomplete, repeated and physically invalid turn-ins add nothing."
+          "rejection": "Unknown/unowned characters, invalid IDs, missing balances, capped ranks, wrong trees, prerequisites and repeat selections reject before any debit or grant. Registry argument bounds reject malformed requests."
         },
         "tests": {},
         "transition": {
@@ -66914,6 +67098,14 @@
                 "f.rpg.captureState().assertEquals(expected)"
               ],
               "path": "wurst/HeroEarnedGrowthTests.wurst"
+            },
+            {
+              "contains": [
+                "f.rejectAndVerify(candidate)",
+                "destination.hero.recoveryDay.assertEquals(deadline)",
+                "destination.rpg.captureState().assertEquals(saved)"
+              ],
+              "path": "wurst/HeroAllocationTests.wurst"
             }
           ]
         }

@@ -127,7 +127,7 @@ class Projections implements RpgProjectionPort
 	source.heroes.recruit("hero")
 	hero.level=20
 	hero.masteryPoints=4
-	hero.choosePerk("navigation",1)
+	hero.chosenPerks = "~navigation~" // Pre-allocation legacy entitlement fixture.
 	hero.wound(10,5)
 	let coat=new RpgItem("coat","Coat","chest","rare",10,5)
 	coat.setId="set"

@@ -3,6 +3,7 @@ package WarcraftRpgRuntime
 import ResearchCost
 import QuestStages
 import HeroProgression
+import HeroAllocationDefinitions
 
 import WC3Compatibility
 import ManagementScreenPauseController
@@ -22,7 +23,7 @@ public constant string QUEST_ACTIVE = "active"
 public constant string QUEST_READY = "ready_to_turn_in"
 public constant string QUEST_COMPLETE = "complete"
 public constant string QUEST_FAILED = "failed"
-constant string RPG_MANAGEMENT_HELP = "Management pauses the campaign. Switch with /roster, /inventory [HERO], /journal, or /technology. Close with /rpg-close. Other open management screens retain their pause."
+constant string RPG_MANAGEMENT_HELP = "Management pauses the campaign. Switch with /roster, /inventory [HERO], /progression HERO, /journal, or /technology. Close with /rpg-close. Other open management screens retain their pause."
 
 function textContains(string haystack,string needle) returns boolean
 	if needle == ""
@@ -160,6 +161,14 @@ function progressionRank(string ranks, string id) returns int
 	let remaining = SubString(text, start + StringLength(id) + 2, StringLength(text))
 	return S2I(SubString(remaining, 0, remaining.indexOf("~")))
 
+function improvedProgressionRank(string ranks, string id) returns string
+	let start = ("~" + ranks).indexOf("~" + id + ":")
+	let next = id + ":" + (progressionRank(ranks, id) + 1).toString() + "~"
+	if start < 0
+		return ranks + next
+	let remaining = SubString(ranks, start, StringLength(ranks))
+	return SubString(ranks, 0, start) + next + SubString(remaining, remaining.indexOf("~") + 1, StringLength(remaining))
+
 function progressionLabel(string id) returns string
 	var result = ""
 	for i = 0 to StringLength(id) - 1
@@ -168,6 +177,22 @@ function progressionLabel(string id) returns string
 			result += " "
 		else
 			result += letter
+	return result
+
+function progressionSelectionsText(string selections) returns string
+	var result = ""
+	var separator = false
+	for i = 0 to StringLength(selections) - 1
+		let letter = SubString(selections, i, i + 1)
+		if letter == "~"
+			separator = result != ""
+		else
+			if separator
+				result += ", "
+			result += letter
+			separator = false
+	if result == ""
+		return "None"
 	return result
 
 function progressionRanksText(string ranks) returns string
@@ -316,11 +341,8 @@ public class RpgHero
 		if level == RPG_LEVEL_CAP
 			progress = experience.toString() + " | Level cap reached | Remaining experience 0"
 		return "Level " + level + " | Experience " + progress + " | Skill points " + skillPoints + " | Mastery points " + masteryPoints + " | Choice points " + choicePoints + "\nSkills: " + progressionRanksText(skillRanks) + "\nMasteries: " + progressionRanksText(masteryRanks) + "\nPersonal tree: " + progressionLabel(signatureProgressionId)
-	function choosePerk(string perkId,int requiredLevel) returns boolean
-		if perkId == "" or not rpgStableText(perkId) or perkId.indexOf("~") >= 0 or level < requiredLevel or textContains(chosenPerks,"~"+perkId+"~")
-			return false
-		chosenPerks += "~"+perkId+"~"
-		return true
+	function hasPerk(string perkId) returns boolean
+		return progressionId(perkId) and textContains(chosenPerks, "~" + perkId + "~")
 	function changeLoyalty(int delta)
 		if oathbound and delta < 0
 			return
@@ -1006,6 +1028,7 @@ public class WarcraftInteractionActors implements InteractionActors
  * stable fields; reconstruct() recreates only transient Warcraft projections. */
 public class WarcraftRpgRuntime
 	ManagementScreenSession management = new ManagementScreenSession()
+	HeroAllocationDefinitions allocations = new HeroAllocationDefinitions()
 	HeroRoster heroes = new HeroRoster()
 	PlayerInventory inventory = new PlayerInventory()
 	QuestJournalRuntime journal = new QuestJournalRuntime()
@@ -1020,6 +1043,109 @@ public class WarcraftRpgRuntime
 		interactions.actors = new WarcraftInteractionActors(heroes)
 	function setProjectionPort(RpgProjectionPort value)
 		projections=value
+	/** The strategic roster belongs to the single campaign player, independently
+	 * of unit existence, assignment, or recovery. Never trust a caller's cost,
+	 * level requirement, tree or native unit ownership as allocation authority. */
+	function allocationOwnerProblem(player sender, string heroId) returns string
+		if sender != Player(0)
+			return "Only the campaign player can manage this roster."
+		let hero = heroes.get(heroId)
+		if hero == null
+			return "Unknown character."
+		if not hero.recruited
+			return "That character is not in your recruited roster."
+		return ""
+	function allocationProblem(RpgHero hero, string kind, string id) returns string
+		if not progressionId(id)
+			return "Invalid allocation ID."
+		if kind == "skill" or kind == "mastery"
+			if allocations.rank(kind, id) == null
+				return "Unknown " + kind + "."
+			var ranks = hero.skillRanks
+			var allowed = hero.skillIds
+			var points = hero.skillPoints
+			if kind == "mastery"
+				ranks = hero.masteryRanks
+				allowed = hero.masteryIds
+				points = hero.masteryPoints
+			if not textContains(allowed, "~" + id + "~") or not validProgressionRanks(ranks, allowed)
+				return "Invalid rank authority."
+			if progressionRank(ranks, id) >= 100
+				return "Rank is capped at 100."
+			if points < 1
+				return "Insufficient " + kind + " points."
+			if not validProgressionRanks(improvedProgressionRank(ranks, id), allowed)
+				return "Rank storage is full."
+			return ""
+		if kind != "perk"
+			return "Unknown allocation kind."
+		let perk = allocations.perk(id)
+		if perk == null or allocations.getAbility(perk.abilityId) == null
+			return "Unknown perk or ability definition."
+		if not allocations.inTree(hero.signatureProgressionId, id)
+			return "Perk is outside this character's personal tree."
+		if hero.hasPerk(id)
+			return "Perk is already selected."
+		if hero.level < perk.minimumLevel
+			return "Requires level " + perk.minimumLevel + "."
+		for i = 0 to allocations.perkCount - 1
+			let required = allocations.perks[i].id
+			if textContains(perk.prerequisites, "~" + required + "~") and not hero.hasPerk(required)
+				return "Requires perk " + required + "."
+		if hero.choicePoints < 1
+			return "Insufficient choice points."
+		return ""
+	function allocate(player sender, string heroId, string kind, string id) returns string
+		let ownerProblem = allocationOwnerProblem(sender, heroId)
+		if ownerProblem != ""
+			return ownerProblem
+		let hero = heroes.get(heroId)
+		let problem = allocationProblem(hero, kind, id)
+		if problem != ""
+			return problem
+		// All validation precedes the debit and mutation. No projection callback
+		// grants abilities or replays allocations during reconstruction.
+		if kind == "skill"
+			hero.skillRanks = improvedProgressionRank(hero.skillRanks, id)
+			hero.skillPoints--
+		else if kind == "mastery"
+			hero.masteryRanks = improvedProgressionRank(hero.masteryRanks, id)
+			hero.masteryPoints--
+		else
+			hero.chosenPerks += "~" + id + "~"
+			hero.choicePoints--
+		return ""
+	function allocationSummary(string heroId) returns string
+		let hero = heroes.get(heroId)
+		var rows = hero.name + " [" + hero.id + "]\n" + hero.progressionSummary() + "\nSelected perks: " + progressionSelectionsText(hero.chosenPerks)
+		rows += "\nOne matching point buys one rank (maximum 100); one choice point buys one perk. Respecialization is unavailable."
+		for i = 0 to allocations.rankCount - 1
+			let definition = allocations.ranks[i]
+			var rank = hero.skillRank(definition.id)
+			if definition.kind == "mastery"
+				rank = hero.masteryRank(definition.id)
+			var status = allocationProblem(hero, definition.kind, definition.id)
+			if status == ""
+				status = "Available"
+			rows += "\n" + definition.kind + " " + definition.id + " (" + definition.name + "): " + rank + " | " + status
+		for i = 0 to allocations.perkCount - 1
+			let perk = allocations.perks[i]
+			if allocations.inTree(hero.signatureProgressionId, perk.id)
+				var status = allocationProblem(hero, "perk", perk.id)
+				if status == ""
+					status = "Available"
+				rows += "\nperk " + perk.id + " | level " + perk.minimumLevel + " | prerequisites " + progressionSelectionsText(perk.prerequisites) + " | ability " + perk.abilityId + " | " + status
+		rows += "\nSelected perks retain ability entitlements; ability effects are pending.\nUse /improveskill HERO SKILL, /improvemastery HERO MASTERY, or /chooseperk HERO PERK."
+		return rows
+	function hasSelectedAbility(string heroId, string abilityId) returns boolean
+		let hero = heroes.get(heroId)
+		if hero == null or not hero.recruited or allocations.getAbility(abilityId) == null
+			return false
+		for i = 0 to allocations.perkCount - 1
+			let perk = allocations.perks[i]
+			if perk.abilityId == abilityId and allocations.inTree(hero.signatureProgressionId, perk.id) and hero.hasPerk(perk.id)
+				return true
+		return false
 	/** Establishes a deterministic playable party for a new campaign. Existing
 	 * recruited characters win; otherwise the first temporally eligible scenario
 	 * character becomes the main character, using the same recruitment gate. */
@@ -1576,6 +1702,31 @@ class RpgScreenCommand implements CommandHandler
 			rows = technologyText(runtime,runtime.researchResources.controllerId(sender),runtime.researchResources.year())
 		output.show(sender,rows+"\n"+RPG_MANAGEMENT_HELP)
 
+class HeroAllocationCommand implements CommandHandler
+	WarcraftRpgRuntime runtime
+	string kind
+	CommandOutput output
+	construct(WarcraftRpgRuntime runtime, string kind, CommandOutput output)
+		this.runtime = runtime
+		this.kind = kind
+		this.output = output
+	override function execute(player sender, string arguments)
+		var heroId = arguments
+		var id = ""
+		let cut = arguments.indexOf(" ")
+		if cut > 0
+			heroId = SubString(arguments, 0, cut)
+			id = SubString(arguments, cut + 1, StringLength(arguments))
+		var problem = runtime.allocationOwnerProblem(sender, heroId)
+		if problem == "" and kind != "inspect"
+			problem = runtime.allocate(sender, heroId, kind, id)
+		if problem != ""
+			output.show(sender, problem)
+			return
+		if kind == "inspect"
+			runtime.management.open("progression")
+		output.show(sender, runtime.allocationSummary(heroId) + "\n" + RPG_MANAGEMENT_HELP)
+
 class RecruitHeroCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
 	CommandOutput output
@@ -1644,7 +1795,7 @@ class RpgActionCommand implements CommandHandler
 
 public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime) returns string
 	// Install the close action before any command that can acquire ownership.
-	var problem=commands.register("rpg-close","","rpg-close","Close RPG management.","Closes roster, inventory/equipment, journal or technology management. Other open screens and a pre-existing manual pause remain paused.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"close",commands.output))
+	var problem=commands.register("rpg-close","","rpg-close","Close RPG management.","Closes roster, inventory/equipment, progression, journal or technology management. Other open screens and a pre-existing manual pause remain paused.",0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"close",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("roster","heroes,companions","roster","Open the hero roster; /rpg-close closes it.","Shows recruited heroes, active-field capacity, assignments, recovery, progression and loyalty. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"roster",commands.output))
@@ -1657,6 +1808,18 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	if problem != ""
 		return problem
 	problem=commands.register("technology","institutions","technology","Open technology; /rpg-close closes it.","Shows research costs, ahead-of-time difficulty, institutional support and unlocked effects. "+RPG_MANAGEMENT_HELP,0,0,COMMAND_RELEASE,new RpgScreenCommand(runtime,"technology",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("progression","","progression HERO","Inspect hero allocations; /rpg-close closes it.","Shows your recruited character's ranks, personal-tree perks, eligibility, selected ability entitlements and remaining points. Ability effects are pending. "+RPG_MANAGEMENT_HELP,1,1,COMMAND_RELEASE,new HeroAllocationCommand(runtime,"inspect",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("improveskill","","improveskill HERO SKILL","Spend one skill point for one rank.","Uses the character's own points. Rank cap: 100. Inspect IDs and balances with /progression HERO. Respecialization is unavailable.",2,2,COMMAND_RELEASE,new HeroAllocationCommand(runtime,"skill",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("improvemastery","","improvemastery HERO MASTERY","Spend one mastery point for one rank.","Uses the character's own points. Rank cap: 100. Inspect IDs and balances with /progression HERO. Respecialization is unavailable.",2,2,COMMAND_RELEASE,new HeroAllocationCommand(runtime,"mastery",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("chooseperk","","chooseperk HERO PERK","Spend one choice point for a personal-tree perk.","Requires the authored minimum level and every prerequisite perk. A perk can only be selected once. Records its ability entitlement; ability effects are pending. Respecialization is unavailable. Inspect with /progression HERO.",2,2,COMMAND_RELEASE,new HeroAllocationCommand(runtime,"perk",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","The current campaign date must be within the character's recruitment window. Recruited companions remain yours after it closes.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime,commands.output))
