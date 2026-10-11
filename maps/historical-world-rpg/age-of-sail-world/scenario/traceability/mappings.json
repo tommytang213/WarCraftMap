@@ -11234,7 +11234,7 @@
       ],
       "persistence": {
         "mode": "reconstructed",
-        "reason": "Authorization is never cached or serialized. Schema 9 separately persists command-map identity and discovered regions; this policy continues reading current military control after commit and rollback.",
+        "reason": "Authorization is never cached or serialized. Schema 10 persists discovery separately from command-map identity; this policy continues reading current military control after commit and rollback.",
         "references": [
           {
             "contains": [
@@ -11252,7 +11252,7 @@
           },
           {
             "contains": [
-              "regionAccess.reveal(loadedRegion)",
+              "maps.setPhysicalRegion(loadedRegion)",
               "regionSelector.afterCampaignLoad(loadedRegion)"
             ],
             "path": "wurst/PlayableCampaignRuntime.wurst",
@@ -11407,7 +11407,7 @@
           },
           {
             "contains": [
-              "known[i] = true"
+              "state.knowledge.revealRegion(id)"
             ],
             "path": "wurst/PlayableCampaignRuntime.wurst",
             "symbol": "reveal"
@@ -11514,7 +11514,7 @@
       ],
       "persistence": {
         "mode": "reconstructed",
-        "reason": "Authorization is never cached or serialized. Schema 9 separately persists command-map identity and discovered regions; this policy continues reading current military control after commit and rollback.",
+        "reason": "Authorization is never cached or serialized. Schema 10 persists discovery separately from command-map identity; this policy continues reading current military control after commit and rollback.",
         "references": [
           {
             "contains": [
@@ -11532,7 +11532,7 @@
           },
           {
             "contains": [
-              "regionAccess.reveal(loadedRegion)",
+              "maps.setPhysicalRegion(loadedRegion)",
               "regionSelector.afterCampaignLoad(loadedRegion)"
             ],
             "path": "wurst/PlayableCampaignRuntime.wurst",
@@ -11687,7 +11687,7 @@
           },
           {
             "contains": [
-              "known[i] = true"
+              "state.knowledge.revealRegion(id)"
             ],
             "path": "wurst/PlayableCampaignRuntime.wurst",
             "symbol": "reveal"

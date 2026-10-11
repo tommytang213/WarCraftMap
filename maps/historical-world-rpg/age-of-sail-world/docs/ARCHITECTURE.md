@@ -199,6 +199,35 @@ landmark geometry, and English labels. Canonical settlements, routes, and
 boundaries are consumed from validated world data. The runtime map-screen
 controller owns a modal pause token while either view is open; focusing changes
 presentation only and cannot move units or change the physical region.
+
+The live `DiscoveryKnowledge` authority implements the region and exact visited
+settlement portion of that contract. `PlayableCampaignState` captures it in the
+schema 10 `discovery` domain and restores it inside the ordinary load transaction,
+including rollback. Generated definitions use the scenario map catalogue's names
+and regional membership for every settlement, including abstract settlements
+without a permanent building. The headless precision/search-area contract and
+RPG treasure authority remain separate and retain their existing saved state.
+
+New campaigns earn authored starting regions and their selected origin settlement.
+`WarcraftRpgRuntime.interact` records a canonical settlement only after physical
+eligibility and location are rechecked at commit. This includes questless visits
+and quest-location aliases; successful local turn-ins use the same listener.
+Committed physical arrival reveals only its region. Remote command, map focus,
+holdings and origin reconstruction never synthesize settlement visits.
+
+`/map world` lists known regions and settlements. `/map <region-id>` filters
+settlements by that region; `/map focus <settlement-id>` uses the existing exact
+focus presentation. Unknown, invalid or unavailable requests fail before changing
+the view or acquiring a modal token. Focus leaves party coordinates, orders,
+camera and command context intact. Closing releases only the map's pause owner.
+Map knowledge never grants ownership or permission to command a region.
+
+Schema 1–9 migration preserves recorded settlement/region IDs and the legacy
+command-context region set. Empty legacy discovery stays without settlement
+visits; the starting identity is not used to invent missing history. Current
+records reject unknown IDs, duplicates, missing membership and malformed rows.
+No source save is rewritten on load. Quest-to-map guidance, clue acquisition,
+search-area presentation and the deferred frame work in #440 remain downstream.
 # Controller military traditions
 
 `_shared/engine/military_tradition.py` owns controller/category experience and

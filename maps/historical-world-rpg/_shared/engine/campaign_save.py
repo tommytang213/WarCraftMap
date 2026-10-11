@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 
-CURRENT_SCHEMA_VERSION = 9
+CURRENT_SCHEMA_VERSION = 10
 AUTOSAVE_SLOT_COUNT = 15
 CHECKSUM_ALGORITHM = "sha256"
 CANONICALIZATION = "json_utf8_sorted_v1"
@@ -106,6 +106,7 @@ class MigrationRegistry:
             self.register(6, _migrate_v6_to_v7)
             self.register(7, _migrate_v7_to_v8)
             self.register(8, _migrate_v8_to_v9)
+            self.register(9, _migrate_v9_to_v10)
 
     def register(self, source_version: int, migration: Migration) -> None:
         if source_version < 0 or source_version >= self.current_version:
@@ -248,6 +249,16 @@ def _migrate_v8_to_v9(document: dict[str, Any]) -> dict[str, Any]:
     authority. The live codec supplies its generated home-map/knowledge defaults.
     """
     document["schemaVersion"] = 9
+    return document
+
+
+def _migrate_v9_to_v10(document: dict[str, Any]) -> dict[str, Any]:
+    """Align live visited-settlement persistence with DiscoveryKnowledge.
+
+    Headless mapKnowledge already carries exact/approximate authority; preserve
+    it and treasure state verbatim. Only the live codec migrates compact IDs.
+    """
+    document["schemaVersion"] = 10
     return document
 
 

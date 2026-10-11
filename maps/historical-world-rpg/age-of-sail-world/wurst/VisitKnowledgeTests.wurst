@@ -1,0 +1,314 @@
+package VisitKnowledgeTests
+
+import CampaignStartupTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import CampaignHandoff
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import WarcraftRegionalRuntime
+import PhysicalInteraction
+import CommandRouter
+import MapDiscoveryScreen
+import ManagementScreenPauseController
+import RemoteRegionManagement
+import MilitarySettlementRuntime
+import Wurstunit
+
+class VisitOutput implements CommandOutput, CampaignPauseRuntime
+	string last = ""
+	string all = ""
+	boolean paused = false
+	override function show(player sender, string message)
+		last = message
+		all += message + "\n"
+	override function setCampaignPaused(boolean value)
+		paused = value
+
+/** Real generated geometry and production adapters; only native observations,
+ * storage, pause and text are recorded. Moving the actor simulates walking. */
+class VisitFixture
+	StartupFixture f
+	PlayableCampaignServices campaign
+	VisitOutput output = new VisitOutput()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(output, false)
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), output)
+	construct(StartupStorage cache, StartupStorage saves, string mapId)
+		f = new StartupFixture(cache, saves, mapId)
+		campaign = f.campaign
+		campaign.state.commandPauses = pauses
+		campaign.regionSelector.pauseController = pauses
+		campaign.maps.pauses = pauses
+		campaign.mapPresentation.output = output
+		f.clock.bindManagementPause(pauses)
+		campaign.autosaves.bindManagementPause(pauses)
+		registerCampaignMapCommand(commands, campaign.maps, campaign.state)
+		registerCampaignSaveCommands(commands, campaign)
+		registerRegionCommand(commands, campaign.regionSelector, output).assertEquals("")
+	function bind()
+		campaign.state.rpg.interactions.actors = f.ports
+		registerRpgRuntimeCommands(commands, campaign.state.rpg).assertEquals("")
+	function start(string origin)
+		f.start(origin)
+		bind()
+	function resume()
+		f.register()
+		campaign.startup().assertTrue()
+		f.ports.selectorIdentity = campaign.identity
+		bind()
+	function dispatch(string text)
+		let previousTimer = bj_gameStartedTimer
+		bj_gameStartedTimer = CreateTimer()
+		commands.dispatch(Player(0), text).assertTrue()
+		DestroyTimer(bj_gameStartedTimer)
+		bj_gameStartedTimer = previousTimer
+	function moveTo(string id)
+		let target = campaign.state.rpg.interactions.get(id)
+		(target != null).assertTrue()
+		let actor = campaign.state.rpg.heroes.indexOf(campaign.state.rpg.heroes.mainCharacterId)
+		f.ports.memberX[actor] = target.x
+		f.ports.memberY[actor] = target.y
+	function visit(string id)
+		moveTo(id)
+		dispatch("/interact " + id)
+		output.last.assertEquals("Action completed.")
+	function rejectMap(string command)
+		let known = campaign.state.knowledge.snapshot()
+		let owners = pauses.getModalOwnerCount()
+		let context = campaign.maps.getContext()
+		let focus = campaign.maps.getFocusedRegionId()
+		dispatch(command)
+		campaign.state.knowledge.snapshot().assertEquals(known)
+		pauses.getModalOwnerCount().assertEquals(owners)
+		campaign.maps.getContext().assertEquals(context)
+		campaign.maps.getFocusedRegionId().assertEquals(focus)
+	function close()
+		campaign.maps.close()
+		campaign.regionSelector.afterCampaignLoad(campaign.travel.physicalRegionId())
+		f.clock.detachTimer()
+		campaign.autosaves.detachTimer()
+
+@test function validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus()
+	let f = new VisitFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("portugal")
+	let knowledge = f.campaign.state.knowledge
+	knowledge.knowsSettlement("lisbon").assertTrue()
+	knowledge.knowsSettlement("seville").assertFalse()
+	let quests = f.campaign.state.rpg.captureState()
+	f.visit("seville")
+	// This settlement has no offer or reward in the production fixture.
+	f.campaign.state.rpg.captureState().assertEquals(quests)
+	knowledge.knowsSettlement("seville").assertTrue()
+	f.rejectMap("/map africa")
+	f.rejectMap("/map invalid")
+	f.rejectMap("/map europe extra")
+	f.rejectMap("/map focus london")
+	f.rejectMap("/map focus hidden_desert_ruin")
+	f.rejectMap("/map focus missing")
+	f.dispatch("/map world")
+	f.output.last.contains("Europe (europe)").assertTrue()
+	f.output.last.contains("Seville (seville)").assertTrue()
+	f.output.last.contains("Africa (africa)").assertFalse()
+	knowledge.revealRegion("africa").assertTrue()
+	f.dispatch("/map africa")
+	f.output.last.contains("Regional map: Africa").assertTrue()
+	f.output.last.contains("Seville").assertFalse()
+	f.output.last.contains("Timbuktu").assertFalse()
+	f.output.last.contains("Hidden Desert Ruin").assertFalse()
+	let party = lastAuthorityValue(f.campaign.state.captureAuthoritativeState(), "partyLocations")
+	let military = f.campaign.state.militarySettlements.snapshot()
+	let command = f.campaign.regionSelector.getCommandRegionId()
+	let camera = f.campaign.state.regional castTo StartupRegionalAdapter
+	let cameraChanges = camera.cameraChanges
+	f.dispatch("/map close")
+	f.pauses.setManuallyPaused(true)
+	let outer = f.pauses.openModalManagementScreen()
+	f.dispatch("/map focus seville")
+	f.output.last.assertEquals("Exact known settlement: Seville (seville)")
+	f.campaign.maps.getFocusedRegionId().assertEquals("europe")
+	lastAuthorityValue(f.campaign.state.captureAuthoritativeState(), "partyLocations").assertEquals(party)
+	f.campaign.state.militarySettlements.snapshot().assertEquals(military)
+	f.campaign.regionSelector.getCommandRegionId().assertEquals(command)
+	camera.cameraChanges.assertEquals(cameraChanges)
+	f.campaign.regionAccess.mayCommandRegion(Player(0), "europe").assertFalse()
+	f.dispatch("/map close")
+	f.pauses.getModalOwnerCount().assertEquals(1)
+	outer.close()
+	f.output.paused.assertTrue()
+	f.pauses.setManuallyPaused(false)
+	f.close()
+
+class StaleVisitActors implements InteractionActors
+	InteractionActors delegate
+	int reads = 0
+	construct(InteractionActors delegate)
+		this.delegate = delegate
+	override function present(int actor, player owner) returns boolean
+		reads++
+		return reads == 1 and delegate.present(actor, owner)
+	override function x(int actor) returns real
+		return delegate.x(actor)
+	override function y(int actor) returns real
+		return delegate.y(actor)
+	override function movement(int actor) returns int
+		return delegate.movement(actor)
+
+@test function wrongMapDistantStaleAndMalformedInteractionsNeverInventVisits()
+	let f = new VisitFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("portugal")
+	let before = f.campaign.state.knowledge.snapshot()
+	f.dispatch("/interact seville")
+	f.dispatch("/interact missing")
+	f.commands.dispatch(Player(0), "/interact seville extra").assertFalse()
+	f.moveTo("timbuktu")
+	f.dispatch("/interact timbuktu")
+	f.campaign.state.knowledge.snapshot().assertEquals(before)
+	f.moveTo("seville")
+	f.campaign.state.rpg.interactions.actors = new StaleVisitActors(f.f.ports)
+	f.dispatch("/interact seville")
+	f.output.last.assertEquals("Requirements are not met here.")
+	f.campaign.state.knowledge.snapshot().assertEquals(before)
+	f.campaign.state.rpg.interactions.actors = f.f.ports
+	f.campaign.state.beginTransition()
+	f.dispatch("/interact seville")
+	f.rejectMap("/map world")
+	f.campaign.state.cancelTransition()
+	f.campaign.state.knowledge.snapshot().assertEquals(before)
+	f.visit("quest_location_london")
+	f.campaign.state.knowledge.knowsSettlement("london").assertTrue()
+	f.close()
+
+@test function multipleVisitsSurviveFailedSaveFreshLoadPhysicalTravelAndReturn()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	source.visit("baghdad")
+	source.visit("delhi")
+	source.dispatch("/save 1")
+	let saved = source.f.saves.read("manual_01")
+	source.f.saves.failKey = "manual_01"
+	source.dispatch("/save 1")
+	source.f.saves.read("manual_01").assertEquals(saved)
+	let known = source.campaign.state.knowledge.snapshot()
+	source.campaign.state.knowledge.knowsSettlement("delhi").assertTrue()
+	let fresh = new VisitFixture(source.f.cache, source.f.saves, "middle_east_india")
+	fresh.resume()
+	fresh.dispatch("/load 1")
+	fresh.campaign.state.knowledge.snapshot().assertEquals(known)
+	fresh.dispatch("/map focus baghdad")
+	fresh.output.last.contains("Baghdad").assertTrue()
+	fresh.dispatch("/map close")
+	let treasure = fresh.campaign.state.rpg.treasures.treasures[0]
+	treasure.clueStage = treasure.clueCount
+	let resolution = treasure.resolution.encode()
+	let precision = treasure.clueStage
+	fresh.campaign.travel.transition(fresh.campaign.state.boundary("middle_east_india_to_africa"), .75, "travel").assertTrue()
+	let destination = new VisitFixture(source.f.cache, source.f.saves, "africa")
+	destination.resume()
+	destination.campaign.state.knowledge.knowsRegion("africa").assertTrue()
+	destination.campaign.state.knowledge.knowsSettlement("timbuktu").assertFalse()
+	destination.visit("timbuktu")
+	destination.dispatch("/map africa")
+	destination.output.last.contains("Timbuktu (timbuktu)").assertTrue()
+	destination.output.last.contains("Delhi").assertFalse()
+	destination.dispatch("/map close")
+	destination.campaign.travel.transition(destination.campaign.state.boundary("africa_to_middle_east_india"), .37, "return").assertTrue()
+	let home = new VisitFixture(source.f.cache, source.f.saves, "middle_east_india")
+	home.resume()
+	home.campaign.state.knowledge.knowsSettlement(source.campaign.identity.settlementId()).assertTrue()
+	home.campaign.state.knowledge.knowsSettlement("baghdad").assertTrue()
+	home.campaign.state.knowledge.knowsSettlement("delhi").assertTrue()
+	home.campaign.state.knowledge.knowsSettlement("timbuktu").assertTrue()
+	home.campaign.state.rpg.treasures.treasures[0].resolution.encode().assertEquals(resolution)
+	home.campaign.state.rpg.treasures.treasures[0].clueStage.assertEquals(precision)
+	home.dispatch("/map focus timbuktu")
+	home.campaign.maps.getPhysicalRegionId().assertEquals("middle_east_india")
+	source.close()
+	fresh.close()
+	destination.close()
+	home.close()
+
+@test function remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.state.militarySettlements.transferSovereignty("london", "player")
+	let known = source.campaign.state.knowledge.snapshot()
+	let party = lastAuthorityValue(source.campaign.state.captureAuthoritativeState(), "partyLocations")
+	source.dispatch("/region europe")
+	let remote = new VisitFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.resume()
+	remote.moveTo("london")
+	remote.dispatch("/interact london")
+	remote.output.last.assertEquals("Requirements are not met here.")
+	remote.campaign.state.knowledge.snapshot().assertEquals(known)
+	remote.rejectMap("/map focus london")
+	remote.dispatch("/map world")
+	remote.output.last.contains("London (london)").assertFalse()
+	remote.dispatch("/map close")
+	lastAuthorityValue(remote.campaign.state.captureAuthoritativeState(), "partyLocations").assertEquals(party)
+	remote.dispatch("/region return")
+	let home = new VisitFixture(source.f.cache, source.f.saves, "africa")
+	home.resume()
+	home.campaign.state.knowledge.snapshot().assertEquals(known)
+	lastAuthorityValue(home.campaign.state.captureAuthoritativeState(), "partyLocations").assertEquals(party)
+	home.campaign.regionAccess.mayCommandRegion(Player(0), "africa").assertFalse()
+	source.close()
+	remote.close()
+	home.close()
+
+@test function legacyDiscoveryPreservesOnlyRecordedIdsAndCurrentMalformedKnowledgeRejects()
+	let f = new VisitFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("portugal")
+	let current = f.campaign.state.captureAuthoritativeState()
+	let codec = f.campaign.saves.codec
+	for schema = 1 to 9
+		var candidate = replaceCampaignField(current, "discovery", "lisbon,seville,africa")
+		candidate = replaceCampaignField(candidate, "commandContext", commandContext("europe_west", false, "|europe|east_asia|"))
+		let payload = campaignSaveEnvelope(schema, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", candidate)
+		let decoded = codec.decodeMigrateAndValidate(payload, "manual_01")
+		(decoded != "").assertTrue()
+		let discovery = lastAuthorityValue(decoded, "discovery")
+		discoveryHas(discovery, "s", "lisbon").assertTrue()
+		discoveryHas(discovery, "s", "seville").assertTrue()
+		discoveryHas(discovery, "r", "africa").assertTrue()
+		discoveryHas(discovery, "r", "east_asia").assertTrue()
+		discoveryHas(discovery, "s", "london").assertFalse()
+		lastAuthorityValue(decoded, "rpg").assertEquals(lastAuthorityValue(current, "rpg"))
+	let empty = codec.decodeMigrateAndValidate(campaignSaveEnvelope(9, "manual_01", SAVE_SLOT_MANUAL, 1, "empty", replaceCampaignField(current, "discovery", "")), "manual_01")
+	discoveryHas(lastAuthorityValue(empty, "discovery"), "s", "lisbon").assertFalse()
+	string array[6] invalid
+	invalid[0] = "v1|r,missing"
+	invalid[1] = "v1|r,europe|s,missing"
+	invalid[2] = "v1|s,lisbon"
+	invalid[3] = "v1|r,europe|r,europe"
+	invalid[4] = "v1|r,europe|"
+	invalid[5] = "v1|r,africa|s,hidden_desert_ruin"
+	for i = 0 to 5
+		let candidate = replaceCampaignField(current, "discovery", invalid[i])
+		codec.decodeMigrateAndValidate(campaignSaveEnvelope(10, "manual_01", SAVE_SLOT_MANUAL, 1, "bad", candidate), "manual_01").assertEquals("")
+		f.campaign.state.validateAuthoritativeState(candidate).assertFalse()
+	codec.decodeMigrateAndValidate(campaignSaveEnvelope(9, "manual_01", SAVE_SLOT_MANUAL, 1, "bad", replaceCampaignField(current, "discovery", "missing")), "manual_01").assertEquals("")
+	codec.decodeMigrateAndValidate(campaignSaveEnvelope(10, "manual_01", SAVE_SLOT_MANUAL, 1, "bad", current + ";discovery=v1"), "manual_01").assertEquals("")
+	f.campaign.state.captureAuthoritativeState().assertEquals(current)
+	f.close()
+
+@test function lateRestorationFailureRollsBackKnowledgeAndRetainsMapPauseOwnership()
+	let f = new LoadFixture()
+	f.campaign.state.knowledge.visitSettlement("seville").assertTrue()
+	let before = f.campaign.state.knowledge.snapshot()
+	let candidate = replaceCampaignField(f.candidate(), "discovery", "v1|r,africa|s,timbuktu")
+	f.store(candidate)
+	let output = new VisitOutput()
+	let pauses = new ManagementScreenPauseController(output, true)
+	f.campaign.maps.pauses = pauses
+	f.campaign.maps.openWorldMap()
+	let other = pauses.openModalManagementScreen()
+	let party = f.ports.projection()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.state.knowledge.snapshot().assertEquals(before)
+	f.ports.projection().assertEquals(party)
+	f.campaign.maps.getContext().assertEquals(MAP_CONTEXT_WORLD)
+	pauses.getModalOwnerCount().assertEquals(2)
+	f.campaign.maps.close()
+	other.close()
+	pauses.isCampaignPaused().assertTrue()

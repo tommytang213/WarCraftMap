@@ -1197,6 +1197,7 @@ public class WarcraftRpgRuntime
 	QuestJournalRuntime journal = new QuestJournalRuntime()
 	TreasureRuntime treasures = new TreasureRuntime()
 	PhysicalInteractionContext interactions = new PhysicalInteractionContext()
+	InteractionVisitListener visits = null
 	TechnologyRuntime technologies
 	ResearchCommandResources researchResources = new WarcraftResearchResources()
 	RpgProjectionPort projections = null
@@ -1387,6 +1388,8 @@ public class WarcraftRpgRuntime
 		if target == null
 			return false
 		var changed = false
+		if visits != null
+			changed = visits.recordVisit(target)
 		for i = 0 to journal.count - 1
 			let q = journal.quests[i]
 			let atGiver = target.matches(q.giverId)
@@ -1422,10 +1425,15 @@ public class WarcraftRpgRuntime
 			return false
 		if interactions.resolve(actor, sender, q.turnInId) == null
 			return false
-		if not eligibleActor(actor) or interactions.resolve(actor, sender, q.turnInId) == null
+		if not eligibleActor(actor)
+			return false
+		let target = interactions.resolve(actor, sender, q.turnInId)
+		if target == null
 			return false
 		let result=journal.turnIn(id,heroes.get(heroId),day,cooldownDays)
 		if result
+			if visits != null
+				visits.recordVisit(target)
 			reconcile("player")
 		return result
 	function diagnostic() returns string

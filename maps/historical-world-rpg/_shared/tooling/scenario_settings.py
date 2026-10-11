@@ -18,7 +18,7 @@ def write_settings(project, destination):
     manifest = project / "physical-maps.json"
     physical_maps = json.loads(manifest.read_text()) if manifest.is_file() else None
     selector = physical_maps["campaign"]["bootstrapMapId"] if physical_maps else ""
-    lines = ["package ScenarioSettings", "",
+    lines = ["package ScenarioSettings", "", "import DiscoveryKnowledge", "",
              "public constant string CAMPAIGN_CACHE_FILE = " + json.dumps(cache),
              "public constant string SCENARIO_CAMPAIGN_ID = " + json.dumps(physical_maps["campaign"]["id"] if physical_maps else cache),
              "public constant string SCENARIO_BOOTSTRAP_MAP_ID = " + json.dumps(selector),
@@ -78,4 +78,6 @@ def write_settings(project, destination):
             lines += ["\tif locationId == " + json.dumps(location),
                       "\t\treturn " + json.dumps(next(iter(maps)))]
     lines += ['\treturn ""', ""]
+    from map_knowledge import knowledge_catalog, configuration_lines
+    lines += configuration_lines(knowledge_catalog(project))
     (destination / "ScenarioSettings.wurst").write_text("\n".join(lines))

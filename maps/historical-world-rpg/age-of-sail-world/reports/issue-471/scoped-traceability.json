@@ -1,0 +1,259 @@
+{
+  "authority": "DiscoveryKnowledge in PlayableCampaignState, schema 10 discovery v1. Scenario map catalogue supplies names and membership. Command rights and RPG treasure authority remain separate.",
+  "broaderRequirements": [
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0287.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0287",
+      "status": "fail",
+      "text": "Visiting a settlement or accepting a quest there is sufficient to record that settlement as known for later navigation."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0288.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0288",
+      "status": "fail",
+      "text": "Quest/map assistance must not reveal unrelated undiscovered geography, hidden locations, secret objectives, or information the quest intentionally withholds."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0288.02",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0288",
+      "status": "fail",
+      "text": "A quest may reveal an exact destination, only a region, an approximate search area, or no marker at all according to its scenario data."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0293.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0293",
+      "status": "fail",
+      "text": "Revealing general fog-of-war or exploring a region does not automatically identify every hidden point of interest inside it; precise quest markers require that the destination itself is known or has been explicitly revealed by the quest/clue."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0294.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0294",
+      "status": "fail",
+      "text": "The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character."
+    },
+    {
+      "authority": {
+        "path": "docs/ROADMAP.md",
+        "section": "Phase 5 \u2014 Age of Sail world content"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "ROAD-0063.01",
+      "kind": "content",
+      "mapping": {},
+      "parent": "ROAD-0063",
+      "status": "fail",
+      "text": "World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs"
+    }
+  ],
+  "closedPortions": [
+    {
+      "id": "REQ-0287.01",
+      "scope": "Validated settlement visits, including questless interactions and local quest acceptance, persist as exact knowledge.",
+      "status": "pass"
+    },
+    {
+      "id": "REQ-0288.01",
+      "scope": "World and regional settlement listings expose only authorized knowledge; invalid requests preserve the current view.",
+      "status": "pass"
+    },
+    {
+      "id": "REQ-0293.01",
+      "scope": "General region discovery reveals neither unvisited settlements nor hidden points of interest.",
+      "status": "pass"
+    },
+    {
+      "id": "REQ-0294.01",
+      "scope": "The registered map focus action accepts known named settlements without changing party, orders or command context.",
+      "status": "pass"
+    },
+    {
+      "id": "ROAD-0063.01",
+      "scope": "Region and visited-settlement authority survives saves, fresh reconstruction, physical travel, remote command and return.",
+      "status": "pass"
+    }
+  ],
+  "entryPoints": [
+    "/interact <local-location-id>",
+    "/turnin <quest-id> <hero-id>",
+    "/map world",
+    "/map <region-id>",
+    "/map focus <settlement-id>",
+    "/map close"
+  ],
+  "executedTests": [
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus",
+      "line": 91,
+      "status": "pass",
+      "validates": "Validated questless visits, named world/regional filtering, exact focus, pause ownership and unchanged party/orders/context."
+    },
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:wrongMapDistantStaleAndMalformedInteractionsNeverInventVisits",
+      "line": 156,
+      "status": "pass",
+      "validates": "Wrong-map, distant, stale, malformed and unavailable interactions reject without knowledge; aliases record canonical IDs."
+    },
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurviveFailedSaveFreshLoadPhysicalTravelAndReturn",
+      "line": 181,
+      "status": "pass",
+      "validates": "Multiple visits, failed storage, fresh services, travel, return and preserved treasure resolution/precision."
+    },
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights",
+      "line": 230,
+      "status": "pass",
+      "validates": "Physical remote command and return preserve absent home-party coordinates and do not invent visits or command rights."
+    },
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:legacyDiscoveryPreservesOnlyRecordedIdsAndCurrentMalformedKnowledgeRejects",
+      "line": 258,
+      "status": "pass",
+      "validates": "Schemas 1\u20139 preserve recorded IDs; empty legacy discovery invents no visits; invalid and duplicate current records reject."
+    },
+    {
+      "id": "wurst/VisitKnowledgeTests.wurst:lateRestorationFailureRollsBackKnowledgeAndRetainsMapPauseOwnership",
+      "line": 294,
+      "status": "pass",
+      "validates": "Late reconstruction failure restores knowledge/projections and retains modal/manual pause ownership."
+    }
+  ],
+  "executionSummary": {
+    "discovered": 258,
+    "status": "pass",
+    "succeeded": 258
+  },
+  "format": "warcraftmap_issue471_visit_knowledge_v1",
+  "frameworkStatus": "pass",
+  "nativeClient": "not_run",
+  "packagedDefinitions": {
+    "archiveSha256": "f292b38a86277b641f1b774d90563ca694741ceae7b9ab1014ef0b1da7e1ccf7",
+    "catalogueDefinitionsMatch": true,
+    "compiledKnowledgeAndCommands": true,
+    "nativeClient": "not_run",
+    "regions": 7,
+    "releaseReady": false,
+    "settlements": 827,
+    "sourceIdentity": {
+      "sourceRevision": "e117845024d3f971d2b6bd9a8f4b8f2bff62759a",
+      "sourceTreeSha256": "1a88cb2b90549a39d50b802b0bf79afd307f2b29dcc81376d7d37b6b606b6166"
+    }
+  },
+  "referenceParity": "tests/test_visit_knowledge.py compares names/membership and the registered-command cases with engine/map_discovery.py; all scenario settlements are represented, including those without map geometry.",
+  "releaseReady": false,
+  "remainingBlockers": [
+    "Quest-to-map guidance, quest return destinations and route breadcrumbs.",
+    "Production clue acquisition and broader search-area/precision presentation; REQ-0288.02 remains downstream.",
+    "Other treasure gameplay obligations remain open; #465 resolution and earned precision are preserved.",
+    "Frame-based map UI (#440) remains deferred.",
+    "Native Warcraft launch, real-client validation and final regional campaign artifact gates."
+  ],
+  "requirementScope": [
+    "REQ-0287",
+    "REQ-0288",
+    "REQ-0293",
+    "REQ-0294",
+    "ROAD-0063"
+  ],
+  "scope": "Persistent region and exact visited-settlement knowledge, filtering, and registered known-settlement focus only.",
+  "sourceIdentity": {
+    "sourceRevision": "e117845024d3f971d2b6bd9a8f4b8f2bff62759a",
+    "sourceTreeSha256": "1a88cb2b90549a39d50b802b0bf79afd307f2b29dcc81376d7d37b6b606b6166"
+  },
+  "visitKnowledgeStatus": "pass"
+}
