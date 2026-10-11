@@ -123,4 +123,46 @@ class TechnologyInstitutionTests(unittest.TestCase):
             runtime.advance_adoption("kent","celestial_navigation",1)
         self.assertEqual(before,runtime.snapshot())
 
+    def test_all_authored_unlocks_are_delivered_with_provenance(self):
+        runtime=self.runtime(date="1820-01-01")
+        delivered=[]
+        for node_id,node in runtime.nodes.items():
+            runtime.research['france']={'completed':set(runtime.nodes)-{node_id},'progress':{}}
+            events=runtime.advance_research('france',node_id,1000000,'1820-01-01')
+            actual=[(e.node_id,e.unlock_kind,e.content_id) for e in events[1:]]
+            expected=sorted((node_id,u['kind'],u['contentId']) for u in node['unlocks'])
+            self.assertEqual(expected,actual)
+            delivered.extend(actual)
+        self.assertEqual(220,len(delivered))
+
+    def test_derived_entitlements_preserve_shared_content_controllers_and_history(self):
+        runtime=self.runtime()
+        runtime.research['france']['completed']={'mass_army_logistics','dockyard_logistics','naval_administration'}
+        before=runtime.snapshot(); expected=runtime.entitlements('france')
+        self.assertEqual(7,len(expected))
+        self.assertEqual(2,sum(e['kind']=='building' and e['contentId']=='dry_dock' for e in expected))
+        self.assertEqual(['mass_conscription','common_wagon_train','supply_efficiency'],
+                         [e['contentId'] for e in expected if e['nodeId']=='mass_army_logistics'])
+        self.assertTrue(all(e['bindingStatus']=='unbound' and e['controllerId']=='france' for e in expected))
+        other=runtime.entitlements('england')
+        for _ in range(3):
+            runtime.restore(before)
+            self.assertEqual(expected,runtime.entitlements('france'))
+            self.assertEqual(other,runtime.entitlements('england'))
+            self.assertEqual(before,runtime.snapshot())
+        self.assertEqual((),runtime.events)
+
+    def test_mutated_unlock_definition_rejects_before_progress_or_completion_changes(self):
+        for unlocks in ([{'kind':'food','contentId':'bonus'}], [{'kind':'unit'}],
+                        [{'kind':'unit','contentId':'bad,id'}],
+                        [{'kind':'unit','contentId':'same'}]*2):
+            runtime=self.runtime()
+            runtime.research['france']={'completed':set(),'progress':{}}
+            runtime.nodes['pike_and_shot']['unlocks']=unlocks
+            before=runtime.snapshot()
+            for points in (1,1000000):
+                with self.assertRaises(ResearchError):
+                    runtime.advance_research('france','pike_and_shot',points,'1820-01-01')
+                self.assertEqual(before,runtime.snapshot())
+
 if __name__=="__main__": unittest.main()

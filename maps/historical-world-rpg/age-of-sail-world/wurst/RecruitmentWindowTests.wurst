@@ -28,10 +28,11 @@ class RecruitmentPorts implements CommandOutput, ResearchCommandResources, Techn
 	override function setGold(player sender, int amount)
 		balance = amount
 		resourceWrites++
-	override function applyTechnology(string controllerId, string effectId, int magnitude)
+	override function replaceResearchEntitlements(ResearchEntitlements result)
 		effects++
-	override function clearTechnologyLayer(string controllerId)
-		effects++
+		destroy result
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
 
 class RecruitmentStorage implements CampaignSaveStorage
 	string payload = ""

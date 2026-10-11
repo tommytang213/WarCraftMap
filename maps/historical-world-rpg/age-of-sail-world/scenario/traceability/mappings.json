@@ -338,7 +338,7 @@
           "symbol": "applyRuntime"
         },
         "mode": "persisted",
-        "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1\u20138 are unchanged; old completions remain earned.",
+        "reason": "Cost definitions and quotes are not persisted. RPG v6 u/controller/id records, clock state and supported campaign envelopes 1\u20139 retain their contracts; old completions remain earned.",
         "references": [
           {
             "contains": [
@@ -364,7 +364,7 @@
         }
       },
       "state": {
-        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, replace its controller entitlement set and debit once.",
         "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
         "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
         "references": [
@@ -489,17 +489,17 @@
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+        "reason": "Stable controller completion records reconstruct typed entitlement layers; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
         "references": [
           {
             "contains": [
-              "technologies.reconstruct(controllerId)"
+              "technologies.reconstructAll()"
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
           },
           {
             "contains": [
-              "effects.clearTechnologyLayer(controllerId)"
+              "effects.replaceResearchEntitlements(result)"
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "reconstruct"
@@ -632,7 +632,7 @@
           "symbol": "applyRuntime"
         },
         "mode": "persisted",
-        "reason": "Cost definitions and quotes are not persisted. RPG v3, u/controller/id records, clock state and supported campaign envelopes 1\u20138 are unchanged; old completions remain earned.",
+        "reason": "Cost definitions and quotes are not persisted. RPG v6 u/controller/id records, clock state and supported campaign envelopes 1\u20139 retain their contracts; old completions remain earned.",
         "references": [
           {
             "contains": [
@@ -658,7 +658,7 @@
         }
       },
       "state": {
-        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, project its effect and debit once.",
+        "mutation": "At command dispatch, calculate current historical cost; after every prerequisite and funds check, add one completion, replace its controller entitlement set and debit once.",
         "outcome": "The registered research action reports completion or requirements unmet; time changes the exact charge.",
         "owner": "Scenario-owned immutable time-cost definitions, CampaignClock date, controller completion IDs and native resource port.",
         "references": [
@@ -783,17 +783,17 @@
       },
       "transition": {
         "mode": "reconstructed",
-        "reason": "Stable controller completion records restore effects; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
+        "reason": "Stable controller completion records reconstruct typed entitlement layers; subsequent commits use the restored authoritative campaign date and current scenario definitions.",
         "references": [
           {
             "contains": [
-              "technologies.reconstruct(controllerId)"
+              "technologies.reconstructAll()"
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst"
           },
           {
             "contains": [
-              "effects.clearTechnologyLayer(controllerId)"
+              "effects.replaceResearchEntitlements(result)"
             ],
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "symbol": "reconstruct"
@@ -18687,6 +18687,87 @@
         "effectBindings": {
           "status": "blocked_pending_gameplay_effect_bindings",
           "reason": "Authored effect definitions contain names/kinds only. Resolved identities are not numeric power and never become health bonuses."
+        },
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "ROAD-0045.01": {
+      "scope": "Issue #463 retains complete typed definitions and delivers controller entitlements only. Existing prerequisite and historical cost contracts remain intact. Missing gameplay consumers and native launch remain release blockers.",
+      "researchEntitlements": {
+        "authority": "RPG v6 u,controller,node completion records and headless research schema 1 remain unchanged. Definitions and derived entitlement layers are never persisted.",
+        "content": [
+          {
+            "path": "scenario/world/world.json",
+            "contains": [
+              "\"mass_army_logistics\"",
+              "\"mass_conscription\"",
+              "\"common_wagon_train\"",
+              "\"supply_efficiency\""
+            ]
+          },
+          {
+            "path": "../_shared/tooling/package_wurst_map.py",
+            "contains": [
+              "research_unlock_definitions(world)",
+              "expectedUnlockCount",
+              "addUnlock",
+              "researchIntegrationBlockers"
+            ]
+          }
+        ],
+        "mechanism": [
+          {
+            "path": "../_shared/engine/technology_institutions.py",
+            "symbol": "advance_research",
+            "contains": [
+              "research_unlocks(self.nodes[node])",
+              "content_unlocked"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "symbol": "entitlements",
+            "contains": [
+              "result.add(definition.unlocks[j])"
+            ]
+          },
+          {
+            "path": "../_shared/wurst/ResearchEntitlements.wurst",
+            "symbol": "replaceResearchEntitlements",
+            "contains": [
+              "result.controllerId",
+              "destroy layer"
+            ]
+          }
+        ],
+        "entry": {
+          "id": "live-typed-research-entitlements",
+          "commands": [
+            "research",
+            "unlock",
+            "institution",
+            "technology",
+            "institutions"
+          ],
+          "registration": "registerRpgRuntimeCommands",
+          "handlers": [
+            "RpgActionCommand.execute",
+            "RpgScreenCommand.execute"
+          ]
+        },
+        "validation": {
+          "definitions": "tests/test_research_generation.py:ResearchGenerationTests",
+          "headless": "tests/test_technology_institutions.py:TechnologyInstitutionTests",
+          "success": "wurst/ResearchRuntimeTests.wurst:generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController",
+          "failure": "wurst/ResearchRuntimeTests.wurst:malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion",
+          "stale": "wurst/ResearchRuntimeTests.wurst:institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds",
+          "replay": "wurst/ResearchRuntimeTests.wurst:typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers",
+          "rollback": "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsRestoreTypedResearchLayersForEveryController"
+        },
+        "effectBindings": {
+          "status": "blocked_pending_gameplay_consumers",
+          "reason": "All authored unlocks are references without implemented consumers. No unit, building, ability, policy or modifier is converted to food capacity.",
+          "gate": "tooling/release_blocker_audit.py:_audit_research_bindings"
         },
         "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
       }

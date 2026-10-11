@@ -1,0 +1,127 @@
+package ResearchEntitlements
+
+public constant string RESEARCH_UNBOUND = "unbound"
+public constant string RESEARCH_BOUND = "bound"
+
+// Repeated scenario registration/load validates the same immutable strings.
+// Cache full values, not hashes alone: StringHash folds case and may collide.
+hashtable validResearchIds = InitHashtable()
+
+public function researchStableId(string value) returns boolean
+	if StringLength(value) < 1 or StringLength(value) > 64
+		return false
+	let hash = StringHash(value)
+	if LoadStr(validResearchIds, 0, hash) == value
+		return true
+	var separator = true
+	for i = 0 to StringLength(value) - 1
+		let letter = SubString(value, i, i + 1)
+		if letter == "_"
+			if separator
+				return false
+			separator = true
+		else
+			if "abcdefghijklmnopqrstuvwxyz".indexOf(letter) < 0 and (i == 0 or "0123456789".indexOf(letter) < 0)
+				return false
+			separator = false
+	if separator
+		return false
+	SaveStr(validResearchIds, 0, hash, value)
+	return true
+
+/** A content reference, never a magnitude or a Warcraft object handle. */
+public class ResearchUnlock
+	string nodeId
+	string kind
+	string contentId
+	ResearchUnlock next = null
+	construct(string nodeId, string kind, string contentId)
+		this.nodeId = nodeId
+		this.kind = kind
+		this.contentId = contentId
+	function valid() returns boolean
+		return researchStableId(nodeId) and researchStableId(contentId) and (kind == "unit" or kind == "building" or kind == "ability" or kind == "policy" or kind == "modifier")
+
+/** Complete replacement of ONE controller's research-owned entitlement layer.
+ * Copies are owned by the recipient. Provenance survives shared content IDs;
+ * has() exposes set membership without turning duplicate provenance into grants. */
+public class ResearchEntitlements
+	string controllerId
+	ResearchUnlock first = null
+	ResearchUnlock last = null
+	int count = 0
+	ResearchEntitlements next = null
+	construct(string controllerId)
+		this.controllerId = controllerId
+	function add(ResearchUnlock definition)
+		let entry = new ResearchUnlock(definition.nodeId, definition.kind, definition.contentId)
+		if last == null
+			first = entry
+		else
+			last.next = entry
+		last = entry
+		count++
+	function has(string kind, string contentId) returns boolean
+		var entry = first
+		while entry != null
+			if entry.kind == kind and entry.contentId == contentId
+				return true
+			entry = entry.next
+		return false
+	function identities() returns string
+		var result = ""
+		var entry = first
+		while entry != null
+			result += controllerId + "|" + entry.nodeId + "|" + entry.kind + "|" + entry.contentId + ";"
+			entry = entry.next
+		return result
+	ondestroy
+		var entry = first
+		while entry != null
+			let following = entry.next
+			destroy entry
+			entry = following
+
+public interface TechnologyEffectPort
+	/** Non-fallible, idempotent replacement, used for both research and load.
+	 * Own the supplied result; preserve other controllers and non-research layers.
+	 * No one-time grant is allowed here. Missing consumers remain unbound. */
+	function replaceResearchEntitlements(ResearchEntitlements result)
+	function bindingStatus(ResearchUnlock definition) returns string
+
+/** Production fallback: retain typed entitlements with explicit missing bindings.
+ * It performs no native resource/stat mutation. Content consumers must implement
+ * their own binding before any gameplay-effect or release-ready claim is valid. */
+public class UnboundResearchEffects implements TechnologyEffectPort
+	ResearchEntitlements layers = null
+	function get(string controllerId) returns ResearchEntitlements
+		var layer = layers
+		while layer != null
+			if layer.controllerId == controllerId
+				return layer
+			layer = layer.next
+		return null
+	override function bindingStatus(ResearchUnlock definition) returns string
+		return RESEARCH_UNBOUND
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		ResearchEntitlements previous = null
+		var layer = layers
+		while layer != null
+			if layer.controllerId == result.controllerId
+				result.next = layer.next
+				if previous == null
+					layers = result
+				else
+					previous.next = result
+				destroy layer
+				return
+			previous = layer
+			layer = layer.next
+		result.next = layers
+		layers = result
+	ondestroy
+		var layer = layers
+		while layer != null
+			let following = layer.next
+			destroy layer
+			layer = following
