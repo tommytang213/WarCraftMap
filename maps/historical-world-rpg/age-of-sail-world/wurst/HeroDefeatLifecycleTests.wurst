@@ -122,6 +122,7 @@ class DefeatFixture
 	RecordingClockTimer clockTimer = new RecordingClockTimer()
 	DefeatObjects objects
 	DefeatNatives natives
+	WarcraftRpgProjections projections
 	MilitaryCombatEvents events
 	PlayableCampaignState state
 	WarcraftRpgRuntime rpg
@@ -135,7 +136,8 @@ class DefeatFixture
 		objects = new DefeatObjects(startup.ports)
 		natives = new DefeatNatives(objects)
 		// Use production projection ownership with recording native identities.
-		rpg.setProjectionPort(new WarcraftRpgProjections(rpg.heroes, objects))
+		projections = new WarcraftRpgProjections(rpg.heroes, objects)
+		rpg.setProjectionPort(projections)
 		let authority = state.captureAuthoritativeState()
 		state.party = objects
 		state.projectParty(authority).assertTrue()
@@ -167,10 +169,11 @@ class DefeatFixture
 		events.stop()
 		startup.clock.detachTimer()
 	function equip()
-		rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1, 7))
+		rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1).addStat("defense", 7))
 		rpg.inventory.grant("defeat_coat").assertTrue()
 		rpg.equipItem(hero().id, "defeat_coat", startup.clock.campaignYear()).assertTrue()
-		objects.life[main].assertEquals(107)
+		objects.life[main].assertEquals(100)
+		projections.itemLayer(hero().id, "defeat_slot").definition.statValue("defense").assertEquals(7)
 		// Populate earned reward history before the lifecycle under test.
 		let completed = rpg.journal.quests[0]
 		rpg.acceptQuest(completed.id).assertTrue()
@@ -305,7 +308,7 @@ function defeatReceipt(string caseName)
 	f.close()
 	let resumed = new DefeatFixture()
 	// Immutable item definition, without replaying the original grant/equip.
-	resumed.rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1, 7))
+	resumed.rpg.inventory.registerItem(new RpgItem("defeat_coat", "Captain's coat", "defeat_slot", "rare", 1).addStat("defense", 7))
 	resumed.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
 	for attempt = 1 to 2
 		resumed.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
@@ -328,12 +331,13 @@ function defeatReceipt(string caseName)
 	resumed.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
 	resumed.rpg.captureState().assertEquals(uninterrupted)
 	resumed.objects.tokens[resumed.main].assertEquals(0)
-	// Redeploying the same recovered character applies its equipment once.
+	// Redeploying the recovered character retains typed equipment without a life bonus.
 	resumed.hero().assignment = "field"
 	resumed.state.projectParty(resumed.state.captureAuthoritativeState()).assertTrue()
-	resumed.objects.life[resumed.main].assertEquals(107)
+	resumed.objects.life[resumed.main].assertEquals(100)
 	resumed.rpg.reconcile("player")
-	resumed.objects.life[resumed.main].assertEquals(107)
+	resumed.objects.life[resumed.main].assertEquals(100)
+	resumed.projections.itemLayer(resumed.hero().id, "defeat_slot").definition.statValue("defense").assertEquals(7)
 	resumed.close()
 	defeatReceipt("replay")
 

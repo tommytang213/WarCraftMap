@@ -62,7 +62,7 @@ public class RecruitmentFixture
 		rpg.heroes.register(hero)
 		rpg.researchResources = ports
 		rpg.journal.currency = 321
-		rpg.inventory.registerItem(new RpgItem("token", "Token", "hand", "common", 1, 1))
+		rpg.inventory.registerItem(new RpgItem("token", "Token", "hand", "common", 1).addStat("defense", 1))
 		rpg.inventory.grant("token").assertTrue()
 		state = new PlayableCampaignState(new WarcraftRegionalAdapter(), clock)
 		state.setRpgRuntime(rpg)

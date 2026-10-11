@@ -99,7 +99,7 @@ class InteractionFixture
 		rpg.treasures.treasures[1] = remoteTreasure
 		rpg.treasures.count = 2
 		rpg.treasures.resolveAll(seed).assertTrue()
-		let reward = new RpgItem("interaction_fixture_reward", "Recovered archive", "artifact", "rare", 1, 1)
+		let reward = new RpgItem("interaction_fixture_reward", "Recovered archive", "artifact", "rare", 1).addStat("defense", 1)
 		rpg.inventory.registerItem(reward)
 		treasure.rewardItemId = reward.id
 		rpg.interactions.actors = actors

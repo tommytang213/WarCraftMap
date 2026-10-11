@@ -1,0 +1,185 @@
+package EquipmentItems
+
+public constant string ITEM_BINDINGS_PENDING = "blocked_pending_item_gameplay_bindings"
+
+function itemField(string value) returns string
+	return StringLength(value).toString() + ":" + value
+
+/** Definition data, never a save field or a Warcraft maximum-life bonus. */
+public class ItemStat
+	string id
+	int value
+	construct(string id, int value)
+		this.id = id
+		this.value = value
+
+public class ItemConditionalEffect
+	string id
+	string condition
+	// Complete authored descriptor, including any additional scenario metadata.
+	string descriptor
+	construct(string id, string condition, string descriptor)
+		this.id = id
+		this.condition = condition
+		this.descriptor = descriptor
+
+public class RpgItem
+	string id
+	string name
+	string slotId
+	string slotIds = "[]"
+	string category = "equipment"
+	string rarity
+	string rarityName
+	int rarityRank = 0
+	string setId = ""
+	int itemLevel
+	int requiredLevel = 0
+	int startYear = 0
+	int endYear = 0
+	string provenance = "{}"
+	string provenanceKind = ""
+	string identityId = ""
+	string requirements = "{}"
+	string requirementsText = "None"
+	int maxEnhancement = 0
+	int maxRestoration = 0
+	string source = ""
+	boolean unique = false
+	ItemStat array[64] stats
+	int statCount = 0
+	string array[64] effectIds
+	int effectCount = 0
+	ItemConditionalEffect array[64] conditionalEffects
+	int conditionalCount = 0
+	string array[512] technologyIds
+	int technologyCount = 0
+	string array[512] institutionIds
+	int institutionCount = 0
+	construct(string id, string name, string slotId, string rarity, int itemLevel)
+		this.id = id
+		this.name = name
+		this.slotId = slotId
+		this.rarity = rarity
+		this.rarityName = rarity
+		this.itemLevel = itemLevel
+	function addStat(string id, int value) returns RpgItem
+		stats[statCount] = new ItemStat(id, value)
+		statCount++
+		return this
+	function statIndex(string id) returns int
+		for i = 0 to statCount - 1
+			if stats[i].id == id
+				return i
+		return -1
+	function statValue(string id) returns int
+		let i = statIndex(id)
+		if i < 0
+			return 0
+		return stats[i].value
+	function addEffect(string id)
+		effectIds[effectCount] = id
+		effectCount++
+	function addConditionalEffect(string id, string condition, string descriptor)
+		conditionalEffects[conditionalCount] = new ItemConditionalEffect(id, condition, descriptor)
+		conditionalCount++
+	function addTechnology(string id)
+		technologyIds[technologyCount] = id
+		technologyCount++
+	function addInstitution(string id)
+		institutionIds[institutionCount] = id
+		institutionCount++
+	/** Content identity for idempotent delivery. Include the complete metadata
+	 * and descriptors so a regenerated definition cannot reuse a stale layer. */
+	function fingerprint() returns string
+		var result = itemField(id) + itemField(name) + itemField(slotId) + itemField(slotIds) + itemField(category) + itemField(rarity) + itemField(rarityName) + itemField(setId)
+		result += itemField(provenance) + itemField(provenanceKind) + itemField(identityId) + itemField(requirements) + itemField(requirementsText)
+		result += itemField(itemLevel.toString()) + itemField(rarityRank.toString()) + itemField(requiredLevel.toString()) + itemField(startYear.toString()) + itemField(endYear.toString()) + itemField(maxEnhancement.toString()) + itemField(maxRestoration.toString())
+		if unique
+			result += "unique"
+		else
+			result += "ordinary"
+		result += itemField(statCount.toString())
+		for i = 0 to statCount - 1
+			result += itemField(stats[i].id) + itemField(stats[i].value.toString())
+		result += itemField(effectCount.toString())
+		for i = 0 to effectCount - 1
+			result += itemField(effectIds[i])
+		result += itemField(conditionalCount.toString())
+		for i = 0 to conditionalCount - 1
+			result += itemField(conditionalEffects[i].id) + itemField(conditionalEffects[i].condition) + itemField(conditionalEffects[i].descriptor)
+		result += itemField(technologyCount.toString())
+		for i = 0 to technologyCount - 1
+			result += itemField(technologyIds[i])
+		result += itemField(institutionCount.toString())
+		for i = 0 to institutionCount - 1
+			result += itemField(institutionIds[i])
+		return result
+	ondestroy
+		for i = 0 to statCount - 1
+			destroy stats[i]
+		for i = 0 to conditionalCount - 1
+			destroy conditionalEffects[i]
+
+/** Mirrors player_items.compare: the union includes stats lost on replacement.
+ * Both definitions are borrowed. Neither equipped authority nor definitions change. */
+public class ItemComparison
+	RpgItem candidate
+	RpgItem equipped
+	string array[128] statIds
+	int statCount = 0
+	construct(RpgItem candidate, RpgItem equipped)
+		this.candidate = candidate
+		this.equipped = equipped
+		for i = 0 to candidate.statCount - 1
+			statIds[statCount] = candidate.stats[i].id
+			statCount++
+		if equipped != null
+			for i = 0 to equipped.statCount - 1
+				if candidate.statIndex(equipped.stats[i].id) < 0
+					statIds[statCount] = equipped.stats[i].id
+					statCount++
+	function delta(string id) returns int
+		var value = candidate.statValue(id)
+		if equipped != null
+			value -= equipped.statValue(id)
+		return value
+	function summary() returns string
+		let value = candidate
+		var result = value.name + " | Item level " + value.itemLevel + " | " + value.rarityName + " (" + value.rarity + ", rank " + value.rarityRank + ") | Provenance: " + value.provenanceKind + " / " + value.identityId + " | Set: " + value.setId
+		for i = 0 to statCount - 1
+			let id = statIds[i]
+			let difference = delta(id)
+			var color = "|cffaaaaaa"
+			if difference > 0
+				color = "|cff00ff00+"
+			else if difference < 0
+				color = "|cffff4040"
+			result += "\n  " + id + ": " + value.statValue(id) + " (" + color + difference + "|r)"
+		for i = 0 to value.effectCount - 1
+			result += "\n  Effect: " + value.effectIds[i] + " (unavailable)"
+		for i = 0 to value.conditionalCount - 1
+			let conditional = value.conditionalEffects[i]
+			result += "\n  Conditional effect: " + conditional.id + " | Condition: " + conditional.condition + " (unavailable)"
+		result += "\n  Requirements: " + value.requirementsText
+		if value.requiredLevel > 0
+			result += " | Character level: " + value.requiredLevel
+		return result + "\n  Item stat and effect gameplay bonuses unavailable."
+
+/** The projector owns the layer; the catalogue owns its immutable definition.
+ * Stable wearer/slot identity is independent of any current unit representation. */
+public class EquipmentItemLayer
+	string heroId
+	string slotId
+	RpgItem definition
+	string definitionFingerprint = ""
+	boolean observed = true
+	EquipmentItemLayer next = null
+	construct(string heroId, string slotId, RpgItem definition)
+		this.heroId = heroId
+		this.slotId = slotId
+		this.definition = definition
+		if definition != null
+			definitionFingerprint = definition.fingerprint()
+	function bindingStatus() returns string
+		return ITEM_BINDINGS_PENDING

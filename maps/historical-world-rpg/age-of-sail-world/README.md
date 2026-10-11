@@ -23,5 +23,8 @@ The player is expected to play near-final/full builds, not repeatedly test indiv
 
 See `docs/DESIGN_LOCK.md` for agreed requirements.
 
+See [item definitions and comparisons](docs/ITEM_DEFINITIONS.md) for retained
+stats/effects, wearer-specific delivery, save compatibility and pending gameplay consumers.
+
 See [management commands](docs/MODAL_MANAGEMENT.md) for RPG and market
 open, switch, and close actions and their campaign pause lifecycle.

@@ -17,6 +17,31 @@ class PlayerItemError(ValueError): pass
 
 RESEARCH_ID = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*")
 EQUIPMENT_RESEARCH_CAPACITY = 512
+EQUIPMENT_DEFINITION_CAPACITY = 64
+
+
+def validate_item_comparison(item_id, comparison):
+    """Reject unrepresentable definitions instead of silently dropping data.
+
+    Authored major stats are integers. Half-range bounds also keep a delta
+    between any two supported definitions within Wurst's signed integer range.
+    """
+    stats = comparison.get("majorStats", {})
+    if (not isinstance(stats, dict) or len(stats) > EQUIPMENT_DEFINITION_CAPACITY or
+            any(not isinstance(key, str) or not key or type(value) is not int or
+                not -1073741823 <= value <= 1073741823 for key, value in stats.items())):
+        raise PlayerItemError(f"item {item_id}: invalid or over-budget majorStats")
+    effects = comparison.get("effectIds", [])
+    if (not isinstance(effects, list) or len(effects) > EQUIPMENT_DEFINITION_CAPACITY or
+            any(not isinstance(value, str) or not value for value in effects) or
+            len(set(effects)) != len(effects)):
+        raise PlayerItemError(f"item {item_id}: invalid or over-budget effectIds")
+    conditions = comparison.get("conditionalEffects", [])
+    if (not isinstance(conditions, list) or len(conditions) > EQUIPMENT_DEFINITION_CAPACITY or
+            any(not isinstance(value, dict) or not isinstance(value.get("id"), str) or
+                not value["id"] or not isinstance(value.get("condition"), str) or
+                not value["condition"] for value in conditions)):
+        raise PlayerItemError(f"item {item_id}: invalid or over-budget conditionalEffects")
 
 
 @dataclass(frozen=True)
@@ -81,6 +106,7 @@ def validate_catalog(data: Mapping[str, Any], *, bulk_good_ids=()) -> None:
         unknown=set(merchant.get("archetypeIds",[]))-set(merchants)
         if unknown: raise PlayerItemError(f"item {item_id}: unknown merchant archetypes {sorted(unknown)}")
         comparison=item["comparison"]
+        validate_item_comparison(item_id, comparison)
         slots=comparison.get("slotIds",[])
         if item["category"] == "equipment" and not slots: raise PlayerItemError(f"item {item_id}: equipment has no slot")
         if item["category"] != "equipment" and slots and item["category"] != "artifact": raise PlayerItemError(f"item {item_id}: non-equipment uses equipment slot")
