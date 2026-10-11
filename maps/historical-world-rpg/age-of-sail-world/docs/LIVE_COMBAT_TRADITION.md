@@ -62,30 +62,70 @@ detached authority before projection changes. Immutable string values keep load
 checkpoints independent. Restoring a track never invokes a contribution adapter.
 Management inspection displays the full XP value, including on inactive maps.
 
-Native integer projection is a separate, explicitly bounded conversion. The
-legacy generic life adapter also bounds its final native output without integer
-multiplication overflow; these native bounds cannot alter XP or reject a loss.
-The generated scenario's life coefficient remains **zero**. Exact threshold
-comparisons preserve existing generic behavior without enabling the pending
-scenario coefficient or milestone-effect adapters.
+Issue #464 resolves the authored coefficients and every milestone through a
+replaceable `TraditionLayer`. Generated definitions retain each attribute ID,
+signed numerator, positive denominator, milestone ID, exact threshold, effect ID,
+mode and replacement target. Validation uses threshold order and rejects unknown
+or forward replacement references. Generation compares executable constructor
+arguments with `scenario/military-traditions.json`, including later milestones;
+retaining the JSON payload alone is insufficient.
 
-Issue #458 completes the numeric representation repair under ROAD-0052 and
-REQ-0158.01. This is evidence for expandable earned XP, not completion of the
-remaining proportional gameplay effects or balance obligations of REQ-0158.
+`ExactRational` multiplies exact XP by each coefficient and reduces the signed
+numerator/positive denominator without a whole-XP integer or real conversion.
+Decimal arithmetic supports coefficients and thresholds beyond native precision.
+Small denominators use bounded integer remainders as an optimization; this never
+bounds the dividend or result. Fractions survive adjacent XP values, every
+threshold crossing and arbitrarily large totals. Milestones cannot cap or replace
+continuous progression.
 
-Issue #450 scopes ROAD-0052, REQ-0154 and REQ-0164 evidence to **earned experience
-and persistence**. Authored attribute coefficients, qualitative milestones,
-category-wide gameplay effects and non-kill contribution adapters remain open
-(REQ-0154.02 and REQ-0155–REQ-0163). The previous generated placeholder HP rate is
-zero: authored attack, discipline, naval damage and maneuver coefficients must
-not silently become maximum-life bonuses. Their definitions remain in the
-packaged scenario data for their own future adapters. No native-launch or release
-candidate status is changed by these headless and diagnostic checks.
+`TraditionDefinition.resolve()` follows the headless
+`military_tradition.py::_resolve()` order: ascending threshold (thresholds are
+unique), removing only the explicitly named earlier effect for an upgrade or
+replacement, then appending the new effect. Unrelated earlier effects remain.
+Every reached milestone is retained for inspection, with superseded effects
+marked replaced. Active effects remain in resolver order.
 
-`MilitaryCombatEventsTests.wurst` exercises installed production callbacks, player
-and AI land/naval tracks, fractional weights, large products and totals, ownership changes, consumed losses,
-native cleanup reentry, stale handles, save/reconstruction, legacy migration and
-failed restoration, every supported integer-version migration, and malformed numerical records. It also exercises the ordinary Warcraft military projection
-with interpreter units. Python checks compare the callback vectors with the
-weighted headless contract and validate generated definitions. No player QA is
-required.
+Each eligible represented force receives a fresh typed layer from its current
+controller/category on earned XP, control transfer, activation and reconstruction.
+Reconciliation removes obsolete layers for ineligible or inactive forces. Abstract
+forces derive the same values on inspection and receive them when instantiated.
+Transfers never move XP between controllers. Layer stores own only tradition
+contributions; replacement and removal do not alter unrelated modifiers. Native
+load checkpoints retain the previous store with its original representations,
+restoring both on rollback and retiring both on commit.
+
+Layers and resolved bonuses are never serialized. Military snapshot v8 and all
+supported migrations remain unchanged; legacy presentation slots normalize to
+zero for typed definitions. Current definitions are reconstructed from saved XP
+in detached authority before projections change. Consumed-loss receipts and
+campaign transaction rollback continue to protect against repeated awards.
+
+Military inspection displays full XP, exact reduced values (for example,
+`attack_basis_points: 3001/10`), and all reached milestones on inactive maps too.
+The native integer bound remains confined to the legacy generic projection API.
+The typed path does not coerce values to health, abilities or floating-point stats.
+Native representability never limits progression authority.
+
+**Gameplay-effect consumers remain blocked.** The four authored attributes and
+four named milestone effects have resolved values/identities, but no implemented
+consumer changes attack, discipline, naval damage, maneuver or doctrine behavior.
+`militaryTraditionIntegrationBlockers` in generated runtime data lists each missing
+consumer; inspection labels these effects pending. No placeholder health bonus or
+native ability mapping is introduced. Assist and objective weights still have no
+dispatcher. Balance and native launch remain open.
+
+The scoped evidence covers exact resolution/delivery portions of ROAD-0052 and
+REQ-0155–REQ-0163 alongside #450's earned XP and #458's expandable representation.
+It does not close the broader gameplay benefits of REQ-0155.01, REQ-0157.01,
+REQ-0158.02–03 or REQ-0159.01, nor non-kill adapters (REQ-0154.02).
+
+`MilitaryCombatEventsTests.wurst` drives installed production callbacks and
+compares generated player/AI land/naval layers with the headless Fraction oracle.
+It covers adjacent XP, every threshold boundary, large totals, stacking and
+replacement, control/category changes, inactive maps, replacement representations,
+inspection, repeated reconciliation, legacy/current saves and late failed loads.
+The ordinary Warcraft adapter retains unrelated abilities and health during typed
+replacement and rollback. `ExactRationalTests.wurst` covers signed, zero and
+expandable coefficients/denominators. Python checks reject omitted coefficients,
+lost later milestones and invalid replacements. No player QA or native-launch
+success is claimed.

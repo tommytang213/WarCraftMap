@@ -1,0 +1,213 @@
+package MilitaryTraditionLayer
+import ExactNatural
+import ExactRational
+
+public class TraditionCoefficient
+	string attributeId
+	string numerator
+	string denominator
+	TraditionCoefficient next = null
+	construct(string attributeId, string numerator, string denominator)
+		this.attributeId = attributeId
+		this.numerator = numerator
+		this.denominator = denominator
+
+public class TraditionMilestone
+	string id
+	string threshold
+	string effectId
+	string mode
+	string replacesEffectId
+	TraditionMilestone next = null
+	construct(string id, string threshold, string effectId, string mode, string replacesEffectId)
+		this.id = id
+		this.threshold = threshold
+		this.effectId = effectId
+		this.mode = mode
+		this.replacesEffectId = replacesEffectId
+
+public class TraditionModifier
+	string attributeId
+	ExactRational value
+	TraditionModifier next = null
+	construct(TraditionCoefficient coefficient, string experience)
+		attributeId = coefficient.attributeId
+		value = new ExactRational(experience, coefficient.numerator, coefficient.denominator)
+	ondestroy
+		destroy value
+
+public class ReachedTraditionMilestone extends TraditionMilestone
+	boolean active = true
+	construct(TraditionMilestone milestone)
+		super(milestone.id, milestone.threshold, milestone.effectId, milestone.mode, milestone.replacesEffectId)
+
+/** A replaceable, independently owned layer, never serialized. Reached entries
+ * retain their identities even if an upgrade removes their effect. No native
+ * ability or stat mapping is implied by an attribute/effect identity. */
+public class TraditionLayer
+	string controllerId
+	string categoryId
+	string experience
+	TraditionModifier modifiers = null
+	TraditionMilestone reached = null
+	construct(string controllerId, string categoryId, string experience)
+		this.controllerId = controllerId
+		this.categoryId = categoryId
+		this.experience = experience
+	function modifier(string attributeId) returns ExactRational
+		var entry = modifiers
+		while entry != null
+			if entry.attributeId == attributeId
+				return entry.value
+			entry = entry.next
+		return null
+	function effects() returns string
+		var result = ""
+		var entry = reached
+		while entry != null
+			if (entry castTo ReachedTraditionMilestone).active
+				if result != ""
+					result += ","
+				result += entry.effectId
+			entry = entry.next
+		return result
+	function inspection() returns string
+		var result = ""
+		var attribute = modifiers
+		while attribute != null
+			result += " | " + attribute.attributeId + ": " + attribute.value.display()
+			attribute = attribute.next
+		var milestone = reached
+		while milestone != null
+			result += " | Reached: " + milestone.id + " at " + milestone.threshold + " XP (" + milestone.effectId
+			if not (milestone castTo ReachedTraditionMilestone).active
+				result += "; replaced"
+			result += ")"
+			milestone = milestone.next
+		return result + " | Gameplay effect consumers: pending"
+	ondestroy
+		while modifiers != null
+			let obsolete = modifiers
+			modifiers = modifiers.next
+			destroy obsolete
+		while reached != null
+			let obsolete = reached
+			reached = reached.next
+			destroy obsolete
+
+/** Scenario definitions are validated before generation. Milestones are sorted
+ * by exact threshold here as well, so caller insertion order cannot affect the
+ * resolver. Duplicate thresholds are rejected by the scenario validator. */
+public class TraditionDefinition
+	string id
+	TraditionCoefficient coefficients = null
+	TraditionMilestone milestones = null
+	construct(string id)
+		this.id = id
+	function coefficient(string attributeId, string numerator, string denominator)
+		let entry = new TraditionCoefficient(attributeId, numerator, denominator)
+		if coefficients == null
+			coefficients = entry
+		else
+			var tail = coefficients
+			while tail.next != null
+				tail = tail.next
+			tail.next = entry
+	function milestone(string id, string threshold, string effectId, string mode, string replacesEffectId)
+		let entry = new TraditionMilestone(id, threshold, effectId, mode, replacesEffectId)
+		TraditionMilestone previous = null
+		var cursor = milestones
+		while cursor != null and exactNaturalCompare(cursor.threshold, threshold) < 0
+			previous = cursor
+			cursor = cursor.next
+		entry.next = cursor
+		if previous == null
+			milestones = entry
+		else
+			previous.next = entry
+	/** Mirrors engine/military_tradition.py::_resolve, including removal of only
+	 * the explicitly replaced effect, followed by appending the new effect. */
+	function resolve(string controllerId, string categoryId, string experience) returns TraditionLayer
+		let result = new TraditionLayer(controllerId, categoryId, experience)
+		var coefficient = coefficients
+		TraditionModifier tail = null
+		while coefficient != null
+			let entry = new TraditionModifier(coefficient, experience)
+			if tail == null
+				result.modifiers = entry
+			else
+				tail.next = entry
+			tail = entry
+			coefficient = coefficient.next
+		var milestone = milestones
+		TraditionMilestone lastReached = null
+		while milestone != null and exactNaturalCompare(experience, milestone.threshold) >= 0
+			if milestone.mode != "additive"
+				var earlier = result.reached
+				while earlier != null
+					if earlier.effectId == milestone.replacesEffectId
+						(earlier castTo ReachedTraditionMilestone).active = false
+					earlier = earlier.next
+			let reached = new ReachedTraditionMilestone(milestone)
+			if lastReached == null
+				result.reached = reached
+			else
+				lastReached.next = reached
+			lastReached = reached
+			milestone = milestone.next
+		return result
+	ondestroy
+		while coefficients != null
+			let obsolete = coefficients
+			coefficients = coefficients.next
+			destroy obsolete
+		while milestones != null
+			let obsolete = milestones
+			milestones = milestones.next
+			destroy obsolete
+
+class StoredTraditionLayer
+	string id
+	TraditionLayer layer
+	StoredTraditionLayer next = null
+	construct(string id, TraditionLayer layer)
+		this.id = id
+		this.layer = layer
+	ondestroy
+		if layer != null
+			destroy layer
+
+/** Owns ONLY tradition layers. Other modifiers are managed by their consumers.
+ * Adapter checkpoints transfer whole stores, retaining old objects on failure. */
+public class TraditionLayerStore
+	private StoredTraditionLayer entries = null
+	function get(string id) returns TraditionLayer
+		var entry = entries
+		while entry != null
+			if entry.id == id
+				return entry.layer
+			entry = entry.next
+		return null
+	/** Takes ownership; null removes the previous layer and all obsolete effects. */
+	function replace(string id, TraditionLayer layer)
+		StoredTraditionLayer previous = null
+		var entry = entries
+		while entry != null
+			if entry.id == id
+				if previous == null
+					entries = entry.next
+				else
+					previous.next = entry.next
+				destroy entry
+				break
+			previous = entry
+			entry = entry.next
+		if layer != null
+			let replacement = new StoredTraditionLayer(id, layer)
+			replacement.next = entries
+			entries = replacement
+	ondestroy
+		while entries != null
+			let obsolete = entries
+			entries = entries.next
+			destroy obsolete

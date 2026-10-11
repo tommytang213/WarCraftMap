@@ -144,6 +144,14 @@ class MilitaryTraditionRuntime:
             if not isinstance(milestones, list):
                 raise TraditionError(f"tradition {tradition_id}: milestones must be an array")
             for milestone in milestones:
+                if not isinstance(milestone, Mapping):
+                    raise TraditionError(f"tradition {tradition_id}: malformed milestone")
+                _integer(milestone.get("threshold"), "milestone.threshold", 1)
+                _ident(milestone.get("id"), "milestone.id")
+            # References must precede their replacements in resolver order,
+            # independent of the order in which JSON records were authored.
+            milestones = sorted(milestones, key=lambda x: (x["threshold"], x["id"]))
+            for milestone in milestones:
                 if not isinstance(milestone, Mapping) or set(milestone) != {"id", "threshold", "effect"}:
                     raise TraditionError(f"tradition {tradition_id}: malformed milestone")
                 milestone_id = _ident(milestone.get("id"), "milestone.id")

@@ -185,6 +185,18 @@
     "combat_loss": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function commitCombatLoss(int victimIndex, int contributorIndex, real now) returns boolean"
+    },
+    "tradition_resolve": {
+      "path": "wurst/MilitaryTraditionLayer.wurst",
+      "signature": "function resolve(string controllerId, string categoryId, string experience) returns TraditionLayer"
+    },
+    "tradition_reconcile": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function reconcileForceTradition(RuntimeForce runtimeForce)"
+    },
+    "tradition_inspection": {
+      "path": "wurst/MilitaryTraditionLayer.wurst",
+      "signature": "function inspection() returns string"
     }
   },
   "systems": {
@@ -303,6 +315,18 @@
       "combat_loss",
       "save",
       "load"
+    ],
+    "military_tradition_resolution": [
+      "domains",
+      "startup",
+      "combat_install",
+      "combat_death",
+      "combat_loss",
+      "save",
+      "load",
+      "tradition_resolve",
+      "tradition_reconcile",
+      "tradition_inspection"
     ]
   }
 }

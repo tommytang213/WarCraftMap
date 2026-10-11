@@ -1,6 +1,7 @@
 package MilitarySettlementRuntimeTests
 
 import MilitarySettlementRuntime
+import MilitaryTraditionLayer
 import CommandRouter
 import ManagementScreenPauseController
 import Wurstunit
@@ -12,16 +13,23 @@ public class RecordingMilitaryAdapter implements MilitarySettlementAdapter, Comm
 	int tradition = 0
 	int appliedAbility = 0
 	string management = ""
+	TraditionLayerStore traditionLayers = new TraditionLayerStore()
+	TraditionLayerStore savedTraditionLayers = null
 	override function show(player viewer, string message)
 		management = message
 	override function setCampaignPaused(boolean paused)
 		skip
 	override function beginLoad()
-		skip
+		savedTraditionLayers = traditionLayers
+		traditionLayers = new TraditionLayerStore()
 	override function rollbackLoad()
-		skip
+		destroy traditionLayers
+		traditionLayers = savedTraditionLayers
+		savedTraditionLayers = null
 	override function commitLoad()
-		skip
+		if savedTraditionLayers != null
+			destroy savedTraditionLayers
+		savedTraditionLayers = null
 	override function playerForController(string controllerId, boolean localDefense) returns player
 		if localDefense
 			return Player(11)
@@ -34,12 +42,15 @@ public class RecordingMilitaryAdapter implements MilitarySettlementAdapter, Comm
 	override function representationId(string stableId) returns int
 		return 0
 	override function removeRepresentation(string stableId)
+		traditionLayers.replace(stableId, null)
 		removed += stableId + "|"
 	override function changeRepresentationOwner(string stableId, player owner)
 		created += "owner:" + stableId + "|"
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		tradition = lifePermille
 		appliedAbility = milestoneAbilityId
+	override function replaceTraditionLayer(string stableId, TraditionLayer layer)
+		traditionLayers.replace(stableId, layer)
 	override function protectRepresentation(string stableId, boolean shouldProtect)
 		if shouldProtect
 			protectedId += stableId + "|"

@@ -2,11 +2,39 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
 from military_tradition import MilitaryTraditionRuntime, RecordingTraditionAdapter, TraditionError
+
+
+def verify_generated_definitions(source: str, definitions: dict) -> None:
+    """Compare executable constructor arguments, not the packaged JSON copy."""
+    MilitaryTraditionRuntime(definitions, RecordingTraditionAdapter())
+    for tradition in definitions["traditions"]:
+        match = re.search(r'function traditionDefinition_' + re.escape(tradition["id"]) +
+                          r'\(\) returns TraditionDefinition\n(.*?)(?=\n[^\t\n]|\Z)', source, re.S)
+        if not match:
+            raise TraditionError(f"missing generated tradition {tradition['id']}")
+        body = match[1]
+        coefficients = re.findall(r'^\tdefinition\.coefficient\("([^"]+)", "(-?\d+)", "(\d+)"\)$', body, re.M)
+        expected = [(row["attributeId"], str(row["numerator"]), str(row["denominator"]))
+                    for row in tradition["coefficients"]]
+        if coefficients != expected:
+            raise TraditionError(f"generated coefficients differ for {tradition['id']}")
+        milestones = re.findall(r'^\tdefinition\.milestone\("([^"]+)", "(\d+)", "([^"]+)", "([^"]+)", "([^"]*)"\)$', body, re.M)
+        expected = [(row["id"], str(row["threshold"]), row["effect"]["effectId"],
+                     row["effect"]["mode"], row["effect"]["replacesEffectId"] or "")
+                    for row in sorted(tradition["milestones"], key=lambda row: (row["threshold"], row["id"]))]
+        if milestones != expected:
+            raise TraditionError(f"generated milestones differ for {tradition['id']}")
+        for controller in definitions["eligibleControllerIds"]:
+            call = (f'runtime.reconcileTradition("{controller}", "{tradition["categoryId"]}", '
+                    f'"{tradition["startingExperience"]}", traditionDefinition_{tradition["id"]}(), migrate)')
+            if source.count(call) != 1:
+                raise TraditionError(f"missing/duplicate generated track {controller}/{tradition['categoryId']}")
 
 
 def validate(path: str | Path, world_path: str | Path) -> None:
