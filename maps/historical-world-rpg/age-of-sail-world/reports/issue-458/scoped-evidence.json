@@ -1,0 +1,193 @@
+{
+  "artifactSha256": "991a217a34328194340a9e777818e6faa9c67f75875f5eb70dfa9113e06bc061",
+  "campaignSchemaVersions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "candidateReady": false,
+  "exactOracleVectors": [
+    {
+      "after": "9007199254740992",
+      "amount": 1,
+      "before": "9007199254740991",
+      "category": "land_formation",
+      "controller": "player",
+      "denominator": 1,
+      "earned": "1",
+      "numerator": 1
+    },
+    {
+      "after": "9007199254740993",
+      "amount": 1,
+      "before": "9007199254740992",
+      "category": "land_formation",
+      "controller": "player",
+      "denominator": 1,
+      "earned": "1",
+      "numerator": 1
+    },
+    {
+      "after": "4620693213387161602",
+      "amount": 2147483647,
+      "before": "9007199254740993",
+      "category": "land_formation",
+      "controller": "player",
+      "denominator": 1,
+      "earned": "4611686014132420609",
+      "numerator": 2147483647
+    },
+    {
+      "after": "9007204254740991",
+      "amount": 2000000000,
+      "before": "9007199254740991",
+      "category": "land_formation",
+      "controller": "france",
+      "denominator": 2,
+      "earned": "5000000000",
+      "numerator": 5
+    },
+    {
+      "after": "1000000000000000000000000000000000000000000000000002147483645",
+      "amount": 2147483647,
+      "before": "999999999999999999999999999999999999999999999999999999999999",
+      "category": "sailing_naval",
+      "controller": "player",
+      "denominator": 2147483647,
+      "earned": "2147483646",
+      "numerator": 2147483646
+    },
+    {
+      "after": "1000000000000000000000000000000000000000000000000002147483647",
+      "amount": 2147483647,
+      "before": "999999999999999999999999999999999999999999999999999999999999",
+      "category": "sailing_naval",
+      "controller": "france",
+      "denominator": 2147483646,
+      "earned": "2147483648",
+      "numerator": 2147483647
+    },
+    {
+      "after": "9007204254741000",
+      "amount": 13,
+      "before": "9007204254740991",
+      "category": "land_formation",
+      "controller": "france",
+      "denominator": 4,
+      "earned": "9",
+      "numerator": 3
+    },
+    {
+      "after": "1000000000000000000000000000000000000000000000000002147483647",
+      "amount": 1,
+      "before": "1000000000000000000000000000000000000000000000000002147483647",
+      "category": "sailing_naval",
+      "controller": "france",
+      "denominator": 2147483647,
+      "earned": "0",
+      "numerator": 1
+    },
+    {
+      "after": "1000000000000000000000000000000000000000000000000004294967292",
+      "amount": 2147483647,
+      "before": "1000000000000000000000000000000000000000000000000002147483645",
+      "category": "sailing_naval",
+      "controller": "player",
+      "denominator": 2147483647,
+      "earned": "2147483647",
+      "numerator": 2147483647
+    }
+  ],
+  "executionLogSha256": "06b8d2bad1d9d0f4a342ef1e70c692e7a00ba5fb9bde188bd5cd2d99e90ac455",
+  "headlessTraditionSchemaVersion": 2,
+  "maps": [
+    "europe_west",
+    "europe_central_east",
+    "africa",
+    "middle_east_india",
+    "southeast_asia",
+    "east_asia",
+    "americas_north_central",
+    "americas_caribbean",
+    "americas_south",
+    "americas_pacific_transition",
+    "pacific_north",
+    "pacific_west",
+    "pacific_melanesia",
+    "pacific_polynesia",
+    "pacific_new_zealand",
+    "pacific_open_ocean_encounter"
+  ],
+  "militarySchemaVersion": 8,
+  "productionJourneys": [
+    "wurst/MilitaryCombatEventsTests.wurst:combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint",
+    "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+    "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+    "wurst/MilitaryCombatEventsTests.wurst:everyLegacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec",
+    "wurst/MilitaryCombatEventsTests.wurst:installedCombatCrossesIntegerBoundaryAndCommitsOnce",
+    "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+    "wurst/MilitaryCombatEventsTests.wurst:largeWeightedCallbacksMatchIntegerOracleAcrossControllersAndCategories",
+    "wurst/MilitaryCombatEventsTests.wurst:malformedExactExperienceIsRejectedByCampaignLoadBeforeMutation",
+    "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition"
+  ],
+  "realClientExecuted": false,
+  "receipts": 16,
+  "releaseCandidate": false,
+  "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "remainingObligations": [
+    "REQ-0154.02",
+    "REQ-0155.01",
+    "REQ-0157.01",
+    "REQ-0158.02",
+    "REQ-0158.03",
+    "REQ-0159.01",
+    "REQ-0161.01",
+    "REQ-0162.01",
+    "REQ-0163.02"
+  ],
+  "remainingPublicationBlockers": 8460,
+  "requiredNumericalTests": [
+    "combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint",
+    "everyLegacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec",
+    "exactNaturalsGrowCarryAndCompareWithoutNativePrecision",
+    "installedCombatCrossesIntegerBoundaryAndCommitsOnce",
+    "largeWeightedCallbacksMatchIntegerOracleAcrossControllersAndCategories",
+    "malformedExactExperienceIsRejectedByCampaignLoadBeforeMutation",
+    "nativeTraditionProjectionLimitsCannotEraseExperienceOrRejectLoss",
+    "registeredCommandLoadsActualTerrainOrdersAndReturnsHome"
+  ],
+  "requirements": [
+    "ROAD-0052.01",
+    "REQ-0154.01",
+    "REQ-0164.01",
+    "REQ-0158.01"
+  ],
+  "scope": "exact expandable earned enemy-kill experience and persistence",
+  "sourceRevision": "a1e12c7d274fb44d9c30311215ea803805d0435b",
+  "sourceTreeSha256": "b870f44247f0fc926209d0cecc210aa724e9dc73946db46103a03a8fdc149850",
+  "status": "pass",
+  "supportedMilitaryVersions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "weightedOracleVectors": [
+    {
+      "amount": 13,
+      "denominator": 4,
+      "earned": 9,
+      "numerator": 3
+    }
+  ]
+}

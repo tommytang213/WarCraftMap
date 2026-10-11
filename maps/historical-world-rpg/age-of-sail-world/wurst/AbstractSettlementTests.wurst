@@ -204,7 +204,7 @@ function abstractReceipt(string caseName)
 	restored.safeX.assertEquals(32.)
 	restored.safeY.assertEquals(64.)
 	let combined = f.military.snapshot()
-	combined.startsWith("v7|").assertTrue()
+	combined.startsWith("v8|").assertTrue()
 	f.military.restore(combined).assertTrue()
 	f.military.snapshot().assertEquals(combined)
 	// Main's v4 already has policy and complete authority, but no safe hints.

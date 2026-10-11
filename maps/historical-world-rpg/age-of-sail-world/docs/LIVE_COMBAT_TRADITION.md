@@ -34,22 +34,44 @@ capture can suffer a new real loss; retirement itself earns nothing. Callback
 generations remain transient and are invalidated during ownership changes, map
 activation and load transactions.
 
-Military snapshot **v7** retains controller/category XP and the existing force
-loss records together. It accepts v1–v6, preserves earned tracks and seeds missing
+Military snapshot **v8** retains controller/category XP and the existing force
+loss records together. It accepts v1–v7, preserves earned tracks and seeds missing
 legacy tracks from scenario starting values. V6 orders and every earlier
-settlement, clock, recovery and conflict migration remain intact. V7 requires the
+settlement, clock, recovery and conflict migration remain intact. V7 and v8 require the
 complete authored track set and rejects malformed, duplicate, unknown or missing
 tracks before replacing authority or touching projections. Current scenario
 definitions reconcile derived presentation without resetting XP. The whole
 campaign load checkpoint restores experience, losses and retained representations
-if a later domain fails. Campaign envelopes 1–8 remain supported. The headless
+if a later domain fails. Campaign envelopes 1–9 remain supported. The headless
 tradition state is v2; its v1 migration only seeds newly supported player tracks.
 
-Live XP uses the existing signed integer representation. Weighted arithmetic
-avoids intermediate multiplication overflow; an unrepresentable positive result
-or accumulated total rejects the combat commit coherently. This is a numeric
-representation limit, not a designed progression level cap. Unbounded live totals
-remain part of REQ-0158's unfinished work.
+Live accumulated XP and weighted awards use **canonical decimal strings**:
+`0`, or a nonzero digit followed by any number of decimal digits. The shared
+`ExactNatural` arithmetic adds with digit carry, multiplies by integer weights
+using exact doubling, and divides with bounded integer remainders. Floor applies
+to each individual contribution. No whole-value float conversion, wrapping,
+saturation, fixed digit array, or gameplay ceiling participates in XP authority.
+An eligible one-point death at 2,147,483,647 commits the loss and records exactly
+2,147,483,648; additions beyond 2^53 remain exact too.
+
+V8 writes that decimal value directly. V1–v7 accept only canonical nonnegative
+signed-integer XP and migrate the digits exactly; legacy overflow, signs, leading
+zeros, fractions, exponent notation and trailing junk are rejected. V8 accepts
+arbitrarily long canonical values. All numerical track fields are validated in
+detached authority before projection changes. Immutable string values keep load
+checkpoints independent. Restoring a track never invokes a contribution adapter.
+Management inspection displays the full XP value, including on inactive maps.
+
+Native integer projection is a separate, explicitly bounded conversion. The
+legacy generic life adapter also bounds its final native output without integer
+multiplication overflow; these native bounds cannot alter XP or reject a loss.
+The generated scenario's life coefficient remains **zero**. Exact threshold
+comparisons preserve existing generic behavior without enabling the pending
+scenario coefficient or milestone-effect adapters.
+
+Issue #458 completes the numeric representation repair under ROAD-0052 and
+REQ-0158.01. This is evidence for expandable earned XP, not completion of the
+remaining proportional gameplay effects or balance obligations of REQ-0158.
 
 Issue #450 scopes ROAD-0052, REQ-0154 and REQ-0164 evidence to **earned experience
 and persistence**. Authored attribute coefficients, qualitative milestones,
@@ -61,9 +83,9 @@ packaged scenario data for their own future adapters. No native-launch or releas
 candidate status is changed by these headless and diagnostic checks.
 
 `MilitaryCombatEventsTests.wurst` exercises installed production callbacks, player
-and AI land/naval tracks, integer weights, ownership changes, consumed losses,
+and AI land/naval tracks, fractional weights, large products and totals, ownership changes, consumed losses,
 native cleanup reentry, stale handles, save/reconstruction, legacy migration and
-failed restoration. It also exercises the ordinary Warcraft military projection
+failed restoration, every supported integer-version migration, and malformed numerical records. It also exercises the ordinary Warcraft military projection
 with interpreter units. Python checks compare the callback vectors with the
 weighted headless contract and validate generated definitions. No player QA is
 required.

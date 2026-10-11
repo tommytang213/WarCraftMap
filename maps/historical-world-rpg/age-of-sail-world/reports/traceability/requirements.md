@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7060**.
+Candidate ready: **False**; blockers: **7054**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -235,7 +235,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0157.01 | combination | The core numerical tradition bonus is continuous and experience-proportional rather than a discrete level table. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | artifact-missing, integration-missing, static-only |
 | REQ-0158.02 | combination | Long-running player and AI controllers may continue improving as they accumulate valid experience across the campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0158.03 | combination | Balance should come from experience rates, coefficients, opposing progression, costs, counters, and scenario tuning rather than an arbitrary cap that makes further combat experience worthless. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0159.01 | combination | Milestone thresholds may unlock additional category-wide buffs, passive effects, doctrines, formations, morale/discipline mechanics, logistics advantages, or other qualitative rewards once the controller reaches the required tradition experience. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -3429,17 +3429,11 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0157.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0157.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0157.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0158.01 [unmapped]: no explicit requirement-to-production mapping
-- REQ-0158.01 [authority-missing]: scenario content authority is absent or stale
-- REQ-0158.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
-- REQ-0158.01 [unreachable]: production entry/registration/call chain is absent or stale
-- REQ-0158.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0158.01 [unpersisted]: persistence behavior/path is absent or stale
-- REQ-0158.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0158.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0158.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0158.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0158.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0158.01 [static-only]: source references cannot establish executed integration
 - REQ-0158.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0158.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0158.02 [authority-missing]: scenario content authority is absent or stale
