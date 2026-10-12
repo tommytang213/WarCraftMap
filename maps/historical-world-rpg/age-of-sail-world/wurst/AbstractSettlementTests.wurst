@@ -153,19 +153,16 @@ function abstractReceipt(string caseName)
 	f.trade.storeSelected.assertTrue()
 	f.trade.hold.id.assertEquals("warehouse:alasora")
 	f.trade.hold.capacity.assertEquals(12000)
-	f.trade.hold.cargo=f.trade.hold.capacity
-	f.trade.hold.goodId="grain"
+	f.trade.hold.contents.set("grain",f.trade.hold.capacity)
 	f.reject("/trade buy 1")
-	f.trade.hold.cargo=0
-	f.trade.hold.goodId=""
+	f.trade.hold.contents.clear()
 	f.visit("dong_kinh")
 	f.dispatch("/trade select dong_kinh rice")
 	f.dispatch("/trade store player_ship_hold")
-	f.trade.hold.cargo=0
-	f.trade.hold.goodId=""
+	f.trade.hold.contents.clear()
 	f.trade.controller.provenance.clear()
 	f.dispatch("/trade buy 1")
-	f.trade.hold.goodId.assertEquals("rice")
+	f.trade.hold.contents.singleGood().assertEquals("rice")
 	f.trade.market.discovered=false
 	f.reject("/trade buy 1")
 	f.trade.market.discovered=true
@@ -250,7 +247,7 @@ function abstractReceipt(string caseName)
 		f.military.forceCount.assertEquals(2)
 		f.trade.marketCount.assertEquals(2)
 		f.trade.storeCount.assertEquals(3)
-		f.trade.findStore("warehouse:alasora").cargo.assertEquals(2)
+		f.trade.findStore("warehouse:alasora").usedCapacity().assertEquals(2)
 		f.trade.findMarket("dong_kinh","rice").discovered.assertFalse()
 		f.military.settlements[f.military.settlementIndex("alasora")].legalOwnerId.assertEquals("player")
 		f.military.settlements[f.military.settlementIndex("dong_kinh")].controllerId.assertEquals("player")
@@ -287,5 +284,5 @@ function abstractReceipt(string caseName)
 	f.trade.findStore("warehouse:alasora").money=2
 	f.trade.reconstruct(tradeOld).assertTrue()
 	f.trade.capture().assertEquals(baseline)
-	f.trade.findStore("warehouse:alasora").cargo.assertEquals(0)
+	f.trade.findStore("warehouse:alasora").usedCapacity().assertEquals(0)
 	f.adapter.created.assertEquals("")

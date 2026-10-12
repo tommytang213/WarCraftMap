@@ -90,9 +90,11 @@ public class CampaignPiracyActionAuthority implements PiracyActionAuthority
 			return null
 		let source=store(sourceId)
 		let destination=trade.hold
-		if source==null or destination==null or source.id==destination.id or source.cargo<0 or source.money<0 or destination.money<0 or source.cargo>destination.freeCapacity() or (destination.cargo>0 and source.cargo>0 and source.goodId!=destination.goodId)
+		if source==null or destination==null or source.id==destination.id or source.money<0 or destination.money<0 or source.usedCapacity()>destination.freeCapacity() or (source.usedCapacity()>0 and not destination.accepts(source.contents.singleGood()))
 			return null
-		let proposal=new PrizeProposal(request.actionId,request.targetId,encounter.targetKind,victim,targetRegion,request.commissionId,request.vesselOutcome,source.goodId,source.cargo,source.money,encounter.prisoners,request.prisonerOutcome,tick)
+		// Prize history still has one commodity field. Mixed or unidentified
+		// source cargo must reject, never collapse or discard another balance.
+		let proposal=new PrizeProposal(request.actionId,request.targetId,encounter.targetKind,victim,targetRegion,request.commissionId,request.vesselOutcome,source.contents.singleGood(),source.usedCapacity(),source.money,encounter.prisoners,request.prisonerOutcome,tick)
 		proposal.actorId=encounter.actorId
 		proposal.actorPolityId=encounter.actorPolityId
 		proposal.encounterId=encounter.id
@@ -118,12 +120,11 @@ public class CampaignPiracyActionAuthority implements PiracyActionAuthority
 		// Seized goods are uncosted cargo; the victim's purchase history cannot
 		// become the captain's merchant route credit. No trade selection changes.
 		if proposal.cargoUnits>0
-			let consumed=trade.controller.provenance.consume(source.id,source.goodId,proposal.cargoUnits,"")
+			let consumed=trade.controller.provenance.consume(source.id,source.contents.singleGood(),proposal.cargoUnits,"")
 			destroy consumed
-			destination.goodId=source.goodId
-			destination.cargo+=proposal.cargoUnits
-			source.cargo-=proposal.cargoUnits
-			source.goodId=""
+			let good=source.contents.singleGood()
+			destination.contents.set(good,destination.quantity(good)+proposal.cargoUnits)
+			source.contents.set(good,source.quantity(good)-proposal.cargoUnits)
 		source.money-=proposal.moneyMinor
 		destination.money+=reward
 		military.prizeCombat.consume(proposal.encounterId,proposal.prisonerOutcome)

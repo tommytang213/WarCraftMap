@@ -114,8 +114,7 @@ public class PrizeFixture
 		rpg.interactions.maps=new CampaignInteractionMaps(state)
 		military.activeRegionId="caribbean"
 		military.registerForce(ship)
-		source.cargo=4
-		source.goodId="sugar"
+		source.contents.set("sugar",4)
 		trade.registerStore(source)
 		trade.registerStore(destination)
 		trade.hold=destination
@@ -164,9 +163,9 @@ public class PrizeFixture
 	f.output.last.contains("LAWFUL PRIVATEERING").assertTrue()
 	f.snapshot().assertEquals(before)
 	f.confirm()
-	f.source.cargo.assertEquals(0)
+	f.source.usedCapacity().assertEquals(0)
 	f.source.money.assertEquals(0)
-	f.destination.cargo.assertEquals(4)
+	f.destination.usedCapacity().assertEquals(4)
 	f.destination.money.assertEquals(2600)
 	f.trade.controller.provenance.count.assertEquals(0)
 	f.trade.progress.standing.assertEquals(0)
@@ -273,7 +272,7 @@ public class PrizeFixture
 	f.preview("cargo","-","release")
 	let used=f.trade.controller.provenance.consume(f.source.id,"sugar",1,"")
 	destroy used
-	f.source.cargo=3
+	f.source.contents.set("sugar",3)
 	f.reject("/prize-confirm")
 	f.output.last.contains("Refresh the preview").assertTrue()
 	f.preview("prisoners","-","release")
@@ -286,7 +285,7 @@ public class PrizeFixture
 	f.preview("reward","marque","release")
 	f.confirm()
 	f.destination.money.assertEquals(3100)
-	f.destination.cargo.assertEquals(3)
+	f.destination.usedCapacity().assertEquals(3)
 
 @test function piracyConfirmationRechecksCommissionRevocationExpiryAndClockCooldown()
 	let f=new PrizeFixture()
@@ -458,3 +457,18 @@ function rejectChangedCommissionDuringFinalRead(string issuer,int rate)
 	f.confirm()
 	f.piracy.state.outlaw.assertTrue()
 	f.piracy.state.bountyMinor.assertEquals(300)
+
+@test function prizeAdapterPreservesMixedDestinationAndRejectsAmbiguousSource()
+	let f=new PrizeFixture()
+	f.trade.registerMarket(new RuntimeMarket("victim_port","grain",100,1000,10,8))
+	f.destination.contents.set("grain",2)
+	f.trade.controller.provenance.add(f.destination.id,"grain",2,20,"victim_port")
+	f.source.contents.set("grain",1)
+	f.reject("/prize-preview mixed ship - release ransom")
+	f.source.contents.set("grain",0)
+	f.preview("single","-","release")
+	f.confirm()
+	f.destination.quantity("grain").assertEquals(2)
+	f.destination.quantity("sugar").assertEquals(4)
+	f.trade.controller.provenance.costIn(f.destination.id,"grain").assertEquals(20)
+	f.trade.controller.provenance.quantityIn(f.destination.id,"sugar").assertEquals(0)

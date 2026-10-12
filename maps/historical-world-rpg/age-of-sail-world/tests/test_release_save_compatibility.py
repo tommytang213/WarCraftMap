@@ -50,7 +50,7 @@ class ReleaseSaveCompatibilityTests(unittest.TestCase):
         self.assertEqual({"diplomacy": {"current": 2, "supportedSources": [1, 2]},
                           "militarySettlements": {"current": military_version, "supportedSources": [1, 2, 3, 4, 5, 6, 7, 8]},
                           "rpg": {"current": 3, "supportedSources": [1, 2, 3]},
-                          "trade": {"current": 3, "supportedSources": [1, 2, 3]},
+                          "trade": {"current": 4, "supportedSources": [1, 2, 3, 4]},
                           "partyLocations": {"current": 1, "supportedSources": [1]},
                           "commandContext": {"current": 1, "supportedSources": [1]},
                           "discovery": {"current": 1, "supportedSources": [0, 1]},

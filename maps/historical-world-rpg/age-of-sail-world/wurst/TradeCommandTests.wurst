@@ -14,7 +14,7 @@ import CommandRouter
 import ManagementScreenPauseController
 import ScenarioData
 
-class TradeCommandPorts implements CommandOutput,TradePresentation,CampaignPauseRuntime
+public class TradeCommandPorts implements CommandOutput,TradePresentation,CampaignPauseRuntime
 	string output=""
 	override function show(player sender,string message)
 		output=message
@@ -27,7 +27,7 @@ class TradeCommandPorts implements CommandOutput,TradePresentation,CampaignPause
 
 /** These replace only native observations. All eligibility, state, catalogue,
  * command registration, transactions, provenance and codecs are production. */
-class TradeActors implements InteractionActors
+public class TradeActors implements InteractionActors
 	real actorX=0.
 	real actorY=0.
 	boolean exists=true
@@ -56,7 +56,7 @@ class TradeActors implements InteractionActors
 		actorX=point.x
 		actorY=point.y
 
-class TradeCommandFixture
+public class TradeCommandFixture
 	PlayableTradeRuntime trade=new PlayableTradeRuntime()
 	TradeCommandPorts ports=new TradeCommandPorts()
 	TradeActors actors=new TradeActors()
@@ -160,20 +160,20 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	// Generated tools use 100 quantity units per display unit. Buy edges
 	// 85..90 sum to 895 minor units before scaling; the debit rounds up to 9.
 	f.personal().money.assertEquals(991)
-	f.warehouse().cargo.assertEquals(2)
-	f.ship().cargo.assertEquals(4)
+	f.warehouse().usedCapacity().assertEquals(2)
+	f.ship().usedCapacity().assertEquals(4)
 	f.trade.controller.provenance.costIn(f.ship().id,"tools").assertEquals(6)
 	f.trade.controller.provenance.costIn(f.warehouse().id,"tools").assertEquals(3)
 	f.dispatch("/trade select lisbon grain")
 	f.dispatch("/trade buy 5")
 	f.ports.output.assertEquals("Bought 5 grain.")
-	f.reject("/trade move cargo:english_patrol_ship player_ship_hold 1")
-	f.ports.output.assertEquals("Cargo store contains another commodity.")
+	f.reject("/trade move cargo:english_patrol_ship cargo:english_patrol_ship 1")
+	f.ports.output.assertEquals("Cargo stores must differ.")
 	// Five grain units settle for 2 on purchase and 1 on resale; smaller
 	// sales may be below the supported minimum currency settlement.
 	f.dispatch("/trade sell 5")
 	f.ports.output.assertEquals("Sold 5 grain; realized P/L -1.")
-	f.personal().cargo.assertEquals(0)
+	f.personal().usedCapacity().assertEquals(0)
 	f.personal().money.assertEquals(990)
 	f.dispatch("/trade close")
 	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)
@@ -195,9 +195,9 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	f.trade.progress.completedRouteCount.assertEquals(1)
 	f.dispatch("/trade move cargo:english_patrol_ship player_ship_hold 2")
 	f.dispatch("/trade store player_ship_hold")
-	f.personal().cargo.assertEquals(2)
+	f.personal().usedCapacity().assertEquals(2)
 	f.trade.controller.provenance.costIn(f.personal().id,"tools").assertEquals(3)
-	f.warehouse().cargo.assertEquals(2)
+	f.warehouse().usedCapacity().assertEquals(2)
 	f.trade.controller.processedCount.assertEquals(7)
 	f.trade.nextTransaction.assertEquals(8)
 	f.trade.storeCount.assertEquals(4)
@@ -343,9 +343,9 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	// Literal supported v2 save from before the personal hold was registered.
 	let old="v2:lisbon:90:82080:24:22:24:2:900:0:0::100:0:0:2:runtime-buy-1:lisbon,grain,90,82080,24,22,0,0,0,0,0,1000,1000,24:warehouse;lisbon:24000:warehouse;lisbon,2,900,24000,grain:grain:grain:warehouse;lisbon,grain,2,48,lisbon"
 	f.trade.reconstruct(old).assertTrue()
-	f.personal().cargo.assertEquals(0)
+	f.personal().usedCapacity().assertEquals(0)
 	f.personal().money.assertEquals(0)
-	f.warehouse().cargo.assertEquals(2)
+	f.warehouse().usedCapacity().assertEquals(2)
 	f.warehouse().money.assertEquals(900)
 	f.trade.controller.provenance.costIn(f.warehouse().id,"grain").assertEquals(48)
 	let migrated=f.trade.capture()
@@ -377,10 +377,10 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 		f.trade.reconstruct(saved).assertTrue()
 		f.trade.hold.id.assertEquals("warehouse:lisbon")
 		f.warehouse().capacity.assertEquals(24000)
-		f.warehouse().cargo.assertEquals(40)
+		f.warehouse().usedCapacity().assertEquals(40)
 		f.warehouse().money.assertEquals(900)
-		f.warehouse().goodId.assertEquals("")
-		f.personal().cargo.assertEquals(0)
+		f.warehouse().contents.singleGood().assertEquals("")
+		f.personal().usedCapacity().assertEquals(0)
 		f.personal().money.assertEquals(0)
 		f.trade.controller.provenance.count.assertEquals(0)
 		f.trade.controller.seen("legacy-buy").assertTrue()

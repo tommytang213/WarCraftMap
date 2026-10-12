@@ -1,0 +1,71 @@
+package CargoBalances
+
+/** Sparse, stable commodity identities. The empty identity is reserved for
+ * legacy cargo whose commodity was never saved; it still occupies capacity. */
+public class CargoBalance
+	string goodId
+	int quantity
+	CargoBalance next=null
+	construct(string goodId,int quantity)
+		this.goodId=goodId
+		this.quantity=quantity
+
+public class CargoBalances
+	CargoBalance first=null
+	function quantity(string goodId) returns int
+		var entry=first
+		while entry!=null
+			if entry.goodId==goodId
+				return entry.quantity
+			entry=entry.next
+		return 0
+	function total() returns int
+		var result=0
+		var entry=first
+		while entry!=null
+			result+=entry.quantity
+			entry=entry.next
+		return result
+	/** Trusted mutation after the transaction or snapshot has been validated. */
+	function set(string goodId,int quantity)
+		var entry=first
+		CargoBalance previous=null
+		while entry!=null
+			if entry.goodId==goodId
+				if quantity==0
+					if previous==null
+						first=entry.next
+					else
+						previous.next=entry.next
+					destroy entry
+				else
+					entry.quantity=quantity
+				return
+			previous=entry
+			entry=entry.next
+		if quantity>0
+			let added=new CargoBalance(goodId,quantity)
+			if previous==null
+				first=added
+			else
+				previous.next=added
+	function clear()
+		while first!=null
+			let removed=first
+			first=removed.next
+			destroy removed
+	function singleGood() returns string
+		if first!=null and first.next==null
+			return first.goodId
+		return ""
+	function capture() returns string
+		var result=""
+		var entry=first
+		while entry!=null
+			if result!=""
+				result+="!"
+			result+=entry.goodId+"="+entry.quantity.toString()
+			entry=entry.next
+		return result
+	ondestroy
+		clear()
