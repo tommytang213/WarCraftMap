@@ -1,5 +1,10 @@
 # Installed command help
 
+Quest navigation has separate `/showonmap QUEST` and `/track QUEST` actions.
+Both focus permitted active-stage or return guidance; Track also retains local
+guidance after `/map close`. See [quest map guidance](QUEST_MAP_GUIDANCE.md) for
+precision, pause ownership, persistence and downstream presentation obligations.
+
 Hero allocation actions are registered in the RPG runtime: `/progression HERO`,
 `/improveskill HERO SKILL`, `/improvemastery HERO MASTERY`, and
 `/chooseperk HERO PERK`. See [hero allocation](HERO_ALLOCATIONS.md) for eligibility,

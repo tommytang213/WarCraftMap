@@ -1,0 +1,422 @@
+package QuestNavigationTests
+
+import QuestNavigation
+import QuestStages
+import AuthoredQuestTests
+import VisitKnowledgeTests
+import CampaignStartupTests
+import CampaignLoadTransactionTests
+import WarcraftRpgRuntime
+import WarcraftRpgProjections
+import PlayableCampaignRuntime
+import CampaignSaveManager
+import CommandRouter
+import MapDiscoveryScreen
+import ManagementScreenPauseController
+import Wurstunit
+import PhysicalInteraction
+
+class NavigationRecording implements MapPresentationRuntime, LocalQuestMarkerPort, CampaignPauseRuntime
+	string shownRegion = ""
+	string exact = ""
+	string marker = ""
+	real x = 0.
+	real y = 0.
+	int views = 0
+	int replacements = 0
+	int clears = 0
+	boolean paused = false
+	override function showWorldMap(string physicalRegionId, string commandRegionId)
+		shownRegion = "world"
+		exact = ""
+		views++
+	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
+		shownRegion = regionId
+		exact = ""
+		views++
+	override function focusExact(string locationId)
+		exact = locationId
+	override function focusSearchArea(string searchAreaId)
+		false.assertTrue()
+	override function hideMap()
+		shownRegion = ""
+		exact = ""
+	override function replace(string questId, string locationId, real x, real y)
+		marker = questId + ":" + locationId
+		this.x = x
+		this.y = y
+		replacements++
+	override function clear()
+		marker = ""
+		clears++
+	override function setCampaignPaused(boolean value)
+		paused = value
+
+class NavigationFixture
+	AuthoredFixture f = new AuthoredFixture()
+	NavigationRecording output = new NavigationRecording()
+	ManagementScreenPauseController pauses = new ManagementScreenPauseController(output, false)
+	MapDiscoveryScreenController maps = new MapDiscoveryScreenController(pauses, output, "europe", "europe")
+	QuestNavigationController navigation
+	construct()
+		f.state.knowledge.start("lisbon").assertTrue()
+		navigation = new QuestNavigationController(f.rpg.journal, f.state.knowledge, f.rpg.interactions, maps, output)
+		f.rpg.navigation = navigation
+		registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+		registerCampaignMapCommand(f.commands, maps, f.state)
+	function dispatch(string text)
+		f.commands.dispatch(Player(0), text).assertTrue()
+	function vector(string name)
+		print("QUEST_MAP_VECTOR|" + name + "|" + maps.getContext() + "|" + output.shownRegion + "|" + output.exact + "|" + output.marker)
+	function reject(string text)
+		let before = f.rpg.captureState()
+		let discovery = f.state.knowledge.snapshot()
+		let owners = pauses.getModalOwnerCount()
+		let views = output.views
+		let marker = output.marker
+		dispatch(text)
+		f.rpg.captureState().assertEquals(before)
+		f.state.knowledge.snapshot().assertEquals(discovery)
+		pauses.getModalOwnerCount().assertEquals(owners)
+		output.views.assertEquals(views)
+		output.marker.assertEquals(marker)
+
+@test function registeredQuestActionsFocusExactWithoutDiscoveryAndPreservePauseOwners()
+	let n = new NavigationFixture()
+	let descriptions = new WarcraftRpgProjections(n.f.rpg.heroes)
+	n.f.rpg.setProjectionPort(descriptions)
+	n.reject("/showonmap missing")
+	n.reject("/track europe_printed_compact")
+	n.f.command("/accept europe_printed_compact", true)
+	descriptions.guidanceCount.assertEquals(0)
+	let authority = n.f.state.captureAuthoritativeState()
+	n.f.rpg.journal.trackedId = ""
+	n.pauses.setManuallyPaused(true)
+	n.dispatch("/showonmap europe_printed_compact")
+	n.f.rpg.journal.trackedId.assertEquals("")
+	n.output.shownRegion.assertEquals("europe")
+	n.output.exact.assertEquals("london")
+	n.output.marker.assertEquals("europe_printed_compact:london")
+	n.output.x.assertEquals(n.f.rpg.interactions.get("london").x)
+	n.output.y.assertEquals(n.f.rpg.interactions.get("london").y)
+	n.f.state.knowledge.knowsSettlement("london").assertFalse()
+	n.reject("/map focus london")
+	let other = n.pauses.openModalManagementScreen()
+	let replacements = n.output.replacements
+	n.dispatch("/track europe_printed_compact")
+	n.dispatch("/track europe_printed_compact")
+	n.output.replacements.assertEquals(replacements)
+	n.pauses.getModalOwnerCount().assertEquals(2)
+	n.f.state.captureAuthoritativeState().assertEquals(authority)
+	n.dispatch("/map close")
+	n.dispatch("/map close")
+	n.pauses.getModalOwnerCount().assertEquals(1)
+	n.output.marker.assertEquals("europe_printed_compact:london")
+	other.close()
+	n.output.paused.assertTrue()
+	n.pauses.setManuallyPaused(false)
+	n.output.paused.assertFalse()
+
+@test function questPrecisionMatchesHeadlessScopesCluesAndEarnedPointKnowledge()
+	let n = new NavigationFixture()
+	n.f.command("/accept europe_printed_compact", true)
+	let guide = n.f.compact.graph.objectives[0].guidance
+	guide.regionId = "africa"
+	guide.destinationId = "timbuktu"
+	let known = n.f.state.knowledge.snapshot()
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.shownRegion.assertEquals("africa")
+	n.output.exact.assertEquals("timbuktu")
+	n.output.marker.assertEquals("")
+	n.f.state.knowledge.snapshot().assertEquals(known)
+	n.reject("/map africa")
+	n.reject("/map focus timbuktu")
+	guide.precision = "region"
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.shownRegion.assertEquals("africa")
+	n.output.exact.assertEquals("")
+	n.output.marker.assertEquals("")
+	guide.precision = "hidden"
+	n.f.rpg.reconcile("player")
+	n.maps.getContext().assertEquals(MAP_CONTEXT_CLOSED)
+	n.reject("/showonmap europe_printed_compact")
+	guide.precision = "approximate"
+	guide.searchAreas = "[{\"x\":10,\"y\":20,\"radius\":100}]"
+	n.reject("/track europe_printed_compact")
+	// Earned knowledge of the specific point upgrades broad/hidden guidance.
+	n.f.state.knowledge.visitSettlement("timbuktu").assertTrue()
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.exact.assertEquals("timbuktu")
+	guide.precision = "hidden"
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.exact.assertEquals("timbuktu")
+	guide.requiredClues = "missing_clue~"
+	n.f.rpg.reconcile("player")
+	n.output.exact.assertEquals("")
+	n.reject("/track europe_printed_compact")
+	n.reject("/showonmap europe_printed_compact")
+
+@test function objectiveAdaptersReplaceMarkersAndRetainReturnUntilSuccessfulTurnIn()
+	let n = new NavigationFixture()
+	n.f.command("/accept europe_printed_compact", true)
+	n.dispatch("/track europe_printed_compact")
+	n.f.command("/interact lisbon", false)
+	n.f.command("/turnin europe_printed_compact hero", false)
+	n.output.marker.assertEquals("europe_printed_compact:london")
+	n.f.move("london")
+	n.f.command("/interact quest_location_london", true)
+	n.output.marker.assertEquals("")
+	n.maps.getContext().assertEquals(MAP_CONTEXT_CLOSED)
+	n.f.command("/interact london", false)
+	n.f.command("/queststage europe_printed_compact secure_archive", true)
+	n.f.receipt("secure_archive", "preserve_copy", "quest_institution_satisfied", "institution:movable_type_printing~", "guidance_receipt")
+	n.f.rpg.questEvent(n.f.compact.id, "preserve_copy", "bad_receipt").assertFalse()
+	n.f.rpg.questEvent(n.f.compact.id, "preserve_copy", "guidance_receipt").assertTrue()
+	n.output.marker.assertEquals("europe_printed_compact:lisbon")
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.exact.assertEquals("lisbon")
+	n.f.command("/turnin europe_printed_compact hero", false)
+	n.f.move("lisbon")
+	n.f.command("/interact lisbon", true)
+	n.f.compact.state.assertEquals(QUEST_READY)
+	n.output.marker.assertEquals("europe_printed_compact:lisbon")
+	n.vector("return")
+	n.f.rpg.journal.currency.assertEquals(0)
+	n.f.command("/turnin europe_printed_compact hero", true)
+	n.output.marker.assertEquals("")
+	n.maps.getContext().assertEquals(MAP_CONTEXT_CLOSED)
+	n.reject("/track europe_printed_compact")
+	n.reject("/showonmap europe_printed_compact")
+	n.f.command("/turnin europe_printed_compact hero", false)
+	n.f.rpg.journal.currency.assertEquals(37)
+
+@test function failedQuestsWrongPhysicalMapsAndTrackingChangesRetireObsoleteMarkers()
+	let n = new NavigationFixture()
+	n.f.command("/accept europe_printed_compact", true)
+	n.dispatch("/track europe_printed_compact")
+	let known = n.f.state.knowledge.snapshot()
+	let x = n.f.actors.px
+	let y = n.f.actors.py
+	n.f.state.loadedPhysicalMap = "europe_east"
+	n.navigation.reconcile()
+	n.output.marker.assertEquals("")
+	n.dispatch("/showonmap europe_printed_compact")
+	n.output.exact.assertEquals("london")
+	n.output.marker.assertEquals("")
+	n.maps.setCommandRegion("africa")
+	n.f.state.loadedPhysicalMap = "europe_west"
+	n.navigation.reconcile()
+	n.output.marker.assertEquals("europe_printed_compact:london")
+	n.maps.getCommandRegionId().assertEquals("africa")
+	n.f.state.knowledge.snapshot().assertEquals(known)
+	n.f.actors.px.assertEquals(x)
+	n.f.actors.py.assertEquals(y)
+	n.f.rpg.journal.quests[1] = n.f.archive
+	n.f.rpg.journal.count = 2
+	n.f.archive.graph.objectives[0].guidance.precision = "region"
+	n.f.command("/accept africa_niger_manuscripts", true)
+	n.output.marker.assertEquals("")
+	n.output.shownRegion.assertEquals("africa")
+	n.f.rpg.journal.fail(n.f.archive.id, 1, 30).assertTrue()
+	n.f.rpg.reconcile("player")
+	n.reject("/track africa_niger_manuscripts")
+	n.reject("/showonmap africa_niger_manuscripts")
+	n.pauses.getModalOwnerCount().assertEquals(0)
+	n.f.state.beginTransition()
+	n.reject("/track europe_printed_compact")
+	n.f.state.cancelTransition()
+	n.f.commands.dispatch(Player(1), "/track europe_printed_compact").assertTrue()
+	n.pauses.getModalOwnerCount().assertEquals(0)
+
+function recordNavigation(VisitFixture f) returns NavigationRecording
+	let output = new NavigationRecording()
+	f.campaign.maps.presentation = output
+	let navigation = f.campaign.state.rpg.navigation castTo QuestNavigationController
+	navigation.markers = output
+	navigation.markerKey = ""
+	navigation.reconcile()
+	return output
+
+@test function activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	let output = recordNavigation(source)
+	source.dispatch("/accept europe_printed_compact")
+	source.dispatch("/track europe_printed_compact")
+	output.exact.assertEquals("london")
+	output.marker.assertEquals("")
+	source.dispatch("/save 1")
+	let progress = source.campaign.state.rpg.captureState()
+	let fresh = new VisitFixture(source.f.cache, source.f.saves, "middle_east_india")
+	fresh.resume()
+	let loaded = recordNavigation(fresh)
+	fresh.dispatch("/load 1")
+	fresh.campaign.state.rpg.captureState().assertEquals(progress)
+	fresh.dispatch("/track europe_printed_compact")
+	loaded.shownRegion.assertEquals("europe")
+	loaded.marker.assertEquals("")
+	source.dispatch("/map close")
+	source.campaign.travel.transition(source.campaign.state.boundary("middle_east_india_to_africa"), .75, "guidance").assertTrue()
+	let destination = new VisitFixture(source.f.cache, source.f.saves, "africa")
+	destination.resume()
+	let restored = recordNavigation(destination)
+	destination.campaign.state.rpg.captureState().assertEquals(progress)
+	destination.campaign.state.rpg.journal.trackedId.assertEquals("europe_printed_compact")
+	restored.marker.assertEquals("")
+	destination.dispatch("/showonmap europe_printed_compact")
+	restored.exact.assertEquals("london")
+	destination.campaign.state.knowledge.knowsSettlement("london").assertFalse()
+	source.close()
+	destination.close()
+	fresh.close()
+
+@test function awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	source.start("portugal")
+	let output = recordNavigation(source)
+	let rpg = source.campaign.state.rpg
+	source.dispatch("/accept europe_printed_compact")
+	source.visit("quest_location_london")
+	source.dispatch("/queststage europe_printed_compact secure_archive")
+	let receipts = new AuthoredFixture()
+	receipts.receipt("secure_archive", "preserve_copy", "quest_institution_satisfied", "institution:movable_type_printing~", "saved_receipt")
+	rpg.journal.conditions = receipts.conditions
+	rpg.questEvent("europe_printed_compact", "preserve_copy", "saved_receipt").assertTrue()
+	source.visit("quest_location_lisbon")
+	rpg.journal.get("europe_printed_compact").state.assertEquals(QUEST_READY)
+	source.dispatch("/track europe_printed_compact")
+	output.marker.assertEquals("europe_printed_compact:lisbon")
+	source.dispatch("/save 1")
+	let progress = rpg.captureState()
+	let fresh = new VisitFixture(source.f.cache, source.f.saves, "europe_west")
+	fresh.resume()
+	let loaded = recordNavigation(fresh)
+	fresh.dispatch("/load 1")
+	fresh.campaign.state.rpg.captureState().assertEquals(progress)
+	loaded.marker.assertEquals("europe_printed_compact:lisbon")
+	fresh.campaign.maps.getContext().assertEquals(MAP_CONTEXT_CLOSED)
+	fresh.pauses.getModalOwnerCount().assertEquals(0)
+	fresh.visit("quest_location_lisbon")
+	loaded.marker.assertEquals("")
+	let complete = fresh.campaign.state.rpg.captureState()
+	fresh.dispatch("/interact quest_location_lisbon")
+	fresh.campaign.state.rpg.captureState().assertEquals(complete)
+	source.close()
+	fresh.close()
+
+@test function failedLoadRetainsQuestMapMarkerTrackingOrdersAndPauseOwnership()
+	let f = new LoadFixture()
+	let output = new NavigationRecording()
+	let pauses = new ManagementScreenPauseController(output, true)
+	f.campaign.maps.pauses = pauses
+	f.campaign.maps.presentation = output
+	f.rpg.interactions.catalog = new InteractionCatalog()
+	f.rpg.interactions.catalog.add(new InteractionLocation("port", "port", "europe_west", "settlement", 12., 34.))
+	f.rpg.navigation = new QuestNavigationController(f.rpg.journal, f.campaign.state.knowledge, f.rpg.interactions, f.campaign.maps, output)
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	f.commands.dispatch(Player(0), "/track quest").assertTrue()
+	let other = pauses.openModalManagementScreen()
+	let before = f.rpg.captureState()
+	let military = f.military.snapshot()
+	let views = output.views
+	let replacements = output.replacements
+	let candidate = f.candidate()
+	f.rpg.journal.trackedId = ""
+	let different = replaceCampaignField(candidate, "rpg", f.rpg.captureState())
+	f.rpg.restoreState(before).assertTrue()
+	f.store(different)
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.rpg.captureState().assertEquals(before)
+	f.military.snapshot().assertEquals(military)
+	output.marker.assertEquals("quest:port")
+	output.exact.assertEquals("port")
+	output.views.assertEquals(views)
+	output.replacements.assertEquals(replacements)
+	pauses.getModalOwnerCount().assertEquals(2)
+	f.campaign.maps.close()
+	other.close()
+	pauses.isCampaignPaused().assertTrue()
+
+@test function remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "africa")
+	source.start("ethiopian_empire")
+	source.campaign.state.militarySettlements.transferSovereignty("london", "player")
+	source.dispatch("/accept europe_printed_compact")
+	source.dispatch("/region europe")
+	let remote = new VisitFixture(source.f.cache, source.f.saves, "europe_west")
+	remote.resume()
+	let output = recordNavigation(remote)
+	let before = remote.campaign.state.captureAuthoritativeState()
+	let owners = remote.pauses.getModalOwnerCount()
+	remote.dispatch("/showonmap europe_printed_compact")
+	output.exact.assertEquals("london")
+	output.marker.assertEquals("")
+	remote.dispatch("/track europe_printed_compact")
+	remote.dispatch("/map close")
+	remote.pauses.getModalOwnerCount().assertEquals(owners)
+	remote.campaign.state.captureAuthoritativeState().assertEquals(before)
+	remote.campaign.state.knowledge.knowsSettlement("london").assertFalse()
+	remote.moveTo("london")
+	remote.dispatch("/interact london")
+	remote.output.last.assertEquals("Requirements are not met here.")
+	remote.campaign.state.captureAuthoritativeState().assertEquals(before)
+	source.close()
+	remote.close()
+
+@test function recordedMapCallsMatchHeadlessPrecisionVectors()
+	let n = new NavigationFixture()
+	n.f.command("/accept europe_printed_compact", true)
+	n.f.rpg.journal.trackedId = ""
+	n.dispatch("/showonmap europe_printed_compact")
+	n.vector("exact_local")
+	n.maps.close()
+	let guide = n.f.compact.graph.objectives[0].guidance
+	guide.regionId = "africa"
+	guide.destinationId = "timbuktu"
+	n.dispatch("/showonmap europe_printed_compact")
+	n.vector("exact_unknown")
+	n.maps.close()
+	guide.precision = "region"
+	n.dispatch("/showonmap europe_printed_compact")
+	n.vector("region")
+	n.maps.close()
+	guide.precision = "hidden"
+	n.reject("/showonmap europe_printed_compact")
+	n.vector("hidden")
+	guide.precision = "approximate"
+	guide.searchAreas = "[{\"x\":10,\"y\":20,\"radius\":100}]"
+	n.reject("/showonmap europe_printed_compact")
+	n.vector("approximate_unsupported")
+	n.f.state.knowledge.visitSettlement("timbuktu").assertTrue()
+	n.dispatch("/showonmap europe_printed_compact")
+	n.vector("visited_approximate")
+	n.maps.close()
+	guide.precision = "hidden"
+	n.dispatch("/showonmap europe_printed_compact")
+	n.vector("visited_hidden")
+	n.maps.close()
+	guide.requiredClues = "missing_clue~"
+	n.reject("/showonmap europe_printed_compact")
+	n.vector("unmet_clue")
+
+@test function activeStageAuthoredOrderSkipsMissingAndClueGatedButNotHiddenDestinations()
+	let graph = new QuestGraph("work", "")
+	graph.addStage(new QuestStage("work", "Work", "first~second~third~", ""))
+	let third = new QuestObjective("third", "Third", "visit", "settlement:lisbon~", "physical_visit")
+	third.guidance = new QuestGuidance("exact", "europe", "lisbon", "", "")
+	let second = new QuestObjective("second", "Second", "visit", "settlement:london~", "physical_visit")
+	second.guidance = new QuestGuidance("hidden", "europe", "london", "", "")
+	let first = new QuestObjective("first", "First", "visit", "settlement:seville~", "physical_visit")
+	graph.addObjective(third)
+	graph.addObjective(second)
+	graph.addObjective(first)
+	graph.activate()
+	(graph.guidance(false) == second.guidance).assertTrue()
+	first.guidance = new QuestGuidance("exact", "europe", "seville", "", "missing_clue~")
+	(graph.guidance(false) == second.guidance).assertTrue()
+	first.guidance.requiredClues = ""
+	(graph.guidance(false) == first.guidance).assertTrue()
+	graph.completeObjective("first").assertTrue()
+	(graph.guidance(false) == second.guidance).assertTrue()
+	destroy graph

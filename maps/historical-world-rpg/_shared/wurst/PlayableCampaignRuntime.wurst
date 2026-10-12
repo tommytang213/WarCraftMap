@@ -23,6 +23,7 @@ import PartyLocations
 import CampaignUnstuck
 import ScenarioSettings
 import public DiscoveryKnowledge
+import QuestNavigation
 
 /** Physical identity is distinct from map tracking and remote command view.
  * Loads and transitions cannot authorize interactions while state is staged. */
@@ -1681,7 +1682,11 @@ public class WarcraftMapPresentation implements MapPresentationRuntime
 	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
 		output.show(Player(0), "Regional map: " + knowledge.catalog.regionName(regionId) + "\nKnown settlements:" + knowledge.settlementListing(regionId))
 	override function focusExact(string locationId)
-		output.show(Player(0), "Exact known settlement: " + knowledge.catalog.settlementName(locationId) + " (" + locationId + ")")
+		let name = knowledge.catalog.settlementName(locationId)
+		if name == ""
+			output.show(Player(0), "Exact quest destination: " + locationId)
+		else
+			output.show(Player(0), "Exact known settlement: " + name + " (" + locationId + ")")
 	override function focusSearchArea(string searchAreaId)
 		output.show(Player(0), "Known search area: " + searchAreaId)
 	override function hideMap()
@@ -1786,6 +1791,8 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		// Require completed configuration, not a nonempty boundary catalogue.
 		registered = registered and state.boundaryConfigurationComplete
 		if registered
+			if state.rpg.navigation == null
+				state.rpg.navigation = new QuestNavigationController(state.rpg.journal, state.knowledge, state.rpg.interactions, maps, new WarcraftLocalQuestMarker())
 			(saves.codec castTo PlayableCampaignCodec).configureMigrationDefaults(state.militarySettlements, state.religion, state.piracy)
 		return registered
 	function diagnostic() returns string
@@ -2047,6 +2054,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		started = true
 		state.rpg.management.close()
 		state.startupLocked = false
+		state.rpg.navigation.reconcile()
 		lastDiagnostic = ""
 		return true
 	function sessionStart(string createdAt)
@@ -2098,6 +2106,8 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		maps.close()
 		maps.setPhysicalRegion(loadedRegion)
 		maps.setCommandRegion(regionSelector.getCommandRegionId())
+		if state.rpg.navigation != null
+			state.rpg.navigation.reconcile()
 		if regionSelector.transport != null
 			focusCommandMap()
 

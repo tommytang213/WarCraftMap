@@ -48,6 +48,11 @@ authored turn-in destination when ready. Conditions never supply marker coordina
 Approximate guidance retains its authored search areas; regional guidance reveals
 only the region; hidden and unfulfilled clue-gated guidance disclose no target.
 Guidance is rebuilt from definitions and saved progress without replaying events.
+The registered map actions now connect exact and regional guidance to map focus
+and exact local indicators; see [quest map guidance](QUEST_MAP_GUIDANCE.md).
+Generator version 29 retains authored destination IDs even for broad/hidden
+definitions so recorded visits can supply earned precision. These IDs are never
+disclosed by a broad/hidden projection or inferred from condition references.
 
 ## Save contract and migration
 

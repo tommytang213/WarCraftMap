@@ -1,0 +1,144 @@
+package QuestNavigation
+
+import WarcraftRpgRuntime
+import QuestStages
+import PhysicalInteraction
+import DiscoveryKnowledge
+import MapDiscoveryScreen
+import ScenarioSettings
+import WC3Compatibility
+
+/** Disposable local presentation, never discovery or objective evidence. */
+public interface LocalQuestMarkerPort
+	function replace(string questId, string locationId, real x, real y)
+	function clear()
+
+public class WarcraftLocalQuestMarker implements LocalQuestMarkerPort
+	effect marker = null
+	override function clear()
+		if marker != null
+			compatDestroyOwnedEffect(marker)
+			marker = null
+	override function replace(string questId, string locationId, real x, real y)
+		clear()
+		marker = compatCreateOwnedEffect("Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl", x, y)
+
+public class ResolvedQuestGuidance
+	string regionId
+	InteractionLocation target = null
+	construct(string regionId, InteractionLocation target)
+		this.regionId = regionId
+		this.target = target
+	function destinationId() returns string
+		if target == null
+			return ""
+		return target.id
+
+/** Live exact/region/hidden slice of QuestJournal and CampaignMap.focus_guidance.
+ * Authorization is scoped to this view. It does not mutate earned knowledge,
+ * command rights, actors, orders, objective evidence or rewards. */
+public class QuestNavigationController implements QuestNavigationPort, MapViewListener
+	QuestJournalRuntime journal
+	DiscoveryKnowledge knowledge
+	PhysicalInteractionContext interactions
+	MapDiscoveryScreenController maps
+	LocalQuestMarkerPort markers
+	string markerKey = ""
+	string observedTracking = ""
+	construct(QuestJournalRuntime journal, DiscoveryKnowledge knowledge, PhysicalInteractionContext interactions, MapDiscoveryScreenController maps, LocalQuestMarkerPort markers)
+		this.journal = journal
+		this.knowledge = knowledge
+		this.interactions = interactions
+		this.maps = maps
+		this.markers = markers
+		maps.listener = this
+	function resolve(string questId) returns ResolvedQuestGuidance
+		let q = journal.get(questId)
+		if q == null or (q.state != QUEST_ACTIVE and q.state != QUEST_READY)
+			return null
+		var precision = q.precision
+		var regionId = q.regionId
+		var destinationId = q.destinationId
+		if q.graph != null
+			let guide = q.graph.guidance(q.state == QUEST_READY)
+			// Clue acquisition remains downstream. A visit cannot bypass this gate.
+			if guide == null or guide.requiredClues != ""
+				return null
+			precision = guide.precision
+			regionId = guide.regionId
+			destinationId = guide.destinationId
+		if knowledge.catalog.regionIndex(regionId) < 0
+			return null
+		var target = interactions.get(destinationId)
+		if target != null and target.anchor != null
+			target = target.anchor
+		// Only recorded knowledge of this specific point upgrades precision.
+		if target != null and knowledge.knowsSettlement(target.id)
+			precision = "exact"
+		if precision == "region"
+			return new ResolvedQuestGuidance(regionId, null)
+		// Never fabricate a point for approximate guidance. Search areas and
+		// discovered-transition breadcrumbs remain separate presentation work.
+		if precision != "exact" or target == null or target.kind == "region" or scenarioLogicalRegion(target.mapId) != regionId
+			return null
+		return new ResolvedQuestGuidance(regionId, target)
+	override function canShow(string questId) returns boolean
+		let guide = resolve(questId)
+		let visible = guide != null
+		if guide != null
+			destroy guide
+		return visible
+	override function show(string questId, boolean track) returns string
+		if interactions.maps == null or not interactions.maps.available()
+			return "Quest map guidance is unavailable during restoration or travel."
+		let guide = resolve(questId)
+		if guide == null
+			return "Quest has no available exact or regional destination."
+		// Validate before either tracking mutation or modal acquisition.
+		if track
+			journal.trackedId = questId
+		observedTracking = journal.trackedId
+		maps.focusGuidance(questId, guide.regionId, guide.destinationId())
+		destroy guide
+		return "Quest destination shown. /map close closes the map."
+	override function mapViewChanged()
+		refreshMarker()
+	function refreshMarker()
+		if interactions.maps == null or not interactions.maps.available()
+			return
+		var questId = journal.trackedId
+		if maps.guidanceQuestId != ""
+			questId = maps.guidanceQuestId
+		let guide = resolve(questId)
+		var key = ""
+		if guide != null and guide.target != null
+			let target = guide.target
+			if target.mapId == interactions.maps.loadedMap() and target.mapId == interactions.maps.partyMap()
+				key = questId + ":" + target.id
+		if key != markerKey
+			if key == ""
+				markers.clear()
+			else
+				markers.replace(questId, guide.target.id, guide.target.x, guide.target.y)
+			markerKey = key
+		if guide != null
+			destroy guide
+	override function reconcile()
+		// Candidate loads keep existing presentation intact until commit; rollback
+		// needs no UI replay and cannot acquire/release another modal owner.
+		if interactions.maps == null or not interactions.maps.available()
+			return
+		if observedTracking != journal.trackedId
+			observedTracking = journal.trackedId
+			if maps.guidanceQuestId != ""
+				maps.guidanceQuestId = observedTracking
+				if observedTracking == ""
+					maps.close()
+		if maps.guidanceQuestId != ""
+			let guide = resolve(maps.guidanceQuestId)
+			if guide == null
+				maps.close()
+			else
+				maps.focusGuidance(maps.guidanceQuestId, guide.regionId, guide.destinationId())
+				destroy guide
+		refreshMarker()

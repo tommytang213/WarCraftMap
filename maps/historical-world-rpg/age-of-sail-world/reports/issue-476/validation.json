@@ -1,0 +1,155 @@
+{
+  "commands": {
+    "execution": "python3 reports/issue-476/validate.py --grill <local-offline-grill> --group all --build-dir _build/issue476-all --package",
+    "framework": "PATH=<local-offline-grill-directory>:$PATH python3 ../_shared/tooling/validate_framework_fixture.py ../conformance-campaign",
+    "traceability": "python3 tooling/requirement_traceability_audit.py --write --check"
+  },
+  "environment": "Existing worktree-local pinned compiler/Java and cached standard library. No containers, global tooling changes or services used during validation repair.",
+  "format": "warcraftmap_issue476_validation_v1",
+  "nativeClient": "not_run",
+  "outcome": "pass",
+  "pythonSuites": {
+    "campaign-quests": {
+      "file": "campaign-quests.log.gz",
+      "passed": 7,
+      "sha256": "7b080b75bcc42bd447a619a6f012924d3e33270adef3f36cc31b5f6de0158a63"
+    },
+    "python-quests": {
+      "file": "python-quests.log.gz",
+      "passed": 30,
+      "sha256": "476eb6c66a1565c46945b13bf4f5bfa5a41a2f5be80e029f1e07669cbce3925d"
+    },
+    "python-systems": {
+      "file": "python-systems.log.gz",
+      "passed": 58,
+      "sha256": "7fd5c78e35090ac6030d3a0b9ea2fbc1b414988f5549919e27e8b451a1cdbc10"
+    },
+    "release-tests": {
+      "file": "release-tests.log.gz",
+      "passed": 10,
+      "sha256": "e5902efb1c2a0424187a8fbcc0c38efe1108fd898b53074e95605d13d77b1a4d"
+    },
+    "trace-tests-final": {
+      "file": "trace-tests-final.log.gz",
+      "passed": 49,
+      "sha256": "963793a1fa37afac59b69d79e22f4813052e0f3624982ddb7c4db1fefed0b96b"
+    },
+    "treasure-repair": {
+      "file": "treasure-repair.log.gz",
+      "passed": 7,
+      "sha256": "bad56d5ff8664d3ec7a3eb46dc29d06af754b0b57f7e53c95aa44b35648f6ed0"
+    }
+  },
+  "pythonTotal": 161,
+  "releaseReady": false,
+  "repair": {
+    "allGeneratedRecordsCovered": true,
+    "authoredContentChanged": false,
+    "batchOnlyAttempt": "Smaller batches without cleanup still timed out and exhausted the 6 GB interpreter heap; historical logs are retained separately.",
+    "compilerTimeoutChanged": false,
+    "failure": "Three generated treasure round-trip tests exceeded the pinned 20-second per-test limit in the full 544-test run.",
+    "fixtureCleanup": "Destroy discarded and completed fixture-owned definitions; retain the borrowed generated interaction catalogue.",
+    "officialReleaseGatesChanged": false,
+    "previousDiscovered": 544,
+    "previousSucceeded": 541,
+    "productionCodeChanged": false,
+    "restorePassesPerBatch": 2,
+    "saveFormatsChanged": false,
+    "testDecoratorsFiltered": false,
+    "treasureBatchSizes": [
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "treasureBatchesAfter": 14,
+    "treasureBatchesBefore": 4,
+    "treasureRecords": 28
+  },
+  "sourceIdentity": {
+    "sourceRevision": "2732fbe7ed1175e497ce4d0840d1b061b05f6df3",
+    "sourceTreeSha256": "406960d25fba9248e40b11f0c7daffaae131da28d58f6d6ad4664e289bfcc131"
+  },
+  "standardLibraryRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+  "toolchain": {
+    "executionImage": null,
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "transcriptHashes": [
+    {
+      "file": "all-results.json.gz",
+      "sha256": "3b2a7d05a6e108d62d25769fd61ee40c44ec23cef19075404cbf5cafb42efda7"
+    },
+    {
+      "file": "all-execution.log.gz",
+      "sha256": "6f5756d909909bcc16d19cfe4835130381cf49e4c09f58a66a4d86922af5e0aa"
+    },
+    {
+      "file": "all-typecheck.log.gz",
+      "sha256": "da95ff39231aa36221ef98f7d70a4cf4c76f94387da72d4797b44b16a2ab3c04"
+    },
+    {
+      "file": "batch14-before-cleanup-results.json.gz",
+      "sha256": "4db491e02d6278abb5c64493a8e2b1d3e1fea4b3b4653e741d6fbf1f01c81211"
+    },
+    {
+      "file": "batch14-before-cleanup-execution.log.gz",
+      "sha256": "1d66fb6b9700bbdafe1fbcae56953bf82ac29e5ce1899704f245e05ccd782349"
+    },
+    {
+      "file": "framework-conformance.json.gz",
+      "sha256": "c5cc628d0bf334d36b5463f33d3d565854c63c5713e68dd72df2cac13e186a90"
+    },
+    {
+      "file": "framework-original-results.json.gz",
+      "sha256": "f0201b94941c729e9d715e2a9b529bceb2889fa92f53e19fe658bd76bdd0ddf4"
+    },
+    {
+      "file": "framework-original-execution.log.gz",
+      "sha256": "efaf8b64da7c193ea43ec24af45d08c66ed7846fa1e5f8216640dff63fdb267d"
+    },
+    {
+      "file": "framework-mutated-results.json.gz",
+      "sha256": "e56dd1c700ef681b2b745343c3f43a0378a0d4911c59c7984f757b1f22b1dd42"
+    },
+    {
+      "file": "framework-mutated-execution.log.gz",
+      "sha256": "4d8859b09a9906b98b042cf71068a70523b2c7abb9e58cafe8e6fedbf4e6215a"
+    },
+    {
+      "file": "framework-final.log.gz",
+      "sha256": "2f531c576e2ce225cc309c4b1f8bc9dd54c7e2b8508b8af72d2efe43a0333edc"
+    },
+    {
+      "file": "traceability.log.gz",
+      "sha256": "d2db66e476bba5cbf055d8006d8a204bed9df79099939641e3a70b6ed6d51c72"
+    },
+    {
+      "file": "boundary.log.gz",
+      "sha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    },
+    {
+      "file": "release-audit.log.gz",
+      "sha256": "b798e747412c5183012530d4da2cd776ef31fd9705eee0e03bc3260785d60309"
+    }
+  ],
+  "wurst": {
+    "discovered": 554,
+    "status": "pass",
+    "strategy": "single complete suite with unchanged test decorators and compiler timeout",
+    "succeeded": 554
+  }
+}

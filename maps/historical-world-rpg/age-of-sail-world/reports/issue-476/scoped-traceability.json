@@ -1,0 +1,371 @@
+{
+  "authority": "Existing RPG journal tracking/progress and schema-10 discovery knowledge; focus and local effects are disposable projections. No durable format change.",
+  "broaderRequirements": [
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0281.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0281",
+      "status": "fail",
+      "text": "The quest journal must retain stable-ID location context for quest givers, turn-in locations, objectives, relevant settlements, regions, and other known destinations so the player is not required to remember where a quest originated."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0282.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0282",
+      "status": "fail",
+      "text": "Quest entries should provide a direct `Show on Map` / `Track` action where a meaningful destination exists."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0283.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0283",
+      "status": "fail",
+      "text": "Showing a quest on the map should open or focus the appropriate world/region map context, select the relevant region and settlement/location, and visibly mark the destination."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0284.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0284",
+      "status": "fail",
+      "text": "For cross-region objectives, the helper should show a useful route breadcrumb through known region transitions from the player's current physical region to the destination, e.g. current region -> ocean/adjacent region -> target region -> target settlement."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0285.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0285",
+      "status": "fail",
+      "text": "When the player reaches the destination region, the helper may provide a local marker, minimap ping, or directional indicator toward the known quest location."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0286.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0286",
+      "status": "fail",
+      "text": "Returning to a quest giver or turn-in point must be supported explicitly; completed objectives should still retain their return destination until the quest is actually turned in."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Quest location and map assistance"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0295.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0295",
+      "status": "fail",
+      "text": "Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel."
+    },
+    {
+      "authority": {
+        "path": "docs/ROADMAP.md",
+        "section": "Phase 5 \u2014 Age of Sail world content"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "ROAD-0064.01",
+      "kind": "content",
+      "mapping": {},
+      "parent": "ROAD-0064",
+      "status": "fail",
+      "text": "Custom quest journal and quest-to-map tracking integration"
+    }
+  ],
+  "closedPortions": [
+    {
+      "id": "REQ-0281.01",
+      "scope": "Authored active-objective and return stable IDs drive derived focus; giver/turn-in definitions stay authoritative."
+    },
+    {
+      "id": "REQ-0282.01",
+      "scope": "Separate registered/documented Show on Map and Track actions validate availability before mutation or pause."
+    },
+    {
+      "id": "REQ-0283.01",
+      "scope": "Scoped exact or region-only regional focus without ordinary unknown-region authorization or unrelated reveals."
+    },
+    {
+      "id": "REQ-0285.01",
+      "scope": "Replaceable exact local marker only on the loaded physical party map."
+    },
+    {
+      "id": "REQ-0286.01",
+      "scope": "Retain authored return guidance until validated, successful turn-in; restoration does not replay rewards."
+    },
+    {
+      "id": "REQ-0295.01",
+      "scope": "Party positions, orders, discovery and remote-command context/rights remain unchanged."
+    },
+    {
+      "id": "ROAD-0064.01",
+      "scope": "Connect current journal presentation and active tracking to exact/regional map and local marker adapters."
+    }
+  ],
+  "entryPoints": [
+    "/accept QUEST",
+    "/interact LOCATION",
+    "/queststage QUEST STAGE",
+    "/track QUEST",
+    "/showonmap QUEST",
+    "/turnin QUEST HERO",
+    "/map close",
+    "/save N",
+    "/load N"
+  ],
+  "executionGroups": {
+    "all": {
+      "discovered": 554,
+      "status": "pass",
+      "succeeded": 554
+    }
+  },
+  "executionSummary": {
+    "discovered": 554,
+    "status": "pass",
+    "strategy": "single complete suite with unchanged test decorators and compiler timeout",
+    "succeeded": 554
+  },
+  "format": "warcraftmap_issue476_quest_navigation_v1",
+  "frameworkStatus": "pass",
+  "headlessParityVectors": [
+    "approximate_unsupported",
+    "exact_local",
+    "exact_unknown",
+    "hidden",
+    "region",
+    "return",
+    "unmet_clue",
+    "visited_approximate",
+    "visited_hidden"
+  ],
+  "nativeClient": "not_run",
+  "packagedEvidence": {
+    "archiveSha256": "8a6a9dfe8216ad331b9ba990c09c324b7d5fb8afd26ced13fb9180088f8b5674",
+    "compiledGuidanceCount": 1184,
+    "compiledGuidanceDefinitionsMatch": true,
+    "compiledSymbols": [
+      "QuestNavigationController_show",
+      "QuestNavigationController_resolve",
+      "QuestNavigationController_refreshMarker",
+      "WarcraftLocalQuestMarker_replace",
+      "TrackQuestCommand_execute",
+      "MapDiscoveryScreenController_focusGuidance"
+    ],
+    "generatedDefinitionsMatch": true,
+    "localMarkerNative": true,
+    "nativeClient": "not_run",
+    "questCount": 304,
+    "releaseReady": false,
+    "showOnMapRegistration": true,
+    "sourceIdentity": {
+      "sourceRevision": "2732fbe7ed1175e497ce4d0840d1b061b05f6df3",
+      "sourceTreeSha256": "406960d25fba9248e40b11f0c7daffaae131da28d58f6d6ad4664e289bfcc131"
+    },
+    "stageCount": 943
+  },
+  "productionEntryCoverage": {
+    "missing": [],
+    "questNavigation": [
+      "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+      "wurst/QuestNavigationTests.wurst:awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards",
+      "wurst/QuestNavigationTests.wurst:failedQuestsWrongPhysicalMapsAndTrackingChangesRetireObsoleteMarkers",
+      "wurst/QuestNavigationTests.wurst:objectiveAdaptersReplaceMarkersAndRetainReturnUntilSuccessfulTurnIn",
+      "wurst/QuestNavigationTests.wurst:questPrecisionMatchesHeadlessScopesCluesAndEarnedPointKnowledge",
+      "wurst/QuestNavigationTests.wurst:recordedMapCallsMatchHeadlessPrecisionVectors",
+      "wurst/QuestNavigationTests.wurst:registeredQuestActionsFocusExactWithoutDiscoveryAndPreservePauseOwners",
+      "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority"
+    ],
+    "systems": 24
+  },
+  "productionTests": [
+    {
+      "id": "wurst/QuestNavigationTests.wurst:registeredQuestActionsFocusExactWithoutDiscoveryAndPreservePauseOwners",
+      "line": 84,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:questPrecisionMatchesHeadlessScopesCluesAndEarnedPointKnowledge",
+      "line": 120,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:objectiveAdaptersReplaceMarkersAndRetainReturnUntilSuccessfulTurnIn",
+      "line": 159,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:failedQuestsWrongPhysicalMapsAndTrackingChangesRetireObsoleteMarkers",
+      "line": 193,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+      "line": 240,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards",
+      "line": 273,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:failedLoadRetainsQuestMapMarkerTrackingOrdersAndPauseOwnership",
+      "line": 307,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority",
+      "line": 341,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:recordedMapCallsMatchHeadlessPrecisionVectors",
+      "line": 367,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/QuestNavigationTests.wurst:activeStageAuthoredOrderSkipsMissingAndClueGatedButNotHiddenDestinations",
+      "line": 403,
+      "status": "pass"
+    }
+  ],
+  "releaseReady": false,
+  "remainingBlockers": [
+    "REQ-0284: discovered-transition route breadcrumbs remain downstream.",
+    "Production quest clue acquisition and bounded approximate search-area rendering remain downstream; unsupported approximate actions fail closed.",
+    "Earned exact knowledge for non-settlement points awaits its discovery authority.",
+    "Custom frame presentation (#440) and broader ROAD-0064 journal obligations remain deferred.",
+    "Native Warcraft launch (#438), native save/travel validation and broader regional campaign/release gates remain unresolved."
+  ],
+  "requirementScope": [
+    "REQ-0281",
+    "REQ-0282",
+    "REQ-0283",
+    "REQ-0284",
+    "REQ-0285",
+    "REQ-0286",
+    "REQ-0295",
+    "ROAD-0064"
+  ],
+  "scope": "Active-stage and return guidance: exact, region-only, hidden and earned settlement precision.",
+  "sourceIdentity": {
+    "sourceRevision": "2732fbe7ed1175e497ce4d0840d1b061b05f6df3",
+    "sourceTreeSha256": "406960d25fba9248e40b11f0c7daffaae131da28d58f6d6ad4664e289bfcc131"
+  },
+  "status": "pass"
+}
