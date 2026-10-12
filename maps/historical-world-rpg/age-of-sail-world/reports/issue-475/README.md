@@ -57,3 +57,21 @@ Final verification:
 Source revision: `51862ed5525219922efb0f73119257cbd465810f`.
 Source tree SHA-256: `6002478d8f18e00d981d200c0952da44bc1819349706d60780037b8ed17b569c`.
 The package check was corrected to the compiler’s actual `TradeCommand_TradeCommand_execute` method and its `CommandHandler_execute` binding, then verified against the exact built archive.
+
+The validation retry at `3ef601b10548099fc2a5405cbe3b18913ddf0684` reproduced
+the release-audit failure: its checked-in report still hashed the compatibility
+manifest from before the trade-domain v4 change. Running
+`python3 tooling/release_blocker_audit.py --write` refreshed that one input hash.
+The machine report's 241 blockers and all readiness flags are unchanged; the
+human report needs no change. The nonzero audit exit remains intentional while
+those release blockers exist.
+
+All 156 selected Python tests passed, including the previously failing release
+audit test. Framework boundary, both worlds, geography, map source, traceability
+and whitespace checks passed. Retry evidence is recorded in
+[repair-validation.json](repair-validation.json).
+The retained pinned execution, package and framework evidence still matches the
+current source tree, and regenerating scoped traceability produces no changes.
+This retry changes no gameplay source or save fixtures. Grill is absent and the
+sandbox cannot access the Docker socket, so no fresh pinned compiler or native
+client execution is claimed; the outer worker performs repository validation.

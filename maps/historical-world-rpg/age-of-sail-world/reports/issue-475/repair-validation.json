@@ -1,0 +1,109 @@
+{
+  "additionalChecks": [
+    {
+      "command": "python3 maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/_shared/tooling/validate_world.py maps/historical-world-rpg/conformance-campaign/scenario/world/world.json",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/_shared/tooling/validate_world.py maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py --check",
+      "status": "pass"
+    },
+    {
+      "command": "python3 maps/historical-world-rpg/age-of-sail-world/reports/issue-475/report.py",
+      "scopedTraceabilityUnchanged": true,
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "date": "2026-10-12",
+  "format": "warcraftmap_issue475_validation_repair_v1",
+  "freshPinnedValidation": {
+    "reason": "Grill is absent; sandbox Docker socket access is denied. Retained same-source evidence verified; outer worker owns authoritative repository validation.",
+    "status": "not_run"
+  },
+  "nativeClient": "not_run",
+  "pythonValidation": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_release_blocker_audit",
+      "test_mixed_cargo",
+      "test_playable_trade",
+      "test_trade_pricing",
+      "test_trade_selection",
+      "test_economy",
+      "test_campaign_save",
+      "test_cross_map_persistence",
+      "test_campaign_save_manager",
+      "test_release_save_compatibility",
+      "test_framework_conformance",
+      "test_requirement_traceability",
+      "test_integration_evidence",
+      "test_runtime_acceptance"
+    ],
+    "compilerFixtureNote": "Python framework and packaging fixtures use a synthetic compiler; their output is not fresh Wurst execution evidence.",
+    "elapsedSeconds": 408.166,
+    "exitCode": 0,
+    "log": "repair-python-validation.log.gz",
+    "logSha256": "5fe82914b8179387e3d28a99b443ae54c311e3cd7a9a974c2da1372ca2c67a5a",
+    "tests": 156,
+    "workingDirectory": "maps/historical-world-rpg/age-of-sail-world/tests"
+  },
+  "releaseAudit": {
+    "allOtherReportFieldsUnchanged": true,
+    "currentSha256": "8ac615873f79d2ae9f10510343c6862e6d8e1960473b9b8c0bafe3a638b692b7",
+    "expectedExitCode": 1,
+    "humanReportUnchanged": true,
+    "input": "scenario/compatibility/release-save-v1.json",
+    "previousSha256": "b2698d32e7bea0edc9badcd2a83710dac4382a5796360b3c45e76f4b26b1a669",
+    "regenerationCommand": [
+      "python3",
+      "tooling/release_blocker_audit.py",
+      "--write"
+    ],
+    "regressionTest": "test_release_blocker_audit.ReleaseBlockerAuditTests.test_checked_in_machine_and_human_reports_are_current",
+    "status": "fail",
+    "unresolvedCampaignBlockers": 241,
+    "workingDirectory": "maps/historical-world-rpg/age-of-sail-world"
+  },
+  "releaseReady": false,
+  "remainingNativeBlocker": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "retainedEvidence": {
+    "currentSourceTreeMatches": true,
+    "diagnosticPackageDefinitions": 829,
+    "frameworkExecutions": "original and content-mutated, 2/2 each",
+    "pinnedWurstStatus": "pass",
+    "pinnedWurstTests": 177,
+    "sourceIdentity": {
+      "sourceRevision": "51862ed5525219922efb0f73119257cbd465810f",
+      "sourceTreeSha256": "6002478d8f18e00d981d200c0952da44bc1819349706d60780037b8ed17b569c"
+    },
+    "verification": "report.py verified retained transcripts, source hashes, packaged metadata and framework evidence."
+  },
+  "scope": "Preserve the issue implementation; repair the stale release audit input hash only.",
+  "sourceIdentity": {
+    "sourceRevision": "3ef601b10548099fc2a5405cbe3b18913ddf0684",
+    "sourceTreeSha256": "6002478d8f18e00d981d200c0952da44bc1819349706d60780037b8ed17b569c"
+  },
+  "status": "pass"
+}
