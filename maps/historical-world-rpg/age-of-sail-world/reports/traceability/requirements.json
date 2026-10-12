@@ -37190,7 +37190,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "fdd8761caaa29bebff6e898a7ff6c536d1abc6ca2da0771fb44a44dc28a8317b",
-  "mappingSha256": "5974339c9490a22475438f6b4b7e25576d87822230240b3b7a19fdc9b903a1ce",
+  "mappingSha256": "3ed4b0c80bbe28c6d2116bbc73ee911b2abd333841b18fad434d1b2957b32111",
   "requirements": [
     {
       "authority": {
@@ -63881,7 +63881,7 @@
         ],
         "persistence": {
           "mode": "reconstructed",
-          "reason": "Authorization is never cached or serialized. Schema 9 separately persists command-map identity and discovered regions; this policy continues reading current military control after commit and rollback.",
+          "reason": "Authorization is never cached or serialized. Schema 10 persists discovery separately from command-map identity; this policy continues reading current military control after commit and rollback.",
           "references": [
             {
               "contains": [
@@ -63899,7 +63899,7 @@
             },
             {
               "contains": [
-                "regionAccess.reveal(loadedRegion)",
+                "maps.setPhysicalRegion(loadedRegion)",
                 "regionSelector.afterCampaignLoad(loadedRegion)"
               ],
               "path": "wurst/PlayableCampaignRuntime.wurst",
@@ -64054,7 +64054,7 @@
             },
             {
               "contains": [
-                "known[i] = true"
+                "state.knowledge.revealRegion(id)"
               ],
               "path": "wurst/PlayableCampaignRuntime.wurst",
               "symbol": "reveal"
@@ -67374,7 +67374,7 @@
         ],
         "persistence": {
           "mode": "reconstructed",
-          "reason": "Authorization is never cached or serialized. Schema 9 separately persists command-map identity and discovered regions; this policy continues reading current military control after commit and rollback.",
+          "reason": "Authorization is never cached or serialized. Schema 10 persists discovery separately from command-map identity; this policy continues reading current military control after commit and rollback.",
           "references": [
             {
               "contains": [
@@ -67392,7 +67392,7 @@
             },
             {
               "contains": [
-                "regionAccess.reveal(loadedRegion)",
+                "maps.setPhysicalRegion(loadedRegion)",
                 "regionSelector.afterCampaignLoad(loadedRegion)"
               ],
               "path": "wurst/PlayableCampaignRuntime.wurst",
@@ -67547,7 +67547,7 @@
             },
             {
               "contains": [
-                "known[i] = true"
+                "state.knowledge.revealRegion(id)"
               ],
               "path": "wurst/PlayableCampaignRuntime.wurst",
               "symbol": "reveal"

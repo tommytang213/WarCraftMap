@@ -13,6 +13,10 @@ public interface InteractionMaps
 	function loadedMap() returns string
 	function partyMap() returns string
 
+/** Receives a location only after validated presence at commit, not a request. */
+public interface InteractionVisitListener
+	function recordVisit(InteractionLocation target) returns boolean
+
 public constant real INTERACTION_RANGE = 256.
 
 /** Generated world coordinates, independent of buildings and marker objects.

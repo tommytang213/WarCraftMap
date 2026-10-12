@@ -90,6 +90,10 @@ public class AuthoredFixture
 		state.loadedPhysicalMap = "europe_west"
 		state.authority = replaceCampaignField(state.authority, "map", "europe_west")
 		state.setRpgRuntime(rpg)
+		// These quest assertions start with already earned location knowledge.
+		// First visits without quest progress are covered by VisitKnowledgeTests.
+		state.knowledge.start("lisbon").assertTrue()
+		state.knowledge.visitSettlement("london").assertTrue()
 		rpg.interactions.maps = new CampaignInteractionMaps(state)
 		move("lisbon")
 	function move(string id)

@@ -482,6 +482,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime['treasureResolutionCatalog'] = treasure_definitions(catalogues.get('treasures', {}), locations)
     rpg.append("\n" + treasure_configuration(runtime['treasureResolutionCatalog']))
     runtime['interactionLocations'] = locations
+    from map_knowledge import knowledge_catalog
+    runtime['mapKnowledgeCatalog'] = knowledge_catalog(config.project)
     points = {row["id"]: row for row in locations if row["kind"] == "settlement"}
     for row in settlement_runtime:
         if row["x"] is None:
@@ -727,6 +729,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             Path(__file__).with_name("party_locations.py"),
             Path(__file__).with_name("recovery_navigation.py"),
             config.project / "scenario/maps/physical-boundaries.json",
+            config.project / configuration(config.project)["scenario"].get("mapPresentation", "scenario/maps/world-map.json"),
         ) if path.is_file()),
         *(config.project.parent / '_shared/wurst').glob('*.wurst'),
         *(config.project.parent / '_shared/wurst-bootstrap').glob('*.wurst'),
@@ -739,6 +742,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         Path(__file__).resolve().parents[1] / "engine/technology_institutions.py",
         Path(__file__).with_name("scenario_inputs.py"),
         Path(__file__).with_name("scenario_settings.py"),
+        Path(__file__).with_name("map_knowledge.py"),
     )
     inputs = {}
     for path in input_paths:

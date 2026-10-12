@@ -67,14 +67,15 @@ import MilitarySettlementRuntime
 	let ticks = ";clock=" + clock.captureState()
 	let locations = ";partyLocations=v1"
 	let autosave = ";autosave=1|1|0"
-	let valid = "v2;map=west" + ticks + locations + autosave
+	let discovery = ";discovery=v1"
+	let valid = "v2;map=west" + discovery + ticks + locations + autosave
 	string array[6] invalid
 	invalid[0] = valid + ticks
 	invalid[1] = valid + locations
 	invalid[2] = valid + autosave
-	invalid[3] = "v2;notclock=" + clock.captureState() + locations + autosave
-	invalid[4] = "v2" + ticks + ";notpartyLocations=v1" + autosave
-	invalid[5] = "v2" + ticks + locations + ";notautosave=1|1|0"
+	invalid[3] = "v2" + discovery + ";notclock=" + clock.captureState() + locations + autosave
+	invalid[4] = "v2" + discovery + ticks + ";notpartyLocations=v1" + autosave
+	invalid[5] = "v2" + discovery + ticks + locations + ";notautosave=1|1|0"
 	for i = 0 to 5
 		(codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "valid", valid) != "").assertTrue()
 		codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "invalid", invalid[i]).assertEquals("")
@@ -262,6 +263,8 @@ class FakeRegionRuntime implements RegionCommandRuntime
 			fixtureState+=";partyLocations=v1"
 		if schema>=8
 			fixtureState+=";autosave="+autosaveMetadata(1, CAMPAIGN_AUTOSAVE_SECONDS)
+		if schema>=10
+			fixtureState=replaceCampaignField(fixtureState,"discovery","v1|r,europe|s,lisbon")
 		if schema>=9
 			fixtureState+=";commandContext="+commandContext("west", false, initialCommandKnowledge("west"))
 		let storage=new MemoryStorage()
@@ -276,7 +279,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 		state.clock.captureState().assertEquals(state.clock.initialState())
 		storage.read("manual_01").assertEquals(fixture)
 		manager.save(SAVE_SLOT_MANUAL,1,"resaved").assertTrue()
-		(storage.read("manual_01").indexOf("|schema=9|slot=manual_01|")>=0).assertTrue()
+		(storage.read("manual_01").indexOf("|schema=10|slot=manual_01|")>=0).assertTrue()
 		(codec.decodeMigrateAndValidate(storage.read("manual_01"),"manual_01")!="").assertTrue()
 		let resaved = storage.read("manual_01")
 		manager.load(SAVE_SLOT_MANUAL,1).assertTrue()
@@ -285,7 +288,7 @@ class FakeRegionRuntime implements RegionCommandRuntime
 
 @test function currentLiveSchemaCannotSilentlyInventMissingDomains()
 	let codec=new PlayableCampaignCodec(new CampaignClock(1, 100, 1, 1.))
-	let incomplete="v2;map=west;region=europe;world=w;players=p;quests=;discovery=;orders=;trade="
+	let incomplete="v2;map=west;region=europe;world=w;players=p;quests=;discovery=v1;orders=;trade="
 	let fixture=campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT,"manual_01",SAVE_SLOT_MANUAL,1,"fixture",incomplete)
 	codec.decodeMigrateAndValidate(fixture,"manual_01").assertEquals("")
 	codec.diagnostic().assertEquals("save is missing authority required by its schema")

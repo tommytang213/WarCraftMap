@@ -64,7 +64,7 @@ class FrameworkConformanceTests(unittest.TestCase):
                 write_settings(project, Path(tmp))
                 settings = (Path(tmp) / "ScenarioSettings.wurst").read_text()
                 self.assertIn('SCENARIO_CAMPAIGN_ID = ' + json.dumps(manifest["campaign"]["id"]), settings)
-                destinations = settings.split("public function scenarioPhysicalMapPath", 1)[1]
+                destinations = settings.split("public function scenarioPhysicalMapPath", 1)[1].split("\npublic function", 1)[0]
                 for physical in manifest["physicalMaps"]:
                     expected = ('\tif mapId == ' + json.dumps(physical["id"]) +
                                 '\n\t\treturn ' + json.dumps(physical["packagePath"]))

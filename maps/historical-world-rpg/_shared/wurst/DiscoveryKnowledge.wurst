@@ -1,0 +1,168 @@
+package DiscoveryKnowledge
+
+import PhysicalInteraction
+
+/** The region/visited-settlement slice of engine/map_discovery.py's contract.
+ * A settlement record means exact knowledge; a region never implies locations.
+ * Definitions are scenario data. Only stable IDs enter campaign authority. */
+public class DiscoveryCatalog
+	string array[64] regionIds
+	string array[64] regionNames
+	boolean array[64] initiallyKnown
+	int regionCount = 0
+	string array[2048] settlementIds
+	string array[2048] settlementNames
+	string array[2048] settlementRegions
+	int settlementCount = 0
+	function addRegion(string id, string name, boolean known)
+		regionIds[regionCount] = id
+		regionNames[regionCount] = name
+		initiallyKnown[regionCount] = known
+		regionCount++
+	function addSettlement(string id, string name, string regionId)
+		settlementIds[settlementCount] = id
+		settlementNames[settlementCount] = name
+		settlementRegions[settlementCount] = regionId
+		settlementCount++
+	function regionIndex(string id) returns int
+		for i = 0 to regionCount - 1
+			if regionIds[i] == id
+				return i
+		return -1
+	function settlementIndex(string id) returns int
+		for i = 0 to settlementCount - 1
+			if settlementIds[i] == id
+				return i
+		return -1
+	function regionName(string id) returns string
+		let i = regionIndex(id)
+		if i < 0
+			return ""
+		return regionNames[i]
+	function settlementName(string id) returns string
+		let i = settlementIndex(id)
+		if i < 0
+			return ""
+		return settlementNames[i]
+	function settlementRegion(string id) returns string
+		let i = settlementIndex(id)
+		if i < 0
+			return ""
+		return settlementRegions[i]
+
+public function discoveryHas(string document, string kind, string id) returns boolean
+	return id != "" and (document + "|").indexOf("|" + kind + "," + id + "|") >= 0
+
+public class DiscoveryKnowledge implements InteractionVisitListener
+	DiscoveryCatalog catalog
+	private string authority = "v1"
+	construct(DiscoveryCatalog catalog)
+		this.catalog = catalog
+	function snapshot() returns string
+		return authority
+	function knowsRegion(string id) returns boolean
+		return catalog.regionIndex(id) >= 0 and discoveryHas(authority, "r", id)
+	function knowsSettlement(string id) returns boolean
+		return catalog.settlementIndex(id) >= 0 and discoveryHas(authority, "s", id)
+	function revealRegion(string id) returns boolean
+		if catalog.regionIndex(id) < 0 or knowsRegion(id)
+			return false
+		authority += "|r," + id
+		return true
+	function visitSettlement(string id) returns boolean
+		let regionId = catalog.settlementRegion(id)
+		if regionId == "" or knowsSettlement(id)
+			return false
+		revealRegion(regionId)
+		authority += "|s," + id
+		return true
+	function start(string settlementId) returns boolean
+		if catalog.settlementIndex(settlementId) < 0
+			return false
+		authority = "v1"
+		for i = 0 to catalog.regionCount - 1
+			if catalog.initiallyKnown[i]
+				revealRegion(catalog.regionIds[i])
+		visitSettlement(settlementId)
+		return true
+	override function recordVisit(InteractionLocation target) returns boolean
+		// Called only after the physical adapter's second, commit-time check.
+		if target.kind == "region"
+			return revealRegion(target.eventId)
+		if target.kind == "settlement" or (target.anchor != null and target.anchor.kind == "settlement")
+			return visitSettlement(target.eventId)
+		return false
+	function validate(string document) returns boolean
+		if document == "v1"
+			return true
+		if not document.startsWith("v1|")
+			return false
+		var seen = "|"
+		var start = 3
+		for cursor = start to StringLength(document)
+			if cursor == StringLength(document) or SubString(document, cursor, cursor + 1) == "|"
+				let row = SubString(document, start, cursor)
+				if StringLength(row) < 3
+					return false
+				let id = SubString(row, 2, StringLength(row))
+				if seen.indexOf("|" + row + "|") >= 0
+					return false
+				if row.startsWith("r,")
+					if catalog.regionIndex(id) < 0
+						return false
+				else if row.startsWith("s,")
+					let regionId = catalog.settlementRegion(id)
+					if regionId == "" or not discoveryHas(document, "r", regionId)
+						return false
+				else
+					return false
+				seen += row + "|"
+				start = cursor + 1
+		return true
+	function restore(string document) returns boolean
+		if not validate(document)
+			return false
+		authority = document
+		return true
+	/** Legacy discovery was empty or a comma-separated list of stable IDs.
+	 * Command-context regions are recorded knowledge, never evidence of a visit.
+	 * Do not infer settlements from the origin, current map, quests or holdings. */
+	function migrateLegacy(string document, string recordedRegions) returns string
+		let migrated = new DiscoveryKnowledge(catalog)
+		var valid = true
+		if document == "v1" or document.startsWith("v1|")
+			valid = migrated.restore(document)
+		else if document != ""
+			var start = 0
+			for cursor = 0 to StringLength(document)
+				if cursor == StringLength(document) or SubString(document, cursor, cursor + 1) == ","
+					let id = SubString(document, start, cursor)
+					if catalog.regionIndex(id) >= 0
+						migrated.revealRegion(id)
+					else if catalog.settlementIndex(id) >= 0
+						migrated.visitSettlement(id)
+					else
+						valid = false
+					start = cursor + 1
+		for i = 0 to catalog.regionCount - 1
+			let id = catalog.regionIds[i]
+			if recordedRegions.indexOf("|" + id + "|") >= 0
+				migrated.revealRegion(id)
+		var result = ""
+		if valid
+			result = migrated.snapshot()
+		destroy migrated
+		return result
+	function regionListing() returns string
+		var result = ""
+		for i = 0 to catalog.regionCount - 1
+			if knowsRegion(catalog.regionIds[i])
+				result += "\n" + catalog.regionNames[i] + " (" + catalog.regionIds[i] + ")"
+		return result
+	function settlementListing(string regionId) returns string
+		var result = ""
+		for i = 0 to catalog.settlementCount - 1
+			let id = catalog.settlementIds[i]
+			if (regionId == "" or catalog.settlementRegions[i] == regionId) and discoveryHas(authority, "s", id)
+				result += "\n" + catalog.settlementNames[i] + " (" + id + ")"
+		return result

@@ -288,8 +288,12 @@ class CampaignPackagingTests(unittest.TestCase):
         compiled = _assemble(base, self.project / "_build/minimal-compile", generated, include_tests=False)
         shutil.copy2(self.project / "wurst-bootstrap/Bootstrap.wurst", compiled / "wurst/Bootstrap.wurst")
         _retain_bootstrap_dependencies(compiled)
+        # ScenarioSettings carries the stable-ID discovery catalogue. Its types
+        # and visit-listener contract are needed even by the origin selector.
         self.assertEqual({"Bootstrap.wurst", "ScenarioData.wurst", "CommandRouter.wurst",
-                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst", "RuntimeProtection.wurst", "ScenarioSettings.wurst"},
+                          "CampaignHandoff.wurst", "CampaignSaveManager.wurst", "WC3Compatibility.wurst",
+                          "RuntimeProtection.wurst", "ScenarioSettings.wurst", "DiscoveryKnowledge.wurst",
+                          "PhysicalInteraction.wurst"},
                          {path.name for path in (compiled / "wurst").glob("*.wurst")})
 
     def test_origin_handoff_and_every_physical_map_region_are_explicit(self):

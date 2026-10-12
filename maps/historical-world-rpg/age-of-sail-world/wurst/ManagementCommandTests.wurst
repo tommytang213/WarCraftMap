@@ -11,6 +11,7 @@ import MilitarySettlementRuntime
 import MilitarySettlementRuntimeTests
 import MapDiscoveryScreen
 import PlayableCampaignRuntime
+import WarcraftRegionalRuntime
 
 /** Only presentation, resources and native boundaries are replaced. */
 public class RecordingManagementPorts implements CommandOutput, TradePresentation, CampaignPauseRuntime, TechnologyEffectPort, ResearchCommandResources, CampaignTimelineListener, MapPresentationRuntime
@@ -90,7 +91,7 @@ class ManagementFixture
 		trade.newCampaign("port")
 		commands = managementCommands(rpg, trade, pauses, ports)
 	function dispatch(string command)
-		commands.dispatch(null, command).assertTrue()
+		commands.dispatch(Player(0), command).assertTrue()
 	function assertFrozen()
 		let before = clock.captureState()
 		let delivered = ports.events
@@ -232,7 +233,9 @@ class ManagementFixture
 	let military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
 	registerMilitarySettlementCommands(f.commands, military)
 	let maps = new MapDiscoveryScreenController(shared, f.ports, "europe", "europe")
-	registerCampaignMapCommand(f.commands, maps)
+	let mapState = new PlayableCampaignState(new WarcraftRegionalAdapter(), f.clock)
+	mapState.knowledge.revealRegion("europe")
+	registerCampaignMapCommand(f.commands, maps, mapState)
 	// Another management surface (e.g. country) retains its independent token.
 	let countryOwner = shared.openModalManagementScreen()
 	f.dispatch("/army army")

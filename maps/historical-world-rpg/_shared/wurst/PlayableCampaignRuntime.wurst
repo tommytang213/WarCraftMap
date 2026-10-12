@@ -22,6 +22,7 @@ import PhysicalInteraction
 import PartyLocations
 import CampaignUnstuck
 import ScenarioSettings
+import public DiscoveryKnowledge
 
 /** Physical identity is distinct from map tracking and remote command view.
  * Loads and transitions cannot authorize interactions while state is staged. */
@@ -51,7 +52,7 @@ public interface CampaignRuntimeExtension
 
 public constant real CAMPAIGN_AUTOSAVE_SECONDS = 300.
 /** These values mirror the release-save manifest and are checked by the release gate. */
-public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 9
+public constant int CAMPAIGN_SAVE_SCHEMA_CURRENT = 10
 public constant int CAMPAIGN_SAVE_SCHEMA_OLDEST = 1
 ReligionRuntime religionMigrationRuntime = null
 public PiracyRuntime piracyMigrationRuntime = null
@@ -262,7 +263,8 @@ public class WarcraftCampaignPartyProjection implements CampaignPartyProjection
  * handles and UI state never enter this document.
  */
 public class PlayableCampaignState implements CampaignStatePort, CampaignDayListener
-	string authority = "v2;map=world-map;region=" + scenarioRegionId(0) + ";boundary=;position=0.5;world=;players=;quests=;discovery=;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
+	string authority = "v2;map=world-map;region=" + scenarioRegionId(0) + ";boundary=;position=0.5;world=;players=;quests=;discovery=v1;orders=;trade=;diplomacy=v1;rewards=v1;rpg=v1;militarySettlements=v1;religion=v1;piracy=v1"
+	DiscoveryKnowledge knowledge = new DiscoveryKnowledge(scenarioMapCatalog())
 	string staged = ""
 	boolean startupLocked = false
 	boolean loading = false
@@ -330,6 +332,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		countries.setMilitaryAuthority(militarySettlements)
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
+		rpg.visits = knowledge
 		// The same clock is restored transactionally by campaign save/load.
 		rpg.heroes.clock = clock
 		clock.subscribeDays(this)
@@ -392,6 +395,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		// Emit this domain in a canonical position even when activation retained
 		// it before the lazily captured country/RPG domains.
 		var result = withoutCampaignField(withoutCampaignField(document, "partyLocations"), "commandContext")
+		result = replaceCampaignField(result, "discovery", knowledge.snapshot())
 		if includeIdentity and identity != null and identity.hasOrigin()
 			result = replaceCampaignField(result, "players", "origin:" + identity.originId() + ",allegiance:" + identity.allegianceId() + ",settlement:" + identity.settlementId())
 		if countries != null
@@ -515,7 +519,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			return false
 		if target == homeMap
 			return true
-		if scenarioPhysicalMapPath(homeMap) == "" or scenarioPhysicalMapPath(target) == "" or not commandKnows(context, scenarioLogicalRegion(target)) or pendingPartyArrival(lastAuthorityValue(candidate, "partyLocations"))
+		if scenarioPhysicalMapPath(homeMap) == "" or scenarioPhysicalMapPath(target) == "" or not discoveryHas(lastAuthorityValue(candidate, "discovery"), "r", scenarioLogicalRegion(target)) or pendingPartyArrival(lastAuthorityValue(candidate, "partyLocations"))
 			lastDiagnostic = "unknown or unavailable command destination"
 			return false
 		if militarySettlements == null
@@ -585,6 +589,9 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			return false
 		if rpg != null and not rpg.validateCampaignState(lastAuthorityValue(candidate,"rpg"))
 			lastDiagnostic=rpg.diagnostic()
+			return false
+		if not hasUniqueAuthorityValue(candidate, "discovery") or not knowledge.validate(lastAuthorityValue(candidate, "discovery"))
+			lastDiagnostic = "invalid region or visited-settlement knowledge"
 			return false
 		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
 			lastDiagnostic = "missing military/settlement authority"
@@ -678,6 +685,9 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if restored and militarySettlements != null
 			militarySettlements.resumeCallbacks()
 	function applyRuntime(string candidate) returns boolean
+		if not knowledge.restore(lastAuthorityValue(candidate, "discovery"))
+			lastDiagnostic = "map knowledge reconstruction failed"
+			return false
 		// Date-sensitive reconstruction must see the checkpoint's time, including
 		// on manual loads after this map's clock has already advanced.
 		if not clock.restoreState(lastAuthorityValue(candidate, "clock"))
@@ -851,6 +861,10 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		authority = replaceCampaignField(authority, "commandContext", lastAuthorityValue(candidate, "commandContext"))
 		if party != null
 			authority = replaceCampaignField(authority, "partyLocations", committedLocations)
+		// Physical arrival earns the region, never any settlement in it. Remote
+		// command reconstruction has a different loaded map and earns no visit.
+		if loadedPhysicalMap == lastAuthorityValue(candidate, "map")
+			knowledge.revealRegion(lastAuthorityValue(candidate, "region"))
 		// No fallible reconstruction remains. Rejected or staged loads never
 		// mutate scheduler authority or disturb its pending request/timer.
 		if autosaves != null
@@ -875,6 +889,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 /** Internal rollback checkpoint, never a persisted save format. Callback-owned
  * mutations are restored directly; rollback never reruns polity callbacks. */
 class CampaignLoadCheckpoint
+	string discoveryState
 	string clockState
 	string rpgState = ""
 	string militaryState = ""
@@ -886,6 +901,7 @@ class CampaignLoadCheckpoint
 	PlayerCampaignIdentity identityState = null
 	string partyLocations
 	construct(PlayableCampaignState state)
+		discoveryState = state.knowledge.snapshot()
 		partyLocations = state.committedLocations
 		clockState = state.clock.captureState()
 		if state.rpg != null
@@ -908,6 +924,7 @@ class CampaignLoadCheckpoint
 		state.committedLocations = partyLocations
 		// Restore time before date-sensitive domain effects, retaining the timer.
 		var restored = state.clock.restoreState(clockState)
+		restored = state.knowledge.restore(discoveryState) and restored
 		// Do not short-circuit: every domain must roll back even if one reports failure.
 		if state.rpg != null
 			restored = state.rpg.restoreState(rpgState) and restored
@@ -958,6 +975,12 @@ function validCampaignAutosave(string document) returns boolean
 
 /** Versioned envelope with slot binding and integrity metadata. Failed loads return no candidate. */
 public class PlayableCampaignCodec implements CampaignSaveCodec
+	DiscoveryKnowledge discovery = new DiscoveryKnowledge(scenarioMapCatalog())
+	function validateDiscovery(string document) returns boolean
+		if not hasUniqueAuthorityValue(document, "discovery") or not discovery.validate(lastAuthorityValue(document, "discovery"))
+			lastDiagnostic = "save has missing, duplicate or invalid map knowledge"
+			return false
+		return true
 	string lastDiagnostic = ""
 	CampaignClock clock
 	string initialClock
@@ -993,6 +1016,8 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		initialReligion = religion.captureState()
 		initialPiracy = piracy.migrationAuthority()
 	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+		if not validateDiscovery(authoritativeState)
+			return ""
 		if not validCampaignAutosave(authoritativeState)
 			lastDiagnostic = "save has missing, duplicate or invalid autosave scheduler authority"
 			return ""
@@ -1094,6 +1119,16 @@ public class PlayableCampaignCodec implements CampaignSaveCodec
 		// Schema 9 separates physical command context from the party's home.
 		if sourceSchema < 9 and decoded.indexOf(";commandContext=") < 0
 			decoded += ";commandContext=" + commandContext(lastAuthorityValue(decoded, "map"), false, initialCommandKnowledge(lastAuthorityValue(decoded, "map")))
+		// Schema 10 separates persistent visit knowledge from view and command
+		// context. Preserve only recorded IDs, including schema 9's region set.
+		if sourceSchema < 10 and hasUniqueAuthorityValue(decoded, "discovery") and validCampaignCommandContext(decoded)
+			let migrated = discovery.migrateLegacy(lastAuthorityValue(decoded, "discovery"), locationField(lastAuthorityValue(decoded, "commandContext"), 3))
+			if migrated == ""
+				lastDiagnostic = "legacy discovery contains invalid IDs"
+				return ""
+			decoded = replaceCampaignField(decoded, "discovery", migrated)
+		if not validateDiscovery(decoded)
+			return ""
 		// All supported schemas carry identity, travel, quests, discovery, orders and trade.
 		if decoded.indexOf(";world=") < 0 or decoded.indexOf(";players=") < 0 or decoded.indexOf(";map=") < 0 or decoded.indexOf(";region=") < 0 or decoded.indexOf(";quests=") < 0 or decoded.indexOf(";discovery=") < 0 or decoded.indexOf(";orders=") < 0 or decoded.indexOf(";trade=") < 0 or decoded.indexOf(";diplomacy=") < 0 or decoded.indexOf(";rewards=") < 0 or decoded.indexOf(";rpg=") < 0 or decoded.indexOf(";militarySettlements=") < 0 or decoded.indexOf(";religion=") < 0 or decoded.indexOf(";piracy=") < 0
 			lastDiagnostic = "save is missing authority required by its schema"
@@ -1406,37 +1441,32 @@ public function registerCampaignSaveCommands(CommandRegistry commands, PlayableC
 public class PlayableRegionAccess implements RegionAccessPolicy
 	PlayableCampaignState state
 	string array[64] ids
-	boolean array[64] known
 	int count = 0
 	construct(PlayableCampaignState state)
 		this.state = state
 	function add(string id, boolean isKnown)
 		ids[count] = id
-		known[count] = isKnown
 		count++
+		if isKnown
+			reveal(id)
 	function find(string id) returns int
 		for i = 0 to count - 1
 			if ids[i] == id
 				return i
 		return -1
 	function reveal(string id)
-		let i = find(id)
-		if i >= 0
-			known[i] = true
+		if find(id) >= 0
+			state.knowledge.revealRegion(id)
 	function captureKnowledge() returns string
 		var result = "|"
 		for i = 0 to count - 1
-			if known[i]
+			if state.knowledge.knowsRegion(ids[i])
 				result += ids[i] + "|"
 		return result
-	function restoreKnowledge(string context)
-		for i = 0 to count - 1
-			known[i] = commandKnows(context, ids[i])
 	override function regionExists(string regionId) returns boolean
 		return find(regionId) >= 0
 	override function regionIsKnown(player whichPlayer, string regionId) returns boolean
-		let i = find(regionId)
-		return i >= 0 and known[i]
+		return regionExists(regionId) and state.knowledge.knowsRegion(regionId)
 	override function mayCommandRegion(player whichPlayer, string regionId) returns boolean
 		// The existing single-player campaign controller is slot 0 / "player".
 		// Citizenship, allegiance and offices do not transfer territorial control.
@@ -1643,23 +1673,15 @@ public class PlayableRegionCommandRuntime implements RegionCommandTransport
 
 public class WarcraftMapPresentation implements MapPresentationRuntime
 	CommandOutput output
-	string knownRegions = scenarioRegionId(0)
-	string knownLocations = ""
-	string knownSearchAreas = ""
-	string knownBreadcrumbs = ""
+	DiscoveryKnowledge knowledge
 	construct(CommandOutput output)
 		this.output = output
-	function setKnowledge(string regions, string locations, string searchAreas, string breadcrumbs)
-		knownRegions = regions
-		knownLocations = locations
-		knownSearchAreas = searchAreas
-		knownBreadcrumbs = breadcrumbs
 	override function showWorldMap(string physicalRegionId, string commandRegionId)
-		output.show(Player(0), "World map\nKnown regions: " + knownRegions + "\nKnown routes: " + knownBreadcrumbs + "\nPhysical: " + physicalRegionId + "  Command: " + commandRegionId)
+		output.show(Player(0), "World map\nKnown regions:" + knowledge.regionListing() + "\nKnown settlements:" + knowledge.settlementListing("") + "\nPhysical: " + knowledge.catalog.regionName(physicalRegionId) + "  Command: " + knowledge.catalog.regionName(commandRegionId))
 	override function showRegionalMap(string regionId, string physicalRegionId, string commandRegionId)
-		output.show(Player(0), "Regional map: " + regionId + "\nKnown locations: " + knownLocations + "\nKnown search areas: " + knownSearchAreas + "\nRoute: " + knownBreadcrumbs)
+		output.show(Player(0), "Regional map: " + knowledge.catalog.regionName(regionId) + "\nKnown settlements:" + knowledge.settlementListing(regionId))
 	override function focusExact(string locationId)
-		output.show(Player(0), "Exact known location: " + locationId)
+		output.show(Player(0), "Exact known settlement: " + knowledge.catalog.settlementName(locationId) + " (" + locationId + ")")
 	override function focusSearchArea(string searchAreaId)
 		output.show(Player(0), "Known search area: " + searchAreaId)
 	override function hideMap()
@@ -1667,18 +1689,38 @@ public class WarcraftMapPresentation implements MapPresentationRuntime
 
 public class CampaignMapCommand implements CommandHandler
 	MapDiscoveryScreenController maps
-	construct(MapDiscoveryScreenController maps)
+	PlayableCampaignState state
+	CommandOutput output
+	construct(MapDiscoveryScreenController maps, PlayableCampaignState state, CommandOutput output)
 		this.maps = maps
+		this.state = state
+		this.output = output
 	override function execute(player sender, string arguments)
+		if sender != Player(0)
+			output.show(sender, "Only the campaign player can open this map.")
+			return
 		if arguments == "close"
 			maps.close()
-		else if arguments == "world"
+			return
+		if not state.isSaveSafe()
+			output.show(sender, "Campaign map is unavailable during restoration or travel.")
+			return
+		if arguments == "world"
 			maps.openWorldMap()
+		else if arguments.startsWith("focus ")
+			let id = SubString(arguments, 6, StringLength(arguments))
+			if not state.knowledge.knowsSettlement(id)
+				output.show(sender, "That settlement is invalid or not yet known.")
+				return
+			maps.focusKnownLocation(state.knowledge.catalog.settlementRegion(id), id)
 		else
+			if not state.knowledge.knowsRegion(arguments)
+				output.show(sender, "That region is invalid or not yet known.")
+				return
 			maps.openRegionalMap(arguments)
 
-public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps)
-	commands.register("map", "worldmap", "map <world|region-id|close>", "Open a discovered campaign map.", "Show legitimately known geography, locations, search areas, and route breadcrumbs without moving the physical character.", 1, 1, COMMAND_RELEASE, new CampaignMapCommand(maps))
+public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps, PlayableCampaignState state)
+	commands.register("map", "worldmap", "map <world|region-id|focus settlement-id|close>", "Open a discovered campaign map.", "List known regions and visited settlements, or focus a known settlement without moving the party.", 1, 2, COMMAND_RELEASE, new CampaignMapCommand(maps, state, commands.output))
 
 public class PlayableCampaignServices implements CampaignLoadObserver
 	PlayerCampaignIdentity identity
@@ -1730,7 +1772,7 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		regionSelector = new RegionSelector(regionAccess, null, logicalRegion)
 		regionSelector.transport = new PlayableRegionCommandRuntime(this)
 		mapPresentation = new WarcraftMapPresentation(new WarcraftOutput())
-		mapPresentation.setKnowledge(logicalRegion, "", "", "")
+		mapPresentation.knowledge = state.knowledge
 		maps = new MapDiscoveryScreenController(getManagementScreenPauseController(), mapPresentation, logicalRegion, logicalRegion)
 		saves.setLoadObserver(this)
 	function registerExtension(CampaignRuntimeExtension value)
@@ -1910,10 +1952,12 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		// the campaign seed, including retries before the first checkpoint write.
 		if not state.rpg.treasures.resolveAll(request.sequence.toString())
 			return rejectStartup("Treasure placement could not be resolved from the campaign seed.")
+		if not state.knowledge.start(request.settlementId)
+			return rejectStartup("The starting settlement has no map catalogue entry.")
 		identity.restore(request.origin, request.origin, request.mapId, request.instanceId, request.settlementId)
 		extension.newCampaign(request.settlementId)
 		countries.discover(request.origin)
-		state.replaceAuthority("v2;map=" + request.mapId + ";region=" + scenarioLogicalRegion(request.mapId) + ";boundary=;position=0.5;world=instance:" + request.instanceId + ";players=origin:" + request.origin + ",allegiance:" + request.origin + ",settlement:" + request.settlementId + ";quests=;discovery=" + request.settlementId + ";orders=;trade=")
+		state.replaceAuthority("v2;map=" + request.mapId + ";region=" + scenarioLogicalRegion(request.mapId) + ";boundary=;position=0.5;world=instance:" + request.instanceId + ";players=origin:" + request.origin + ",allegiance:" + request.origin + ",settlement:" + request.settlementId + ";quests=;discovery=" + state.knowledge.snapshot() + ";orders=;trade=")
 		if not state.rpg.prepareNewCampaign() or not state.projectParty(state.authorityDocument())
 			return rejectStartup("The starting player representation could not be initialized.")
 		let candidate = state.captureAuthoritativeState()
@@ -2043,19 +2087,15 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		let document = state.authorityDocument()
 		let loadedMap = lastAuthorityValue(document, "map")
 		let loadedRegion = lastAuthorityValue(document, "region")
-		let loadedSettlement = playerAuthorityValue(document, "settlement")
 		restoreCampaignPlayerIdentity(identity, document)
 		travel.startAt(loadedMap, loadedRegion)
 		let context = lastAuthorityValue(document, "commandContext")
-		if context != ""
-			regionAccess.restoreKnowledge(context)
-		regionAccess.reveal(loadedRegion)
 		if regionSelector.transport != null
 			state.commandPauses.restoreManualPause(locationField(context, 2) == "1")
 			regionSelector.restoreCommandContext(loadedRegion, scenarioLogicalRegion(physicalMapId), physicalMapId != loadedMap)
 		else
 			regionSelector.afterCampaignLoad(loadedRegion)
-		mapPresentation.setKnowledge(loadedRegion, loadedSettlement, "", "")
+		maps.close()
 		maps.setPhysicalRegion(loadedRegion)
 		maps.setCommandRegion(regionSelector.getCommandRegionId())
 		if regionSelector.transport != null
@@ -2084,7 +2124,7 @@ public function initializePlayableCampaignRuntime(CommandRegistry commands, stri
 	campaignServices = new PlayableCampaignServices(regionalRuntime, clock, physicalMapId, religion, new WarcraftCampaignSaveStorage(cache, "campaign"), new CampaignHandoff(new WarcraftCampaignSaveStorage(cache, "bootstrap"), new WarcraftPhysicalMapLoader()), new WarcraftPhysicalMapLoader(), new WarcraftCampaignPartyProjection())
 	registerCampaignSaveCommands(commands, campaignServices)
 	registerRegionCommand(commands, campaignServices.regionSelector, new WarcraftOutput())
-	registerCampaignMapCommand(commands, campaignServices.maps)
+	registerCampaignMapCommand(commands, campaignServices.maps, campaignServices.state)
 	registerGovernmentRewards(commands, campaignServices.countryScreen)
 	return campaignServices
 
