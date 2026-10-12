@@ -62,7 +62,7 @@ import WarcraftRpgRuntime
         source += '\n'.join(equipment_sets_wurst(data, str)).replace('runtime.', 'f.rpg.') + '\n'
         slots = {row['id']: row['equipmentSlotTypes'][0] for row in data['itemTypes']}
         for row in data['itemTypes']:
-            source += f'\tf.rpg.inventory.registerItem(new RpgItem("{row["id"]}","Item","{slots[row["id"]]}","common",1,0))\n'
+            source += f'\tf.rpg.inventory.registerItem(new RpgItem("{row["id"]}","Item","{slots[row["id"]]}","common",1))\n'
             source += f'\tf.rpg.inventory.grant("{row["id"]}").assertTrue()\n'
         states = {hero: {'ownerId': hero, 'backpackUnlockTierId': 'empty', 'outerSlots': [None] * 6,
                          'activeBackpacks': [], 'equipment': {slot: None for slot in slots.values()}}

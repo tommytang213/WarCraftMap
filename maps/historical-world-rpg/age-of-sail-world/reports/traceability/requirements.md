@@ -102,17 +102,17 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0068.01 | combination | Loyalty/relationship thresholds can produce buffs/debuffs and special content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0069.01 | combination | A high-investment permanent loyalty state such as Oathbound is supported. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0070.01 | combination | Relationships between companions may create synergies or friction. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0071.01 | combination | Equipment uses separate, explicit dimensions for power and identity rather than collapsing everything into one rarity label. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0072.01 | combination | Every player-usable equipment item has a player-facing item level / power level for quick comparison. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0072.02 | combination | The intended long-campaign scale supports item levels up to roughly the same order as hero progression (target level cap 300), while scenario data may use narrower bands for specific eras or categories. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0073.01 | combination | Item level represents the item's overall stat/effect budget and is primarily a comparison aid, not an absolute statement that a higher-level item is always better for every build. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0074.01 | combination | Rarity/quality is a separate field and should communicate affix/effect complexity, craftsmanship, scarcity, and ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0074.02 | combination | Use a clear ordered ladder such as Common, Fine, Superior, Rare, Epic, Legendary, and Relic/Artifact, with exact labels kept data-driven. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0075.01 | combination | Identity/provenance is also separate from rarity: generic, regional/cultural, polity-specific, profession/specialist, quest reward, equipment-set piece, unique historical item, legendary/relic, or other authored identity may coexist with any appropriate power level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0071.01 | combination | Equipment uses separate, explicit dimensions for power and identity rather than collapsing everything into one rarity label. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0072.01 | combination | Every player-usable equipment item has a player-facing item level / power level for quick comparison. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0072.02 | combination | The intended long-campaign scale supports item levels up to roughly the same order as hero progression (target level cap 300), while scenario data may use narrower bands for specific eras or categories. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0073.01 | combination | Item level represents the item's overall stat/effect budget and is primarily a comparison aid, not an absolute statement that a higher-level item is always better for every build. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0074.01 | combination | Rarity/quality is a separate field and should communicate affix/effect complexity, craftsmanship, scarcity, and ceiling. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0074.02 | combination | Use a clear ordered ladder such as Common, Fine, Superior, Rare, Epic, Legendary, and Relic/Artifact, with exact labels kept data-driven. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0075.01 | combination | Identity/provenance is also separate from rarity: generic, regional/cultural, polity-specific, profession/specialist, quest reward, equipment-set piece, unique historical item, legendary/relic, or other authored identity may coexist with any appropriate power level. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | REQ-0076.01 | combination | Era, technology, institutions, local production, trade access, settlement wealth, polity/culture, merchant type, and quest/event state determine plausible availability. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
-| REQ-0076.02 | combination | Historical/unique items remain persistent singular identities unless explicitly authored otherwise. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0077.01 | combination | Equipment comparison UI should show item level, rarity, major stats/effects, equipment-set membership, requirements, and green/red deltas against the currently equipped item. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0077.02 | combination | Build-specific abilities, resistances, passives, set thresholds, and conditional effects must remain visible so a lower-level specialized item can rationally outperform a higher-level generic one. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| REQ-0076.02 | combination | Historical/unique items remain persistent singular identities unless explicitly authored otherwise. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0077.01 | combination | Equipment comparison UI should show item level, rarity, major stats/effects, equipment-set membership, requirements, and green/red deltas against the currently equipped item. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
+| REQ-0077.02 | combination | Build-specific abilities, resistances, passives, set thresholds, and conditional effects must remain visible so a lower-level specialized item can rationally outperform a higher-level generic one. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | REQ-0078.01 | combination | Equipment may support bounded enhancement/refinement where appropriate, but enhancement must not erase historical/technological gating or make every old item converge into the same endgame stat block. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0079.01 | combination | Player-facing stores distinguish bulk trade goods from usable RPG inventory. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0079.02 | combination | Settlement merchant types may include general merchants, armourers/weaponsmiths, gunsmiths, tailors/outfitters, apothecaries, booksellers/cartographers, horse dealers, military suppliers, relic/artifact merchants, ship chandlers, and dockyards, with inventory generated from authoritative local context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -636,7 +636,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | artifact-missing, integration-missing, static-only |
 | ROAD-0131.01 | combination | Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0132.01 | combination | Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0133.01 | combination | Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
+| ROAD-0133.01 | combination | Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | ROAD-0134.01 | combination | Implement persistent individual ship equipment/refits, crew/veterancy/history progression, and meaningful continuous ship-experience bonuses with role-specific milestone traits. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0135.01 | combination | Expand named historical/recruitable heroes toward release-scale regional/era coverage and implement long-campaign hero progression to level 300 with deep skill/mastery/personal progression, unlimited recruited roster, and a high local field-group target subject to performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0136.01 | combination | Expand progression breadth toward roughly 180-250 technologies and 20-30 institutions/reforms across the full 1450-1820 timeline. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -1873,7 +1873,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0070.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0070.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0070.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0071.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0071.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0071.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0071.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1884,8 +1883,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0071.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0071.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0071.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0071.01 [static-only]: source references cannot establish executed integration
 - REQ-0071.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0072.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0072.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0072.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0072.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1896,8 +1895,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0072.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0072.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0072.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0072.01 [static-only]: source references cannot establish executed integration
 - REQ-0072.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0072.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0072.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0072.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0072.02 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1908,8 +1907,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0072.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0072.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0072.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0072.02 [static-only]: source references cannot establish executed integration
 - REQ-0072.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0073.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0073.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0073.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0073.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1920,8 +1919,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0073.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0073.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0073.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0073.01 [static-only]: source references cannot establish executed integration
 - REQ-0073.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0074.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0074.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0074.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0074.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1932,8 +1931,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0074.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0074.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0074.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0074.01 [static-only]: source references cannot establish executed integration
 - REQ-0074.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0074.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0074.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0074.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0074.02 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1944,8 +1943,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0074.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0074.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0074.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0074.02 [static-only]: source references cannot establish executed integration
 - REQ-0074.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0075.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0075.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0075.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0075.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1956,6 +1955,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0075.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0075.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0075.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0075.01 [static-only]: source references cannot establish executed integration
 - REQ-0075.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0076.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0076.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -1969,7 +1969,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0076.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0076.01 [static-only]: source references cannot establish executed integration
 - REQ-0076.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0076.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0076.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0076.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0076.02 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1980,8 +1979,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0076.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0076.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0076.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0076.02 [static-only]: source references cannot establish executed integration
 - REQ-0076.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0077.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0077.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0077.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0077.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1992,8 +1991,8 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0077.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0077.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0077.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0077.01 [static-only]: source references cannot establish executed integration
 - REQ-0077.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0077.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0077.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0077.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0077.02 [unreachable]: production entry/registration/call chain is absent or stale
@@ -2004,6 +2003,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0077.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0077.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0077.02 [integration-missing]: replay: current executable production-adapter evidence is absent
+- REQ-0077.02 [static-only]: source references cannot establish executed integration
 - REQ-0077.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0078.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0078.01 [authority-missing]: scenario content authority is absent or stale
@@ -7517,7 +7517,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0132.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0132.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0132.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0133.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0133.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0133.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - ROAD-0133.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -7528,6 +7527,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0133.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0133.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0133.01 [integration-missing]: replay: current executable production-adapter evidence is absent
+- ROAD-0133.01 [static-only]: source references cannot establish executed integration
 - ROAD-0133.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0134.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0134.01 [authority-missing]: scenario content authority is absent or stale

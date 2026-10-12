@@ -79,7 +79,7 @@ public class EquipmentFixture
 		rpg.heroes.register(hero)
 		natives.represent(index, index + 1, (index + 1) * 100)
 	function addItem(string id, string slot, int power, string setId, boolean unique, int copies)
-		let itemDefinition = new RpgItem(id, id, slot, "rare", 10, power)
+		let itemDefinition = new RpgItem(id, id, slot, "rare", 10).addStat("defense", power)
 		itemDefinition.setId = setId
 		itemDefinition.unique = unique
 		rpg.inventory.registerItem(itemDefinition)
@@ -172,7 +172,7 @@ public class EquipmentFixture
 	f.itemAt("alpha", "chest").assertEquals("coat")
 	f.itemAt("beta", "chest").assertEquals("")
 	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
-	f.natives.life[0].assertEquals(105)
+	f.natives.life[0].assertEquals(100)
 	f.natives.life[1].assertEquals(200)
 	commands.dispatch(null, "/rpg-close").assertTrue()
 	f.rpg.management.pauses.getModalOwnerCount().assertEquals(0)
@@ -228,24 +228,24 @@ public class EquipmentFixture
 	f.rpg.inventory.setPieceCount("beta", "uniform").assertEquals(1)
 	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("")
 	f.projections.setEffectIdentities("beta", "uniform").assertEquals("")
-	f.natives.life[0].assertEquals(105)
-	f.natives.life[1].assertEquals(204)
+	f.natives.life[0].assertEquals(100)
+	f.natives.life[1].assertEquals(200)
 	f.natives.life[2].assertEquals(300)
 	f.rpg.unequipItem("beta", "head").assertTrue()
 	f.equip("alpha", "hat")
-	f.natives.life[0].assertEquals(109)
+	f.natives.life[0].assertEquals(100)
 	f.equip("alpha", "boots")
 	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")
 	for i = 1 to 3
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(111)
+		f.natives.life[0].assertEquals(100)
 		f.natives.life[1].assertEquals(200)
 		f.natives.life[2].assertEquals(300)
 	f.natives.writes[2].assertEquals(0)
 	f.rpg.inventory.setPieceCount("gamma", "uniform").assertEquals(0)
-	(f.rpg.inventory.comparison("alpha", "replacement").indexOf("+3 power") >= 0).assertTrue()
-	(f.rpg.inventory.comparison("beta", "replacement").indexOf("+8 power") >= 0).assertTrue()
-	(f.rpg.inventory.comparison("alpha", "coat").indexOf("0 power") >= 0).assertTrue()
+	(f.rpg.inventory.comparison("alpha", "replacement").indexOf("defense: 8 (|cff00ff00+3|r)") >= 0).assertTrue()
+	(f.rpg.inventory.comparison("beta", "replacement").indexOf("defense: 8 (|cff00ff00+8|r)") >= 0).assertTrue()
+	(f.rpg.inventory.comparison("alpha", "coat").indexOf("defense: 5 (|cffaaaaaa0|r)") >= 0).assertTrue()
 	(f.rpg.inventorySummary("alpha").indexOf("Alpha (alpha)") >= 0).assertTrue()
 	(f.rpg.inventorySummary("alpha").indexOf("Set uniform: 3 pieces") >= 0).assertTrue()
 	(f.rpg.inventorySummary("alpha").indexOf("pieces_3 (3 pieces): active | Effects: command") >= 0).assertTrue()
@@ -257,20 +257,20 @@ public class EquipmentFixture
 	f.equip("alpha", "hat")
 	f.equip("alpha", "boots")
 	f.equip("beta", "coat")
-	// Another modifier arrives after gear was projected. Clearing gear must
-	// subtract its own contribution rather than restore an old base-life cache.
+	// Another modifier arrives after typed gear delivery. Reconciliation must
+	// leave it intact; unbound item stats never become maximum life.
 	f.natives.life[0] += 40
 	f.natives.life[1] += 60
 	f.rpg.reconcile("player")
-	f.natives.life[0].assertEquals(151)
-	f.natives.life[1].assertEquals(265)
+	f.natives.life[0].assertEquals(140)
+	f.natives.life[1].assertEquals(260)
 	f.equip("alpha", "replacement")
-	f.natives.life[0].assertEquals(154)
-	f.natives.life[1].assertEquals(265)
+	f.natives.life[0].assertEquals(140)
+	f.natives.life[1].assertEquals(260)
 	f.rpg.unequipItem("alpha", "head").assertTrue()
-	f.natives.life[0].assertEquals(150)
+	f.natives.life[0].assertEquals(140)
 	f.rpg.unequipItem("alpha", "feet").assertTrue()
-	f.natives.life[0].assertEquals(148)
+	f.natives.life[0].assertEquals(140)
 	// Inactive wearers retain authority. Their missing objects receive no calls.
 	f.rpg.heroes.assignRemote("alpha", "governor", "remote").assertTrue()
 	f.natives.identities[0] = 0
@@ -284,21 +284,21 @@ public class EquipmentFixture
 	// Reconstruction has different base life and existing unrelated modifiers.
 	f.natives.represent(0, 4, 500)
 	f.rpg.reconcile("player")
-	f.natives.life[0].assertEquals(511)
-	f.natives.life[1].assertEquals(265)
+	f.natives.life[0].assertEquals(500)
+	f.natives.life[1].assertEquals(260)
 	// Destruction/recreation may happen entirely between reconciliations.
 	f.natives.represent(0, 5, 700)
 	f.natives.represent(1, 6, 800)
 	for i = 1 to 2
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(711)
-		f.natives.life[1].assertEquals(805)
+		f.natives.life[0].assertEquals(700)
+		f.natives.life[1].assertEquals(800)
 		f.natives.life[2].assertEquals(300)
 	f.rpg.unequipItem("alpha", "chest").assertTrue()
 	f.rpg.unequipItem("alpha", "head").assertTrue()
 	f.rpg.unequipItem("alpha", "feet").assertTrue()
 	f.natives.life[0].assertEquals(700)
-	f.natives.life[1].assertEquals(805)
+	f.natives.life[1].assertEquals(800)
 	f.rpg.inventory.ownedQuantity("coat").assertEquals(2)
 
 @test function characterEquipmentSnapshotsValidateCopiesPairsAndLegacyWearers()
@@ -311,8 +311,8 @@ public class EquipmentFixture
 	restored.rpg.restoreState(saved).assertTrue()
 	restored.rpg.captureState().assertEquals(saved)
 	restored.rpg.reconcile("player")
-	restored.natives.life[0].assertEquals(109)
-	restored.natives.life[1].assertEquals(205)
+	restored.natives.life[0].assertEquals(100)
+	restored.natives.life[1].assertEquals(200)
 	restored.natives.life[2].assertEquals(300)
 	restored.rejectSnapshot(saved + "|e,chest,replacement,alpha")
 	restored.rejectSnapshot(saved + "|e,chest,coat,gamma")
@@ -331,7 +331,7 @@ public class EquipmentFixture
 	restored.rpg.captureState().assertEquals("v7|p,|s,1|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,,0|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,,0|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,,,,0|i,relic|e,chest,relic,beta|j,,0")
 	restored.rpg.reconcile("player")
 	restored.natives.life[0].assertEquals(100)
-	restored.natives.life[1].assertEquals(209)
+	restored.natives.life[1].assertEquals(200)
 	// Equipment can precede owned records; validation uses candidate totals.
 	let reordered = "v2|e,chest,relic,beta|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,|h,gamma,0,1,0,0,0,0,50,0,0,0,unrecruited,,,,,|i,relic|j,,0"
 	restored.rpg.restoreState(reordered).assertTrue()
@@ -371,8 +371,8 @@ public class EquipmentStorage implements CampaignSaveStorage
 		manager.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 		f.rpg.captureState().assertEquals(saved)
 		f.rpg.reconcile("player")
-		f.natives.life[0].assertEquals(109)
-		f.natives.life[1].assertEquals(205)
+		f.natives.life[0].assertEquals(100)
+		f.natives.life[1].assertEquals(200)
 		f.natives.life[2].assertEquals(300)
 	let before = state.captureAuthoritativeState()
 	storage.payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "bad", authority + ";rpg=" + saved + "|e,chest,coat,gamma")
@@ -394,7 +394,7 @@ public class EquipmentStorage implements CampaignSaveStorage
 @test function fullLocalGroupEquipmentRoundTripsThroughLiveCampaignCodec()
 	let rpg = new WarcraftRpgRuntime(null)
 	for slot = 0 to 8
-		rpg.inventory.registerItem(new RpgItem("item" + slot, "Item", "slot" + slot, "common", 1, 1))
+		rpg.inventory.registerItem(new RpgItem("item" + slot, "Item", "slot" + slot, "common", 1).addStat("defense", 1))
 	for wearer = 0 to RPG_DEFAULT_ACTIVE_HERO_LIMIT - 1
 		let hero = new RpgHero("hero" + wearer, "Hero", 'Hpal')
 		hero.recruited = true
@@ -421,7 +421,7 @@ public class EquipmentStorage implements CampaignSaveStorage
 	for repetition = 1 to 2
 		rpg.reconcile("player")
 		for wearer = 0 to RPG_DEFAULT_ACTIVE_HERO_LIMIT - 1
-			natives.life[wearer].assertEquals(1009 + wearer)
+			natives.life[wearer].assertEquals(1000 + wearer)
 	let before = state.captureAuthoritativeState()
 	// Re-encode malformed authority with a valid checksum: domain validation,
 	// rather than envelope integrity alone, must atomically reject the load.
@@ -435,7 +435,7 @@ public class EquipmentStorage implements CampaignSaveStorage
 
 @test function inventoryCapacityRejectionKeepsAuthorityUnchanged()
 	let inventory = new PlayerInventory()
-	inventory.registerItem(new RpgItem("copy", "Copy", "hand", "common", 1, 1))
+	inventory.registerItem(new RpgItem("copy", "Copy", "hand", "common", 1).addStat("defense", 1))
 	for i = 1 to RPG_INVENTORY_CAPACITY
 		inventory.grant("copy").assertTrue()
 	inventory.grant("copy").assertFalse()
@@ -627,8 +627,8 @@ function equipmentEligibilityReceipt(string caseName)
 	fixture.command("/equip alpha replacement", false)
 	fixture.resources.currentYear = 1820
 	fixture.command("/equip alpha replacement", true)
-	fixture.f.natives.life[0].assertEquals(112)
-	fixture.f.natives.life[1].assertEquals(205)
+	fixture.f.natives.life[0].assertEquals(100)
+	fixture.f.natives.life[1].assertEquals(200)
 	fixture.command("/equip beta replacement", false)
 	fixture.command("/equip gamma coat", true)
 	fixture.f.rpg.inventory.equippedQuantity("coat").assertEquals(2)
@@ -679,7 +679,7 @@ function equipmentEligibilityReceipt(string caseName)
 		// RPG v7 preserves legacy progression and establishes migration seed authority.
 		fixture.f.rpg.captureState().assertEquals("v7|p,|s,1|h,alpha,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,,0|h,beta,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,,0|h,gamma,1,20,0,0,0,0,50,0,0,0,reserve,,,,,,,,0|i,replacement|i,coat|e,chest,replacement,alpha|u,player,craft|j,,0")
 		fixture.f.rpg.reconcile("player")
-		fixture.f.natives.life[0].assertEquals(108)
+		fixture.f.natives.life[0].assertEquals(100)
 		fixture.f.natives.life[1].assertEquals(200)
 		fixture.command("/equip alpha replacement", false)
 		fixture.command("/equip beta replacement", false)

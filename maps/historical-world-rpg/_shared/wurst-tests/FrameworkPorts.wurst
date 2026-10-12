@@ -165,10 +165,12 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 		skip
 	override function commitPartyLoad()
 		skip
-	override function clearEquipmentLayer()
+	override function beginEquipmentReconciliation()
 		skip
-	override function applyEquipment(string heroId, string itemId, int power)
+	override function finishEquipmentReconciliation()
 		skip
+	override function replaceEquipment(EquipmentItemLayer result)
+		destroy result
 	override function beginEquipmentSetReconciliation()
 		skip
 	override function finishEquipmentSetReconciliation()

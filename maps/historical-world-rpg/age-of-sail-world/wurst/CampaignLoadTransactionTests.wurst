@@ -179,10 +179,13 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		skip
 	override function commitPartyLoad()
 		skip
-	override function clearEquipmentLayer()
+	override function beginEquipmentReconciliation()
 		equipment = ""
-	override function applyEquipment(string heroId, string itemId, int power)
-		equipment += heroId + itemId + power.toString()
+	override function finishEquipmentReconciliation()
+		skip
+	override function replaceEquipment(EquipmentItemLayer result)
+		equipment += result.heroId + result.slotId + result.definition.id + result.definition.statValue("defense").toString()
+		destroy result
 	override function beginEquipmentSetReconciliation()
 		skip
 	override function finishEquipmentSetReconciliation()
@@ -318,7 +321,7 @@ public class LoadFixture
 		rpg.heroes.recruit("hero").assertTrue()
 		hero.level = 20
 		hero.assignment = "field"
-		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "rare", 10, 5))
+		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "rare", 10).addStat("defense", 5))
 		rpg.inventory.grant("coat").assertTrue()
 		rpg.inventory.equip("hero", "coat", hero, 1600, null, "player").assertTrue()
 		let tech = new RuntimeTechnology("printing", "Printing", 1450, 100)
@@ -838,7 +841,7 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 	let projections = new WarcraftRpgProjections(f.rpg.heroes, objects)
 	f.rpg.setProjectionPort(projections)
 	f.rpg.reconcile("player")
-	objects.life.assertEquals(105)
+	objects.life.assertEquals(100)
 	objects.life += 40 // An unrelated modifier on the retained original object.
 	let before = f.rpg.captureState()
 	f.rpg.heroes.heroes[0].level = 25
@@ -852,18 +855,20 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 		let originalWrites = objects.originalLifeWrites
 		f.rejectAndVerify(candidate)
 		objects.identity.assertEquals(1)
-		objects.life.assertEquals(145)
+		objects.life.assertEquals(140)
+		projections.itemLayer("hero", "chest").definition.statValue("defense").assertEquals(5)
 		projections.setEffectIdentities("hero", "uniform").assertEquals("hero|uniform|one|guard;")
 		objects.originalLifeWrites.assertEquals(originalWrites)
 		for repeat = 1 to 2
 			f.rpg.reconcile("player")
-			objects.life.assertEquals(145)
-		// Removal clears the set identity layer and subtracts only item power.
+			objects.life.assertEquals(140)
+		// Removal clears only typed equipment; unrelated modifiers survive.
 		f.rpg.unequipItem("hero", "chest").assertTrue()
 		objects.life.assertEquals(140)
+		(projections.itemLayer("hero", "chest") == null).assertTrue()
 		projections.setEffectIdentities("hero", "uniform").assertEquals("")
 		f.rpg.equipItem("hero", "coat", 1600).assertTrue()
-		objects.life.assertEquals(145)
+		objects.life.assertEquals(140)
 	f.ports.failParty = false
 	f.recordingTimer.expected = f.candidateClock
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
@@ -877,7 +882,7 @@ class LoadEquipmentObjects implements CampaignPartyProjection, RpgEquipmentNativ
 	for repeat = 1 to 2
 		f.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
 		f.rpg.reconcile("player")
-		objects.life.assertEquals(105)
+		objects.life.assertEquals(100)
 
 @test function registeredFoundingRejectsUnqualifiedCaptainsAndGovernmentTerritory()
 	let f = new LoadFixture()
