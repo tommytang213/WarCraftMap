@@ -34,10 +34,10 @@ capture can suffer a new real loss; retirement itself earns nothing. Callback
 generations remain transient and are invalidated during ownership changes, map
 activation and load transactions.
 
-Military snapshot **v8** retains controller/category XP and the existing force
-loss records together. It accepts v1–v7, preserves earned tracks and seeds missing
+Military snapshot **v9** retains controller/category XP and the existing force
+loss records together. It accepts v1–v8, preserves earned tracks and seeds missing
 legacy tracks from scenario starting values. V6 orders and every earlier
-settlement, clock, recovery and conflict migration remain intact. V7 and v8 require the
+settlement, clock, recovery and conflict migration remain intact. V7–v9 require the
 complete authored track set and rejects malformed, duplicate, unknown or missing
 tracks before replacing authority or touching projections. Current scenario
 definitions reconcile derived presentation without resetting XP. The whole
@@ -94,8 +94,8 @@ contributions; replacement and removal do not alter unrelated modifiers. Native
 load checkpoints retain the previous store with its original representations,
 restoring both on rollback and retiring both on commit.
 
-Layers and resolved bonuses are never serialized. Military snapshot v8 and all
-supported migrations remain unchanged; legacy presentation slots normalize to
+Layers and resolved bonuses are never serialized. Military v9 adds only optional roster identity records; existing
+supported migrations preserve XP, orders and strength; legacy presentation slots normalize to
 zero for typed definitions. Current definitions are reconstructed from saved XP
 in detached authority before projections change. Consumed-loss receipts and
 campaign transaction rollback continue to protect against repeated awards.
@@ -106,18 +106,83 @@ The native integer bound remains confined to the legacy generic projection API.
 The typed path does not coerce values to health, abilities or floating-point stats.
 Native representability never limits progression authority.
 
-**Gameplay-effect consumers remain blocked.** The four authored attributes and
-four named milestone effects have resolved values/identities, but no implemented
-consumer changes attack, discipline, naval damage, maneuver or doctrine behavior.
-`militaryTraditionIntegrationBlockers` in generated runtime data lists each missing
-consumer; inspection labels these effects pending. No placeholder health bonus or
-native ability mapping is introduced. Assist and objective weights still have no
-dispatcher. Balance and native launch remain open.
+Issue #469 binds the compatible damage consumers through the versioned
+`scenario/combat-effect-bindings.json` catalogue. It retains the locked tradition
+thresholds, coefficients, recipients and replacement links. Ordered Volley adds
+500 basis points to firearm-volley damage; Platoon Fire replaces it with 1,000.
+Disciplined Gunnery adds 500 to naval gunfire; Line of Battle replaces it with
+1,000 and adds a 300 basis-point incoming naval-gunfire resistance rating. These
+are initial game-balance defaults, not measured historical effectiveness.
+
+The catalogue owns effect source identities, numeric values, descriptions and
+weapon predicates. Generation validates every effect exactly once, compares all
+continuous coefficients and milestone identities with the original tradition
+data, and compiles profiles from the existing inherited roster. Firearm volleys
+require a listed firearm, `volley_fire`, and a compatible infantry/marine role.
+Naval gunfire requires listed ship guns, `broadside`, a warship hull and sailing
+movement. Native primary-attack mappings also belong to this catalogue. Shared
+code interprets typed `damage` and `resistance` contributions. It contains no
+Age of Sail effect names or balance defaults.
+
+`RuntimeForce.combatProfileId` identifies an existing roster archetype. The
+roster-aware `recruit(force, profileId)` boundary validates its proxy type and
+force kind. No profile is inferred from tradition eligibility, appearance,
+nationality or proxy rawcode: the same proxy represents several weapon roles.
+The two explicitly assigned historical starting forces have no authored roster
+identity and remain unbound weapon blockers, receiving no fabricated bonus.
+Their assignments and the world/history sources are unchanged.
+
+`MilitaryCombatEvents.onWeaponDamage` verifies current representation, callback
+generation, legal hostility, actual native proxy types and the native attack type before using
+`MilitarySettlementRuntime.applyCombatHit`. Native spell, repair and environment
+damage do not become weapon attacks. Known hostile campaign heroes can receive
+qualified military damage; unrelated objects remain untouched. Native event
+damage is written only when a rating contributes, and legality is checked before
+input rounding. Abstract/inactive callers use that same
+boundary with validated attack identity; the Python `CombatCatalogue` and
+`resolve_roster_hit` adapter mirror it using Fraction and authoritative roster/
+controller state, regardless of projection presence.
+
+A `CombatHit` owns one result and applies once. A second delivery returns that
+result. Death callbacks consume actual remaining strength and award XP once;
+they never multiply casualties by the damage bonus again. Installed native
+subscriptions remain singular and stale generations fail closed on transfer,
+map transitions and load/rollback. Independently authored `CombatSources` replace
+contributions by source/attack/stat identity and add their ratings once; reserved
+milestone sources cannot be injected again. This is the integration boundary for
+later research damage bonuses, which must remain separate from milestone
+replacement.
+
+Damage is `base × max(0, 10000 + continuous + milestone + other attack ratings) /
+(10000 + max(0, resistance rating))`. Only compatible attacks contribute. Exact
+rational arithmetic preserves fractions and unbounded XP until the damage or
+casualty boundary. Native damage enters at nine decimal places and leaves at
+native real precision (eight leading decimal digits); only that projection
+saturates at a finite 1e30 to prevent overflow. Exact authority is unchanged.
+An abstract consumer can use `floorNatural()` once at its casualty boundary.
+No armor grant, immunity, health bonus, native ability, order, teleport or free
+`line_ahead` formation capability is involved.
+
+Military v9 optionally saves `p,forceId,rosterId` identity records. It never saves
+milestone effects or ratings. V1–v8 migrate with unknown weapon identity, retaining
+existing XP, losses, orders and all earlier migrations. Unknown, mismatched and
+duplicate profile records fail before mutation. Current roster definitions and
+saved XP reconstruct damage on active and inactive maps, including zero-strength
+records. Late campaign-load rollback retains the previous authority and native
+projection checkpoint. The campaign envelope version is unchanged.
+
+Formation/fleet inspection displays reached and replaced effects, source,
+numeric basis points and descriptions. Unarmed/missing-profile and dead forces
+are marked inactive. Continuous discipline and maneuver consumers remain
+explicitly pending in inspection and `militaryTraditionIntegrationBlockers`.
+Missing weapon identities and unknown effect metadata also remain blockers.
+Assist and objective dispatchers, balance validation and #438 real-client crash
+resolution remain open; no CI result supplies native-launch evidence.
 
 The scoped evidence covers exact resolution/delivery portions of ROAD-0052 and
 REQ-0155–REQ-0163 alongside #450's earned XP and #458's expandable representation.
-It does not close the broader gameplay benefits of REQ-0155.01, REQ-0157.01,
-REQ-0158.02–03 or REQ-0159.01, nor non-kill adapters (REQ-0154.02).
+The new damage tests cover the four milestone behaviors, without closing unbound
+discipline/maneuver, non-kill adapters (REQ-0154.02), or native-launch evidence.
 
 `MilitaryCombatEventsTests.wurst` drives installed production callbacks and
 compares generated player/AI land/naval layers with the headless Fraction oracle.

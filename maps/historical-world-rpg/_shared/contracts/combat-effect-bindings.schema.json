@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warcraftmap.local/schemas/combat-effect-bindings.schema.json",
+  "title": "Versioned scenario combat effect bindings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "balanceNote",
+    "attackPredicates",
+    "attributes",
+    "effects"
+  ],
+  "properties": {
+    "format": {
+      "const": "warcraftmap_combat_effect_bindings_v1"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "balanceNote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attackPredicates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "categoryId",
+          "weaponIds",
+          "abilityIds",
+          "rosterCategories",
+          "movementClassIds",
+          "requiresShip",
+          "nativeTemplates"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoryId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "weaponIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "abilityIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rosterCategories": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "movementClassIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "requiresShip": {
+            "type": "boolean"
+          },
+          "nativeTemplates": {
+            "type": "object",
+            "additionalProperties": {
+              "enum": [
+                "normal",
+                "pierce",
+                "siege"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "attributes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "categoryId",
+          "numerator",
+          "denominator",
+          "attackId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoryId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "numerator": {
+            "type": "integer"
+          },
+          "denominator": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "attackId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sourceId",
+          "categoryId",
+          "milestoneId",
+          "threshold",
+          "mode",
+          "replacesEffectId",
+          "description",
+          "contributions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoryId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "milestoneId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "threshold": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mode": {
+            "enum": [
+              "additive",
+              "upgrade",
+              "replacement"
+            ]
+          },
+          "replacesEffectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contributions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stat",
+                "attackId",
+                "basisPoints"
+              ],
+              "properties": {
+                "stat": {
+                  "enum": [
+                    "damage",
+                    "resistance"
+                  ]
+                },
+                "attackId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "basisPoints": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

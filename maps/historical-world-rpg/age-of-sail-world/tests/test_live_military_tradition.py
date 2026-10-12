@@ -25,6 +25,11 @@ class LiveMilitaryTraditionTests(unittest.TestCase):
             source = (output / "ScenarioData.wurst").read_text()
             runtime = json.loads((output / "scenario-runtime.json").read_text())
         self.assertEqual(self.definitions, runtime["militaryTraditions"])
+        self.assertEqual({"discipline_basis_points", "maneuver_basis_points"},
+                         {r["id"] for r in runtime["militaryTraditionIntegrationBlockers"] if r["kind"] == "attribute"})
+        self.assertFalse(any(r["kind"] == "effect" for r in runtime["militaryTraditionIntegrationBlockers"]))
+        self.assertEqual({r["id"] for r in self.definitions["unitAssignments"]},
+                         {r["id"] for r in runtime["militaryTraditionIntegrationBlockers"] if r["kind"] == "weapon"})
         catalogues = json.loads((PROJECT / "scenario/traceability/catalogues.json").read_text())
         census = next(row for row in catalogues if row["id"] == "military-traditions")
         self.assertEqual({row["id"]: row for row in self.definitions["traditions"]}, records(runtime, census["runtime"]))

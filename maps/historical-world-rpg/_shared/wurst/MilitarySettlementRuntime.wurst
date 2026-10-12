@@ -2,6 +2,7 @@ package MilitarySettlementRuntime
 import ScenarioSettings
 import ExactNatural
 import MilitaryTraditionLayer
+import CombatEffects
 
 import RuntimeProtection
 
@@ -29,7 +30,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 8
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 9
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -117,6 +118,9 @@ public class RuntimeForce
 	string categoryId
 	int kind
 	int unitTypeId
+	// Durable roster identity, not a saved bonus or an inferred weapon assignment.
+	// Old forces with no metadata remain unknown and fail closed.
+	string combatProfileId = ""
 	int strength
 	int maximumStrength
 	int supply
@@ -467,6 +471,7 @@ public class MilitarySettlementRuntime
 	boolean legacyMilitaryVersion4 = false
 	boolean legacyOrders = false
 	boolean legacyTraditions = false
+	boolean legacyCombatProfiles = false
 	boolean legacyIntegerExperience = false
 	WarcraftRpgRuntime rpg = null
 	RuntimeForce array[4096] forces
@@ -474,6 +479,7 @@ public class MilitarySettlementRuntime
 	TraditionContribution array[32] contributions
 	int contributionCount = 0
 	MilitaryTraditionDefinitions traditionDefinitions = null
+	CombatBindings combatBindings = null
 	SettlementRuntimeState array[1024] settlements
 	AdministratorState array[1024] administrators
 	string array[1024] administratorSettlementIds
@@ -758,6 +764,30 @@ public class MilitarySettlementRuntime
 			return null
 		let track = traditions[found]
 		return track.definition.resolve(track.controllerId, track.categoryId, track.experience)
+	function combatProfile(RuntimeForce runtimeForce) returns CombatProfile
+		if combatBindings == null or runtimeForce.combatProfileId == ""
+			return null
+		return combatBindings.profile(runtimeForce.combatProfileId, runtimeForce.unitTypeId, runtimeForce.kind)
+	/** Both native and inactive-region callers use this exact calculation. The
+	 * caller supplies diplomatic identity; progression uses current controllers.
+	 * A casualty callback consumes loss, never calls this boundary a second time. */
+	function applyCombatHit(CombatHit hit, int sourceIndex, int targetIndex, string sourcePolity, string targetPolity, boolean weaponAttack)
+		if hit.applied or combatBindings == null or sourceIndex < 0 or targetIndex < 0 or sourceIndex >= forceCount or targetIndex >= forceCount
+			return
+		let source = forces[sourceIndex]
+		let target = forces[targetIndex]
+		let city = settlementForForce(target)
+		var legal = weaponAttack and source.active and target.active and source.strength > 0 and target.strength > 0 and atWar(sourcePolity, targetPolity)
+		legal = legal and (militaryMapMatches(source.regionId, target.regionId) or militaryMapMatches(target.regionId, source.regionId) or scenarioAuthorityMap(source.regionId) != "" and scenarioAuthorityMap(source.regionId) == scenarioAuthorityMap(target.regionId))
+		if city >= 0
+			legal = legal and settlements[city].controllerId == target.controllerId and gameplaySeconds >= settlements[city].captureImmuneUntil
+		let attackingLayer = resolveTradition(source)
+		let defendingLayer = resolveTradition(target)
+		combatBindings.apply(hit, legal, attackingLayer, combatProfile(source), defendingLayer, combatProfile(target), null, null)
+		if attackingLayer != null
+			destroy attackingLayer
+		if defendingLayer != null
+			destroy defendingLayer
 	function reconcileForceTradition(RuntimeForce runtimeForce)
 		TraditionLayer layer = null
 		if runtimeForce.active and runtimeForce.strength > 0 and militaryMapMatches(runtimeForce.regionId, activeRegionId)
@@ -819,9 +849,22 @@ public class MilitarySettlementRuntime
 	function recruit(RuntimeForce runtimeForce) returns boolean
 		if runtimeForce.strength <= 0 or runtimeForce.supply <= 0 or forceIndex(runtimeForce.id) >= 0
 			return false
+		if runtimeForce.combatProfileId != "" and combatProfile(runtimeForce) == null
+			return false
 		registerForce(runtimeForce)
 		instantiate(runtimeForce)
 		return true
+	/** The roster caller supplies its existing archetype; never deduce one from
+	 * controller, tradition category, rawcode, or historical nationality. */
+	function recruit(RuntimeForce runtimeForce, string profileId) returns boolean
+		if combatBindings == null or combatBindings.profile(profileId, runtimeForce.unitTypeId, runtimeForce.kind) == null
+			return false
+		let previous = runtimeForce.combatProfileId
+		runtimeForce.combatProfileId = profileId
+		if recruit(runtimeForce)
+			return true
+		runtimeForce.combatProfileId = previous
+		return false
 	function reinforce(string forceId, int strength, int supplyCost) returns boolean
 		let found = forceIndex(forceId)
 		if found < 0 or strength <= 0 or supplyCost < 0 or forces[found].supply < supplyCost
@@ -1093,6 +1136,8 @@ public class MilitarySettlementRuntime
 		for i = 0 to forceCount - 1
 			let f = forces[i]
 			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY) + "," + f.orderTargetId + "," + f.orderControllerId
+			if f.combatProfileId != ""
+				result += "|p," + f.id + "," + f.combatProfileId
 			// Strategic movement may reassign an unloaded force. A hint from its
 			// previous physical map cannot accompany the new location authority.
 			if f.recoveryMap != "" and f.recoveryMap == f.regionId and (f.kind == FORCE_ARMY or f.kind == FORCE_FLEET)
@@ -1152,6 +1197,15 @@ public class MilitarySettlementRuntime
 				f.orderControllerId = record.field(17)
 			target.registerForce(f)
 			return f.validOrder() and f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+		if kind == "p"
+			let found = target.forceIndex(record.field(1))
+			if record.count != 3 or found < 0 or target.combatBindings == null or target.legacyCombatProfiles
+				return false
+			let f = target.forces[found]
+			if f.combatProfileId != "" or target.combatBindings.profile(record.field(2), f.unitTypeId, f.kind) == null
+				return false
+			f.combatProfileId = record.field(2)
+			return true
 		if kind == "n"
 			let found = target.forceIndex(record.field(1))
 			let kindText = record.field(3)
@@ -1266,13 +1320,15 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
 		// fresh provider or touch projections for every validation/load attempt.
 		parsed.traditionDefinitions = traditionDefinitions
-		parsed.legacyIntegerExperience = not candidate.startsWith("v8|")
+		parsed.combatBindings = combatBindings
+		parsed.legacyCombatProfiles = not candidate.startsWith("v9|")
+		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
 		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
 		parsed.legacyConflicts = candidate.startsWith("v1|")
@@ -1400,6 +1456,8 @@ public class MilitarySettlementRuntime
 				let layer = resolveTradition(runtimeForce)
 				if layer != null
 					result += layer.inspection()
+					if combatBindings != null
+						result += combatBindings.inspection(layer, combatProfile(runtimeForce), runtimeForce.active and runtimeForce.strength > 0)
 					destroy layer
 			return result
 		let s = settlementIndex(subjectId)

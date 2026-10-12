@@ -5,6 +5,8 @@ import MilitarySettlementRuntime
 import ManagementScreenPauseController
 import CommandRouter
 import PlayableCampaignRuntime
+import CombatEffects
+import ExactRational
 
 /** Only native operations are replaceable. Registration, identity resolution,
  * hostility checks, event routing and deadline scheduling run in production and
@@ -173,6 +175,56 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 				runtime.beginSettlementAttack(runtime.settlements[home].id, controller(runtime.forces[runtimeForce].controllerId), runtime.gameplaySeconds)
 		schedule()
 		return 1
+	/** Native and headless ports deliver the same one-use attack receipt. Native
+	 * attack classification is combined with an authored, verified primary weapon;
+	 * an arbitrary attack label cannot convert boarding or a spell into gunfire. */
+	function onWeaponDamage(int epoch, int target, int source, string nativeAttack, CombatHit hit) returns int
+		return onWeaponDamage(epoch, target, source, nativeAttack, hit, hit.damage.nativeDamage())
+	function onWeaponDamage(int epoch, int target, int source, string nativeAttack, CombatHit hit, real originalDamage) returns int
+		if not accepts(epoch)
+			return -1
+		if hit.applied
+			return 1
+		// Legality uses the original event even below the input rounding boundary.
+		let accepted = onDamage(epoch, target, source, originalDamage)
+		if accepted < 0
+			return accepted
+		let attacker = representedForce(source)
+		let defender = representedForce(target)
+		if attacker < 0
+			return accepted
+		let profile = runtime.combatProfile(runtime.forces[attacker])
+		let verified = profile != null and nativeAttack != "" and profile.nativeAttack == nativeAttack and profile.attackId == hit.attackId
+		if defender < 0
+			// A known, living campaign hero is also a valid hostile weapon target.
+			// Unrelated Warcraft objects and non-weapon events remain untouched.
+			let heroController = attackerController(target)
+			if not verified or originalDamage <= 0. or heroController == "" or not runtime.atWar(controller(runtime.forces[attacker].controllerId), heroController)
+				return accepted
+			let attackingLayer = runtime.resolveTradition(runtime.forces[attacker])
+			runtime.combatBindings.apply(hit, true, attackingLayer, profile, null, null, null, null)
+			if attackingLayer != null
+				destroy attackingLayer
+			return 1
+		if accepted != 1
+			return accepted
+		runtime.applyCombatHit(hit, attacker, defender, controller(runtime.forces[attacker].controllerId), controller(runtime.forces[defender].controllerId), verified)
+		return accepted
+	function nativeAttackId(int source, string nativeAttack) returns string
+		let found = representedForce(source)
+		if found >= 0 and nativeAttack != ""
+			let profile = runtime.combatProfile(runtime.forces[found])
+			if profile != null and profile.nativeAttack == nativeAttack
+				return profile.attackId
+		return ""
+	function nativeTypesMatch(int source, int target, int sourceType, int targetType) returns boolean
+		let attacker = representedForce(source)
+		let defender = representedForce(target)
+		if attacker < 0 or runtime.forces[attacker].unitTypeId != sourceType
+			return false
+		if defender >= 0
+			return runtime.forces[defender].unitTypeId == targetType
+		return targetType != 0 and attackerController(target) != ""
 	function onDeath(int epoch, int target, int killer)
 		if not accepts(epoch)
 			return
@@ -207,8 +259,18 @@ WarcraftMilitaryCombatNatives activeCombatNatives = null
 function militaryDamageEvent()
 	let port = activeCombatNatives
 	if port != null and GetTriggeringTrigger() == port.damageTrigger
-		if port.events.onDamage(port.generation, GetHandleId(GetTriggerUnit()), GetHandleId(GetEventDamageSource()), GetEventDamage()) < 0
+		let source = GetHandleId(GetEventDamageSource())
+		let target = GetHandleId(GetTriggerUnit())
+		var nativeAttack = compatCombatAttackType()
+		if not port.events.nativeTypesMatch(source, target, GetUnitTypeId(GetEventDamageSource()), GetUnitTypeId(GetTriggerUnit()))
+			nativeAttack = ""
+		let hit = new CombatHit(port.events.nativeAttackId(source, nativeAttack), exactNativeDamage(GetEventDamage()))
+		let accepted = port.events.onWeaponDamage(port.generation, target, source, nativeAttack, hit, GetEventDamage())
+		if accepted < 0
 			compatCancelCombatDamage()
+		else if accepted == 1 and hit.modified
+			compatSetCombatDamage(hit.damage.nativeDamage())
+		destroy hit
 
 function militaryDeathEvent()
 	let port = activeCombatNatives
