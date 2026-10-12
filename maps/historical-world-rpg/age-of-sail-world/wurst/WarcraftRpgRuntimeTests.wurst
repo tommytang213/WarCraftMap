@@ -481,7 +481,8 @@ function generatedBatchRoundTrips(string domain, int part, int parts)
 		restored.reconcile("player")
 		restored.captureState().assertEquals(saved)
 	projections.clears.assertEquals(2)
-	projections.guidance.assertEquals(1)
+	// A completed quest retains its save history but no obsolete guidance layer.
+	projections.guidance.assertEquals(0)
 
 @test function generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration()
 	generatedBatchRoundTrips("heroes", 0, 4)

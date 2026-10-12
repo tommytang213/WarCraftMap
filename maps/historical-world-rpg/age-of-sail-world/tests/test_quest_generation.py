@@ -11,7 +11,7 @@ import unittest
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / '_shared/tooling'))
 from package_wurst_map import PackagingError, generate, load_config
-from quest_codegen import validate_graphs
+from quest_codegen import validate_graphs, emit_quests
 
 
 class QuestGenerationTests(unittest.TestCase):
@@ -50,6 +50,21 @@ class QuestGenerationTests(unittest.TestCase):
             with self.assertRaisesRegex(PackagingError, diagnostic):
                 generate(replace(self.config, scenario_file=scenario), root / 'generated')
             self.assertFalse((root / 'generated/ScenarioData.wurst').exists())
+
+    def test_nonexact_guidance_retains_authored_point_for_earned_knowledge_only(self):
+        quest = copy.deepcopy(self.world['quests'][0])
+        objective = quest['objectives'][0]['id']
+        for precision in ('region', 'hidden', 'approximate'):
+            quest['journal']['destinations'][objective] = dict(
+                precision=precision, regionId='europe', locationId='quest_location_london',
+                requiredClueIds=['sealed_chart'], searchAreas=[dict(x=1, y=2, radius=3)])
+            generated = '\n'.join(emit_quests([quest], self.runtime['questConditionBindings'], lambda x: x.replace('"', '\\"')))
+            self.assertIn(f'new QuestGuidance("{precision}","europe","quest_location_london",', generated)
+            self.assertIn('"sealed_chart~")', generated)
+        # Missing authored location never falls back to condition entity refs.
+        quest['journal']['destinations'][objective] = dict(precision='region', regionId='europe')
+        generated = '\n'.join(emit_quests([quest], self.runtime['questConditionBindings'], lambda x: x.replace('"', '\\"')))
+        self.assertIn('new QuestGuidance("region","europe","",', generated)
 
     def test_generation_rejects_omitted_authored_stage(self):
         world = copy.deepcopy(self.world)

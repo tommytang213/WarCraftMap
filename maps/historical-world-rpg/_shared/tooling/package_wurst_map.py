@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 28
+GENERATOR_VERSION = 29
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)

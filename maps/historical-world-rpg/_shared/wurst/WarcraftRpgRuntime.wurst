@@ -670,6 +670,8 @@ public class RuntimeQuest
 		precision = "hidden"
 		regionId = ""
 		destinationId = ""
+		if state != QUEST_ACTIVE and state != QUEST_READY
+			return
 		let guide = graph.guidance(state == QUEST_READY)
 		// Clue-gated destinations remain hidden until a knowledge adapter exists.
 		if guide != null and guide.requiredClues == ""
@@ -810,10 +812,12 @@ public class QuestJournalRuntime
 		let questDefinition=get(id)
 		if questDefinition == null
 			return "Quest is unknown."
-		trackedId=id
+		if questDefinition.state != QUEST_ACTIVE and questDefinition.state != QUEST_READY
+			return "Quest is unavailable."
 		questDefinition.updateGuidance()
 		if questDefinition.precision == "hidden"
 			return "No destination is revealed yet."
+		trackedId=id
 		if questDefinition.graph != null and questDefinition.precision == "approximate"
 			return "approximate:" + questDefinition.regionId + ":" + questDefinition.graph.guidance(questDefinition.state == QUEST_READY).searchAreas
 		return questDefinition.precision + ":" + questDefinition.regionId + ":" + questDefinition.destinationId
@@ -951,6 +955,12 @@ public class TreasureRuntime
 			return false
 		treasure.discovered=true
 		return true
+
+/** Implemented by the campaign navigation adapter, independently of RPG objects. */
+public interface QuestNavigationPort
+	function canShow(string questId) returns boolean
+	function show(string questId, boolean track) returns string
+	function reconcile()
 
 public interface RpgProjectionPort
 	/** Preserve bookkeeping for retained party objects. Begin before detaching
@@ -1173,6 +1183,7 @@ public class WarcraftRpgRuntime
 	TechnologyRuntime technologies
 	ResearchCommandResources researchResources = new WarcraftResearchResources()
 	RpgProjectionPort projections = null
+	QuestNavigationPort navigation = null
 	string lastDiagnostic = ""
 	construct(TechnologyEffectPort effects)
 		technologies = new TechnologyRuntime(effects)
@@ -1796,6 +1807,8 @@ public class WarcraftRpgRuntime
 	function reconcile(string controllerId)
 		technologies.rememberController(controllerId)
 		technologies.reconstructAll()
+		if navigation != null
+			navigation.reconcile()
 		if projections == null
 			return
 		projections.beginEquipmentReconciliation()
@@ -1815,9 +1828,15 @@ public class WarcraftRpgRuntime
 		projections.finishEquipmentReconciliation()
 		projections.finishEquipmentSetReconciliation()
 		projections.clearGuidanceLayer()
-		if journal.trackedId != ""
+		// The installed navigation adapter owns the live guidance view. Retire
+		// legacy descriptive quests so changing tracking cannot leave a second,
+		// obsolete "Tracked" entry behind in the native quest panel.
+		if navigation == null and journal.trackedId != ""
 			let q=journal.get(journal.trackedId)
-			projections.applyQuestGuidance(q.id,q.precision,q.regionId,q.destinationId)
+			if q != null and (q.state == QUEST_ACTIVE or q.state == QUEST_READY)
+				q.updateGuidance()
+				if q.precision != "hidden"
+					projections.applyQuestGuidance(q.id,q.precision,q.regionId,q.destinationId)
 		projections.clearTreasureKnowledgeLayer()
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
@@ -1893,6 +1912,8 @@ public function journalText(WarcraftRpgRuntime runtime) returns string
 		if questDefinition.state != QUEST_OFFERED
 			questDefinition.updateGuidance()
 			rows += "\n"+questDefinition.title+" - "+questDefinition.state+" ["+questDefinition.precision+"]"
+			if runtime.navigation != null and runtime.navigation.canShow(questDefinition.id)
+				rows += "\nShow on Map: /showonmap " + questDefinition.id + " | Track: /track " + questDefinition.id
 			let graph = questDefinition.graph
 			if graph != null and graph.stage(graph.activeStageId) != null
 				rows += "\n" + graph.stage(graph.activeStageId).title
@@ -2000,12 +2021,18 @@ class RecruitHeroCommand implements CommandHandler
 class TrackQuestCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
 	CommandOutput output
-	construct(WarcraftRpgRuntime runtime, CommandOutput output)
+	boolean track
+	construct(WarcraftRpgRuntime runtime, CommandOutput output, boolean track)
 		this.runtime=runtime
 		this.output=output
+		this.track=track
 	override function execute(player sender,string arguments)
-		output.show(sender,runtime.journal.track(arguments))
-		runtime.reconcile("player")
+		if sender != Player(0)
+			output.show(sender,"Only the campaign player can navigate quests.")
+		else if runtime.navigation == null
+			output.show(sender,"Quest map guidance is unavailable.")
+		else
+			output.show(sender,runtime.navigation.show(arguments,track))
 
 class RpgActionCommand implements CommandHandler
 	WarcraftRpgRuntime runtime
@@ -2082,7 +2109,10 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("recruit","hire","recruit CHARACTER","Recruit an available named character.","The current campaign date must be within the character's recruitment window. Recruited companions remain yours after it closes.",1,1,COMMAND_RELEASE,new RecruitHeroCommand(runtime,commands.output))
 	if problem != ""
 		return problem
-	problem=commands.register("track","showonmap","track QUEST","Track a quest or show its guidance.","Reveals only the exact, approximate, regional or hidden guidance earned by the campaign state.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime,commands.output))
+	problem=commands.register("track","","track QUEST","Track an active quest and open its map.","Uses the current objective or return destination and earned precision. Local markers require an exact destination on the party's loaded map. /map close closes the map.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime,commands.output,true))
+	if problem != ""
+		return problem
+	problem=commands.register("showonmap","","showonmap QUEST","Show an active quest on the map.","Focuses permitted exact or regional guidance without changing tracking or discovering locations. /map close closes the map. Hidden, unmet-clue and unsupported search-area guidance is unavailable.",1,1,COMMAND_RELEASE,new TrackQuestCommand(runtime,commands.output,false))
 	if problem != ""
 		return problem
 	problem=commands.register("equip","","equip HERO ITEM","Equip an owned item.","Checks level, era, technology and institution requirements, then applies its Warcraft effect.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"equip",commands.output))

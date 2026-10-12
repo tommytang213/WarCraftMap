@@ -68,8 +68,10 @@ def emit_quests(quests, bindings, ws):
     lines = []
     def guidance(name, d):
         precision = d.get("precision", "hidden")
-        # Non-exact knowledge never exposes the condition's exact target.
-        destination = d.get("locationId", d.get("settlementId", "")) if precision == "exact" else ""
+        # Preserve the authored stable point for earned-knowledge comparison.
+        # The navigation/journal projection enforces precision before disclosure;
+        # never infer a destination from objective condition entity references.
+        destination = d.get("locationId", d.get("settlementId", ""))
         areas = json.dumps(d.get("searchAreas", []), separators=(",", ":")) if d.get("searchAreas") else ""
         return f'{name}=new QuestGuidance("{ws(precision)}","{ws(d.get("regionId", ""))}","{ws(destination)}","{ws(areas)}","{ids(d.get("requiredClueIds", []))}")'
     for n, q in enumerate(quests):

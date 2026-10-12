@@ -6,6 +6,9 @@ public constant string MAP_CONTEXT_CLOSED = "closed"
 public constant string MAP_CONTEXT_WORLD = "world"
 public constant string MAP_CONTEXT_REGIONAL = "regional"
 
+public interface MapViewListener
+	function mapViewChanged()
+
 /** Presentation boundary. Authorized render data is prepared by map knowledge. */
 public interface MapPresentationRuntime
 	function showWorldMap(string physicalRegionId, string commandRegionId)
@@ -26,6 +29,13 @@ public class MapDiscoveryScreenController
 	string physicalRegionId
 	string commandRegionId
 	string focusedRegionId = ""
+	// Transient, scoped authorization; never added to campaign knowledge.
+	string guidanceQuestId = ""
+	MapViewListener listener = null
+
+	function changed()
+		if listener != null
+			listener.mapViewChanged()
 
 	construct(ManagementScreenPauseController pauses, MapPresentationRuntime presentation, string physicalRegionId, string commandRegionId)
 		this.pauses = pauses
@@ -38,16 +48,31 @@ public class MapDiscoveryScreenController
 			modal = pauses.openModalManagementScreen()
 
 	function openWorldMap()
+		guidanceQuestId = ""
 		acquireModal()
 		context = MAP_CONTEXT_WORLD
 		focusedRegionId = ""
 		presentation.showWorldMap(physicalRegionId, commandRegionId)
+		changed()
 
 	function openRegionalMap(string regionId)
+		guidanceQuestId = ""
 		acquireModal()
 		context = MAP_CONTEXT_REGIONAL
 		focusedRegionId = regionId
 		presentation.showRegionalMap(regionId, physicalRegionId, commandRegionId)
+		changed()
+
+	/** Only the quest authority calls this after validating its derived target. */
+	function focusGuidance(string questId, string regionId, string exactLocationId)
+		acquireModal()
+		context = MAP_CONTEXT_REGIONAL
+		focusedRegionId = regionId
+		guidanceQuestId = questId
+		presentation.showRegionalMap(regionId, physicalRegionId, commandRegionId)
+		if exactLocationId != ""
+			presentation.focusExact(exactLocationId)
+		changed()
 
 	function focusKnownLocation(string regionId, string locationId)
 		openRegionalMap(regionId)
@@ -64,12 +89,15 @@ public class MapDiscoveryScreenController
 		physicalRegionId = regionId
 
 	function close()
+		guidanceQuestId = ""
 		if modal != null
 			presentation.hideMap()
 			modal.close()
+			destroy modal
 			modal = null
 		context = MAP_CONTEXT_CLOSED
 		focusedRegionId = ""
+		changed()
 
 	function getContext() returns string
 		return context

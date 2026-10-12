@@ -165,10 +165,19 @@ public class QuestGraph
 	function guidance(boolean ready) returns QuestGuidance
 		if ready
 			return turnInGuidance
-		for i = 0 to objectiveCount - 1
-			if activeObjective(objectives[i].id)
-				return objectives[i].guidance
-		return null
+		let current = stage(activeStageId)
+		if current == null
+			return null
+		// Follow authored stage order, not catalogue order. Like the headless
+		// journal, skip absent/unmet-clue destinations but retain hidden guidance.
+		let ids = new QuestIds(current.objectiveIds)
+		QuestGuidance result = null
+		for i = 0 to ids.count - 1
+			let entry = objective(ids.ids[i])
+			if result == null and entry != null and activeObjective(entry.id) and entry.guidance != null and entry.guidance.requiredClues == ""
+				result = entry.guidance
+		destroy ids
+		return result
 	/** Validate the entire candidate without mutating current authority. Earlier
 	 * stages must be proven, and no unselected branch can contribute objectives. */
 	function validProgress(string active, string reached, string completed, string receipts) returns boolean
