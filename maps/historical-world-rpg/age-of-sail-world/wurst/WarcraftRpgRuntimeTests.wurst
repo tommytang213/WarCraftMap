@@ -16,7 +16,7 @@ class Effects implements TechnologyEffectPort
 
 class Projections implements RpgProjectionPort
 	int clears=0
-	int equipmentPower=0
+	int equipmentDefense=0
 	string setIdentities=""
 	int guidance=0
 	int knowledge=0
@@ -26,11 +26,14 @@ class Projections implements RpgProjectionPort
 		skip
 	override function commitPartyLoad()
 		skip
-	override function clearEquipmentLayer()
+	override function beginEquipmentReconciliation()
 		clears++
-		equipmentPower=0
-	override function applyEquipment(string heroId,string itemId,int power)
-		equipmentPower+=power
+		equipmentDefense=0
+	override function finishEquipmentReconciliation()
+		skip
+	override function replaceEquipment(EquipmentItemLayer result)
+		equipmentDefense+=result.definition.statValue("defense")
+		destroy result
 	override function beginEquipmentSetReconciliation()
 		setIdentities=""
 	override function finishEquipmentSetReconciliation()
@@ -88,10 +91,10 @@ function testEquipmentSet() returns EquipmentSet
 	let hero=new RpgHero("hero","Hero",'Hpal')
 	hero.level=20
 	hero.recruited=true
-	let coat=new RpgItem("coat","Coat","chest","rare",10,5)
+	let coat=new RpgItem("coat","Coat","chest","rare",10).addStat("defense", 5)
 	coat.setId="set"
 	coat.unique=true
-	let hat=new RpgItem("hat","Hat","head","rare",10,4)
+	let hat=new RpgItem("hat","Hat","head","rare",10).addStat("defense", 4)
 	hat.setId="set"
 	runtime.inventory.registerItem(coat)
 	runtime.inventory.registerItem(hat)
@@ -123,7 +126,7 @@ function testEquipmentSet() returns EquipmentSet
 	runtime.journal.turnIn("quest",hero,5,10).assertEquals(true)
 	hero.level.assertEquals(2)
 	runtime.journal.currency.assertEquals(20)
-	let relic=new RpgItem("relic","Relic","artifact","legendary",100,50)
+	let relic=new RpgItem("relic","Relic","artifact","legendary",100).addStat("defense", 50)
 	runtime.inventory.registerItem(relic)
 	let treasure=new RuntimeTreasure("secret","europe","cave")
 	treasure.clueCount=1
@@ -152,7 +155,7 @@ function testEquipmentSet() returns EquipmentSet
 	hero.masteryPoints=4
 	hero.chosenPerks = "~navigation~" // Pre-allocation legacy entitlement fixture.
 	hero.wound(10,5)
-	let coat=new RpgItem("coat","Coat","chest","rare",10,5)
+	let coat=new RpgItem("coat","Coat","chest","rare",10).addStat("defense", 5)
 	coat.setId="set"
 	coat.unique=true
 	source.inventory.registerItem(coat)
@@ -179,7 +182,7 @@ function testEquipmentSet() returns EquipmentSet
 	let restored=new WarcraftRpgRuntime(effects)
 	let restoredHero=new RpgHero("hero","Hero",'Hpal')
 	restored.heroes.register(restoredHero)
-	let restoredCoat=new RpgItem("coat","Coat","chest","rare",10,5)
+	let restoredCoat=new RpgItem("coat","Coat","chest","rare",10).addStat("defense", 5)
 	restoredCoat.setId="set"
 	restoredCoat.unique=true
 	restored.inventory.registerItem(restoredCoat)
@@ -201,13 +204,13 @@ function testEquipmentSet() returns EquipmentSet
 	restored.captureState().assertEquals(saved)
 	restored.reconcile("player")
 	projections.clears.assertEquals(1)
-	projections.equipmentPower.assertEquals(5)
+	projections.equipmentDefense.assertEquals(5)
 	projections.setIdentities.assertEquals("hero|set|one|guard;")
 	projections.guidance.assertEquals(1)
 	projections.knowledge.assertEquals(1)
 	restored.reconcile("player")
 	projections.clears.assertEquals(2)
-	projections.equipmentPower.assertEquals(5)
+	projections.equipmentDefense.assertEquals(5)
 	projections.setIdentities.assertEquals("hero|set|one|guard;")
 	projections.guidance.assertEquals(1)
 	projections.knowledge.assertEquals(1)
@@ -224,11 +227,11 @@ function testEquipmentSet() returns EquipmentSet
 	hero.level=20
 	hero.recruited=true
 	runtime.heroes.register(hero)
-	let blade=new RpgItem("blade","Blade","hand","rare",10,6)
+	let blade=new RpgItem("blade","Blade","hand","rare",10).addStat("defense", 6)
 	runtime.inventory.registerItem(blade)
 	runtime.inventory.grant("blade")
 	runtime.equipItem("hero","blade",1450).assertTrue()
-	projections.equipmentPower.assertEquals(6)
+	projections.equipmentDefense.assertEquals(6)
 	let technology=new RuntimeTechnology("navigation","Navigation",1450,10)
 	technology.addUnlock("navigation","modifier","range")
 	runtime.technologies.register(technology)
@@ -267,7 +270,7 @@ function testEquipmentSet() returns EquipmentSet
 	let hero=new RpgHero("hero","Hero",'Hpal')
 	runtime.heroes.register(hero)
 	runtime.heroes.recruit("hero").assertTrue()
-	let itemDefinition=new RpgItem("plain","Plain","hand","common",1,1)
+	let itemDefinition=new RpgItem("plain","Plain","hand","common",1).addStat("defense", 1)
 	itemDefinition.setId.assertEquals("")
 	itemDefinition.source.assertEquals("")
 	runtime.inventory.registerItem(itemDefinition)
@@ -294,12 +297,12 @@ function testEquipmentSet() returns EquipmentSet
 		runtime.restoreState(saved).assertTrue()
 		runtime.reconcile("player")
 		runtime.captureState().assertEquals(saved)
-		projections.equipmentPower.assertEquals(1)
+		projections.equipmentDefense.assertEquals(1)
 		projections.knowledge.assertEquals(1)
 	// Ordinary duplicates are inventory copies, while unique items and hero
 	// authority still reject duplicate records without changing active state.
 	runtime.inventory.grant("plain").assertTrue()
-	let uniqueItem=new RpgItem("unique","Unique","artifact","rare",1,1)
+	let uniqueItem=new RpgItem("unique","Unique","artifact","rare",1).addStat("defense", 1)
 	uniqueItem.unique=true
 	runtime.inventory.registerItem(uniqueItem)
 	runtime.inventory.grant("unique").assertTrue()

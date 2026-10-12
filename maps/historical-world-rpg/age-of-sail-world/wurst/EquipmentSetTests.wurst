@@ -87,15 +87,12 @@ function akanEffects(string heroId, int count) returns string
 	(saved.indexOf("set_resilience") < 0).assertTrue()
 	(saved.indexOf("pieces_3") < 0).assertTrue()
 	let index = f.rpg.heroes.indexOf("wearer")
-	var itemPower = 0
-	for p = 0 to definition.pieceCount - 1
-		itemPower += inventory.getItem(definition.pieces[p].itemIds[0]).power
-	f.natives.life[index].assertEquals(100 + itemPower)
+	f.natives.life[index].assertEquals(100)
 	f.natives.life[index] += 40 // An unrelated modifier remains intact.
 	for repeat = 1 to 3
 		f.rpg.reconcile("player")
 		f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
-		f.natives.life[index].assertEquals(140 + itemPower)
+		f.natives.life[index].assertEquals(140)
 	f.action("/unequip wearer " + inventory.getItem("akan_diplomat_state_emblem").slotId)
 	f.check("wearer", definition.id, 3, akanEffects("wearer", 3))
 	f.action("/unequip wearer " + inventory.getItem("akan_diplomat_goldweight_scale").slotId)
@@ -106,7 +103,7 @@ function akanEffects(string heroId, int count) returns string
 	f.rpg.reconcile("player")
 	f.rpg.captureState().assertEquals(saved)
 	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
-	f.natives.life[index].assertEquals(140 + itemPower)
+	f.natives.life[index].assertEquals(140)
 	f.natives.identities[index] = 0
 	let writes = f.natives.totalWrites
 	f.rpg.reconcile("player")
@@ -114,7 +111,7 @@ function akanEffects(string heroId, int count) returns string
 	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
 	f.natives.represent(index, 500, 700)
 	f.rpg.reconcile("player")
-	f.natives.life[index].assertEquals(700 + itemPower)
+	f.natives.life[index].assertEquals(700)
 	f.check("wearer", definition.id, 4, akanEffects("wearer", 4))
 	let bad = saved + "|e,forged,akan_diplomat_woven_robe,wearer"
 	let beforeWrites = f.natives.totalWrites
@@ -161,7 +158,7 @@ function akanEffects(string heroId, int count) returns string
 		f.rpg.reconcile("player")
 		f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")
 		f.projections.setEffectIdentities("beta", "uniform").assertEquals("")
-		f.natives.life[0].assertEquals(111)
+		f.natives.life[0].assertEquals(100)
 		f.rpg.captureState().assertEquals(saved)
 	f.rejectSnapshot(saved + "|e,chest,coat,beta")
 	f.projections.setEffectIdentities("alpha", "uniform").assertEquals("alpha|uniform|pieces_2|guard;alpha|uniform|pieces_3|command;")

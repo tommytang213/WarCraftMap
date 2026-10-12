@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 27
+GENERATOR_VERSION = 28
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -445,19 +445,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         rpg.append(f'\truntime.technologies.register(technology{index})')
     rpg += emit_quests(world.get("quests", []), quest_bindings, ws)
     inventory = catalogues.get("inventory", {})
-    item_sets = {item_id: row["id"] for row in inventory.get("equipmentSets", ()) for item_id in row.get("itemTypeIds", ())}
-    for index, row in enumerate(inventory.get("items", ())):
-        comparison = row.get("comparison", {}); stats = comparison.get("majorStats", {})
-        power = sum(value for value in stats.values() if isinstance(value, int))
-        requirements = row.get("requirements", {})
-        rpg += [f'\tlet item{index}=new RpgItem("{ws(row["id"])}","{ws(row.get("name", row["id"]))}","{ws((comparison.get("slotIds") or [row.get("category", "item")])[0])}","{ws(row.get("rarityId", "common"))}",{int(row.get("itemLevel", 1))},{power})',
-                f'\titem{index}.setId="{ws(item_sets.get(row["id"], ""))}"', f'\titem{index}.unique={str(bool(row.get("unique"))).lower()}',
-                f'\titem{index}.startYear={int(requirements.get("startYear", 0))}', f'\titem{index}.endYear={int(requirements.get("endYear", 0))}']
-        for technology_id in requirements.get("technologyIds", ()):
-            rpg.append(f'\titem{index}.addTechnology("{ws(technology_id)}")')
-        for institution_id in requirements.get("institutionIds", ()):
-            rpg.append(f'\titem{index}.addInstitution("{ws(institution_id)}")')
-        rpg.append(f'\truntime.inventory.registerItem(item{index})')
+    from equipment_items import item_definitions_wurst
+    rpg += item_definitions_wurst(inventory)
     if "equipmentSetDefinitions" in runtime:
         from equipment_sets import equipment_sets_wurst
         rpg += equipment_sets_wurst(runtime["equipmentSetDefinitions"], ws)
@@ -745,6 +734,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *(config.project.parent / '_shared/wurst').glob('*.wurst'),
         *(config.project.parent / '_shared/wurst-bootstrap').glob('*.wurst'),
         Path(__file__).with_name("equipment_sets.py"),
+        Path(__file__).with_name("equipment_items.py"),
         Path(__file__).with_name("treasure_resolution.py"),
         Path(__file__).resolve().parents[1] / "engine/treasures.py",
         Path(__file__).resolve().parents[1] / "engine/player_items.py",

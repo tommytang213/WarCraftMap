@@ -10870,7 +10870,7 @@
       }
     },
     "REQ-0076.01": {
-      "scope": "Issue #433 covers equipment research eligibility only. Merchant availability, local production, trade access, wealth, polity/culture, quest/event gates and broader progression integration remain blocked; no native-client claim. The nested mapping is supplementary evidence and does not satisfy the whole obligation.",
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
       "equipmentEligibility": {
         "content": [
           {
@@ -11019,8 +11019,8 @@
               "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
               "symbol": "reconcile",
               "contains": [
-                "projections.clearEquipmentLayer()",
-                "projections.applyEquipment(heroId,"
+                "projections.beginEquipmentReconciliation()",
+                "projections.replaceEquipment(new EquipmentItemLayer(heroId,"
               ]
             }
           ]
@@ -11133,6 +11133,34 @@
             "\\b[\\w.]*TechnologyRuntime[\\w]*isUnlocked[\\w]*\\s*\\("
           ]
         }
+      },
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
       }
     },
     "REQ-0296.01": {
@@ -22143,6 +22171,347 @@
           "reason": "All authored unlocks are references without implemented consumers. No unit, building, ability, policy or modifier is converted to food capacity.",
           "gate": "tooling/release_blocker_audit.py:_audit_research_bindings"
         },
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0071.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0072.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0072.02": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0073.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0074.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0074.02": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0075.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0076.02": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0077.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "REQ-0077.02": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
+        "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
+      }
+    },
+    "ROAD-0133.01": {
+      "scope": "Issue #470: complete item definition retention, wearer comparison and typed delivery only. Gameplay consumers, conditional activation, merchant availability integration and native launch remain separate blockers.",
+      "itemDefinitionDelivery": {
+        "definitions": [
+          "../_shared/tooling/equipment_items.py:item_definitions_wurst",
+          "../_shared/wurst/EquipmentItems.wurst:RpgItem"
+        ],
+        "authority": "Unchanged RPG v7 and supported legacy equipment IDs, quantities and wearer/slot assignments. Derived item and set layers are reconstructed; no compensatory grants.",
+        "comparison": "../_shared/wurst/EquipmentItems.wurst:ItemComparison, matching ../_shared/engine/player_items.py:compare",
+        "entry": {
+          "commands": [
+            "equip",
+            "unequip",
+            "inventory",
+            "equipment",
+            "items"
+          ],
+          "registration": "registerRpgRuntimeCommands"
+        },
+        "delivery": "../_shared/wurst/WarcraftRpgProjections.wurst:replaceEquipment(EquipmentItemLayer)",
+        "validation": [
+          "tests/test_item_definitions.py",
+          "wurst/ItemComparisonVectorsTests.wurst",
+          "wurst/ItemDefinitionTests.wurst",
+          "wurst/CharacterEquipmentTests.wurst",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects"
+        ],
+        "gameplayBindings": "blocked_pending_item_gameplay_bindings",
         "nativeClient": "blocked_pending_real_forsaken_kingdom_launch_smoke"
       }
     }
