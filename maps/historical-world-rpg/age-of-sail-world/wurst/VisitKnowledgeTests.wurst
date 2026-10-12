@@ -4,6 +4,7 @@ import CampaignStartupTests
 import CampaignLoadTransactionTests
 import CampaignSaveManager
 import CampaignHandoff
+import CampaignTimeline
 import PlayableCampaignRuntime
 import WarcraftRpgRuntime
 import WarcraftRegionalRuntime
@@ -57,6 +58,9 @@ class VisitFixture
 		f.ports.selectorIdentity = campaign.identity
 		bind()
 	function dispatch(string text)
+		// Registered RPG commands read the installed campaign day. Bind this
+		// fixture explicitly instead of inheriting a previous test's clock.
+		installCampaignClock(f.clock, pauses)
 		let previousTimer = bj_gameStartedTimer
 		bj_gameStartedTimer = CreateTimer()
 		commands.dispatch(Player(0), text).assertTrue()
@@ -87,6 +91,8 @@ class VisitFixture
 		campaign.regionSelector.afterCampaignLoad(campaign.travel.physicalRegionId())
 		f.clock.detachTimer()
 		campaign.autosaves.detachTimer()
+		if getCampaignClock() == f.clock
+			installCampaignClock(null, null)
 
 @test function validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus()
 	let f = new VisitFixture(new StartupStorage(), new StartupStorage(), "europe_west")

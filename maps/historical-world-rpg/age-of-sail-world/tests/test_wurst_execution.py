@@ -128,14 +128,14 @@ class WurstExecutionTests(unittest.TestCase):
         probe = self.root / "java_environment.py"
         probe.write_text('import os, pathlib\npathlib.Path("java-options.txt").write_text('
                          'os.environ.get("JAVA_TOOL_OPTIONS", ""))\n')
-        for options in (None, "-Dfile.encoding=UTF-8", "-Xmx8g -Dfile.encoding=UTF-8"):
+        for options in (None, "-Dfile.encoding=UTF-8", "-Xmx4g -Dfile.encoding=UTF-8"):
             with self.subTest(options=options), patch.dict(os.environ):
                 if options is None:
                     os.environ.pop("JAVA_TOOL_OPTIONS", None)
                 else:
                     os.environ["JAVA_TOOL_OPTIONS"] = options
                 before = dict(os.environ)
-                expected = "-Xmx6g" + (" " + options if options else "")
+                expected = "-Xmx8g" + (" " + options if options else "")
                 self.run_suite()
                 log = (self.root / "evidence/execution.log").read_text()
                 self.assertIn("JAVA_TOOL_OPTIONS=" + expected + "\n", log)

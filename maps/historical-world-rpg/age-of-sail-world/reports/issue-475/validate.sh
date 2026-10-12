@@ -24,9 +24,30 @@ for name in ('common.j','blizzard.j'):
 CORE
   exit 0
 fi
+if [ "$1" = test ]; then
+  exec python3 /tmp/issue475-tools/timed-grill.py "$@"
+fi
 exec /home/wurstuser/.wurst/grill "$@"
 GRILL
 chmod +x /tmp/issue475-tools/grill
+cat > /tmp/issue475-tools/timed-grill.py <<'TIMINGS'
+import json, re, subprocess, sys, time
+from pathlib import Path
+process = subprocess.Popen(['/home/wurstuser/.wurst/grill', *sys.argv[1:]], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+start = None
+rows = []
+for line in process.stdout:
+    match = re.match(r'Running (.+[.]wurst):(\d+) - (\w+)[.][.]', line)
+    if match:
+        start = time.monotonic()
+        rows.append(dict(file=Path(match[1]).name, line=int(match[2]), test=match[3]))
+    if start is not None and (line.strip() == 'OK!' or 'FAILED' in line):
+        rows[-1].update(seconds=round(time.monotonic()-start, 3), result=line.strip())
+        start = None
+    print(line, end='', flush=True)
+Path('_build/test-timings.json').write_text(json.dumps(rows, indent=2)+'\n')
+sys.exit(process.wait())
+TIMINGS
 cd /tmp/issue475/maps/historical-world-rpg/age-of-sail-world
 python3 - <<'CHECK'
 import os, sys, re, subprocess, shutil
@@ -43,7 +64,7 @@ if root.exists():
 root.mkdir(parents=True)
 generate(config,root/'generated');comp=_assemble(config,root,root/'generated')
 if os.environ.get('CARGO_TARGETED') == '1':
-    keep={'MixedCargoTests.wurst', 'MixedCargoVectorsTests.wurst', 'PlayableTradeTests.wurst', 'TradeCommandTests.wurst', 'TradePricingTests.wurst', 'TradePricingVectorsTests.wurst', 'PiracyCommandTests.wurst', 'CampaignLoadTransactionTests.wurst', 'CampaignStartupTests.wurst', 'PlayableCampaignRuntimeTests.wurst', 'CampaignAutosaveLifecycleTests.wurst', 'ManagementCommandTests.wurst', 'AbstractSettlementTests.wurst', 'FrameworkConformanceTests.wurst'}
+    keep=set(os.environ['FOCUSED_SUITES'].split(',')) if os.environ.get('FOCUSED_SUITES') else {'MixedCargoTests.wurst', 'MixedCargoVectorsTests.wurst', 'PlayableTradeTests.wurst', 'TradeCommandTests.wurst', 'TradePricingTests.wurst', 'TradePricingVectorsTests.wurst', 'PiracyCommandTests.wurst', 'CampaignLoadTransactionTests.wurst', 'CampaignStartupTests.wurst', 'PlayableCampaignRuntimeTests.wurst', 'CampaignAutosaveLifecycleTests.wurst', 'ManagementCommandTests.wurst', 'AbstractSettlementTests.wurst', 'FrameworkConformanceTests.wurst'}
     for p in (comp/'wurst').glob('*.wurst'):
         if p.name not in keep:
             p.write_text(p.read_text().replace('@test',''))

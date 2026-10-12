@@ -1,0 +1,319 @@
+{
+  "changes": [
+    "Select the existing generated RPG batch after full production registration, before resolving treasures and applying progress. All existing assertions and generated record coverage remain.",
+    "Raise the per-process validation heap from 6 GiB to 8 GiB after measuring near-full heap and 501 seconds of GC; preserve caller overrides and the 20-second test deadline.",
+    "Install each visit fixture campaign clock before registered command dispatch and detach its global clock on close, so isolated and complete runs use the same time authority."
+  ],
+  "checks": [
+    "framework boundary",
+    "both world validators",
+    "canonical map source",
+    "Europe geography",
+    "requirement traceability --check",
+    "scoped report regeneration",
+    "git diff --check"
+  ],
+  "container": {
+    "buildStorage": "container-private /tmp",
+    "dependencies": "cached, read-only",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "network": "none",
+    "sourceMount": "read-only",
+    "user": "wurstuser (1001:1001)"
+  },
+  "diagnosticPackage": {
+    "archiveSha256": "e2d76f948771159b24d330feee6be122ef8b9c525e6b58b50b1bd652a630baf2",
+    "catalogueDefinitionsMatch": true,
+    "compiledMixedCargoAndCommands": true,
+    "nativeClient": "not_run",
+    "releaseReady": false,
+    "sourceIdentity": {
+      "sourceRevision": "96c32d45ce851dc435cfa268340fb6aeedf93b13",
+      "sourceTreeSha256": "a9253abd7c2f58eeef20cad56f1feb85062dfa179394748491539bec185d17bd"
+    },
+    "stores": 829
+  },
+  "evidenceSha256": {
+    "framework-conformance.json.gz": "63580055de4055484b036e76431c7aee74ea6b20a8878e49005656c6e34ccaa0",
+    "framework-mutated-execution.log.gz": "9b72620fc6ee25e86eb8aa6fda377e5e553cfb24b06d96b0c699332d926ec37b",
+    "framework-mutated-results.json.gz": "e62ac32b285045ee90d382157af90fd6be21676b5666f8098e3657b7c2f9c237",
+    "framework-original-execution.log.gz": "6f2dade1d479a5c1ea2f68a9216e35f511b0e97be02e5179cea1cdf24b4fe2fe",
+    "framework-original-results.json.gz": "a9e1a8124bd8081db254cd18952220e64b0c2b9d3741ecd12f68b1cd85b132db",
+    "timeout-driver.log.gz": "cb02ab2d59d9dcde844232ae0077ec24eb0d57ef617edd4f854714ff278a2921",
+    "timeout-heap8-jstat.log.gz": "4c35882ef31e575534ac1bc6a68928f453d216ef7a107771beae039aaa1c7f30",
+    "timeout-heap8-late-jstat.log.gz": "8d6a48555f5512501043f15225cba763a1e9a00d178ba47b58aacb964ca8a3ef",
+    "timeout-python-automation.log.gz": "59a14f5fdf5bab57d27ac7f050aeb1c973d7d7a4e3c473d3959d2e0cc006a7b3",
+    "timeout-python-heap.log.gz": "f7b98cf8c04d359d9e06cffad03369cbbf86e3b7c36c757187bc179e7a86fe65",
+    "timeout-python-integration-fixed.log.gz": "901ea27d1b3c254139574d927c3988542574f9ffb26966ba61ed608161502e78",
+    "timeout-python-packaging.log.gz": "27cceaa24568e0fa093fac9d4de1521fb2d3e7669bc3d59ec4a2a9f508840221",
+    "timeout-python-targeted.log.gz": "1bd4dfc556e269ac9b758d7324c028c4037478c2e7a1146eb8b2595dfb9abe45",
+    "timeout-test-timings.json.gz": "40e794dcac563c14c05d09ea995a4b59e2064cce0ca47154431824ab2029d0eb",
+    "timeout-world-validation.log.gz": "a42bbda2b2ff1e3194d721f431d6ef50a7f18d7129bf6bdeac2caf8eeb396477",
+    "wurst-execution.log.gz": "765a1a1136afef44693ebc103643c529ab209240cbfbc3a3dae2ebd2b56ec1a4",
+    "wurst-results.json.gz": "153ae1cc1a258a8ca3397ac5d3cc2c14d45a76477e6c314058a41d190bdc827d",
+    "wurst-typecheck.log.gz": "1f9664488be2e8cfd1fd471e4a0d13bbca94e4533d1c0d978238a3925492e338"
+  },
+  "firstFullRetry": {
+    "discovered": 531,
+    "evidence": "timeout-first-full-results.json.gz",
+    "interpreterTimeouts": 10,
+    "succeeded": 521
+  },
+  "focusedBaseline": {
+    "discovered": 26,
+    "evidence": "timeout-baseline-results.json.gz",
+    "failures": "Four visit tests relied on an installed campaign clock from earlier tests.",
+    "succeeded": 22
+  },
+  "focusedBeforeHeapRepair": {
+    "discovered": 26,
+    "evidence": "timeout-focused-results.json.gz",
+    "status": "pass",
+    "succeeded": 26
+  },
+  "format": "warcraftmap_issue475_timeout_repair_v1",
+  "framework": {
+    "mutatedTestsPassed": 2,
+    "originalTestsPassed": 2,
+    "sharedSourcesUnchanged": true,
+    "status": "pass"
+  },
+  "heapPressure": {
+    "fullCollections": 350,
+    "fullGcSeconds": 490.923,
+    "heapKiB": 6291456,
+    "measurement": "jcmd GC.heap_info and jstat -gcutil in the stopped 6 GiB diagnostic run; item cleanup was reverted",
+    "oldGenerationPercent": 99.94,
+    "totalGcSeconds": 501.063,
+    "usedKiB": 6284785
+  },
+  "lateHeapHealth": {
+    "checkpoint": "RemoteRegionAuthorityTests",
+    "fullCollections": 0,
+    "log": "timeout-heap8-late-jstat.log.gz",
+    "totalGcSeconds": 19.476
+  },
+  "nativeClient": "not_run",
+  "pinnedWurst": {
+    "callerHeapOverridePreserved": true,
+    "command": "reports/issue-475/validate.sh (complete suite; no test selection)",
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "defaultHeapGiB": 8,
+    "discovered": 531,
+    "evidence": "wurst-results.json.gz",
+    "interpreterDeadlineSeconds": 20,
+    "maximumObservedTestSeconds": 8.689,
+    "status": "pass",
+    "succeeded": 531,
+    "timings": "timeout-test-timings.json.gz",
+    "typecheck": "pass"
+  },
+  "previouslyAffectedTimings": [
+    {
+      "file": "VisitKnowledgeTests.wurst",
+      "line": 187,
+      "result": "OK!",
+      "seconds": 7.123,
+      "test": "multipleVisitsSurviveFailedSaveFreshLoadPhysicalTravelAndReturn"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 379,
+      "result": "OK!",
+      "seconds": 0.343,
+      "test": "generatedItemComparisonsCoverEveryDefinition"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 481,
+      "result": "OK!",
+      "seconds": 0.611,
+      "test": "generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 484,
+      "result": "OK!",
+      "seconds": 0.651,
+      "test": "generatedHeroesSecondQuarterRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 487,
+      "result": "OK!",
+      "seconds": 0.604,
+      "test": "generatedHeroesThirdQuarterRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 490,
+      "result": "OK!",
+      "seconds": 0.651,
+      "test": "generatedHeroesFourthQuarterRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 493,
+      "result": "OK!",
+      "seconds": 0.559,
+      "test": "generatedQuestsFirstBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 496,
+      "result": "OK!",
+      "seconds": 0.659,
+      "test": "generatedQuestsSecondBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 499,
+      "result": "OK!",
+      "seconds": 0.618,
+      "test": "generatedQuestsThirdBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 502,
+      "result": "OK!",
+      "seconds": 0.668,
+      "test": "generatedQuestsFourthBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 505,
+      "result": "OK!",
+      "seconds": 0.635,
+      "test": "generatedQuestsFifthBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 508,
+      "result": "OK!",
+      "seconds": 0.698,
+      "test": "generatedQuestsSixthBatchRoundTrips"
+    },
+    {
+      "file": "WarcraftRpgRuntimeTests.wurst",
+      "line": 511,
+      "result": "OK!",
+      "seconds": 3.921,
+      "test": "generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress"
+    }
+  ],
+  "pythonFixtureNote": "Python framework/packaging tests use a synthetic compiler for orchestration and rejection cases; actual pinned execution and packaged evidence are recorded separately.",
+  "pythonValidation": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "test_mixed_cargo",
+        "test_playable_trade",
+        "test_trade_pricing",
+        "test_trade_selection",
+        "test_economy",
+        "test_campaign_save",
+        "test_cross_map_persistence",
+        "test_campaign_save_manager",
+        "test_release_save_compatibility",
+        "test_visit_knowledge",
+        "test_treasure_resolution",
+        "test_rpg_interactions",
+        "test_item_definitions"
+      ],
+      "log": "timeout-python-targeted.log.gz",
+      "seconds": 76.448,
+      "status": "pass",
+      "suite": "targeted",
+      "tests": 74,
+      "workingDirectory": "maps/historical-world-rpg/age-of-sail-world/tests"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "test_release_blocker_audit",
+        "test_framework_conformance",
+        "test_requirement_traceability",
+        "test_integration_evidence",
+        "test_runtime_acceptance",
+        "test_wurst_execution",
+        "test_campaign_packaging"
+      ],
+      "log": "timeout-python-integration-fixed.log.gz",
+      "seconds": 980.77,
+      "status": "pass",
+      "suite": "integration-fixed",
+      "tests": 143,
+      "workingDirectory": "maps/historical-world-rpg/age-of-sail-world/tests"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "test_packaging"
+      ],
+      "log": "timeout-python-packaging.log.gz",
+      "seconds": 33.511,
+      "status": "pass",
+      "suite": "packaging",
+      "tests": 12,
+      "workingDirectory": "maps/historical-world-rpg/age-of-sail-world/tests"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "automation/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "log": "timeout-python-automation.log.gz",
+      "seconds": 4.316,
+      "status": "pass",
+      "suite": "automation",
+      "tests": 154,
+      "workingDirectory": "."
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "test_wurst_execution"
+      ],
+      "log": "timeout-python-heap.log.gz",
+      "seconds": 80.013,
+      "status": "pass",
+      "suite": "heap",
+      "tests": 17,
+      "workingDirectory": "maps/historical-world-rpg/age-of-sail-world/tests"
+    }
+  ],
+  "releaseReady": false,
+  "remainingNativeBlocker": "blocked_pending_real_forsaken_kingdom_launch_smoke",
+  "reportedOuterFailure": {
+    "discovered": 531,
+    "interpreterTimeouts": 11,
+    "source": "User-provided repository validation transcript",
+    "succeeded": 520
+  },
+  "scope": "Preserve the mixed-cargo implementation; repair validation fixture setup and retain complete pinned execution evidence.",
+  "sourceIdentity": {
+    "sourceRevision": "96c32d45ce851dc435cfa268340fb6aeedf93b13",
+    "sourceTreeSha256": "a9253abd7c2f58eeef20cad56f1feb85062dfa179394748491539bec185d17bd"
+  },
+  "status": "pass"
+}

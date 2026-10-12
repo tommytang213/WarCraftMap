@@ -28,10 +28,12 @@ source because its separate history contract still records one commodity.
 
 `validate.sh` copies read-only source/dependency mounts into container-private
 `/tmp`, uses the immutable pinned compiler offline as its non-root user, typechecks
-all source, and executes the selected trade/pricing/persistence/access/framework
-suites with the unchanged interpreter deadline. `CARGO_TARGETED=1 CARGO_PACKAGE=1`
-also builds and inspects a diagnostic W3X and runs original/content-mutated
-framework campaigns. Test selection changes only the private copy. No services,
+all source, and executes the complete suite with the unchanged interpreter
+deadline. It then builds and inspects a diagnostic W3X and runs original/content-mutated
+framework campaigns. `CARGO_TARGETED=1 CARGO_PACKAGE=1` selects the cargo-related
+suites; `FOCUSED_SUITES` can override that selection with comma-separated filenames.
+Test selection changes only the private copy. The wrapper records per-test wall
+times in the private assembly's `_build/test-timings.json`. No services,
 packages or global tools are installed; no container writes into this worktree.
 
 `report.py` verifies compressed transcripts, the pinned compiler, current source
@@ -46,32 +48,36 @@ launch remains `blocked_pending_real_forsaken_kingdom_launch_smoke`; the diagnos
 package and scoped interpreter execution do not establish release readiness.
 No player QA, commits or remote repository changes are part of this work.
 
-Final verification:
+Final verification after the merged-suite repair:
 
-- Pinned typecheck and **177/177** selected Wurst tests passed.
-- **212** Python tests passed.
+- Pinned typecheck and **531/531** Wurst tests passed in one complete run with the unchanged 20-second deadline.
+- **400** Python test executions passed across trade/persistence, integration/packaging and automation checks. Python compiler fixtures verify orchestration; they are separate from pinned execution.
 - Original and content-mutated framework campaigns each passed **2/2** Wurst tests and campaign packaging.
-- World validation, framework boundary audit, traceability consistency and `git diff --check` passed.
+- World validation, framework boundary, geography, canonical map source, traceability and whitespace checks passed.
 - The diagnostic W3X retains all **829** source store definitions and the registered mixed-cargo implementation.
 
-Source revision: `51862ed5525219922efb0f73119257cbd465810f`.
-Source tree SHA-256: `6002478d8f18e00d981d200c0952da44bc1819349706d60780037b8ed17b569c`.
-The package check was corrected to the compiler’s actual `TradeCommand_TradeCommand_execute` method and its `CommandHandler_execute` binding, then verified against the exact built archive.
+Source revision: `96c32d45ce851dc435cfa268340fb6aeedf93b13`.
+Source tree SHA-256: `a9253abd7c2f58eeef20cad56f1feb85062dfa179394748491539bec185d17bd`.
+Execution, packaged definitions and regenerated scoped traceability bind to this
+same source tree. The longest measured test took
+**8.689 seconds**.
 
-The validation retry at `3ef601b10548099fc2a5405cbe3b18913ddf0684` reproduced
-the release-audit failure: its checked-in report still hashed the compatibility
-manifest from before the trade-domain v4 change. Running
-`python3 tooling/release_blocker_audit.py --write` refreshed that one input hash.
-The machine report's 241 blockers and all readiness flags are unchanged; the
-human report needs no change. The nonzero audit exit remains intentional while
-those release blockers exist.
+The full-suite compiler saturated its 6 GiB heap. JVM counters showed 350 full
+collections and 501.063 seconds of garbage collection. The validation subprocess
+now reserves 8 GiB, while explicit caller heap settings still take precedence.
+The compiler and its 20-second test deadline are unchanged. The heap regression
+checks execution and packaging and verifies the caller environment is unchanged.
+Generated RPG batches are selected
+before treasure resolution, so discarded treasures do not repeat that work.
+Visit commands also install their own fixture clock and clear it on close; the
+focused baseline exposed their dependency on a previous test's global clock.
+All existing journeys, assertions, catalogue registrations and 531 test cases
+remain. No gameplay accounting, save schemas or scenario definitions changed in
+this validation repair.
 
-All 156 selected Python tests passed, including the previously failing release
-audit test. Framework boundary, both worlds, geography, map source, traceability
-and whitespace checks passed. Retry evidence is recorded in
-[repair-validation.json](repair-validation.json).
-The retained pinned execution, package and framework evidence still matches the
-current source tree, and regenerating scoped traceability produces no changes.
-This retry changes no gameplay source or save fixtures. Grill is absent and the
-sandbox cannot access the Docker socket, so no fresh pinned compiler or native
-client execution is claimed; the outer worker performs repository validation.
+The retained before/after evidence and per-test timings are indexed in
+[timeout-repair-validation.json](timeout-repair-validation.json). The earlier
+release-audit input-hash repair remains recorded in
+[repair-validation.json](repair-validation.json). Its 241 campaign/publication
+blockers remain; native launch is still
+`blocked_pending_real_forsaken_kingdom_launch_smoke`.
