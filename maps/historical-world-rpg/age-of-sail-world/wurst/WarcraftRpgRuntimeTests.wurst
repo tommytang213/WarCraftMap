@@ -456,8 +456,11 @@ function selectGeneratedBatch(WarcraftRpgRuntime runtime, string domain, int par
 			if i > 0
 				runtime.journal.quests[runtime.journal.count] = runtime.journal.quests[i]
 				runtime.journal.count++
-	else
-		runtime.treasures.count = treasures
+	else if domain == "treasures"
+		for i = treasures * part div parts to treasures * (part + 1) div parts - 1
+			if i > 0
+				runtime.treasures.treasures[runtime.treasures.count] = runtime.treasures.treasures[i]
+				runtime.treasures.count++
 
 function generatedBatchRoundTrips(string domain, int part, int parts)
 	let runtime=generatedRpgWithProgress()
@@ -506,4 +509,15 @@ function generatedBatchRoundTrips(string domain, int part, int parts)
 	generatedBatchRoundTrips("quests", 5, 6)
 
 @test function generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress()
-	generatedBatchRoundTrips("treasures", 0, 1)
+	// Use the same complete-record partition as heroes and quests. Every batch
+	// still performs both restores and retains the discovered first treasure.
+	generatedBatchRoundTrips("treasures", 0, 4)
+
+@test function generatedTreasuresSecondQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 1, 4)
+
+@test function generatedTreasuresThirdQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 2, 4)
+
+@test function generatedTreasuresFourthQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 3, 4)
