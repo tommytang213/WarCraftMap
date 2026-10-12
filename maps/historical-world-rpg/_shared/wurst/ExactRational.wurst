@@ -121,3 +121,96 @@ public class ExactRational
 		if denominator == "1"
 			return numerator
 		return numerator + "/" + denominator
+	function copy() returns ExactRational
+		return new ExactRational("1", numerator, denominator)
+	function negative() returns boolean
+		return numerator.startsWith("-")
+	function magnitude() returns string
+		if negative()
+			return SubString(numerator, 1, StringLength(numerator))
+		return numerator
+	function assign(string top, string bottom)
+		let reduced = new ExactRational("1", top, bottom)
+		numerator = reduced.numerator
+		denominator = reduced.denominator
+		destroy reduced
+	/** Mutating arithmetic owns no operand. No whole-value real/int conversion. */
+	function add(ExactRational other)
+		let left = exactNaturalProduct(magnitude(), other.denominator)
+		let right = exactNaturalProduct(other.magnitude(), denominator)
+		var top = "0"
+		if negative() == other.negative()
+			top = exactNaturalAdd(left, right)
+			if negative() and top != "0"
+				top = "-" + top
+		else if exactNaturalCompare(left, right) >= 0
+			top = subtractNatural(left, right)
+			if negative() and top != "0"
+				top = "-" + top
+		else
+			top = subtractNatural(right, left)
+			if other.negative() and top != "0"
+				top = "-" + top
+		assign(top, exactNaturalProduct(denominator, other.denominator))
+	function multiply(ExactRational other)
+		var top = exactNaturalProduct(magnitude(), other.magnitude())
+		if negative() != other.negative() and top != "0"
+			top = "-" + top
+		assign(top, exactNaturalProduct(denominator, other.denominator))
+	function dividePositive(ExactRational other)
+		if other.negative() or other.numerator == "0"
+			return
+		var top = exactNaturalProduct(magnitude(), other.denominator)
+		if negative() and top != "0"
+			top = "-" + top
+		assign(top, exactNaturalProduct(denominator, other.numerator))
+	function nonnegative()
+		if negative()
+			numerator = "0"
+			denominator = "1"
+	function floorNatural() returns string
+		if negative()
+			return "0"
+		let division = new NaturalDivision(numerator, denominator)
+		let result = division.quotient
+		destroy division
+		return result
+	/** Native damage boundary only. Eight leading digits retain native real
+	 * precision; scaling avoids overflow even for thousand-digit XP. The native
+	 * projection saturates at a finite 1e30, never the exact combat/XP authority. */
+	function nativeDamage() returns real
+		if negative() or numerator == "0"
+			return 0.
+		let topDigits = IMinBJ(8, StringLength(numerator))
+		let bottomDigits = IMinBJ(8, StringLength(denominator))
+		var result = S2R(SubString(numerator, 0, topDigits)) / S2R(SubString(denominator, 0, bottomDigits))
+		var exponent = StringLength(numerator) - topDigits - StringLength(denominator) + bottomDigits
+		while exponent > 0
+			if result >= 100000000000000000000000000000.
+				return 1000000000000000000000000000000.
+			result *= 10.
+			exponent--
+		while exponent < 0 and result > 0.
+			result /= 10.
+			exponent++
+		return result
+
+/** Native damage enters at nine decimal places. This is a damage boundary,
+ * never a conversion of saved XP or a derived coefficient. */
+public function exactNativeDamage(real amount) returns ExactRational
+	let text = R2SW(RMaxBJ(0., amount), 0, 9)
+	var digits = ""
+	var denominator = "1"
+	var fractional = false
+	for i = 0 to StringLength(text) - 1
+		let digit = SubString(text, i, i + 1)
+		if digit == "."
+			fractional = true
+		else if digit != " "
+			if digits != "" or digit != "0"
+				digits += digit
+			if fractional
+				denominator += "0"
+	if digits == ""
+		digits = "0"
+	return new ExactRational(digits, "1", denominator)

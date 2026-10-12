@@ -1,0 +1,162 @@
+{
+  "format": "warcraftmap_combat_effect_bindings_v1",
+  "schemaVersion": 1,
+  "balanceNote": "Initial gameplay tuning, not historical effectiveness statistics. Volleys coordinate infantry fire; gunnery and line of battle coordinate ship crews and naval gunfire.",
+  "attackPredicates": [
+    {
+      "id": "firearm_volley",
+      "categoryId": "land_formation",
+      "weaponIds": [
+        "matchlock",
+        "musket_bayonet",
+        "arquebus",
+        "hand_cannon",
+        "traded_musket"
+      ],
+      "abilityIds": [
+        "volley_fire"
+      ],
+      "rosterCategories": [
+        "infantry",
+        "marine"
+      ],
+      "movementClassIds": [
+        "foot"
+      ],
+      "requiresShip": false,
+      "nativeTemplates": {
+        "foot_company_runtime": "normal"
+      }
+    },
+    {
+      "id": "naval_gunfire",
+      "categoryId": "sailing_naval",
+      "weaponIds": [
+        "naval_guns",
+        "light_cannon",
+        "swivel_gun",
+        "swivel_guns",
+        "heavy_broadside"
+      ],
+      "abilityIds": [
+        "broadside"
+      ],
+      "rosterCategories": [
+        "warship"
+      ],
+      "movementClassIds": [
+        "coastal_sail",
+        "ocean_sail"
+      ],
+      "requiresShip": true,
+      "nativeTemplates": {
+        "large_ship_runtime": "siege"
+      }
+    }
+  ],
+  "attributes": [
+    {
+      "id": "attack_basis_points",
+      "categoryId": "land_formation",
+      "numerator": 1,
+      "denominator": 10,
+      "attackId": "firearm_volley"
+    },
+    {
+      "id": "discipline_basis_points",
+      "categoryId": "land_formation",
+      "numerator": 1,
+      "denominator": 20,
+      "attackId": null
+    },
+    {
+      "id": "naval_damage_basis_points",
+      "categoryId": "sailing_naval",
+      "numerator": 1,
+      "denominator": 8,
+      "attackId": "naval_gunfire"
+    },
+    {
+      "id": "maneuver_basis_points",
+      "categoryId": "sailing_naval",
+      "numerator": 1,
+      "denominator": 16,
+      "attackId": null
+    }
+  ],
+  "effects": [
+    {
+      "id": "ordered_volley",
+      "sourceId": "military_tradition:ordered_volley",
+      "categoryId": "land_formation",
+      "milestoneId": "land_drill_one",
+      "threshold": 1000,
+      "mode": "additive",
+      "replacesEffectId": null,
+      "description": "+5% firearm volley damage",
+      "contributions": [
+        {
+          "stat": "damage",
+          "attackId": "firearm_volley",
+          "basisPoints": 500
+        }
+      ]
+    },
+    {
+      "id": "platoon_fire",
+      "sourceId": "military_tradition:platoon_fire",
+      "categoryId": "land_formation",
+      "milestoneId": "land_drill_two",
+      "threshold": 3000,
+      "mode": "upgrade",
+      "replacesEffectId": "ordered_volley",
+      "description": "+10% firearm volley damage",
+      "contributions": [
+        {
+          "stat": "damage",
+          "attackId": "firearm_volley",
+          "basisPoints": 1000
+        }
+      ]
+    },
+    {
+      "id": "disciplined_gunnery",
+      "sourceId": "military_tradition:disciplined_gunnery",
+      "categoryId": "sailing_naval",
+      "milestoneId": "naval_practice_one",
+      "threshold": 1200,
+      "mode": "additive",
+      "replacesEffectId": null,
+      "description": "+5% naval gunfire damage",
+      "contributions": [
+        {
+          "stat": "damage",
+          "attackId": "naval_gunfire",
+          "basisPoints": 500
+        }
+      ]
+    },
+    {
+      "id": "line_of_battle",
+      "sourceId": "military_tradition:line_of_battle",
+      "categoryId": "sailing_naval",
+      "milestoneId": "naval_practice_two",
+      "threshold": 3600,
+      "mode": "replacement",
+      "replacesEffectId": "disciplined_gunnery",
+      "description": "+10% naval gunfire damage; +300 basis-point resistance to incoming naval gunfire. Trained doctrine; does not grant line-ahead orders.",
+      "contributions": [
+        {
+          "stat": "damage",
+          "attackId": "naval_gunfire",
+          "basisPoints": 1000
+        },
+        {
+          "stat": "resistance",
+          "attackId": "naval_gunfire",
+          "basisPoints": 300
+        }
+      ]
+    }
+  ]
+}

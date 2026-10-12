@@ -335,6 +335,22 @@ public function compatRegisterCombatEvents(trigger damage, trigger death)
 public function compatCancelCombatDamage()
 	BlzSetEventDamage(0.)
 
+/** Native classification precedes scenario weapon-profile validation. Spells,
+ * repair and scripted non-attack damage are never tradition attacks. */
+public function compatCombatAttackType() returns string
+	if not BlzGetEventIsAttack() or BlzGetEventDamageType() != DAMAGE_TYPE_NORMAL
+		return ""
+	let kind = BlzGetEventAttackType()
+	if kind == ATTACK_TYPE_NORMAL
+		return "normal"
+	if kind == ATTACK_TYPE_PIERCE
+		return "pierce"
+	if kind == ATTACK_TYPE_SIEGE
+		return "siege"
+	return ""
+public function compatSetCombatDamage(real damage)
+	BlzSetEventDamage(damage)
+
 // Development benchmark operations. Keeping these natives here makes the
 // benchmark compile against the pinned patch without creating a second
 // version-specific boundary.

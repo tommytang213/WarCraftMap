@@ -1,0 +1,104 @@
+{
+  "format": "warcraftmap_issue_validation_v1",
+  "issue": 469,
+  "sourceIdentity": {
+    "sourceRevision": "51862ed5525219922efb0f73119257cbd465810f",
+    "sourceTreeSha256": "850080b427fc56051d7c9d9f34b56808c818a2399ab8cb3d71c602efa28e7b35"
+  },
+  "summary": "Four scenario-authored milestone combat effects use exact additive ratings and verified roster weapons; native and abstract hits share the typed boundary.",
+  "validation": {
+    "pinnedTypecheck": "pass",
+    "finalCombatExecution": {
+      "status": "pass",
+      "tests": 44,
+      "sourceIdentity": {
+        "sourceRevision": "51862ed5525219922efb0f73119257cbd465810f",
+        "sourceTreeSha256": "850080b427fc56051d7c9d9f34b56808c818a2399ab8cb3d71c602efa28e7b35"
+      }
+    },
+    "broaderRegressionExecution": {
+      "status": "pass",
+      "tests": 159,
+      "sourceIdentity": {
+        "sourceRevision": "51862ed5525219922efb0f73119257cbd465810f",
+        "sourceTreeSha256": "b39f2ecb9744b194dec5e5aec1cb6c60b4fd789df5322e8be7f37e490110eba4"
+      },
+      "note": "Precedes the final native type/hero/subprecision guards, covered by the final combat run."
+    },
+    "focusedPython": {
+      "status": "pass",
+      "tests": 47
+    },
+    "pythonFramework": {
+      "status": "pass",
+      "tests": 8,
+      "scope": "Framework orchestration and content boundary; synthetic compiler fixtures are not native evidence."
+    },
+    "pinnedFramework": {
+      "status": "pass",
+      "originalTests": 2,
+      "mutatedTests": 2,
+      "sharedSourcesUnchanged": true,
+      "sharedWurstSourcesMatchFinalTree": true
+    },
+    "generationProvenanceAndExecutableBindings": "pass",
+    "jsonSchema": "pass",
+    "frameworkContentAudit": "pass",
+    "diffCheck": "pass"
+  },
+  "saveCompatibility": {
+    "militaryVersion": 9,
+    "migratesMilitaryVersions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "campaignEnvelopeChanged": false,
+    "effectLayersPersisted": false,
+    "newSavedField": "optional force roster identity",
+    "priorImmutableFixturesAndBudgetsUnchanged": true,
+    "releaseManifestMatchesRuntime": true
+  },
+  "bindingCoverage": {
+    "rosterProfiles": 472,
+    "validatedFirearmProfiles": 43,
+    "validatedGunfireProfiles": 43,
+    "definedMilestones": 4
+  },
+  "lockedAuthoritiesUnchanged": {
+    "scenario/military-traditions.json": "936b98e721dc91c0b7fc79b0cf3ed9f172fd9a5ef87c840645cc5e59576bad7b",
+    "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
+  },
+  "remainingReleaseBlockers": {
+    "nativeLaunch": {
+      "issue": 438,
+      "status": "unresolved",
+      "nativeClientRun": false
+    },
+    "attributeConsumers": [
+      "discipline_basis_points",
+      "maneuver_basis_points"
+    ],
+    "missingAuthoredWeapons": [
+      "english_guard_formation",
+      "english_patrol_ship"
+    ],
+    "nonKillContributionAdapters": [
+      "combat_assist",
+      "battle_objective"
+    ]
+  },
+  "officialReleaseGatesChanged": false,
+  "playerQARequested": false,
+  "containerValidation": {
+    "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "worktreeMount": "read-only",
+    "buildStorage": "container-private /tmp",
+    "globalToolingChanged": false
+  }
+}

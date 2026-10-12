@@ -303,6 +303,13 @@ class MilitaryTraditionRuntime:
         view = self.view(unit["controllerId"], unit["categoryId"])
         self._adapter.replace_tradition_layer(unit_id, view.modifiers, view.effects)
 
+    def view_for_unit(self, unit_id: str) -> TraditionView | None:
+        """Current authority, including forces with no live representation."""
+        unit = self._units.get(unit_id)
+        if unit is None:
+            return None
+        return self.view(unit["controllerId"], unit["categoryId"])
+
     def set_runtime_active(self, unit_id: str, active: bool) -> bool:
         if unit_id not in self._units or not isinstance(active, bool):
             raise TraditionError("unknown unit or invalid runtime-active flag")

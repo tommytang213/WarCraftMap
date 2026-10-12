@@ -1,0 +1,154 @@
+{
+  "format": "warcraftmap_issue_validation_repair_v1",
+  "issue": 469,
+  "pullRequest": 477,
+  "sourceIdentity": {
+    "sourceRevision": "668d962fe252a03000337a52e092ef688a4e4f46",
+    "sourceTreeSha256": "bc525616dd2fd2c5b40766c3d0ac1d58f07f16f39e750c942b15681bacab6a37"
+  },
+  "repair": {
+    "failedRuns": [
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/38217239265/job/114704727368",
+      "https://github.com/tommytang213/WarCraftMap/actions/runs/38217239245/job/114704727401"
+    ],
+    "failure": "530/531 passed; generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress exceeded the pinned 20-second per-test timeout.",
+    "action": "Extend existing generated-record batching to four treasure intervals, retaining every record, row-zero cross-domain progress and both restore/reconcile/equality passes.",
+    "productionCodeChanged": false,
+    "saveFormatsChanged": false,
+    "authoredContentChanged": false,
+    "compilerTimeoutChanged": false,
+    "officialReleaseGatesChanged": false
+  },
+  "validation": {
+    "pinnedWurst": {
+      "status": "pass",
+      "tests": 534,
+      "militaryCombatCallbackTests": 41,
+      "treasureBatches": 4
+    },
+    "pinnedTypecheck": "pass",
+    "productionEntryCoverage": {
+      "status": "pass",
+      "completeSystems": 23
+    },
+    "pinnedFramework": {
+      "status": "pass",
+      "originalTests": 2,
+      "mutatedTests": 2,
+      "bothCampaignsPackaged": true,
+      "sharedSourcesUnchanged": true
+    },
+    "python": {
+      "status": "pass",
+      "totalTests": 75,
+      "suites": {
+        "live-tradition-tests.log": {
+          "status": "pass",
+          "tests": 6,
+          "elapsedSeconds": 3.267,
+          "transcript": "ci-repair-live-tradition-tests.log.gz"
+        },
+        "headless-tests.log": {
+          "status": "pass",
+          "tests": 29,
+          "elapsedSeconds": 1.045,
+          "transcript": "ci-repair-headless-tests.log.gz"
+        },
+        "military-and-release-tests.log": {
+          "status": "pass",
+          "tests": 25,
+          "elapsedSeconds": 77.719,
+          "transcript": "ci-repair-military-and-release-tests.log.gz"
+        },
+        "framework-python-tests.log": {
+          "status": "pass",
+          "tests": 8,
+          "elapsedSeconds": 264.383,
+          "transcript": "ci-repair-framework-python-tests.log.gz"
+        },
+        "combat-effects": {
+          "status": "pass",
+          "tests": 7,
+          "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_combat_effects.py' -v",
+          "transcript": null,
+          "note": "Executed successfully in the initial tool output; no disk transcript retained."
+        }
+      }
+    },
+    "frameworkBoundary": "pass",
+    "traceabilityFreshness": "pass",
+    "gitDiffCheck": "pass"
+  },
+  "toolchain": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "standardLibraryRevision": "771e5c8a4b2349b46ac5ca813330fde4112304c3",
+    "execution": "Local compiler and bundled Java copied from the cached pinned image into ignored worktree storage.",
+    "containerWorktreeMounts": false,
+    "globalToolingChanged": false,
+    "wrapper": "ci-grill-offline.sh"
+  },
+  "lockedAuthorities": {
+    "scenario/military-traditions.json": "936b98e721dc91c0b7fc79b0cf3ed9f172fd9a5ef87c840645cc5e59576bad7b",
+    "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
+  },
+  "nativeLaunch": {
+    "issue": 438,
+    "status": "unresolved",
+    "executedThisSession": false
+  },
+  "remainingTraditionBlockers": [
+    "discipline_basis_points",
+    "maneuver_basis_points",
+    "english_guard_formation",
+    "english_patrol_ship"
+  ],
+  "playerQARequested": false,
+  "outerRepositoryValidation": "pending outer worker",
+  "artifacts": {
+    "ci-repair-wurst-results.json.gz": {
+      "uncompressedSha256": "4475e647ff6bb9ae1462def02affd12ab965c45188a99869277c2ce07c670cc7"
+    },
+    "ci-repair-wurst-execution.log.gz": {
+      "uncompressedSha256": "e61e3071a11b6542461d625350ec74c9b691639eccd674550c50f18002f82340"
+    },
+    "ci-repair-wurst-typecheck.log.gz": {
+      "uncompressedSha256": "1cdde7e60b8eef3c28ec0c18e85baf9e2aabf27338cf83fc2fd26d70ef212ce4"
+    },
+    "ci-repair-framework-conformance.json.gz": {
+      "uncompressedSha256": "9ed32dbae1cd1963d31cb3e8ea6aa230bef2487676acf0a4758fedf743997801"
+    },
+    "ci-repair-framework-validation.log.gz": {
+      "uncompressedSha256": "e3500291af23ccbf651867e77a4add691f12cd7ff63688109f503d6c7ccfb501"
+    },
+    "ci-repair-framework-original-results.json.gz": {
+      "uncompressedSha256": "c0aa8112594ce1d20969467db39a098550b669001a3fb38f286a63360c93cdf5"
+    },
+    "ci-repair-framework-original-execution.log.gz": {
+      "uncompressedSha256": "5857eedeab35205ec2535919ead77d99d7e943e6d1c8a8188b76bb0e7fd9887b"
+    },
+    "ci-repair-framework-mutated-results.json.gz": {
+      "uncompressedSha256": "c789f1e40fa449dcfffa9ce973160dab3d4a7d2bcdb9dd10a4195162f49b2903"
+    },
+    "ci-repair-framework-mutated-execution.log.gz": {
+      "uncompressedSha256": "8fad549c9602a9451630e5632f33670cf64309d1fabb84cd90af3588f429c9e1"
+    },
+    "ci-repair-live-tradition-tests.log.gz": {
+      "uncompressedSha256": "3ae4bb7941f6dfe3ed78271ed63e15433833b12a71695da10bea77afc5aef868"
+    },
+    "ci-repair-headless-tests.log.gz": {
+      "uncompressedSha256": "b252c96265c4a07f95b20a536a80b47f5258bd467ef6682a50826e0a6d6ccfe5"
+    },
+    "ci-repair-military-and-release-tests.log.gz": {
+      "uncompressedSha256": "d6f02225e6cafe3764c7cb043a7378be16bef29c3c14cae9b47bd0db5a8d2839"
+    },
+    "ci-repair-framework-python-tests.log.gz": {
+      "uncompressedSha256": "06b0af19713bb5ba65858a5445b8bd524bfa8a90fe5e6f465e50be64552fb1c4"
+    }
+  }
+}
