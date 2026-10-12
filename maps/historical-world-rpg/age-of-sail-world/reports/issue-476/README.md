@@ -26,26 +26,38 @@ Generated map binaries remain under ignored `_build/` storage.
 Reproduce from the campaign directory with a local offline Grill wrapper:
 
 ```sh
-python3 reports/issue-476/validate.py --grill <local-offline-grill> --group navigation --build-dir _build/issue476-navigation --package
-python3 reports/issue-476/validate.py --grill <local-offline-grill> --group remaining --build-dir _build/issue476-remaining
-python3 reports/issue-476/validate.py --grill <local-offline-grill> --group rpg --build-dir _build/issue476-rpg
+python3 reports/issue-476/validate.py --grill <local-offline-grill> --group all --build-dir _build/issue476-all --package
 PATH=<local-offline-grill-directory>:$PATH python3 ../_shared/tooling/validate_framework_fixture.py ../conformance-campaign
 python3 tooling/requirement_traceability_audit.py --write --check
 ```
 
-The wrapper uses the repository-pinned compiler and bundled Java copied from a
-stopped cached container, plus a cached standard library. No container ran or
-mounted this worktree, and no global tooling or services changed. The compiler and
-standard-library identities are retained in `validation.json`.
+The wrapper uses the existing worktree-local repository-pinned compiler, bundled
+Java and cached standard library. The initial implementation copied these from a
+stopped cached container. This repair uses no containers, global tooling changes
+or services. Compiler and standard-library identities remain in `validation.json`.
 
-Exploratory full runs exposed the help pagination change and exceeded the pinned
-20-second per-test limit in existing large treasure fixtures. Final execution uses
-three disjoint groups in fresh interpreters. Only `@test` selection changes in
-private assemblies; every source function is typechecked and every test remains
-in the union. `report.py` verifies each original transcript, its precise input
-transformation and source hash, complete test membership, and production journeys
-within individual passing tests. It does not synthesize a combined compiler run
-or relax timeouts. The repository worker still performs its authoritative gate.
+The outer validator reported 541/544 passing tests: three generated treasure
+round-trip fixtures timed out during seeded SHA-256 resolution. The repair splits
+the four treasure intervals into fourteen, reducing the largest fixture from
+eight to three records. All 28 treasures still execute production registration,
+seeded resolution, two restore/reconcile passes and complete snapshot equality;
+each fixture retains the discovered first treasure and hero/quest/equipment
+progress. `retain.py` verifies complete interval coverage against generated data.
+Batching alone exposed accumulated fixture allocations: the interpreter eventually
+ran out of heap. Discarded definitions and completed standalone fixtures now
+release their owned objects, including nested definitions. The generated shared
+interaction catalogue remains borrowed and alive. This keeps repeated full
+registration from retaining every discarded catalogue for the entire test run.
+Production code, scenario content, save formats and the compiler's 20-second limit
+are unchanged by the repair.
+
+Final execution uses one complete interpreter run with unchanged test decorators.
+`report.py` uses the repository's production evidence verifier to require every
+current test and its actual production calls in that transcript. The
+`all-results.json.gz`, `all-execution.log.gz` and `all-typecheck.log.gz` files are
+the repair evidence; earlier navigation/remaining/rpg group logs are historical
+and are not used for current validation. The repository worker still performs its
+authoritative gate.
 
 The retained Python transcripts cover quest generation/journal/events, headless
 map parity, discovery, interactions, supported saves and migrations, persistence,

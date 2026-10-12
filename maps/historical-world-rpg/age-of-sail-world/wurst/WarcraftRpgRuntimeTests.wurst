@@ -386,6 +386,7 @@ function testEquipmentSet() returns EquipmentSet
 	for i=0 to runtime.inventory.definitionCount-1
 		let itemDefinition=runtime.inventory.definitions[i]
 		(runtime.inventory.comparison(hero.id,itemDefinition.id) != "Unknown item").assertTrue()
+	disposeGeneratedFixture(runtime)
 
 /** Execute every generated registration, then populate the selected records. */
 function generatedRpgWithProgress(string domain, int part, int parts) returns WarcraftRpgRuntime
@@ -449,6 +450,18 @@ function selectGeneratedBatch(WarcraftRpgRuntime runtime, string domain, int par
 	let heroes = runtime.heroes.count
 	let quests = runtime.journal.count
 	let treasures = runtime.treasures.count
+	// The interpreter retains Wurst objects until destroy. Release discarded
+	// definitions before compacting, or repeated full registration eventually
+	// exhausts the heap even though each tested snapshot is small.
+	for i = 1 to heroes - 1
+		if domain != "heroes" or i < heroes * part div parts or i >= heroes * (part + 1) div parts
+			destroy runtime.heroes.heroes[i]
+	for i = 1 to quests - 1
+		if domain != "quests" or i < quests * part div parts or i >= quests * (part + 1) div parts
+			destroy runtime.journal.quests[i]
+	for i = 1 to treasures - 1
+		if domain != "treasures" or i < treasures * part div parts or i >= treasures * (part + 1) div parts
+			destroy runtime.treasures.treasures[i]
 	runtime.heroes.count = 1
 	runtime.journal.count = 1
 	runtime.treasures.count = 1
@@ -468,6 +481,59 @@ function selectGeneratedBatch(WarcraftRpgRuntime runtime, string domain, int par
 				runtime.treasures.treasures[runtime.treasures.count] = runtime.treasures.treasures[i]
 				runtime.treasures.count++
 
+/** Own only these standalone catalogue fixtures, never installed campaign
+ * objects. Reclaim nested definitions so subsequent tests can reuse their
+ * interpreter slots instead of accumulating every generated catalogue. */
+function disposeGeneratedFixture(WarcraftRpgRuntime runtime)
+	for i = 0 to runtime.heroes.count - 1
+		destroy runtime.heroes.heroes[i]
+	let clock = runtime.heroes.clock
+	if clock != null
+		for i = 0 to clock.eraCount - 1
+			destroy clock.eras[i]
+		for i = 0 to clock.occurrenceCount - 1
+			destroy clock.occurrences[i]
+		destroy clock
+	destroy runtime.heroes
+	for i = 0 to runtime.journal.count - 1
+		destroy runtime.journal.quests[i]
+	destroy runtime.journal
+	for i = 0 to runtime.treasures.count - 1
+		destroy runtime.treasures.treasures[i]
+	destroy runtime.treasures
+	for i = 0 to runtime.inventory.definitionCount - 1
+		destroy runtime.inventory.definitions[i]
+	for i = 0 to runtime.inventory.setCount - 1
+		let definition = runtime.inventory.sets[i]
+		for j = 0 to definition.pieceCount - 1
+			destroy definition.pieces[j]
+		for j = 0 to definition.thresholdCount - 1
+			destroy definition.thresholds[j]
+		destroy definition
+	destroy runtime.inventory
+	for i = 0 to runtime.technologies.count - 1
+		let definition = runtime.technologies.definitions[i]
+		for j = 0 to definition.unlockCount - 1
+			destroy definition.unlocks[j]
+		destroy definition
+	destroy runtime.technologies.effects
+	destroy runtime.technologies
+	for i = 0 to runtime.allocations.rankCount - 1
+		destroy runtime.allocations.ranks[i]
+	for i = 0 to runtime.allocations.abilityCount - 1
+		destroy runtime.allocations.abilities[i]
+	for i = 0 to runtime.allocations.perkCount - 1
+		destroy runtime.allocations.perks[i]
+	destroy runtime.allocations
+	// The generated interaction catalogue is shared, borrowed scenario data.
+	destroy runtime.interactions.actors
+	destroy runtime.interactions
+	destroy runtime.researchResources
+	destroy runtime.management
+	if runtime.projections != null
+		destroy runtime.projections
+	destroy runtime
+
 function generatedBatchRoundTrips(string domain, int part, int parts)
 	let runtime=generatedRpgWithProgress(domain, part, parts)
 	let saved=runtime.captureState()
@@ -483,6 +549,8 @@ function generatedBatchRoundTrips(string domain, int part, int parts)
 	projections.clears.assertEquals(2)
 	// A completed quest retains its save history but no obsolete guidance layer.
 	projections.guidance.assertEquals(0)
+	disposeGeneratedFixture(restored)
+	disposeGeneratedFixture(runtime)
 
 @test function generatedRpgRecordsExecuteAndRestoreThroughProductionRegistration()
 	generatedBatchRoundTrips("heroes", 0, 4)
@@ -515,15 +583,47 @@ function generatedBatchRoundTrips(string domain, int part, int parts)
 	generatedBatchRoundTrips("quests", 5, 6)
 
 @test function generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress()
-	// Use the same complete-record partition as heroes and quests. Every batch
-	// still performs both restores and retains the discovered first treasure.
-	generatedBatchRoundTrips("treasures", 0, 4)
+	// SHA-256 runs in the pinned interpreter. Keep each interval small enough
+	// for its unchanged 20-second limit in the full suite, not only in an
+	// isolated run. Fourteen intervals cover all 28 authored treasures (at most
+	// two plus the progressed first record); every batch keeps both restores.
+	generatedBatchRoundTrips("treasures", 0, 14)
 
-@test function generatedTreasuresSecondQuarterRoundTrips()
-	generatedBatchRoundTrips("treasures", 1, 4)
+@test function generatedTreasuresSecondBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 1, 14)
 
-@test function generatedTreasuresThirdQuarterRoundTrips()
-	generatedBatchRoundTrips("treasures", 2, 4)
+@test function generatedTreasuresThirdBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 2, 14)
 
-@test function generatedTreasuresFourthQuarterRoundTrips()
-	generatedBatchRoundTrips("treasures", 3, 4)
+@test function generatedTreasuresFourthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 3, 14)
+
+@test function generatedTreasuresFifthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 4, 14)
+
+@test function generatedTreasuresSixthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 5, 14)
+
+@test function generatedTreasuresSeventhBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 6, 14)
+
+@test function generatedTreasuresEighthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 7, 14)
+
+@test function generatedTreasuresNinthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 8, 14)
+
+@test function generatedTreasuresTenthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 9, 14)
+
+@test function generatedTreasuresEleventhBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 10, 14)
+
+@test function generatedTreasuresTwelfthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 11, 14)
+
+@test function generatedTreasuresThirteenthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 12, 14)
+
+@test function generatedTreasuresFourteenthBatchRoundTrips()
+	generatedBatchRoundTrips("treasures", 13, 14)

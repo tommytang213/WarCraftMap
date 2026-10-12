@@ -47,7 +47,7 @@ def main():
     parser.add_argument('--smoke', action='store_true')
     parser.add_argument('--inspect-existing', action='store_true')
     parser.add_argument('--package', action='store_true')
-    parser.add_argument('--build-dir', type=Path, default=PROJECT / '_build/issue476')
+    parser.add_argument('--build-dir', type=Path, default=PROJECT / '_build/issue476-all')
     parser.add_argument('--group', choices=['all', 'navigation', 'rpg', 'remaining'], default='all')
     args = parser.parse_args()
     grill = str(args.grill.resolve())

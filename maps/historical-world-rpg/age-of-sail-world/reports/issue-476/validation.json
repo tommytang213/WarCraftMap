@@ -1,10 +1,10 @@
 {
   "commands": {
-    "execution": "python3 reports/issue-476/validate.py --grill <local-offline-grill> --group GROUP --build-dir _build/issue476-GROUP (GROUP=navigation,remaining,rpg; --package on navigation)",
+    "execution": "python3 reports/issue-476/validate.py --grill <local-offline-grill> --group all --build-dir _build/issue476-all --package",
     "framework": "PATH=<local-offline-grill-directory>:$PATH python3 ../_shared/tooling/validate_framework_fixture.py ../conformance-campaign",
     "traceability": "python3 tooling/requirement_traceability_audit.py --write --check"
   },
-  "environment": "Pinned cached compiler/Java copied from a stopped container without worktree mounts; validation ran locally with cached standard library. No global tooling changes.",
+  "environment": "Existing worktree-local pinned compiler/Java and cached standard library. No containers, global tooling changes or services used during validation repair.",
   "format": "warcraftmap_issue476_validation_v1",
   "nativeClient": "not_run",
   "outcome": "pass",
@@ -12,34 +12,73 @@
     "campaign-quests": {
       "file": "campaign-quests.log.gz",
       "passed": 7,
-      "sha256": "a2bce9278cfa48bbec56ee1415e31c62fe16d7ebe0b3989f00237d3a1d1f3466"
+      "sha256": "7b080b75bcc42bd447a619a6f012924d3e33270adef3f36cc31b5f6de0158a63"
     },
     "python-quests": {
       "file": "python-quests.log.gz",
       "passed": 30,
-      "sha256": "b20c44881647003777c0bb5c8ac44b9a080f2e8c1cec796ea3e032d56dc35f09"
+      "sha256": "476eb6c66a1565c46945b13bf4f5bfa5a41a2f5be80e029f1e07669cbce3925d"
     },
     "python-systems": {
       "file": "python-systems.log.gz",
       "passed": 58,
-      "sha256": "c3d36c310310871ee9255314a3539a18a34322c73603b0ed9a0f526adfa9a9be"
+      "sha256": "7fd5c78e35090ac6030d3a0b9ea2fbc1b414988f5549919e27e8b451a1cdbc10"
     },
     "release-tests": {
       "file": "release-tests.log.gz",
       "passed": 10,
-      "sha256": "64f92b0f2848f0355b5a14efc38002dc1b0998166d73d60ae1b699b6b42c1f31"
+      "sha256": "e5902efb1c2a0424187a8fbcc0c38efe1108fd898b53074e95605d13d77b1a4d"
     },
     "trace-tests-final": {
       "file": "trace-tests-final.log.gz",
       "passed": 49,
-      "sha256": "7ad0e1bd25ed363628d5eed11e53cb2c883009d11db0a2f4293db4706c5721a3"
+      "sha256": "963793a1fa37afac59b69d79e22f4813052e0f3624982ddb7c4db1fefed0b96b"
+    },
+    "treasure-repair": {
+      "file": "treasure-repair.log.gz",
+      "passed": 7,
+      "sha256": "bad56d5ff8664d3ec7a3eb46dc29d06af754b0b57f7e53c95aa44b35648f6ed0"
     }
   },
-  "pythonTotal": 154,
+  "pythonTotal": 161,
   "releaseReady": false,
+  "repair": {
+    "allGeneratedRecordsCovered": true,
+    "authoredContentChanged": false,
+    "batchOnlyAttempt": "Smaller batches without cleanup still timed out and exhausted the 6 GB interpreter heap; historical logs are retained separately.",
+    "compilerTimeoutChanged": false,
+    "failure": "Three generated treasure round-trip tests exceeded the pinned 20-second per-test limit in the full 544-test run.",
+    "fixtureCleanup": "Destroy discarded and completed fixture-owned definitions; retain the borrowed generated interaction catalogue.",
+    "officialReleaseGatesChanged": false,
+    "previousDiscovered": 544,
+    "previousSucceeded": 541,
+    "productionCodeChanged": false,
+    "restorePassesPerBatch": 2,
+    "saveFormatsChanged": false,
+    "testDecoratorsFiltered": false,
+    "treasureBatchSizes": [
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "treasureBatchesAfter": 14,
+    "treasureBatchesBefore": 4,
+    "treasureRecords": 28
+  },
   "sourceIdentity": {
-    "sourceRevision": "cea06c5e88a1ea3214e0144226321eed1ab8f4cb",
-    "sourceTreeSha256": "348479443d96161889dd6bb715f4c62204bbd1d7025ea39bbfef6a4fe2d850c3"
+    "sourceRevision": "2732fbe7ed1175e497ce4d0840d1b061b05f6df3",
+    "sourceTreeSha256": "406960d25fba9248e40b11f0c7daffaae131da28d58f6d6ad4664e289bfcc131"
   },
   "standardLibraryRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
   "toolchain": {
@@ -51,48 +90,32 @@
   },
   "transcriptHashes": [
     {
-      "file": "navigation-results.json.gz",
-      "sha256": "9fe628feb7ce7c15c522f8618291d9dcb425dd6c5694547f55ccae307e96879d"
+      "file": "all-results.json.gz",
+      "sha256": "3b2a7d05a6e108d62d25769fd61ee40c44ec23cef19075404cbf5cafb42efda7"
     },
     {
-      "file": "navigation-execution.log.gz",
-      "sha256": "563ab98af4c7cf17aa0d3ffd29279f0f758095cd59938498e3297dc3009a6bd9"
+      "file": "all-execution.log.gz",
+      "sha256": "6f5756d909909bcc16d19cfe4835130381cf49e4c09f58a66a4d86922af5e0aa"
     },
     {
-      "file": "navigation-typecheck.log.gz",
+      "file": "all-typecheck.log.gz",
       "sha256": "da95ff39231aa36221ef98f7d70a4cf4c76f94387da72d4797b44b16a2ab3c04"
     },
     {
-      "file": "remaining-results.json.gz",
-      "sha256": "7e4e26080058acc444709910fa96ed711c1f40eb9d08eb3dc55cbb385281047c"
+      "file": "batch14-before-cleanup-results.json.gz",
+      "sha256": "4db491e02d6278abb5c64493a8e2b1d3e1fea4b3b4653e741d6fbf1f01c81211"
     },
     {
-      "file": "remaining-execution.log.gz",
-      "sha256": "b237ec997a83410b76c3c07c020a1b05d099eccc4d5b2cfec6aac1f6302f406d"
-    },
-    {
-      "file": "remaining-typecheck.log.gz",
-      "sha256": "da95ff39231aa36221ef98f7d70a4cf4c76f94387da72d4797b44b16a2ab3c04"
-    },
-    {
-      "file": "rpg-results.json.gz",
-      "sha256": "cb069682e682fb82986f688751cac7d7464930f41b6714c66377d0581208c947"
-    },
-    {
-      "file": "rpg-execution.log.gz",
-      "sha256": "9e7ed883b7919103adea43d656c27464015acd6a037003297b4219fc4a3c744d"
-    },
-    {
-      "file": "rpg-typecheck.log.gz",
-      "sha256": "da95ff39231aa36221ef98f7d70a4cf4c76f94387da72d4797b44b16a2ab3c04"
+      "file": "batch14-before-cleanup-execution.log.gz",
+      "sha256": "1d66fb6b9700bbdafe1fbcae56953bf82ac29e5ce1899704f245e05ccd782349"
     },
     {
       "file": "framework-conformance.json.gz",
-      "sha256": "8040b10ed59f08e9eca5273564afac61b6c757a09bb7787c7f642de00df61f7c"
+      "sha256": "c5cc628d0bf334d36b5463f33d3d565854c63c5713e68dd72df2cac13e186a90"
     },
     {
       "file": "framework-original-results.json.gz",
-      "sha256": "7d351866cad75ff8764108057d062ec40851580c833d1adeefebfdefe0501853"
+      "sha256": "f0201b94941c729e9d715e2a9b529bceb2889fa92f53e19fe658bd76bdd0ddf4"
     },
     {
       "file": "framework-original-execution.log.gz",
@@ -100,7 +123,7 @@
     },
     {
       "file": "framework-mutated-results.json.gz",
-      "sha256": "b991fea9fc3d208c6abee5c86d80fbaf1a4e66912a92eb2c31b9762ffe76c46b"
+      "sha256": "e56dd1c700ef681b2b745343c3f43a0378a0d4911c59c7984f757b1f22b1dd42"
     },
     {
       "file": "framework-mutated-execution.log.gz",
@@ -124,9 +147,9 @@
     }
   ],
   "wurst": {
-    "discovered": 544,
+    "discovered": 554,
     "status": "pass",
-    "strategy": "three disjoint fresh-interpreter groups",
-    "succeeded": 544
+    "strategy": "single complete suite with unchanged test decorators and compiler timeout",
+    "succeeded": 554
   }
 }

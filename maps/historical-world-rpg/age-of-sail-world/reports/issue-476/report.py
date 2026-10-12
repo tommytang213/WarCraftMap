@@ -8,53 +8,28 @@ OUT = Path(__file__).resolve().parent
 PROJECT = OUT.parents[1]
 SHARED = PROJECT.parent / '_shared'
 sys.path[:0] = [str(SHARED / 'tooling'), str(PROJECT / 'tooling'), str(OUT)]
-from integration_evidence import source_identity, execution_sources, load_contract, observed_probes, instrument, digest, canonical
+from integration_evidence import source_identity, verify_execution_coverage
 from requirement_traceability_audit import build_report
 from validate_framework_fixture import source_hashes
-from wurst_execution import verify_evidence, discover
+from wurst_execution import verify_evidence
 from parity import verify_transcript
-from validate import selected
 
-GROUPS = ('navigation', 'remaining', 'rpg')
+GROUPS = ('all',)
 
 
 def executions():
-    """Verify each real run and its decorator-only selection against current source.
+    """Require one complete run through the repository's production verifier.
 
-    Do not synthesize a single compiler transcript. Retain three independent
-    results, prove their disjoint union covers every test, and combine coverage
-    only from complete journeys within individual passing tests.
+    No test-decorator filtering or merged partial transcripts: the same verifier
+    used by release validation binds every discovered test and production probe
+    to current authored inputs and the pinned compiler.
     """
-    sources = execution_sources(PROJECT)
-    expected = discover(PROJECT, sources=sources)
-    contract = load_contract(PROJECT)
-    combined, hits, reports, transcripts = [], {}, [], []
-    for group in GROUPS:
-        report = json.loads(gzip.decompress((OUT / (group + '-results.json.gz')).read_bytes()))
-        log = gzip.decompress((OUT / (group + '-execution.log.gz')).read_bytes())
-        revision = report['sourceRevision']
-        verify_evidence(report, log, revision)
-        assert report['sourceIdentity'] == source_identity(PROJECT, revision), 'stale execution'
-        assert report['expected'] == [row for row in expected if selected(group, Path(row['id'].split(':')[0]).name)]
-        for relative, source in sources.items():
-            code = source.read_text()
-            if not selected(group, source.name):
-                code = code.replace('@test', '')
-            probes = {name: spec for name, spec in contract['probes'].items() if spec['path'] == relative}
-            assert report['inputs'][relative] == digest(instrument(code, probes).encode() if probes else code.encode()), relative
-        observed = observed_probes(log.decode(), report['tests'], contract)
-        assert report['productionCoverage'] == dict(contractSha256=digest(canonical(contract)), tests=observed)
-        assert not set(hits) & set(observed), 'duplicate tests between groups'
-        hits.update(observed)
-        combined += report['tests']
-        reports.append(report)
-        transcripts.append(log)
-    assert len({row['id'] for row in combined}) == len(expected) == len(combined)
-    assert {row['id'] for row in combined} == {row['id'] for row in expected}
-    coverage = {system: sorted(test for test, observed in hits.items() if set(required) <= set(observed))
-                for system, required in contract['systems'].items()}
-    summary = dict(discovered=len(combined), succeeded=len(combined), status='pass', strategy='three disjoint fresh-interpreter groups')
-    return reports, transcripts, combined, coverage, summary
+    report = json.loads(gzip.decompress((OUT / 'all-results.json.gz').read_bytes()))
+    log = gzip.decompress((OUT / 'all-execution.log.gz').read_bytes())
+    coverage = verify_execution_coverage(report, log, PROJECT, report['sourceRevision'])
+    summary = {key: report[key] for key in ('discovered', 'succeeded', 'status')}
+    summary['strategy'] = 'single complete suite with unchanged test decorators and compiler timeout'
+    return [report], [log], report['tests'], coverage, summary
 
 
 def main():
