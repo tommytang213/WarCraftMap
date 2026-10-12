@@ -61,7 +61,7 @@ function pricingRuntime(int stock,int target,int basePrice,int units,int spread)
 	r.hold.money.assertEquals(999825)
 	(r.hold.money+r.market.money).assertEquals(2000000)
 	r.market.stock.assertEquals(100)
-	r.hold.cargo.assertEquals(0)
+	r.hold.usedCapacity().assertEquals(0)
 	r.controller.provenance.count.assertEquals(0)
 	r.progress.realizedProfit.assertEquals(-175)
 	r.progress.standing.assertEquals(0)
@@ -79,9 +79,8 @@ function order(PlayableTradeRuntime r,string id,int quantity,boolean buying)
 function partitionCycle(int stock,int target,int basePrice,int units,int spread,boolean reverse,int partition)
 	let r=pricingRuntime(stock,target,basePrice,units,spread)
 	if reverse
-		r.hold.cargo=75
-		r.hold.goodId="grain"
-	let initialCargo=r.hold.cargo
+		r.hold.contents.set("grain",75)
+	let initialCargo=r.hold.usedCapacity()
 	for cycle=0 to 3
 		let before=r.hold.money
 		for side=0 to 1
@@ -97,7 +96,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 		(r.hold.money<=before).assertTrue()
 		(r.hold.money+r.market.money).assertEquals(2000000)
 		r.market.stock.assertEquals(stock)
-		r.hold.cargo.assertEquals(initialCargo)
+		r.hold.usedCapacity().assertEquals(initialCargo)
 		r.progress.standing.assertEquals(0)
 		// Replay remains rejected after any mixture of order sizes/directions.
 		let saved=r.capture()
@@ -175,7 +174,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 	order(r,"d",17,false)
 	order(r,"e",3,true)
 	order(r,"f",47,false)
-	r.hold.cargo.assertEquals(0)
+	r.hold.usedCapacity().assertEquals(0)
 	r.market.stock.assertEquals(100)
 	r.hold.money.assertEquals(1000000)
 	r.market.money.assertEquals(1000000)
@@ -192,7 +191,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 	let saved="v2:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10:cargo;ship:1000:cargo;ship,75,999250,1000,grain:grain:grain:cargo;ship,grain,75,750,port"
 	let r=pricingRuntime(100,100,10,1,80)
 	r.reconstruct(saved).assertTrue()
-	r.capture().assertEquals("v3:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10,1:cargo;ship:1000:cargo;ship,75,999250,1000,grain:grain:grain:cargo;ship,grain,75,750,port")
+	r.capture().assertEquals("v4:port:25:1000750:10:9:10:75:999250:0:0::1234:777:12:2:old-buy:port,grain,25,1000750,10,9,0,0,0,0,0,1000,1000,10,1:cargo;ship:1000:cargo;ship,75,999250,1000,grain=75:grain:grain=75:cargo;ship,grain,75,750,port")
 	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(750)
 	r.controller.buy("old-buy",r.market,r.hold,1).assertEquals("Transaction already processed.")
 	r.market.quoteAmount(75,false).assertEquals(905)
@@ -246,8 +245,7 @@ function partitionCycle(int stock,int target,int basePrice,int units,int spread,
 	let before=r.capture()
 	r.controller.buy("overflow",r.market,r.hold,1).assertEquals("Trade amount is outside the currency settlement range.")
 	r.capture().assertEquals(before)
-	r.hold.cargo=1
-	r.hold.goodId="grain"
+	r.hold.contents.set("grain",1)
 	r.market.stock=2147483647
 	let fullStock=r.capture()
 	r.controller.sell("overflow",r.market,r.hold,1,1000).assertEquals("Trade amount is outside the currency settlement range.")

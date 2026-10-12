@@ -1,0 +1,311 @@
+package MixedCargoTests
+
+import PlayableTrade
+import TradePricing
+import TradeCommandTests
+import PlayableTradeTests
+import CampaignStartupTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import PlayableCampaignRuntime
+
+/** Production registration and physical eligibility, with small funded stores
+ * and unit-price definitions matching the independent headless vectors. */
+public function mixedTradeFixture() returns TradeCommandFixture
+	let f=new TradeCommandFixture()
+	for i=0 to f.trade.marketCount-1
+		let market=f.trade.markets[i]
+		market.pricing=new TradePricing()
+		market.stock=100
+		market.targetStock=100
+		market.money=10000
+		market.shortagePermille=0
+		market.productionPermille=1000
+		market.consumptionPermille=1000
+		market.baseUnitPrice=10
+		if market.goodName=="tools"
+			market.baseUnitPrice=30
+		if market.id=="london"
+			market.shortagePermille=2000
+	for i=0 to f.trade.storeCount-1
+		f.trade.stores[i].allowedGoodIds="grain,tools"
+	f.personal().capacity=8
+	f.warehouse().capacity=6
+	f.ship().capacity=4
+	f.trade.progress.standing=100
+	f.selectPersonal()
+	return f
+
+public function mixedCargoVectorState(TradeCommandFixture f) returns string
+	var result=""
+	for i=0 to 2
+		var store=f.personal()
+		if i==1
+			store=f.warehouse()
+		if i==2
+			store=f.ship()
+		result+=store.quantity("grain").toString()+","+store.quantity("tools").toString()+","+store.money.toString()+","+f.trade.controller.provenance.costIn(store.id,"grain").toString()+","+f.trade.controller.provenance.costIn(store.id,"tools").toString()+";"
+	for i=0 to 1
+		var id="lisbon"
+		if i==1
+			id="london"
+		let grain=f.trade.findMarket(id,"grain")
+		let tools=f.trade.findMarket(id,"tools")
+		result+=grain.stock.toString()+","+tools.stock.toString()+","+(grain.money+tools.money).toString()+";"
+	return result
+
+function fillMixedPersonal(TradeCommandFixture f)
+	f.dispatch("/trade buy 3")
+	f.dispatch("/trade select lisbon tools")
+	f.dispatch("/trade buy 2")
+	f.personal().quantity("grain").assertEquals(3)
+	f.personal().quantity("tools").assertEquals(2)
+	f.personal().usedCapacity().assertEquals(5)
+
+@test function mixedCargoRejectsAmbiguityCapacityCompatibilityAndReplayAtomically()
+	let f=mixedTradeFixture()
+	fillMixedPersonal(f)
+	f.reject("/trade move player_ship_hold warehouse:lisbon 1")
+	f.ports.output.startsWith("Specify a commodity:").assertTrue()
+	f.reject("/trade buy 4")
+	f.ports.output.assertEquals("Cargo capacity is insufficient.")
+	f.reject("/trade sell 3")
+	f.ports.output.assertEquals("Cargo is insufficient.")
+	f.reject("/trade move player_ship_hold warehouse:lisbon grain 4")
+	f.reject("/trade move player_ship_hold warehouse:lisbon missing 1")
+	f.reject("/trade move player_ship_hold warehouse:lisbon tools 2147483648")
+	f.warehouse().allowedGoodIds="grain"
+	f.reject("/trade move player_ship_hold warehouse:lisbon tools 1")
+	f.ports.output.assertEquals("Cargo store is incompatible with this commodity.")
+	f.dispatch("/trade store warehouse:lisbon")
+	f.reject("/trade buy 1")
+	f.ports.output.assertEquals("Cargo store is incompatible with this commodity.")
+	f.dispatch("/trade store player_ship_hold")
+	f.personal().capacity=5
+	f.reject("/trade buy 1")
+	f.dispatch("/trade move player_ship_hold warehouse:lisbon grain 2")
+	f.ports.output.assertEquals("Cargo moved.")
+	f.personal().quantity("tools").assertEquals(2)
+	f.trade.controller.provenance.costIn(f.personal().id,"tools").assertEquals(64)
+	f.trade.nextTransaction=3
+	f.reject("/trade move player_ship_hold warehouse:lisbon grain 1")
+	f.ports.output.assertEquals("Transaction already processed.")
+	f.trade.nextTransaction=4
+	// A mixed destination still shares one finite capacity.
+	f.ship().contents.set("tools",4)
+	f.reject("/trade move player_ship_hold cargo:english_patrol_ship grain 1")
+	f.ports.output.assertEquals("Cargo capacity is insufficient.")
+
+@test function mixedCargoInspectionAndAccessRetainPhysicalStoreAuthority()
+	let f=mixedTradeFixture()
+	fillMixedPersonal(f)
+	let before=f.trade.capture()
+	f.dispatch("/trade inspect")
+	f.ports.output.contains("5/8 cargo").assertTrue()
+	f.ports.output.contains("grain: 3").assertTrue()
+	f.ports.output.contains("tools: 2").assertTrue()
+	(StringLength(f.ports.output)<700).assertTrue()
+	f.trade.capture().assertEquals(before)
+	f.dispatch("/trade move player_ship_hold cargo:english_patrol_ship tools 1")
+	f.dispatch("/trade move player_ship_hold cargo:english_patrol_ship grain 1")
+	f.dispatch("/trade store cargo:english_patrol_ship")
+	f.vessel.controllerId="portugal"
+	f.reject("/trade sell 1")
+	f.reject("/trade move cargo:english_patrol_ship player_ship_hold grain 1")
+	f.dispatch("/trade inspect")
+	f.ports.output.contains("grain: 1").assertFalse()
+	f.vessel.controllerId="player"
+	f.dispatch("/trade store cargo:english_patrol_ship")
+	f.trade.progress.standing=0
+	f.reject("/trade move cargo:english_patrol_ship warehouse:lisbon grain 1")
+	f.actors.moveTo(f.rpg.interactions.get("london"))
+	f.reject("/trade sell 1")
+	f.reject("/trade move cargo:english_patrol_ship player_ship_hold tools 1")
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.state.loadedPhysicalMap="africa"
+	f.reject("/trade sell 1")
+	f.state.loadedPhysicalMap="europe_west"
+	f.dispatch("/trade store player_ship_hold")
+	// More than six entries uses the existing inspection page action.
+	f.personal().capacity=30
+	for i=0 to 6
+		f.personal().contents.set("extra"+i.toString(),1)
+	f.dispatch("/trade inspect")
+	f.ports.output.contains("extra6").assertFalse()
+	f.dispatch("/trade inspect 2")
+	f.ports.output.contains("extra6: 1").assertTrue()
+	f.ports.output.contains("grain: 2").assertFalse()
+	f.dispatch("/trade close")
+	f.trade.management.pauses.getModalOwnerCount().assertEquals(0)
+
+@test function mixedCargoKeepsUncostedGoodsSeparateFromOtherCommodityLots()
+	let f=mixedTradeFixture()
+	fillMixedPersonal(f)
+	f.personal().contents.set("tools",3)
+	f.dispatch("/trade move player_ship_hold warehouse:lisbon tools 3")
+	f.trade.controller.provenance.quantityIn(f.warehouse().id,"tools").assertEquals(2)
+	f.trade.controller.provenance.costIn(f.personal().id,"grain").assertEquals(30)
+	f.actors.moveTo(f.rpg.interactions.get("london"))
+	// Sell from the portable store after bringing the same uncosted balance back.
+	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+	f.dispatch("/trade move warehouse:lisbon player_ship_hold tools 3")
+	f.actors.moveTo(f.rpg.interactions.get("london"))
+	f.dispatch("/trade select london tools")
+	f.dispatch("/trade sell 3")
+	f.trade.progress.standing.assertEquals(100)
+	f.trade.progress.completedRouteCount.assertEquals(0)
+	f.personal().quantity("grain").assertEquals(3)
+	f.trade.controller.provenance.costIn(f.personal().id,"grain").assertEquals(30)
+
+function replaceMixedField(string saved,int index,string value) returns string
+	var result=""
+	var start=0
+	var field=0
+	for i=0 to StringLength(saved)
+		if i==StringLength(saved) or SubString(saved,i,i+1)==":"
+			if field>0
+				result+=":"
+			if field==index+1
+				result+=value
+			else
+				result+=SubString(saved,start,i)
+			field++
+			start=i+1
+	return result
+
+@test function mixedCargoSnapshotRejectsMalformedBalancesAndCrossCommodityOverAttribution()
+	let f=mixedTradeFixture()
+	fillMixedPersonal(f)
+	let saved=f.trade.capture()
+	let restored=mixedTradeFixture()
+	restored.trade.reconstruct(saved).assertTrue()
+	restored.trade.capture().assertEquals(saved)
+	for i=0 to 8
+		var contents="grain=3!tools=2!"
+		if i==1
+			contents="grain=3!tools=1!tools=1"
+		if i==2
+			contents="grain=2!tools=2"
+		if i==3
+			contents="grain=3!tools=-2"
+		if i==4
+			contents="grain=3!tools=2147483648"
+		if i==5
+			contents="grain=3!!tools=2"
+		if i==6
+			contents="grain=3!tools=0"
+		if i==7
+			contents="grain=3!tools=2=2"
+		if i==8
+			contents="grain=4!tools=1"
+		// Change both summary and row, so the last case reaches lot validation:
+		// total still fits, but tools provenance must not borrow grain balance.
+		let candidate=replaceMixedField(replaceMixedField(saved,21,contents),19,"player_ship_hold,5,906,8,"+contents)
+		restored.trade.reconstruct(candidate).assertFalse()
+		restored.trade.capture().assertEquals(saved)
+	restored.trade.reconstruct(replaceMixedField(saved,19,"")).assertFalse()
+	restored.trade.reconstruct(replaceMixedField(saved,21,"grain=3!tools=1")).assertFalse()
+	restored.trade.reconstruct(saved+"~player_ship_hold,grain,1,1,lisbon").assertFalse()
+	restored.trade.capture().assertEquals(saved)
+
+@test function supportedSingleCommoditySavesMigrateThenAdmitMixedUncostedCargoExactly()
+	for tradeVersion=2 to 3
+		let f=mixedTradeFixture()
+		var discovery=""
+		if tradeVersion==3
+			discovery=",1"
+		let legacy="v"+tradeVersion.toString()+":lisbon:97:10030:10:9:10:3:970:71:9:lisbon:100:240:4:8:legacy-buy,legacy-sale:lisbon,grain,97,10030,10,9,0,0,0,0,0,1000,1000,10"+discovery+":player_ship_hold:8:player_ship_hold,3,970,8,grain:grain:grain:player_ship_hold,grain,2,21,lisbon"
+		f.trade.reconstruct(legacy).assertTrue()
+		f.personal().quantity("grain").assertEquals(3)
+		f.personal().money.assertEquals(970)
+		f.trade.controller.provenance.costIn(f.personal().id,"grain").assertEquals(21)
+		f.trade.controller.legacyUnattributedCost.assertEquals(71)
+		f.trade.controller.seen("legacy-sale").assertTrue()
+		f.dispatch("/trade select lisbon tools")
+		f.dispatch("/trade store player_ship_hold")
+		f.dispatch("/trade buy 2")
+		f.ports.output.assertEquals("Bought 2 tools.")
+		let mixed=f.trade.capture()
+		let fresh=mixedTradeFixture()
+		fresh.trade.reconstruct(mixed).assertTrue()
+		fresh.trade.capture().assertEquals(mixed)
+		fresh.trade.controller.provenance.quantityIn(fresh.personal().id,"grain").assertEquals(2)
+		fresh.trade.controller.provenance.quantityIn(fresh.personal().id,"tools").assertEquals(2)
+	// Missing historical identities stay separate, occupying capacity forever
+	// until a supported system can identify them; purchases never relabel them.
+	let unknownFixture=mixedTradeFixture()
+	unknownFixture.trade.reconstruct("lisbon:100:10000:10:9:10:3:970:0:0::0:0:0:1:").assertTrue()
+	let unknown=unknownFixture.trade.hold
+	unknown.quantity("").assertEquals(3)
+	unknownFixture.trade.controller.buy("new",unknownFixture.trade.findMarket("lisbon","tools"),unknown,2).assertEquals("Bought 2 tools.")
+	unknown.quantity("").assertEquals(3)
+	unknown.quantity("tools").assertEquals(2)
+	unknown.usedCapacity().assertEquals(5)
+	let saved=unknownFixture.trade.capture()
+	unknownFixture.trade.reconstruct(saved).assertTrue()
+	unknownFixture.trade.capture().assertEquals(saved)
+
+@test function mixedCargoSurvivesFailedStorageFreshServicesPhysicalTravelAndReturn()
+	let source=new StartupFixture(new StartupStorage(),new StartupStorage(),"middle_east_india")
+	source.start("aq_qoyunlu")
+	let trade=source.trade
+	(trade.markets[0].goodName!=trade.markets[1].goodName).assertTrue()
+	trade.selectMarket(trade.markets[0].id,trade.markets[0].goodName).assertTrue()
+	trade.controller.buy("travel-first",trade.markets[0],trade.hold,3).startsWith("Bought").assertTrue()
+	trade.controller.buy("travel-second",trade.markets[1],trade.hold,2).startsWith("Bought").assertTrue()
+	let savedTrade=trade.capture()
+	source.campaign.saves.save(SAVE_SLOT_MANUAL,1,"mixed cargo").assertTrue()
+	let savedSlot=source.saves.read("manual_01")
+	trade.controller.buy("after-save",trade.markets[0],trade.hold,1).startsWith("Bought").assertTrue()
+	let live=trade.capture()
+	source.saves.failKey="manual_01"
+	source.campaign.saves.save(SAVE_SLOT_MANUAL,1,"failed cargo write").assertFalse()
+	source.saves.read("manual_01").assertEquals(savedSlot)
+	trade.capture().assertEquals(live)
+	source.saves.failKey=""
+	let fresh=new StartupFixture(source.cache,source.saves,"middle_east_india")
+	fresh.register()
+	fresh.campaign.startup().assertTrue()
+	fresh.ports.selectorIdentity=fresh.campaign.identity
+	fresh.campaign.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
+	fresh.trade.capture().assertEquals(savedTrade)
+	fresh.campaign.travel.transition(fresh.campaign.state.boundary("middle_east_india_to_africa"),.75,"mixed travel").assertTrue()
+	let destination=new StartupFixture(source.cache,source.saves,"africa")
+	destination.register()
+	destination.campaign.startup().assertTrue()
+	destination.ports.selectorIdentity=destination.campaign.identity
+	destination.trade.capture().assertEquals(savedTrade)
+	destination.campaign.travel.transition(destination.campaign.state.boundary("africa_to_middle_east_india"),.37,"mixed return").assertTrue()
+	let home=new StartupFixture(source.cache,source.saves,"middle_east_india")
+	home.register()
+	home.campaign.startup().assertTrue()
+	home.trade.capture().assertEquals(savedTrade)
+	home.trade.controller.buy("travel-first",home.trade.markets[0],home.trade.hold,1).assertEquals("Transaction already processed.")
+	home.trade.capture().assertEquals(savedTrade)
+	source.clock.detachTimer()
+	fresh.clock.detachTimer()
+	destination.clock.detachTimer()
+	home.clock.detachTimer()
+	source.campaign.autosaves.detachTimer()
+	fresh.campaign.autosaves.detachTimer()
+	destination.campaign.autosaves.detachTimer()
+	home.campaign.autosaves.detachTimer()
+
+@test function mixedCargoLateExtensionAndPartyFailuresRestoreEveryBalanceAndLot()
+	let f=new LoadFixture()
+	let trade=f.extension.trade
+	trade.registerMarket(new RuntimeMarket("port","tools",100,10000,30,27))
+	trade.controller.buy("kept-grain",trade.markets[0],trade.hold,3)
+	trade.controller.buy("kept-tools",trade.markets[1],trade.hold,2)
+	let before=trade.capture()
+	f.extension.fail=true
+	f.rejectAndVerify(f.candidate())
+	trade.capture().assertEquals(before)
+	f.extension.fail=false
+	f.ports.failParty=true
+	f.rejectAndVerify(f.candidate())
+	trade.capture().assertEquals(before)
+	trade.hold.quantity("grain").assertEquals(3)
+	trade.hold.quantity("tools").assertEquals(2)
+	trade.controller.provenance.costIn(trade.hold.id,"grain").assertEquals(30)
+	trade.controller.provenance.costIn(trade.hold.id,"tools").assertEquals(64)

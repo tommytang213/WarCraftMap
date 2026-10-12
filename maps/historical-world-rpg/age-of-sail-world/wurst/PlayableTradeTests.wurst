@@ -37,14 +37,14 @@ class Presentation implements TradePresentation
 	runtime.management.close()
 	buyCargo(null,"buy_1",calicut,ship,10,controller,ui)
 	ui.result.assertEquals("Bought 10 Pepper.")
-	ship.cargo.assertEquals(10)
+	ship.usedCapacity().assertEquals(10)
 	controller.moveCargo("unload",ship,warehouse,4).assertEquals("Cargo moved.")
 	controller.moveCargo("reload",warehouse,ship,4).assertEquals("Cargo moved.")
 	sellCargo(null,"sell_1",london,ship,10,2000,controller,ui)
 	// Marginal buy edges 91..100 cost 5*10+5*11=105. London edges
 	// 6..15 pay 3*53+3*52+4*51=519. Route rounding allocates 51*10-105.
 	ui.result.assertEquals("Sold 10 Pepper; realized P/L 414.")
-	ship.cargo.assertEquals(0)
+	ship.usedCapacity().assertEquals(0)
 	ship.money.assertEquals(1414)
 	progress.realizedProfit.assertEquals(414)
 	progress.standing.assertEquals(810)
@@ -57,7 +57,7 @@ class Presentation implements TradePresentation
 	controller.buy("large",market,ship,4).assertEquals("Cargo capacity is insufficient.")
 	controller.buy("once",market,ship,2).assertEquals("Bought 2 Grain.")
 	controller.buy("once",market,ship,1).assertEquals("Transaction already processed.")
-	ship.cargo.assertEquals(2)
+	ship.usedCapacity().assertEquals(2)
 
 @test function repeatedRouteStandingDiminishes()
 	let progress=new MerchantProgress()
@@ -96,7 +96,7 @@ class Presentation implements TradePresentation
 	controller.seen("no-money").assertFalse()
 	market.blockaded=true
 	controller.sell("blocked",market,ship,1,1000).assertEquals("Market access is restricted.")
-	ship.cargo.assertEquals(1)
+	ship.usedCapacity().assertEquals(1)
 	market.blockaded=false
 	market.occupiedByHostile=true
 	controller.buy("occupied",market,ship,1).assertEquals("Market access is restricted.")
@@ -124,7 +124,7 @@ class Presentation implements TradePresentation
 	resumed.registerStore(new TradeStore("cargo:test_ship",30,1000))
 	resumed.reconstruct(saved).assertEquals(true)
 	resumed.hold.id.assertEquals("cargo:test_ship")
-	resumed.hold.cargo.assertEquals(original.hold.cargo)
+	resumed.hold.usedCapacity().assertEquals(original.hold.usedCapacity())
 	resumed.controller.provenance.costIn("cargo:test_ship","grain").assertEquals(original.controller.provenance.costIn("cargo:test_ship","grain"))
 	resumed.progress.realizedProfit.assertEquals(original.progress.realizedProfit)
 	resumed.progress.standing.assertEquals(original.progress.standing)
@@ -140,7 +140,7 @@ class Presentation implements TradePresentation
 	resumed.controller.provenance.costIn("cargo:test_ship","grain").assertEquals(16)
 	// An additional configured warehouse stays empty; selecting the saved hold
 	// must not apply its summary cargo to whichever store was selected before.
-	resumed.stores[0].cargo.assertEquals(0)
+	resumed.stores[0].usedCapacity().assertEquals(0)
 	resumed.stores[0].money.assertEquals(0)
 	let resumedState=resumed.capture()
 	resumed.reconstruct(saved).assertTrue()
@@ -219,8 +219,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	let a=r.stores[0]
 	let b=r.stores[1]
 	r.controller.buy("legitimate",r.markets[0],a,3)
-	b.cargo=2
-	b.goodId="grain"
+	b.contents.set("grain",2)
 	r.controller.sell("unrelated",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 181.")
 	r.progress.standing.assertEquals(0)
 	r.progress.completedRouteCount.assertEquals(0)
@@ -228,8 +227,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(30)
 	r.controller.provenance.lots[0].origin.assertEquals("port")
 	// Only part of the next sale has recorded acquisitions, even in one store.
-	b.cargo=1
-	b.goodId="grain"
+	b.contents.set("grain",1)
 	r.controller.moveCargo("partial",a,b,1).assertEquals("Cargo moved.")
 	r.controller.sell("mixed",r.markets[3],b,2,1000)
 	r.progress.standing.assertEquals(0)
@@ -243,8 +241,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	let b=r.stores[1]
 	// A legitimate imported lot may have fractional per-unit cost, just as
 	// engine/trade.py's minor-currency settlement does: 10 / 3 units.
-	a.cargo=3
-	a.goodId="grain"
+	a.contents.set("grain",3)
 	r.controller.provenance.add(a.id,"grain",3,10,"port")
 	r.controller.moveCargo("split",a,b,2).assertEquals("Cargo moved.")
 	r.controller.provenance.costIn(a.id,"grain").assertEquals(4)
@@ -269,8 +266,7 @@ function lotRuntime() returns PlayableTradeRuntime
 	let r=lotRuntime()
 	let a=r.stores[0]
 	let b=r.stores[1]
-	a.cargo=3
-	a.goodId="grain"
+	a.contents.set("grain",3)
 	r.controller.provenance.add(a.id,"grain",3,1,"port")
 	r.controller.moveCargo("tiny-split",a,b,2)
 	r.controller.provenance.costIn(b.id,"grain").assertEquals(0)
@@ -312,19 +308,17 @@ function lotRuntime() returns PlayableTradeRuntime
 	let poor=r.capture()
 	r.controller.buy("poor",r.markets[0],a,1).assertEquals("Funds are insufficient.")
 	r.capture().assertEquals(poor)
-	b.goodId="silk"
+	b.allowedGoodIds="silk"
 	let incompatible=r.capture()
-	r.controller.moveCargo("incompatible",a,b,1).assertEquals("Cargo store contains another commodity.")
+	r.controller.moveCargo("incompatible",a,b,1).assertEquals("Cargo store is incompatible with this commodity.")
 	r.capture().assertEquals(incompatible)
 
 @test function transferAcrossOriginsKeepsEachLotAndItsRoundingRemainder()
 	let r=lotRuntime()
 	let a=r.stores[0]
 	let b=r.stores[1]
-	a.cargo=5
-	a.goodId="grain"
-	b.cargo=1
-	b.goodId="grain"
+	a.contents.set("grain",5)
+	b.contents.set("grain",1)
 	r.controller.provenance.add(a.id,"grain",3,10,"port")
 	r.controller.provenance.add(a.id,"grain",2,7,"other")
 	r.controller.provenance.add(b.id,"grain",1,2,"sink")
@@ -404,7 +398,7 @@ function assertLegacyTradeMigration(int fields,int schema)
 	r.controller.legacyUnattributedCost.assertEquals(71)
 	r.controller.legacyUnattributedQuantity.assertEquals(9)
 	r.controller.legacyUnattributedOrigin.assertEquals("other")
-	r.hold.cargo.assertEquals(3)
+	r.hold.usedCapacity().assertEquals(3)
 	r.hold.money.assertEquals(970)
 	r.progress.standing.assertEquals(600)
 	r.progress.realizedProfit.assertEquals(240)
@@ -413,17 +407,17 @@ function assertLegacyTradeMigration(int fields,int schema)
 	r.controller.seen("legacy-buy").assertTrue()
 	r.controller.seen("legacy-sale").assertTrue()
 	if fields==20
-		r.stores[1].cargo.assertEquals(2)
-		r.stores[1].goodId.assertEquals("silk")
+		r.stores[1].usedCapacity().assertEquals(2)
+		r.stores[1].contents.singleGood().assertEquals("silk")
 		r.controller.sell("legacy-cargo",r.markets[3],r.hold,1,1000)
 		r.progress.standing.assertEquals(600)
 		r.controller.legacyUnattributedCost.assertEquals(71)
 	else
 		// Historical summary formats never saved a commodity. Preserve the
 		// holding as unknown, instead of guessing from the selected market.
-		r.hold.goodId.assertEquals("")
+		r.hold.contents.singleGood().assertEquals("")
 	let migrated=r.capture()
-	migrated.startsWith("v3:").assertTrue()
+	migrated.startsWith("v4:").assertTrue()
 	let second=lotRuntime()
 	let resaved=codec.encode("manual_01",SAVE_SLOT_MANUAL,1,"migrated",tradeCampaignState(migrated,clock))
 	second.reconstruct(lastAuthorityValue(codec.decodeMigrateAndValidate(resaved,"manual_01"),"trade")).assertTrue()
@@ -441,8 +435,7 @@ function assertLegacyTradeMigration(int fields,int schema)
 	let r=lotRuntime()
 	r.controller.buy("original",r.markets[0],r.stores[0],3)
 	r.controller.buy("original-silk",r.markets[1],r.stores[1],2)
-	r.stores[2].cargo=1
-	r.stores[2].goodId="grain"
+	r.stores[2].contents.set("grain",1)
 	r.selectMarket("port","silk")
 	r.hold=r.stores[1]
 	let before=r.capture()
@@ -455,7 +448,7 @@ function assertLegacyTradeMigration(int fields,int schema)
 	r.reconstruct(before+"~cargo;a,grain,0,1,port").assertFalse()
 	r.reconstruct(before+"~cargo;a,grain,1,-1,port").assertFalse()
 	r.reconstruct(before+"~").assertFalse()
-	r.reconstruct("v4:"+SubString(before,3,StringLength(before))).assertFalse()
+	r.reconstruct("v5:"+SubString(before,3,StringLength(before))).assertFalse()
 	r.capture().assertEquals(before)
 	let other=lotRuntime()
 	other.controller.buy("candidate",other.markets[2],other.stores[2],4)
@@ -469,3 +462,39 @@ function assertLegacyTradeMigration(int fields,int schema)
 	(r.hold==selectedHold).assertTrue()
 	r.controller.seen("candidate").assertFalse()
 	r.controller.seen("original").assertTrue()
+
+@test function mixedCommoditySplitsKeepDestinationFifoOriginsAndExactRemainders()
+	let r=lotRuntime()
+	let a=r.stores[0]
+	let b=r.stores[1]
+	a.contents.set("grain",3)
+	a.contents.set("silk",3)
+	b.contents.set("grain",1)
+	b.contents.set("silk",1)
+	r.controller.provenance.add(a.id,"grain",3,10,"port")
+	r.controller.provenance.add(a.id,"silk",3,1,"port")
+	r.controller.provenance.add(b.id,"grain",1,2,"sink")
+	r.controller.provenance.add(b.id,"silk",1,7,"sink")
+	r.controller.moveCargo("grain-split",a,b,"grain",2).assertEquals("Cargo moved.")
+	r.controller.provenance.costIn(a.id,"grain").assertEquals(4)
+	r.controller.provenance.costIn(b.id,"grain").assertEquals(8)
+	r.controller.provenance.costIn(a.id,"silk").assertEquals(1)
+	r.controller.moveCargo("silk-split",a,b,"silk",2).assertEquals("Cargo moved.")
+	r.controller.provenance.costIn(b.id,"silk").assertEquals(7)
+	let saved=r.capture()
+	let fresh=lotRuntime()
+	fresh.reconstruct(saved).assertTrue()
+	fresh.capture().assertEquals(saved)
+	r.controller.sell("grain-sale",r.markets[3],b,2,1000).assertEquals("Sold 2 grain; realized P/L 176.")
+	r.controller.provenance.costIn(b.id,"grain").assertEquals(3)
+	let standing=r.progress.standing
+	r.controller.sell("silk-sale",r.markets[4],b,1,1000).assertEquals("Sold 1 silk; realized P/L 84.")
+	// The destination's same-market silk precedes the transferred zero-cost
+	// lot. Neither that lot nor grain's origin can provide route credit here.
+	r.progress.standing.assertEquals(standing)
+	b.quantity("grain").assertEquals(1)
+	b.quantity("silk").assertEquals(2)
+	r.controller.provenance.costIn(a.id,"grain").assertEquals(4)
+	r.controller.provenance.costIn(a.id,"silk").assertEquals(1)
+	r.controller.provenance.costIn(b.id,"silk").assertEquals(0)
+	r.controller.provenance.quantityIn(b.id,"silk").assertEquals(2)

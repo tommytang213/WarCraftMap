@@ -1,0 +1,281 @@
+{
+  "authority": "Shared CargoBalances keyed by stable commodity identity; FIFO CargoProvenance scoped to store and commodity; generated capacities/access remain unchanged.",
+  "broaderRequirements": [
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Playable markets and merchant standing"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0060.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0060",
+      "status": "fail",
+      "text": "Buying and selling are atomic conserved exchanges of cargo and currency."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Playable markets and merchant standing"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0060.02",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0060",
+      "status": "fail",
+      "text": "Cargo must enter an eligible authoritative personal, ship, fleet, warehouse, army, or other explicitly supported store and must respect that store's capacity and commodity compatibility."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Playable markets and merchant standing"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0060.03",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0060",
+      "status": "fail",
+      "text": "Warcraft items, units, frames, and cached price text are representations, never the authority."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Playable markets and merchant standing"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0066.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0066",
+      "status": "fail",
+      "text": "Market stock/history, cargo stores and cost basis, processed transaction IDs, route/repetition history, realized profit, merchant standing, and unlocked benefits persist in campaign saves and across physical-map transitions."
+    },
+    {
+      "authority": {
+        "path": "docs/DESIGN_LOCK.md",
+        "section": "Playable markets and merchant standing"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "REQ-0066.02",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "REQ-0066",
+      "status": "fail",
+      "text": "Quests, exploration, ships/fleets, governments, wars, historical events, technologies, and institutions integrate through stable IDs and explicit modifiers rather than hardcoded Age of Sail content in the shared trade engine."
+    },
+    {
+      "authority": {
+        "path": "docs/ROADMAP.md",
+        "section": "Phase 4 \u2014 Core world simulation"
+      },
+      "blockerClasses": [
+        "artifact-missing",
+        "authority-missing",
+        "integration-missing",
+        "mechanism-missing",
+        "state-unmapped",
+        "unmapped",
+        "unpersisted",
+        "unreachable"
+      ],
+      "classification": "combination",
+      "id": "ROAD-0046.01",
+      "kind": "runtime",
+      "mapping": {},
+      "parent": "ROAD-0046",
+      "status": "fail",
+      "text": "Economy/trade"
+    }
+  ],
+  "campaignEnvelopeVersion": 10,
+  "closedPortions": [
+    {
+      "id": "REQ-0060.01",
+      "scope": "Mixed buy/sell/transfer conserve quantities and currency with independent FIFO costs."
+    },
+    {
+      "id": "REQ-0060.02",
+      "scope": "Existing personal, warehouse and vessel stores share their finite capacity across all compatible commodities."
+    },
+    {
+      "id": "REQ-0066.01",
+      "scope": "Mixed balances, costs and history persist through fresh services, migration, travel and rollback."
+    },
+    {
+      "id": "ROAD-0046.01",
+      "scope": "Single-commodity live cargo authority gap repaired."
+    }
+  ],
+  "entryPoints": [
+    "/trade select MARKET COMMODITY",
+    "/trade store STORE",
+    "/trade buy QUANTITY",
+    "/trade sell QUANTITY",
+    "/trade move SOURCE DESTINATION COMMODITY QUANTITY",
+    "/trade inspect [PAGE]",
+    "/trade stores [PAGE]"
+  ],
+  "executedTests": [
+    {
+      "id": "wurst/MixedCargoVectorsTests.wurst:registeredMixedCargoOracleOrder0",
+      "line": 7,
+      "status": "pass",
+      "validates": "Registered buy/explicit transfer/sale journey compared at every step with headless balances, market stock, currency and FIFO cost."
+    },
+    {
+      "id": "wurst/MixedCargoVectorsTests.wurst:registeredMixedCargoOracleOrder1",
+      "line": 67,
+      "status": "pass",
+      "validates": "Reverse sale order preserves each quantity, all currency and the exact 94 total acquisition cost."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoRejectsAmbiguityCapacityCompatibilityAndReplayAtomically",
+      "line": 65,
+      "status": "pass",
+      "validates": "Mixed capacity, incompatible destinations, insufficient selected commodity, ambiguous shorthand and duplicate transactions reject atomically."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoInspectionAndAccessRetainPhysicalStoreAuthority",
+      "line": 99,
+      "status": "pass",
+      "validates": "Paged registered inspection; personal, warehouse and vessel checks retain physical presence, control and stale-selection rejection."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoKeepsUncostedGoodsSeparateFromOtherCommodityLots",
+      "line": 141,
+      "status": "pass",
+      "validates": "Uncosted mixed cargo cannot borrow another commodity cost basis or earn ordinary standing."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoSnapshotRejectsMalformedBalancesAndCrossCommodityOverAttribution",
+      "line": 176,
+      "status": "pass",
+      "validates": "Fresh v4 reconstruction, malformed/duplicate/overflowing balances, mismatched summaries and cross-commodity provenance rejection."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:supportedSingleCommoditySavesMigrateThenAdmitMixedUncostedCargoExactly",
+      "line": 211,
+      "status": "pass",
+      "validates": "Literal v2/v3 records preserve quantities, costs, uncosted portions, archival history and replay; unknown legacy identities stay separate."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoSurvivesFailedStorageFreshServicesPhysicalTravelAndReturn",
+      "line": 248,
+      "status": "pass",
+      "validates": "Failed transactional storage preserves the old slot and live cargo; fresh services and physical travel/return preserve complete trade authority."
+    },
+    {
+      "id": "wurst/MixedCargoTests.wurst:mixedCargoLateExtensionAndPartyFailuresRestoreEveryBalanceAndLot",
+      "line": 294,
+      "status": "pass",
+      "validates": "Late extension/party failures restore mixed balances, lots, other authority and projections together."
+    },
+    {
+      "id": "wurst/PlayableTradeTests.wurst:mixedCommoditySplitsKeepDestinationFifoOriginsAndExactRemainders",
+      "line": 466,
+      "status": "pass",
+      "validates": "Two mixed stores retain destination FIFO, original identities, integer remainders and legitimate zero-cost lots separately per commodity."
+    },
+    {
+      "id": "wurst/PiracyCommandTests.wurst:prizeAdapterPreservesMixedDestinationAndRejectsAmbiguousSource",
+      "line": 461,
+      "status": "pass",
+      "validates": "Single-commodity prizes preserve unrelated destination cargo/provenance; mixed-source claims reject without loss."
+    }
+  ],
+  "executionSummary": {
+    "discovered": 531,
+    "status": "pass",
+    "succeeded": 531
+  },
+  "format": "warcraftmap_issue475_mixed_cargo_v1",
+  "frameworkStatus": "pass",
+  "migration": "Supported unversioned 16/17/19/20-field records and v2/v3 singletons retain quantities, currency, exact costs, uncosted cargo and history; v4 uses sparse good=quantity entries.",
+  "mixedCargoStatus": "pass",
+  "nativeClient": "not_run",
+  "packagedDefinitions": {
+    "archiveSha256": "e2d76f948771159b24d330feee6be122ef8b9c525e6b58b50b1bd652a630baf2",
+    "catalogueDefinitionsMatch": true,
+    "compiledMixedCargoAndCommands": true,
+    "nativeClient": "not_run",
+    "releaseReady": false,
+    "sourceIdentity": {
+      "sourceRevision": "96c32d45ce851dc435cfa268340fb6aeedf93b13",
+      "sourceTreeSha256": "a9253abd7c2f58eeef20cad56f1feb85062dfa179394748491539bec185d17bd"
+    },
+    "stores": 829
+  },
+  "referenceParity": "test_mixed_cargo.py regenerates literal Wurst states from engine/economy.py and engine/trade.py; 22 registered transaction snapshots conserve each good, all currency and allocated cost in two sale orders.",
+  "releaseReady": false,
+  "remainingBlockers": [
+    "Broader economic simulation and other economic-integration obligations.",
+    "Broader merchant reputation, route diversity and progression contributions.",
+    "Mixed-source prize history remains outside the single-commodity prize contract and rejects atomically.",
+    "Native Warcraft launch and real-client gameplay validation: blocked_pending_real_forsaken_kingdom_launch_smoke.",
+    "Other repository publication blockers remain in the exhaustive traceability report."
+  ],
+  "requirementScope": [
+    "REQ-0060",
+    "REQ-0066",
+    "ROAD-0046"
+  ],
+  "scope": "Simultaneous commodity balances within existing live trade stores only.",
+  "sourceIdentity": {
+    "sourceRevision": "96c32d45ce851dc435cfa268340fb6aeedf93b13",
+    "sourceTreeSha256": "a9253abd7c2f58eeef20cad56f1feb85062dfa179394748491539bec185d17bd"
+  },
+  "tradeDomainVersion": 4
+}

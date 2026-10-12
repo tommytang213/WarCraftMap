@@ -27,12 +27,13 @@ class WurstExecutionError(RuntimeError):
 def toolchain_environment() -> dict[str, str]:
     """Give the full generated suite enough heap without changing host settings.
 
-    The pinned JVM's automatic heap limit can exhaust memory during the complete
-    interpreter run. Prepend the validated limit so an explicit caller -Xmx in
+    The complete catalogue suite saturated a 6 GiB heap and spent minutes in
+    full GC, causing the unchanged 20-second test deadlines to expire. Reserve
+    8 GiB for this process. Prepend the limit so an explicit caller -Xmx in
     JAVA_TOOL_OPTIONS still takes precedence. Grill's compiler child inherits it.
     """
     env = os.environ.copy()
-    env["JAVA_TOOL_OPTIONS"] = ("-Xmx6g " + env.get("JAVA_TOOL_OPTIONS", "")).strip()
+    env["JAVA_TOOL_OPTIONS"] = ("-Xmx8g " + env.get("JAVA_TOOL_OPTIONS", "")).strip()
     return env
 
 

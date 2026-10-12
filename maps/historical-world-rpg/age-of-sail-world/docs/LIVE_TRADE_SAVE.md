@@ -1,7 +1,7 @@
 # Live trade provenance and save contract
 
-`PlayableTradeRuntime` writes trade domain version 3 (`v3:`). The campaign
-envelope is version 8, supporting envelopes 1–8. This follows the existing
+`PlayableTradeRuntime` writes trade domain version 4 (`v4:`). The campaign
+envelope is version 10, supporting envelopes 1–10. This follows the existing
 independently versioned diplomacy and military domains. The headless JSON trade
 contract already contains attributable lots and remains unchanged.
 
@@ -30,7 +30,7 @@ cannot change earlier lots' origins. Existing standing, realized profit and
 completed-route progression persist. Transaction and lot capacity are checked
 before mutation; replay history is never evicted to accept another transaction.
 
-After the `v2:` or `v3:` prefix, fields 0–19 retain the former colon-delimited layout.
+In the supported `v2:` and `v3:` formats, fields 0–19 retain the former colon-delimited layout.
 Fields 8–10 now hold **unattributed legacy** cost, quantity and last origin;
 they are archival history and never participate in sales or transfers. Fields
 20–22 contain the selected market's commodity, selected hold's commodity and
@@ -38,8 +38,7 @@ ordered lots. A lot is `storeId,goodId,quantity,cost,originMarketId`; lots are
 separated by `~`. Store IDs retain the existing colon-to-semicolon encoding.
 
 The production validator checks all records before mutation, including lot
-amounts, known stores and origin/commodity pairs, matching saved store
-commodities, total attributed quantities no greater than saved holdings, and
+amounts, known stores and origin/commodity pairs, total attributed quantities no greater than the matching saved commodity balance, and
 agreement between the selected hold summary and its store record. Reconstruction
 and rollback use the same serialization; campaign load still commits through
 the existing staged transaction boundary.
@@ -53,10 +52,31 @@ state, processed transaction IDs, next transaction number and earned progression
 are retained. The summary-only formats never saved the hold's commodity; their
 cargo quantity remains present with an unknown commodity rather than guessing
 an identity from the selected market. New purchases receive normal provenance.
-Resaving writes v3 and migration is idempotent. Source saves are not rewritten.
+Resaving writes v4 and migration is idempotent. Source saves are not rewritten.
 
-Quantity-aware pricing does not change this wire format. The live domain stays
-independently versioned; the campaign envelope remains version 8. Base prices, target stocks,
+Version 4 retains the 23-field layout and unchanged market/lot/history records.
+Store column 4 and summary field 21 now contain sparse `goodId=quantity` entries
+separated by `!`, replacing the single commodity ID. For example,
+`grain=3!tools=2` occupies five units, recorded in store column 1 / summary field 6.
+An empty contents field means no cargo. `=3` preserves three units whose identity
+was absent in a legacy summary. It is never inferred from a new purchase.
+Zero balances are removed; duplicate keys, malformed/overflowing quantities,
+capacity overflow, summary disagreement and per-commodity lot over-attribution
+reject before any live mutation. A temporary validation ledger is discarded on
+both acceptance and rejection. Uncosted quantities remain independent of lots.
+The store's definition allowlist, when restricted, applies independently to each
+known balance; existing unrestricted live definitions and capacities are unchanged.
+
+V2/V3 and all four unversioned layouts migrate each saved singleton exactly,
+including uncosted cargo and earned/archival history. Fresh services and rollback
+use the same v4 encoder. A store newly added to the catalogue but absent from a
+v4 save starts with zero currency and cargo; missing selected-store records reject.
+Legacy additive-definition defaults remain supported, including the special
+zero-balance migration for an omitted personal hold. No new store or capacity is
+introduced by mixed cargo.
+
+Quantity-aware pricing is unchanged by the balance migration. The live domain stays
+independently versioned; the campaign envelope remains version 10. Base prices, target stocks,
 quantity units, elasticity, spread and price bounds are generated definitions;
 generator provenance is version 18, including the trade access bindings. Current
 stock and persisted live modifiers determine every commit quote. Cached displayed
@@ -118,3 +138,19 @@ including after loading the same legacy save over a changed campaign. Existing
 saved balances, capacity, commodities, provenance and progression override these
 defaults. Missing personal stores retain the existing zero-balance migration.
 Generated bindings and local actor checks remain the only access authority.
+
+`MixedCargoVectorsTests.wurst` executes registered commands against literal
+headless economy/trade expectations for both sale orders. Every step compares
+all commodity balances, remaining acquisition costs, store currency and market
+stock/liquidity. `MixedCargoTests.wurst` covers mixed-store access, combined
+capacity, compatibility, ambiguous transfers, paged inspection, uncosted cargo,
+fresh reconstruction, malformed records, failed storage, physical travel/return
+and late extension/party rollback. Existing FIFO tests additionally split two
+commodities with integer and zero-cost remainders into an already mixed store.
+
+The existing prize contract records one commodity per claim. Its adapter accepts
+a single known source commodity into a compatible mixed destination, preserving
+unrelated balances; it atomically rejects a mixed or unidentified source pending
+a separate prize-accounting extension. It never collapses cargo into one identity.
+This repair closes mixed trade cargo only. Economic simulation, broader merchant
+reputation and native-launch obligations retain their existing blockers.

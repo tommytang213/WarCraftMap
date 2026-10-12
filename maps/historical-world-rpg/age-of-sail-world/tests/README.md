@@ -365,3 +365,11 @@ terminal and legacy RPG state through the live codec. RPG v5 preserves stage pat
 objective IDs and deduplication without converting old counters into evidence.
 See [LIVE_QUEST_STAGES.md](../docs/LIVE_QUEST_STAGES.md) for the migration table and
 explicit condition, reward and local-random-quest integration blockers.
+
+`MixedCargoTests.wurst` and `MixedCargoVectorsTests.wurst` cover simultaneous
+commodity balances through registered trade actions, mixed personal/warehouse/
+vessel stores, capacity and compatibility, FIFO costs, replay, v4 persistence,
+legacy migration, failed storage, late rollback and fresh physical-map services.
+`test_mixed_cargo.py` generates and checks both sale-order vectors against the
+headless economy/trade contracts. Regenerate intentionally with
+`python3 tests/test_mixed_cargo.py --write-vectors`, then execute pinned Wurst.

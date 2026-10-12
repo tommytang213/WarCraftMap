@@ -8,8 +8,8 @@
 | List eligible stores at the selected market | `/trade stores [PAGE]` |
 | Select a cargo store | `/trade store STORE` |
 | Buy or sell using the selected store | `/trade buy QUANTITY`, `/trade sell QUANTITY` |
-| Transfer cargo between two eligible stores | `/trade move SOURCE DESTINATION QUANTITY` |
-| Inspect the current local selection | `/trade inspect` or `/trade open` |
+| Transfer cargo between two eligible stores | `/trade move SOURCE DESTINATION COMMODITY QUANTITY` |
+| Inspect the current local selection | `/trade inspect [PAGE]` or `/trade open [PAGE]` |
 | Close market management | `/trade close` |
 
 `/market` is an alias for `/trade`. Lists show six eligible entries per page.
@@ -23,6 +23,17 @@ and `/trade buy 2`. Close management before travelling. At the next settlement,
 list and select that settlement's market and commodity before selling. Each
 store retains its own currency; cargo transfer moves quantities and acquisition
 lots, without transferring currency or replenishing any balance.
+
+A store can hold several commodities simultaneously. The sum of all quantities
+uses its existing capacity. Buying and selling affect only the selected commodity;
+transfers name the commodity independently of the market selection. The older
+`/trade move SOURCE DESTINATION QUANTITY` shorthand works only when the source
+contains exactly one known commodity. Mixed and unidentified legacy cargo require
+an explicit known identity; no selection guesses or relabels a balance.
+
+`/trade inspect [PAGE]` lists six individual balances per page and the selected
+store's total used capacity and currency, after rechecking its access. Saved
+unidentified cargo appears as **Unknown legacy commodity** and still uses space.
 
 Markets require a recruited, capable field character physically within the
 existing 256-world-unit interaction range of the generated settlement point.
@@ -63,7 +74,7 @@ open management. `/trade close` releases only that market owner, preserving othe
 management sessions and manual pause. Failed or aborted loads retain the session
 and previous selection validation; committed reconstruction closes the session.
 
-Trade schema 2 and campaign envelopes 1–8 remain supported. Access bindings and
+Trade schemas 1–4 and campaign envelopes 1–10 remain supported. Access bindings and
 interaction points are regenerated definitions (generator version 18), not saved
 permissions or new mutable location records. Current military ownership/control,
 RPG physical observations and merchant standing remain the authorities, with
