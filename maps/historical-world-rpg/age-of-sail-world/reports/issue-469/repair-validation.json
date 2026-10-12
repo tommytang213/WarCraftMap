@@ -1,0 +1,65 @@
+{
+  "format": "warcraftmap_issue_validation_repair_v1",
+  "issue": 469,
+  "sourceIdentity": {
+    "sourceRevision": "4a5ea0d7492b814716c83e75c6e51a9071271faf",
+    "sourceTreeSha256": "850080b427fc56051d7c9d9f34b56808c818a2399ab8cb3d71c602efa28e7b35"
+  },
+  "repair": {
+    "failure": "test_checked_in_machine_and_human_reports_are_current raised JSONDecodeError after the audit rejected stale reports before emitting its JSON summary.",
+    "cause": "The milestone implementation changed two hashed release inputs without refreshing the generated release-blocker report.",
+    "action": "Regenerated reports with tooling/release_blocker_audit.py --write; only the two release input hashes changed.",
+    "refreshedInputs": [
+      "package.json",
+      "scenario/compatibility/release-save-v1.json"
+    ],
+    "implementationChanged": false,
+    "officialReleaseGatesChanged": false,
+    "findingsAndStatusesChanged": false
+  },
+  "validation": {
+    "focusedPythonAndFramework": {
+      "status": "pass",
+      "tests": 37,
+      "elapsedSeconds": 270.532,
+      "transcript": "repair-focused-python.log.gz"
+    },
+    "releaseBlockerRegression": {
+      "status": "pass",
+      "tests": 10,
+      "elapsedSeconds": 67.955,
+      "transcript": "repair-release-blocker-tests.log.gz"
+    },
+    "totalPythonTests": 47,
+    "frameworkFixtureScope": "The 8 framework Python tests use synthetic compiler fixtures for orchestration, not fresh pinned Wurst or native-client evidence.",
+    "frameworkContentBoundary": "pass",
+    "requirementTraceabilityFreshness": "pass",
+    "gitDiffCheck": "pass",
+    "lockedTraditionAndWorldHashes": "unchanged"
+  },
+  "retainedPinnedWurst": {
+    "executedThisSession": false,
+    "report": "wurst-results.json.gz",
+    "status": "pass",
+    "tests": 44,
+    "historicalSourceIdentity": {
+      "sourceRevision": "51862ed5525219922efb0f73119257cbd465810f",
+      "sourceTreeSha256": "850080b427fc56051d7c9d9f34b56808c818a2399ab8cb3d71c602efa28e7b35"
+    },
+    "sourceContentMatchesCurrentTree": true,
+    "transcriptDigestVerified": true,
+    "freshExecutionUnavailable": "Grill and Java are absent; the Docker socket denies access in this Codex environment."
+  },
+  "releaseAudit": {
+    "status": "fail",
+    "unresolvedCampaignBlockers": 241,
+    "candidateReady": false
+  },
+  "nativeLaunch": {
+    "issue": 438,
+    "status": "unresolved",
+    "executedThisSession": false
+  },
+  "playerQARequested": false,
+  "outerRepositoryValidation": "pending outer worker"
+}

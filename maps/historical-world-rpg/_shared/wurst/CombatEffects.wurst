@@ -1,0 +1,248 @@
+package CombatEffects
+
+import ExactNatural
+import ExactRational
+import MilitaryTraditionLayer
+
+/** Scenario-authored predicates are compiled from validated weapon, role,
+ * ability, movement and ship metadata. Proxy rawcodes alone prove nothing. */
+public class CombatProfile
+	string id
+	int unitTypeId
+	int kind
+	string categoryId
+	string attackId
+	string nativeAttack
+	CombatProfile next = null
+	construct(string id, int unitTypeId, int kind, string categoryId, string attackId, string nativeAttack)
+		this.id = id
+		this.unitTypeId = unitTypeId
+		this.kind = kind
+		this.categoryId = categoryId
+		this.attackId = attackId
+		this.nativeAttack = nativeAttack
+
+class CombatAttribute
+	string id
+	string categoryId
+	string attackId
+	CombatAttribute next = null
+	construct(string id, string categoryId, string attackId)
+		this.id = id
+		this.categoryId = categoryId
+		this.attackId = attackId
+
+public class CombatEffect
+	string id
+	string sourceId
+	string categoryId
+	string description
+	CombatSources contributions = new CombatSources()
+	CombatEffect next = null
+	construct(string id, string sourceId, string categoryId, string description)
+		this.id = id
+		this.sourceId = sourceId
+		this.categoryId = categoryId
+		this.description = description
+	ondestroy
+		destroy contributions
+
+class CombatSource
+	string id
+	string attackId
+	string stat
+	ExactRational value
+	CombatSource next = null
+	construct(string id, string attackId, string stat, ExactRational value)
+		this.id = id
+		this.attackId = attackId
+		this.stat = stat
+		this.value = value
+	ondestroy
+		destroy value
+
+/** A named source contributes once per typed stat. Research/equipment can own
+ * separate stores; milestone replacement never removes their contributions. */
+public class CombatSources
+	private CombatSource entries = null
+	/** Takes ownership of value. Reconciliation replaces rather than adds. */
+	function replace(string id, string attackId, string stat, ExactRational value)
+		var entry = entries
+		while entry != null
+			if entry.id == id and entry.attackId == attackId and entry.stat == stat
+				destroy entry.value
+				entry.value = value
+				return
+			entry = entry.next
+		let added = new CombatSource(id, attackId, stat, value)
+		added.next = entries
+		entries = added
+	function appendRating(ExactRational total, string attackId, string stat, CombatBindings bindings)
+		var entry = entries
+		while entry != null
+			if entry.attackId == attackId and entry.stat == stat and (bindings == null or not bindings.milestoneSource(entry.id))
+				total.add(entry.value)
+			entry = entry.next
+	function inspection() returns string
+		var result = ""
+		var entry = entries
+		while entry != null
+			result += " | " + entry.attackId + " " + entry.stat + ": +" + entry.value.display() + " basis points"
+			entry = entry.next
+		return result
+	ondestroy
+		while entries != null
+			let obsolete = entries
+			entries = entries.next
+			destroy obsolete
+
+/** A single transient delivery receipt. Duplicate tactical/abstract deliveries
+ * return its committed result; death callbacks consume loss without re-scaling.
+ * Receipts never cross a callback generation, map rebuild, or load transaction. */
+public class CombatHit
+	string attackId
+	ExactRational damage
+	boolean applied = false
+	boolean modified = false
+	construct(string attackId, ExactRational baseDamage)
+		this.attackId = attackId
+		damage = baseDamage
+	ondestroy
+		destroy damage
+
+public class CombatBindings
+	private CombatProfile profiles = null
+	private CombatEffect effects = null
+	private CombatAttribute attributes = null
+	function profile(string id, int unitTypeId, int kind) returns CombatProfile
+		var entry = profiles
+		while entry != null
+			if entry.id == id and entry.unitTypeId == unitTypeId and entry.kind == kind
+				return entry
+			entry = entry.next
+		return null
+	function addProfile(string id, int unitTypeId, int kind, string categoryId, string attackId, string nativeAttack)
+		let entry = new CombatProfile(id, unitTypeId, kind, categoryId, attackId, nativeAttack)
+		entry.next = profiles
+		profiles = entry
+	function addAttribute(string id, string categoryId, string attackId)
+		let entry = new CombatAttribute(id, categoryId, attackId)
+		entry.next = attributes
+		attributes = entry
+	function addEffect(string id, string sourceId, string categoryId, string description) returns CombatEffect
+		let entry = new CombatEffect(id, sourceId, categoryId, description)
+		entry.next = effects
+		effects = entry
+		return entry
+	function binding(string id) returns CombatEffect
+		var entry = effects
+		while entry != null
+			if entry.id == id
+				return entry
+			entry = entry.next
+		return null
+	function milestoneSource(string id) returns boolean
+		var entry = effects
+		while entry != null
+			if entry.sourceId == id
+				return true
+			entry = entry.next
+		return false
+	function compatible(TraditionLayer layer, CombatProfile profile, string attackId) returns boolean
+		return layer != null and profile != null and attackId != "" and profile.attackId == attackId and layer.categoryId == profile.categoryId
+	function knownEffects(TraditionLayer layer) returns boolean
+		if layer == null
+			return true
+		var reached = layer.reached
+		while reached != null
+			if this.binding(reached.effectId) == null
+				return false
+			reached = reached.next
+		return true
+	function rating(TraditionLayer layer, CombatProfile profile, string attackId, string stat) returns ExactRational
+		let result = new ExactRational("0", "1", "1")
+		if not compatible(layer, profile, attackId)
+			return result
+		if stat == "damage"
+			var attribute = attributes
+			while attribute != null
+				if attribute.attackId == attackId and attribute.categoryId == layer.categoryId
+					let value = layer.modifier(attribute.id)
+					if value != null
+						result.add(value)
+				attribute = attribute.next
+		var reached = layer.reached
+		while reached != null
+			if (reached castTo ReachedTraditionMilestone).active
+				let binding = this.binding(reached.effectId)
+				if binding != null and binding.categoryId == layer.categoryId
+					binding.contributions.appendRating(result, attackId, stat, null)
+			reached = reached.next
+		return result
+	/** The sole rating-to-damage boundary, used by native and abstract combat.
+	 * Input legality and actual weapon validation precede any contribution. */
+	function apply(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources)
+		if hit.applied
+			return
+		hit.applied = true
+		if not legalAttack or source == null or hit.attackId == "" or source.attackId != hit.attackId or hit.damage.negative() or hit.damage.numerator == "0" or not knownEffects(attacker) or not knownEffects(defender)
+			return
+		let attack = rating(attacker, source, hit.attackId, "damage")
+		let resistance = rating(defender, target, hit.attackId, "resistance")
+		if attackSources != null
+			attackSources.appendRating(attack, hit.attackId, "damage", this)
+		if defenseSources != null
+			defenseSources.appendRating(resistance, hit.attackId, "resistance", this)
+		resistance.nonnegative()
+		hit.modified = attack.numerator != "0" or resistance.numerator != "0"
+		let baseline = new ExactRational("10000", "1", "1")
+		attack.add(baseline)
+		attack.nonnegative()
+		resistance.add(baseline)
+		hit.damage.multiply(attack)
+		hit.damage.dividePositive(resistance)
+		destroy baseline
+		destroy attack
+		destroy resistance
+	function inspection(TraditionLayer layer, CombatProfile profile, boolean alive) returns string
+		var result = ""
+		var reached = layer.reached
+		while reached != null
+			let binding = this.binding(reached.effectId)
+			if binding == null
+				result += " | " + reached.effectId + ": unbound (release blocker)"
+			else
+				result += " | " + binding.id + " [" + binding.sourceId + "]: " + binding.description
+				if not (reached castTo ReachedTraditionMilestone).active
+					result += " [replaced]"
+				else if not alive or profile == null or profile.attackId == "" or profile.categoryId != layer.categoryId
+					result += " [inactive: no eligible weapon/force]"
+				else
+					result += " [active on " + profile.attackId + "]"
+				result += binding.contributions.inspection()
+			reached = reached.next
+		var attribute = layer.modifiers
+		while attribute != null
+			var bound = false
+			var consumer = attributes
+			while consumer != null
+				if consumer.id == attribute.attributeId and consumer.attackId != ""
+					bound = true
+				consumer = consumer.next
+			if not bound
+				result += " | " + attribute.attributeId + ": consumer pending"
+			attribute = attribute.next
+		return result
+	ondestroy
+		while profiles != null
+			let obsolete = profiles
+			profiles = profiles.next
+			destroy obsolete
+		while effects != null
+			let obsolete = effects
+			effects = effects.next
+			destroy obsolete
+		while attributes != null
+			let obsolete = attributes
+			attributes = attributes.next
+			destroy obsolete

@@ -387,8 +387,8 @@ function testEquipmentSet() returns EquipmentSet
 		let itemDefinition=runtime.inventory.definitions[i]
 		(runtime.inventory.comparison(hero.id,itemDefinition.id) != "Unknown item").assertTrue()
 
-/** Execute every generated registration and populate each authority domain. */
-function generatedRpgWithProgress() returns WarcraftRpgRuntime
+/** Execute every generated registration, then populate the selected records. */
+function generatedRpgWithProgress(string domain, int part, int parts) returns WarcraftRpgRuntime
 	let runtime=new WarcraftRpgRuntime(new Effects())
 	configureGeneratedRpg(runtime)
 	(runtime.heroes.count>0).assertTrue()
@@ -396,6 +396,12 @@ function generatedRpgWithProgress() returns WarcraftRpgRuntime
 	(runtime.technologies.count>0).assertTrue()
 	(runtime.journal.count>0).assertTrue()
 	(runtime.treasures.count>0).assertTrue()
+	// Bound the population before resolving seeded treasure choices. Resolving
+	// the whole catalogue here repeats expensive SHA work for records that the
+	// batch immediately discards, even in hero/quest tests. Full registration
+	// still runs on both sides; the intervals collectively resolve and restore
+	// every treasure, with the progressed first record retained in every batch.
+	selectGeneratedBatch(runtime, domain, part, parts)
 	let hero=runtime.heroes.heroes[0]
 	runtime.heroes.clock=configureCampaignTimeline()
 	runtime.heroes.clock.advanceTo(hero.availabilityStartDay).assertTrue()
@@ -456,12 +462,14 @@ function selectGeneratedBatch(WarcraftRpgRuntime runtime, string domain, int par
 			if i > 0
 				runtime.journal.quests[runtime.journal.count] = runtime.journal.quests[i]
 				runtime.journal.count++
-	else
-		runtime.treasures.count = treasures
+	else if domain == "treasures"
+		for i = treasures * part div parts to treasures * (part + 1) div parts - 1
+			if i > 0
+				runtime.treasures.treasures[runtime.treasures.count] = runtime.treasures.treasures[i]
+				runtime.treasures.count++
 
 function generatedBatchRoundTrips(string domain, int part, int parts)
-	let runtime=generatedRpgWithProgress()
-	selectGeneratedBatch(runtime, domain, part, parts)
+	let runtime=generatedRpgWithProgress(domain, part, parts)
 	let saved=runtime.captureState()
 	let restored=new WarcraftRpgRuntime(new Effects())
 	configureGeneratedRpg(restored)
@@ -506,4 +514,15 @@ function generatedBatchRoundTrips(string domain, int part, int parts)
 	generatedBatchRoundTrips("quests", 5, 6)
 
 @test function generatedTreasuresRoundTripWithHeroQuestAndEquipmentProgress()
-	generatedBatchRoundTrips("treasures", 0, 1)
+	// Use the same complete-record partition as heroes and quests. Every batch
+	// still performs both restores and retains the discovered first treasure.
+	generatedBatchRoundTrips("treasures", 0, 4)
+
+@test function generatedTreasuresSecondQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 1, 4)
+
+@test function generatedTreasuresThirdQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 2, 4)
+
+@test function generatedTreasuresFourthQuarterRoundTrips()
+	generatedBatchRoundTrips("treasures", 3, 4)

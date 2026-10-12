@@ -1,0 +1,180 @@
+{
+  "format": "warcraftmap_issue_validation_repair_v1",
+  "issue": 469,
+  "pullRequest": 477,
+  "sourceIdentity": {
+    "sourceRevision": "b096193bce6403c367892f87603661eef759b7d7",
+    "sourceTreeSha256": "9633ddb748837671e48f2ca2a47417c301b734c621276a04c3fcbc8d27a0eb88"
+  },
+  "repair": {
+    "failedRuns": [
+      {
+        "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/38227319305/job/114737901434",
+        "passed": 531,
+        "total": 534,
+        "timeoutBatches": [
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "url": "https://github.com/tommytang213/WarCraftMap/actions/runs/38227319224/job/114737902004",
+        "passed": 532,
+        "total": 534,
+        "timeoutBatches": [
+          3,
+          4
+        ]
+      }
+    ],
+    "failure": "Treasure round-trip batches still resolved all 28 seeded treasures before selecting the batch, exceeding the pinned 20-second interpreter limit in CI.",
+    "action": "Select the fixture population after full production registration, before populating progress and resolving seeded choices. Retain all 14 record batches, both destination restore/reconcile passes, and complete snapshot equality assertions.",
+    "treasures": 28,
+    "treasureBatchSizes": [
+      7,
+      8,
+      8,
+      8
+    ],
+    "seededResolutionsBefore": 392,
+    "seededResolutionsAfter": 41,
+    "authoredTreasureCandidatesSharedBetweenRecords": false,
+    "productionCodeChanged": false,
+    "saveFormatsChanged": false,
+    "authoredContentChanged": false,
+    "compilerTimeoutChanged": false,
+    "officialReleaseGatesChanged": false
+  },
+  "validation": {
+    "pinnedWurst": {
+      "status": "pass",
+      "tests": 534,
+      "militaryCombatCallbackTests": 41,
+      "generatedRecordBatches": 14,
+      "treasureBatches": 4
+    },
+    "pinnedTypecheck": "pass",
+    "productionEntryCoverage": {
+      "status": "pass",
+      "completeSystems": 23
+    },
+    "python": {
+      "status": "pass",
+      "totalTests": 81,
+      "suites": {
+        "python-tests": {
+          "status": "pass",
+          "tests": 58,
+          "elapsedSeconds": 73.076
+        },
+        "framework-python-tests": {
+          "status": "pass",
+          "tests": 8,
+          "elapsedSeconds": 266.856
+        },
+        "military-tests": {
+          "status": "pass",
+          "tests": 15,
+          "elapsedSeconds": 8.006
+        }
+      }
+    },
+    "pinnedFramework": {
+      "status": "pass",
+      "originalTests": 2,
+      "mutatedTests": 2,
+      "bothCampaignsPackaged": true,
+      "sharedSourcesUnchanged": true
+    },
+    "frameworkBoundary": "pass",
+    "traceabilityFreshness": "pass",
+    "gitDiffCheck": "pass"
+  },
+  "commands": {
+    "wurst": "python3 maps/historical-world-rpg/_shared/tooling/run_wurst_tests.py maps/historical-world-rpg/age-of-sail-world/package.json --grill \"$PWD/_build/issue469-ci-repair/tools/grill\"",
+    "typecheck": "grill typecheck (separate assembly using the same generated scenario and local pinned compiler)",
+    "framework": "python3 _build/issue-469-repair/framework/_shared/tooling/validate_framework_fixture.py _build/issue-469-repair/framework/conformance-campaign",
+    "pythonSuites": [
+      "test_combat_effects",
+      "test_live_military_tradition",
+      "test_military_tradition",
+      "test_campaign_save_manager",
+      "test_release_save_compatibility",
+      "test_treasure_resolution",
+      "test_unit_roster",
+      "test_release_blocker_audit",
+      "test_framework_conformance",
+      "test_military",
+      "test_warcraft_military_runtime"
+    ]
+  },
+  "toolchain": {
+    "compiler": {
+      "executionImage": null,
+      "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "grillVersion": "1.4.0.0-2c676dd",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "version": "1.9.0.0-nightly-1-gedd2e5e74"
+    },
+    "standardLibraryRevision": "771e5c8a4b2349b46ac5ca813330fde4112304c3",
+    "execution": "Existing worktree-local pinned compiler and bundled Java with ci-grill-offline.sh.",
+    "containersUsedThisSession": false,
+    "globalToolingChanged": false
+  },
+  "lockedAuthorities": {
+    "scenario/military-traditions.json": "936b98e721dc91c0b7fc79b0cf3ed9f172fd9a5ef87c840645cc5e59576bad7b",
+    "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
+  },
+  "nativeLaunch": {
+    "issue": 438,
+    "status": "unresolved",
+    "executedThisSession": false
+  },
+  "remainingTraditionBlockers": [
+    "discipline_basis_points",
+    "maneuver_basis_points",
+    "english_guard_formation",
+    "english_patrol_ship"
+  ],
+  "playerQARequested": false,
+  "outerRepositoryValidation": "pending outer worker",
+  "artifacts": {
+    "ci-followup-wurst-results.json.gz": {
+      "uncompressedSha256": "2298e6321590eb0835be5d422ad2072a041bcaa4640cee6a70d713e3e1ebd8d4"
+    },
+    "ci-followup-wurst-execution.log.gz": {
+      "uncompressedSha256": "21b9536dcdd2cbb0534db07ed4e02376d2861631dce90e5c6fa51a7531dfcdc0"
+    },
+    "ci-followup-wurst-typecheck.log.gz": {
+      "uncompressedSha256": "79223bde03ea943caacc2f72313dba5f5d251d3c27519347cb236850a571dec4"
+    },
+    "ci-followup-python-tests.log.gz": {
+      "uncompressedSha256": "67760ca868ab77f2f50eca1aa80284063c5e6d3e905cbed280703a56be3c0d06"
+    },
+    "ci-followup-framework-python-tests.log.gz": {
+      "uncompressedSha256": "18c41915f3abf963a6dc918f6b2551d6d3c3fa9d70629081318965dda7885ac8"
+    },
+    "ci-followup-framework-validation.log.gz": {
+      "uncompressedSha256": "c818db13b36dce5473ac9273085068e7e6582a6b98dabd21d327059310447c5b"
+    },
+    "ci-followup-framework-conformance.json.gz": {
+      "uncompressedSha256": "c58c45219dc970ab698e0cb6611474c2d072aad738887ef668cee8155b4a3933"
+    },
+    "ci-followup-framework-original-results.json.gz": {
+      "uncompressedSha256": "8c30b7e6696d02c765174346462be67fd96fd46b03e99a9c235d50318721db79"
+    },
+    "ci-followup-framework-original-execution.log.gz": {
+      "uncompressedSha256": "70c4030b11ff8c677acf8042203ada70036e9980451c4e86e8d703f50f39bd9d"
+    },
+    "ci-followup-framework-mutated-results.json.gz": {
+      "uncompressedSha256": "69a1fa4521e4157d984e999c527afee82143eb3c7a14a64099951d4f6e2f4357"
+    },
+    "ci-followup-framework-mutated-execution.log.gz": {
+      "uncompressedSha256": "40dfb625931f2932d8c4c4c13b23baa97bb669ea84c578fe9d8364de840f9ff0"
+    },
+    "ci-followup-military-tests.log.gz": {
+      "uncompressedSha256": "b424534887c5ed8d204f174b29f48bb2265e1b211676e89f5eff9bfcb6131f70"
+    }
+  }
+}

@@ -231,3 +231,8 @@ also supersedes an interrupted origin start across later travel; only a new orig
 request can select a new campaign. Recovery itself
 never writes manual, autosave, session-start or milestone slots. These checksums
 provide corruption detection, not a security/authentication boundary.
+
+`combat-effect-bindings.schema.json` defines versioned scenario-owned weapon
+predicates, continuous-stat consumers and named milestone contributions. The
+combat catalogue validator additionally checks roster references and exact parity
+with military-tradition coefficients, thresholds and replacement identities.
