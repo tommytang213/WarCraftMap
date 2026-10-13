@@ -459,8 +459,8 @@ class WorkerTests(unittest.TestCase):
     def test_planner_limits_survive_removing_schema_only_constraints(self):
         baseline = {
             "kind": "agent-ready", "title": "Valid task",
-            "body": "## Acceptance criteria\\n- Deliver.\\n"
-                    "## Automated validation\\n- Test.",
+            "body": "## Acceptance criteria\n- Deliver.\n"
+                    "## Automated validation\n- Test.",
             "question": "", "blocker_keys": [],
         }
         valid = {"outcome": "planned", "issues": [baseline]}
