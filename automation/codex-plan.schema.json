@@ -8,17 +8,16 @@
     "summary": {"type": "string"},
     "issues": {
       "type": "array",
-      "maxItems": 10,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["kind", "title", "body", "question", "blocker_keys"],
         "properties": {
           "kind": {"enum": ["agent-ready", "needs-design"]},
-          "title": {"type": "string", "minLength": 1},
+          "title": {"type": "string"},
           "body": {"type": "string"},
           "question": {"type": "string"},
-          "blocker_keys": {"type": "array", "items": {"type": "string"}, "maxItems": 4, "uniqueItems": true}
+          "blocker_keys": {"type": "array", "items": {"type": "string"}}
         }
       }
     }
