@@ -108,6 +108,11 @@ controller intentionally follows a branch other than the remote default.
 
 Every wake reads the release-blocker, runtime-acceptance and exhaustive
 requirement-traceability reports, plus complete open/closed issue and PR history.
+On older GitHub CLI versions missing `closingIssuesReferences` from
+`gh pr list --json`, the controller uses paginated GitHub GraphQL to retain
+complete issue-closing PR relationships; it fails closed on truncated results,
+authentication errors and unknown CLI schema failures. The dependency checks
+must never treat a manually closed issue as proof its implementing PR merged.
 The scenario's `tooling/planning_audit.py` regenerates all three audits in memory
 on the current origin default-branch revision. It verifies available execution
 and campaign artifacts through the existing audits; it never treats saved PASS
