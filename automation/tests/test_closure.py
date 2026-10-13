@@ -352,6 +352,80 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(len(rows), 101)
         self.assertIn("200", gh.call_args.args[1])
 
+    def test_legacy_gh_pr_json_field_uses_complete_graphql_history(self):
+        missing = RuntimeError(
+            'command failed (1): gh pr list --json closingIssuesReferences\\n'
+            'Unknown JSON field: "closingIssuesReferences"'
+        )
+        def page(nodes, cursor, more):
+            return {"data": {"repository": {"pullRequests": {
+                "nodes": nodes, "pageInfo": {
+                    "hasNextPage": more, "endCursor": cursor,
+                },
+            }}}}
+        def pr(number, state, refs):
+            return {"number": number, "title": f"PR {number}",
+                    "state": state, "createdAt": "2026-10-13T00:00:00Z",
+                    "mergedAt": "2026-10-13T01:00:00Z" if state == "MERGED" else None,
+                    "body": "", "url": f"https://github.com/example/repo/pull/{number}",
+                    "closedAt": None, "mergeCommit": {"oid": B},
+                    "closingIssuesReferences": {"nodes": [{"number": n} for n in refs],
+                                                 "pageInfo": {"hasNextPage": False}}}
+        first = page([pr(477, "MERGED", [469])], "cursor-one", True)
+        second = page([pr(480, "MERGED", [])], "cursor-two", False)
+        with mock.patch.object(worker, "gh_json", side_effect=[
+            missing, {"nameWithOwner": "example/repo"}, first, second,
+        ]) as gh:
+            rows = worker.list_history(self.config, "pr")
+        self.assertEqual([r["number"] for r in rows], [477, 480])
+        self.assertEqual(rows[0]["closingIssuesReferences"], [{"number": 469}])
+        self.assertEqual(rows[1]["closingIssuesReferences"], [])
+        graphql_calls = [call.args[1] for call in gh.call_args_list if call.args[1][:2] == ["api", "graphql"]]
+        self.assertEqual(len(graphql_calls), 2)
+        self.assertTrue(any("cursor=cursor-one" in part for part in graphql_calls[1]))
+        closed = {"number": 469, "title": "[agent-ready] Traditions", "state": "CLOSED",
+                  "closedAt": "2026-10-13T01:00:00Z"}
+        dependent = {"number": 474, "title": "[agent-ready] Pike and Shot",
+                     "body": "Depends on: #469\n", "state": "OPEN"}
+        gate = worker.Closure(A, True, {}, issues=[closed, dependent], prs=rows)
+        self.assertIsNotNone(worker.dependency_completion_receipt(dependent, gate))
+
+    def test_legacy_gh_fallback_rejects_truncated_linked_issues(self):
+        missing = RuntimeError('Unknown JSON field: "closingIssuesReferences"')
+        response = {"data": {"repository": {"pullRequests": {
+            "nodes": [{"number": 477, "closingIssuesReferences": {
+                "nodes": [{"number": 469}],
+                "pageInfo": {"hasNextPage": True},
+            }}],
+            "pageInfo": {"hasNextPage": False, "endCursor": None},
+        }}}}
+        with mock.patch.object(worker, "gh_json", side_effect=[
+            missing, {"nameWithOwner": "example/repo"}, response,
+        ]):
+            with self.assertRaisesRegex(RuntimeError, "incomplete closing references"):
+                worker.list_history(self.config, "pr")
+
+    def test_legacy_gh_fallback_rejects_network_error(self):
+        with mock.patch.object(worker, "gh_json",
+                               side_effect=RuntimeError("authentication failed for GitHub")):
+            with self.assertRaisesRegex(RuntimeError, "authentication failed"):
+                worker.list_history(self.config, "pr")
+
+    def test_legacy_gh_fallback_rejects_missing_pages(self):
+        missing = RuntimeError('Unknown JSON field: "closingIssuesReferences"')
+        bad = {"data": {"repository": {"pullRequests": {
+            "nodes": [{"number": 477, "closingIssuesReferences": {
+                "nodes": [{"number": 469}],
+                "pageInfo": {"hasNextPage": False},
+            }}],
+            "pageInfo": {"hasNextPage": True, "endCursor": None},
+        }}}}
+        with mock.patch.object(worker, "gh_json", side_effect=[
+            missing, {"nameWithOwner": "example/repo"}, bad,
+        ]):
+            with self.assertRaisesRegex(RuntimeError, "pagination failed"):
+                worker.list_history(self.config, "pr")
+
     def test_creation_rechecks_stable_ids_in_issue_and_pr_history(self):
         closure = build_closure(bundle(findings=["REQ-0002.01"]), A)
         items = worker.prepare_plan_items(plan(), [], 10, closure=closure)

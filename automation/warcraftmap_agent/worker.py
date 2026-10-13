@@ -422,6 +422,77 @@ def prepare_plan_items(
     return prepared
 
 
+def legacy_pr_history(config: Config) -> list[dict[str, Any]]:
+    """Read all PRs via GraphQL when gh's --json lacks closing issue links.
+
+    Ubuntu's older gh releases do not expose closingIssuesReferences in
+    `gh pr list --json`. It is vital for dependency gating: omitting it would
+    let a manually closed issue conceal a still-open implementing PR.
+    """
+    repo = gh_json(config.repo_root, ["repo", "view", "--json", "nameWithOwner"])
+    full_name = str(repo.get("nameWithOwner") or "")
+    if full_name.count("/") != 1 or not all(full_name.split("/")):
+        raise RuntimeError("cannot identify repository for complete PR history")
+    owner, name = full_name.split("/", 1)
+    query = """query($owner: String!, $name: String!, $cursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequests(first: 100, after: $cursor, orderBy: {field: CREATED_AT, direction: ASC}) {
+          nodes {
+            number title body state url createdAt closedAt mergedAt
+            mergeCommit { oid }
+            closingIssuesReferences(first: 25) {
+              nodes { number }
+              pageInfo { hasNextPage }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }"""
+    rows: list[dict[str, Any]] = []
+    seen_numbers: set[int] = set()
+    seen_cursors: set[str] = set()
+    cursor: str | None = None
+    while True:
+        args = ["api", "graphql", "-f", f"query={query}",
+                "-F", f"owner={owner}", "-F", f"name={name}"]
+        if cursor is not None:
+            args.extend(["-F", f"cursor={cursor}"])
+        response = gh_json(config.repo_root, args)
+        if not isinstance(response, dict) or response.get("errors"):
+            raise RuntimeError("GitHub returned a failed or partial PR history query")
+        try:
+            collection = response["data"]["repository"]["pullRequests"]
+            nodes = collection["nodes"]
+            page = collection["pageInfo"]
+        except (KeyError, TypeError) as exc:
+            raise RuntimeError("GitHub returned incomplete PR history data") from exc
+        if not isinstance(nodes, list) or not isinstance(page, dict):
+            raise RuntimeError("GitHub returned malformed PR history pagination")
+        for row in nodes:
+            if not isinstance(row, dict) or type(row.get("number")) is not int:
+                raise RuntimeError("GitHub returned malformed PR history entry")
+            number = row["number"]
+            refs = row.get("closingIssuesReferences")
+            if (number in seen_numbers or not isinstance(refs, dict)
+                    or not isinstance(refs.get("nodes"), list)
+                    or not isinstance(refs.get("pageInfo"), dict)
+                    or refs["pageInfo"].get("hasNextPage") is not False):
+                # Never accept a truncated closing-issue association or
+                # a repeated page as evidence that a dependency was merged.
+                raise RuntimeError(f"GitHub returned incomplete closing references for PR #{number}")
+            seen_numbers.add(number)
+            rows.append({**row, "closingIssuesReferences": refs["nodes"]})
+        if page.get("hasNextPage") is False:
+            return rows
+        next_cursor = page.get("endCursor")
+        if (page.get("hasNextPage") is not True or not isinstance(next_cursor, str)
+                or not next_cursor or next_cursor in seen_cursors or not nodes):
+            raise RuntimeError("GitHub PR history pagination failed or repeated a cursor")
+        seen_cursors.add(next_cursor)
+        cursor = next_cursor
+
+
 def list_history(config: Config, kind: str) -> list[dict[str, Any]]:
     """Read complete history, growing gh's limit until no entries are omitted."""
     fields = "number,title,body,state,url,createdAt,closedAt"
@@ -429,7 +500,20 @@ def list_history(config: Config, kind: str) -> list[dict[str, Any]]:
         fields += ",mergedAt,mergeCommit,closingIssuesReferences"
     limit = max(config.issue_limit, 100)
     while True:
-        rows = gh_json(config.repo_root, [kind, "list", "--state", "all", "--limit", str(limit), "--json", fields])
+        try:
+            rows = gh_json(config.repo_root, [kind, "list", "--state", "all",
+                                               "--limit", str(limit), "--json", fields])
+        except RuntimeError as exc:
+            message = str(exc)
+            if (kind != "pr" or not re.search(
+                r"(?i)(?:unknown|invalid|unsupported)\s+JSON\s+field:[^\n]*closingIssuesReferences",
+                message,
+            )):
+                raise
+            # Only this known gh CLI schema mismatch authorizes the fallback.
+            # Network/authentication problems and unrelated bad fields remain
+            # fatal instead of being mistaken for an empty history.
+            return legacy_pr_history(config)
         if len(rows) < limit:
             return rows
         limit *= 2
