@@ -506,7 +506,7 @@ def list_history(config: Config, kind: str) -> list[dict[str, Any]]:
         except RuntimeError as exc:
             message = str(exc)
             if (kind != "pr" or not re.search(
-                r"(?i)(?:unknown|invalid|unsupported)\\s+JSON\\s+field:[^\\n]*closingIssuesReferences",
+                r"(?i)(?:unknown|invalid|unsupported)\s+JSON\s+field:[^\n]*closingIssuesReferences",
                 message,
             )):
                 raise
