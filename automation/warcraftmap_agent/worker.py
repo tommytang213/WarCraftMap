@@ -361,6 +361,20 @@ def prepare_plan_items(
     closure: Closure | None = None,
 ) -> list[dict[str, str]]:
     """Validate/deduplicate a planner result while preserving roadmap order."""
+    # Response-format JSON Schema deliberately uses only Codex-supported
+    # keywords. Enforce maxItems and uniqueItems here rather than asking the
+    # model API to accept unsupported schema constraints (HTTP 400).
+    rows = plan.get("issues", [])
+    if not isinstance(rows, list) or len(rows) > 10:
+        raise ValueError("planner may return at most ten issues")
+    for raw in rows:
+        if not isinstance(raw, dict):
+            raise ValueError("planner issues must be objects")
+        blocker_keys = raw.get("blocker_keys", [])
+        if (not isinstance(blocker_keys, list) or len(blocker_keys) > 4
+                or any(not isinstance(key, str) for key in blocker_keys)
+                or len(set(blocker_keys)) != len(blocker_keys)):
+            raise ValueError("planner blocker_keys must contain at most four unique string IDs")
     if plan.get("outcome") == "exhausted":
         if closure is not None and closure.active:
             raise ValueError("exhausted is forbidden while release closure is unresolved")
@@ -370,7 +384,7 @@ def prepare_plan_items(
     prepared: list[dict[str, str]] = []
     design_seen = False
     claimed: set[str] = set()
-    for raw in plan.get("issues", []):
+    for raw in rows:
         if len(prepared) >= limit:
             break
         kind = raw.get("kind")
