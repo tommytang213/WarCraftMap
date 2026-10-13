@@ -18,6 +18,9 @@ from automation.warcraftmap_agent.worker import (
     parse_codex_token_usage,
     create_plan_issues,
     decision_question,
+    dependency_completion_receipt,
+    reconcile_dependency_exhaustion,
+    prepare_repair,
     notify_design_blocker,
     eligible_planned_issues,
     normalized_work_title,
@@ -44,6 +47,124 @@ class WorkerTests(unittest.TestCase):
                 load_env(path)["WARCRAFTMAP_AGENT_MODEL"],
                 "small model",
             )
+
+    def test_dependency_recovery_for_427_and_474_after_actual_merges(self):
+        # Matches the real exhausted records without altering accounting.
+        eligible = [
+            {"number": 427, "title": "[agent-ready] Schedule overlapping PRs",
+             "body": "Depends on: #426\nDepends on: #428\n", "createdAt": "2026-01-01",
+             "state": "OPEN"},
+            {"number": 474, "title": "[agent-ready] Pike and Shot",
+             "body": "Depends on: #469\n", "createdAt": "2026-01-02",
+             "state": "OPEN"},
+        ]
+        history = [
+            *eligible,
+            {"number": 469, "state": "CLOSED", "closedAt": "2026-10-12T14:02:31Z",
+             "title": "[agent-ready] Military traditions", "body": ""},
+        ]
+        prs = [
+            {"number": 426, "state": "MERGED", "mergedAt": "2026-10-09T03:53:13Z"},
+            {"number": 428, "state": "MERGED", "mergedAt": "2026-10-09T03:53:29Z"},
+            {"number": 477, "state": "MERGED", "mergedAt": "2026-10-12T14:02:30Z",
+             "closingIssuesReferences": [{"number": 469}]},
+        ]
+        gate = Closure("a" * 40, True, {}, issues=history, prs=prs)
+        state = {"issues": {
+            "427": {"attempts": 15, "status": "failed",
+                    "last_failure": "Codex implementation blocked: Prerequisite PRs #426 and #428 remain open and unmerged"},
+            "474": {"attempts": 15, "status": "failed",
+                    "last_failure": "Codex implementation blocked: Required dependency #469 remains unmerged"},
+        }, "runs": [{"tokens": 9001, "issue": 474}]}
+        for item in eligible:
+            self.assertIsNotNone(dependency_completion_receipt(item, gate))
+        reconcile_dependency_exhaustion(eligible, state, gate, 15)
+        for number in ("427", "474"):
+            record = state["issues"][number]
+            self.assertEqual("queued", record["status"])
+            self.assertEqual(0, record["attempts"])
+            self.assertEqual(15, record["dependency_recovery_history"][0]["attempts"])
+            self.assertIn("unmerged", record["dependency_recovery_history"][0]["last_failure"])
+            self.assertNotIn("last_failure", record)
+        self.assertEqual([{"tokens": 9001, "issue": 474}], state["runs"])
+        self.assertEqual(427, select_issue(eligible, state, 15, closure=gate)["number"])
+        # The same old prerequisite completion must never unlock another
+        # batch of 15 attempts just because main gained unrelated commits.
+        for record in state["issues"].values():
+            record.update({"status": "failed", "attempts": 15,
+                           "last_failure": "Codex implementation blocked: dependency remains unmerged"})
+        reconcile_dependency_exhaustion(eligible, state, gate, 15)
+        for record in state["issues"].values():
+            self.assertEqual("failed", record["status"])
+            self.assertEqual(15, record["attempts"])
+            self.assertEqual(1, len(record["dependency_recovery_history"]))
+
+    def test_dependency_recovery_waits_for_merged_pr_and_fresh_audit(self):
+        candidate = {"number": 474, "title": "[agent-ready] Pike and Shot",
+                     "body": "Depends on: #469\n", "state": "OPEN"}
+        prior = {"number": 469, "title": "[agent-ready] Traditions",
+                 "state": "CLOSED", "closedAt": "2026-10-12T14:02:31Z"}
+        pr = {"number": 477, "state": "OPEN", "mergedAt": None,
+              "closingIssuesReferences": [{"number": 469}]}
+        gate = Closure("a" * 40, True, {}, issues=[candidate, prior], prs=[pr])
+        state = {"issues": {"474": {"attempts": 15, "status": "failed",
+                "last_failure": "Codex implementation blocked: Required dependency #469 remains unmerged"}}}
+        self.assertIsNone(dependency_completion_receipt(candidate, gate))
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("failed", state["issues"]["474"]["status"])
+        pr["state"], pr["mergedAt"] = "MERGED", "2026-10-12T14:02:30Z"
+        stale = Closure(gate.revision, False, {}, issues=[candidate, prior], prs=[pr])
+        reconcile_dependency_exhaustion([candidate], state, stale, 15)
+        self.assertEqual("failed", state["issues"]["474"]["status"])
+        # A completed prerequisite does not revive an unrelated failure.
+        state["issues"]["474"]["last_failure"] = "Codex implementation blocked: missing native runner"
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("failed", state["issues"]["474"]["status"])
+        state["issues"]["474"]["last_failure"] = "Codex implementation blocked: Required dependency #469 remains unmerged"
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("queued", state["issues"]["474"]["status"])
+
+    def test_declared_prerequisite_wait_is_automatic_and_costs_no_new_run(self):
+        candidate = {"number": 474, "title": "[agent-ready] Pike and Shot",
+                     "body": "Depends on: #469\n", "state": "OPEN"}
+        prior = {"number": 469, "title": "[agent-ready] Traditions", "state": "OPEN",
+                 "closedAt": None}
+        pr = {"number": 477, "state": "OPEN", "mergedAt": None,
+              "closingIssuesReferences": [{"number": 469}]}
+        gate = Closure("a" * 40, True, {}, issues=[candidate, prior], prs=[pr])
+        record = {"status": "waiting_dependency", "attempts": 1,
+                  "last_failure": "Codex implementation blocked: Required dependency #469 remains unmerged"}
+        state = {"issues": {"474": record}, "runs": [{"issue": 474, "tokens": 500}]}
+        self.assertIsNone(select_issue([candidate], state, 15, closure=gate))
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("waiting_dependency", record["status"])
+        prior["state"], prior["closedAt"] = "CLOSED", "2026-10-12T14:02:31Z"
+        pr["state"], pr["mergedAt"] = "MERGED", "2026-10-12T14:02:30Z"
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("queued", record["status"])
+        self.assertEqual(1, record["attempts"])
+        self.assertEqual(1, len(record["dependency_recovery_history"]))
+        self.assertEqual([{"issue": 474, "tokens": 500}], state["runs"])
+        self.assertEqual(474, select_issue([candidate], state, 15, closure=gate)["number"])
+
+
+    def test_implementation_refreshes_worktree_before_codex_launch(self):
+        config = Config(Path("/repo"), Path("/state"))
+        wt = Path("/worktree")
+        with mock.patch("automation.warcraftmap_agent.worker.prepare_validation_repair",
+                        return_value=("new-main", [])) as refresh:
+            record = {"status": "queued", "attempts": 0}
+            prepare_repair(config, wt, 474, record)
+            refresh.assert_called_once_with(config, wt, 474)
+            self.assertNotIn("repair_kind", record)
+        # Conflicting local changes are preserved for the conflict lane.
+        with mock.patch("automation.warcraftmap_agent.worker.prepare_validation_repair",
+                        return_value=("new-main", ["PlayableCampaignRuntime.wurst"])):
+            record = {"status": "queued", "attempts": 0}
+            prepare_repair(config, wt, 427, record)
+            self.assertEqual("merge_conflict", record["repair_kind"])
+            self.assertIn("PlayableCampaignRuntime.wurst", record["last_failure"])
+
 
     def test_selects_oldest_eligible_ready_issue(self):
         issues = [
