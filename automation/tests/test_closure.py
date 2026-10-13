@@ -386,7 +386,7 @@ class ControllerTests(unittest.TestCase):
         closed = {"number": 469, "title": "[agent-ready] Traditions", "state": "CLOSED",
                   "closedAt": "2026-10-13T01:00:00Z"}
         dependent = {"number": 474, "title": "[agent-ready] Pike and Shot",
-                     "body": "Depends on: #469\\n", "state": "OPEN"}
+                     "body": "Depends on: #469\n", "state": "OPEN"}
         gate = worker.Closure(A, True, {}, issues=[closed, dependent], prs=rows)
         self.assertIsNotNone(worker.dependency_completion_receipt(dependent, gate))
 
