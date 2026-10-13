@@ -611,7 +611,7 @@ class TraceabilityTests(unittest.TestCase):
         output.parent.mkdir()
         runtime_report = self.runtime_evidence()
         identity = integration.source_identity(self.project, "a" * 40)
-        # Use the real audit and all authored consumer findings; only expensive
+        # Use the real audit and all remaining unbound consumers; only expensive
         # journey fixtures and the separately tested runtime evidence are stubbed.
         with patch.object(release_audit, "_audit_reports", return_value=([], [])), \
              patch.object(release_audit, "_audit_inputs", return_value=({}, [])), \
@@ -620,9 +620,11 @@ class TraceabilityTests(unittest.TestCase):
              patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report):
             report = release_audit.build_report()
         expected_findings = sorted(release_audit._audit_research_bindings(), key=lambda row: row["id"])
-        self.assertEqual(220, len(expected_findings))
+        self.assertEqual(219, len(expected_findings))
+        self.assertNotIn('RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE',
+                         {row['id'] for row in expected_findings})
         self.assertEqual(expected_findings, report["findings"])
-        self.assertEqual(220, report["unresolvedCampaignBlockers"])
+        self.assertEqual(219, report["unresolvedCampaignBlockers"])
 
         with patch.object(release, "PROJECT", self.project), \
              patch.object(scenario, "PROJECT", self.project), \

@@ -36,8 +36,8 @@ function openBootstrapOriginSelection()
 		PauseGame(true)
 		bootstrapOriginSelection.showPage(1)
 
-// Retain complete typed research entitlements. Gameplay consumers are explicitly
-// unbound; research never substitutes a native food-cap bonus.
+// Retain complete typed research entitlements. Campaign registration wraps this
+// fallback with scenario-authored combat consumers; no native food-cap substitute.
 public WarcraftRpgRuntime rpgRuntime = new WarcraftRpgRuntime(new UnboundResearchEffects())
 public PiracyRuntime piracyRuntime
 

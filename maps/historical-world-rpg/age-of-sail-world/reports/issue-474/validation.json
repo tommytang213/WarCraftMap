@@ -1,0 +1,86 @@
+{
+  "framework": "pass: original and content-mutated campaigns built with unchanged shared sources; 2/2 pinned tests in each",
+  "headlessRepository": {
+    "automationTestsPassed": 162,
+    "fullSuiteRepeatedAfterTestOnlyRepair": false,
+    "initialFailures": [
+      "test_requirement_traceability.TraceabilityTests.test_unbound_research_blocks_publication_with_complete_diagnostics"
+    ],
+    "initialPasses": 1029,
+    "recheckedFailures": 1,
+    "repair": "Updated the remaining-unbound-consumer expectation from 220 to 219 and asserted Pike and Shot is absent. The complete failed test passed on a targeted rerun.",
+    "repositoryScriptWurstMode": "skip; pinned Wurst executed separately",
+    "scenarioTests": 1030
+  },
+  "headlessTargeted": {
+    "combat": 10,
+    "research": 10,
+    "status": "pass",
+    "tradition": 13
+  },
+  "issue": 474,
+  "nativeClient": "not_run",
+  "releaseReady": false,
+  "sourceIdentity": {
+    "sourceRevision": "be75a062ef2e1c78ebbba8a051987c8dea8105af",
+    "sourceTreeSha256": "31b53f6d2c1b07825a1bec8c4610ffeb611b21e06789f38b2343b22792fc1079"
+  },
+  "standardLibraryRevision": "1bd90397f6c034f19602127af2ab48d332d8fff9",
+  "toolchain": {
+    "executionImage": null,
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "transcriptHashes": [
+    {
+      "file": "automation.log.gz",
+      "sha256": "5bab6d8710613736cbdfbb0a24e81febe776865034e8ef3f10c175af7d51ea0a"
+    },
+    {
+      "file": "framework.log.gz",
+      "sha256": "d65a007cbd7edf82e8e717ab79dc49ab33a8b34a8e83af9716e37d11bd09a872"
+    },
+    {
+      "file": "headless-full.log.gz",
+      "sha256": "561f33a1447740cabc41259c7f60310657928579d0a9b0c3d47e8f9fa77ba56c"
+    },
+    {
+      "file": "publication-recheck.log.gz",
+      "sha256": "ab95c0532ecc2a9a8623bbf7342d3135db0a4ba6a41ca936103a314d6f3a7a75"
+    },
+    {
+      "file": "wurst-execution.log.gz",
+      "sha256": "390d4647db35dd70847fc67f9a49f510fe8b3b1286c1f8766be839dc0044c322"
+    },
+    {
+      "file": "wurst-results.json.gz",
+      "sha256": "61a2383ecd6ed87425de5e4f323800829409aec9fc9292a8371d1b0a95634d85"
+    },
+    {
+      "file": "wurst-typecheck.log.gz",
+      "sha256": "7f02c98440bac931ec196e706976f269fe2721411ef3238b7676f85219297828"
+    }
+  ],
+  "wurst": {
+    "discovered": 185,
+    "passed": 185,
+    "status": "pass",
+    "suites": {
+      "CampaignLoadTransactionTests.wurst": 24,
+      "CampaignStartupTests.wurst": 49,
+      "CharacterEquipmentTests.wurst": 13,
+      "EquipmentSetTests.wurst": 3,
+      "ExactNaturalTests.wurst": 2,
+      "ExactRationalTests.wurst": 3,
+      "FrameworkConformanceTests.wurst": 1,
+      "MilitaryCombatEventsTests.wurst": 45,
+      "MilitarySettlementRuntimeTests.wurst": 10,
+      "PlayableCampaignRuntimeTests.wurst": 15,
+      "ResearchCostTests.wurst": 3,
+      "ResearchRuntimeTests.wurst": 17
+    },
+    "typecheck": "pass"
+  }
+}

@@ -192,6 +192,14 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		let attacker = representedForce(source)
 		let defender = representedForce(target)
 		if attacker < 0
+			// A known hostile campaign character can damage a qualifying force,
+			// but has no force record and cannot receive military discipline.
+			if accepted == 1 and defender >= 0 and runtime.combatBindings != null
+				let defendingForce = runtime.forces[defender]
+				let layer = runtime.resolveTradition(defendingForce)
+				runtime.combatBindings.applyForRecipient(hit, true, null, null, layer, runtime.combatProfile(defendingForce), null, null, defendingForce.controllerId, defendingForce.categoryId)
+				if layer != null
+					destroy layer
 			return accepted
 		let profile = runtime.combatProfile(runtime.forces[attacker])
 		let verified = profile != null and nativeAttack != "" and profile.nativeAttack == nativeAttack and profile.attackId == hit.attackId
@@ -220,7 +228,9 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 	function nativeTypesMatch(int source, int target, int sourceType, int targetType) returns boolean
 		let attacker = representedForce(source)
 		let defender = representedForce(target)
-		if attacker < 0 or runtime.forces[attacker].unitTypeId != sourceType
+		if attacker < 0
+			return sourceType != 0 and attackerController(source) != "" and defender >= 0 and runtime.forces[defender].unitTypeId == targetType
+		if runtime.forces[attacker].unitTypeId != sourceType
 			return false
 		if defender >= 0
 			return runtime.forces[defender].unitTypeId == targetType
@@ -261,11 +271,14 @@ function militaryDamageEvent()
 	if port != null and GetTriggeringTrigger() == port.damageTrigger
 		let source = GetHandleId(GetEventDamageSource())
 		let target = GetHandleId(GetTriggerUnit())
-		var nativeAttack = compatCombatAttackType()
-		if not port.events.nativeTypesMatch(source, target, GetUnitTypeId(GetEventDamageSource()), GetUnitTypeId(GetTriggerUnit()))
-			nativeAttack = ""
+		let nativeAttack = compatCombatAttackType()
+		let typesMatch = port.events.nativeTypesMatch(source, target, GetUnitTypeId(GetEventDamageSource()), GetUnitTypeId(GetTriggerUnit()))
 		let hit = new CombatHit(port.events.nativeAttackId(source, nativeAttack), exactNativeDamage(GetEventDamage()))
-		let accepted = port.events.onWeaponDamage(port.generation, target, source, nativeAttack, hit, GetEventDamage())
+		var accepted = 0
+		if typesMatch
+			accepted = port.events.onWeaponDamage(port.generation, target, source, nativeAttack, hit, GetEventDamage())
+		else
+			accepted = port.events.onDamage(port.generation, target, source, GetEventDamage())
 		if accepted < 0
 			compatCancelCombatDamage()
 		else if accepted == 1 and hit.modified

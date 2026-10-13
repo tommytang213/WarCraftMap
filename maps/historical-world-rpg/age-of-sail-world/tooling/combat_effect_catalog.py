@@ -13,7 +13,8 @@ def build(project=ROOT):
     project = Path(project)
     data = json.loads((project / 'scenario/combat-effect-bindings.json').read_text())
     traditions = json.loads((project / 'scenario/military-traditions.json').read_text())
-    catalog = CombatCatalogue(data, traditions, load_catalog())
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    catalog = CombatCatalogue(data, traditions, load_catalog(), world)
     return catalog
 
 
@@ -23,7 +24,10 @@ def wurst(catalog):
     lines = ['public function createGeneratedCombatBindings() returns CombatBindings',
              '\tlet bindings = new CombatBindings()']
     for row in catalog.attributes.values():
-        lines.append(f'\tbindings.addAttribute({quote(row["id"])}, {quote(row["categoryId"])}, {quote(row["attackId"] or "")})')
+        lines.append(f'\tbindings.addAttribute({quote(row["id"])}, {quote(row["categoryId"])}, {quote(row["attackId"] or "")}, {quote(row["stat"] or "")})')
+    for row in catalog.research_effects.values():
+        args = [row['sourceId'], row['entitlement']['kind'], row['entitlement']['contentId'], row['recipient']['kind'], row['recipient']['categoryId'], row['stat'], str(row['basisPoints']), row['description']]
+        lines.append('\tbindings.addResearch(' + ', '.join(map(quote, args)) + ')')
     for index, row in enumerate(catalog.effects.values()):
         lines.append(f'\tlet effect{index} = bindings.addEffect({quote(row["id"])}, {quote(row["sourceId"])}, {quote(row["categoryId"])}, {quote(row["description"])})')
         for contribution in row['contributions']:

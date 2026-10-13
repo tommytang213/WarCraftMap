@@ -105,11 +105,13 @@ def _audit_inputs(config):
 def _audit_research_bindings():
     # Definition retention and successful entitlement delivery cannot establish
     # gameplay consumers. Keep each missing typed consumer accountable at release.
+    from combat_effect_catalog import build
+    bindings = build(PROJECT)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
         f"{row['nodeId']}: {row['kind']} {row['contentId']} is unbound; no gameplay consumer")
-        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'))]
+        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bindings.research_effects)]
 
 
 def only_unbound_research_blocks(report):

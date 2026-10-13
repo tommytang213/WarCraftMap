@@ -1,6 +1,6 @@
 {
-  "format": "warcraftmap_combat_effect_bindings_v1",
-  "schemaVersion": 1,
+  "format": "warcraftmap_combat_effect_bindings_v2",
+  "schemaVersion": 2,
   "balanceNote": "Initial gameplay tuning, not historical effectiveness statistics. Volleys coordinate infantry fire; gunnery and line of battle coordinate ship crews and naval gunfire.",
   "attackPredicates": [
     {
@@ -60,28 +60,32 @@
       "categoryId": "land_formation",
       "numerator": 1,
       "denominator": 10,
-      "attackId": "firearm_volley"
+      "attackId": "firearm_volley",
+      "stat": "damage"
     },
     {
       "id": "discipline_basis_points",
       "categoryId": "land_formation",
       "numerator": 1,
       "denominator": 20,
-      "attackId": null
+      "attackId": null,
+      "stat": "discipline"
     },
     {
       "id": "naval_damage_basis_points",
       "categoryId": "sailing_naval",
       "numerator": 1,
       "denominator": 8,
-      "attackId": "naval_gunfire"
+      "attackId": "naval_gunfire",
+      "stat": "damage"
     },
     {
       "id": "maneuver_basis_points",
       "categoryId": "sailing_naval",
       "numerator": 1,
       "denominator": 16,
-      "attackId": null
+      "attackId": null,
+      "stat": null
     }
   ],
   "effects": [
@@ -157,6 +161,22 @@
           "basisPoints": 300
         }
       ]
+    }
+  ],
+  "researchEffects": [
+    {
+      "sourceId": "research:modifier:army_discipline",
+      "entitlement": {
+        "kind": "modifier",
+        "contentId": "army_discipline"
+      },
+      "recipient": {
+        "kind": "force_category",
+        "categoryId": "land_formation"
+      },
+      "stat": "discipline",
+      "basisPoints": 500,
+      "description": "+500 basis points of defensive discipline; all currently controlled land_formation forces, represented or abstract; one layer per controller."
     }
   ]
 }

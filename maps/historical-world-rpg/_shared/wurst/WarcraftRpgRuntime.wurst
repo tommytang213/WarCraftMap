@@ -4,6 +4,7 @@ import public EquipmentItems
 import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
+import CombatEffects
 import QuestStages
 import HeroProgression
 import HeroAllocationDefinitions
@@ -1949,6 +1950,11 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 			else
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
+			if runtime.technologies.effects instanceof CombatResearchEffects
+				let effects = runtime.technologies.effects castTo CombatResearchEffects
+				let binding = effects.bindings.researchBinding(entry.kind, entry.contentId)
+				if binding != null
+					rows += "\n    " + binding.inspection(effects.earned(controllerId, binding))
 	return rows + "\nUnbound research unlocks have no gameplay effect yet."
 
 public function showTechnology(player viewer, WarcraftRpgRuntime runtime, string controllerId, int year)

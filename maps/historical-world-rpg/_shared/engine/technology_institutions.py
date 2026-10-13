@@ -107,10 +107,11 @@ def research_unlock_definitions(world):
     for node_id in nodes: visit(node_id)
     return result
 
-def research_integration_blockers(world):
-    """The production adapter currently retains references only, for every kind."""
+def research_integration_blockers(world, bound_entitlements=()):
+    """Only validated consumers may supply bound typed identities."""
     return [{**entry,"bindingStatus":"unbound","reason":"missing_gameplay_consumer"}
-            for entry in research_unlock_definitions(world)]
+            for entry in research_unlock_definitions(world)
+            if (entry['kind'], entry['contentId']) not in bound_entitlements]
 
 class TechnologyInstitutionRuntime:
     """Authoritative fixed-point polity research and province adoption."""
