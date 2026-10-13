@@ -35,6 +35,32 @@ runs repository checks automatically after Codex reports completion. Any further
 validation repair uses its remaining validation budget. Exhausted conflict
 budgets preserve the worktree and diagnostic in an explicit `failed` state.
 
+## Prerequisite-only block recovery
+
+Dependencies are not implementation failures. Before launching Codex the worker
+requires fresh GitHub audit evidence that each declared `Depends on: #N`
+prerequisite was genuinely merged (for a PR) or closed with any known closing
+PR merged (for an issue). A pending prerequisite does **not** cost a Codex run.
+
+If a legacy record already exhausted its implementation attempts solely by
+reporting a missing/unmerged prerequisite, the controller may automatically
+give it **one** new attempt generation when a fresh current-main audit proves
+all the declared prerequisites complete. Its old attempt count and failure
+are archived in `dependency_recovery_history`; historical token and run
+budgets are **not** reset. A stable merge-completion receipt prevents recycling
+the same dependency to obtain further attempt generations.
+
+If Codex nevertheless reports an unmerged declared prerequisite, the worker
+places it in `waiting_dependency` (or `failed` if the current audit already
+proves the prerequisite merged) instead of burning all subsequent attempts.
+It resumes a pending wait only when the actual dependency completes.
+
+Every implementation worktree is merged with the latest `origin/main` before
+any Codex quota is charged. Existing dirty work is checkpointed, and real
+conflicts enter the existing bounded conflict-repair lane. The worker never
+blindly deletes a worktree, discards files, force-resets Git, or waives any
+tests, release gates or native acceptance.
+
 After GitHub confirms a PR is merged, the worker removes its clean issue
 worktree, then its local agent branch, and separately tries to delete the remote
 agent branch. Dirty worktrees are preserved. Cleanup errors are logged and
