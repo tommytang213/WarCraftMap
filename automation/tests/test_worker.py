@@ -421,6 +421,74 @@ class WorkerTests(unittest.TestCase):
         self.assertIn("mount the worktree read-only", prompt)
         self.assertIn("container-private temporary storage", prompt)
 
+    def test_codex_schemas_avoid_unsupported_output_format_keywords(self):
+        # A previous Codex planner request failed HTTP 400 invalid_json_schema:
+        # blocker_keys.uniqueItems is not permitted. maxItems/minLength are
+        # also absent from the strict response-format supported subset.
+        forbidden = {
+            "uniqueItems", "minItems", "maxItems", "minLength", "maxLength",
+            "pattern", "format", "minimum", "maximum", "multipleOf",
+            "exclusiveMinimum", "exclusiveMaximum",
+        }
+        for name in ("codex-plan.schema.json", "codex-result.schema.json"):
+            with self.subTest(name=name):
+                path = Path(__file__).resolve().parents[1] / name
+                schema = json.loads(path.read_text(encoding="utf-8"))
+                def visit(node):
+                    if isinstance(node, dict):
+                        self.assertFalse(
+                            forbidden.intersection(node),
+                            f"{name} includes unsupported constraints: "
+                            f"{forbidden.intersection(node)}",
+                        )
+                        for value in node.values():
+                            visit(value)
+                    elif isinstance(node, list):
+                        for value in node:
+                            visit(value)
+                visit(schema)
+                self.assertEqual(schema["type"], "object")
+                self.assertIs(schema["additionalProperties"], False)
+        plan = json.loads(
+            (Path(__file__).resolve().parents[1] / "codex-plan.schema.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(plan["properties"]["issues"]["items"]["properties"]
+                         ["blocker_keys"]["items"]["type"], "string")
+
+    def test_planner_limits_survive_removing_schema_only_constraints(self):
+        baseline = {
+            "kind": "agent-ready", "title": "Valid task",
+            "body": "## Acceptance criteria\n- Deliver.\n"
+                    "## Automated validation\n- Test.",
+            "question": "", "blocker_keys": [],
+        }
+        valid = {"outcome": "planned", "issues": [baseline]}
+        self.assertEqual(
+            len(prepare_plan_items(valid, [], 10)), 1
+        )
+        for bad_keys in (
+            ["duplicate", "duplicate"],
+            ["a", "b", "c", "d", "e"],
+            ["x", 42],
+            "not a list",
+        ):
+            with self.subTest(blocker_keys=bad_keys):
+                plan = {"outcome": "planned",
+                        "issues": [{**baseline, "blocker_keys": bad_keys}]}
+                with self.assertRaisesRegex(ValueError, "four unique string IDs"):
+                    prepare_plan_items(plan, [], 10)
+        too_many = {"outcome": "planned", "issues": [
+            {**baseline, "title": f"Distinct task {n}"} for n in range(11)
+        ]}
+        with self.assertRaisesRegex(ValueError, "at most ten issues"):
+            prepare_plan_items(too_many, [], 10)
+        self.assertEqual(
+            prepare_plan_items({"outcome": "planned", "issues": [
+                {**baseline, "title": ""}
+            ]}, [], 10), []
+        )
+
     def test_codex_command_uses_json_and_no_conflicting_sandbox_flag(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

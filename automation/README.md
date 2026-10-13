@@ -6,6 +6,11 @@ process and one issue at a time, in a dedicated `agent/issue-N` branch and
 worktree. Codex runs with `workspace-write`, `--approve-for-me`, a 45-minute
 timeout, and no dangerous sandbox bypass.
 
+Codex's strict JSON response-format schema supports only a subset of ordinary
+JSON Schema. Keep `automation/codex-plan.schema.json` free of unsupported
+`uniqueItems`, `maxItems`, and `minLength` keywords; the worker validates
+those planner limits and unique blocker identities before creating issues.
+
 The primary budget is token-based: 100,000,000 reported Codex tokens per UTC
 day and 500,000,000 in any rolling seven-day window. Codex is invoked with
 machine-readable JSON output and the worker records per-run usage. Because token
