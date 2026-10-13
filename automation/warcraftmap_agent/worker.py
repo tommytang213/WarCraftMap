@@ -675,7 +675,7 @@ def select_issue(
         if issue_blocker_numbers(issue) & blockers:
             continue
         record = state["issues"].get(str(issue["number"]), {})
-        if record.get("status") in {"pr_open", "needs_design", "merged"}:
+        if record.get("status") in {"pr_open", "needs_design", "merged", "waiting_dependency"}:
             continue
         _attempt_key, attempts, limit = attempt_budget(
             record, max_attempts, max_validation_repair_attempts,
@@ -763,8 +763,10 @@ def reconcile_dependency_exhaustion(
         return
     for issue in issues:
         record = state["issues"].get(str(issue["number"]))
-        if (not record or record.get("status") != "failed" or record.get("pr")
-                or int(record.get("attempts", 0)) < max_attempts
+        if (not record or record.get("status") not in {"failed", "waiting_dependency"}
+                or record.get("pr")
+                or (record.get("status") == "failed"
+                    and int(record.get("attempts", 0)) < max_attempts)
                 or not closure.permits_issue(issue)):
             continue
         failure = str(record.get("last_failure") or "")
@@ -784,7 +786,10 @@ def reconcile_dependency_exhaustion(
             "recovery_revision": closure.revision,
         })
         record["dependency_recovery_receipt"] = proof
-        record["attempts"] = 0
+        # A wait consuming one Codex invocation keeps its remaining attempts;
+        # an already exhausted historical record gets one fresh generation.
+        if int(record.get("attempts", 0)) >= max_attempts:
+            record["attempts"] = 0
         record["status"] = "queued"
         # Validation/CI repair lanes are unrelated to this prerequisite retry.
         for key in ("last_failure", "repair_kind", "validation_failure",
@@ -1569,6 +1574,22 @@ def main(argv: list[str] | None = None) -> int:
                 record["status"] = "needs_design"
             elif result["outcome"] == "blocked":
                 detail = (result.get("summary") or result.get("question") or "technical blocker").strip()
+                # If Codex reports an unmerged declared prerequisite, do not
+                # spend every initial attempt repeating that same observation.
+                if (issue_blocker_numbers(selected)
+                        and re.search(r"\\b(?:unmerged|not merged)\\b", detail, re.I)):
+                    receipt = dependency_completion_receipt(selected, closure)
+                    record["status"] = "waiting_dependency" if receipt is None else "failed"
+                    record["last_failure"] = f"Codex implementation blocked: {detail}"
+                    if receipt is not None:
+                        # The dependency is already merged: this is a stale
+                        # Codex/worktree assertion, not license to retry 14x.
+                        record["dependency_recovery_receipt"] = json.dumps(
+                            receipt, sort_keys=True, separators=(",", ":")
+                        )
+                    save_state(state_path, state)
+                    print(f"issue #{selected['number']}: prerequisite gate unresolved; Codex paused")
+                    return 0
                 raise RuntimeError(f"Codex implementation blocked: {detail}")
             else:
                 if conflicts:
