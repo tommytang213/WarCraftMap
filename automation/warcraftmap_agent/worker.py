@@ -1506,6 +1506,13 @@ def main(argv: list[str] | None = None) -> int:
             save_state(state_path, state)
             print("release closure pending; no unblocked repair is ready" if closure.active else "no eligible [agent-ready] issue")
             return 0
+        # A closed issue is insufficient while its implementing PR remains
+        # unmerged. Recheck before any Codex quota is charged, even if the
+        # earlier queue snapshot considered the issue eligible.
+        if issue_blocker_numbers(selected) and dependency_completion_receipt(selected, closure) is None:
+            print(f"issue #{selected['number']}: waiting for verified prerequisite merges")
+            save_state(state_path, state)
+            return 0
         available, reason = budget_available(
             state["runs"],
             utcnow(),
