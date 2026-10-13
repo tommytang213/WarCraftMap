@@ -124,6 +124,30 @@ class WorkerTests(unittest.TestCase):
         reconcile_dependency_exhaustion([candidate], state, gate, 15)
         self.assertEqual("queued", state["issues"]["474"]["status"])
 
+    def test_declared_prerequisite_wait_is_automatic_and_costs_no_new_run(self):
+        candidate = {"number": 474, "title": "[agent-ready] Pike and Shot",
+                     "body": "Depends on: #469\n", "state": "OPEN"}
+        prior = {"number": 469, "title": "[agent-ready] Traditions", "state": "OPEN",
+                 "closedAt": None}
+        pr = {"number": 477, "state": "OPEN", "mergedAt": None,
+              "closingIssuesReferences": [{"number": 469}]}
+        gate = Closure("a" * 40, True, {}, issues=[candidate, prior], prs=[pr])
+        record = {"status": "waiting_dependency", "attempts": 1,
+                  "last_failure": "Codex implementation blocked: Required dependency #469 remains unmerged"}
+        state = {"issues": {"474": record}, "runs": [{"issue": 474, "tokens": 500}]}
+        self.assertIsNone(select_issue([candidate], state, 15, closure=gate))
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("waiting_dependency", record["status"])
+        prior["state"], prior["closedAt"] = "CLOSED", "2026-10-12T14:02:31Z"
+        pr["state"], pr["mergedAt"] = "MERGED", "2026-10-12T14:02:30Z"
+        reconcile_dependency_exhaustion([candidate], state, gate, 15)
+        self.assertEqual("queued", record["status"])
+        self.assertEqual(1, record["attempts"])
+        self.assertEqual(1, len(record["dependency_recovery_history"]))
+        self.assertEqual([{"issue": 474, "tokens": 500}], state["runs"])
+        self.assertEqual(474, select_issue([candidate], state, 15, closure=gate)["number"])
+
+
     def test_implementation_refreshes_worktree_before_codex_launch(self):
         config = Config(Path("/repo"), Path("/state"))
         wt = Path("/worktree")
