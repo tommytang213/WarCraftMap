@@ -352,12 +352,14 @@ class RepairPromptTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             config = worker.Config(root, root)
-            (root / "last-codex-result.json").write_text(json.dumps({"outcome": "complete"}))
             process = mock.Mock(returncode=0)
             process.communicate.return_value = ("", None)
             record = {"attempts": 3, "repair_kind": "merge_conflict", "last_failure": "Codex exited 1"}
             issue = {"number": 402, "title": "[agent-ready] Repair", "body": ""}
-            with mock.patch.object(worker.subprocess, "Popen", return_value=process):
+            def launch(command, **kwargs):
+                Path(command[command.index("--output-last-message") + 1]).write_text(json.dumps({"outcome": "complete"}))
+                return process
+            with mock.patch.object(worker.subprocess, "Popen", side_effect=launch):
                 worker.invoke_codex(config, root, issue, record, {})
             self.assertIn("This is an integration repair.", process.communicate.call_args.args[0])
 
