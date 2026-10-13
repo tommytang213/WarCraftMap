@@ -569,7 +569,7 @@ class WorkerTests(unittest.TestCase):
             )
         )
 
-    def test_v1_state_migrates_to_token_aware_v2(self):
+    def test_v1_state_migrates_without_losing_token_quota_history(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "state.json"
             path.write_text(
@@ -583,7 +583,7 @@ class WorkerTests(unittest.TestCase):
                 encoding="utf-8",
             )
             state = load_state(path)
-        self.assertEqual(state["version"], 2)
+        self.assertEqual(state["version"], 3)
         self.assertEqual(len(state["runs"]), 1)
         self.assertIsNone(state["runs"][0]["tokens"])
         self.assertEqual(state["runs"][0]["telemetry"], "legacy_missing")

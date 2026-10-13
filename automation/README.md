@@ -2,8 +2,10 @@
 
 This worker consumes open GitHub issues whose titles begin with `[agent-ready]`.
 Titles beginning with `[needs-design]` or `[planned]` are never selected. It runs only one
-process and one issue at a time, in a dedicated `agent/issue-N` branch and
-worktree. Codex runs with `workspace-write`, `--approve-for-me`, a 45-minute
+process and one Codex invocation at a time, in a dedicated `agent/issue-N` branch
+and worktree. One unpublished implementation may wait for a predecessor's CI;
+the same controller owns its claim, integration and publication. Codex runs with
+`workspace-write`, `--approve-for-me`, a 45-minute
 timeout, and no dangerous sandbox bypass.
 
 Codex's strict JSON response-format schema supports only a subset of ordinary
@@ -39,6 +41,80 @@ Once the index has no unmerged paths, the worker resumes the validation lane and
 runs repository checks automatically after Codex reports completion. Any further
 validation repair uses its remaining validation budget. Exhausted conflict
 budgets preserve the worktree and diagnostic in an explicit `failed` state.
+
+## Bounded integration trial
+
+The rollout fixes maximum unpublished staging depth at **one**, and caps managed
+open PRs at **two**. There is no concurrency/quota override. Before a Codex launch,
+the controller records managed PR heads and complete paginated changed-file
+inventories, including both sides of renames. Actual local Git changes decide
+overlap after implementation; issue titles never prove independence. Incomplete
+inventories, changing PR heads and unknown paths hold publication.
+
+All campaign paths share one conservative risk boundary: runtime, bootstrap,
+save, scenario data, traceability and execution evidence are coupled even when
+literal filenames differ. The only separate code boundary currently recognized
+is the controller's budget/self-update modules and their tests, plus its
+README/environment example under `automation/`. Exact path overlaps always hold.
+The worker and closure code consume campaign reports and are therefore coupled,
+as are CI workflows, shared validation scripts, image tooling and unclassified paths. This permits
+an independent controller fix to get PR CI during a campaign build, while limiting
+speculative full builds. Broader independence rules need evidence and tests first.
+
+A `stage` reservation in state v3 is persisted before Codex starts, together with
+the existing quota charge. Completed work becomes `staged` before integration
+starts; polling, restarting and integrating it cost no new Codex attempt. Failed
+and design-blocked unpublished work retains the slot and worktree. All repairs
+still use the existing attempt limits and token/run ceilings. Published PR repairs
+take priority over staged work. Release, native launch, dependency and planned
+issue gates still apply, and are checked again immediately before publication.
+
+An overlapping predecessor must actually be merged, with a merge commit reachable
+from fetched main. Green CI or a closed-but-unmerged PR does not release the hold.
+The controller checkpoints local work, merges current main, resolves source
+conflicts through the existing bounded Codex repair lane, and regenerates known
+traceability JSON/Markdown reports from the combined source. It never resolves a
+report by selecting one branch's PASS evidence. Scoped Python suites and the
+configured complete repository validation then run on a committed combined tree.
+Publication requires the exact validated head, a clean worktree and an unchanged
+remote main. A main advance during validation defers to another integration pass.
+After publication, a changed head/base also invalidates old green checks and
+requires fresh integration/validation and PR CI. Final main workflows remain enabled.
+
+Predecessor failures retain the staged work while the usual PR repair lane runs.
+Closure without merge, missing worktrees, exhausted repair attempts and waits
+over 24 hours are explicit attention conditions in durable state and timer output;
+`--dry-run` shows the occupied slot and reason. The worker never evicts a slot,
+deletes changes or substitutes another predecessor to clear a hold. Reopening and
+then merging the predecessor resumes automatically. A deliberately abandoned
+predecessor or candidate needs controller-side review of the preserved work before
+its reservation is released; it is never treated as a completed dependency.
+
+State v1/v2 migrates to v3 without losing runs, unknown telemetry, attempts or
+issue claims. Older controllers reject v3 rather than ignoring its reservations.
+Managed branch/PR history reconciles a crash after PR creation before state save,
+preventing duplicate claims. A validation interrupted by a crash runs again.
+Codex results and logs have unique per-issue, per-run directories. Long-running
+children inherit the existing controller lock, so a restart cannot start another
+writer while an orphaned invocation/validation still owns it.
+
+Each PR gets a replaceable `warcraftmap-agent-metrics` JSON block in its body and
+a local `metrics/pr-N.json` record under the state directory. They contain the
+first validation base SHA, subsequent head/base validation records, file-overlap
+observations, actual merge conflicts, phase wall times, Codex tokens and unknown
+telemetry counts, CI workflow-run counts, head updates and attempt reruns. Head
+updates distinguish repair pushes from reruns of the same Actions run. GitHub
+JSON reads time out after two minutes and fail closed. CI elapsed seconds
+sum workflow attempt durations; they are **not billed runner minutes** (parallel
+jobs and queue time differ). Missing API telemetry is reported explicitly and
+never interpreted as successful validation. Metrics errors do not waive gates.
+
+Keep this depth-one trial through multiple merges and compare PRs merged per day,
+CI elapsed minutes per PR, reruns and the fraction of PRs requiring conflict
+repair, alongside tokens and unknown telemetry, against a comparable baseline.
+No higher staging depth is enabled by this change. Local tests use real temporary
+Git histories and simulated CI; production throughput must be measured from the
+worker's subsequent PR receipts.
 
 ## Prerequisite-only block recovery
 
@@ -96,7 +172,7 @@ input when a blocker is first created or an implementation issue first becomes a
 blocker. The object contains `issue_number`, `title`, `url`, and `question`; the
 command can forward it to ntfy or another transport without storing credentials in
 the worker. Delivery is best-effort and is never retried on timer wakes. Existing v1
-timestamp-only state is migrated to the token-aware v2 state format without
+timestamp-only and v2 token-aware state are migrated to the integration-aware v3 format without
 discarding prior invocation history. Logs, worktrees, and quota state live under
 `~/.local/state/warcraftmap-agent` by default. The service is deliberately
 low-priority (`Nice=19`, idle I/O scheduling, low CPU/I/O weights). It uses the

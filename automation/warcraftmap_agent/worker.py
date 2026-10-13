@@ -11,11 +11,13 @@ import signal
 import subprocess
 import sys
 import tempfile
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import integration
 from .budget import budget_available, recent_runs, usage_summary
 from .closure import (APPROVED_NATIVE_LAUNCH_DIAGNOSTIC, Closure, REPORTS,
                       build_closure, is_open, marked_keys)
@@ -28,6 +30,13 @@ PLANNED_PHASE = re.compile(r"^\[planned\]\s+Phase\s+(\d+)\s*:", re.IGNORECASE)
 DEPENDENCY = re.compile(r"(?im)^\s*Depends on:\s*#(\d+)\b")
 QUEUE_REFILL_THRESHOLD = 3
 QUEUE_TARGET = 10
+_worker_lock = None
+
+
+def lock_fds() -> tuple[int, ...]:
+    # Long-running children retain the same flock if the controller crashes.
+    # A restarted controller cannot write their worktrees or start another run.
+    return (_worker_lock.fileno(),) if _worker_lock is not None and not _worker_lock.closed else ()
 
 
 @dataclass
@@ -127,7 +136,8 @@ def make_config(repo_root: Path, env_path: Path) -> Config:
 
 
 def run(args: list[str], *, cwd: Path, check: bool = True, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, timeout=timeout)
+    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, timeout=timeout,
+                            pass_fds=lock_fds())
     if check and result.returncode:
         detail = (result.stderr or result.stdout).strip()
         raise RuntimeError(f"command failed ({result.returncode}): {shlex.join(args)}\n{detail}")
@@ -136,7 +146,7 @@ def run(args: list[str], *, cwd: Path, check: bool = True, timeout: int | None =
 
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {"version": 2, "runs": [], "issues": {}}
+        return {"version": 3, "runs": [], "issues": {}}
 
     data = json.loads(path.read_text(encoding="utf-8"))
     version = data.get("version")
@@ -157,9 +167,12 @@ def load_state(path: Path) -> dict[str, Any]:
             ],
             "issues": data.get("issues", {}),
         }
-    elif version != 2:
+    elif version not in {2, 3}:
         raise ValueError("unsupported worker state version")
 
+    # v3 adds durable integration claims and validation receipts. Older workers
+    # reject v3 instead of silently ignoring an unpublished staging reservation.
+    data["version"] = 3
     data.setdefault("runs", [])
     data.setdefault("issues", {})
     return data
@@ -175,13 +188,31 @@ def save_state(path: Path, state: dict[str, Any]) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
 
 
 def gh_json(repo: Path, args: list[str]) -> Any:
-    result = run(["gh", *args], cwd=repo)
+    result = run(["gh", *args], cwd=repo, timeout=120)
+    if args[0] == "api" and "--paginate" in args:
+        # gh 2.45 has --paginate but no --slurp. Decode its consecutive JSON
+        # documents without dropping pages or requiring a CLI upgrade.
+        remaining = result.stdout.lstrip()
+        pages = []
+        decoder = json.JSONDecoder()
+        while remaining:
+            page, end = decoder.raw_decode(remaining)
+            pages.append(page)
+            remaining = remaining[end:].lstrip()
+        if not pages:
+            raise ValueError("GitHub returned no paginated response")
+        return pages
     return json.loads(result.stdout)
 
 
@@ -452,7 +483,7 @@ def legacy_pr_history(config: Config) -> list[dict[str, Any]]:
       repository(owner: $owner, name: $name) {
         pullRequests(first: 100, after: $cursor, orderBy: {field: CREATED_AT, direction: ASC}) {
           nodes {
-            number title body state url createdAt closedAt mergedAt
+            number title body state url createdAt closedAt mergedAt headRefName headRefOid
             mergeCommit { oid }
             closingIssuesReferences(first: 25) {
               nodes { number }
@@ -511,7 +542,7 @@ def list_history(config: Config, kind: str) -> list[dict[str, Any]]:
     """Read complete history, growing gh's limit until no entries are omitted."""
     fields = "number,title,body,state,url,createdAt,closedAt"
     if kind == "pr":
-        fields += ",mergedAt,mergeCommit,closingIssuesReferences"
+        fields += ",mergedAt,mergeCommit,closingIssuesReferences,headRefName,headRefOid"
     limit = max(config.issue_limit, 100)
     while True:
         try:
@@ -600,6 +631,7 @@ def invoke_planner(config: Config, context: dict[str, Any], requested: int, run_
         command, cwd=config.repo_root, stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
         start_new_session=True, env=os.environ.copy(),
+        pass_fds=lock_fds(),
     )
     stream = ""
     timed_out = False
@@ -754,6 +786,7 @@ def select_issue(
     closure: Closure | None = None,
 ) -> dict[str, Any] | None:
     blockers = open_design_numbers or set()
+    slots = integration.staged_numbers(state)
     if closure is not None:
         closed = completed_dependency_numbers(closure.issues, closure.prs)
         blockers = blockers | {number for issue in issues for number in issue_blocker_numbers(issue) if number not in closed}
@@ -773,8 +806,14 @@ def select_issue(
         if issue_blocker_numbers(issue) & blockers:
             continue
         record = state["issues"].get(str(issue["number"]), {})
-        if record.get("status") in {"pr_open", "needs_design", "merged", "waiting_dependency"}:
+        if slots and int(issue["number"]) not in slots and not record.get("pr"):
             continue
+        if record.get("status") in {"pr_open", "pr_closed", "needs_design", "merged", "waiting_dependency"}:
+            continue
+        # Resuming completed local work only runs integration/validation. It
+        # neither launches Codex nor consumes another implementation attempt.
+        if record.get("status") == "staged":
+            return issue
         _attempt_key, attempts, limit = attempt_budget(
             record, max_attempts, max_validation_repair_attempts,
             max_ci_repair_attempts, max_conflict_attempts
@@ -1084,7 +1123,11 @@ def invoke_codex(
     run_entry: dict[str, Any],
 ) -> dict[str, str]:
     schema = config.repo_root / "automation" / "codex-result.schema.json"
-    output = config.state_dir / "last-codex-result.json"
+    run_entry.setdefault("id", uuid.uuid4().hex)
+    run_dir = config.state_dir / "runs" / f"issue-{issue['number']}" / run_entry["id"]
+    run_dir.mkdir(parents=True, exist_ok=True)
+    output = run_dir / "result.json"
+    output.unlink(missing_ok=True)
     command = build_codex_command(config, worktree, schema, output)
     env = os.environ.copy()
     process = subprocess.Popen(
@@ -1096,12 +1139,23 @@ def invoke_codex(
         text=True,
         start_new_session=True,
         env=env,
+        pass_fds=lock_fds(),
     )
     stdout = ""
     timed_out = False
+    prompt = codex_prompt(issue, record.get("last_failure", ""), repair_kind=repair_kind(record))
+    predecessors = record.get("stage", {}).get("predecessors", [])
+    if predecessors and not record.get("pr"):
+        prompt += (
+            "\n\nThe controller reserved the single unpublished staging slot for this implementation. "
+            "Managed predecessor PRs: " + ", ".join(f"#{row['number']}" for row in predecessors) + ". "
+            "Implement and run focused automated tests in this worktree. Leave complete repository "
+            "validation to the controller after integration preflight. Do not merge an unmerged "
+            "predecessor branch or reuse its CI/artifacts as evidence for this code."
+        )
     try:
         stdout, _ = process.communicate(
-            codex_prompt(issue, record.get("last_failure", ""), repair_kind=repair_kind(record)),
+            prompt,
             timeout=config.timeout_minutes * 60,
         )
     except subprocess.TimeoutExpired:
@@ -1117,11 +1171,7 @@ def invoke_codex(
         run_entry["tokens"] = tokens
         run_entry["telemetry"] = "reported" if tokens is not None else "missing"
         run_entry["completed_at"] = utcnow().isoformat().replace("+00:00", "Z")
-        log = (
-            config.state_dir
-            / "logs"
-            / f"issue-{issue['number']}-attempt-{record['attempts']}.jsonl"
-        )
+        log = run_dir / "codex.jsonl"
         log.parent.mkdir(parents=True, exist_ok=True)
         log.write_text(stdout or "", encoding="utf-8")
 
@@ -1146,7 +1196,8 @@ def prepare_validation_repair(config: Config, worktree: Path, issue_number: int)
     run(["git", "fetch", "origin"], cwd=worktree)
     branch = default_branch(config.repo_root)
     upstream = f"origin/{branch}"
-    base_oid = remote_branch_oid(config.repo_root, branch)
+    # Identify the commit actually fetched/merged, not a later ls-remote result.
+    base_oid = run(["git", "rev-parse", upstream], cwd=worktree).stdout.strip()
     merge_head = run(["git", "rev-parse", "--verify", "--quiet", "MERGE_HEAD"], cwd=worktree, check=False)
     if merge_head.returncode not in {0, 1}:
         raise RuntimeError(f"could not inspect merge state (git exited {merge_head.returncode})")
@@ -1204,6 +1255,7 @@ def resume_validation_repair(record: dict[str, Any], conflicts: list[str]) -> No
 def prepare_repair(config: Config, worktree: Path, issue_number: int, record: dict[str, Any]) -> None:
     """Determine the actual repair lane before charging a Codex attempt."""
     kind = repair_kind(record)
+    base_oid = record.get("stage", {}).get("integration_base_sha") or record.get("conflict_base_oid")
     if kind == "validation":
         # Kept separately because last_failure is replaced by Codex errors and
         # conflict diagnostics on subsequent worker invocations.
@@ -1218,7 +1270,7 @@ def prepare_repair(config: Config, worktree: Path, issue_number: int, record: di
         # Even a queued/initial retry may have a worktree created against an
         # obsolete main. Bring it forward *before* consuming any Codex quota.
         # Existing changes are checkpointed, never thrown away.
-        _base_oid, conflicts = prepare_validation_repair(config, worktree, issue_number)
+        base_oid, conflicts = prepare_validation_repair(config, worktree, issue_number)
         if conflicts:
             record["repair_kind"] = "merge_conflict"
             record["last_failure"] = (
@@ -1232,6 +1284,10 @@ def prepare_repair(config: Config, worktree: Path, issue_number: int, record: di
         return
 
     if record["repair_kind"] == "merge_conflict":
+        if conflicts:
+            event = {"base_sha": base_oid, "paths": conflicts}
+            if event not in integration.metrics(record)["conflicts"]:
+                integration.metrics(record)["conflicts"].append(event)
         record["last_failure"] = (
             "Merge conflict repair required: current main was merged into the issue "
             "worktree; resolve only these unmerged paths while preserving both work "
@@ -1261,16 +1317,286 @@ def push_existing_pr_repair(worktree: Path, issue_number: int, pr: int) -> None:
     run(["git", "push"], cwd=worktree)
 
 
-def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str) -> int:
-    status = run(["git", "status", "--porcelain"], cwd=worktree).stdout
-    if status.strip():
+def reconcile_pr_claims(state: dict, history: list[dict]) -> None:
+    """Recover a crash between PR creation and state persistence, without a new claim."""
+    owners: dict[int, int] = {}
+    for row in history:
+        match = re.fullmatch(r"agent/issue-(\d+)", str(row.get("headRefName") or ""))
+        if not match:
+            continue
+        number, pr = int(match[1]), int(row["number"])
+        existing = state["issues"].get(str(number), {})
+        recovering_publication = (
+            not existing.get("pr") and existing.get("metrics", {}).get("phase") == "publication" and
+            existing.get("validation_receipt", {}).get("head_sha") and
+            existing["validation_receipt"]["head_sha"] == row.get("headRefOid")
+        )
+        if str(row.get("state")).upper() != "OPEN" and not recovering_publication:
+            continue
+        if number in owners and owners[number] != pr:
+            raise RuntimeError(f"multiple managed PRs claim issue #{number}; integration paused")
+        owners[number] = pr
+        record = issue_record(state, number)
+        if record.get("pr") and record["pr"] != pr:
+            raise RuntimeError(f"issue #{number} already owns PR #{record['pr']}; integration paused")
+        if not record.get("pr") or record.get("status") == "pr_closed":
+            record.update(pr=pr, status="pr_open")
+            integration.phase(record, "pr_ci")
+
+
+def predecessor_snapshot(config: Config, state: dict, history: list[dict], record: dict) -> list[dict]:
+    tracked = {int(row["pr"]) for row in state["issues"].values() if row.get("pr")}
+    remembered = {int(row["number"]) for row in record.get("stage", {}).get("predecessors", [])}
+    numbers = remembered | {int(row["number"]) for row in history
+                           if str(row.get("state")).upper() == "OPEN" and
+                           (int(row["number"]) in tracked or
+                            re.fullmatch(r"agent/issue-\d+", str(row.get("headRefName") or "")))}
+    numbers.discard(record.get("pr"))
+    snapshots = []
+    fields = "number,state,headRefOid,headRefName,baseRefName,changedFiles,mergedAt,mergeCommit,statusCheckRollup"
+    for number in sorted(numbers):
+        snapshot = {"number": number, "state": "UNKNOWN", "files": None}
+        try:
+            view = gh_json(config.repo_root, ["pr", "view", str(number), "--json", fields])
+            if view.get("number") != number or view.get("state") not in {"OPEN", "CLOSED", "MERGED"}:
+                raise ValueError("GitHub returned incomplete PR identity/state")
+            snapshot.update({key: value for key, value in view.items() if key != "statusCheckRollup"})
+            checks = view.get("statusCheckRollup") or []
+            snapshot["ci"] = ("failed" if any(check_state(row) == "failed" for row in checks) else
+                              "pending" if not checks or any(check_state(row) == "pending" for row in checks)
+                              else "passed")
+            if view["state"] == "OPEN":
+                pages = gh_json(config.repo_root, ["api", "--paginate",
+                    f"repos/{{owner}}/{{repo}}/pulls/{number}/files?per_page=100"])
+                rows = [row for page in pages for row in page]
+                if (not rows or len(rows) != view.get("changedFiles") or
+                        any(not isinstance(row, dict) or not row.get("filename") for row in rows)):
+                    raise ValueError("incomplete PR changed-file inventory")
+                filenames = [row["filename"] for row in rows]
+                if len(set(filenames)) != len(rows):
+                    raise ValueError("duplicate paths in PR changed-file inventory")
+                filenames += [row["previous_filename"] for row in rows if row.get("previous_filename")]
+                if integration.paths(filenames) is None:
+                    raise ValueError("ambiguous PR changed-file inventory")
+                current = gh_json(config.repo_root, ["pr", "view", str(number), "--json", "state,headRefOid"])
+                if not view.get("headRefOid") or current.get("headRefOid") != view["headRefOid"] or current["state"] != "OPEN":
+                    raise ValueError("PR changed while its files were being read")
+                snapshot["files"] = sorted(set(filenames))
+        except Exception as exc:
+            snapshot["files"] = None
+            snapshot["error"] = str(exc)[-1000:]
+        snapshots.append(snapshot)
+    return snapshots
+
+
+def changed_paths(worktree: Path, base: str) -> list[str]:
+    # --no-renames deliberately includes both names of moved/deleted files.
+    tracked = run(["git", "diff", "--name-only", "--no-renames", "-z", base], cwd=worktree).stdout
+    new = run(["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=worktree).stdout
+    return sorted(set(path for path in (tracked + new).split("\0") if path))
+
+
+def reserve_stage(config: Config, state: dict, issue: dict, record: dict, worktree: Path,
+                  predecessors: list[dict]) -> None:
+    if record.get("stage"):
+        return
+    slots = integration.staged_numbers(state)
+    if not record.get("pr") and len(slots) >= integration.MAX_STAGED_DEPTH and issue["number"] not in slots:
+        raise RuntimeError("the single unpublished staging slot is occupied")
+    base = run(["git", "merge-base", "HEAD", f"origin/{default_branch(config.repo_root)}"], cwd=worktree).stdout.strip()
+    record["stage"] = {"created_at": integration.stamp(), "implementation_base_sha": base,
+                       "predecessors": predecessors, "implementation_complete": False,
+                       "worktree": str(worktree), "branch": f"agent/issue-{issue['number']}"}
+    integration.phase(record, "implementation")
+
+
+def integration_hold(record: dict, files: list[str], predecessors: list[dict]) -> str:
+    stage = record["stage"]
+    stage["predecessors"] = predecessors
+    stage["files"] = files
+    holds = []
+    for pr in predecessors:
+        if pr.get("error"):
+            holds.append(f"PR #{pr['number']}: {pr['error']}")
+        elif pr.get("state") == "MERGED":
+            if not pr.get("mergedAt") or not (pr.get("mergeCommit") or {}).get("oid"):
+                holds.append(f"PR #{pr['number']}: merge evidence is incomplete")
+        elif pr.get("state") == "CLOSED":
+            holds.append(f"PR #{pr['number']} closed without merging; preserved work needs review or a reopened predecessor")
+        else:
+            decision = integration.classify(files, pr.get("files"))
+            integration.observe(record, pr, decision)
+            if not decision["independent"]:
+                holds.append(f"PR #{pr['number']} {pr.get('ci', 'unknown')}: {decision['reason']}")
+    if not record.get("pr") and sum(pr.get("state") == "OPEN" for pr in predecessors) >= integration.MAX_OPEN_PRS:
+        holds.append("two managed PRs already occupy the bounded CI trial")
+    if holds and integration.seconds(stage["created_at"], integration.stamp()) >= integration.STAGE_TIMEOUT_HOURS * 3600:
+        holds.insert(0, "staging wait exceeded 24 hours; attention required (work remains preserved)")
+    return "; ".join(holds)
+
+
+def defer_integration(config: Config, state: dict, issue: dict, record: dict, reason: str) -> None:
+    record["status"] = "staged"
+    record["stage"]["hold_reason"] = reason
+    integration.phase(record, "staging_wait")
+    save_state(config.state_dir / "state.json", state)
+    print(f"issue #{issue['number']}: staged in {record['stage']['worktree']}; {reason}")
+
+
+def regenerate_integration_reports(config: Config, worktree: Path, files: list[str]) -> None:
+    """Generate reports from merged source, never select a conflict side or old PASS."""
+    for script in sorted(worktree.glob("maps/*/*/tooling/requirement_traceability_audit.py")):
+        project = script.parent.parent
+        relative = project.relative_to(worktree).as_posix() + "/"
+        if not any(path.startswith((relative, "maps/historical-world-rpg/_shared/")) for path in files):
+            continue
+        run([sys.executable, str(script), "--write", "--check"], cwd=worktree,
+            timeout=config.timeout_minutes * 60)
+        reports = [project / "reports/traceability" / f"requirements.{suffix}" for suffix in ("json", "md")]
+        run(["git", "add", "--", *(str(path.relative_to(worktree)) for path in reports)], cwd=worktree)
+
+
+def generated_report(path: str) -> bool:
+    return bool(re.fullmatch(r"maps/[^/]+/[^/]+/reports/traceability/requirements\.(json|md)", path))
+
+
+def checkpoint_candidate(worktree: Path, number: int) -> None:
+    if unmerged_paths(worktree):
+        raise RuntimeError("cannot checkpoint unresolved integration conflicts")
+    dirty = run(["git", "status", "--porcelain"], cwd=worktree).stdout.strip()
+    merging = run(["git", "rev-parse", "--verify", "--quiet", "MERGE_HEAD"], cwd=worktree, check=False).returncode == 0
+    if dirty or merging:
         run(["git", "add", "-A"], cwd=worktree)
-        run(["git", "commit", "-m", f"Implement issue #{issue['number']}: {READY.sub('', issue['title'])}"], cwd=worktree)
+        run(["git", "commit", "-m", f"Integrate issue #{number} before complete validation"], cwd=worktree)
+
+
+def run_scoped_checks(config: Config, worktree: Path, files: list[str]) -> None:
+    directories = []
+    if any(path.startswith("automation/") for path in files):
+        directories.append(worktree / "automation/tests")
+    if any(path.startswith("maps/") for path in files):
+        directories.extend(sorted(worktree.glob("maps/*/*/tests")))
+    for directory in directories:
+        if directory.is_dir():
+            run([sys.executable, "-m", "unittest", "discover", "-s", str(directory), "-p", "test_*.py"],
+                cwd=worktree, timeout=config.timeout_minutes * 60)
+
+
+def assert_validation_receipt(config: Config, worktree: Path, receipt: dict) -> None:
+    if (not receipt.get("base_sha") or not receipt.get("head_sha") or
+            remote_branch_oid(config.repo_root, default_branch(config.repo_root)) != receipt["base_sha"] or
+            run(["git", "rev-parse", "HEAD"], cwd=worktree).stdout.strip() != receipt["head_sha"] or
+            run(["git", "status", "--porcelain"], cwd=worktree).stdout.strip() or
+            run(["git", "merge-base", "--is-ancestor", receipt["base_sha"], "HEAD"],
+                cwd=worktree, check=False).returncode):
+        raise RuntimeError("code or main advanced after validation; fresh integration and complete validation required")
+
+
+def complete_candidate(config: Config, state: dict, issue: dict, record: dict, worktree: Path, branch: str) -> None:
+    """One preflight per wake; no previous CI/validation result authorizes new code."""
+    stage = record["stage"]
+    stage["implementation_complete"] = True
+    record["status"] = "staged"
+    record.pop("validation_receipt", None)
+    save_state(config.state_dir / "state.json", state)
+    history = list_history(config, "pr")
+    predecessors = predecessor_snapshot(config, state, history, record)
+    files = changed_paths(worktree, stage["implementation_base_sha"])
+    hold = integration_hold(record, files, predecessors)
+    if hold:
+        defer_integration(config, state, issue, record, hold)
+        return
+    integration.phase(record, "integration")
+    save_state(config.state_dir / "state.json", state)
+    base, conflicts = prepare_validation_repair(config, worktree, issue["number"])
+    stage["integration_base_sha"] = base
+    if conflicts:
+        event = {"base_sha": base, "paths": conflicts}
+        if event not in integration.metrics(record)["conflicts"]:
+            integration.metrics(record)["conflicts"].append(event)
+    if not conflicts or all(generated_report(path) for path in conflicts):
+        try:
+            regenerate_integration_reports(config, worktree, files + conflicts)
+        except Exception as exc:
+            record.update(repair_kind="validation", validation_failure=str(exc)[-4000:], validation_base_oid=base)
+            raise
+        conflicts = unmerged_paths(worktree)
+    if conflicts:
+        record.update(status="repair", repair_kind="merge_conflict",
+                      last_failure="Merge conflict repair required: " + ", ".join(conflicts))
+        save_state(config.state_dir / "state.json", state)
+        return
+    # The new main must actually contain each confirmed merge, not merely have
+    # a newer timestamp or an unrelated successful CI run.
+    for pr in predecessors:
+        if pr.get("state") == "MERGED" and run(
+            ["git", "merge-base", "--is-ancestor", pr["mergeCommit"]["oid"], base],
+            cwd=worktree, check=False,
+        ).returncode:
+            defer_integration(config, state, issue, record, f"main does not contain merged PR #{pr['number']} yet")
+            return
+    checkpoint_candidate(worktree, issue["number"])
+    stage["implementation_base_sha"] = base
+    files = changed_paths(worktree, base)
+    receipt = {"base_sha": base, "head_sha": run(["git", "rev-parse", "HEAD"], cwd=worktree).stdout.strip()}
+    data = integration.metrics(record)
+    if data["first_validation_base_sha"] is None:
+        data["first_validation_base_sha"] = base
+    validation = {**receipt, "started_at": integration.stamp(), "result": "running"}
+    data["validations"].append(validation)
+    integration.phase(record, "validation")
+    save_state(config.state_dir / "state.json", state)
+    try:
+        run_scoped_checks(config, worktree, files)
+        run_checks(config, worktree)
+    except Exception as exc:
+        validation["result"] = "failed"
+        record.update(repair_kind="validation" if not record.get("pr") else "ci",
+                      validation_failure=str(exc)[-4000:], validation_base_oid=base)
+        raise
+    finally:
+        validation["completed_at"] = integration.stamp()
+        validation["seconds"] = integration.seconds(validation["started_at"], validation["completed_at"])
+    validation["result"] = "passed"
+    try:
+        assert_validation_receipt(config, worktree, receipt)
+    except RuntimeError as exc:
+        defer_integration(config, state, issue, record, str(exc))
+        return
+    # Refresh both claims and release/dependency gates after the expensive work.
+    context = planning_context(config)
+    current_issue = next((row for row in context["issues"] if row["number"] == issue["number"]), {})
+    if (not current_issue or not is_open(current_issue) or not READY.match(current_issue["title"]) or
+            not context["closure"].fresh or not context["closure"].permits_issue(current_issue) or
+            (issue_blocker_numbers(current_issue) and dependency_completion_receipt(current_issue, context["closure"]) is None)):
+        defer_integration(config, state, issue, record, "current issue, release or dependency gate no longer permits publication")
+        return
+    predecessors = predecessor_snapshot(config, state, context["pull_requests"], record)
+    hold = integration_hold(record, files, predecessors)
+    if hold:
+        defer_integration(config, state, issue, record, hold)
+        return
+    record["validation_receipt"] = receipt
+    for key in ("last_failure", "repair_kind", "validation_failure"):
+        record.pop(key, None)
+    integration.phase(record, "publication")
+    save_state(config.state_dir / "state.json", state)
+    if record.get("pr"):
+        assert_validation_receipt(config, worktree, receipt)
+        push_existing_pr_repair(worktree, issue["number"], int(record["pr"]))
     else:
-        upstream = f"origin/{default_branch(config.repo_root)}"
-        ahead = run(["git", "rev-list", "--count", f"{upstream}..HEAD"], cwd=worktree).stdout.strip()
-        if int(ahead or "0") < 1:
-            raise RuntimeError("Codex reported completion but made no changes")
+        record["pr"] = publish(config, issue, worktree, branch, receipt=receipt)
+    record["status"] = "pr_open"
+    stage.pop("hold_reason", None)
+    integration.phase(record, "pr_ci")
+    save_state(config.state_dir / "state.json", state)
+
+
+def publish(config: Config, issue: dict[str, Any], worktree: Path, branch: str, *, receipt: dict) -> int:
+    assert_validation_receipt(config, worktree, receipt)
+    ahead = run(["git", "rev-list", "--count", f"{receipt['base_sha']}..HEAD"], cwd=worktree).stdout.strip()
+    if int(ahead or "0") < 1:
+        raise RuntimeError("Codex reported completion but made no changes")
     run(["git", "push", "--set-upstream", "origin", branch], cwd=worktree)
     existing = run(
         ["gh", "pr", "list", "--head", branch, "--state", "open", "--json", "number", "--jq", ".[0].number"],
@@ -1363,6 +1689,8 @@ def cleanup_merged_issue(config: Config, issue_number: int) -> list[str]:
 def finish_merged_issue(config: Config, number: str, record: dict[str, Any]) -> None:
     """Keep merge success authoritative even when issue-close/cleanup reports warnings."""
     record["status"] = "merged"
+    if record.get("metrics"):
+        integration.phase(record, "merged")
     errors: list[str] = []
     if int(number) in APPROVED_NATIVE_LAUNCH_DIAGNOSTIC:
         # Code integration succeeded; a real client smoke has NOT been run.
@@ -1395,14 +1723,26 @@ def service_open_prs(config: Config, state: dict[str, Any], allowed_issues: set[
         )
         if record.get("status") != "pr_open" and not failed_conflict:
             continue
-        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,mergeable,statusCheckRollup,baseRefName"])
+        view = gh_json(config.repo_root, ["pr", "view", str(pr), "--json", "state,mergeStateStatus,mergeable,statusCheckRollup,baseRefName,headRefOid"])
         if view["state"] == "MERGED":
             finish_merged_issue(config, number, record)
             return True
         if view["state"] == "CLOSED":
-            record["status"] = "failed"
+            record["status"] = "pr_closed"
             record["last_failure"] = f"PR #{pr} was closed without merging; manual review is required."
+            if record.get("metrics"):
+                integration.phase(record, "attention")
             return True
+        receipt = record.get("validation_receipt")
+        if receipt:
+            base = remote_branch_oid(config.repo_root, str(view.get("baseRefName") or default_branch(config.repo_root)))
+            if view.get("headRefOid") != receipt["head_sha"] or base != receipt["base_sha"]:
+                # Green checks for an older head/base cannot validate a new
+                # combined tree. Resume local preflight without a Codex charge.
+                record["status"] = "staged"
+                record["stage"]["hold_reason"] = "PR head/base changed; fresh integration and CI required"
+                integration.phase(record, "staging_wait")
+                return True
         merge_state = str(view.get("mergeStateStatus") or "").upper()
         mergeable = str(view.get("mergeable") or "").upper()
         if merge_state == "DIRTY" or mergeable == "CONFLICTING":
@@ -1470,13 +1810,116 @@ def service_open_prs(config: Config, state: dict[str, Any], allowed_issues: set[
         # complete successful statusCheckRollup above.
         if not checks:
             continue
-        run(build_pr_merge_command(int(pr)), cwd=config.repo_root)
+        command = build_pr_merge_command(int(pr))
+        if receipt:
+            # GitHub atomically rejects a changed head between inspection and merge.
+            command += ["--match-head-commit", receipt["head_sha"]]
+        run(command, cwd=config.repo_root)
         finish_merged_issue(config, number, record)
         return True
     return False
 
 
+def record_attempt_failure(config: Config, record: dict, exc: Exception) -> None:
+    if record.get("status") == "staged" and not repair_kind(record):
+        # A transport/checkpoint/publication failure is not a request to rerun
+        # the finished implementation, nor a reason to lose its reserved slot.
+        record["stage"]["hold_reason"] = str(exc)[-4000:]
+        integration.phase(record, "staging_wait")
+        print(f"integration deferred: {exc}", file=sys.stderr)
+        return
+    _key, attempts, limit = attempt_budget(
+        record, config.max_attempts, config.max_validation_repair_attempts,
+        config.max_ci_repair_attempts, config.max_conflict_attempts,
+    )
+    record["status"] = "failed" if attempts >= limit else "repair"
+    record["last_failure"] = str(exc)[-4000:]
+    if attempts >= limit:
+        lane = {"validation": "validation-repair", "ci": "CI-repair",
+                "merge_conflict": "conflict-repair"}.get(repair_kind(record), "implementation")
+        record["last_failure"] += f"\nThe {lane} attempt limit ({limit}) is exhausted."
+    integration.phase(record, "attention" if attempts >= limit else "repair")
+    print(f"attempt failed: {exc}", file=sys.stderr)
+
+
+def collect_ci_metrics(config: Config, record: dict, number: str) -> None:
+    data = integration.metrics(record)
+    pages = gh_json(config.repo_root, ["api", "--paginate",
+        f"repos/{{owner}}/{{repo}}/actions/runs?branch=agent%2Fissue-{number}&event=pull_request&per_page=100"])
+    totals = {page["total_count"] for page in pages}
+    rows = [row for page in pages for row in page["workflow_runs"]]
+    if len(totals) != 1 or totals != {len(rows)} or len({row["id"] for row in rows}) != len(rows):
+        raise ValueError("CI run inventory changed or was truncated during pagination")
+    data["ci_unattributed_runs"] = sum(not row.get("pull_requests") for row in rows)
+    for page in pages:
+        for item in page["workflow_runs"]:
+            # Do not attribute another PR's CI to this one, even if a branch
+            # name is reused. Missing association remains unknown telemetry.
+            if not any(row["number"] == record["pr"] for row in item.get("pull_requests", [])):
+                continue
+            for attempt in range(1, int(item["run_attempt"]) + 1):
+                key = f"{item['id']}:{attempt}"
+                if data["ci_runs"].get(key, {}).get("seconds") is not None:
+                    continue
+                run_data = item if attempt == item["run_attempt"] else gh_json(config.repo_root, [
+                    "api", f"repos/{{owner}}/{{repo}}/actions/runs/{item['id']}/attempts/{attempt}"])
+                elapsed = None
+                if run_data.get("status") == "completed" and run_data.get("run_started_at") and run_data.get("updated_at"):
+                    elapsed = integration.seconds(run_data["run_started_at"], run_data["updated_at"])
+                data["ci_runs"][key] = {"id": item["id"], "attempt": attempt,
+                                        "head_sha": run_data.get("head_sha"), "seconds": elapsed,
+                                        "conclusion": run_data.get("conclusion")}
+    data["ci_observed_at"] = integration.stamp()
+    data.pop("ci_error", None)
+
+
+def emit_pr_metrics(config: Config, state: dict) -> None:
+    """Publish one replaceable JSON block per PR; telemetry never waives a gate."""
+    integration.record_runs(state)
+    for number, record in state["issues"].items():
+        if not record.get("pr") or not record.get("metrics"):
+            continue
+        # Finished receipts are immutable unless an earlier telemetry write failed.
+        if record.get("metrics_finalized"):
+            continue
+        data = integration.metrics(record)
+        try:
+            collect_ci_metrics(config, record, number)
+        except Exception as exc:
+            data["ci_error"] = str(exc)[-1000:]
+        payload = {"issue": int(number), "pr": record["pr"], "status": record["status"],
+                   "trial": {"max_staged_depth": 1, "max_open_prs": integration.MAX_OPEN_PRS},
+                   **integration.summary(record)}
+        path = config.state_dir / "metrics" / f"pr-{record['pr']}.json"
+        save_state(path, payload)
+        start, end = "<!-- warcraftmap-agent-metrics -->", "<!-- /warcraftmap-agent-metrics -->"
+        block = start + "\n```json\n" + json.dumps(payload, indent=2, sort_keys=True) + "\n```\n" + end
+        try:
+            view = gh_json(config.repo_root, ["pr", "view", str(record["pr"]), "--json", "body"])
+            body = str(view.get("body") or "")
+            updated = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda _: block,
+                             body, flags=re.S) if start in body and end in body else body.rstrip() + "\n\n" + block
+            if updated != body:
+                body_path = path.with_suffix(".body.json")
+                body_path.write_text(json.dumps({"body": updated}), encoding="utf-8")
+                # Use the stable REST body endpoint without gh pr edit's
+                # additional GraphQL metadata queries on older CLI versions.
+                run(["gh", "api", "--method", "PATCH",
+                     f"repos/{{owner}}/{{repo}}/pulls/{record['pr']}", "--input", str(body_path)],
+                    cwd=config.repo_root, timeout=120)
+            data.pop("publication_error", None)
+            if (record["status"] == "merged" and not data.get("ci_error") and
+                    not data.get("ci_unattributed_runs") and
+                    all(row.get("seconds") is not None for row in data["ci_runs"].values())):
+                record["metrics_finalized"] = True
+        except Exception as exc:
+            data["publication_error"] = str(exc)[-1000:]
+            print(f"metrics warning for PR #{record['pr']}: {exc}", file=sys.stderr)
+    save_state(config.state_dir / "state.json", state)
+
+
 def main(argv: list[str] | None = None) -> int:
+    global _worker_lock
     parser = argparse.ArgumentParser(description="Conservative GitHub-Issue-driven Codex worker")
     parser.add_argument("--dry-run", action="store_true", help="show the next eligible task without invoking Codex or changing GitHub")
     parser.add_argument("--repo", type=Path, default=Path.cwd())
@@ -1484,18 +1927,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     config = make_config(args.repo, args.config)
     config.state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (config.state_dir / "worker.lock").open("w") as lock:
+    # A read-only descriptor can hold flock on Linux. Children retain ownership
+    # across controller crashes without receiving a writable state-directory FD.
+    with os.fdopen(os.open(config.state_dir / "worker.lock", os.O_RDONLY | os.O_CREAT, 0o600), "r") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             print("another worker is active; exiting")
             return 0
+        _worker_lock = lock
         state_path = config.state_dir / "state.json"
         state = load_state(state_path)
+        integration.record_runs(state)
         state["runs"] = recent_runs(state["runs"], utcnow())
         # Audit and inspect full history on every wake, including a healthy queue
         # and cached design exhaustion. Optional work must not bypass closure.
         context = planning_context(config)
+        reconcile_pr_claims(state, context["pull_requests"])
         closure = context["closure"]
         if closure.active:
             state.pop("planning_exhausted_for_blockers", None)
@@ -1508,7 +1956,10 @@ def main(argv: list[str] | None = None) -> int:
         if not args.dry_run and service_open_prs(config, state, allowed_pr_issues):
             # Next wake regenerates all audits on the post-merge main revision.
             save_state(state_path, state)
+            emit_pr_metrics(config, state)
             return 0
+        if not args.dry_run:
+            emit_pr_metrics(config, state)
         promoted = promote_planned_issues(config, dry_run=args.dry_run, closure=closure)
         if args.dry_run:
             for issue in promoted:
@@ -1518,6 +1969,9 @@ def main(argv: list[str] | None = None) -> int:
         open_issues = [item for item in context["issues"] if is_open(item)]
         issues = sorted((item for item in open_issues if READY.match(item["title"])),
                         key=lambda item: (item["createdAt"], item["number"]))
+        # Repair the published predecessor before spending time on held work.
+        if integration.staged_numbers(state):
+            issues.sort(key=lambda item: 0 if state["issues"].get(str(item["number"]), {}).get("pr") else 1)
         reconcile_ready_issue_states(issues, state)
         reconcile_dependency_exhaustion(issues, state, closure, config.max_attempts)
         refresh_validation_repair_bases(config, state)
@@ -1534,6 +1988,15 @@ def main(argv: list[str] | None = None) -> int:
         independent_ready_count = sum(not (issue_blocker_numbers(issue) & dependency_numbers) for issue in issues)
         refill_count = (min(QUEUE_TARGET, len(closure.actionable)) if closure.active else
                         queue_refill_count(independent_ready_count, bool(needs_design)))
+        if integration.staged_numbers(state):
+            refill_count = 0
+            for number in integration.staged_numbers(state):
+                held = state["issues"][str(number)]
+                current = next((row for row in context["issues"] if row["number"] == number), None)
+                if not current or not is_open(current) or not READY.match(current["title"]):
+                    held["stage"]["hold_reason"] = "issue is closed, unavailable, planned or needs design; work preserved for review"
+                print(f"staging slot: issue #{number}, {held['status']}, "
+                      f"{held['stage'].get('hold_reason') or held.get('last_failure') or 'implementation reserved'}")
         if not closure.active and design_numbers and design_numbers == set(state.get("planning_exhausted_for_blockers", [])):
             refill_count = 0
         if args.dry_run:
@@ -1616,6 +2079,22 @@ def main(argv: list[str] | None = None) -> int:
             print(f"issue #{selected['number']}: waiting for verified prerequisite merges")
             save_state(state_path, state)
             return 0
+        record = issue_record(state, selected["number"])
+        if record.get("status") == "staged":
+            # A completed implementation survives crashes and quota exhaustion.
+            # Integrating it does not invoke Codex; a real repair still uses the
+            # existing quota and separate attempt lanes on a subsequent wake.
+            worktree = Path(record["stage"]["worktree"])
+            if not worktree.is_dir():
+                defer_integration(config, state, selected, record, "reserved worktree is missing; recovery requires attention")
+                return 0
+            try:
+                complete_candidate(config, state, selected, record, worktree, record["stage"]["branch"])
+            except Exception as exc:
+                record_attempt_failure(config, record, exc)
+            save_state(state_path, state)
+            emit_pr_metrics(config, state)
+            return 0
         available, reason = budget_available(
             state["runs"],
             utcnow(),
@@ -1628,12 +2107,14 @@ def main(argv: list[str] | None = None) -> int:
             save_state(state_path, state)
             print(reason)
             return 0
-        record = issue_record(state, selected["number"])
         worktree, branch = worktree_for(config, selected["number"])
         kind = repair_kind(record)
         if kind and not record.get("repair_kind"):
             record["repair_kind"] = kind
         try:
+            predecessors = predecessor_snapshot(config, state, context["pull_requests"], record)
+            reserve_stage(config, state, selected, record, worktree, predecessors)
+            save_state(state_path, state)
             prepare_repair(config, worktree, selected["number"], record)
             # Merging main can switch lanes. Check and charge the resulting
             # budget, never the validation budget that led us to this merge.
@@ -1645,7 +2126,9 @@ def main(argv: list[str] | None = None) -> int:
                 raise RuntimeError("No repair attempts remain before Codex launch.")
             record[attempt_key] = attempts + 1
             record["status"] = "working"
+            integration.phase(record, "implementation")
             run_entry = {
+                "id": uuid.uuid4().hex,
                 "timestamp": utcnow().isoformat().replace("+00:00", "Z"),
                 "tokens": None,
                 "telemetry": "pending",
@@ -1660,6 +2143,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 result = invoke_codex(config, worktree, selected, record, run_entry)
             finally:
+                integration.record_runs(state)
                 if record.get("repair_kind") == "merge_conflict":
                     conflicts = unmerged_paths(worktree)
                     # A timeout/blocker after resolving the merge must not
@@ -1695,42 +2179,11 @@ def main(argv: list[str] | None = None) -> int:
                         "Merge conflict repair required: unmerged paths remain after Codex: "
                         + ", ".join(conflicts)
                     )
-                try:
-                    run_checks(config, worktree)
-                except Exception as exc:
-                    if not record.get("pr"):
-                        record["repair_kind"] = "validation"
-                        record["validation_failure"] = str(exc)[-4000:]
-                        branch_name = default_branch(config.repo_root)
-                        base_oid = remote_branch_oid(config.repo_root, branch_name)
-                        if base_oid:
-                            record["validation_base_oid"] = base_oid
-                    raise
-                existing_pr = record.get("pr")
-                if existing_pr:
-                    push_existing_pr_repair(worktree, selected["number"], int(existing_pr))
-                    record["status"] = "pr_open"
-                else:
-                    record["pr"] = publish(config, selected, worktree, branch)
-                    record["status"] = "pr_open"
-                record.pop("last_failure", None)
-                record.pop("repair_kind", None)
-                record.pop("validation_failure", None)
+                complete_candidate(config, state, selected, record, worktree, branch)
         except Exception as exc:
-            attempt_key, attempts, limit = attempt_budget(
-                record, config.max_attempts, config.max_validation_repair_attempts,
-                config.max_ci_repair_attempts, config.max_conflict_attempts,
-            )
-            record["status"] = "failed" if attempts >= limit else "repair"
-            record["last_failure"] = str(exc)[-4000:]
-            if attempts >= limit:
-                lane = {
-                    "validation": "validation-repair", "ci": "CI-repair",
-                    "merge_conflict": "conflict-repair",
-                }.get(repair_kind(record), "implementation")
-                record["last_failure"] += f"\nThe {lane} attempt limit ({limit}) is exhausted."
-            print(f"attempt failed: {exc}", file=sys.stderr)
+            record_attempt_failure(config, record, exc)
         save_state(state_path, state)
+        emit_pr_metrics(config, state)
         return 0
 
 

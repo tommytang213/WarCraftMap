@@ -156,14 +156,17 @@ class NativeLaunchDiagnosticRoutingTests(unittest.TestCase):
                     return CompletedProcess(args, 0, "", "")
                 if args[:3] == ["gh", "pr", "create"]:
                     return CompletedProcess(args, 0, "https://github.com/example/WarCraftMap/pull/999\n", "")
+                if args[:3] == ["git", "rev-list", "--count"]:
+                    return CompletedProcess(args, 0, "1", "")
                 return CompletedProcess(args, 0, "", "")
             with mock.patch("automation.warcraftmap_agent.worker.run",
                             side_effect=fake_run), \
                  mock.patch("automation.warcraftmap_agent.worker.default_branch",
-                            return_value="main"):
-                self.assertEqual(999, publish(config, self.crash, root, "agent/issue-438"))
+                            return_value="main"), \
+                 mock.patch("automation.warcraftmap_agent.worker.assert_validation_receipt"):
+                self.assertEqual(999, publish(config, self.crash, root, "agent/issue-438", receipt={"base_sha": REVISION}))
                 normal = issue(434, "[agent-ready] Regular repair", keys=[EVIDENCE])
-                self.assertEqual(999, publish(config, normal, root, "agent/issue-434"))
+                self.assertEqual(999, publish(config, normal, root, "agent/issue-434", receipt={"base_sha": REVISION}))
             pr_commands = [args for args in commands if args[:3] == ["gh", "pr", "create"]]
             self.assertEqual(2, len(pr_commands))
             native_body = pr_commands[0][pr_commands[0].index("--body") + 1]
