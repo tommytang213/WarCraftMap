@@ -1577,7 +1577,7 @@ def main(argv: list[str] | None = None) -> int:
                 # If Codex reports an unmerged declared prerequisite, do not
                 # spend every initial attempt repeating that same observation.
                 if (issue_blocker_numbers(selected)
-                        and re.search(r"\\b(?:unmerged|not merged)\\b", detail, re.I)):
+                        and re.search(r"\b(?:unmerged|not merged)\b", detail, re.I)):
                     receipt = dependency_completion_receipt(selected, closure)
                     record["status"] = "waiting_dependency" if receipt is None else "failed"
                     record["last_failure"] = f"Codex implementation blocked: {detail}"
