@@ -709,6 +709,90 @@ def refresh_validation_repair_bases(config: Config, state: dict[str, Any]) -> No
                 record["status"] = "repair"
 
 
+def dependency_completion_receipt(issue: dict[str, Any], closure: Closure) -> dict[str, str] | None:
+    """Prove dependencies from current GitHub issue/PR history, not stale errors.
+
+    A closed issue is not enough when its associated closing PR remains open.
+    Merge history is only dependency evidence, never proof of native launch.
+    """
+    required = issue_blocker_numbers(issue)
+    if not required:
+        return None
+    issues = {int(row["number"]): row for row in closure.issues}
+    prs = {int(row["number"]): row for row in closure.prs}
+    receipt = {}
+    for number in sorted(required):
+        pr = prs.get(number)
+        if pr is not None:
+            if str(pr.get("state") or "").upper() != "MERGED" or not pr.get("mergedAt"):
+                return None
+            receipt[str(number)] = "pr:" + str(pr["mergedAt"])
+            continue
+        prior = issues.get(number)
+        if prior is None or is_open(prior) or not prior.get("closedAt"):
+            return None
+        # For an issue with a known implementing PR, a manually closed issue
+        # cannot bypass the required PR merge.
+        linked = [row for row in closure.prs if any(
+            int(ref.get("number", -1)) == number
+            for ref in row.get("closingIssuesReferences", []) if isinstance(ref, dict)
+        )]
+        if linked:
+            merged = [row for row in linked if
+                      str(row.get("state") or "").upper() == "MERGED" and row.get("mergedAt")]
+            if not merged:
+                return None
+            receipt[str(number)] = "issue:" + str(prior["closedAt"]) + ":merged:" + str(
+                sorted(str(row["mergedAt"]) for row in merged)[-1]
+            )
+        else:
+            receipt[str(number)] = "issue:" + str(prior["closedAt"])
+    return receipt
+
+
+def reconcile_dependency_exhaustion(
+    issues: list[dict[str, Any]], state: dict[str, Any],
+    closure: Closure, max_attempts: int,
+) -> None:
+    """Give exhausted prerequisite-only failures one fresh chance after merge.
+
+    Historical Codex runs, reported tokens, and previous attempt failures remain
+    in the state. Replaying the same dependency receipt cannot grant more runs.
+    """
+    if not closure.fresh:
+        return
+    for issue in issues:
+        record = state["issues"].get(str(issue["number"]))
+        if (not record or record.get("status") != "failed" or record.get("pr")
+                or int(record.get("attempts", 0)) < max_attempts
+                or not closure.permits_issue(issue)):
+            continue
+        failure = str(record.get("last_failure") or "")
+        if (not failure.startswith("Codex implementation blocked:")
+                or not re.search(r"\b(?:unmerged|not merged)\b", failure, re.I)):
+            continue
+        receipt = dependency_completion_receipt(issue, closure)
+        if receipt is None:
+            continue
+        proof = json.dumps(receipt, sort_keys=True, separators=(",", ":"))
+        if proof == record.get("dependency_recovery_receipt"):
+            continue
+        record.setdefault("dependency_recovery_history", []).append({
+            "attempts": int(record.get("attempts", 0)),
+            "last_failure": failure,
+            "completion_receipt": receipt,
+            "recovery_revision": closure.revision,
+        })
+        record["dependency_recovery_receipt"] = proof
+        record["attempts"] = 0
+        record["status"] = "queued"
+        # Validation/CI repair lanes are unrelated to this prerequisite retry.
+        for key in ("last_failure", "repair_kind", "validation_failure",
+                    "validation_repair_attempts", "ci_repair_attempts", "conflict_attempts",
+                    "validation_base_oid", "ci_base_oid", "conflict_base_oid"):
+            record.pop(key, None)
+
+
 def reconcile_ready_issue_states(issues: list[dict[str, Any]], state: dict[str, Any]) -> None:
     """Allow externally resolved design issues to re-enter the implementation queue."""
     for issue in issues:
@@ -1027,6 +1111,20 @@ def prepare_repair(config: Config, worktree: Path, issue_number: int, record: di
     elif kind == "merge_conflict":
         conflicts = prepare_merge_conflict_repair(config, worktree)
         resume_validation_repair(record, conflicts)
+    elif not record.get("pr"):
+        # Even a queued/initial retry may have a worktree created against an
+        # obsolete main. Bring it forward *before* consuming any Codex quota.
+        # Existing changes are checkpointed, never thrown away.
+        _base_oid, conflicts = prepare_validation_repair(config, worktree, issue_number)
+        if conflicts:
+            record["repair_kind"] = "merge_conflict"
+            record["last_failure"] = (
+                "Merge conflict repair required: prerequisite changes from main "
+                "conflict with the preserved issue worktree; resolve: "
+                + ", ".join(conflicts)
+            )
+        else:
+            return
     else:
         return
 
@@ -1318,6 +1416,7 @@ def main(argv: list[str] | None = None) -> int:
         issues = sorted((item for item in open_issues if READY.match(item["title"])),
                         key=lambda item: (item["createdAt"], item["number"]))
         reconcile_ready_issue_states(issues, state)
+        reconcile_dependency_exhaustion(issues, state, closure, config.max_attempts)
         refresh_validation_repair_bases(config, state)
         needs_design = [item for item in open_issues if NEEDS_DESIGN.match(item["title"])]
         design_numbers = {int(item["number"]) for item in needs_design}
