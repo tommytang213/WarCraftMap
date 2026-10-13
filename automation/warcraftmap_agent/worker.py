@@ -735,7 +735,7 @@ def dependency_completion_receipt(issue: dict[str, Any], closure: Closure) -> di
         # cannot bypass the required PR merge.
         linked = [row for row in closure.prs if any(
             int(ref.get("number", -1)) == number
-            for ref in row.get("closingIssuesReferences", []) if isinstance(ref, dict)
+            for ref in (row.get("closingIssuesReferences") or []) if isinstance(ref, dict)
         )]
         if linked:
             merged = [row for row in linked if
