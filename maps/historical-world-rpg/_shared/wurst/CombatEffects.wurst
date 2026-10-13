@@ -3,6 +3,7 @@ package CombatEffects
 import ExactNatural
 import ExactRational
 import MilitaryTraditionLayer
+import ResearchEntitlements
 
 /** Scenario-authored predicates are compiled from validated weapon, role,
  * ability, movement and ship metadata. Proxy rawcodes alone prove nothing. */
@@ -26,11 +27,61 @@ class CombatAttribute
 	string id
 	string categoryId
 	string attackId
+	string stat
 	CombatAttribute next = null
-	construct(string id, string categoryId, string attackId)
+	construct(string id, string categoryId, string attackId, string stat)
 		this.id = id
 		this.categoryId = categoryId
 		this.attackId = attackId
+		this.stat = stat
+
+public class ResearchCombatBinding
+	string sourceId
+	string kind
+	string contentId
+	string categoryId
+	string basisPoints
+	string description
+	ResearchCombatBinding next = null
+	construct(string sourceId, string kind, string contentId, string categoryId, string basisPoints, string description)
+		this.sourceId = sourceId
+		this.kind = kind
+		this.contentId = contentId
+		this.categoryId = categoryId
+		this.basisPoints = basisPoints
+		this.description = description
+	function inspection(boolean active) returns string
+		var status = "inactive"
+		if active
+			status = "active"
+		return sourceId + ": +" + basisPoints + " basis points defensive discipline [bound; " + status + "]; eligible: controller-owned " + categoryId + " forces (represented or abstract). " + description
+
+/** Retains every entitlement and forwards an independent copy to existing
+ * consumers. Only generated, typed combat bindings claim a new consumer. */
+public class CombatResearchEffects extends UnboundResearchEffects
+	CombatBindings bindings
+	TechnologyEffectPort other
+	construct(CombatBindings bindings, TechnologyEffectPort other)
+		this.bindings = bindings
+		this.other = other
+	override function bindingStatus(ResearchUnlock definition) returns string
+		if bindings != null and bindings.researchBinding(definition.kind, definition.contentId) != null
+			return RESEARCH_BOUND
+		if other != null
+			return other.bindingStatus(definition)
+		return RESEARCH_UNBOUND
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		if other != null
+			let copy = new ResearchEntitlements(result.controllerId)
+			var entry = result.first
+			while entry != null
+				copy.add(entry)
+				entry = entry.next
+			other.replaceResearchEntitlements(copy)
+		super.replaceResearchEntitlements(result)
+	function earned(string controllerId, ResearchCombatBinding binding) returns boolean
+		let layer = get(controllerId)
+		return layer != null and layer.has(binding.kind, binding.contentId)
 
 public class CombatEffect
 	string id
@@ -80,7 +131,7 @@ public class CombatSources
 	function appendRating(ExactRational total, string attackId, string stat, CombatBindings bindings)
 		var entry = entries
 		while entry != null
-			if entry.attackId == attackId and entry.stat == stat and (bindings == null or not bindings.milestoneSource(entry.id))
+			if entry.attackId == attackId and entry.stat == stat and (bindings == null or not bindings.reservedSource(entry.id))
 				total.add(entry.value)
 			entry = entry.next
 	function inspection() returns string
@@ -114,6 +165,8 @@ public class CombatBindings
 	private CombatProfile profiles = null
 	private CombatEffect effects = null
 	private CombatAttribute attributes = null
+	private ResearchCombatBinding researchBindings = null
+	CombatResearchEffects research = null
 	function profile(string id, int unitTypeId, int kind) returns CombatProfile
 		var entry = profiles
 		while entry != null
@@ -125,10 +178,24 @@ public class CombatBindings
 		let entry = new CombatProfile(id, unitTypeId, kind, categoryId, attackId, nativeAttack)
 		entry.next = profiles
 		profiles = entry
-	function addAttribute(string id, string categoryId, string attackId)
-		let entry = new CombatAttribute(id, categoryId, attackId)
+	function addAttribute(string id, string categoryId, string attackId, string stat)
+		let entry = new CombatAttribute(id, categoryId, attackId, stat)
 		entry.next = attributes
 		attributes = entry
+	function addResearch(string sourceId, string kind, string contentId, string recipientKind, string categoryId, string stat, string basisPoints, string description)
+		// Unsupported recipient/stat metadata can never activate a binding.
+		if recipientKind != "force_category" or stat != "discipline" or not defensiveCategory(categoryId) or not exactNaturalValid(basisPoints)
+			return
+		let entry = new ResearchCombatBinding(sourceId, kind, contentId, categoryId, basisPoints, description)
+		entry.next = researchBindings
+		researchBindings = entry
+	function researchBinding(string kind, string contentId) returns ResearchCombatBinding
+		var entry = researchBindings
+		while entry != null
+			if entry.kind == kind and entry.contentId == contentId
+				return entry
+			entry = entry.next
+		return null
 	function addEffect(string id, string sourceId, string categoryId, string description) returns CombatEffect
 		let entry = new CombatEffect(id, sourceId, categoryId, description)
 		entry.next = effects
@@ -148,6 +215,41 @@ public class CombatBindings
 				return true
 			entry = entry.next
 		return false
+	function reservedSource(string id) returns boolean
+		if milestoneSource(id)
+			return true
+		var entry = researchBindings
+		while entry != null
+			if entry.sourceId == id
+				return true
+			entry = entry.next
+		return false
+	function defensiveCategory(string categoryId) returns boolean
+		var entry = attributes
+		while entry != null
+			if entry.categoryId == categoryId and entry.stat == "discipline"
+				return true
+			entry = entry.next
+		return false
+	function discipline(TraditionLayer layer, string controllerId, string categoryId) returns ExactRational
+		let result = new ExactRational("0", "1", "1")
+		if not defensiveCategory(categoryId)
+			return result
+		var attribute = attributes
+		while attribute != null
+			if attribute.stat == "discipline" and attribute.categoryId == categoryId and layer != null and layer.controllerId == controllerId and layer.categoryId == categoryId
+				let value = layer.modifier(attribute.id)
+				if value != null
+					result.add(value)
+			attribute = attribute.next
+		var entry = researchBindings
+		while entry != null
+			if entry.categoryId == categoryId and research != null and research.earned(controllerId, entry)
+				let value = new ExactRational(entry.basisPoints, "1", "1")
+				result.add(value)
+				destroy value
+			entry = entry.next
+		return result
 	function compatible(TraditionLayer layer, CombatProfile profile, string attackId) returns boolean
 		return layer != null and profile != null and attackId != "" and profile.attackId == attackId and layer.categoryId == profile.categoryId
 	function knownEffects(TraditionLayer layer) returns boolean
@@ -166,7 +268,7 @@ public class CombatBindings
 		if stat == "damage"
 			var attribute = attributes
 			while attribute != null
-				if attribute.attackId == attackId and attribute.categoryId == layer.categoryId
+				if attribute.stat == stat and attribute.attackId == attackId and attribute.categoryId == layer.categoryId
 					let value = layer.modifier(attribute.id)
 					if value != null
 						result.add(value)
@@ -182,17 +284,33 @@ public class CombatBindings
 	/** The sole rating-to-damage boundary, used by native and abstract combat.
 	 * Input legality and actual weapon validation precede any contribution. */
 	function apply(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources)
+		var controllerId = ""
+		var categoryId = ""
+		if defender != null
+			controllerId = defender.controllerId
+			categoryId = defender.categoryId
+		applyForRecipient(hit, legalAttack, attacker, source, defender, target, attackSources, defenseSources, controllerId, categoryId)
+	function applyForRecipient(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string controllerId, string categoryId)
 		if hit.applied
 			return
 		hit.applied = true
-		if not legalAttack or source == null or hit.attackId == "" or source.attackId != hit.attackId or hit.damage.negative() or hit.damage.numerator == "0" or not knownEffects(attacker) or not knownEffects(defender)
+		if not legalAttack or hit.damage.negative() or hit.damage.numerator == "0" or not knownEffects(attacker) or not knownEffects(defender)
 			return
-		let attack = rating(attacker, source, hit.attackId, "damage")
-		let resistance = rating(defender, target, hit.attackId, "resistance")
-		if attackSources != null
-			attackSources.appendRating(attack, hit.attackId, "damage", this)
-		if defenseSources != null
-			defenseSources.appendRating(resistance, hit.attackId, "resistance", this)
+		let weapon = source != null and hit.attackId != "" and source.attackId == hit.attackId
+		var attack = new ExactRational("0", "1", "1")
+		let resistance = discipline(defender, controllerId, categoryId)
+		if weapon
+			destroy attack
+			attack = rating(attacker, source, hit.attackId, "damage")
+			let weaponResistance = rating(defender, target, hit.attackId, "resistance")
+			resistance.add(weaponResistance)
+			destroy weaponResistance
+			if attackSources != null
+				attackSources.appendRating(attack, hit.attackId, "damage", this)
+			if defenseSources != null
+				defenseSources.appendRating(resistance, hit.attackId, "resistance", this)
+		if defenseSources != null and defensiveCategory(categoryId)
+			defenseSources.appendRating(resistance, "", "discipline", this)
 		resistance.nonnegative()
 		hit.modified = attack.numerator != "0" or resistance.numerator != "0"
 		let baseline = new ExactRational("10000", "1", "1")
@@ -226,14 +344,35 @@ public class CombatBindings
 			var bound = false
 			var consumer = attributes
 			while consumer != null
-				if consumer.id == attribute.attributeId and consumer.attackId != ""
+				if consumer.id == attribute.attributeId and consumer.stat != ""
 					bound = true
 				consumer = consumer.next
 			if not bound
 				result += " | " + attribute.attributeId + ": consumer pending"
+			else
+				result += " | " + attribute.attributeId + ": bound"
 			attribute = attribute.next
 		return result
+	function researchInspection(string controllerId, string categoryId, boolean alive) returns string
+		var result = ""
+		var entry = researchBindings
+		while entry != null
+			let earned = research != null and research.earned(controllerId, entry)
+			if entry.categoryId == categoryId or earned
+				result += " | " + entry.inspection(alive and earned and entry.categoryId == categoryId)
+				if not earned
+					result += " [research not completed]"
+				else if entry.categoryId != categoryId
+					result += " [ineligible category]"
+				else if not alive
+					result += " [inactive force]"
+			entry = entry.next
+		return result
 	ondestroy
+		while researchBindings != null
+			let obsolete = researchBindings
+			researchBindings = researchBindings.next
+			destroy obsolete
 		while profiles != null
 			let obsolete = profiles
 			profiles = profiles.next

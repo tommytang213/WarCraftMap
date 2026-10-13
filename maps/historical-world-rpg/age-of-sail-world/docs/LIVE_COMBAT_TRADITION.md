@@ -173,7 +173,7 @@ projection checkpoint. The campaign envelope version is unchanged.
 
 Formation/fleet inspection displays reached and replaced effects, source,
 numeric basis points and descriptions. Unarmed/missing-profile and dead forces
-are marked inactive. Continuous discipline and maneuver consumers remain
+are marked inactive. The maneuver consumer remains
 explicitly pending in inspection and `militaryTraditionIntegrationBlockers`.
 Missing weapon identities and unknown effect metadata also remain blockers.
 Assist and objective dispatchers, balance validation and #438 real-client crash
@@ -182,7 +182,7 @@ resolution remain open; no CI result supplies native-launch evidence.
 The scoped evidence covers exact resolution/delivery portions of ROAD-0052 and
 REQ-0155–REQ-0163 alongside #450's earned XP and #458's expandable representation.
 The new damage tests cover the four milestone behaviors, without closing unbound
-discipline/maneuver, non-kill adapters (REQ-0154.02), or native-launch evidence.
+maneuver, non-kill adapters (REQ-0154.02), or native-launch evidence.
 
 `MilitaryCombatEventsTests.wurst` drives installed production callbacks and
 compares generated player/AI land/naval layers with the headless Fraction oracle.
@@ -194,3 +194,14 @@ replacement and rollback. `ExactRationalTests.wurst` covers signed, zero and
 expandable coefficients/denominators. Python checks reject omitted coefficients,
 lost later milestones and invalid replacements. No player QA or native-launch
 success is claimed.
+
+Issue #474 binds continuous land discipline and the scenario-authored Pike and
+Shot research layer to the same exact damage boundary. Discipline uses the
+current force category/controller even without a roster weapon identity; it
+protects against legal combat from authoritative military forces and known
+campaign characters. Offensive weapon verification is unchanged. The +500-bp
+research rating and continuous discipline are added once before the nonnegative
+defensive denominator. Category reassignment retires callback generations just
+as ownership transfer does. No defensive layer, resolved stat or binding flag is
+saved. See [RESEARCH_ENTITLEMENTS.md](RESEARCH_ENTITLEMENTS.md) for recipients,
+stacking, reconstruction and inspection, including abstract forces.

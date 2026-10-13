@@ -29,11 +29,14 @@ modifiers. Different nodes unlocking the same typed content retain both sources;
 Kinds remain distinct even when they share a content ID. The boundary is a
 non-fallible projection operation; one-time grants are outside its contract.
 
-The production `UnboundResearchEffects` adapter retains these references and
-reports `unbound`. It never alters food capacity or any native statistic.
+The fallback `UnboundResearchEffects` adapter retains these references and
+reports `unbound`. Campaign registration wraps the existing adapter with
+`CombatResearchEffects`, which binds only scenario-declared combat recipients.
+Other typed references and existing consumers survive that wrapper. Neither
+adapter alters food capacity, health, equipment or native abilities.
 `/technology` and `/institutions` show each identity, whether it is earned, and
 its binding status. A recording adapter can report a tested binding; this does
-not establish a production gameplay consumer. All 220 authored references have
+not establish a production gameplay consumer. Of 220 authored references, 219 still have
 individual release-blocking consumer findings, including all three unlocks from
 `mass_army_logistics`. Generated runtime metadata retains the same blocker list.
 
@@ -50,3 +53,34 @@ campaign's existing checkpoint and rollback boundary.
 Issue #463 supplies definition retention and entitlement delivery for ROAD-0045.01.
 Gameplay consumers, broader technology/institution integration, and native-client
 launch evidence remain separate release blockers. No player QA is required.
+
+Issue #474 binds `(modifier, army_discipline)` through combat catalogue v2:
+`research:modifier:army_discipline` contributes exactly **+500 basis points** to
+forces explicitly assigned `land_formation` and currently controlled by the
+research owner. This is an approved gameplay tuning value, not a historical
+measurement. An identical entitlement from another completed node retains its
+provenance but contributes no second copy. Partial research contributes nothing.
+
+Defensive discipline adds the controller's exact continuous
+`discipline_basis_points` and compatible, source-identified ratings before
+`damage_received = base_damage * 10000 / (10000 + max(0, discipline_rating_bp))`.
+The existing offensive and naval-resistance consumers remain separate. This
+recipient rule requires a force record, not a firearm profile: legal melee,
+weapon and spell combat can encounter discipline. Peaceful, protected,
+environmental/unresolved and stale events cannot activate it. Naval or unknown
+categories and characters without a qualifying force record receive no layer.
+
+The damage boundary derives the layer from current authority, so there is no
+cached per-unit bonus to accumulate or preserve across replacement. Research
+reconstruction, force transfer/category reassignment, recruitment, inactive-map
+simulation, map activation, successful load and rollback use the same binding.
+No campaign/research/military save schema changes are necessary. Existing
+completion records reconstruct the new effect without replaying research,
+charging funds, rewriting history or changing XP. Combat catalogue v1 migrates
+to v2 with its original weapon consumers and no new research bindings.
+
+Technology/institution and military inspection display the source, +500 basis
+points, recipient category, binding and active status. The release audit removes
+only `RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE`; other research
+consumers, maneuver, missing weapon identities and the #438 native-launch issue
+remain open. Pinned interpreter tests do not establish native Warcraft launch.

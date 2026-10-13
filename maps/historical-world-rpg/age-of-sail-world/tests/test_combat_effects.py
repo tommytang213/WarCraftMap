@@ -13,6 +13,8 @@ from combat_effects import CombatCatalogue, CombatBindingError, CombatHit
 from military_tradition import MilitaryTraditionRuntime, RecordingTraditionAdapter
 from validate_unit_roster import load_catalog
 from unit_roster import RosterProjection
+from technology_institutions import TechnologyInstitutionRuntime
+from military_tradition import TraditionView
 
 
 class CombatEffectsTests(unittest.TestCase):
@@ -148,6 +150,93 @@ class CombatEffectsTests(unittest.TestCase):
         traditions.change_unit('source', controller_id='player')
         self.assertEqual(100, self.catalog.resolve_roster_hit(CombatHit(Fraction(100), 'firearm_volley'), traditions, roster,
                          'source', 'target', lambda a,b:False))
+
+    def test_discipline_formula_typed_entitlements_and_exact_high_xp(self):
+        unlock = dict(controllerId='player', nodeId='pike_and_shot', kind='modifier', contentId='army_discipline')
+        enemy = self.participant(0, controller='france')
+        for xp in (0, 1, 3001, 2**31, 2**53+1, 10**100+1):
+            for profile in ('pike_foot', 'european_musket_battalion', 'field_engineers', ''):
+                defender = self.participant(xp, profile=profile)
+                if not profile:
+                    defender = defender[0], '', ''
+                for earned in (False, True):
+                    entitlements = [unlock, unlock, dict(unlock, nodeId='another_unlock')] if earned else []
+                    expected = Fraction(1000000) / (10000 + Fraction(xp, 20) + (500 if earned else 0))
+                    for attack_id, weapon in (('firearm_volley', True), ('melee', True), ('spell', False)):
+                        hit = CombatHit(Fraction(100), attack_id)
+                        actual = self.catalog.resolve(hit, enemy, defender, attack=weapon, entitlements=entitlements)
+                        self.assertEqual(expected, actual)
+                        self.assertEqual(actual, self.catalog.resolve(hit, enemy, defender, entitlements=entitlements))
+        defender = self.participant(3000)
+        self.assertEqual(Fraction(1000000, 10650), self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, entitlements=[unlock]))
+        for invalid in (dict(unlock, kind='ability'), dict(unlock, controllerId='england'), dict(unlock, contentId='unknown')):
+            self.assertEqual(Fraction(20000, 203), self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, entitlements=[invalid]))
+        for excluded in ((None, '', ''), self.participant(0, naval=True), (TraditionView('player', 'unknown', 0, {}, ()), '', '')):
+            self.assertEqual(100, self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, excluded, entitlements=[unlock]))
+        self.assertEqual(100, self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, legal=False, entitlements=[unlock]))
+        self.assertEqual(100, self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, entitlements=[unlock], other_sources={'equipment:fixture': {'discipline': -1000}}))
+        self.assertEqual(Fraction(20000, 217), self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, entitlements=[unlock], other_sources={'equipment:fixture': {'discipline': 200}}))
+        with self.assertRaises(CombatBindingError):
+            self.catalog.resolve(CombatHit(Fraction(100), 'firearm_volley'), enemy, defender, other_sources={'research:modifier:army_discipline': {'discipline': 500}})
+
+    def test_research_completion_rebuild_and_headless_ownership(self):
+        world = json.loads((PROJECT / 'scenario/world/world.json').read_text())
+        research = TechnologyInstitutionRuntime(world, '1470-01-01')
+        definitions = copy.deepcopy(self.definitions)
+        definitions['unitAssignments'] = [dict(id='source', controllerId='france', categoryId='land_formation'),
+                                           dict(id='target', controllerId='england', categoryId='land_formation')]
+        traditions = MilitaryTraditionRuntime(definitions, RecordingTraditionAdapter())
+        roster = RosterProjection(self.roster, [dict(id=ident, archetypeId='pike_foot', representedStrength=100,
+            regionId='map', active=True, morale=70, discipline=60, supply=50) for ident in ('source', 'target')])
+        def damage():
+            return self.catalog.resolve_roster_hit(CombatHit(Fraction(100), 'melee'), traditions, roster,
+                'source', 'target', lambda a,b:a != b, research=research)
+        self.assertEqual(100, damage())
+        research.advance_research('england', 'pike_and_shot', 89, '1470-01-01')
+        self.assertEqual(100, damage())
+        research.advance_research('england', 'pike_and_shot', 1, '1470-01-01')
+        saved = research.snapshot()
+        for region in ('map', 'inactive', 'map'):
+            roster.project(region, 10)
+            traditions.set_runtime_active('target', region == 'map')
+            research.restore(saved)
+            self.assertEqual(Fraction(2000, 21), damage())
+            self.assertEqual(saved, research.snapshot())
+        traditions.change_unit('target', controller_id='player')
+        self.assertEqual(100, damage())
+        traditions.change_unit('target', controller_id='england', category_id='sailing_naval')
+        self.assertEqual(100, damage())
+        traditions.change_unit('target', category_id='land_formation')
+        self.assertEqual(Fraction(2000, 21), damage())
+        malformed = copy.deepcopy(saved)
+        malformed['polities'][0]['completedNodeIds'].append('unknown')
+        with self.assertRaises(ValueError):
+            research.restore(malformed)
+        self.assertEqual(saved, research.snapshot())
+        self.assertEqual(Fraction(2000, 21), damage())
+
+    def test_research_metadata_fails_closed_and_v1_catalogue_migrates(self):
+        def category(d): d['researchEffects'][0]['recipient']['categoryId'] = 'unknown'
+        def kind(d): d['researchEffects'][0]['recipient']['kind'] = 'all_units'
+        def stat(d): d['researchEffects'][0]['stat'] = 'health'
+        def duplicate(d): d['researchEffects'].append(copy.deepcopy(d['researchEffects'][0]))
+        def source(d): d['researchEffects'][0]['sourceId'] = d['effects'][0]['sourceId']
+        def magnitude(d): d['researchEffects'][0]['basisPoints'] = -500
+        for mutation in (category, kind, stat, duplicate, source, magnitude):
+            broken = copy.deepcopy(self.catalog.data); mutation(broken)
+            with self.subTest(mutation=mutation.__name__), self.assertRaises(CombatBindingError):
+                CombatCatalogue(broken, self.definitions, self.roster)
+        old = copy.deepcopy(self.catalog.data)
+        old.update(format='warcraftmap_combat_effect_bindings_v1', schemaVersion=1)
+        del old['researchEffects']
+        for row in old['attributes']: del row['stat']
+        migrated = CombatCatalogue(old, self.definitions, self.roster)
+        self.assertEqual({}, migrated.research_effects)
+        self.assertEqual(100, migrated.resolve(CombatHit(Fraction(100), 'melee'), self.participant(0), self.participant(1000)))
+        generated = wurst(self.catalog)
+        for broken in (generated.replace('"500", "+500 basis', '"1000", "+500 basis'),
+                       '\n'.join(line for line in generated.splitlines() if 'bindings.addResearch(' not in line)):
+            with self.assertRaises(CombatBindingError): verify(broken, self.catalog)
 
 
 if __name__ == '__main__':

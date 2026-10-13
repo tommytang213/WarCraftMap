@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 29
+GENERATOR_VERSION = 30
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -543,7 +543,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
                 [("effect", row["effect"]["effectId"]) for row in tradition["milestones"]])
         ]
         if combat_payload:
-            bound_attributes = {row["id"] for row in combat_payload["catalog"]["attributes"] if row["attackId"]}
+            bound_attributes = {row["id"] for row in combat_payload["catalog"]["attributes"] if row["stat"]}
             bound_effects = {row["id"] for row in combat_payload["catalog"]["effects"]}
             runtime["militaryTraditionIntegrationBlockers"] = [
                 row for row in runtime["militaryTraditionIntegrationBlockers"]
@@ -724,7 +724,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime['questConditionBindings'] = quest_bindings
     runtime['questIntegrationBlockers'] = quest_blockers
     runtime['researchUnlockDefinitions'] = unlock_definitions
-    runtime['researchIntegrationBlockers'] = research_integration_blockers(world)
+    bound_research = {(row['entitlement']['kind'], row['entitlement']['contentId'])
+                      for row in combat_payload['catalog']['researchEffects']} if combat_payload else set()
+    runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
     wurst += recovery_configuration(runtime['recoveryNavigation'])

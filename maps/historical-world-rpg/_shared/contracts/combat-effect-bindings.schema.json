@@ -10,14 +10,15 @@
     "balanceNote",
     "attackPredicates",
     "attributes",
-    "effects"
+    "effects",
+    "researchEffects"
   ],
   "properties": {
     "format": {
-      "const": "warcraftmap_combat_effect_bindings_v1"
+      "const": "warcraftmap_combat_effect_bindings_v2"
     },
     "schemaVersion": {
-      "const": 1
+      "const": 2
     },
     "balanceNote": {
       "type": "string",
@@ -111,7 +112,8 @@
           "categoryId",
           "numerator",
           "denominator",
-          "attackId"
+          "attackId",
+          "stat"
         ],
         "properties": {
           "id": {
@@ -133,6 +135,13 @@
             "type": [
               "string",
               "null"
+            ]
+          },
+          "stat": {
+            "enum": [
+              "damage",
+              "discipline",
+              null
             ]
           }
         }
@@ -221,6 +230,72 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "researchEffects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceId",
+          "entitlement",
+          "recipient",
+          "stat",
+          "basisPoints",
+          "description"
+        ],
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "entitlement": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "contentId"
+            ],
+            "properties": {
+              "kind": {
+                "const": "modifier"
+              },
+              "contentId": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "recipient": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "categoryId"
+            ],
+            "properties": {
+              "kind": {
+                "const": "force_category"
+              },
+              "categoryId": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "stat": {
+            "const": "discipline"
+          },
+          "basisPoints": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       }

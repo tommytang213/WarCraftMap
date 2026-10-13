@@ -1,6 +1,7 @@
 package MilitaryCombatEventsTests
 
 import MilitaryCombatEvents
+import WarcraftRpgRuntime
 import CombatEffects
 import ExactRational
 import ExactNatural
@@ -1133,7 +1134,7 @@ function resolvedTraditionBoundaries(string category, string first, string secon
 	f.representations.management.contains("attack_basis_points: 3001/10").assertTrue()
 	f.representations.management.contains("land_drill_one at 1000 XP (ordered_volley; replaced)").assertTrue()
 	f.representations.management.contains("land_drill_two at 3000 XP (platoon_fire)").assertTrue()
-	f.representations.management.contains("discipline_basis_points: consumer pending").assertTrue()
+	f.representations.management.contains("discipline_basis_points: bound").assertTrue()
 	f.runtime.awardTradition("france", "land_formation", "1001")
 	f.runtime.transferControl("player_army", "france")
 	layers.get("player_army").modifier("attack_basis_points").display().assertEquals("1001/10")
@@ -1463,7 +1464,7 @@ function milestoneDamageVector(CombatFixture f, string category, string xp, stri
 	text.contains("military_tradition:ordered_volley").assertTrue()
 	text.contains("+5% firearm volley damage [replaced]").assertTrue()
 	text.contains("+10% firearm volley damage [active on firearm_volley]").assertTrue()
-	text.contains("discipline_basis_points: consumer pending").assertTrue()
+	text.contains("discipline_basis_points: bound").assertTrue()
 	f.runtime.forces[f.runtime.forceIndex("player_army")].combatProfileId = ""
 	f.runtime.managementSummary("player_army").contains("[inactive: no eligible weapon/force]").assertTrue()
 	f.runtime.awardTradition("player", "sailing_naval", "3600")
@@ -1518,4 +1519,174 @@ function milestoneDamageVector(CombatFixture f, string category, string xp, stri
 	f.events.onWeaponDamage(f.events.generation, 999999, f.token("enemy"), "normal", unrelated).assertEquals(0)
 	unrelated.modified.assertFalse()
 	destroy unrelated
+	f.close()
+
+function completeDiscipline(CombatFixture f, string controller)
+	let research = f.runtime.rpg.technologies
+	research.cost("pike_and_shot", 1470, 0, 0).assertEquals(90)
+	research.cost("pike_and_shot", 1450, 0, 0).assertEquals(864)
+	research.unlock(controller, "pike_and_shot", 1470, 89, 0, 0).assertFalse()
+	research.unlock(controller, "pike_and_shot", 1470, 90, 0, 0).assertTrue()
+	research.unlock(controller, "pike_and_shot", 1470, 90, 0, 0).assertFalse()
+	research.bindingStatus(research.get("pike_and_shot").unlocks[0]).assertEquals("bound")
+
+@test function pikeDisciplineUsesCompletedTypedEntitlementsOnceAndLeavesOtherLayers()
+	let f = milestoneCombatFixture()
+	let food = GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP)
+	SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP, 95)
+	f.representations.tradition = 37
+	f.representations.appliedAbility = 'Adef'
+	let before = f.runtime.rpg.captureState()
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("100")
+	completeDiscipline(f, "player")
+	let store = f.runtime.combatBindings.research
+	store.get("player").has("modifier", "army_discipline").assertTrue()
+	// Two nodes can retain distinct provenance without duplicating one entitlement.
+	let duplicate = new RuntimeTechnology("duplicate_discipline", "Duplicate source", 1470, 1)
+	duplicate.addUnlock("duplicate_discipline", "modifier", "army_discipline")
+	f.runtime.rpg.technologies.register(duplicate).assertTrue()
+	f.runtime.rpg.technologies.unlock("player", "duplicate_discipline", 1470, 1, 0, 0).assertTrue()
+	for repeat = 1 to 3
+		f.runtime.rpg.technologies.reconstructAll()
+		f.runtime.instantiate(f.runtime.forces[f.runtime.forceIndex("player_army")])
+		deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("2000/21")
+		GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(95)
+	f.representations.tradition.assertEquals(37)
+	f.representations.appliedAbility.assertEquals('Adef')
+	// Source identity, magnitude and recipients appear in existing military inspection.
+	let text = f.runtime.managementSummary("abstract_army")
+	text.contains("research:modifier:army_discipline: +500 basis points").assertTrue()
+	text.contains("bound; active").assertTrue()
+	text.contains("land_formation forces (represented or abstract)").assertTrue()
+	// A complete entitlement replacement removes only the research-derived layer.
+	f.runtime.rpg.restoreState(before).assertTrue()
+	f.runtime.rpg.reconcile("player")
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("100")
+	GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(95)
+	SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP, food)
+	f.close()
+
+function disciplineVector(CombatFixture f, string xp, string expected)
+	let track = f.runtime.traditions[f.runtime.traditionIndex("player", "land_formation")]
+	track.experience = xp
+	let target = f.runtime.forces[f.runtime.forceIndex("player_army")]
+	// Defensive eligibility does not infer a firearm or require a roster profile.
+	target.combatProfileId = ""
+	f.runtime.reconcileForceTradition(target)
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals(expected)
+	deliveredMilestoneDamage(f, "enemy", "player_army", "melee", "normal").assertEquals(expected)
+	deliveredMilestoneDamage(f, "enemy", "player_army", "spell", "").assertEquals(expected)
+	f.runtime.activateRegion("europe_central_east")
+	let hit = new CombatHit("melee", new ExactRational("100", "1", "1"))
+	f.runtime.applyCombatHit(hit, f.runtime.forceIndex("enemy"), f.runtime.forceIndex("player_army"), "france", "england", true)
+	hit.damage.display().assertEquals(expected)
+	destroy hit
+	f.runtime.activateRegion("europe_west")
+	track.experience.assertEquals(xp)
+
+@test function disciplineAddsToContinuousExactRatingsBeforeOneDefensiveDivision()
+	let f = milestoneCombatFixture()
+	disciplineVector(f, "0", "100")
+	disciplineVector(f, "3000", "20000/203")
+	completeDiscipline(f, "player")
+	disciplineVector(f, "0", "2000/21")
+	disciplineVector(f, "1", "20000000/210001")
+	disciplineVector(f, "3000", "20000/213")
+	disciplineVector(f, "9007199254740993", "20000000/9007199254950993")
+	disciplineVector(f, "100000000000000000000000000000000000000000000000001", "20000000/100000000000000000000000000000000000000000000210001")
+	let track = f.runtime.traditions[f.runtime.traditionIndex("player", "land_formation")]
+	track.experience = "3000"
+	let target = f.runtime.forces[f.runtime.forceIndex("player_army")]
+	let layer = f.runtime.resolveTradition(target)
+	let sources = new CombatSources()
+	sources.replace("equipment:fixture", "", "discipline", new ExactRational("200", "1", "1"))
+	sources.replace("equipment:fixture", "", "discipline", new ExactRational("200", "1", "1"))
+	sources.replace("research:modifier:army_discipline", "", "discipline", new ExactRational("500", "1", "1"))
+	let hit = new CombatHit("melee", new ExactRational("100", "1", "1"))
+	f.runtime.combatBindings.apply(hit, true, null, null, layer, null, null, sources)
+	hit.damage.display().assertEquals("20000/217")
+	destroy hit
+	sources.replace("equipment:fixture", "", "discipline", new ExactRational("1000", "-1", "1"))
+	let negative = new CombatHit("melee", new ExactRational("100", "1", "1"))
+	f.runtime.combatBindings.apply(negative, true, null, null, layer, null, null, sources)
+	negative.damage.display().assertEquals("100")
+	destroy negative
+	destroy sources
+	destroy layer
+	f.close()
+
+@test function disciplineFollowsControllerAndCategoryAndRejectsStaleCombat()
+	let f = milestoneCombatFixture()
+	completeDiscipline(f, "player")
+	deliveredMilestoneDamage(f, "enemy", "english_army", "firearm_volley", "normal").assertEquals("100")
+	deliveredMilestoneDamage(f, "enemy", "player_fleet", "firearm_volley", "normal").assertEquals("100")
+	let hero = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.natives.heroToken, f.token("enemy"), "normal", hero).assertEquals(1)
+	hero.damage.display().assertEquals("100")
+	destroy hero
+	completeDiscipline(f, "france")
+	let characterAttack = new CombatHit("spell", new ExactRational("100", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token("enemy"), f.natives.heroToken, "", characterAttack).assertEquals(1)
+	characterAttack.damage.display().assertEquals("2000/21")
+	destroy characterAttack
+	let epoch = f.events.generation
+	let token = f.token("player_army")
+	f.runtime.transferControl("player_army", "england")
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("100")
+	f.runtime.transferControl("player_army", "player")
+	f.runtime.changeForceCategory("player_army", "sailing_naval").assertTrue()
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("100")
+	f.runtime.changeForceCategory("player_army", "unknown").assertFalse()
+	f.runtime.changeForceCategory("player_army", "").assertTrue()
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("100")
+	f.runtime.changeForceCategory("player_army", "land_formation").assertTrue()
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("2000/21")
+	let stale = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.events.onWeaponDamage(epoch, token, f.token("enemy"), "normal", stale).assertEquals(-1)
+	stale.damage.display().assertEquals("100")
+	destroy stale
+	let added = new RuntimeForce("new_land", "player", "europe_west", "land_formation", FORCE_ARMY, 'hfoo', 30, 10, 0., 0.)
+	f.runtime.recruit(added).assertTrue()
+	deliveredMilestoneDamage(f, "enemy", "new_land", "firearm_volley", "normal").assertEquals("2000/21")
+	f.close()
+
+@test function disciplineReconstructsOldSavesAndRollsBackLateCampaignLoads()
+	let f = milestoneCombatFixture()
+	completeDiscipline(f, "player")
+	f.runtime.awardTradition("player", "land_formation", "3000")
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "discipline").assertTrue()
+	let completed = f.runtime.rpg.captureState()
+	let saved = f.runtime.snapshot()
+	// Saved RPG research records predate the consumer; no effects are serialized.
+	completed.contains("army_discipline").assertFalse()
+	saved.contains("army_discipline").assertFalse()
+	f.runtime.rpg.restoreState(completed.replace("|u,player,pike_and_shot", "")).assertTrue()
+	f.runtime.rpg.reconcile("player")
+	f.runtime.awardTradition("player", "land_formation", "1")
+	let rollback = f.runtime.snapshot()
+	let rpgRollback = f.runtime.rpg.captureState()
+	let retained = f.token("player_army")
+	let staleEpoch = f.events.generation
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failAfterFirstMember = false
+	f.runtime.snapshot().assertEquals(rollback)
+	f.runtime.rpg.captureState().assertEquals(rpgRollback)
+	f.token("player_army").assertEquals(retained)
+	deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("20000000/203001")
+	let stale = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.events.onWeaponDamage(staleEpoch, retained, f.token("enemy"), "normal", stale).assertEquals(-1)
+	destroy stale
+	for repeat = 1 to 2
+		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("20000/213")
+	// V8 military migration leaves unknown weapons; defensive category survives.
+	var legacy = saved.replace("v9|", "v8|")
+	for i = 0 to f.runtime.forceCount - 1
+		let savedForce = f.runtime.forces[i]
+		if savedForce.combatProfileId != ""
+			legacy = legacy.replace("|p," + savedForce.id + "," + savedForce.combatProfileId, "")
+	f.runtime.restore(legacy).assertTrue()
+	deliveredMilestoneDamage(f, "enemy", "player_army", "melee", "normal").assertEquals("20000/213")
+	traditionXp(f, "player", "land_formation").assertEquals("3000")
 	f.close()

@@ -508,6 +508,14 @@ public class MilitarySettlementRuntime
 			destroy prizeCombat
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg=runtime
+		if rpg != null and combatBindings != null
+			if rpg.technologies.effects instanceof CombatResearchEffects
+				combatBindings.research = rpg.technologies.effects castTo CombatResearchEffects
+				combatBindings.research.bindings = combatBindings
+			else
+				combatBindings.research = new CombatResearchEffects(combatBindings, rpg.technologies.effects)
+				rpg.technologies.effects = combatBindings.research
+			rpg.technologies.reconstructAll()
 	/** Only register/appoint while this catalogue batch is open. Discard the
 	 * indexes before gameplay, where reconstruction can replace the arrays. */
 	function beginRegistration()
@@ -777,13 +785,16 @@ public class MilitarySettlementRuntime
 		let source = forces[sourceIndex]
 		let target = forces[targetIndex]
 		let city = settlementForForce(target)
-		var legal = weaponAttack and source.active and target.active and source.strength > 0 and target.strength > 0 and atWar(sourcePolity, targetPolity)
+		var legal = source.active and target.active and source.strength > 0 and target.strength > 0 and atWar(sourcePolity, targetPolity)
 		legal = legal and (militaryMapMatches(source.regionId, target.regionId) or militaryMapMatches(target.regionId, source.regionId) or scenarioAuthorityMap(source.regionId) != "" and scenarioAuthorityMap(source.regionId) == scenarioAuthorityMap(target.regionId))
 		if city >= 0
 			legal = legal and settlements[city].controllerId == target.controllerId and gameplaySeconds >= settlements[city].captureImmuneUntil
 		let attackingLayer = resolveTradition(source)
 		let defendingLayer = resolveTradition(target)
-		combatBindings.apply(hit, legal, attackingLayer, combatProfile(source), defendingLayer, combatProfile(target), null, null)
+		CombatProfile weapon = null
+		if weaponAttack
+			weapon = combatProfile(source)
+		combatBindings.applyForRecipient(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, target.controllerId, target.categoryId)
 		if attackingLayer != null
 			destroy attackingLayer
 		if defendingLayer != null
@@ -927,6 +938,23 @@ public class MilitarySettlementRuntime
 			if orderCallbacks != null
 				orderCallbacks.reconstruct()
 			resumeCallbacks()
+	/** Explicit category reassignment retires callbacks and replaces only derived
+	 * tradition/discipline. Empty removes eligibility; unknown categories reject. */
+	function changeForceCategory(string forceId, string categoryId) returns boolean
+		let found = forceIndex(forceId)
+		if found < 0
+			return false
+		var known = categoryId == ""
+		for i = 0 to traditionCount - 1
+			if traditions[i].categoryId == categoryId and traditions[i].definition != null
+				known = true
+		if not known
+			return false
+		suspendCallbacks()
+		forces[found].categoryId = categoryId
+		reconcileForceTradition(forces[found])
+		resumeCallbacks()
+		return true
 	function awardTradition(string controllerId, string categoryId, int experience)
 		if experience > 0
 			awardTradition(controllerId, categoryId, I2S(experience))
@@ -1459,6 +1487,8 @@ public class MilitarySettlementRuntime
 					if combatBindings != null
 						result += combatBindings.inspection(layer, combatProfile(runtimeForce), runtimeForce.active and runtimeForce.strength > 0)
 					destroy layer
+			if combatBindings != null
+				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0)
 			return result
 		let s = settlementIndex(subjectId)
 		if s >= 0

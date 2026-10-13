@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **241**
+Unresolved campaign blockers: **240**
 
 ## Severity taxonomy
 
@@ -199,7 +199,6 @@ Static readiness, executed production integration, built-artifact inspection and
 | `RESEARCH-UNBOUND-PACK-TRAIN-CONTRACTS-MODIFIER-PROGRESSION-PACK-TRAIN-CONTRACTS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-PATENT-OFFICES-POLICY-PROGRESSION-PATENT-OFFICES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-PATHOLOGICAL-ANATOMY-MODIFIER-PROGRESSION-PATHOLOGICAL-ANATOMY` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-PILOT-BOOKS-MODIFIER-PROGRESSION-PILOT-BOOKS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-PLANTATION-PROCESSING-MODIFIER-PROGRESSION-PLANTATION-PROCESSING` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-POLAR-NAVIGATION-MODIFIER-PROGRESSION-POLAR-NAVIGATION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |

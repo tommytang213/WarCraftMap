@@ -1,6 +1,7 @@
 package ResearchRuntimeTests
 
 import WarcraftRpgRuntime
+import CombatEffects
 import CommandRouter
 import CampaignSaveManager
 import PlayableCampaignRuntime
@@ -550,3 +551,36 @@ function entitlementReceipt(string caseName)
 	production.get("player").count.assertEquals(0)
 	GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP).assertEquals(95)
 	SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,previous)
+
+@test function pikeResearchCommandBindsOnlyItsModifierAndReportsItsRecipients()
+	let f = new ResearchFixture()
+	let bindings = createGeneratedCombatBindings()
+	let consumer = new CombatResearchEffects(bindings, f.effects)
+	bindings.research = consumer
+	f.runtime.technologies.effects = consumer
+	f.effects.boundContent = "separate_fixture_consumer"
+	f.commands.dispatch(null, "/technology").assertTrue()
+	f.output.last.contains("research:modifier:army_discipline: +500 basis points defensive discipline [bound; inactive").assertTrue()
+	f.resources.balance = 863
+	f.reject("/research pike_and_shot")
+	f.resources.balance = 100000
+	f.succeed("/research pike_and_shot", "pike_and_shot")
+	f.resources.balance.assertEquals(99136)
+	f.commands.dispatch(null, "/institutions").assertTrue()
+	f.output.last.contains("research:modifier:army_discipline: +500 basis points defensive discipline [bound; active").assertTrue()
+	f.output.last.contains("controller-owned land_formation forces (represented or abstract)").assertTrue()
+	f.runtime.technologies.bindingStatus(f.runtime.technologies.get("mass_army_logistics").unlocks[0]).assertEquals(RESEARCH_UNBOUND)
+	let sameNameOtherKind = new ResearchUnlock("fixture", "ability", "army_discipline")
+	consumer.bindingStatus(sameNameOtherKind).assertEquals(RESEARCH_UNBOUND)
+	destroy sameNameOtherKind
+	f.effects.unrelatedModifier.assertEquals(47)
+	f.effects.oneTimeGrants.assertEquals(0)
+	let saved = f.runtime.captureState()
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		codecRestore(f, saved, schema)
+		consumer.get("player").count.assertEquals(1)
+		consumer.get("player").has("modifier", "army_discipline").assertTrue()
+		f.resources.balance.assertEquals(99136)
+	f.completions("|u,other,pike_and_shot")
+	consumer.get("player").count.assertEquals(0)
+	consumer.get("other").has("modifier", "army_discipline").assertTrue()
