@@ -435,6 +435,49 @@ def prepare_plan_items(
             continue
         seen.add(key)
         body = re.sub(r"(?m)^Closure (?:blocker|revision):[^\n]*\n?", "", str(raw.get("body", ""))).strip()
+        # The owner has delegated routine research gameplay tuning. Missing
+        # typed research consumers must become implementation work, not one
+        # owner-facing design question per catalog unlock.
+        delegated_research = (
+            closure is not None and closure.active and bool(keys)
+            and all(key.startswith("release:RESEARCH-UNBOUND-") for key in keys)
+        )
+        if delegated_research and kind == "needs-design":
+            kind = "agent-ready"
+            clean_title = re.sub(r"(?i)^specify\\b", "Implement", clean_title)
+            body = (
+                "Owner-approved design delegation: implement the researched "
+                "typed unlock gameplay consumers as reusable scenario-driven "
+                "mechanisms. Use docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md "
+                "and scenario/progression/gameplay-effect-design.json, the "
+                "existing research catalogue, historical era, economy, "
+                "eligible recipients and configured costs. Choose modest, "
+                "tunable, historically plausible initial values from the "
+                "approved domain ranges for effects not explicitly listed. "
+                "Do not fabricate free troops, gold, food or buildings; do "
+                "not hardcode campaign-specific names into shared code. "
+                "Keep the original unbound audit findings until executed. "
+                "No further player design question is required for ordinary "
+                "modifier values, recipient conditions, or existing unlock "
+                "actions.\n\n"
+                "## Acceptance criteria\n"
+                "- Implement actual production consumer(s) for the linked "
+                "research-unbound IDs, including controller/category/era "
+                "filters, costs/eligibility, source-aware stacking and "
+                "player-visible previews.\n"
+                "- Preserve research costs, prerequisites, supported saves, "
+                "AI/player parity, legitimate historical asymmetry and "
+                "viable weaker-country routes. Reconstruct all derived "
+                "effects without duplicate grants on map/load/control "
+                "changes.\n\n"
+                "## Automated validation\n"
+                "- Run registered actions/production callbacks for each "
+                "eligible and ineligible condition with deterministic "
+                "headless plus pinned Wurst evidence, negative stacking "
+                "tests, save/load, rollback and abstract/live parity.\n"
+                "- Regenerate current-main release, runtime and requirement "
+                "audits. Do not claim native Warcraft launch or waive #438.\n"
+            )
         if keys and closure is not None:
             body += "\n\n## Closure findings\n\n"
             for blocker_key in sorted(keys):
@@ -615,7 +658,7 @@ When closure.active is true, return only implementation-sized repairs for the su
 
 Only when closure.active is false, resume ordinary roadmap/content planning, using an empty blocker_keys list. Preserve roadmap and dependency order; choose only the next incomplete work that is actually unblocked. Do not duplicate open, completed, superseded, or PR-represented work.
 
-Return at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue independent blocker repairs (or roadmap work once closure is clean), and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. Do not create repeated per-region needs-design questions for geography/content scope when DESIGN_LOCK.md already provides a reusable global rule; derive region-specific boundaries, compression, historical coverage, settlements, routes, terrain, and borders from the locked rules plus historical/geographic evidence and performance constraints. Ask the player only for a genuinely new material gameplay/design choice that cannot be resolved from those authorities. Only if closure is clean and no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
+The owner explicitly delegated ordinary research effects and game balance. Read age-of-sail-world/docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md and scenario/progression/gameplay-effect-design.json alongside DESIGN_LOCK.md. Research-unbound modifiers/policies/buildings/abilities/unit unlocks are preauthorized implementation work, **not** a new needs-design per technology. Group related effect consumers sharing one engine mechanism into at most four distinct exact research-unbound blocker keys per agent-ready issue; give actual effects with historically plausible scenario-owned tuning and deterministic tests. Preserve historically unequal 1450 starting strengths and meaningful weaker-polity survival paths without ahistorical bonus armies or forced historical outcomes. Do not turn a real novel gameplay architecture conflict into an invented default.\n\nReturn at most {requested} items, in implementation order. Every agent-ready body must include explicit `## Acceptance criteria` and `## Automated validation` sections and must not require player QA. An open needs-design issue blocks only work that materially depends on its decision: continue independent blocker repairs (or roadmap work once closure is clean), and explicitly state in each such issue body why it is independent of the open decision. Never skip a real dependency or invent a design choice. When a material decision is missing, return one needs-design item with exactly one decision question, then continue only with work explicitly independent of it. Do not duplicate an unresolved decision already represented by an open needs-design issue. Do not create repeated per-region needs-design questions for geography/content scope when DESIGN_LOCK.md already provides a reusable global rule; derive region-specific boundaries, compression, historical coverage, settlements, routes, terrain, and borders from the locked rules plus historical/geographic evidence and performance constraints. Ask the player only for a genuinely new material gameplay/design choice that cannot be resolved from those authorities. Only if closure is clean and no independent planned work remains, return outcome `exhausted` and no issues. Do not edit files or interact with GitHub.
 
 GitHub and repository history:
 {json.dumps(context, sort_keys=True)}
