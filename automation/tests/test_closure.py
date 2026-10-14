@@ -303,6 +303,54 @@ class ClosureTests(unittest.TestCase):
         self.assertIn(DEPENDENT, closure.actionable)
         self.assertTrue(closure.permits_issue(child))
 
+    def test_standard_research_modifier_questions_are_preapproved_as_ready_work(self):
+        key = ("release:RESEARCH-UNBOUND-CANAL-LOGISTICS-"
+               "MODIFIER-PROGRESSION-CANAL-LOGISTICS")
+        closure = worker.Closure(A, True, {
+            key: Blocker(key, "Bind canal logistics modifier"),
+        })
+        original = {
+            "outcome": "planned",
+            "issues": [{
+                "kind": "needs-design",
+                "title": "Specify canal logistics modifier",
+                "body": "Numerical consumer missing.",
+                "question": "How should Canal Logistics work?",
+                "blocker_keys": [key],
+            }],
+        }
+        self.assertEqual(closure.actionable, [key])
+        prepared = worker.prepare_plan_items(original, [], 10, closure=closure)
+        self.assertEqual(1, len(prepared))
+        self.assertEqual("",
+                         prepared[0]["question"])
+        self.assertTrue(prepared[0]["title"].startswith("[agent-ready]"))
+        self.assertIn("Implement canal logistics", prepared[0]["title"])
+        self.assertIn("HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS", prepared[0]["body"])
+        self.assertIn("## Acceptance criteria", prepared[0]["body"])
+        self.assertIn("## Automated validation", prepared[0]["body"])
+        self.assertIn("Closure blocker: "+key, prepared[0]["body"])
+        self.assertNotIn("## Decision required", prepared[0]["body"])
+
+    def test_nonstandard_design_question_is_not_silently_approved(self):
+        key = "runtime:novel_mechanic"
+        closure = worker.Closure(A, True, {
+            key: Blocker(key, "New core architecture"),
+        })
+        original = {
+            "outcome": "planned",
+            "issues": [{
+                "kind": "needs-design",
+                "title": "Specify fundamental architecture change",
+                "body": "Genuinely conflicts with design lock.",
+                "question": "Change the underlying world architecture?",
+                "blocker_keys": [key],
+            }],
+        }
+        prepared = worker.prepare_plan_items(original, [], 10, closure=closure)
+        self.assertTrue(prepared[0]["title"].startswith("[needs-design]"))
+        self.assertIn("## Decision required", prepared[0]["body"])
+
     def test_duplicate_blocker_in_one_plan_is_created_once(self):
         response = plan()
         response["issues"] += plan(title="Another title for the same repair")["issues"]
