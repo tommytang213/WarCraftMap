@@ -444,7 +444,7 @@ def prepare_plan_items(
         )
         if delegated_research and kind == "needs-design":
             kind = "agent-ready"
-            clean_title = re.sub(r"(?i)^specify\\b", "Implement", clean_title)
+            clean_title = re.sub(r"(?i)^specify\b", "Implement", clean_title)
             body = (
                 "Owner-approved design delegation: implement the researched "
                 "typed unlock gameplay consumers as reusable scenario-driven "
