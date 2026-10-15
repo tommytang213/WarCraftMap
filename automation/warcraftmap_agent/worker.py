@@ -624,14 +624,14 @@ def compact_planning_history(context: dict[str, Any], body_limit: int) -> dict[s
             if active and body_limit:
                 excerpt = body[:body_limit]
                 if len(body) > body_limit:
-                    excerpt += "\\n[truncated; retrieve full GitHub record when needed]"
+                    excerpt += "\n[truncated; retrieve full GitHub record when needed]"
             else:
                 excerpt = ""
             # Preserve *all* explicit dependencies and blocker IDs even when
             # a long active body was abbreviated.
             references = list(dict.fromkeys(
-                re.findall(r"(?im)^\\s*Depends on:\\s*#\\d+[^\\n]*", body)
-                + re.findall(r"(?im)^\\s*(?:Closure blocker|Blocker key):[^\\n]*", body)
+                re.findall(r"(?im)^\s*Depends on:\s*#\d+[^\n]*", body)
+                + re.findall(r"(?im)^\s*(?:Closure blocker|Blocker key):[^\n]*", body)
             ))
             entry["body"] = excerpt
             if references:
@@ -642,7 +642,10 @@ def compact_planning_history(context: dict[str, Any], body_limit: int) -> dict[s
 
 
 def planning_prompt(context: dict[str, Any], requested: int) -> str:
-    # First shrink narrative only; keep the closure findings and full history\n    # identities available for duplicate/dependency checking.\n    context = compact_planning_history(context, body_limit=4000)\n    closure = context.get("closure")
+    # First shrink narrative only; keep the closure findings and full history
+    # identities available for duplicate/dependency checking.
+    context = compact_planning_history(context, body_limit=4000)
+    closure = context.get("closure")
     context["closure"] = closure.planning_view(requested) if closure is not None else None
     prefix = f"""Plan the next implementation-sized GitHub issues for WarCraftMap.
 
@@ -663,8 +666,8 @@ GitHub and repository history:
     # closure findings, dependency references, or blocker identities.
     context = compact_planning_history(context, body_limit=700)
     context["closure"] = closure.planning_view(requested) if closure is not None else None
-    marker = "GitHub and repository history:\\n"
-    prefix = prefix.split(marker, 1)[0] + marker + json.dumps(context, sort_keys=True) + "\\n"
+    marker = "GitHub and repository history:\n"
+    prefix = prefix.split(marker, 1)[0] + marker + json.dumps(context, sort_keys=True) + "\n"
     if len(prefix) > PLANNER_INPUT_BUDGET:
         raise ValueError(
             f"planner context exceeds safe {PLANNER_INPUT_BUDGET}-character budget "
