@@ -105,7 +105,7 @@ class ResearchGameplayDesignTests(unittest.TestCase):
         self.assertIn("Release-scale content density targets", locked)
         self.assertIn("Owner-delegated historical balance", policy)
         self.assertIn("weaker start", policy)
-        self.assertIn("1450-01-01", policy)
+        self.assertIn("1 January 1450", policy)
         self.assertIn("two meaningful", policy)
         self.assertIn("production", policy.lower())
         self.assertIn("not", self.design["authority"].lower())
