@@ -603,11 +603,48 @@ def planning_context(config: Config) -> dict[str, Any]:
     return {"issues": issues, "pull_requests": prs, "git_history": history, "git_status": status, "closure": closure}
 
 
+# A planner needs a *catalogue* of historical work, not every archived issue
+# body. GitHub remains the source of truth; no issue/PR is removed from history.
+# Reserve headroom for Codex-side instructions and later repository growth.
+PLANNER_INPUT_BUDGET = 750_000
+
+
+def compact_planning_history(context: dict[str, Any], body_limit: int) -> dict[str, Any]:
+    """Preserve complete history identities while bounding narrative payloads."""
+    result = dict(context)
+    for field in ("issues", "pull_requests"):
+        compact = []
+        for item in context.get(field, []):
+            entry = dict(item)
+            body = str(entry.get("body") or "")
+            # Closed records still provide identity, state, title, timestamps,
+            # dependency references and PR linkage. Their prose is not needed
+            # on each planner run; the selected task can retrieve it from GitHub.
+            active = is_open(item)
+            if active and body_limit:
+                excerpt = body[:body_limit]
+                if len(body) > body_limit:
+                    excerpt += "\\n[truncated; retrieve full GitHub record when needed]"
+            else:
+                excerpt = ""
+            # Preserve *all* explicit dependencies and blocker IDs even when
+            # a long active body was abbreviated.
+            references = list(dict.fromkeys(
+                re.findall(r"(?im)^\\s*Depends on:\\s*#\\d+[^\\n]*", body)
+                + re.findall(r"(?im)^\\s*(?:Closure blocker|Blocker key):[^\\n]*", body)
+            ))
+            entry["body"] = excerpt
+            if references:
+                entry["planning_references"] = references
+            compact.append(entry)
+        result[field] = compact
+    return result
+
+
 def planning_prompt(context: dict[str, Any], requested: int) -> str:
-    context = dict(context)
-    closure = context.get("closure")
+    # First shrink narrative only; keep the closure findings and full history\n    # identities available for duplicate/dependency checking.\n    context = compact_planning_history(context, body_limit=4000)\n    closure = context.get("closure")
     context["closure"] = closure.planning_view(requested) if closure is not None else None
-    return f"""Plan the next implementation-sized GitHub issues for WarCraftMap.
+    prefix = f"""Plan the next implementation-sized GitHub issues for WarCraftMap.
 
 FIRST read the release-blocker, runtime-acceptance and requirement-traceability reports and the freshly regenerated closure findings below, plus open/closed issue and PR history. These findings are the authoritative closure queue, ahead of ROADMAP.md checkboxes or optional content expansion. Read DESIGN_LOCK.md, ARCHITECTURE.md and AGENTS.md for implementation constraints.
 
@@ -620,6 +657,21 @@ Return at most {requested} items, in implementation order. Every agent-ready bod
 GitHub and repository history:
 {json.dumps(context, sort_keys=True)}
 """
+    if len(prefix) <= PLANNER_INPUT_BUDGET:
+        return prefix
+    # A second pass reduces only active narratives, never issue identities,
+    # closure findings, dependency references, or blocker identities.
+    context = compact_planning_history(context, body_limit=700)
+    context["closure"] = closure.planning_view(requested) if closure is not None else None
+    marker = "GitHub and repository history:\\n"
+    prefix = prefix.split(marker, 1)[0] + marker + json.dumps(context, sort_keys=True) + "\\n"
+    if len(prefix) > PLANNER_INPUT_BUDGET:
+        raise ValueError(
+            f"planner context exceeds safe {PLANNER_INPUT_BUDGET}-character budget "
+            f"({len(prefix)} chars) even after historical compaction; "
+            "reduce closure/audit payload without dropping blocker identities"
+        )
+    return prefix
 
 
 def invoke_planner(config: Config, context: dict[str, Any], requested: int, run_entry: dict[str, Any]) -> dict[str, Any]:
