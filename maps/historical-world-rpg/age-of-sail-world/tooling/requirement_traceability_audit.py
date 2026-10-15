@@ -22,9 +22,13 @@ def build_report(artifact=None, evidence=None, transcript=None, revision=""):
     maps = [{"id": row["id"], "packagePath": row["packagePath"],
              "bootstrap": row.get("bootstrap", False), "_self": [row["id"]],
              **row["assignments"]} for row in physical]
-    return trace.audit(PROJECT, ledger, mappings, catalogues, maps, artifact=artifact,
+    report = trace.audit(PROJECT, ledger, mappings, catalogues, maps, artifact=artifact,
                        evidence=evidence, transcript=transcript, revision=revision,
                        authority_documents=("docs/DESIGN_LOCK.md", "docs/ROADMAP.md"))
+    from integration_evidence import source_identity
+    from wurst_execution import source_revision
+    report.update(source_identity(PROJECT, source_revision(PROJECT, revision or None)))
+    return report
 
 
 def write_report(report, base=REPORT):

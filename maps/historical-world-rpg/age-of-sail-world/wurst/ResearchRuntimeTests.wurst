@@ -15,7 +15,7 @@ class ResearchOutput implements CommandOutput
 	override function show(player recipient,string message)
 		last=message
 
-class ResearchResources implements ResearchCommandResources
+public class ResearchResources implements ResearchCommandResources
 	string controller="player"
 	int balance=100000
 	int writes=0
@@ -54,7 +54,7 @@ class ResearchEffects extends UnboundResearchEffects
 			otherPower=result.count
 		super.replaceResearchEntitlements(result)
 
-class ResearchFixture
+public class ResearchFixture
 	ResearchEffects effects=new ResearchEffects()
 	ResearchResources resources=new ResearchResources()
 	ResearchOutput output=new ResearchOutput()

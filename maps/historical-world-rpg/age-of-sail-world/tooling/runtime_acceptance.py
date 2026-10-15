@@ -190,7 +190,6 @@ def finalize(report):
 
 def audit_acceptance(path=MANIFEST, *, execution=None, execution_log=None, revision=None, campaign=None):
  report=audit_sources(path)
- if execution is None and campaign is None: return report
  try:
   revision=source_revision(PROJECT,revision)
   identity=source_identity(PROJECT,revision)

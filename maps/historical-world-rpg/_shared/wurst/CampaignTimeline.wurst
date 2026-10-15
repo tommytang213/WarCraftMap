@@ -81,6 +81,9 @@ function clockField(string record, int index) returns string
 		return SubString(tail, 0, finish)
 	return tail
 
+public function campaignClockRecordDay(string record) returns int
+	return S2I(clockField(record, 1))
+
 public class CampaignEra
 	string id
 	int firstDay
