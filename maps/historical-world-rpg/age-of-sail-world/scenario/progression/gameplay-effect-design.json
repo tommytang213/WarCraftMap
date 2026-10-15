@@ -1,0 +1,387 @@
+{
+  "format": "age_of_sail_research_gameplay_design_v1",
+  "schemaVersion": 1,
+  "baselineDate": "1450-01-01",
+  "authority": "Owner-approved gameplay and scenario balance design. Does not establish production binding, completed tests or Warcraft client playability.",
+  "basisPointsDenominator": 10000,
+  "balanceRules": {
+    "researchOwnership": "Own completed research only; no entitlement on technology discovery or on another controller's completion",
+    "layers": "Independent named source layers, idempotent under save/load, control changes, reconstruction, and replay. Identical contentId never multiplied by duplicate unlock sources.",
+    "effects": "Resolve exact typed effect with condition and correct domain consumer; do not apply blanket flat health, food capacity, troop count, or money generation.",
+    "policies": "Research unlocks selectable policy; elected rule persists under the polity. Delegate eligible policies to administrator/AI optionally, but do not silently impose controversial reforms.",
+    "policiesCosts": "Default policy enactment requires 1% of affected provinces' annual normal tax equivalent and 90-day transition unless an effect-specific rule explicitly states otherwise; upkeep 0.5% annual tax equivalent on affected provinces. Never permit treasury below zero; failed enactment changes nothing.",
+    "buildingsCosts": "Granary requires its normal roster/infrastructure construction materials plus 10% of owning settlement's normal annual tax equivalent, takes 90 in-game days and is max one per settlement. Rebuild after capture does not pay/award again. Captured buildings remain physically owned but benefit only eligible new controllers.",
+    "abilitiesCosts": "Epidemic response costs 2% of settlement annual normal tax equivalent plus real medical supplies, runs 90 in-game days with a 90-day reuse cooldown; when no outbreak, cannot activate.",
+    "surveysCosts": "Cadastral project requires 1% of provincial annual tax equivalent and 90 days of administrative work per eligible province; it persists as a local development state after completion and control changes.",
+    "numeric": "Bonus percentages affect qualified pre-bonus domain outcome in fixed-point math, not player generic base stats; compatible distinct sources aggregate once, then apply one rounding rule at transaction/casualty boundary. No single effect creates value without existing input/resources.",
+    "stacking": "Different compatible sources stack once by distinct typed source IDs, additions in basis points only on a common rating and not self-compounded; unrelated domains never stack. Research does not cap unbounded earned military tradition XP.",
+    "historicalAvailability": "Research technology gates and roster/equipment availability/historical windows remain authoritative. Future discoveries do not retroactively materialize ship hulls, trained troops or construction.",
+    "status": "All entries are design-only until the named live production consumer is executed and fresh same-revision audits confirm binding. No early release unblock."
+  },
+  "effects": [
+    {
+      "nodeId": "abolitionist_public_sphere",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "progression_abolitionist_public_sphere"
+      },
+      "family": "civic",
+      "activation": "policy_choice",
+      "recipient": "controlled_civic_centers",
+      "metric": "civic_reform_diffusion",
+      "bonusBasisPoints": 500,
+      "rules": "Only applies where reform discussion and lawful civic institutions exist; no automatic emancipation, no blanket global diplomacy modifier",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "agrarian_improvement",
+      "unlock": {
+        "kind": "building",
+        "contentId": "granary"
+      },
+      "family": "agriculture",
+      "activation": "build_per_settlement",
+      "recipient": "owned_settlement_with_food_storage",
+      "metric": "staple_storage_capacity",
+      "bonusBasisPoints": 2000,
+      "rules": "One durable granary per settlement; pays a construction bill and takes 90 campaign days; separately lowers stored grain spoilage by 10%",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "agrarian_improvement",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "land_tenure_reform"
+      },
+      "family": "agriculture",
+      "activation": "policy_choice",
+      "recipient": "controlled_rural_provinces",
+      "metric": "crop_output_efficiency",
+      "bonusBasisPoints": 500,
+      "rules": "Reform administrative action, no double grant; +2% rural tax efficiency; temporary transition unrest only where historically applicable",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "agricultural_mechanization",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "enclosure"
+      },
+      "family": "agriculture",
+      "activation": "policy_choice",
+      "recipient": "controlled_rural_provinces",
+      "metric": "crop_output_efficiency",
+      "bonusBasisPoints": 800,
+      "rules": "Requires eligible arable land and technology; transitional unrest +5% on affected rural territory for two years; no automatic confiscation or instant manpower generation",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "agricultural_societies",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "progression_agricultural_societies"
+      },
+      "family": "agriculture",
+      "activation": "policy_choice",
+      "recipient": "controlled_farming_provinces",
+      "metric": "agricultural_knowledge_diffusion",
+      "bonusBasisPoints": 600,
+      "rules": "Only eligible agricultural networks, +2% farm output conditional on locally supported farming and active organizations",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "anatomy_and_medicine",
+      "unlock": {
+        "kind": "ability",
+        "contentId": "epidemic_control"
+      },
+      "family": "health",
+      "activation": "active_settlement_action",
+      "recipient": "controlled_settlement_during_outbreak",
+      "metric": "epidemic_losses_avoided",
+      "bonusBasisPoints": 2500,
+      "rules": "90-day quarantine/medical response; reduces disease losses only; local trade throughput -10%; consumes existing medical resources and treasury; cooldown 90 days",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "arquebus_volley_drill",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_arquebus_volley_drill"
+      },
+      "family": "land_combat",
+      "activation": "passive_research",
+      "recipient": "land_formation_arquebus_musket_firearms",
+      "metric": "firearm_reload_efficiency",
+      "bonusBasisPoints": 500,
+      "rules": "No sword, bow, cavalry-charge or siege gain. Compatible with, but independent of, Ordered Volley/Platoon Fire damage and Pike and Shot defense",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "artillery_offices",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "progression_artillery_offices"
+      },
+      "family": "land_combat",
+      "activation": "policy_choice",
+      "recipient": "owned_arsenal_production",
+      "metric": "artillery_production_throughput",
+      "bonusBasisPoints": 800,
+      "rules": "Requires actual arsenal and arms inputs, administrative upkeep +2% of artillery procurement; never spawns free guns",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "artillery_train",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_artillery_train"
+      },
+      "family": "land_logistics",
+      "activation": "passive_research",
+      "recipient": "supplied_field_artillery",
+      "metric": "artillery_supply_waste_reduction",
+      "bonusBasisPoints": 800,
+      "rules": "No benefit for isolated, unsupplied artillery; cannot manufacture ammunition from nothing",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "auction_markets",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_auction_markets"
+      },
+      "family": "commerce",
+      "activation": "passive_research",
+      "recipient": "eligible_formal_auction_transactions",
+      "metric": "market_transaction_fee_reduction",
+      "bonusBasisPoints": 500,
+      "rules": "Existing market/auction infrastructure and real trade transaction required; no generated cash",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "barometric_measurement",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_barometric_measurement"
+      },
+      "family": "exploration",
+      "activation": "passive_research",
+      "recipient": "qualified_sea_voyages",
+      "metric": "storm_attrition_reduction",
+      "bonusBasisPoints": 1000,
+      "rules": "Only on eligible voyages using actual weather information; no immunity, perfect prediction or generic battle armor",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "battlefleet_doctrine",
+      "unlock": {
+        "kind": "unit",
+        "contentId": "ship_of_the_line"
+      },
+      "family": "naval",
+      "activation": "commissioning_unlock",
+      "recipient": "qualified_warship_yards",
+      "metric": "unlock_recruitment",
+      "bonusBasisPoints": 0,
+      "rules": "Purchase existing ship_of_the_line roster at its historical, shipyard, tech, manpower, funds, supply, maintenance and construction-time rules. No free hulls or automatic upgrades",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "bayonet_system",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_bayonet_system"
+      },
+      "family": "land_combat",
+      "activation": "passive_research",
+      "recipient": "bayonet_equipped_firearm_infantry",
+      "metric": "anti_cavalry_melee_defense",
+      "bonusBasisPoints": 800,
+      "rules": "Requires actual socket bayonet compatible equipment; not a generic 8% damage boost for all land forces",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "bill_of_exchange_networks",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_bill_of_exchange_networks"
+      },
+      "family": "commerce",
+      "activation": "passive_research",
+      "recipient": "qualified_long_distance_trade_transfers",
+      "metric": "secure_remittance_fee_reduction",
+      "bonusBasisPoints": 600,
+      "rules": "Reduces existing transaction/remittance costs for accessible banking networks; does not mint gold or create debt/loans",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "blast_furnace_practice",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_blast_furnace_practice"
+      },
+      "family": "industry",
+      "activation": "passive_research",
+      "recipient": "fueled_iron_smelting_facilities",
+      "metric": "iron_refining_yield",
+      "bonusBasisPoints": 700,
+      "rules": "Consumes actual ore, fuel, labor and equipment; no raw-iron creation or universal wealth multiplier",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "boring_mills",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_boring_mills"
+      },
+      "family": "industry",
+      "activation": "passive_research",
+      "recipient": "qualified_artillery_manufacturing_workshops",
+      "metric": "gun_barrel_production_throughput",
+      "bonusBasisPoints": 600,
+      "rules": "Requires foundry/machining infrastructure and materials; no bonus to existing cannon combat damage",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "botanical_collecting",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_botanical_collecting"
+      },
+      "family": "exploration",
+      "activation": "passive_research",
+      "recipient": "qualified_overland_exploration_parties",
+      "metric": "unknown_route_attrition_reduction",
+      "bonusBasisPoints": 1000,
+      "rules": "On eligible survey journeys only; does not reveal hidden map or instantly discover secrets",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "brokerage_houses",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_brokerage_houses"
+      },
+      "family": "commerce",
+      "activation": "passive_research",
+      "recipient": "formal_exchange_hubs",
+      "metric": "market_slippage_reduction",
+      "bonusBasisPoints": 700,
+      "rules": "Requires legitimate market access and active trading volume; real counterparty and stock constraints remain",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "cadastral_survey",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_cadastral_survey"
+      },
+      "family": "administration",
+      "activation": "survey_province",
+      "recipient": "controlled_surveyed_provinces",
+      "metric": "land_tax_collection_efficiency",
+      "bonusBasisPoints": 500,
+      "rules": "Must complete paid local survey before benefit, no instant census of unknown territory; collected revenue still limited by taxable economic capacity",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "calculus_methods",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_calculus_methods"
+      },
+      "family": "science",
+      "activation": "passive_research",
+      "recipient": "controlled_scholarly_research_centers",
+      "metric": "research_generation_efficiency",
+      "bonusBasisPoints": 500,
+      "rules": "Only active scholarly centers with research inputs; no direct firearm or artillery firepower",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "campaign_bakeries",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_campaign_bakeries"
+      },
+      "family": "logistics",
+      "activation": "passive_research",
+      "recipient": "supplied_land_armies_with_grain",
+      "metric": "grain_supply_spoilage_reduction",
+      "bonusBasisPoints": 800,
+      "rules": "Consumes and transports real grain; reduces waste, not hunger when disconnected from logistics",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "canal_logistics",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_canal_logistics"
+      },
+      "family": "logistics",
+      "activation": "passive_research",
+      "recipient": "connected_operational_canal_routes",
+      "metric": "canal_freight_throughput",
+      "bonusBasisPoints": 1000,
+      "rules": "Only actual built and usable canal routes; not desert roads, ocean passages or generic player movement",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "canal_tolls_finance",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_canal_tolls_finance"
+      },
+      "family": "commerce",
+      "activation": "passive_research",
+      "recipient": "funded_operational_canal_projects",
+      "metric": "canal_infrastructure_financing_cost_reduction",
+      "bonusBasisPoints": 600,
+      "rules": "Reduces financing costs for real canal works; does not hand out free capital or apply to all buildings",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "careening_stations",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_careening_stations"
+      },
+      "family": "naval",
+      "activation": "passive_research",
+      "recipient": "ships_at_operational_careening_ports",
+      "metric": "hull_repair_throughput",
+      "bonusBasisPoints": 1500,
+      "rules": "Actual repair materials, money, access and time required; no healing at sea, no free owned docks",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "carronade_batteries",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_carronade_batteries"
+      },
+      "family": "naval",
+      "activation": "passive_research",
+      "recipient": "warships_equipped_with_carronade_guns",
+      "metric": "close_range_naval_gunfire_damage",
+      "bonusBasisPoints": 1000,
+      "rules": "Only valid carronade mounts and close-range cannon shots; no free armament and no long-range buff; preserve gunnery doctrine and vessel refit layers",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "carvel_hull_construction",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_carvel_hull_construction"
+      },
+      "family": "naval",
+      "activation": "passive_research",
+      "recipient": "carvel_hulled_or_validly_refitted_vessels",
+      "metric": "voyage_hull_weather_resilience",
+      "bonusBasisPoints": 800,
+      "rules": "Only ships with historically compatible carvel construction/refit; no automatic redesign of legacy hulls or combat invulnerability",
+      "designStatus": "approved_unimplemented"
+    }
+  ]
+}
