@@ -373,3 +373,13 @@ legacy migration, failed storage, late rollback and fresh physical-map services.
 `test_mixed_cargo.py` generates and checks both sale-order vectors against the
 headless economy/trade contracts. Regenerate intentionally with
 `python3 tests/test_mixed_cargo.py --write-vectors`, then execute pinned Wurst.
+
+Cast Cannon production-command and installed-combat tests in
+`MilitaryCombatEventsTests.wurst` cover the exact +500-bp qualified shipboard
+weapon contract, missing research, prerequisite and fund rejection, incompatible
+weapons/events, controller transfer without a tradition track, repeated grants,
+reconstruction, exact composition, abstract resolution and late-load rollback.
+`ResearchRuntimeTests.wurst` rebuilds the resulting damage through every supported
+campaign envelope. `test_combat_effects.py` checks qualification across the whole
+roster, headless research/save/controller behavior, definition migrations and
+executable qualification tampering. See [CAST_CANNON_COMBAT.md](../docs/CAST_CANNON_COMBAT.md).

@@ -37,7 +37,7 @@ def verify_executable_bindings(source, expected):
     """Reject additions as well as omissions/changes to generated consumers."""
     def calls(text):
         return [line for line in text.splitlines() if any(token in line for token in
-                ('bindings.addAttribute(', 'bindings.addEffect(', 'bindings.addResearch(', 'bindings.addProfile(', '.contributions.replace('))]
+                ('bindings.addAttribute(', 'bindings.addEffect(', 'bindings.addResearch(', 'bindings.addResearchAttack(', 'bindings.addResearchWeapon(', 'bindings.addProfile(', '.contributions.replace('))]
     if calls(source) != calls(expected):
         raise CombatBindingError("executable combat bindings differ from scenario (release blocker)")
 
@@ -63,8 +63,10 @@ class CombatCatalogue:
             data.update(format="warcraftmap_combat_effect_bindings_v2", schemaVersion=2, researchEffects=[])
             for row in data['attributes']:
                 row['stat'] = 'damage' if row['attackId'] else None
+        if data.get('format') == 'warcraftmap_combat_effect_bindings_v2' and data.get('schemaVersion') == 2:
+            data.update(format='warcraftmap_combat_effect_bindings_v3', schemaVersion=3)
         _fields(data, ('format', 'schemaVersion', 'balanceNote', 'attackPredicates', 'effects', 'attributes', 'researchEffects'))
-        if data.get("format") != "warcraftmap_combat_effect_bindings_v2" or data.get("schemaVersion") != 2:
+        if data.get("format") != "warcraftmap_combat_effect_bindings_v3" or data.get("schemaVersion") != 3:
             raise CombatBindingError("unsupported combat-effect binding catalogue")
         MilitaryTraditionRuntime(traditions, RecordingTraditionAdapter())
         self.data = data
@@ -122,13 +124,22 @@ class CombatCatalogue:
         for row in data['researchEffects']:
             _fields(row, ('sourceId', 'entitlement', 'recipient', 'stat', 'basisPoints', 'description'))
             _fields(row['entitlement'], ('kind', 'contentId'))
-            _fields(row['recipient'], ('kind', 'categoryId'))
+            recipient = row['recipient']
+            offensive = recipient.get('kind') == 'weapon_attack'
+            _fields(recipient, ('kind', 'categoryId', 'attackId', 'weaponIds') if offensive else ('kind', 'categoryId'))
+            if offensive:
+                predicate = self.predicates.get(recipient['attackId'])
+                if (not predicate or predicate['categoryId'] != recipient['categoryId']
+                        or not isinstance(recipient['weaponIds'], list) or not recipient['weaponIds']
+                        or len(set(recipient['weaponIds'])) != len(recipient['weaponIds'])
+                        or not set(recipient['weaponIds']) <= set(predicate['weaponIds']) or row['stat'] != 'damage'):
+                    raise CombatBindingError('invalid research weapon predicate')
             key = (row['entitlement']['kind'], row['entitlement']['contentId'])
             if (key in self.research_effects or key[0] != 'modifier' or not key[1]
                     or not row['sourceId'] or row['sourceId'] in sources or not row['description']
-                    or row['recipient']['kind'] != 'force_category' or row['recipient']['categoryId'] not in self.categories
-                    or not any(a['categoryId'] == row['recipient']['categoryId'] and a['stat'] == 'discipline' for a in self.attributes.values())
-                    or row['stat'] != 'discipline' or type(row['basisPoints']) is not int or row['basisPoints'] < 0):
+                    or recipient['categoryId'] not in self.categories
+                    or (not offensive and (recipient['kind'] != 'force_category' or row['stat'] != 'discipline'
+                        or not any(a['categoryId'] == recipient['categoryId'] and a['stat'] == 'discipline' for a in self.attributes.values()))) or type(row['basisPoints']) is not int or row['basisPoints'] < 0):
                 raise CombatBindingError('invalid research combat binding')
             if research_world is not None:
                 from technology_institutions import research_unlock_definitions
@@ -203,9 +214,20 @@ class CombatCatalogue:
                      if row['stat'] == 'discipline' and row['categoryId'] == view.category_id), Fraction(0))
         earned = {(u['kind'], u['contentId']) for u in entitlements if u['controllerId'] == view.controller_id}
         for key, row in self.research_effects.items():
-            if key in earned and row['recipient']['categoryId'] == view.category_id:
+            if key in earned and row['stat'] == 'discipline' and row['recipient']['categoryId'] == view.category_id:
                 value += row['basisPoints']
         return value
+
+    def research_damage(self, view, profile_id, unit_type, attack_id, entitlements):
+        if view is None or not self.compatible(profile_id, unit_type, view.category_id, attack_id):
+            return Fraction(0)
+        earned = {(u['kind'], u['contentId']) for u in entitlements if u['controllerId'] == view.controller_id}
+        weapons = set(self.profiles[profile_id]['weaponIds'])
+        return sum((row['basisPoints'] for key, row in self.research_effects.items()
+                    if key in earned and row['stat'] == 'damage'
+                    and row['recipient']['categoryId'] == view.category_id
+                    and row['recipient']['attackId'] == attack_id
+                    and weapons.intersection(row['recipient']['weaponIds'])), Fraction(0))
 
     def resolve(self, hit, attacker, defender, *, legal=True, attack=True, other_sources=None, entitlements=()):
         """Participants: (current TraditionView or None, profile ID, rawcode).
@@ -224,6 +246,8 @@ class CombatCatalogue:
         data = self.profiles.get(profile)
         weapon = attack and data and data["unitTypeId"] == rawcode and any(a["id"] == hit.attack_id for a in data["attacks"])
         damage = self.rating(view, profile, rawcode, hit.attack_id, "damage") if weapon else Fraction(0)
+        if weapon:
+            damage += self.research_damage(view, profile, rawcode, hit.attack_id, entitlements)
         resistance = self.rating(*defender, hit.attack_id, "resistance") if weapon else Fraction(0)
         discipline = self.discipline(defender[0], entitlements)
         for source, ratings in (other_sources or {}).items():
@@ -256,5 +280,7 @@ class CombatCatalogue:
             profile = self.profiles.get(unit["archetypeId"]) if unit else None
             return view, profile["id"] if profile else "", profile["unitTypeId"] if profile else ""
 
-        entitlements = research.entitlements(defending.controller_id) if research and defending and defending.controller_id in research.research else ()
+        controllers = {v.controller_id for v in (attacking, defending) if v is not None}
+        entitlements = [u for controller in controllers if research and controller in research.research
+                        for u in research.entitlements(controller)]
         return self.resolve(hit, participant(source, attacking), participant(target, defending), legal=legal, attack=attack, entitlements=entitlements)

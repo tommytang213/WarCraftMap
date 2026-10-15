@@ -210,7 +210,7 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 			if not verified or originalDamage <= 0. or heroController == "" or not runtime.atWar(controller(runtime.forces[attacker].controllerId), heroController)
 				return accepted
 			let attackingLayer = runtime.resolveTradition(runtime.forces[attacker])
-			runtime.combatBindings.apply(hit, true, attackingLayer, profile, null, null, null, null)
+			runtime.combatBindings.applyForCombatants(hit, true, attackingLayer, profile, null, null, null, null, runtime.forces[attacker].controllerId, runtime.forces[attacker].categoryId, "", "")
 			if attackingLayer != null
 				destroy attackingLayer
 			return 1

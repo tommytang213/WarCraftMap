@@ -96,3 +96,8 @@ independent. Military v10 saves the necessary voyage inputs, with pure legacy
 migration and the existing campaign rollback boundary. Only this research
 consumer finding is removed; weather/exploration consumers and native launch
 remain separate blockers.
+
+Issue #522 binds `(modifier, progression_cast_cannon)` to qualified heavy
+shipboard gunfire through combat catalogue v3. See
+[the Cast Cannon contract](CAST_CANNON_COMBAT.md) for its exact rating, weapon
+whitelist, activation, stacking and save compatibility rules.

@@ -1,6 +1,6 @@
 {
-  "format": "warcraftmap_combat_effect_bindings_v2",
-  "schemaVersion": 2,
+  "format": "warcraftmap_combat_effect_bindings_v3",
+  "schemaVersion": 3,
   "balanceNote": "Initial gameplay tuning, not historical effectiveness statistics. Volleys coordinate infantry fire; gunnery and line of battle coordinate ship crews and naval gunfire.",
   "attackPredicates": [
     {
@@ -177,6 +177,25 @@
       "stat": "discipline",
       "basisPoints": 500,
       "description": "+500 basis points of defensive discipline; all currently controlled land_formation forces, represented or abstract; one layer per controller."
+    },
+    {
+      "sourceId": "research:modifier:progression_cast_cannon",
+      "entitlement": {
+        "kind": "modifier",
+        "contentId": "progression_cast_cannon"
+      },
+      "recipient": {
+        "kind": "weapon_attack",
+        "categoryId": "sailing_naval",
+        "attackId": "naval_gunfire",
+        "weaponIds": [
+          "naval_guns",
+          "heavy_broadside"
+        ]
+      },
+      "stat": "damage",
+      "basisPoints": 500,
+      "description": "+500 basis points heavy shipboard gunfire damage; requires an existing qualified naval_guns or heavy_broadside battery and completed controller research. No guns or refits granted."
     }
   ]
 }

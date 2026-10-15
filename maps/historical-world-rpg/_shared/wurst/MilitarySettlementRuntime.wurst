@@ -867,7 +867,7 @@ public class MilitarySettlementRuntime
 		CombatProfile weapon = null
 		if weaponAttack
 			weapon = combatProfile(source)
-		combatBindings.applyForRecipient(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, target.controllerId, target.categoryId)
+		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
 		if attackingLayer != null
 			destroy attackingLayer
 		if defendingLayer != null
@@ -1595,7 +1595,7 @@ public class MilitarySettlementRuntime
 			if voyageSupported(runtimeForce, "")
 				result += "\nNavigation: astronomical observation capable; kit installed: " + boolText(runtimeForce.navigation.equipment) + "; voyage: " + runtimeForce.navigation.routeId + "; elapsed days: " + runtimeForce.navigation.elapsedDays.toString() + "; reserved provisions: " + runtimeForce.navigation.reserved.toString() + "; fractional provision credit: " + runtimeForce.navigation.creditBasisPoints.toString() + "/10000. Research source: " + voyages.contentId + "; position-finding provision reduction: " + voyages.reductionBasisPoints.toString() + " basis points; research eligible: " + boolText(voyageEligible(runtimeForce))
 			if combatBindings != null
-				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0)
+				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0, combatProfile(runtimeForce), true)
 			return result
 		let s = settlementIndex(subjectId)
 		if s >= 0
