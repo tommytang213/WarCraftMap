@@ -150,7 +150,13 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         self.assertEqual("fail", report["status"])
 
     def test_checked_in_machine_and_human_reports_are_current(self):
-        completed = subprocess.run([sys.executable, str(TOOL)], cwd=PROJECT, text=True,
+        saved = json.loads(audit.REPORT_JSON.read_text())
+        # Committing generated reports advances HEAD without changing their
+        # inputs. Recompute at the recorded revision; the complete comparison
+        # still checks the current source hash, findings and human report.
+        # Publication gates separately require the tested release revision.
+        completed = subprocess.run([sys.executable, str(TOOL),
+                                    "--source-revision", saved["sourceRevision"]], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
         self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
         summary = json.loads(completed.stdout)

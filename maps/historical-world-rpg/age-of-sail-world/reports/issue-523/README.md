@@ -69,3 +69,21 @@ generated payloads and compiler input hashes. The compiler runs as its default
 container-private `/tmp`. No gameplay changes or blocker waivers were needed.
 The controller still owns complete repository validation and report regeneration
 after integration onto a new main revision.
+
+The final repair is indexed by `integrated-validation.json` and
+`integrated-wurst.json`, with fresh compressed transcripts. It retains the
+voyage implementation and fixes the recurring report-only checkpoint failure:
+the two checked-in-report tests now recompute at each report's recorded revision
+and compare all current source hashes and report bytes. A generated-report commit
+can no longer invalidate its own revision field. Publication gates still require
+the explicitly tested release revision; source changes, changed findings and
+remaining blockers receive no exemption. Both tests also pass with a simulated
+newer implicit revision, without creating a commit.
+
+This snapshot passes 169 Python tests, those two checkpoint regression checks,
+71 selected pinned Wurst tests, Wurst typechecking, framework conformance and
+boundary checks, and generated-payload verification. All three audits were
+regenerated at `ef605e5a9dcf13e5cb849b4a29ff9da2306256e8` with the repaired
+source hash. The Celestial Navigation finding is absent; 238 campaign blockers
+remain. Full repository validation remains assigned to the controller. Native
+client execution was not run, and no player QA or blocker waiver was used.

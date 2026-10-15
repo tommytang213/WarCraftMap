@@ -736,7 +736,11 @@ class AuthoritativeInventoryTests(unittest.TestCase):
         self.assertGreater(len(ledger["requirements"]), 470)
         self.assertGreater(sum(len(row["obligations"]) for row in ledger["requirements"]), 640)
         self.assertGreaterEqual(len(ledger["dependencies"]), 22)
-        report = scenario.build_report()
+        # A report-only checkpoint must not invalidate its own report. Retain
+        # its declared revision while recomputing every current source input
+        # and obligation; any source drift still fails the byte comparison.
+        saved = trace.load(scenario.REPORT.with_suffix(".json"))
+        report = scenario.build_report(revision=saved["sourceRevision"])
         self.assertFalse(report["candidateReady"])
         self.assertEqual(trace.canonical(report), scenario.REPORT.with_suffix(".json").read_bytes())
         self.assertEqual(trace.render_markdown(report), scenario.REPORT.with_suffix(".md").read_text())
