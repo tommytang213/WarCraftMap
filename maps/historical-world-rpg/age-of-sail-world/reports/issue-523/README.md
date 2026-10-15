@@ -33,7 +33,16 @@ were made. Generated output is not authoritative source.
 The release-blocker, runtime-acceptance and requirement-traceability reports
 were regenerated with the full base revision and a hash of this worktree's
 actual source inputs. The Celestial Navigation consumer finding is absent;
-**218 other unbound research consumers remain**. Source-only audits still block
+**217 other unbound research consumers remain**. Source-only audits still block
 publication because full same-revision execution/artifact evidence is absent;
 no remaining blocker is waived. Full repository validation and regeneration on
 the integrated main revision belong to the controller. No player QA was used.
+
+The integration repair is recorded separately in `repair-validation.json` and
+`repair-wurst.json`, with fresh compressed transcripts. It aligns the release
+save manifest with the live military v10 codec and its v1–v10 migration support,
+and refreshes all three acceptance reports on the integrated revision. These
+checks supersede the original verification above for the current worktree;
+full repository validation remains assigned to the controller. Grill normalizes
+its dependency metadata during installation, so the focused run verifies that
+normalized build file and every copied Wurst source across compilation and tests.
