@@ -236,3 +236,11 @@ provide corruption detection, not a security/authentication boundary.
 predicates, continuous-stat consumers and named milestone contributions. The
 combat catalogue validator additionally checks roster references and exact parity
 with military-tradition coefficients, thresholds and replacement identities.
+
+Combat catalogue v3 adds typed offensive research recipients (`weapon_attack`)
+with an explicit attack ID and weapon whitelist. The generator compiles matching
+profile identities; both combat adapters require that identity plus current
+controller entitlement membership. Research ratings are independent of tradition
+tracks, use exact basis points, and reserve their source identities against
+duplicate contributions. Definition v1/v2 migration preserves previous bindings;
+no derived combat ratings enter campaign saves.

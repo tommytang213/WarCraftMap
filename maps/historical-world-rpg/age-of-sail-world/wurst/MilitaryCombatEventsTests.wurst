@@ -1690,3 +1690,147 @@ function disciplineVector(CombatFixture f, string xp, string expected)
 	deliveredMilestoneDamage(f, "enemy", "player_army", "melee", "normal").assertEquals("20000/213")
 	traditionXp(f, "player", "land_formation").assertEquals("3000")
 	f.close()
+
+class CannonResearchResources implements ResearchCommandResources
+	int balance = 100000
+	override function controllerId(player sender) returns string
+		return "player"
+	override function year() returns int
+		return 1450
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+
+class CannonResearchOutput implements CommandOutput
+	string last = ""
+	override function show(player recipient, string message)
+		last = message
+
+/** Dispatch registered production actions before the installed combat callback.
+ * Research retains the generated prerequisite and exact ahead-of-time prices. */
+function completeCastCannon(CombatFixture f)
+	let resources = new CannonResearchResources()
+	let output = new CannonResearchOutput()
+	f.runtime.rpg.researchResources = resources
+	let commands = new CommandRegistry(false, 6, new CommandText(), output)
+	registerRpgRuntimeCommands(commands, f.runtime.rpg).assertEquals("")
+	let research = f.runtime.rpg.technologies
+	research.cost("cast_cannon", 1470, 0, 0).assertEquals(110)
+	research.cost("cast_cannon", 1450, 0, 0).assertEquals(1056)
+	commands.dispatch(null, "/research cast_cannon").assertTrue()
+	output.last.assertEquals("Requirements are not met here.")
+	resources.balance.assertEquals(100000)
+	commands.dispatch(null, "/research water_powered_machinery").assertTrue()
+	output.last.assertEquals("Action completed.")
+	resources.balance = 1055
+	commands.dispatch(null, "/research cast_cannon").assertTrue()
+	output.last.assertEquals("Requirements are not met here.")
+	resources.balance.assertEquals(1055)
+	resources.balance = 100000
+	commands.dispatch(null, "/research cast_cannon").assertTrue()
+	output.last.assertEquals("Action completed.")
+	resources.balance.assertEquals(98944)
+	commands.dispatch(null, "/research cast_cannon").assertTrue()
+	output.last.assertEquals("Requirements are not met here.")
+	resources.balance.assertEquals(98944)
+	research.bindingStatus(research.get("cast_cannon").unlocks[0]).assertEquals("bound")
+
+@test function castCannonRegisteredResearchChangesQualifiedGameplayExactlyOnce()
+	let f = milestoneCombatFixture()
+	let before = f.runtime.snapshot()
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	completeCastCannon(f)
+	f.runtime.snapshot().assertEquals(before)
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
+	deliveredMilestoneDamage(f, "enemy_fleet", "player_fleet", "naval_gunfire", "siege").assertEquals("100")
+	let duplicate = new RuntimeTechnology("duplicate_cast", "Duplicate source", 1450, 1)
+	duplicate.addUnlock("duplicate_cast", "modifier", "progression_cast_cannon")
+	f.runtime.rpg.technologies.register(duplicate).assertTrue()
+	f.runtime.rpg.technologies.unlock("player", "duplicate_cast", 1450, 1, 0, 0).assertTrue()
+	for repeat = 1 to 3
+		f.runtime.rpg.technologies.reconstructAll()
+		f.runtime.instantiate(f.runtime.forces[f.runtime.forceIndex("player_fleet")])
+		deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
+	f.runtime.managementSummary("player_fleet").contains("progression_cast_cannon: +500 basis points naval_gunfire damage [bound; active]").assertTrue()
+	f.close()
+
+@test function castCannonRejectsWrongWeaponsControllersAndNativeEvents()
+	let f = milestoneCombatFixture()
+	completeCastCannon(f)
+	for attackIndex = 0 to 2
+		var attackId = "boarding"
+		if attackIndex == 1
+			attackId = "rocket"
+		else if attackIndex == 2
+			attackId = "firearm_volley"
+		deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", attackId, "siege").assertEquals("100")
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "").assertEquals("100")
+	deliveredMilestoneDamage(f, "player_army", "enemy", "firearm_volley", "normal").assertEquals("100")
+	let fleet = f.runtime.forces[f.runtime.forceIndex("player_fleet")]
+	fleet.combatProfileId = "coastal_transport"
+	fleet.unitTypeId = 'hbot'
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	f.runtime.managementSummary("player_fleet").contains("incompatible weapon").assertTrue()
+	fleet.combatProfileId = "armed_sailing_warship"
+	fleet.unitTypeId = 'hbsh'
+	f.runtime.transferControl("player_fleet", "england")
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	f.runtime.transferControl("player_fleet", "player")
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
+	f.runtime.changeForceCategory("player_fleet", "land_formation").assertTrue()
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	f.runtime.changeForceCategory("player_fleet", "sailing_naval").assertTrue()
+	// Research does not require a tradition track for its new controller.
+	f.runtime.transferControl("player_fleet", "portugal")
+	(f.runtime.resolveTradition(fleet) == null).assertTrue()
+	f.runtime.rpg.technologies.unlock("portugal", "water_powered_machinery", 1450, 85, 0, 0).assertTrue()
+	f.runtime.rpg.technologies.unlock("portugal", "cast_cannon", 1470, 110, 0, 0).assertTrue()
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
+	f.close()
+
+@test function castCannonComposesExactTraditionRefitAndAbstractRatings()
+	let f = milestoneCombatFixture()
+	completeCastCannon(f)
+	f.runtime.awardTradition("player", "sailing_naval", "3601")
+	f.runtime.awardTradition("france", "sailing_naval", "3600")
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("95601/824")
+	let attacker = f.runtime.resolveTradition(f.runtime.forces[f.runtime.forceIndex("player_fleet")])
+	let defender = f.runtime.resolveTradition(f.runtime.forces[f.runtime.forceIndex("enemy_fleet")])
+	let sources = new CombatSources()
+	sources.replace("refit:fixture", "naval_gunfire", "damage", new ExactRational("200", "1", "1"))
+	sources.replace("refit:fixture", "naval_gunfire", "damage", new ExactRational("200", "1", "1"))
+	sources.replace("research:modifier:progression_cast_cannon", "naval_gunfire", "damage", new ExactRational("500", "1", "1"))
+	let hit = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+	f.runtime.combatBindings.apply(hit, true, attacker, f.runtime.combatProfile(f.runtime.forces[f.runtime.forceIndex("player_fleet")]), defender, f.runtime.combatProfile(f.runtime.forces[f.runtime.forceIndex("enemy_fleet")]), sources, null)
+	hit.damage.display().assertEquals("97201/824")
+	destroy hit
+	destroy sources
+	destroy attacker
+	destroy defender
+	f.runtime.activateRegion("europe_central_east")
+	let abstractHit = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+	f.runtime.applyCombatHit(abstractHit, f.runtime.forceIndex("player_fleet"), f.runtime.forceIndex("enemy_fleet"), "england", "france", true)
+	abstractHit.damage.display().assertEquals("95601/824")
+	destroy abstractHit
+	f.close()
+
+@test function castCannonSaveLoadReconstructionAndLateRollbackKeepCurrentContribution()
+	let f = milestoneCombatFixture()
+	completeCastCannon(f)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "cast-cannon").assertTrue()
+	let saved = f.runtime.rpg.captureState()
+	saved.contains("progression_cast_cannon").assertFalse()
+	f.runtime.rpg.restoreState(saved.replace("|u,player,cast_cannon", "")).assertTrue()
+	f.runtime.rpg.reconcile("player")
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	let rollback = f.runtime.rpg.captureState()
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failAfterFirstMember = false
+	f.runtime.rpg.captureState().assertEquals(rollback)
+	deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("100")
+	for repeat = 1 to 2
+		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
+	f.close()

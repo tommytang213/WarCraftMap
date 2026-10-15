@@ -35,6 +35,12 @@ class CombatAttribute
 		this.attackId = attackId
 		this.stat = stat
 
+class ResearchCombatWeapon
+	string profileId
+	ResearchCombatWeapon next = null
+	construct(string profileId)
+		this.profileId = profileId
+
 public class ResearchCombatBinding
 	string sourceId
 	string kind
@@ -42,6 +48,8 @@ public class ResearchCombatBinding
 	string categoryId
 	string basisPoints
 	string description
+	string attackId = ""
+	ResearchCombatWeapon weapons = null
 	ResearchCombatBinding next = null
 	construct(string sourceId, string kind, string contentId, string categoryId, string basisPoints, string description)
 		this.sourceId = sourceId
@@ -50,10 +58,26 @@ public class ResearchCombatBinding
 		this.categoryId = categoryId
 		this.basisPoints = basisPoints
 		this.description = description
+	function qualifies(CombatProfile profile, string attackId) returns boolean
+		if profile == null or this.attackId == "" or this.attackId != attackId or profile.attackId != attackId or profile.categoryId != categoryId
+			return false
+		var entry = weapons
+		while entry != null
+			if entry.profileId == profile.id
+				return true
+			entry = entry.next
+		return false
+	ondestroy
+		while weapons != null
+			let obsolete = weapons
+			weapons = weapons.next
+			destroy obsolete
 	function inspection(boolean active) returns string
 		var status = "inactive"
 		if active
 			status = "active"
+		if attackId != ""
+			return sourceId + ": +" + basisPoints + " basis points " + attackId + " damage [bound; " + status + "]; eligible: controller-owned qualified " + categoryId + " weapons (represented or abstract). " + description
 		return sourceId + ": +" + basisPoints + " basis points defensive discipline [bound; " + status + "]; eligible: controller-owned " + categoryId + " forces (represented or abstract). " + description
 
 /** Retains every entitlement and forwards an independent copy to existing
@@ -189,6 +213,24 @@ public class CombatBindings
 		let entry = new ResearchCombatBinding(sourceId, kind, contentId, categoryId, basisPoints, description)
 		entry.next = researchBindings
 		researchBindings = entry
+	/** Qualified attack research is separate from defensive category research.
+	 * Profile IDs below are compiled from authoritative weapon metadata. */
+	function addResearchAttack(string sourceId, string kind, string contentId, string categoryId, string attackId, string basisPoints, string description)
+		if attackId == "" or not exactNaturalValid(basisPoints)
+			return
+		let entry = new ResearchCombatBinding(sourceId, kind, contentId, categoryId, basisPoints, description)
+		entry.attackId = attackId
+		entry.next = researchBindings
+		researchBindings = entry
+	function addResearchWeapon(string sourceId, string profileId)
+		var entry = researchBindings
+		while entry != null
+			if entry.sourceId == sourceId and entry.attackId != ""
+				let weapon = new ResearchCombatWeapon(profileId)
+				weapon.next = entry.weapons
+				entry.weapons = weapon
+				return
+			entry = entry.next
 	function researchBinding(string kind, string contentId) returns ResearchCombatBinding
 		var entry = researchBindings
 		while entry != null
@@ -244,7 +286,7 @@ public class CombatBindings
 			attribute = attribute.next
 		var entry = researchBindings
 		while entry != null
-			if entry.categoryId == categoryId and research != null and research.earned(controllerId, entry)
+			if entry.attackId == "" and entry.categoryId == categoryId and research != null and research.earned(controllerId, entry)
 				let value = new ExactRational(entry.basisPoints, "1", "1")
 				result.add(value)
 				destroy value
@@ -281,6 +323,16 @@ public class CombatBindings
 					binding.contributions.appendRating(result, attackId, stat, null)
 			reached = reached.next
 		return result
+	function researchDamage(string controllerId, string categoryId, CombatProfile profile, string attackId) returns ExactRational
+		let result = new ExactRational("0", "1", "1")
+		var entry = researchBindings
+		while entry != null
+			if entry.categoryId == categoryId and entry.qualifies(profile, attackId) and research != null and research.earned(controllerId, entry)
+				let value = new ExactRational(entry.basisPoints, "1", "1")
+				result.add(value)
+				destroy value
+			entry = entry.next
+		return result
 	/** The sole rating-to-damage boundary, used by native and abstract combat.
 	 * Input legality and actual weapon validation precede any contribution. */
 	function apply(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources)
@@ -291,6 +343,14 @@ public class CombatBindings
 			categoryId = defender.categoryId
 		applyForRecipient(hit, legalAttack, attacker, source, defender, target, attackSources, defenseSources, controllerId, categoryId)
 	function applyForRecipient(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string controllerId, string categoryId)
+		var sourceController = ""
+		var sourceCategory = ""
+		if attacker != null
+			sourceController = attacker.controllerId
+			sourceCategory = attacker.categoryId
+		applyForCombatants(hit, legalAttack, attacker, source, defender, target, attackSources, defenseSources, sourceController, sourceCategory, controllerId, categoryId)
+	/** Research ownership is authoritative even without a tradition track. */
+	function applyForCombatants(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string sourceController, string sourceCategory, string controllerId, string categoryId)
 		if hit.applied
 			return
 		hit.applied = true
@@ -302,6 +362,9 @@ public class CombatBindings
 		if weapon
 			destroy attack
 			attack = rating(attacker, source, hit.attackId, "damage")
+			let researchRating = researchDamage(sourceController, sourceCategory, source, hit.attackId)
+			attack.add(researchRating)
+			destroy researchRating
 			let weaponResistance = rating(defender, target, hit.attackId, "resistance")
 			resistance.add(weaponResistance)
 			destroy weaponResistance
@@ -354,16 +417,20 @@ public class CombatBindings
 			attribute = attribute.next
 		return result
 	function researchInspection(string controllerId, string categoryId, boolean alive) returns string
+		return researchInspection(controllerId, categoryId, alive, null, false)
+	function researchInspection(string controllerId, string categoryId, boolean alive, CombatProfile profile, boolean checkWeapon) returns string
 		var result = ""
 		var entry = researchBindings
 		while entry != null
 			let earned = research != null and research.earned(controllerId, entry)
 			if entry.categoryId == categoryId or earned
-				result += " | " + entry.inspection(alive and earned and entry.categoryId == categoryId)
+				result += " | " + entry.inspection(alive and earned and entry.categoryId == categoryId and (not checkWeapon or entry.attackId == "" or entry.qualifies(profile, entry.attackId)))
 				if not earned
 					result += " [research not completed]"
 				else if entry.categoryId != categoryId
 					result += " [ineligible category]"
+				else if checkWeapon and entry.attackId != "" and not entry.qualifies(profile, entry.attackId)
+					result += " [incompatible weapon]"
 				else if not alive
 					result += " [inactive force]"
 			entry = entry.next

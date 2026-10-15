@@ -129,9 +129,10 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
 
     def test_all_unbound_research_consumers_block_release_independently(self):
         rows=audit._audit_research_bindings()
-        self.assertEqual(219,len(rows))
-        self.assertEqual(219,len({r['id'] for r in rows}))
+        self.assertEqual(218,len(rows))
+        self.assertEqual(218,len({r['id'] for r in rows}))
         self.assertFalse(any(r['id'] == 'RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE' for r in rows))
+        self.assertFalse(any(r['id'] == 'RESEARCH-UNBOUND-CAST-CANNON-MODIFIER-PROGRESSION-CAST-CANNON' for r in rows))
         self.assertTrue(all(r['severity']=='campaign_blocker' and r['disposition']=='unresolved' for r in rows))
         self.assertTrue(all(r in self.report['findings'] for r in rows))
         for content in ('mass_conscription','common_wagon_train','supply_efficiency'):
