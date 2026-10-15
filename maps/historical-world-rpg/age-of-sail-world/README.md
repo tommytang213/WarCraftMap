@@ -23,6 +23,11 @@ The player is expected to play near-final/full builds, not repeatedly test indiv
 
 See `docs/DESIGN_LOCK.md` for agreed requirements.
 
+Owner-approved historical power calibration, playable weak-polity starts and
+scenario-owned ordinary research-effect balance decisions are documented in
+[Historical balance and research gameplay contracts](docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md).
+These are implementation contracts, not evidence of finished game consumers or native playability.
+
 See [item definitions and comparisons](docs/ITEM_DEFINITIONS.md) for retained
 stats/effects, wearer-specific delivery, save compatibility and pending gameplay consumers.
 
