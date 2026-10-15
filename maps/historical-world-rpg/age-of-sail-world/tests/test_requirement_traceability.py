@@ -730,6 +730,10 @@ class TraceabilityTests(unittest.TestCase):
 
 
 class AuthoritativeInventoryTests(unittest.TestCase):
+    def test_source_check_survives_report_only_checkpoint(self):
+        with patch.object(execution, "source_revision", side_effect=lambda project, explicit=None: explicit or "f"*40):
+            self.assertEqual(0, scenario.main(["--check"]))
+
     def test_complete_ledger_and_report_are_current_and_honest(self):
         ledger = trace.load(scenario.DIRECTORY / "requirements.json")
         self.assertEqual([], trace.authority_errors(PROJECT, ledger))
@@ -753,6 +757,44 @@ class AuthoritativeInventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "blocks candidate publication"):
                     scenario.validate_final(Path("final.w3n"), {}, b"", "a"*40)
                 self.assertTrue((Path(directory)/"_build/release/requirement-traceability.json").is_file())
+
+
+class SourceReportCliTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.output = Path(temporary.name) / "requirements"
+        self.report = {"sourceRevision": "a"*40, "sourceTreeSha256": "b"*64,
+                       "candidateReady": False, "blockerCount": 1,
+                       "requirements": [], "dependencies": [], "catalogues": [], "artifact": None,
+                       "blockers": [{"id": "gap", "class": "unmapped", "message": "Still blocked"}]}
+        scenario.write_report(self.report, self.output)
+        self.args = ["--check", "--output", str(self.output)]
+
+    def test_source_drift_and_report_tampering_still_fail(self):
+        for field, value in (("sourceTreeSha256", "c"*64), ("blockerCount", 2)):
+            changed = {**self.report, field: value}
+            with self.subTest(field=field), patch.object(scenario, "build_report", return_value=changed):
+                with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                    scenario.main(self.args)
+        self.output.with_suffix(".md").write_text("Changed report")
+        with patch.object(scenario, "build_report", return_value=self.report):
+            with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                scenario.main(self.args)
+
+    def test_explicit_release_revision_is_never_replaced_by_recorded_revision(self):
+        with patch.object(scenario, "build_report", return_value={**self.report, "sourceRevision": "c"*40}) as build:
+            with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                scenario.main(self.args + ["--source-revision", "c"*40])
+            build.assert_called_once_with(None, None, None, "c"*40)
+
+    def test_writing_and_artifact_checks_still_resolve_current_revision(self):
+        with patch.object(scenario, "build_report", return_value=self.report) as build:
+            self.assertEqual(0, scenario.main(self.args + ["--write"]))
+            build.assert_called_once_with(None, None, None, "")
+        with patch.object(scenario, "build_report", return_value=self.report) as build:
+            self.assertEqual(0, scenario.main(self.args + ["--artifact", "candidate.w3n"]))
+            build.assert_called_once_with(Path("candidate.w3n"), None, None, "")
 
 
 if __name__ == "__main__":

@@ -87,3 +87,20 @@ regenerated at `ef605e5a9dcf13e5cb849b4a29ff9da2306256e8` with the repaired
 source hash. The Celestial Navigation finding is absent; 238 campaign blockers
 remain. Full repository validation remains assigned to the controller. Native
 client execution was not run, and no player QA or blocker waiver was used.
+
+The CLI integration repair is indexed by `cli-validation.json` and
+`cli-wurst.json`, with fresh compressed transcripts. The source-only
+`requirement_traceability_audit.py --check` now uses the report's recorded
+revision while recomputing current source hashes and complete report bytes.
+This closes the remaining checkpoint failure in `automation/run_checks.sh`.
+Regression tests exercise a newer implicit revision, changed source hashes,
+report tampering and explicit revision mismatches. Report generation and checks
+with artifact or execution evidence retain their tested-revision requirements.
+
+This repair passes 189 focused Python tests and 71 pinned Wurst tests, including
+Wurst typechecking, framework conformance, generated-payload verification and
+boundary checks. All three acceptance reports were refreshed at
+`edab468c56f34c7e2ef872c92e3299f91314eb35` on the tested source snapshot.
+The voyage implementation is unchanged, the Celestial Navigation finding is
+absent and 238 campaign blockers remain. Complete repository validation and
+regeneration after main integration remain assigned to the controller.
