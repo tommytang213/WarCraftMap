@@ -54,6 +54,9 @@ class PackagingTests(unittest.TestCase):
         with zipfile.ZipFile(output) as archive:
             names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json"))
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
+        self.assertIn("war3mapMap.blp", names)
+        self.assertNotIn("war3mapMap.blp.base64", names)
+        self.assertEqual(b"BLP1", zipfile.ZipFile(output).read("war3mapMap.blp")[:4])
         self.assertIn("runtime/terrain-europe.json", names)
         self.assertIn("runtime/terrain-africa.json", names)
         self.assertIn("runtime/terrain-middle_east_india.json", names)
