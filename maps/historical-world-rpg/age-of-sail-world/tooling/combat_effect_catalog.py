@@ -27,7 +27,15 @@ def wurst(catalog):
         lines.append(f'\tbindings.addAttribute({quote(row["id"])}, {quote(row["categoryId"])}, {quote(row["attackId"] or "")}, {quote(row["stat"] or "")})')
     for row in catalog.research_effects.values():
         args = [row['sourceId'], row['entitlement']['kind'], row['entitlement']['contentId'], row['recipient']['kind'], row['recipient']['categoryId'], row['stat'], str(row['basisPoints']), row['description']]
-        lines.append('\tbindings.addResearch(' + ', '.join(map(quote, args)) + ')')
+        if row['recipient']['kind'] == 'weapon_attack':
+            args = [row['sourceId'], row['entitlement']['kind'], row['entitlement']['contentId'], row['recipient']['categoryId'], row['recipient']['attackId'], str(row['basisPoints']), row['description']]
+            lines.append('\tbindings.addResearchAttack(' + ', '.join(map(quote, args)) + ')')
+            for profile in catalog.profiles.values():
+                if (any(a['id'] == row['recipient']['attackId'] and a['categoryId'] == row['recipient']['categoryId'] for a in profile['attacks'])
+                        and set(profile['weaponIds']) & set(row['recipient']['weaponIds'])):
+                    lines.append('\tbindings.addResearchWeapon(' + quote(row['sourceId']) + ', ' + quote(profile['id']) + ')')
+        else:
+            lines.append('\tbindings.addResearch(' + ', '.join(map(quote, args)) + ')')
     for index, row in enumerate(catalog.effects.values()):
         lines.append(f'\tlet effect{index} = bindings.addEffect({quote(row["id"])}, {quote(row["sourceId"])}, {quote(row["categoryId"])}, {quote(row["description"])})')
         for contribution in row['contributions']:

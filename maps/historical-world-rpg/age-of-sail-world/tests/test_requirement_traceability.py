@@ -620,11 +620,13 @@ class TraceabilityTests(unittest.TestCase):
              patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report):
             report = release_audit.build_report()
         expected_findings = sorted(release_audit._audit_research_bindings(), key=lambda row: row["id"])
-        self.assertEqual(219, len(expected_findings))
+        self.assertEqual(218, len(expected_findings))
         self.assertNotIn('RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE',
                          {row['id'] for row in expected_findings})
+        self.assertNotIn('RESEARCH-UNBOUND-CAST-CANNON-MODIFIER-PROGRESSION-CAST-CANNON',
+                         {row['id'] for row in expected_findings})
         self.assertEqual(expected_findings, report["findings"])
-        self.assertEqual(219, report["unresolvedCampaignBlockers"])
+        self.assertEqual(218, report["unresolvedCampaignBlockers"])
 
         with patch.object(release, "PROJECT", self.project), \
              patch.object(scenario, "PROJECT", self.project), \

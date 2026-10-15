@@ -794,7 +794,7 @@ public class MilitarySettlementRuntime
 		CombatProfile weapon = null
 		if weaponAttack
 			weapon = combatProfile(source)
-		combatBindings.applyForRecipient(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, target.controllerId, target.categoryId)
+		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
 		if attackingLayer != null
 			destroy attackingLayer
 		if defendingLayer != null
@@ -1488,7 +1488,7 @@ public class MilitarySettlementRuntime
 						result += combatBindings.inspection(layer, combatProfile(runtimeForce), runtimeForce.active and runtimeForce.strength > 0)
 					destroy layer
 			if combatBindings != null
-				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0)
+				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0, combatProfile(runtimeForce), true)
 			return result
 		let s = settlementIndex(subjectId)
 		if s >= 0

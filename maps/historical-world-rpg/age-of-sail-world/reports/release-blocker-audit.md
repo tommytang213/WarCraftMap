@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **240**
+Unresolved campaign blockers: **239**
 
 ## Severity taxonomy
 
@@ -79,7 +79,6 @@ Static readiness, executed production integration, built-artifact inspection and
 | `RESEARCH-UNBOUND-CAREENING-STATIONS-MODIFIER-PROGRESSION-CAREENING-STATIONS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CARRONADE-BATTERIES-MODIFIER-PROGRESSION-CARRONADE-BATTERIES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CARVEL-HULL-CONSTRUCTION-MODIFIER-PROGRESSION-CARVEL-HULL-CONSTRUCTION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CAST-CANNON-MODIFIER-PROGRESSION-CAST-CANNON` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CELESTIAL-NAVIGATION-MODIFIER-PROGRESSION-CELESTIAL-NAVIGATION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CENTRAL-BANK-INSTITUTION-POLICY-PROGRESSION-CENTRAL-BANK-INSTITUTION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CENTRAL-BANKING-MODIFIER-PROGRESSION-CENTRAL-BANKING` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |

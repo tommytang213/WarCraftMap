@@ -2,6 +2,8 @@ package ResearchRuntimeTests
 
 import WarcraftRpgRuntime
 import CombatEffects
+import ExactRational
+import MilitaryTraditionLayer
 import CommandRouter
 import CampaignSaveManager
 import PlayableCampaignRuntime
@@ -584,3 +586,27 @@ function entitlementReceipt(string caseName)
 	f.completions("|u,other,pike_and_shot")
 	consumer.get("player").count.assertEquals(0)
 	consumer.get("other").has("modifier", "army_discipline").assertTrue()
+
+@test function castCannonSupportedEnvelopesRebuildTheSameQualifiedDamage()
+	let f = new ResearchFixture()
+	let bindings = createGeneratedCombatBindings()
+	let consumer = new CombatResearchEffects(bindings, f.effects)
+	bindings.research = consumer
+	f.runtime.technologies.effects = consumer
+	f.completions("|u,player,water_powered_machinery")
+	f.succeed("/research cast_cannon", "cast_cannon")
+	f.commands.dispatch(null, "/technology").assertTrue()
+	f.output.last.contains("progression_cast_cannon: +500 basis points naval_gunfire damage [bound; active]").assertTrue()
+	let saved = f.runtime.captureState()
+	let layer = new TraditionLayer("player", "sailing_naval", "0")
+	let profile = bindings.profile("armed_sailing_warship", 'hbsh', 2)
+	(profile != null).assertTrue()
+	for schema = CAMPAIGN_SAVE_SCHEMA_OLDEST to CAMPAIGN_SAVE_SCHEMA_CURRENT
+		codecRestore(f, saved, schema)
+		let hit = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+		bindings.apply(hit, true, layer, profile, null, null, null, null)
+		hit.damage.display().assertEquals("105")
+		destroy hit
+	f.effects.unrelatedModifier.assertEquals(47)
+	f.effects.oneTimeGrants.assertEquals(0)
+	destroy layer

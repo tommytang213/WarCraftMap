@@ -215,6 +215,85 @@ class CombatEffectsTests(unittest.TestCase):
         self.assertEqual(saved, research.snapshot())
         self.assertEqual(Fraction(2000, 21), damage())
 
+    def test_cast_cannon_exact_weapon_controller_and_composition_contract(self):
+        unlock = dict(controllerId='player', nodeId='cast_cannon', kind='modifier', contentId='progression_cast_cannon')
+        attacker = self.participant(3601, naval=True)
+        defender = self.participant(3600, naval=True, controller='france')
+        def resolve(source=attacker, attack_id='naval_gunfire', **kwargs):
+            return self.catalog.resolve(CombatHit(Fraction(100), attack_id), source, defender, **kwargs)
+        self.assertEqual(Fraction(91601, 824), resolve())
+        self.assertEqual(Fraction(95601, 824), resolve(entitlements=[unlock, unlock, dict(unlock, nodeId='duplicate')]))
+        self.assertEqual(Fraction(97201, 824), resolve(entitlements=[unlock], other_sources={'refit:fixture': {'damage': 200}}))
+        for invalid in (dict(unlock, controllerId='england'), dict(unlock, kind='ability'), dict(unlock, contentId='unknown')):
+            self.assertEqual(resolve(), resolve(entitlements=[invalid]))
+        for attack_id in ('boarding', 'rocket', 'firearm_volley', 'spell', ''):
+            self.assertEqual(100, resolve(attack_id=attack_id, entitlements=[unlock]))
+        for profile in self.catalog.profiles.values():
+            category = 'sailing_naval' if profile['kind'] == 2 else 'land_formation'
+            view = TraditionView('player', category, 0, {}, ())
+            qualified = (any(a['id'] == 'naval_gunfire' for a in profile['attacks'])
+                         and bool(set(profile['weaponIds']) & {'naval_guns', 'heavy_broadside'}))
+            self.assertEqual(105 if qualified else 100, self.catalog.resolve(
+                CombatHit(Fraction(100), 'naval_gunfire'), (view, profile['id'], profile['unitTypeId']),
+                (None, '', ''), entitlements=[unlock]), profile['id'])
+        self.assertEqual(100, resolve(source=(attacker[0], attacker[1], 'hbot'), entitlements=[unlock]))
+        for kwargs in ({'attack': False}, {'legal': False}):
+            self.assertEqual(100, resolve(entitlements=[unlock], **kwargs))
+        with self.assertRaises(CombatBindingError):
+            resolve(entitlements=[unlock], other_sources={'research:modifier:progression_cast_cannon': {'damage': 500}})
+
+    def test_cast_cannon_completed_research_headless_reconstruction_and_capture(self):
+        world = json.loads((PROJECT / 'scenario/world/world.json').read_text())
+        research = TechnologyInstitutionRuntime(world, '1470-01-01')
+        definitions = copy.deepcopy(self.definitions)
+        definitions['unitAssignments'] = [dict(id='source', controllerId='england', categoryId='sailing_naval'),
+                                           dict(id='target', controllerId='france', categoryId='sailing_naval')]
+        traditions = MilitaryTraditionRuntime(definitions, RecordingTraditionAdapter())
+        roster = RosterProjection(self.roster, [dict(id=ident, archetypeId='armed_sailing_warship',
+            representedStrength=100, regionId='map', active=True, morale=70, discipline=60, supply=50)
+            for ident in ('source', 'target')])
+        def damage():
+            return self.catalog.resolve_roster_hit(CombatHit(Fraction(100), 'naval_gunfire'), traditions, roster,
+                'source', 'target', lambda a,b:a != b, research=research)
+        self.assertEqual(100, damage())
+        research.advance_research('england', 'cast_cannon', 109, '1470-01-01')
+        self.assertEqual(100, damage())
+        research.advance_research('england', 'cast_cannon', 1, '1470-01-01')
+        saved = research.snapshot()
+        units = roster.snapshot()
+        for region in ('map', 'inactive', 'map'):
+            roster.project(region, 10)
+            research.restore(saved)
+            self.assertEqual(105, damage())
+            self.assertEqual(saved, research.snapshot())
+            self.assertEqual(units, roster.snapshot())
+        traditions.change_unit('source', controller_id='player')
+        self.assertEqual(100, damage())
+        traditions.change_unit('source', controller_id='england')
+        self.assertEqual(105, damage())
+        malformed = copy.deepcopy(saved)
+        malformed['polities'][0]['completedNodeIds'].append('unknown')
+        with self.assertRaises(ValueError): research.restore(malformed)
+        self.assertEqual(saved, research.snapshot())
+        self.assertEqual(105, damage())
+
+    def test_cast_cannon_metadata_and_executable_qualification_fail_closed(self):
+        for field, value in [('attackId', 'firearm_volley'), ('weaponIds', ['gunpowder_rockets']),
+                             ('weaponIds', []), ('categoryId', 'land_formation'), ('kind', 'all_units')]:
+            broken = copy.deepcopy(self.catalog.data)
+            broken['researchEffects'][1]['recipient'][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(CombatBindingError):
+                CombatCatalogue(broken, self.definitions, self.roster)
+        generated = wurst(self.catalog)
+        for name in ('addResearchAttack', 'addResearchWeapon'):
+            with self.assertRaises(CombatBindingError):
+                verify('\n'.join(line for line in generated.splitlines() if 'bindings.' + name + '(' not in line), self.catalog)
+        old = copy.deepcopy(self.catalog.data)
+        old.update(format='warcraftmap_combat_effect_bindings_v2', schemaVersion=2)
+        old['researchEffects'] = old['researchEffects'][:1]
+        migrated = CombatCatalogue(old, self.definitions, self.roster)
+        self.assertEqual({('modifier', 'army_discipline')}, set(migrated.research_effects))
+
     def test_research_metadata_fails_closed_and_v1_catalogue_migrates(self):
         def category(d): d['researchEffects'][0]['recipient']['categoryId'] = 'unknown'
         def kind(d): d['researchEffects'][0]['recipient']['kind'] = 'all_units'

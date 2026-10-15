@@ -15,10 +15,10 @@
   ],
   "properties": {
     "format": {
-      "const": "warcraftmap_combat_effect_bindings_v2"
+      "const": "warcraftmap_combat_effect_bindings_v3"
     },
     "schemaVersion": {
-      "const": 2
+      "const": 3
     },
     "balanceNote": {
       "type": "string",
@@ -274,24 +274,63 @@
             }
           },
           "recipient": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "kind",
-              "categoryId"
-            ],
-            "properties": {
-              "kind": {
-                "const": "force_category"
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "categoryId"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "force_category"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
               },
-              "categoryId": {
-                "type": "string",
-                "minLength": 1
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "categoryId",
+                  "attackId",
+                  "weaponIds"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "weapon_attack"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "attackId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "weaponIds": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
               }
-            }
+            ]
           },
           "stat": {
-            "const": "discipline"
+            "enum": [
+              "discipline",
+              "damage"
+            ]
           },
           "basisPoints": {
             "type": "integer",

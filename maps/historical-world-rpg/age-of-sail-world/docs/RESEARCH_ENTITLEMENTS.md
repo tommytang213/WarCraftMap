@@ -36,7 +36,7 @@ Other typed references and existing consumers survive that wrapper. Neither
 adapter alters food capacity, health, equipment or native abilities.
 `/technology` and `/institutions` show each identity, whether it is earned, and
 its binding status. A recording adapter can report a tested binding; this does
-not establish a production gameplay consumer. Of 220 authored references, 219 still have
+not establish a production gameplay consumer. Of 220 authored references, 218 still have
 individual release-blocking consumer findings, including all three unlocks from
 `mass_army_logistics`. Generated runtime metadata retains the same blocker list.
 
@@ -84,3 +84,8 @@ points, recipient category, binding and active status. The release audit removes
 only `RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE`; other research
 consumers, maneuver, missing weapon identities and the #438 native-launch issue
 remain open. Pinned interpreter tests do not establish native Warcraft launch.
+
+Issue #522 binds `(modifier, progression_cast_cannon)` to qualified heavy
+shipboard gunfire through combat catalogue v3. See
+[the Cast Cannon contract](CAST_CANNON_COMBAT.md) for its exact rating, weapon
+whitelist, activation, stacking and save compatibility rules.
