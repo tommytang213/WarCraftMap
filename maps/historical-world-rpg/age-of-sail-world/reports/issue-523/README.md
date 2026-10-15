@@ -47,7 +47,7 @@ full repository validation remains assigned to the controller. Grill normalizes
 its dependency metadata during installation, so the focused run verifies that
 normalized build file and every copied Wurst source across compilation and tests.
 
-The latest integration retry is indexed by `retry-validation.json` and
+The preceding integration retry is indexed by `retry-validation.json` and
 `retry-wurst.json`, with fresh compressed transcripts. The reported failures
 were stale revision identities in the acceptance reports after integration;
 all three reports have been regenerated for revision
@@ -57,3 +57,15 @@ system tests, pinned Wurst typechecking and focused production execution.
 Its compiler input mount is read-only and all build writes are container-private.
 Publication blockers remain unwaived. The controller must regenerate these
 reports again after integration onto a new main revision.
+
+The current integration repair is indexed by `current-validation.json` and
+`current-wurst.json`, with fresh compressed transcripts. All three acceptance
+reports now identify revision `4718d772a20d94d5aa8470a85f7d634460a1e3c3`;
+the gameplay source hash is unchanged. The previously failing release-blocker
+and requirement-traceability freshness tests pass. This run exercises 169 Python
+tests and 96 pinned Wurst tests, including framework conformance, and verifies
+generated payloads and compiler input hashes. The compiler runs as its default
+`wurstuser`, with a read-only temporary input mount and all build writes in
+container-private `/tmp`. No gameplay changes or blocker waivers were needed.
+The controller still owns complete repository validation and report regeneration
+after integration onto a new main revision.
