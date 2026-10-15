@@ -46,3 +46,14 @@ checks supersede the original verification above for the current worktree;
 full repository validation remains assigned to the controller. Grill normalizes
 its dependency metadata during installation, so the focused run verifies that
 normalized build file and every copied Wurst source across compilation and tests.
+
+The latest integration retry is indexed by `retry-validation.json` and
+`retry-wurst.json`, with fresh compressed transcripts. The reported failures
+were stale revision identities in the acceptance reports after integration;
+all three reports have been regenerated for revision
+`688d86690b8bad78c0060af854fface5d9014908`. The gameplay source hash is unchanged.
+The retry reruns the failing report-freshness tests, focused voyage and adjacent
+system tests, pinned Wurst typechecking and focused production execution.
+Its compiler input mount is read-only and all build writes are container-private.
+Publication blockers remain unwaived. The controller must regenerate these
+reports again after integration onto a new main revision.
