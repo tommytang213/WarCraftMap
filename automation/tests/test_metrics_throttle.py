@@ -34,6 +34,18 @@ class HistoricalMetricsThrottleTests(TestCase):
         self.assertEqual([], worker.due_pr_metrics({"issues": {"1": row}}, NOW))
         self.assertNotIn("metrics_finalized", row)
 
+    def test_closed_unmerged_pr_is_historical_not_an_active_run(self):
+        rows = {
+            "1": record(1, status="pr_closed", observed=NOW - timedelta(days=10)),
+            "2": record(2, status="pr_closed", observed=NOW - timedelta(days=10)),
+            "3": record(3, status="pr_closed", observed=NOW - timedelta(days=10)),
+        }
+        self.assertEqual(2, len(worker.due_pr_metrics({"issues": rows}, NOW)))
+        rows["1"]["metrics_last_attempt_at"] = (NOW - timedelta(minutes=5)).isoformat()
+        rows["1"]["metrics_last_attempt_status"] = "pr_closed"
+        self.assertEqual(["2", "3"], [n for n, _ in
+                         worker.due_pr_metrics({"issues": rows}, NOW)])
+
     def test_status_transition_refreshes_immediately_even_with_recent_poll(self):
         row = record(1, observed=NOW - timedelta(minutes=5))
         row["metrics_last_attempt_at"] = (NOW - timedelta(minutes=5)).isoformat()
