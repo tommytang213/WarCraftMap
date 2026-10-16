@@ -1988,9 +1988,9 @@ def _metrics_observed_at(value: object) -> datetime | None:
 def due_pr_metrics(state: dict, now: datetime) -> list[tuple[str, dict]]:
     """Never let permanently incomplete historical CI receipts block development.
 
-    Live work is always eligible. Historical merged PRs get at most two refreshes
-    per wake, no more than once per 24 hours each, oldest first. A newly merged
-    PR receives an immediate status update even if its previous CI poll was recent.
+    Live work is always eligible. Historical merged or closed PRs get at most
+    two refreshes per wake, no more than once per 24 hours each, oldest first.
+    A fresh status transition gets an immediate update despite recent CI polling.
     Missing CI attribution is kept visible; it is never falsely finalized.
     """
     live: list[tuple[str, dict]] = []
@@ -2000,7 +2000,7 @@ def due_pr_metrics(state: dict, now: datetime) -> list[tuple[str, dict]]:
         if (not record.get("pr") or not record.get("metrics")
                 or record.get("metrics_finalized")):
             continue
-        if record.get("status") != "merged":
+        if record.get("status") not in {"merged", "pr_closed"}:
             live.append((number, record))
             continue
         data = record["metrics"]
@@ -2008,7 +2008,7 @@ def due_pr_metrics(state: dict, now: datetime) -> list[tuple[str, dict]]:
         phase = _metrics_observed_at(data.get("phase_started_at"))
         attempted = _metrics_observed_at(record.get("metrics_last_attempt_at"))
         status_changed = (
-            record.get("metrics_last_attempt_status") not in (None, "merged")
+            record.get("metrics_last_attempt_status") not in (None, record["status"])
             or (attempted is None and phase is not None
                 and (observed is None or phase > observed))
         )
@@ -2027,11 +2027,11 @@ def emit_pr_metrics(config: Config, state: dict) -> None:
     integration.record_runs(state)
     now = utcnow()
     for number, record in due_pr_metrics(state, now):
-        if record.get("status") == "merged":
+        if record.get("status") in {"merged", "pr_closed"}:
             # Persist the retry clock even when GitHub publication fails. The
             # next wake may continue normal development instead of spinning.
             record["metrics_last_attempt_at"] = now.isoformat()
-            record["metrics_last_attempt_status"] = "merged"
+            record["metrics_last_attempt_status"] = record["status"]
         data = integration.metrics(record)
         try:
             collect_ci_metrics(config, record, number)
