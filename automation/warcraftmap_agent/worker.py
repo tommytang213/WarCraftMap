@@ -30,6 +30,10 @@ PLANNED_PHASE = re.compile(r"^\[planned\]\s+Phase\s+(\d+)\s*:", re.IGNORECASE)
 DEPENDENCY = re.compile(r"(?im)^\s*Depends on:\s*#(\d+)\b")
 QUEUE_REFILL_THRESHOLD = 3
 QUEUE_TARGET = 10
+# Historical CI attribution can remain permanently incomplete. Limit its
+# housekeeping so it cannot starve issue selection and new Codex work.
+MERGED_METRICS_REFRESH_HOURS = 24
+MERGED_METRICS_PER_WAKE = 2
 _worker_lock = None
 
 
@@ -1971,15 +1975,63 @@ def collect_ci_metrics(config: Config, record: dict, number: str) -> None:
     data.pop("ci_error", None)
 
 
+def _metrics_observed_at(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        observed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return observed.astimezone(timezone.utc) if observed.tzinfo else None
+    except ValueError:
+        return None
+
+
+def due_pr_metrics(state: dict, now: datetime) -> list[tuple[str, dict]]:
+    """Never let permanently incomplete historical CI receipts block development.
+
+    Live work is always eligible. Historical merged PRs get at most two refreshes
+    per wake, no more than once per 24 hours each, oldest first. A newly merged
+    PR receives an immediate status update even if its previous CI poll was recent.
+    Missing CI attribution is kept visible; it is never falsely finalized.
+    """
+    live: list[tuple[str, dict]] = []
+    merged: list[tuple[int, datetime, str, dict]] = []
+    epoch = datetime.min.replace(tzinfo=timezone.utc)
+    for number, record in state["issues"].items():
+        if (not record.get("pr") or not record.get("metrics")
+                or record.get("metrics_finalized")):
+            continue
+        if record.get("status") != "merged":
+            live.append((number, record))
+            continue
+        data = record["metrics"]
+        observed = _metrics_observed_at(data.get("ci_observed_at"))
+        phase = _metrics_observed_at(data.get("phase_started_at"))
+        attempted = _metrics_observed_at(record.get("metrics_last_attempt_at"))
+        status_changed = (
+            record.get("metrics_last_attempt_status") not in (None, "merged")
+            or (attempted is None and phase is not None
+                and (observed is None or phase > observed))
+        )
+        last = attempted or observed
+        if (not status_changed and last is not None
+                and (now - last).total_seconds() < MERGED_METRICS_REFRESH_HOURS * 3600):
+            continue
+        merged.append((0 if status_changed else 1, last or epoch, number, record))
+    merged.sort(key=lambda row: (row[0], row[1], int(row[2])))
+    return live + [(number, record) for _, _, number, record
+                   in merged[:MERGED_METRICS_PER_WAKE]]
+
+
 def emit_pr_metrics(config: Config, state: dict) -> None:
     """Publish one replaceable JSON block per PR; telemetry never waives a gate."""
     integration.record_runs(state)
-    for number, record in state["issues"].items():
-        if not record.get("pr") or not record.get("metrics"):
-            continue
-        # Finished receipts are immutable unless an earlier telemetry write failed.
-        if record.get("metrics_finalized"):
-            continue
+    now = utcnow()
+    for number, record in due_pr_metrics(state, now):
+        if record.get("status") == "merged":
+            # Persist the retry clock even when GitHub publication fails. The
+            # next wake may continue normal development instead of spinning.
+            record["metrics_last_attempt_at"] = now.isoformat()
+            record["metrics_last_attempt_status"] = "merged"
         data = integration.metrics(record)
         try:
             collect_ci_metrics(config, record, number)
