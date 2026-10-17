@@ -136,6 +136,11 @@ public class CivicLedger
 	CivicDistrict array[1024] districts
 	CivicLocalState array[1024] states
 	int count = 0
+	// Derived lookup only; save records still use exact district identities.
+	// Chain hash collisions so registration and staged forks stay linear in
+	// catalogue size without treating a hash as an authoritative identity.
+	hashtable districtIndex = InitHashtable()
+	int array[1024] previousDistrict
 	int transitionDays = 90
 	int enactmentBasisPoints = 100
 	int upkeepBasisPoints = 50
@@ -160,12 +165,17 @@ public class CivicLedger
 			copy.register(districts[i], 0)
 		return copy
 	function index(string id) returns int
-		for i = 0 to count - 1
+		var i = LoadInteger(districtIndex, 0, StringHash(id)) - 1
+		while i >= 0
 			if districts[i].id == id
 				return i
+			i = previousDistrict[i]
 		return -1
 	function register(CivicDistrict district, int day)
 		if index(district.id) < 0 and count < 1024
+			let hash = StringHash(district.id)
+			previousDistrict[count] = LoadInteger(districtIndex, 0, hash) - 1
+			SaveInteger(districtIndex, 0, hash, count + 1)
 			districts[count] = district
 			states[count] = new CivicLocalState(day)
 			count++
@@ -319,3 +329,4 @@ public class CivicLedger
 	ondestroy
 		for i = 0 to count - 1
 			destroy states[i]
+		FlushParentHashtable(districtIndex)
