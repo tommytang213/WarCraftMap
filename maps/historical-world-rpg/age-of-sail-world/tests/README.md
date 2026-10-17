@@ -37,7 +37,7 @@ death callbacks, including weighted land/naval kills for player and AI controlle
 transfers, duplicate/stale delivery, cleanup reentry and campaign load rollback.
 `test_live_military_tradition.py` checks generated definitions and the weighted
 headless oracle. See [LIVE_COMBAT_TRADITION.md](../docs/LIVE_COMBAT_TRADITION.md)
-for military v9 roster identity, v1–v8 migration and exact combat ratings.
+for military v10 civic state and roster identity, v1–v9 migration and exact combat ratings.
 The same production callbacks now test all four milestone damage effects,
 gunfire resistance, weapon exclusions, duplicate hit/death delivery and late
 campaign rollback. `test_combat_effects.py` checks Fraction damage, roster

@@ -13,6 +13,7 @@ import PlayableTrade
 import WarcraftRegionalRuntime
 import WarcraftRpgRuntime
 import MilitarySettlementRuntime
+import CivicGovernance
 import ReligionRuntime
 import PlayablePiracy
 
@@ -76,6 +77,13 @@ class ConformanceSession
 				destroy city
 		m.definitions = null
 		m.settlementCount = kept
+		let civic = m.civic
+		let retained = new CivicLedger()
+		for i = 0 to civic.count - 1
+			if m.settlementIndex(civic.districts[i].id) >= 0
+				retained.register(civic.districts[i], clock.currentDay)
+		m.civic = retained
+		destroy civic
 		for i = kept to originalCount - 1
 			m.settlements[i] = null
 		kept = 0

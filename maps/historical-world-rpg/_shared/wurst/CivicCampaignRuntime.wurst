@@ -1,0 +1,134 @@
+package CivicCampaignRuntime
+
+import CivicGovernance
+import CampaignTimeline
+import initlater PlayableCampaignRuntime
+import MilitarySettlementRuntime
+import initlater PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+
+/** Production adapter: all bills use the government's persisted treasury;
+ * dressings are withdrawn from actual local commodity stock. No seed/grant. */
+public class CampaignCivicEconomy implements CivicEconomyPort
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		this.campaign = campaign
+		this.trade = trade
+	function settlement(string id) returns SettlementRuntimeState
+		let i = campaign.militarySettlements.settlementIndex(id)
+		if i < 0
+			return null
+		return campaign.militarySettlements.settlements[i]
+	override function controller(string id) returns string
+		let s = settlement(id)
+		if s == null
+			return ""
+		return s.controllerId
+	override function lawful(string id) returns boolean
+		let s = settlement(id)
+		let i = campaign.militarySettlements.administratorIndex(id)
+		return s != null and s.controllerId == s.legalOwnerId and s.occupationConflictId == "" and not s.underAttack and i >= 0 and campaign.militarySettlements.administrators[i].controllerId == s.controllerId
+	override function known(string controllerId, string id) returns boolean
+		// Governments know their own administered holdings, for player and AI.
+		// Other discovery alone never authorizes a project in unknown territory.
+		return controller(id) == controllerId and lawful(id)
+	override function accessible(string id) returns boolean
+		for i = 0 to trade.marketCount - 1
+			let m = trade.markets[i]
+			if m.id == id and not m.blockaded and not m.occupiedByHostile and m.stock > 0
+				return true
+		return false
+	override function pay(string controllerId, string id, int money, string good, int units) returns boolean
+		let p = campaign.countries.polityIndex(controllerId)
+		if p < 0 or money < 1 or campaign.countries.treasury[p] < money
+			return false
+		RuntimeMarket supplies = null
+		if units > 0
+			supplies = trade.findMarket(id, good)
+			if supplies == null or supplies.blockaded or supplies.occupiedByHostile or supplies.stock < units
+				return false
+		campaign.countries.treasury[p] -= money
+		if supplies != null
+			supplies.stock -= units
+		return true
+	override function collect(string controllerId, string id, int maximum) returns int
+		let p = campaign.countries.polityIndex(controllerId)
+		if p < 0
+			return 0
+		var remaining = IMinBJ(maximum, 2147483647 - campaign.countries.treasury[p])
+		let allowed = remaining
+		for i = 0 to trade.marketCount - 1
+			let m = trade.markets[i]
+			if m.id == id and remaining > 0
+				let transfer = IMinBJ(remaining, m.money)
+				m.money -= transfer
+				remaining -= transfer
+		campaign.countries.treasury[p] += allowed - remaining
+		return allowed - remaining
+	override function diseaseAvailable(string id) returns int
+		let s = settlement(id)
+		if s == null
+			return 0
+		return s.manpower
+	override function disease(string id, int maximum) returns int
+		let s = settlement(id)
+		if s == null
+			return 0
+		let loss = IMinBJ(s.manpower, maximum)
+		s.manpower -= loss
+		return loss
+
+public class CivicCampaignRuntime
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	CampaignCivicEconomy economy
+	CivicResearchEffects research
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, CivicResearchEffects research)
+		this.campaign = campaign
+		this.trade = trade
+		this.research = research
+		economy = new CampaignCivicEconomy(campaign, trade)
+	function advance(int day)
+		campaign.militarySettlements.civic.advance(day, research, economy)
+	function act(string controllerId, string action, string id) returns string
+		if campaign.loading or campaign.startupLocked or campaign.transitionOpen
+			return "Campaign actions are unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		return campaign.militarySettlements.civic.action(controllerId, id, action, campaign.clock.currentDay, research, economy)
+	function overview(string controllerId, string id) returns string
+		let ledger = campaign.militarySettlements.civic
+		let i = ledger.index(id)
+		if i < 0 or not economy.known(controllerId, id)
+			return "Choose a known, administered local tax district."
+		let d = ledger.districts[i]
+		let s = ledger.states[i]
+		return "Civic administration: " + id + " (province " + d.provinceId + ")\nNormal annual tax capacity " + I2S(d.annualTax) + " currency minor units. Policy: " + I2S(civicBill(d.annualTax, ledger.enactmentBasisPoints)) + " enactment; " + I2S(ledger.transitionDays) + " days; " + I2S(civicBill(d.annualTax, ledger.upkeepBasisPoints)) + " annual upkeep paid in advance. Requires reform discussion and lawful civic institutions.\nResearch adds " + I2S(research.rate(controllerId, "civic_reform_diffusion")) + " bp to local civic reform diffusion; no automatic emancipation or diplomatic change. Progress " + I2S(s.discussion) + "/10000; policy ready day " + I2S(s.policyReady) + ".\nSurvey: " + I2S(civicBill(d.annualTax, ledger.surveyBasisPoints)) + " currency, " + I2S(ledger.transitionDays) + " days; +" + I2S(research.rate(controllerId, "land_tax_collection_efficiency")) + " bp collection efficiency, capped by local taxable capacity and actual liquidity. Survey ready day " + I2S(s.surveyReady) + "; collected " + I2S(s.taxesCollected) + ".\nMedical response: " + I2S(civicBill(d.annualTax, ledger.responseBasisPoints)) + " currency plus " + I2S(d.medicalUnits) + " " + d.medicalGood + " stock units for dressings; requires outbreak and accessible supplies. " + I2S(ledger.responseDays) + " days; " + I2S(ledger.cooldownDays) + " day cooldown after response; " + I2S(research.rate(controllerId, "epidemic_losses_avoided")) + " bp fewer disease losses; local trade throughput -" + I2S(ledger.tradePenaltyBasisPoints) + " bp. Response end " + I2S(s.responseEnd) + "; reuse day " + I2S(s.cooldownEnd) + "; disease lost " + I2S(s.diseaseLost) + ", avoided " + I2S(s.diseaseAvoided) + ".\nUse /civic <inspect|policy|repeal|survey|response> DISTRICT. Each district survey covers only its known local part of the province."
+
+class CivicCommand implements CommandHandler
+	CivicCampaignRuntime runtime
+	CommandOutput output
+	construct(CivicCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let cut = arguments.indexOf(" ")
+		if sender != Player(0) or cut <= 0
+			output.show(sender, "Use /civic <inspect|policy|repeal|survey|response> DISTRICT.")
+			return
+		let action = SubString(arguments, 0, cut)
+		let id = SubString(arguments, cut + 1, StringLength(arguments))
+		let controllerId = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			runtime.campaign.rpg.management.open("technology")
+			output.show(sender, runtime.overview(controllerId, id))
+			return
+		let problem = runtime.act(controllerId, action, id)
+		if problem != ""
+			output.show(sender, problem)
+		else
+			output.show(sender, "Civic action completed.\n" + runtime.overview(controllerId, id))
+
+public function registerCivicCommands(CommandRegistry commands, CivicCampaignRuntime runtime) returns string
+	return commands.register("civic", "", "civic <inspect|policy|repeal|survey|response> DISTRICT", "Manage local civic policies, surveys and outbreak response.", "Inspect costs and conditions before activation. Government treasury pays; medical response consumes existing local medical dressings. Same rules for player and AI governments. Policies require explicit enactment.", 2, 2, COMMAND_RELEASE, new CivicCommand(runtime, commands.output))

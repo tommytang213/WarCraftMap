@@ -5,6 +5,7 @@ import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
+import CivicGovernance
 import QuestStages
 import HeroProgression
 import HeroAllocationDefinitions
@@ -1950,8 +1951,16 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 			else
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
-			if runtime.technologies.effects instanceof CombatResearchEffects
-				let effects = runtime.technologies.effects castTo CombatResearchEffects
+			var port = runtime.technologies.effects
+			if port instanceof CivicResearchEffects
+				let civic = port castTo CivicResearchEffects
+				for k = 0 to civic.definitionCount - 1
+					let binding = civic.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires paid local activation. Use /civic inspect DISTRICT for conditions, currency, supplies, duration and upkeep."
+				port = civic.upstream
+			if port instanceof CombatResearchEffects
+				let effects = port castTo CombatResearchEffects
 				let binding = effects.bindings.researchBinding(entry.kind, entry.contentId)
 				if binding != null
 					rows += "\n    " + binding.inspection(effects.earned(controllerId, binding))

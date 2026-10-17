@@ -5,6 +5,7 @@ import BoundaryArrival
 import CampaignTimeline
 import CampaignTimelineTests
 import CampaignRegistration
+import CivicGovernance
 import CampaignSaveManager
 import CommandRouter
 import PlayableCampaignRuntime
@@ -129,6 +130,13 @@ public class StartupFixture
 		// reconstruction, including origins without a military city record.
 		let row = selector.find("england")
 		military.registerSettlement(new SettlementRuntimeState(row.settlementId, row.polityId, row.physicalMapId, 'htow', 'hfoo', 40, 80, 100, 100, row.x, row.y))
+		let civic = military.civic
+		let retained = new CivicLedger()
+		for i = 0 to civic.count - 1
+			if military.settlementIndex(civic.districts[i].id) >= 0
+				retained.register(civic.districts[i], clock.currentDay)
+		military.civic = retained
+		destroy civic
 		campaign.finishRegistration().assertTrue()
 	function choose(string origin)
 		selector.choose(origin).assertTrue()
@@ -1214,3 +1222,33 @@ function coordinateLessSaveSchemasUseDeterministicFallback(int firstSchema, int 
 	destinationWake.delay.assertEquals(300.)
 	destination.saves.read("autosave_02").assertEquals(payload)
 	destination.campaign.autosaves.detachTimer()
+
+@test function civicCampaignFailedProjectionRollsBackLedgerTreasuryAndCommodityStock()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	let ledger = f.campaign.state.militarySettlements.civic
+	(ledger.count > 0).assertTrue()
+	ledger.states[0].surveyed = true
+	ledger.states[0].surveyOwner = "player"
+	ledger.states[0].surveyReady = f.clock.currentDay
+	ledger.states[0].policyOwner = "player"
+	ledger.states[0].policyReady = f.clock.currentDay + 90
+	ledger.states[0].upkeepThrough = f.clock.currentDay + 90
+	ledger.states[0].responseOwner = "player"
+	ledger.states[0].responseEnd = f.clock.currentDay + 90
+	ledger.states[0].cooldownEnd = f.clock.currentDay + 180
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "civic").assertTrue()
+	ledger.states[0].policyOwner = ""
+	ledger.states[0].policyReady = 0
+	ledger.states[0].upkeepThrough = 0
+	f.campaign.countries.treasury[0] = 17
+	f.trade.markets[0].stock = 11
+	let before = f.campaign.state.captureAuthoritativeState()
+	f.ports.failProjection = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.campaign.countries.treasury[0].assertEquals(17)
+	f.trade.markets[0].stock.assertEquals(11)
+	f.ports.failProjection = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.campaign.state.militarySettlements.civic.states[0].policyOwner.assertEquals("player")
