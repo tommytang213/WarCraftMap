@@ -289,7 +289,7 @@ def category(name):
         return "pathing"
     if name.endswith((".doo", ".w3u", ".w3t", ".w3a", ".w3b", ".w3d", ".w3h", ".w3q")):
         return "object_data"
-    if name in {"war3campaign.w3f", "campaign-manifest.json"}:
+    if name in {"war3campaign.w3f", "war3campaign.wts", "campaign-manifest.json"}:
         return "campaign_metadata"
     if name.startswith("("):
         return "archive_metadata"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic, scenario-configured Warcraft folder-map build pipeline."""
 from __future__ import annotations
-import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
+import base64, binascii, calendar, hashlib, json, re, shutil, struct, subprocess, sys, zipfile
 from datetime import date
 from decimal import Decimal
 from dataclasses import dataclass
@@ -836,9 +836,49 @@ def _run(stage: str, command: list[str], cwd: Path) -> None:
                             env=toolchain_environment())
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stdout + result.stderr).strip()}")
 
+def _materialize_authored_minimap(map_root: Path) -> bytes | None:
+    """Decode a versioned BLP1 JPEG map preview without an image-library dependency.
+
+    The authored .base64 text is source-controlled; only the decoded BLP is
+    handed to the Warcraft map compiler. This is opt-in for source maps.
+    """
+    encoded_path = map_root / "war3mapMap.blp.base64"
+    if not encoded_path.is_file():
+        return None
+    output = map_root / "war3mapMap.blp"
+    if output.exists():
+        raise _fail("assembly", "both authored BLP and encoded minimap are present")
+    try:
+        encoded = encoded_path.read_text(encoding="ascii").strip()
+        if len(encoded) > 256_000:
+            raise ValueError("encoded minimap exceeds supported size")
+        image = base64.b64decode(encoded, validate=True)
+        if len(image) < 160:
+            raise ValueError("BLP1 header truncated")
+        magic, compression, flags, width, height, kind, subtype = struct.unpack_from("<4s6I", image)
+        offsets = struct.unpack_from("<16I", image, 28)
+        sizes = struct.unpack_from("<16I", image, 92)
+        jpeg_header_size = struct.unpack_from("<I", image, 156)[0]
+        if ((magic, compression, flags, width, height, kind, subtype)
+                != (b"BLP1", 0, 0, 256, 256, 5, 0)):
+            raise ValueError("expected BLP1 JPEG 256x256 minimap")
+        if (not 0 < jpeg_header_size <= 16_384 or
+                offsets[0] < 160 + jpeg_header_size or
+                sizes[0] == 0 or offsets[0] + sizes[0] != len(image) or
+                any(offsets[1:]) or any(sizes[1:]) or
+                image[160:162] != bytes.fromhex("ffd8") or
+                image[-2:] != bytes.fromhex("ffd9")):
+            raise ValueError("malformed BLP1 JPEG mip/header layout")
+    except (OSError, UnicodeError, ValueError, binascii.Error, struct.error) as error:
+        raise _fail("assembly", f"invalid authored minimap: {error}") from error
+    output.write_bytes(image)
+    encoded_path.unlink()
+    return image
+
 def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
     compile_root = root / "compile"
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
+    _materialize_authored_minimap(compile_root / "map" / config.source_map.name)
     shutil.copytree(config.wurst_source, compile_root / "wurst",
                     ignore=None if include_tests else shutil.ignore_patterns("*Tests.wurst"))
     for source in (config.project.parent / '_shared/wurst').glob('*.wurst'):
@@ -910,6 +950,19 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
             packaged_source_sha = json.loads(reader.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
         except (KeyError, ValueError, UnicodeError) as error:
             raise _fail("archive inspection", f"invalid packaged Lua/runtime: {error}") from error
+    minimap_path = compile_root / "map" / config.source_map.name / "war3mapMap.blp"
+    if minimap_path.is_file():
+        try:
+            if zipfile.is_zipfile(archive):
+                with zipfile.ZipFile(archive) as packed:
+                    packaged_minimap = packed.read("war3mapMap.blp")
+            else:
+                from warcraft_campaign import MpqReader
+                packaged_minimap = MpqReader(archive).read("war3mapMap.blp")
+        except (KeyError, OSError, ValueError) as error:
+            raise _fail("archive inspection", f"authored minimap missing from compiled map: {error}") from error
+        if packaged_minimap != minimap_path.read_bytes():
+            raise _fail("archive inspection", "compiled minimap differs from authored source")
     if not lua: raise _fail("archive inspection", "generated Lua runtime code is missing")
     from warcraft_lua_startup import startup_failures
     startup = startup_failures(lua)

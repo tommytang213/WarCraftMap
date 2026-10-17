@@ -183,7 +183,11 @@ class RuntimeAcceptanceTests(unittest.TestCase):
             with self.assertRaisesRegex(release.PackagingError, "campaign inspection"):
                 release.verify_campaign_runtime(damaged, campaign, revision=identity["sourceRevision"],
                                                 source_tree_sha256=identity["sourceTreeSha256"])
-            self.assertEqual(len(campaign.maps) + 2, len(release.normalized_campaign(archive, campaign)))
+            normalized = release.normalized_campaign(archive, campaign)
+            self.assertEqual(len(campaign.maps) + 2 + (campaign.campaign_wts_source is not None),
+                             len(normalized))
+            if campaign.campaign_wts_source is not None:
+                self.assertEqual(release.sha(campaign.campaign_wts_source), normalized["war3campaign.wts"])
             # Run the real ZIP/upload verifiers on this binary integration
             # fixture, without claiming that its synthetic Lua was executed.
             config = release.load_release_config()

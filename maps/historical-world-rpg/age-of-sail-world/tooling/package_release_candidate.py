@@ -219,6 +219,10 @@ def normalized_campaign(path: Path, campaign_config) -> dict[str, str]:
     """Hash semantic MPQ entries, ignoring container layout and nested ZIP metadata."""
     result: dict[str, str] = {}
     campaign = MpqReader(path)
+    try:
+        result["war3campaign.wts"] = sha_bytes(campaign.read("war3campaign.wts"))
+    except KeyError:
+        pass  # Older campaigns have no outer WTS; its presence changes the semantic hash.
     for name in ["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x in campaign_config.maps)]:
         payload = campaign.read(name)
         if name.endswith(".json"):

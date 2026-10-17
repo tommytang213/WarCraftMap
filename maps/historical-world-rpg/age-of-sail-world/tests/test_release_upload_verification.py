@@ -94,6 +94,7 @@ class ReleaseNormalizationTests(unittest.TestCase):
         outer = root / (name + '.w3n')
         write_mpq(outer, {
             'Maps/Africa.w3x': bytes(payload), 'war3campaign.w3f': b'campaign metadata',
+            'war3campaign.wts': b'STRING 5000\r\n{\r\nfixture\r\n}\r\n',
             'campaign-manifest.json': json.dumps({'maps': [
                 {'id': 'africa', 'sha256': hashlib.sha256(payload).hexdigest()}
             ]}).encode(),
@@ -118,6 +119,20 @@ class ReleaseNormalizationTests(unittest.TestCase):
                     second, _ = self.campaign(root, 'second', changed=member)
                     self.assertNotEqual(release.normalized_campaign(first, config),
                                         release.normalized_campaign(second, config))
+
+    def test_campaign_wts_content_is_not_normalized_away(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first, config = self.campaign(root, 'first')
+            second, _ = self.campaign(root, 'second')
+            archive = mpq.MpqReader(second)
+            members = {name: archive.read(name) for name in (
+                'Maps/Africa.w3x', 'war3campaign.w3f', 'war3campaign.wts',
+                'campaign-manifest.json')}
+            members['war3campaign.wts'] += b'changed'
+            write_mpq(second, members)
+            self.assertNotEqual(release.normalized_campaign(first, config),
+                                release.normalized_campaign(second, config))
 
     def test_incomplete_listfile_cannot_hide_archived_gameplay_content(self):
         with tempfile.TemporaryDirectory() as directory:
