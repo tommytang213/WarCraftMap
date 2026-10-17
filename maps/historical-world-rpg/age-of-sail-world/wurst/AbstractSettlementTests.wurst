@@ -205,7 +205,7 @@ function abstractReceipt(string caseName)
 	f.military.restore(combined).assertTrue()
 	f.military.snapshot().assertEquals(combined)
 	// Main's v4 already has policy and complete authority, but no safe hints.
-	let policyV4 = withoutMilitaryOrderTargets("v4" + SubString(combined, 2, StringLength(combined))).replace("|n,legacy_fleet,africa,1,2,32.0,64.0", "")
+	let policyV4 = withoutMilitaryOrderTargets("v4" + SubString(combined, combined.indexOf("|"), StringLength(combined))).replace("|n,legacy_fleet,africa,1,2,32.0,64.0", "")
 	f.military.restore(policyV4).assertTrue()
 	f.military.forces[f.military.forceIndex("legacy_fleet")].recoveryMap.assertEquals("")
 	f.military.settlementCount.assertEquals(3)

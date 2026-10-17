@@ -1,5 +1,16 @@
 # Issue #523 verification
 
+The latest integration repair uses the military snapshot's `|` delimiter when
+constructing legacy v3/v4 test payloads. The former fixed two-character offset
+turned v10 snapshots into invalid v30/v40 fixtures. Both migration journeys are
+included in the fresh focused pinned-compiler run recorded by
+`final-repair-validation.json` and `final-repair-wurst.json`; its compressed
+transcript retains each individual test result and compiler-input hash checks.
+All three acceptance reports identify the tested source tree at
+`b50b20312a7086a7b0ee69518a45792e63fe2a55`. The Celestial Navigation finding is
+absent, and 238 remaining campaign blockers are retained. Full repository
+validation and report regeneration after integration remain with the controller.
+
 The bounded scenario contract is documented in
 [CELESTIAL_NAVIGATION.md](../../docs/CELESTIAL_NAVIGATION.md). A fully eligible
 station-return circuit consumes 48 provisions against the same-condition
