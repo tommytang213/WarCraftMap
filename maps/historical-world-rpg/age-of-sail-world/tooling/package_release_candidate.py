@@ -163,7 +163,14 @@ def validate_gates(config: dict) -> tuple[dict, dict, dict, list[dict]]:
     if coverage.get("status") != "pass" or coverage.get("failures"):
         raise PackagingError("gate stage failed: Phase 8 content coverage does not pass")
     runtime_report = json.loads(_source_path(gates["runtimeAcceptance"], "runtimeAcceptance").read_text())
-    if runtime_report != runtime:
+    # This is a source-only preflight. Reports contain a recorded revision and
+    # current source hashes, whereas audit_sources deliberately has no identity.
+    # Recompute the complete report at its recorded revision so committing it
+    # does not invalidate itself. Post-build gates still require fresh execution
+    # and artifact evidence at the explicitly tested release revision.
+    recorded_revision = runtime_report.get("sourceRevision") if isinstance(runtime_report, dict) else None
+    if not isinstance(recorded_revision, str) or not re.fullmatch(r"[0-9a-f]{40}", recorded_revision) \
+            or runtime_report != runtime_acceptance.audit_acceptance(revision=recorded_revision):
         raise PackagingError("gate stage failed: runtime-acceptance report is stale")
     compatibility = json.loads(_source_path(gates["releaseSaveCompatibility"], "releaseSaveCompatibility").read_text())
     recovery = json.loads(_source_path(gates["recoveryDocumentation"], "recoveryDocumentation").read_text())

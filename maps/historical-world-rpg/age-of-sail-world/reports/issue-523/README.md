@@ -1,5 +1,27 @@
 # Issue #523 verification
 
+The PR #532 CI repair fixes the campaign packager's source preflight. It compared
+the persisted runtime-acceptance report (with revision and source hashes) against
+`audit_sources()` (which deliberately has neither), so every generated report
+failed as stale before compilation. The preflight now recomputes the complete
+report and current source hashes at the recorded revision. Regression coverage
+accepts a later report-only checkpoint but rejects changed source hashes,
+malformed revision identities and modified readiness/stage flags. The production
+preflight, including all ten save fixtures, passes. Post-build execution,
+artifact and publication gates still require the tested release revision.
+
+`ci-repair-validation.json` indexes 183 passing relevant Python tests and 198
+passing automation tests. `ci-repair-wurst.json` and its compressed transcript
+retain 71 passing pinned Wurst tests, typechecking and verified compiler/source
+hashes. This includes eight production voyage cases and 24 campaign-load cases.
+The container ran as `wurstuser`, with read-only temporary inputs and build
+writes confined to container-private `/tmp`. All three acceptance reports were
+regenerated at `d756978d188d0378334c7a0b12f65dc6013620d8` with the tested worktree
+source hash. The Celestial Navigation finding is absent and 238 other campaign
+blockers remain. Complete repository validation and report regeneration on the
+integrated main revision remain assigned to the outer worker. No player QA or
+blocker waiver was used.
+
 The latest integration repair uses the military snapshot's `|` delimiter when
 constructing legacy v3/v4 test payloads. The former fixed two-character offset
 turned v10 snapshots into invalid v30/v40 fixtures. Both migration journeys are
