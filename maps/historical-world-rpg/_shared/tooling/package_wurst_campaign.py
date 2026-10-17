@@ -93,6 +93,7 @@ class CampaignConfig:
     audio_validator_path: Path | None
     boundaries: tuple[PhysicalBoundary, ...]
     boundary_manifest_path: Path
+    campaign_wts_source: Path | None = None
 
 
 def _inside(project: Path, value: object, label: str) -> Path:
@@ -252,6 +253,7 @@ def load_campaign_config(manifest_path: Path) -> CampaignConfig:
         _inside(project, raw.get("audioManifest"), "audioManifest"),
         _inside(project, raw.get("audioProfiles"), "audioProfiles"),
         _inside(project, raw["audioValidator"], "audioValidator") if raw.get("audioValidator") else None, tuple(boundaries), boundary_path,
+        _inside(project, campaign["wtsSource"], "campaign.wtsSource") if "wtsSource" in campaign else None,
     )
 
 
@@ -540,6 +542,54 @@ def _validate_budget(base, physical: PhysicalMap, generated: Path) -> None:
         )
 
 
+def _validate_campaign_wts_payload(payload: bytes) -> None:
+    """Validate the narrow STRING/id/braces grammar used by campaign WTS."""
+    try:
+        text = payload.decode("utf-8-sig").replace("\r\n", "\n")
+    except UnicodeError as error:
+        raise PackagingError("campaign WTS source is not UTF-8") from error
+    if "\r" in text or "\x00" in text:
+        raise PackagingError("campaign WTS source has invalid control characters")
+    lines = text.split("\n")
+    index = 0
+    ids: set[int] = set()
+    while index < len(lines):
+        if not lines[index].strip():
+            index += 1
+            continue
+        match = re.fullmatch(r"[ \t]*STRING[ \t]+([0-9]+)[ \t]*", lines[index])
+        if match is None:
+            raise PackagingError("campaign WTS source has an invalid STRING header")
+        string_id = int(match.group(1))
+        if string_id in ids:
+            raise PackagingError("campaign WTS source has duplicate STRING IDs")
+        ids.add(string_id)
+        index += 1
+        if index >= len(lines) or lines[index].strip() != "{":
+            raise PackagingError("campaign WTS source has a missing opening brace")
+        index += 1
+        while index < len(lines) and lines[index].strip() != "}":
+            index += 1
+        if index >= len(lines):
+            raise PackagingError("campaign WTS source has an unterminated STRING")
+        index += 1
+    if not ids:
+        raise PackagingError("campaign WTS source has no STRING entries")
+
+
+def _campaign_wts_bytes(config: CampaignConfig) -> bytes | None:
+    if config.campaign_wts_source is None:
+        return None
+    try:
+        payload = config.campaign_wts_source.read_bytes()
+    except OSError as error:
+        raise PackagingError(f"campaign WTS source cannot be read: {error}") from error
+    if not payload:
+        raise PackagingError("campaign WTS source is empty")
+    _validate_campaign_wts_payload(payload)
+    return payload
+
+
 def _write_campaign(output: Path, config: CampaignConfig, built: list[tuple[PhysicalMap, Path]]) -> None:
     manifest = {
         "format": CAMPAIGN_ARCHIVE_FORMAT, "formatVersion": 1, "campaignId": config.campaign_id,
@@ -551,11 +601,17 @@ def _write_campaign(output: Path, config: CampaignConfig, built: list[tuple[Phys
     # selection from the Custom Campaign chapter list.
     maps = [(item.chapter_title, item.package_path) for item, _ in built]
     chapters = [(item.chapter_title, item.package_path) for item, _ in built if item.bootstrap]
+    wts = _campaign_wts_bytes(config)
+    member_names = ["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x, _ in built)]
+    if wts is not None:
+        member_names.insert(1, "war3campaign.wts")
     files = {
         "war3campaign.w3f": campaign_metadata(config.name, config.description, maps, chapters),
         "campaign-manifest.json": (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode(),
-        "(listfile)": ("\r\n".join(["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x, _ in built)]) + "\r\n").encode(),
+        "(listfile)": ("\r\n".join(member_names) + "\r\n").encode(),
     }
+    if wts is not None:
+        files["war3campaign.wts"] = wts
     files.update((item.package_path, archive.read_bytes()) for item, archive in built)
     write_mpq(output, files)
 
@@ -571,8 +627,13 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
     expected_chapters = [(item.chapter_title, item.package_path) for item in config.maps]
     expected_members = {"war3campaign.w3f", "campaign-manifest.json",
                         *(item.package_path.replace("\\", "/").lower() for item in config.maps)}
+    wts = _campaign_wts_bytes(config)
+    if wts is not None:
+        expected_members.add("war3campaign.wts")
     if set(members) - {"(listfile)", "(attributes)", "(signature)"} != expected_members:
         raise PackagingError("campaign inspection stage failed: archive member set differs from configured campaign")
+    if wts is not None and reader.read("war3campaign.wts") != wts:
+        raise PackagingError("campaign inspection stage failed: campaign WTS differs from configured source")
     if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
         raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
     expected_order = [("", path) for _, path in expected_chapters]
