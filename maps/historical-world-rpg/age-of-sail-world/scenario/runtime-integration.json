@@ -687,6 +687,13 @@
           "contains": [
             "Technology"
           ]
+        },
+        {
+          "path": "scenario/naval/navigation-efficiency.json",
+          "contains": [
+            "progression_celestial_navigation",
+            "positionFindingReductionBasisPoints"
+          ]
         }
       ],
       "headlessVerification": [
@@ -694,6 +701,13 @@
           "path": "tests/test_technology_institutions.py",
           "contains": [
             "institution"
+          ]
+        },
+        {
+          "path": "tests/test_navigation_efficiency.py",
+          "contains": [
+            "same_condition_control",
+            "test_active_abstract_callback_chunking_and_save_resume_parity"
           ]
         }
       ],
@@ -709,6 +723,19 @@
           "contains": [
             "configureGeneratedRpg"
           ]
+        },
+        {
+          "path": "wurst/VoyageNavigation.wurst",
+          "contains": [
+            "class VoyageContract",
+            "function resolve"
+          ]
+        },
+        {
+          "path": "wurst/PlayableCampaignRuntime.wurst",
+          "contains": [
+            "militarySettlements.resolveVoyages(day)"
+          ]
         }
       ],
       "playerEntry": [
@@ -716,6 +743,13 @@
           "path": "wurst/WarcraftRpgRuntime.wurst",
           "contains": [
             "commands.register(\"technology\""
+          ]
+        },
+        {
+          "path": "wurst/VoyageCommands.wurst",
+          "contains": [
+            "commands.register(\"voyage\"",
+            "commands.register(\"voyage-kit\""
           ]
         }
       ],
@@ -735,6 +769,14 @@
             "party.project",
             "rpg.reconcile"
           ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 11",
+            "progress.creditBasisPoints",
+            "parsed.legacyVoyages"
+          ]
         }
       ],
       "runtimeVerification": [
@@ -742,6 +784,13 @@
           "path": "wurst/WarcraftRpgRuntimeTests.wurst",
           "contains": [
             "technology"
+          ]
+        },
+        {
+          "path": "wurst/NavigationEfficiencyTests.wurst",
+          "contains": [
+            "registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl",
+            "rejectedCampaignLoadRestoresVoyageReservationEquipmentAndFractionalCredit"
           ]
         }
       ],

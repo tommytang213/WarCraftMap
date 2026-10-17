@@ -4,6 +4,7 @@ import ExactNatural
 import MilitaryTraditionLayer
 import CombatEffects
 import CivicGovernance
+import VoyageNavigation
 
 import RuntimeProtection
 
@@ -31,7 +32,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 10
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 11
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -121,6 +122,7 @@ public class RuntimeForce
 	int unitTypeId
 	// Durable roster identity, not a saved bonus or an inferred weapon assignment.
 	// Old forces with no metadata remain unknown and fail closed.
+	VoyageProgress navigation = new VoyageProgress()
 	string combatProfileId = ""
 	int strength
 	int maximumStrength
@@ -151,6 +153,8 @@ public class RuntimeForce
 		this.supply = supply
 		this.x = x
 		this.y = y
+	ondestroy
+		destroy navigation
 	function mobileForce() returns boolean
 		return kind == FORCE_ARMY or kind == FORCE_FLEET
 	function cancelOrder()
@@ -482,6 +486,9 @@ public class MilitarySettlementRuntime
 	int contributionCount = 0
 	MilitaryTraditionDefinitions traditionDefinitions = null
 	CombatBindings combatBindings = null
+	VoyageContract voyages = null
+	boolean legacyVoyages = false
+	boolean navigationEffectsInstalled = false
 	SettlementRuntimeState array[1024] settlements
 	AdministratorState array[1024] administrators
 	string array[1024] administratorSettlementIds
@@ -511,6 +518,9 @@ public class MilitarySettlementRuntime
 			destroy prizeCombat
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg=runtime
+		if rpg != null and voyages != null and not navigationEffectsInstalled
+			rpg.technologies.effects = new NavigationResearchEffects(rpg.technologies.effects, voyages.kind, voyages.contentId)
+			navigationEffectsInstalled = true
 		if rpg != null and combatBindings != null
 			if rpg.technologies.effects instanceof CombatResearchEffects
 				combatBindings.research = rpg.technologies.effects castTo CombatResearchEffects
@@ -636,10 +646,73 @@ public class MilitarySettlementRuntime
 		let found = settlementIndex(id)
 		if found >= 0
 			settlements[found].withPolicy(projectMilitary, capturable, governanceExceptionId)
+	function voyageSupported(RuntimeForce vessel, string routeId) returns boolean
+		return voyages != null and vessel.kind == FORCE_FLEET and voyages.supports(vessel.id, vessel.unitTypeId, routeId)
+	function voyageEligible(RuntimeForce vessel) returns boolean
+		if rpg == null or not voyageSupported(vessel, vessel.navigation.routeId) or not vessel.active or vessel.strength <= 0
+			return false
+		let earned = rpg.technologies.entitlements(vessel.controllerId)
+		let eligible = earned.has(voyages.kind, voyages.contentId)
+		destroy earned
+		return eligible
+	/** Runs identically for represented and unloaded forces. Never advances time.
+	 * Equipment/control changes must settle elapsed days before their mutation. */
+	function resolveVoyages(int day)
+		if voyages == null
+			return
+		for i = 0 to forceCount - 1
+			let vessel = forces[i]
+			let progress = vessel.navigation
+			if progress.pending()
+				let route = voyages.route(progress.routeId)
+				if not voyageSupported(vessel, progress.routeId) or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
+					vessel.supply += progress.interrupt()
+				else
+					vessel.supply += voyages.resolve(progress, day, voyageEligible(vessel))
+				if not progress.pending()
+					instantiate(vessel)
+	function startVoyage(string forceId, string routeId, string controllerId, int day, boolean destinationKnown) returns boolean
+		let found = forceIndex(forceId)
+		if found < 0 or not destinationKnown or voyages == null
+			return false
+		let vessel = forces[found]
+		let route = voyages.route(routeId)
+		if route == null or not voyageSupported(vessel, routeId) or vessel.controllerId != controllerId or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
+			return false
+		if orderCallbacks != null
+			orderCallbacks.capture()
+		let specification = voyages.ship(vessel.id)
+		if (vessel.x - specification.stationX) * (vessel.x - specification.stationX) + (vessel.y - specification.stationY) * (vessel.y - specification.stationY) > 128. * 128.
+			return false
+		if not voyages.start(vessel.navigation, route, day, vessel.supply)
+			return false
+		// Retire the sampled local object; the circuit returns to this station.
+		vessel.supply -= vessel.navigation.reserved
+		vessel.cancelOrder()
+		adapter.removeRepresentation(vessel.id)
+		return true
+	function interruptVoyage(string forceId, string controllerId, int day) returns boolean
+		let found = forceIndex(forceId)
+		if found < 0 or forces[found].controllerId != controllerId or not forces[found].navigation.pending()
+			return false
+		resolveVoyages(day)
+		let vessel = forces[found]
+		vessel.supply += vessel.navigation.interrupt()
+		instantiate(vessel)
+		return true
+	function setNavigationEquipment(string forceId, string controllerId, boolean equipped, int day) returns boolean
+		let found = forceIndex(forceId)
+		if found < 0 or not voyageSupported(forces[found], "") or forces[found].controllerId != controllerId or forces[found].navigation.equipment == equipped
+			return false
+		if equipped and not militaryMapMatches(forces[found].regionId, voyages.ship(forceId).mapId)
+			return false
+		resolveVoyages(day)
+		forces[found].navigation.equipment = equipped
+		return true
 	function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean
 		var command = orderId
 		let found = forceIndex(forceId)
-		if found < 0 or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
+		if found < 0 or forces[found].navigation.pending() or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
 			return false
 		if orderId == "march" or orderId == "sail"
 			command = "move"
@@ -814,7 +887,7 @@ public class MilitarySettlementRuntime
 		if traditionDefinitions == null and (track < 0 or traditions[track].definition == null)
 			adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 	function instantiate(RuntimeForce runtimeForce)
-		if not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
+		if runtimeForce.navigation.pending() or not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
 			adapter.replaceTraditionLayer(runtimeForce.id, null)
 			return
 		let city = settlementForForce(runtimeForce)
@@ -927,6 +1000,9 @@ public class MilitarySettlementRuntime
 			rpg.worldEventAt("combat", settlements[city].id, loss, getCampaignDay())
 		return true
 	function transferControl(string forceId, string controllerId)
+		transferControl(forceId, controllerId, getCampaignDay())
+	function transferControl(string forceId, string controllerId, int day)
+		resolveVoyages(day)
 		let found = forceIndex(forceId)
 		if found >= 0
 			if orderCallbacks != null
@@ -1169,6 +1245,8 @@ public class MilitarySettlementRuntime
 		for i = 0 to forceCount - 1
 			let f = forces[i]
 			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY) + "," + f.orderTargetId + "," + f.orderControllerId
+			if f.navigation.equipment or f.navigation.pending() or f.navigation.creditBasisPoints > 0
+				result += "|v," + f.id + "," + f.navigation.record()
 			if f.combatProfileId != ""
 				result += "|p," + f.id + "," + f.combatProfileId
 			// Strategic movement may reassign an unloaded force. A hint from its
@@ -1264,6 +1342,25 @@ public class MilitarySettlementRuntime
 				f.orderControllerId = record.field(17)
 			target.registerForce(f)
 			return f.validOrder() and f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+		if kind == "v"
+			let found = target.forceIndex(record.field(1))
+			if target.legacyVoyages or record.count != 8 or found < 0 or target.voyages == null
+				return false
+			let vessel = target.forces[found]
+			let progress = vessel.navigation
+			if progress.saved or not target.voyageSupported(vessel, record.field(3)) or (record.field(2) != "0" and record.field(2) != "1")
+				return false
+			for i = 4 to 7
+				if S2I(record.field(i)).toString() != record.field(i)
+					return false
+			progress.saved = true
+			progress.equipment = record.field(2) == "1"
+			progress.routeId = record.field(3)
+			progress.elapsedDays = S2I(record.field(4))
+			progress.lastDay = S2I(record.field(5))
+			progress.reserved = S2I(record.field(6))
+			progress.creditBasisPoints = S2I(record.field(7))
+			return target.voyages.valid(progress) and vessel.supply <= 2147483647 - progress.reserved and (not progress.pending() or militaryMapMatches(vessel.regionId, target.voyages.route(progress.routeId).mapId))
 		if kind == "p"
 			let found = target.forceIndex(record.field(1))
 			if record.count != 3 or found < 0 or target.combatBindings == null or target.legacyCombatProfiles
@@ -1387,7 +1484,7 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
@@ -1396,7 +1493,9 @@ public class MilitarySettlementRuntime
 		parsed.civic = civic.fork()
 		parsed.traditionDefinitions = traditionDefinitions
 		parsed.combatBindings = combatBindings
-		parsed.legacyCombatProfiles = not candidate.startsWith("v10|") and not candidate.startsWith("v9|")
+		parsed.voyages = voyages
+		parsed.legacyVoyages = not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
+		parsed.legacyCombatProfiles = parsed.legacyVoyages and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
 		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
@@ -1427,7 +1526,7 @@ public class MilitarySettlementRuntime
 			parsed.dispose()
 			return null
 		for i = 0 to parsed.civic.count - 1
-			if candidate.startsWith("v10|") and not parsed.civic.states[i].restored
+			if (candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.conflictCount - 1
@@ -1456,9 +1555,15 @@ public class MilitarySettlementRuntime
 		return parsed
 	/** Parse completely into detached authority before replacing projections. */
 	function validateSnapshot(string candidate) returns boolean
+		return validateSnapshot(candidate, -1)
+	function validateSnapshot(string candidate, int campaignDay) returns boolean
 		let parsed = parseSnapshot(candidate)
 		if parsed == null
 			return false
+		for i = 0 to parsed.forceCount - 1
+			if campaignDay >= 0 and parsed.forces[i].navigation.pending() and parsed.forces[i].navigation.lastDay > campaignDay
+				parsed.dispose()
+				return false
 		parsed.dispose()
 		return true
 	function restore(string candidate) returns boolean
@@ -1535,6 +1640,8 @@ public class MilitarySettlementRuntime
 					if combatBindings != null
 						result += combatBindings.inspection(layer, combatProfile(runtimeForce), runtimeForce.active and runtimeForce.strength > 0)
 					destroy layer
+			if voyageSupported(runtimeForce, "")
+				result += "\nNavigation: astronomical observation capable; kit installed: " + boolText(runtimeForce.navigation.equipment) + "; voyage: " + runtimeForce.navigation.routeId + "; elapsed days: " + runtimeForce.navigation.elapsedDays.toString() + "; reserved provisions: " + runtimeForce.navigation.reserved.toString() + "; fractional provision credit: " + runtimeForce.navigation.creditBasisPoints.toString() + "/10000. Research source: " + voyages.contentId + "; position-finding provision reduction: " + voyages.reductionBasisPoints.toString() + " basis points; research eligible: " + boolText(voyageEligible(runtimeForce))
 			if combatBindings != null
 				result += combatBindings.researchInspection(runtimeForce.controllerId, runtimeForce.categoryId, runtimeForce.active and runtimeForce.strength > 0, combatProfile(runtimeForce), true)
 			return result

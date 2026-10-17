@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic, scenario-configured Warcraft folder-map build pipeline."""
 from __future__ import annotations
-import calendar, hashlib, json, re, shutil, subprocess, sys, zipfile
+import base64, binascii, calendar, hashlib, json, re, shutil, struct, subprocess, sys, zipfile
 from datetime import date
 from decimal import Decimal
 from dataclasses import dataclass
@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 30
+GENERATOR_VERSION = 31
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -529,6 +529,34 @@ def generate(config: BuildConfig, generated: Path) -> None:
         combat_sources.append(Path(__file__).resolve().parents[1] / "engine/unit_roster.py")
         runtime["combatEffectBindings"] = combat_payload["catalog"]
         runtime["combatProfiles"] = combat_payload["profiles"]
+    voyage_payload = None
+    voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
+    if voyage_builder:
+        try:
+            result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],
+                                    cwd=config.project, text=True, capture_output=True, check=True)
+            voyage_payload = json.loads(result.stdout)
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            raise _fail("voyage contract", error) from error
+        # A ship station must be a real naval cell in the packaged physical
+        # raster. No fallback settlement or arbitrary same-map land position.
+        for ship in voyage_payload["catalog"]["ships"]:
+            grid = runtime["recoveryNavigation"][ship["mapId"]][1]
+            px, py = ship["stationPosition"]
+            x, y = int((px - grid["minX"]) // 128), int((py - grid["minY"]) // 128)
+            component = 0
+            if 0 <= x < grid["width"] and 0 <= y < grid["height"]:
+                for end_text, label_text in re.findall(r"(\d+):(\d+),", grid["rows"][y]):
+                    end, label = int(end_text), int(label_text)
+                    if x < end:
+                        component = label
+                        break
+            if component <= 0:
+                raise _fail("voyage station", "station is not a legal naval position")
+        runtime["voyageNavigation"] = voyage_payload["catalog"]
+        combat_sources += [content_path(config.project, p) for p in voyage_payload["sources"]]
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/voyage_navigation.py")
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/navigation.py")
     if traditions_path.is_file():
         from validate_military_traditions import validate as validate_traditions
         validate_traditions(traditions_path, config.scenario_file)
@@ -588,13 +616,20 @@ def generate(config: BuildConfig, generated: Path) -> None:
         type_id = template["warcraftUnitTypeId"]
         supply = row.get("operationalState", {}).get("supply", 0)
         location = next((item for item in settlement_runtime if item["id"] == row["currentLocationId"]), settlement_runtime[0])
+        voyage_ship = next((ship for ship in voyage_payload["catalog"]["ships"] if ship["forceId"] == row["id"]), None) if voyage_payload else None
+        if voyage_ship:
+            location = dict(regionId=voyage_ship["mapId"], x=voyage_ship["stationPosition"][0], y=voyage_ship["stationPosition"][1])
         military_lines.append(f'\truntime.registerForce(new RuntimeForce("{row["id"]}", "{row["controllerPolityId"]}", "{location["regionId"]}", "{category}", {kind}, \'{type_id}\', {row["representedStrength"]}, {supply}, {location["x"]}, {location["y"]}))')
+    if voyage_payload:
+        military_lines += ['\truntime.voyages = createGeneratedVoyageContract()']
     if len(military_lines) == 1:
         military_lines.append("\tskip")
     if traditions_path.is_file():
         military_lines += tradition_lines
         if combat_payload:
             military_lines += [combat_payload["wurst"]]
+    if voyage_payload:
+        military_lines += [voyage_payload["wurst"]]
     countries = ["\npublic function configureGeneratedCountryInteractions(PlayableCountryInteractionRuntime runtime)"]
     for row in country_runtime["polities"]:
         countries.append(f'\truntime.registerPolityResources("{ws(row["id"])}", {row["treasury"]}, {row["stock"]})')
@@ -719,7 +754,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     from civic_governance import configuration as civic_configuration
     civic_wurst, civic_catalog, civic_sources = civic_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
     runtime['civicGovernance'] = civic_catalog
-    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport TreasureResolution\nimport MilitarySettlementRuntime\nimport MilitaryTraditionLayer\nimport CombatEffects\nimport ExactRational\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
+    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport TreasureResolution\nimport MilitarySettlementRuntime\nimport MilitaryTraditionLayer\nimport CombatEffects\nimport VoyageNavigation\nimport ExactRational\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
     wurst += civic_wurst
     wurst = wurst.replace('import UnstuckRecovery\n', 'import CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
@@ -730,6 +765,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime['researchUnlockDefinitions'] = unlock_definitions
     bound_research = {(row['entitlement']['kind'], row['entitlement']['contentId'])
                       for row in combat_payload['catalog']['researchEffects']} if combat_payload else set()
+    if voyage_payload:
+        entitlement = voyage_payload['catalog']['entitlement']
+        bound_research.add((entitlement['kind'], entitlement['contentId']))
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
@@ -836,14 +874,68 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
         from combat_effects import verify_executable_bindings
         verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
 
+    voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
+    if voyage_builder and not selector:
+        result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],
+                                cwd=config.project, text=True, capture_output=True, check=True)
+        payload = json.loads(result.stdout)
+        expected = payload["wurst"]
+        if json.loads((generated / GENERATED_DATA).read_text()).get("voyageNavigation") != payload["catalog"]:
+            raise _fail("voyage bindings", "runtime payload differs from scenario")
+        source = (generated / GENERATED_WURST).read_text()
+        calls = lambda text: [line for line in text.splitlines() if
+            'new VoyageContract(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line]
+        if source.count(expected) != 1 or calls(source) != calls(expected):
+            raise _fail("voyage bindings", "executable catalogue differs from scenario")
+
 def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,
                             env=toolchain_environment())
     if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stdout + result.stderr).strip()}")
 
+def _materialize_authored_minimap(map_root: Path) -> bytes | None:
+    """Decode a versioned BLP1 JPEG map preview without an image-library dependency.
+
+    The authored .base64 text is source-controlled; only the decoded BLP is
+    handed to the Warcraft map compiler. This is opt-in for source maps.
+    """
+    encoded_path = map_root / "war3mapMap.blp.base64"
+    if not encoded_path.is_file():
+        return None
+    output = map_root / "war3mapMap.blp"
+    if output.exists():
+        raise _fail("assembly", "both authored BLP and encoded minimap are present")
+    try:
+        encoded = encoded_path.read_text(encoding="ascii").strip()
+        if len(encoded) > 256_000:
+            raise ValueError("encoded minimap exceeds supported size")
+        image = base64.b64decode(encoded, validate=True)
+        if len(image) < 160:
+            raise ValueError("BLP1 header truncated")
+        magic, compression, flags, width, height, kind, subtype = struct.unpack_from("<4s6I", image)
+        offsets = struct.unpack_from("<16I", image, 28)
+        sizes = struct.unpack_from("<16I", image, 92)
+        jpeg_header_size = struct.unpack_from("<I", image, 156)[0]
+        if ((magic, compression, flags, width, height, kind, subtype)
+                != (b"BLP1", 0, 0, 256, 256, 5, 0)):
+            raise ValueError("expected BLP1 JPEG 256x256 minimap")
+        if (not 0 < jpeg_header_size <= 16_384 or
+                offsets[0] < 160 + jpeg_header_size or
+                sizes[0] == 0 or offsets[0] + sizes[0] != len(image) or
+                any(offsets[1:]) or any(sizes[1:]) or
+                image[160:162] != bytes.fromhex("ffd8") or
+                image[-2:] != bytes.fromhex("ffd9")):
+            raise ValueError("malformed BLP1 JPEG mip/header layout")
+    except (OSError, UnicodeError, ValueError, binascii.Error, struct.error) as error:
+        raise _fail("assembly", f"invalid authored minimap: {error}") from error
+    output.write_bytes(image)
+    encoded_path.unlink()
+    return image
+
 def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
     compile_root = root / "compile"
     shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
+    _materialize_authored_minimap(compile_root / "map" / config.source_map.name)
     shutil.copytree(config.wurst_source, compile_root / "wurst",
                     ignore=None if include_tests else shutil.ignore_patterns("*Tests.wurst"))
     for source in (config.project.parent / '_shared/wurst').glob('*.wurst'):
@@ -915,6 +1007,19 @@ def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids
             packaged_source_sha = json.loads(reader.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
         except (KeyError, ValueError, UnicodeError) as error:
             raise _fail("archive inspection", f"invalid packaged Lua/runtime: {error}") from error
+    minimap_path = compile_root / "map" / config.source_map.name / "war3mapMap.blp"
+    if minimap_path.is_file():
+        try:
+            if zipfile.is_zipfile(archive):
+                with zipfile.ZipFile(archive) as packed:
+                    packaged_minimap = packed.read("war3mapMap.blp")
+            else:
+                from warcraft_campaign import MpqReader
+                packaged_minimap = MpqReader(archive).read("war3mapMap.blp")
+        except (KeyError, OSError, ValueError) as error:
+            raise _fail("archive inspection", f"authored minimap missing from compiled map: {error}") from error
+        if packaged_minimap != minimap_path.read_bytes():
+            raise _fail("archive inspection", "compiled minimap differs from authored source")
     if not lua: raise _fail("archive inspection", "generated Lua runtime code is missing")
     from warcraft_lua_startup import startup_failures
     startup = startup_failures(lua)

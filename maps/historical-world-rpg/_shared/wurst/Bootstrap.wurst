@@ -1,4 +1,5 @@
 package Bootstrap
+import VoyageCommands
 import WC3Compatibility
 import CommandRouter
 import ScenarioData
@@ -103,6 +104,9 @@ function initializeRegionalCampaign()
 		error(tradeRegistrationProblem)
 	registerCivicCommands(commands, campaign.state.civicRuntime)
 	initializeMilitarySettlementRuntime(commands)
+	let voyageProblem = registerVoyageCommands(commands, campaign.state)
+	if voyageProblem != ""
+		error(voyageProblem)
 	registerUnstuckCommand(commands, recoveryService)
 	let rpgRegistrationProblem=registerRpgRuntimeCommands(commands,rpgRuntime)
 	if rpgRegistrationProblem != ""

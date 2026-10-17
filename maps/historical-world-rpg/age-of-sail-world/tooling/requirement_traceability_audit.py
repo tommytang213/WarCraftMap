@@ -22,9 +22,13 @@ def build_report(artifact=None, evidence=None, transcript=None, revision=""):
     maps = [{"id": row["id"], "packagePath": row["packagePath"],
              "bootstrap": row.get("bootstrap", False), "_self": [row["id"]],
              **row["assignments"]} for row in physical]
-    return trace.audit(PROJECT, ledger, mappings, catalogues, maps, artifact=artifact,
+    report = trace.audit(PROJECT, ledger, mappings, catalogues, maps, artifact=artifact,
                        evidence=evidence, transcript=transcript, revision=revision,
                        authority_documents=("docs/DESIGN_LOCK.md", "docs/ROADMAP.md"))
+    from integration_evidence import source_identity
+    from wurst_execution import source_revision
+    report.update(source_identity(PROJECT, source_revision(PROJECT, revision or None)))
+    return report
 
 
 def write_report(report, base=REPORT):
@@ -53,11 +57,18 @@ def main(argv=None):
     parser.add_argument("--transcript", type=Path)
     parser.add_argument("--source-revision", default="")
     parser.add_argument("--write", action="store_true")
-    parser.add_argument("--check", action="store_true", help="validate ledger/report freshness, allowing explicitly reported release blockers")
+    parser.add_argument("--check", action="store_true", help="validate current sources against the recorded report revision, allowing explicitly reported release blockers")
     parser.add_argument("--output", type=Path, default=REPORT)
     args = parser.parse_args(argv)
+    revision = args.source_revision
+    if args.check and not args.write and not any((revision, args.artifact, args.execution, args.transcript)):
+        # Committing generated reports advances HEAD without changing their
+        # inputs. Source-only freshness checks retain the recorded revision but
+        # recompute all current source hashes and obligations. Writing reports
+        # and checking release evidence still resolve the tested revision.
+        revision = trace.load(args.output.with_suffix(".json"))["sourceRevision"]
     report = build_report(args.artifact, trace.load(args.execution) if args.execution else None,
-                          args.transcript.read_bytes() if args.transcript else None, args.source_revision)
+                          args.transcript.read_bytes() if args.transcript else None, revision)
     if args.write:
         write_report(report, args.output)
     if args.check:

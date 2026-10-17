@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Astronomical observations improve latitude and position finding during bounded station-return sea voyages.",
+  "designAuthority": "Issue #523 delegates routine effect design from the catalogue purpose. This is gameplay tuning, not a historical measurement.",
+  "entitlement": {
+    "kind": "modifier",
+    "contentId": "progression_celestial_navigation"
+  },
+  "positionFindingReductionBasisPoints": 1000,
+  "observationEquipmentMoneyCost": 120,
+  "equipment": "Purchased astronomical observation kit; separate from charts, refits, experience and weather effects. Research never grants it.",
+  "routes": [
+    {
+      "id": "channel_position_finding_circuit",
+      "mapId": "europe_west",
+      "knownRegionId": "europe",
+      "zoneCircuit": [
+        "english_channel",
+        "north_sea_atlantic",
+        "english_channel"
+      ],
+      "days": 10,
+      "dailyProvisions": 5,
+      "dailyPositionFindingProvisions": 2
+    }
+  ],
+  "ships": [
+    {
+      "forceId": "english_patrol_ship",
+      "runtimeTemplateId": "sailing_ship_default",
+      "mapId": "europe_west",
+      "stationZoneId": "english_channel",
+      "observationCapable": true,
+      "routeIds": [
+        "channel_position_finding_circuit"
+      ],
+      "stationPosition": [
+        4160,
+        -6720
+      ]
+    }
+  ]
+}

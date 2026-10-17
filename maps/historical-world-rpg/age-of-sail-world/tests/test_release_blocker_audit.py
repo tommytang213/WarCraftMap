@@ -129,9 +129,10 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
 
     def test_all_unbound_research_consumers_block_release_independently(self):
         rows=audit._audit_research_bindings()
-        self.assertEqual(218,len(rows))
-        self.assertEqual(218,len({r['id'] for r in rows}))
+        self.assertEqual(217,len(rows))
+        self.assertEqual(217,len({r['id'] for r in rows}))
         self.assertFalse(any(r['id'] == 'RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE' for r in rows))
+        self.assertFalse(any(r['id'] == 'RESEARCH-UNBOUND-CELESTIAL-NAVIGATION-MODIFIER-PROGRESSION-CELESTIAL-NAVIGATION' for r in rows))
         self.assertFalse(any(r['id'] == 'RESEARCH-UNBOUND-CAST-CANNON-MODIFIER-PROGRESSION-CAST-CANNON' for r in rows))
         self.assertTrue(all(r['severity']=='campaign_blocker' and r['disposition']=='unresolved' for r in rows))
         self.assertTrue(all(r in self.report['findings'] for r in rows))
@@ -149,7 +150,13 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         self.assertEqual("fail", report["status"])
 
     def test_checked_in_machine_and_human_reports_are_current(self):
-        completed = subprocess.run([sys.executable, str(TOOL)], cwd=PROJECT, text=True,
+        saved = json.loads(audit.REPORT_JSON.read_text())
+        # Committing generated reports advances HEAD without changing their
+        # inputs. Recompute at the recorded revision; the complete comparison
+        # still checks the current source hash, findings and human report.
+        # Publication gates separately require the tested release revision.
+        completed = subprocess.run([sys.executable, str(TOOL),
+                                    "--source-revision", saved["sourceRevision"]], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
         self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
         summary = json.loads(completed.stdout)

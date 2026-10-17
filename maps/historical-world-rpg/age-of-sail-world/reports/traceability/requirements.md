@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **6994**.
+Candidate ready: **False**; blockers: **7004**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -230,21 +230,21 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | artifact-missing, integration-missing, static-only |
 | REQ-0154.02 | combination | Enemy kills are a primary supported source; scenario/balance data may also award weighted experience for other meaningful combat contribution so the system is not tied only to literal last-hit ownership. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0155.01 | combination | Tradition progression benefits all currently controlled units that qualify for that tradition category, including units represented abstractly while another physical map is active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | artifact-missing, integration-missing, static-only |
-| REQ-0156.01 | combination | Tradition belongs to the controller, not permanently to the individual unit. | artifact-missing, integration-missing, static-only |
-| REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | artifact-missing, integration-missing, static-only |
+| REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0156.01 | combination | Tradition belongs to the controller, not permanently to the individual unit. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | artifact-missing, integration-missing, static-only, unpersisted |
 | REQ-0157.01 | combination | The core numerical tradition bonus is continuous and experience-proportional rather than a discrete level table. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | artifact-missing, integration-missing, static-only |
+| REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | artifact-missing, integration-missing, static-only, unpersisted |
 | REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | artifact-missing, integration-missing, static-only |
 | REQ-0158.02 | combination | Long-running player and AI controllers may continue improving as they accumulate valid experience across the campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0158.03 | combination | Balance should come from experience rates, coefficients, opposing progression, costs, counters, and scenario tuning rather than an arbitrary cap that makes further combat experience worthless. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0159.01 | combination | Milestone thresholds may unlock additional category-wide buffs, passive effects, doctrines, formations, morale/discipline mechanics, logistics advantages, or other qualitative rewards once the controller reaches the required tradition experience. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0160.01 | combination | Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. | artifact-missing, integration-missing, static-only |
-| REQ-0160.02 | combination | Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP. | artifact-missing, integration-missing, static-only |
-| REQ-0161.01 | combination | Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect. | artifact-missing, integration-missing, static-only |
-| REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | artifact-missing, integration-missing, static-only |
-| REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | artifact-missing, integration-missing, static-only |
-| REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | artifact-missing, integration-missing, static-only |
+| REQ-0160.01 | combination | Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0160.02 | combination | Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0161.01 | combination | Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | artifact-missing, integration-missing, static-only, unpersisted |
 | REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | artifact-missing, integration-missing, static-only |
 | REQ-0165.01 | combination | AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0166.01 | combination | Religion is a reusable, scenario-neutral system. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -3369,18 +3369,21 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0155.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0155.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0155.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0155.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0155.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0155.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0155.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0155.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0155.02 [static-only]: source references cannot establish executed integration
 - REQ-0155.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0156.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0156.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0156.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0156.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0156.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0156.01 [static-only]: source references cannot establish executed integration
 - REQ-0156.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0156.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0156.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0156.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0156.02 [integration-missing]: stale: current executable production-adapter evidence is absent
@@ -3399,6 +3402,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0157.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0157.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0157.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0157.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0157.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0157.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0157.02 [integration-missing]: stale: current executable production-adapter evidence is absent
@@ -3447,36 +3451,42 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0159.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0159.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0159.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0160.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0160.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0160.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0160.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0160.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0160.01 [static-only]: source references cannot establish executed integration
 - REQ-0160.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0160.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0160.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0160.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0160.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0160.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0160.02 [static-only]: source references cannot establish executed integration
 - REQ-0160.02 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0161.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0161.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0161.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0161.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0161.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0161.01 [static-only]: source references cannot establish executed integration
 - REQ-0161.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0162.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0162.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0162.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0162.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0162.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0162.01 [static-only]: source references cannot establish executed integration
 - REQ-0162.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0163.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0163.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0163.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0163.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0163.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0163.01 [static-only]: source references cannot establish executed integration
 - REQ-0163.01 [artifact-missing]: compiled implementation/registration evidence is absent
+- REQ-0163.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0163.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0163.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0163.02 [integration-missing]: stale: current executable production-adapter evidence is absent

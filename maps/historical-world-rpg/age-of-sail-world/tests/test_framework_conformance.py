@@ -194,6 +194,22 @@ class FrameworkConformanceTests(unittest.TestCase):
                      for p in (category / "_shared").rglob("*") if p.is_file() and "__pycache__" not in p.parts}
             self.assertEqual(before, after)
 
+    def test_campaign_wts_newline_exception_is_exact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            category = Path(tmp)
+            copy_category(category)
+            packager = category / "_shared/tooling/package_wurst_campaign.py"
+            self.assertIn('text.split("\\n")', packager.read_text())
+            self.assertEqual([], audit(category))
+
+            (category / "_shared/tooling/other.py").write_text('VALUE = "a".split("b")\n')
+            with packager.open("a") as stream:
+                stream.write('SCENARIO = "England"\nTOKEN = "split"\n')
+            errors = audit(category)
+            self.assertTrue(any("tooling/other.py" in error and "'split'" in error for error in errors))
+            self.assertTrue(any("tooling/package_wurst_campaign.py" in error and "'england'" in error for error in errors))
+            self.assertTrue(any("tooling/package_wurst_campaign.py" in error and "'split'" in error for error in errors))
+
     def test_boundary_rejects_literals_branches_and_renamed_forks(self):
         with tempfile.TemporaryDirectory() as tmp:
             category = Path(tmp)

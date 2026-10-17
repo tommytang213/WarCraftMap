@@ -620,13 +620,15 @@ class TraceabilityTests(unittest.TestCase):
              patch.object(release.runtime_acceptance, "audit_acceptance", return_value=runtime_report):
             report = release_audit.build_report()
         expected_findings = sorted(release_audit._audit_research_bindings(), key=lambda row: row["id"])
-        self.assertEqual(218, len(expected_findings))
+        self.assertEqual(217, len(expected_findings))
         self.assertNotIn('RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE',
                          {row['id'] for row in expected_findings})
         self.assertNotIn('RESEARCH-UNBOUND-CAST-CANNON-MODIFIER-PROGRESSION-CAST-CANNON',
                          {row['id'] for row in expected_findings})
+        self.assertNotIn('RESEARCH-UNBOUND-CELESTIAL-NAVIGATION-MODIFIER-PROGRESSION-CELESTIAL-NAVIGATION',
+                         {row['id'] for row in expected_findings})
         self.assertEqual(expected_findings, report["findings"])
-        self.assertEqual(218, report["unresolvedCampaignBlockers"])
+        self.assertEqual(217, report["unresolvedCampaignBlockers"])
 
         with patch.object(release, "PROJECT", self.project), \
              patch.object(scenario, "PROJECT", self.project), \
@@ -728,13 +730,21 @@ class TraceabilityTests(unittest.TestCase):
 
 
 class AuthoritativeInventoryTests(unittest.TestCase):
+    def test_source_check_survives_report_only_checkpoint(self):
+        with patch.object(execution, "source_revision", side_effect=lambda project, explicit=None: explicit or "f"*40):
+            self.assertEqual(0, scenario.main(["--check"]))
+
     def test_complete_ledger_and_report_are_current_and_honest(self):
         ledger = trace.load(scenario.DIRECTORY / "requirements.json")
         self.assertEqual([], trace.authority_errors(PROJECT, ledger))
         self.assertGreater(len(ledger["requirements"]), 470)
         self.assertGreater(sum(len(row["obligations"]) for row in ledger["requirements"]), 640)
         self.assertGreaterEqual(len(ledger["dependencies"]), 22)
-        report = scenario.build_report()
+        # A report-only checkpoint must not invalidate its own report. Retain
+        # its declared revision while recomputing every current source input
+        # and obligation; any source drift still fails the byte comparison.
+        saved = trace.load(scenario.REPORT.with_suffix(".json"))
+        report = scenario.build_report(revision=saved["sourceRevision"])
         self.assertFalse(report["candidateReady"])
         self.assertEqual(trace.canonical(report), scenario.REPORT.with_suffix(".json").read_bytes())
         self.assertEqual(trace.render_markdown(report), scenario.REPORT.with_suffix(".md").read_text())
@@ -747,6 +757,44 @@ class AuthoritativeInventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "blocks candidate publication"):
                     scenario.validate_final(Path("final.w3n"), {}, b"", "a"*40)
                 self.assertTrue((Path(directory)/"_build/release/requirement-traceability.json").is_file())
+
+
+class SourceReportCliTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.output = Path(temporary.name) / "requirements"
+        self.report = {"sourceRevision": "a"*40, "sourceTreeSha256": "b"*64,
+                       "candidateReady": False, "blockerCount": 1,
+                       "requirements": [], "dependencies": [], "catalogues": [], "artifact": None,
+                       "blockers": [{"id": "gap", "class": "unmapped", "message": "Still blocked"}]}
+        scenario.write_report(self.report, self.output)
+        self.args = ["--check", "--output", str(self.output)]
+
+    def test_source_drift_and_report_tampering_still_fail(self):
+        for field, value in (("sourceTreeSha256", "c"*64), ("blockerCount", 2)):
+            changed = {**self.report, field: value}
+            with self.subTest(field=field), patch.object(scenario, "build_report", return_value=changed):
+                with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                    scenario.main(self.args)
+        self.output.with_suffix(".md").write_text("Changed report")
+        with patch.object(scenario, "build_report", return_value=self.report):
+            with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                scenario.main(self.args)
+
+    def test_explicit_release_revision_is_never_replaced_by_recorded_revision(self):
+        with patch.object(scenario, "build_report", return_value={**self.report, "sourceRevision": "c"*40}) as build:
+            with self.assertRaisesRegex(ValueError, "stale requirement report"):
+                scenario.main(self.args + ["--source-revision", "c"*40])
+            build.assert_called_once_with(None, None, None, "c"*40)
+
+    def test_writing_and_artifact_checks_still_resolve_current_revision(self):
+        with patch.object(scenario, "build_report", return_value=self.report) as build:
+            self.assertEqual(0, scenario.main(self.args + ["--write"]))
+            build.assert_called_once_with(None, None, None, "")
+        with patch.object(scenario, "build_report", return_value=self.report) as build:
+            self.assertEqual(0, scenario.main(self.args + ["--artifact", "candidate.w3n"]))
+            build.assert_called_once_with(Path("candidate.w3n"), None, None, "")
 
 
 if __name__ == "__main__":

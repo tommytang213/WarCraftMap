@@ -131,9 +131,9 @@ accounting year. These are campaign accounting units, not historical demographic
 estimates. Capacity factors retain the existing economy's capital, port and market
 asymmetries; this does not claim to prove relative historical national strength.
 
-Military/settlement snapshot schema **10** includes local civic projects, policy
+Military/settlement snapshot schema **11** includes local civic projects, policy
 choice, response/cooldown, diffusion, outcome counters and shipment usage. Versions
-1–9 migrate with inactive projects and no invented past revenue or supplies. The
+1–10 migrate with inactive projects and no invented past revenue or supplies. The
 first live day anchors legacy accounting. Campaign transaction rollback restores
 this ledger together with treasuries, commodities and research. Capture cancels
 policy choices, unfinished surveys and medical authority, retains completed land

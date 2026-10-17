@@ -344,6 +344,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			recoverHeroes(day)
 			if civicRuntime != null
 				civicRuntime.advance(day)
+			if militarySettlements != null
+				militarySettlements.resolveVoyages(day)
 	function recoverHeroes(int day)
 		if rpg == null
 			return
@@ -607,7 +609,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if piracy != null and candidate.indexOf(";piracy=") < 0
 			lastDiagnostic = "missing piracy authority"
 			return false
-		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
+		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"), campaignClockRecordDay(lastAuthorityValue(candidate, "clock")))
 			lastDiagnostic = "military/settlement authority is invalid"
 			return false
 		if piracy != null and not piracy.validateAuthority(lastAuthorityValue(candidate,"piracy"))

@@ -1,0 +1,258 @@
+package NavigationEfficiencyTests
+
+import VoyageNavigation
+import VoyageCommands
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import ResearchRuntimeTests
+import WarcraftRpgRuntime
+import PlayableCampaignRuntime
+import CampaignTimeline
+import CommandRouter
+import ScenarioData
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+
+class NavigationFixture
+	ResearchFixture research = new ResearchFixture()
+	RecordingMilitaryAdapter ports = new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(ports)
+	CampaignClock clock = new CampaignClock(0, 100, 0, 1.)
+	PlayableCampaignState state = new PlayableCampaignState(null, clock)
+	RuntimeForce ship = new RuntimeForce("english_patrol_ship", "player", "europe_west", "sailing_naval", FORCE_FLEET, 'hbot', 1, 70, 4160., -6720.)
+	construct(boolean active, boolean researched, boolean equipment)
+		military.voyages = createGeneratedVoyageContract()
+		military.registerForce(ship)
+		military.setRpgRuntime(research.runtime)
+		state.setRpgRuntime(research.runtime)
+		state.setMilitarySettlementRuntime(military)
+		state.knowledge.revealRegion("europe")
+		registerVoyageCommands(research.commands, state).assertEquals("")
+		if active
+			military.activateRegion("europe_west")
+		else
+			military.activateRegion("africa")
+		if researched
+			research.succeed("/research oceanic_seamanship", "oceanic_seamanship")
+			research.succeed("/research celestial_navigation", "celestial_navigation")
+		if equipment
+			let balance = research.resources.balance
+			action("/voyage-kit english_patrol_ship install", true)
+			research.resources.balance.assertEquals(balance - military.voyages.equipmentMoneyCost)
+	function action(string command, boolean success)
+		research.commands.dispatch(null, command).assertTrue()
+		if success
+			research.output.last.assertEquals("Voyage action completed.")
+		else
+			research.output.last.assertEquals("Voyage requirements are not met.")
+	function start()
+		let provisions = ship.supply
+		action("/voyage english_patrol_ship channel_position_finding_circuit", true)
+		ship.supply.assertEquals(provisions - 50)
+	function advance(int day)
+		clock.advanceTo(day).assertTrue()
+		clock.currentDay.assertEquals(day)
+	function refresh()
+		ship = military.forces[military.forceIndex("english_patrol_ship")]
+
+@test function registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl()
+	let treatment = new NavigationFixture(true, true, true)
+	let control = new NavigationFixture(true, false, true)
+	let beforeTime = treatment.clock.captureState()
+	treatment.start()
+	control.start()
+	treatment.clock.captureState().assertEquals(beforeTime)
+	treatment.ports.removed.contains("english_patrol_ship|").assertTrue()
+	treatment.military.issueOrder("english_patrol_ship", "move", 200., 300.).assertFalse()
+	treatment.advance(10)
+	control.advance(10)
+	treatment.ship.supply.assertEquals(22)
+	control.ship.supply.assertEquals(20)
+	treatment.ship.strength.assertEquals(1)
+	treatment.research.effects.unrelatedModifier.assertEquals(47)
+	treatment.ship.x.assertEquals(4160.)
+	treatment.ship.y.assertEquals(-6720.)
+	treatment.ship.regionId.assertEquals("europe_west")
+	treatment.ship.navigation.pending().assertFalse()
+	let saved = treatment.military.snapshot()
+	treatment.research.reject("/research celestial_navigation")
+	treatment.research.runtime.technologies.reconstructAll()
+	treatment.research.runtime.technologies.reconstructAll()
+	treatment.advance(10)
+	treatment.military.snapshot().assertEquals(saved)
+	let unlock = treatment.research.runtime.technologies.get("celestial_navigation").unlocks[0]
+	treatment.research.runtime.technologies.bindingStatus(unlock).assertEquals(RESEARCH_BOUND)
+
+@test function voyageRejectionsKeepProvisionTimeKnowledgeEquipmentAndResearchAuthority()
+	let f = new NavigationFixture(true, true, false)
+	let military = f.military.snapshot()
+	let research = f.research.runtime.captureState()
+	let time = f.clock.captureState()
+	let knowledge = f.state.knowledge.snapshot()
+	f.action("/voyage english_patrol_ship unknown", false)
+	f.action("/voyage missing channel_position_finding_circuit", false)
+	f.ship.unitTypeId = 'hfoo'
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.action("/voyage-kit english_patrol_ship install", false)
+	f.ship.unitTypeId = 'hbot'
+	f.ship.kind = FORCE_ARMY
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.ship.kind = FORCE_FLEET
+	f.ship.controllerId = "other"
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.ship.controllerId = "player"
+	f.ship.regionId = "africa"
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.ship.regionId = "europe_west"
+	f.ship.x += 256.
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.ship.x -= 256.
+	f.ship.supply = 49
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.ship.supply = 70
+	f.state.knowledge.restore("v1").assertTrue()
+	f.action("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	f.state.knowledge.restore(knowledge).assertTrue()
+	f.military.snapshot().assertEquals(military)
+	f.research.runtime.captureState().assertEquals(research)
+	f.clock.captureState().assertEquals(time)
+	f.state.knowledge.snapshot().assertEquals(knowledge)
+	f.start()
+	f.advance(10)
+	f.ship.supply.assertEquals(20) // Research alone never supplies a kit.
+
+@test function voyageEquipmentIsPaidIdempotentAndReevaluatedAtResolution()
+	let f = new NavigationFixture(true, true, false)
+	let balance = f.research.resources.balance
+	f.research.resources.balance = 119
+	f.action("/voyage-kit english_patrol_ship install", false)
+	f.ship.navigation.equipment.assertFalse()
+	f.research.resources.balance = balance
+	f.action("/voyage-kit english_patrol_ship install", true)
+	let paid = f.research.resources.balance
+	f.action("/voyage-kit english_patrol_ship install", false)
+	f.research.resources.balance.assertEquals(paid)
+	f.start()
+	f.advance(3)
+	f.ship.navigation.creditBasisPoints.assertEquals(6000)
+	f.action("/voyage-kit english_patrol_ship remove", true)
+	f.action("/voyage-kit english_patrol_ship install", false)
+	f.advance(10)
+	f.ship.supply.assertEquals(20)
+	f.ship.navigation.creditBasisPoints.assertEquals(6000)
+	f.research.resources.balance.assertEquals(paid)
+
+@test function fixedPointVoyageInterruptionsAndControllerChangesPreserveOnlyElapsedBenefit()
+	let f = new NavigationFixture(true, true, true)
+	f.start()
+	f.advance(3)
+	f.action("/voyage-return english_patrol_ship", true)
+	f.ship.supply.assertEquals(55)
+	f.ship.navigation.creditBasisPoints.assertEquals(6000)
+	f.start()
+	f.advance(5)
+	f.ship.supply.assertEquals(6)
+	f.ship.navigation.creditBasisPoints.assertEquals(0)
+	f.action("/voyage-return english_patrol_ship", true)
+	f.ship.supply.assertEquals(46)
+	f.ship.supply = 70
+	f.start()
+	f.advance(8)
+	f.military.transferControl("english_patrol_ship", "other", 8)
+	f.advance(15)
+	f.ship.supply.assertEquals(20)
+	f.ship.navigation.creditBasisPoints.assertEquals(6000)
+	f.military.transferControl("english_patrol_ship", "player", 15)
+	f.ship.supply = 70
+	f.start()
+	f.advance(25)
+	f.ship.supply.assertEquals(22)
+	f.ship.navigation.creditBasisPoints.assertEquals(6000)
+
+@test function activeAbstractSaveResumeAndRepeatedCallbackHaveExactVoyageParity()
+	let active = new NavigationFixture(true, true, true)
+	let unloaded = new NavigationFixture(false, true, true)
+	let resumed = new NavigationFixture(true, true, true)
+	active.start()
+	unloaded.start()
+	resumed.start()
+	active.advance(3)
+	resumed.advance(3)
+	let save = resumed.military.snapshot()
+	save.startsWith("v11|").assertTrue()
+	resumed.military.restore(save).assertTrue()
+	resumed.refresh()
+	resumed.military.snapshot().assertEquals(save)
+	resumed.ship.navigation.equipment.assertTrue()
+	resumed.ship.navigation.reserved.assertEquals(35)
+	for day = 4 to 10
+		active.advance(day)
+	unloaded.advance(10)
+	resumed.advance(10)
+	active.ship.supply.assertEquals(22)
+	unloaded.ship.supply.assertEquals(22)
+	resumed.ship.supply.assertEquals(22)
+	active.ship.navigation.record().assertEquals(unloaded.ship.navigation.record())
+	active.ship.navigation.record().assertEquals(resumed.ship.navigation.record())
+	let before = resumed.military.snapshot()
+	resumed.advance(10)
+	resumed.military.snapshot().assertEquals(before)
+
+@test function navigationSaveValidationAndLegacyMigrationAreTransactional()
+	let f = new NavigationFixture(true, true, true)
+	f.start()
+	f.advance(3)
+	let saved = f.military.snapshot()
+	let record = "|v,english_patrol_ship,1,channel_position_finding_circuit,3,3,35,6000"
+	saved.contains(record).assertTrue()
+	f.military.restore(saved.replace(record, record + ",extra")).assertFalse()
+	f.military.restore(saved + record).assertFalse()
+	f.military.restore(saved.replace(",3,3,35,6000", ",3,3,34,6000")).assertFalse()
+	f.military.restore(saved.replace(",3,3,35,6000", ",3,3,35,10000")).assertFalse()
+	f.military.restore(saved.replace("channel_position_finding_circuit", "unknown")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	f.military.validateSnapshot(saved, 2).assertFalse()
+	f.military.validateSnapshot(saved, 3).assertTrue()
+	let legacy = saved.replace(record, "").replace("v11|", "v9|")
+	f.military.restore(legacy).assertTrue()
+	f.refresh()
+	f.ship.navigation.equipment.assertFalse()
+	f.ship.navigation.pending().assertFalse()
+	f.ship.navigation.creditBasisPoints.assertEquals(0)
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+
+@test function rejectedCampaignLoadRestoresVoyageReservationEquipmentAndFractionalCredit()
+	let f = new LoadFixture()
+	f.military.voyages = createGeneratedVoyageContract()
+	f.military.setRpgRuntime(f.rpg)
+	let vessel = new RuntimeForce("english_patrol_ship", "player", "europe_west", "sailing_naval", FORCE_FLEET, 'hbot', 1, 70, 4160., -6720.)
+	f.military.registerForce(vessel)
+	f.military.setNavigationEquipment(vessel.id, "player", true, f.clock.currentDay).assertTrue()
+	f.military.startVoyage(vessel.id, "channel_position_finding_circuit", "player", f.clock.currentDay, true).assertTrue()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "voyage").assertTrue()
+	f.clock.advanceTo(f.clock.currentDay + 3).assertTrue()
+	let checkpoint = f.military.snapshot()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(checkpoint)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	let restored = f.military.forces[f.military.forceIndex("english_patrol_ship")]
+	restored.navigation.equipment.assertTrue()
+	restored.navigation.elapsedDays.assertEquals(0)
+	restored.navigation.reserved.assertEquals(50)
+	restored.supply.assertEquals(20)
+
+@test function sharedCelestialEntitlementsAndReconstructionNeverMultiplyTheVoyageBenefit()
+	let f = new NavigationFixture(true, true, true)
+	let tables = new RuntimeTechnology("observation_tables", "Observation Tables", 1450, 1)
+	tables.addUnlock("observation_tables", "modifier", "progression_celestial_navigation")
+	f.research.runtime.technologies.register(tables)
+	f.research.succeed("/research observation_tables", "observation_tables")
+	f.research.runtime.technologies.reconstructAll()
+	f.research.runtime.technologies.reconstructAll()
+	f.start()
+	f.advance(10)
+	f.ship.supply.assertEquals(22)
+	f.ship.navigation.creditBasisPoints.assertEquals(0)
