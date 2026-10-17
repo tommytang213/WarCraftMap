@@ -1,0 +1,321 @@
+package CivicGovernance
+
+import ResearchEntitlements
+import ExactNatural
+
+/** Integer currency and outcome boundaries: floor gains, ceil positive bills.
+ * Products never pass through a real or overflow a native intermediate. */
+public function civicScale(int value, int basisPoints) returns int
+	return exactNaturalNativeInt(exactNaturalScaleFloor(I2S(value), basisPoints, 10000))
+
+public function civicTax(int normalTax, int collectionBasisPoints, int bonusBasisPoints) returns int
+	let assessed = exactNaturalMultiply(I2S(normalTax), collectionBasisPoints)
+	let adjusted = exactNaturalMultiply(assessed, 10000 + bonusBasisPoints)
+	let result = exactNaturalDivide(adjusted, 100000000)
+	if exactNaturalCompare(result, I2S(normalTax)) > 0
+		return normalTax
+	return exactNaturalNativeInt(result)
+
+public function civicBill(int value, int basisPoints) returns int
+	let product = exactNaturalMultiply(I2S(value), basisPoints)
+	return IMaxBJ(1, exactNaturalNativeInt(exactNaturalDivide(exactNaturalAdd(product, "9999"), 10000)))
+
+public class CivicEffect
+	string kind
+	string contentId
+	string metric
+	int basisPoints
+	construct(string kind, string contentId, string metric, int basisPoints)
+		this.kind = kind
+		this.contentId = contentId
+		this.metric = metric
+		this.basisPoints = basisPoints
+
+/** One named research layer per controller. Duplicate provenance does not
+ * multiply a typed content identity; unrelated binding ports retain ownership. */
+public class CivicResearchEffects extends UnboundResearchEffects
+	TechnologyEffectPort upstream
+	CivicEffect array[32] definitions
+	int definitionCount = 0
+	construct(TechnologyEffectPort upstream)
+		this.upstream = upstream
+	function register(CivicEffect binding)
+		for i = 0 to definitionCount - 1
+			if definitions[i].kind == binding.kind and definitions[i].contentId == binding.contentId
+				destroy binding
+				return
+		definitions[definitionCount] = binding
+		definitionCount++
+	function rate(string controllerId, string metric) returns int
+		let layer = get(controllerId)
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let binding = definitions[i]
+				if binding.metric == metric and layer.has(binding.kind, binding.contentId)
+					result += binding.basisPoints
+		return result
+	override function bindingStatus(ResearchUnlock definition) returns string
+		for i = 0 to definitionCount - 1
+			let binding = definitions[i]
+			if definition.kind == binding.kind and definition.contentId == binding.contentId
+				return RESEARCH_BOUND
+		return upstream.bindingStatus(definition)
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		let copy = new ResearchEntitlements(result.controllerId)
+		var entry = result.first
+		while entry != null
+			copy.add(entry)
+			entry = entry.next
+		upstream.replaceResearchEntitlements(copy)
+		super.replaceResearchEntitlements(result)
+
+/** Immutable, scenario-owned local economic/institutional conditions.
+ * A survey covers this named tax district, never unknown surrounding land. */
+public class CivicDistrict
+	string id
+	string provinceId
+	int annualTax
+	boolean civicCenter
+	int discussionFirstDay
+	int discussionPerDay
+	int outbreakFirstDay
+	int outbreakDays
+	int diseaseLossPerDay
+	string medicalGood
+	int medicalUnits
+	int tradeCapacity
+	construct(string id, string provinceId, int annualTax, boolean civicCenter, int discussionFirstDay, int discussionPerDay, int outbreakFirstDay, int outbreakDays, int diseaseLossPerDay, string medicalGood, int medicalUnits, int tradeCapacity)
+		this.id = id
+		this.provinceId = provinceId
+		this.annualTax = annualTax
+		this.civicCenter = civicCenter
+		this.discussionFirstDay = discussionFirstDay
+		this.discussionPerDay = discussionPerDay
+		this.outbreakFirstDay = outbreakFirstDay
+		this.outbreakDays = outbreakDays
+		this.diseaseLossPerDay = diseaseLossPerDay
+		this.medicalGood = medicalGood
+		this.medicalUnits = medicalUnits
+		this.tradeCapacity = tradeCapacity
+
+public class CivicLocalState
+	boolean restored = false
+	string policyOwner = ""
+	int policyReady = 0
+	int upkeepThrough = 0
+	string surveyOwner = ""
+	int surveyReady = 0
+	boolean surveyed = false
+	string responseOwner = ""
+	int responseEnd = 0
+	int cooldownEnd = 0
+	int lastDay = 0
+	int discussion = 0
+	int taxesCollected = 0
+	int diseaseLost = 0
+	int diseaseAvoided = 0
+	int tradeDay = 0
+	int tradedUnits = 0
+	construct(int day)
+		lastDay = day
+
+/** The campaign port reads current control and real stocks, not projected
+ * object handles. Transactions must validate the entire bill before mutation. */
+public interface CivicEconomyPort
+	function controller(string id) returns string
+	function lawful(string id) returns boolean
+	function known(string controllerId, string id) returns boolean
+	function accessible(string id) returns boolean
+	function pay(string controllerId, string id, int money, string good, int units) returns boolean
+	function collect(string controllerId, string id, int maximum) returns int
+	function diseaseAvailable(string id) returns int
+	function disease(string id, int maximum) returns int
+
+public class CivicLedger
+	CivicDistrict array[1024] districts
+	CivicLocalState array[1024] states
+	int count = 0
+	int transitionDays = 90
+	int enactmentBasisPoints = 100
+	int upkeepBasisPoints = 50
+	int surveyBasisPoints = 100
+	int responseBasisPoints = 200
+	int responseDays = 90
+	int cooldownDays = 90
+	int tradePenaltyBasisPoints = 1000
+	int baseTaxBasisPoints = 9000
+	function fork() returns CivicLedger
+		let copy = new CivicLedger()
+		copy.transitionDays = transitionDays
+		copy.enactmentBasisPoints = enactmentBasisPoints
+		copy.upkeepBasisPoints = upkeepBasisPoints
+		copy.surveyBasisPoints = surveyBasisPoints
+		copy.responseBasisPoints = responseBasisPoints
+		copy.responseDays = responseDays
+		copy.cooldownDays = cooldownDays
+		copy.tradePenaltyBasisPoints = tradePenaltyBasisPoints
+		copy.baseTaxBasisPoints = baseTaxBasisPoints
+		for i = 0 to count - 1
+			copy.register(districts[i], 0)
+		return copy
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if districts[i].id == id
+				return i
+		return -1
+	function register(CivicDistrict district, int day)
+		if index(district.id) < 0 and count < 1024
+			districts[count] = district
+			states[count] = new CivicLocalState(day)
+			count++
+	function controlChanged(string id)
+		let i = index(id)
+		if i >= 0
+			let s = states[i]
+			s.policyOwner = ""
+			s.policyReady = 0
+			s.upkeepThrough = 0
+			if not s.surveyed
+				s.surveyOwner = ""
+				s.surveyReady = 0
+			s.responseOwner = ""
+			s.responseEnd = 0
+	function outbreak(int index, int day) returns boolean
+		let d = districts[index]
+		return d.outbreakFirstDay > 0 and day >= d.outbreakFirstDay and day < d.outbreakFirstDay + d.outbreakDays
+	function responseActive(int index, string controllerId, int day) returns boolean
+		let s = states[index]
+		return controllerId != "" and s.responseOwner == controllerId and day < s.responseEnd
+	function tradeAllowed(string id, string controllerId, int day, int quantity) returns boolean
+		let i = index(id)
+		if i < 0
+			return true
+		let s = states[i]
+		var used = 0
+		if s.tradeDay == day
+			used = s.tradedUnits
+		var rate = 10000
+		if responseActive(i, controllerId, day)
+			rate -= tradePenaltyBasisPoints
+		return quantity <= civicScale(districts[i].tradeCapacity, rate) - used
+	function recordTrade(string id, int day, int quantity)
+		let i = index(id)
+		if i >= 0
+			let s = states[i]
+			if s.tradeDay != day
+				s.tradeDay = day
+				s.tradedUnits = 0
+			s.tradedUnits = IMinBJ(2147483647 - quantity, s.tradedUnits) + quantity
+	function action(string controllerId, string id, string action, int day, CivicResearchEffects research, CivicEconomyPort economy) returns string
+		let i = index(id)
+		if i < 0 or controllerId == "" or economy.controller(id) != controllerId or not economy.lawful(id) or not economy.known(controllerId, id)
+			return "Requires a known, lawfully controlled tax district and local administrator."
+		let d = districts[i]
+		let s = states[i]
+		if day < s.lastDay or d.annualTax <= 0
+			return "Local tax assessment or campaign date is unavailable."
+		if action == "repeal"
+			if s.policyOwner != controllerId
+				return "No local policy is enacted by this controller."
+			s.policyOwner = ""
+			s.policyReady = 0
+			s.upkeepThrough = 0
+			return ""
+		var cost = 0
+		var good = ""
+		var units = 0
+		if action == "policy"
+			if research.rate(controllerId, "civic_reform_diffusion") <= 0 or not d.civicCenter or day < d.discussionFirstDay or s.policyOwner != ""
+				return "Requires earned civic policy, reform discussion and a lawful civic center; policy already pending/active cannot stack."
+			cost = civicBill(d.annualTax, enactmentBasisPoints)
+		else if action == "survey"
+			if research.rate(controllerId, "land_tax_collection_efficiency") <= 0 or s.surveyed or s.surveyReady > 0
+				return "Requires earned survey research and an unsurveyed local district with no pending survey."
+			cost = civicBill(d.annualTax, surveyBasisPoints)
+		else if action == "response"
+			if research.rate(controllerId, "epidemic_losses_avoided") <= 0 or not outbreak(i, day) or day < s.cooldownEnd or not economy.accessible(id)
+				return "Requires earned medicine, an active outbreak, medical access and expired cooldown."
+			cost = civicBill(d.annualTax, responseBasisPoints)
+			good = d.medicalGood
+			units = d.medicalUnits
+		else
+			return "Use policy, repeal, survey or response."
+		if not economy.pay(controllerId, id, cost, good, units)
+			return "Treasury or existing local medical supplies are insufficient."
+		if action == "policy"
+			s.policyOwner = controllerId
+			s.policyReady = day + transitionDays
+			s.upkeepThrough = s.policyReady
+		else if action == "survey"
+			s.surveyOwner = controllerId
+			s.surveyReady = day + transitionDays
+		else
+			s.responseOwner = controllerId
+			s.responseEnd = day + responseDays
+			s.cooldownEnd = s.responseEnd + cooldownDays
+		return ""
+	/** Replay each committed day for chunk-independent rounding and deadlines.
+	 * No load callback advances this ledger. A legacy ledger anchors on its
+	 * first live day rather than charging centuries of invented back taxes. */
+	function advance(int day, CivicResearchEffects research, CivicEconomyPort economy)
+		for i = 0 to count - 1
+			let d = districts[i]
+			let s = states[i]
+			if s.lastDay == 0
+				s.lastDay = day
+			while s.lastDay < day
+				s.lastDay++
+				let at = s.lastDay
+				let owner = economy.controller(d.id)
+				let lawful = economy.lawful(d.id)
+				// Capture keeps completed land records; opt-in policy and medical
+				// authority never transfer to another controller.
+				if s.policyOwner != owner
+					s.policyOwner = ""
+					s.policyReady = 0
+					s.upkeepThrough = 0
+				if s.surveyReady > 0 and not s.surveyed
+					if s.surveyOwner != owner or not lawful
+						s.surveyOwner = ""
+						s.surveyReady = 0
+					else if at >= s.surveyReady
+						s.surveyed = true
+				if s.responseOwner != owner
+					s.responseOwner = ""
+					s.responseEnd = 0
+				if lawful and s.policyOwner == owner and owner != "" and at >= s.policyReady and d.civicCenter and at >= d.discussionFirstDay and research.rate(owner, "civic_reform_diffusion") > 0
+					if at >= s.upkeepThrough
+						if economy.pay(owner, d.id, civicBill(d.annualTax, upkeepBasisPoints), "", 0)
+							s.upkeepThrough = at + 365
+						else
+							s.policyOwner = ""
+							s.policyReady = 0
+							s.upkeepThrough = 0
+				var diffusionRate = 10000
+				if s.policyOwner == owner and owner != "" and at > s.policyReady and s.upkeepThrough >= at
+					diffusionRate += research.rate(owner, "civic_reform_diffusion")
+				if lawful and d.civicCenter and at > d.discussionFirstDay
+					s.discussion = IMinBJ(10000, s.discussion + civicScale(d.discussionPerDay, diffusionRate))
+				// Tax is a transfer from existing economic liquidity, bounded by
+				// normal taxable capacity. Survey modifies collection efficiency.
+				if lawful and at mod 365 == 0
+					var bonus = 0
+					if s.surveyed
+						bonus = research.rate(owner, "land_tax_collection_efficiency")
+					let collected = economy.collect(owner, d.id, civicTax(d.annualTax, baseTaxBasisPoints, bonus))
+					s.taxesCollected += collected
+				if outbreak(i, at - 1)
+					let exposed = IMinBJ(d.diseaseLossPerDay, economy.diseaseAvailable(d.id))
+					var loss = exposed
+					if responseActive(i, owner, at - 1) and lawful
+						loss -= civicScale(loss, IMinBJ(10000, research.rate(owner, "epidemic_losses_avoided")))
+					let actual = economy.disease(d.id, loss)
+					s.diseaseLost += actual
+					// The avoided counter excludes unavailable people and is only
+					// informational; manpower is mutated by the port exactly once.
+					if actual == loss
+						s.diseaseAvoided += exposed - loss
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]
