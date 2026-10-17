@@ -125,3 +125,7 @@ public class UnboundResearchEffects implements TechnologyEffectPort
 			let following = layer.next
 			destroy layer
 			layer = following
+
+/** Local earned practice adoption, used by the existing research cost model. */
+public interface ResearchAdoptionPort
+	function adoption(string controllerId, string nodeId) returns int

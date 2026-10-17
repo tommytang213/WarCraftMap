@@ -1,0 +1,497 @@
+package Agriculture
+
+import ResearchEntitlements
+import ExactNatural
+
+/** All amounts are integer minor currency / commodity units; rates are bp.
+ * No Warcraft handle, player-only rule, or scenario identity owns this state. */
+public interface AgricultureAuthority
+	function controller(string settlementId) returns string
+	function operational(string settlementId) returns boolean
+	function funds(string controllerId) returns int
+	function materials(string controllerId, string siteId) returns int
+	function pay(string controllerId, string siteId, int money, int materials)
+	function stapleStock(string settlementId) returns int
+	function equipment(string settlementId) returns int
+	function harvest(string settlementId, int seed, int equipmentConsumed, int output, int loss, int capacity)
+	function collectTax(string settlementId, string controllerId, int maximum) returns int
+
+public function agricultureScale(int amount, int bp) returns int
+	if amount <= 0 or bp <= 0
+		return 0
+	return S2I(exactNaturalScaleFloor(I2S(amount), bp, 10000))
+
+public class AgricultureEffect
+	string nodeId
+	string kind
+	string contentId
+	string metric
+	int bonus
+	int secondary
+	int unrest
+	int unrestDays
+	int costBp
+	int upkeepBp
+	int duration
+	int materialCost
+	int earliestYear
+	string description=""
+	function described(string text) returns AgricultureEffect
+		description=text
+		return this
+	construct(string nodeId, string kind, string contentId, string metric, int bonus, int secondary, int unrest, int unrestDays, int costBp, int upkeepBp, int duration, int materialCost, int earliestYear)
+		this.nodeId=nodeId
+		this.kind=kind
+		this.contentId=contentId
+		this.metric=metric
+		this.bonus=bonus
+		this.secondary=secondary
+		this.unrest=unrest
+		this.unrestDays=unrestDays
+		this.costBp=costBp
+		this.upkeepBp=upkeepBp
+		this.duration=duration
+		this.materialCost=materialCost
+		this.earliestYear=earliestYear
+
+public class AgricultureSite
+	string id
+	string provinceId
+	int normalTax
+	int baseCapacity
+	int seedLimit
+	int yieldBp
+	int spoilageBp
+	int laborCost
+	boolean arable
+	boolean network
+	boolean tenureTransition
+	// A local infrastructure project transfers with the settlement.
+	int granaryDue=0
+	int nextHarvest=365
+	int knowledge=0
+	construct(string id, string provinceId, int normalTax, int baseCapacity, int seedLimit, int yieldBp, int spoilageBp, int laborCost, boolean arable, boolean network, boolean tenureTransition)
+		this.id=id
+		this.provinceId=provinceId
+		this.normalTax=normalTax
+		this.baseCapacity=baseCapacity
+		this.seedLimit=seedLimit
+		this.yieldBp=yieldBp
+		this.spoilageBp=spoilageBp
+		this.laborCost=laborCost
+		this.arable=arable
+		this.network=network
+		this.tenureTransition=tenureTransition
+
+public class AgriculturePolicy
+	string controllerId
+	string siteId
+	string contentId
+	int started
+	int fundedUntil
+	int nextUpkeep
+	construct(string controllerId, string siteId, string contentId, int started)
+		this.controllerId=controllerId
+		this.siteId=siteId
+		this.contentId=contentId
+		this.started=started
+		fundedUntil=started
+		nextUpkeep=started
+
+/** Retain one named entitlement layer per controller. Replacement can never
+ * construct buildings, enact policies, debit funds, or produce a harvest. */
+public class AgricultureRuntime extends UnboundResearchEffects implements ResearchAdoptionPort
+	TechnologyEffectPort other=null
+	AgricultureAuthority authority=null
+	AgricultureEffect array[4] effects
+	int effectCount=0
+	AgricultureSite array[1024] sites
+	int siteCount=0
+	hashtable siteIndex=InitHashtable()
+	AgriculturePolicy array[4096] policies
+	int policyCount=0
+	int currentDay=0
+	int year=0
+	string agriculturalNodes="~"
+	int knowledgePerSeedBp=10000
+	int maximumKnowledge=100
+	string materialName="construction materials"
+	override function adoption(string controllerId, string nodeId) returns int
+		if agriculturalNodes.indexOf("~"+nodeId+"~")<0 or authority==null
+			return 0
+		var amount=0
+		for i=0 to siteCount-1
+			let s=sites[i]
+			if s.arable and authority.controller(s.id)==controllerId and authority.operational(s.id)
+				amount=IMaxBJ(amount,s.knowledge)
+		return amount
+	function addEffect(AgricultureEffect definition)
+		if effectCount < 4
+			effects[effectCount]=definition
+			effectCount++
+	function getEffect(string id) returns AgricultureEffect
+		for i=0 to effectCount-1
+			if effects[i].contentId==id
+				return effects[i]
+		return null
+	function sitePosition(string id) returns int
+		let hash=StringHash(id)
+		let cached=LoadInteger(siteIndex,0,hash)-1
+		if cached>=0 and cached<siteCount and sites[cached].id==id
+			return cached
+		for i=0 to siteCount-1
+			if sites[i].id==id
+				return i
+		return -1
+	function site(string id) returns AgricultureSite
+		let index=sitePosition(id)
+		if index<0
+			return null
+		return sites[index]
+	function addSite(AgricultureSite site)
+		if siteCount < 1024
+			SaveInteger(siteIndex,0,StringHash(site.id),siteCount+1)
+			sites[siteCount]=site
+			siteCount++
+	override function bindingStatus(ResearchUnlock definition) returns string
+		let e=getEffect(definition.contentId)
+		if e!=null and e.kind==definition.kind and e.nodeId==definition.nodeId
+			return RESEARCH_BOUND
+		if other!=null
+			return other.bindingStatus(definition)
+		return RESEARCH_UNBOUND
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		if other!=null
+			let copy=new ResearchEntitlements(result.controllerId)
+			var entry=result.first
+			while entry!=null
+				copy.add(entry)
+				entry=entry.next
+			other.replaceResearchEntitlements(copy)
+		super.replaceResearchEntitlements(result)
+	function earned(string controllerId, AgricultureEffect e) returns boolean
+		let layer=get(controllerId)
+		return e!=null and layer!=null and layer.has(e.kind,e.contentId) and year>=e.earliestYear
+	function policy(string controllerId, string siteId, string contentId) returns AgriculturePolicy
+		for i=0 to policyCount-1
+			let p=policies[i]
+			if p.controllerId==controllerId and p.siteId==siteId and p.contentId==contentId
+				return p
+		return null
+	function eligible(AgricultureSite s, AgricultureEffect e) returns boolean
+		if authority==null or s==null or e==null or not authority.operational(s.id) or s.normalTax<=0
+			return false
+		if e.kind=="building"
+			return s.baseCapacity>0
+		if not s.arable or s.seedLimit<=0 or authority.equipment(s.id)<=0
+			return false
+		return e.metric!="agricultural_knowledge_diffusion" or s.network
+	function problem(string controllerId, string siteId, string contentId) returns string
+		let s=site(siteId)
+		let e=getEffect(contentId)
+		if s==null or e==null or authority==null
+			return "Unknown agricultural action or settlement."
+		if authority.controller(siteId)!=controllerId or not earned(controllerId,e)
+			return "Requires current control, completed research and historical availability."
+		if not eligible(s,e)
+			return "Requires operational food storage; reforms also need supported arable farming, equipment and local administration; societies need an agricultural network."
+		if (e.kind=="building" and s.granaryDue!=0) or policy(controllerId,siteId,contentId)!=null
+			return "Already commissioned or enacted here."
+		if policyCount>=4096 and e.kind!="building"
+			return "Agricultural policy registry is full."
+		let cost=IMaxBJ(1,agricultureScale(s.normalTax,e.costBp))
+		if authority.funds(controllerId)<cost or authority.materials(controllerId,siteId)<e.materialCost
+			return "Insufficient treasury or construction materials."
+		return ""
+	function enact(string controllerId, string siteId, string contentId) returns string
+		let rejected=problem(controllerId,siteId,contentId)
+		if rejected!=""
+			return rejected
+		let s=site(siteId)
+		let e=getEffect(contentId)
+		authority.pay(controllerId,siteId,IMaxBJ(1,agricultureScale(s.normalTax,e.costBp)),e.materialCost)
+		if e.kind=="building"
+			s.granaryDue=currentDay+e.duration
+		else
+			policies[policyCount]=new AgriculturePolicy(controllerId,siteId,contentId,currentDay)
+			policies[policyCount].nextUpkeep=currentDay+e.duration
+			policyCount++
+		return "Action completed."
+	function active(AgricultureSite s, AgricultureEffect e, int day) returns boolean
+		if not eligible(s,e) or not earned(authority.controller(s.id),e)
+			return false
+		if e.kind=="building"
+			return s.granaryDue>0 and day>=s.granaryDue
+		let p=policy(authority.controller(s.id),s.id,e.contentId)
+		return p!=null and day>=p.started+e.duration and day<p.fundedUntil
+	function rate(AgricultureSite s, string metric, int day) returns int
+		var bp=0
+		for i=0 to effectCount-1
+			let e=effects[i]
+			if active(s,e,day)
+				if e.metric==metric
+					bp+=e.bonus
+				if metric=="crop_output_efficiency" and e.metric=="agricultural_knowledge_diffusion"
+					bp+=e.secondary
+				if metric=="rural_tax_efficiency" and e.metric=="crop_output_efficiency" and e.unrestDays==0
+					bp+=e.secondary
+		return bp
+	function unrest(AgricultureSite s, int day) returns int
+		var bp=0
+		for i=0 to effectCount-1
+			let e=effects[i]
+			let p=policy(authority.controller(s.id),s.id,e.contentId)
+			if p!=null and earned(p.controllerId,e) and s.arable
+				var duration=e.unrestDays
+				if duration==0 and s.tenureTransition
+					duration=e.duration
+				if day>=p.started and day<p.started+duration
+					bp+=e.unrest
+		return bp
+	function capacity(AgricultureSite s, int day) returns int
+		return s.baseCapacity+agricultureScale(s.baseCapacity,rate(s,"staple_storage_capacity",day))
+	function settle(AgricultureSite s, int day)
+		let owner=authority.controller(s.id)
+		if not authority.operational(s.id)
+			return
+		var seed=0
+		var equipmentConsumed=0
+		var output=0
+		let stored=authority.stapleStock(s.id)
+		if s.arable and s.seedLimit>0 and authority.equipment(s.id)>0 and authority.funds(owner)>=s.laborCost
+			seed=IMinBJ(stored,s.seedLimit)
+			if seed>0
+				let base=agricultureScale(seed,s.yieldBp)
+				// Unrest reduces actual eligible output, never manpower or title.
+				output=base+agricultureScale(base,rate(s,"crop_output_efficiency",day))-agricultureScale(base,unrest(s,day))
+				equipmentConsumed=1
+				if output>0
+					authority.pay(owner,s.id,s.laborCost,0)
+		let diffusion=rate(s,"agricultural_knowledge_diffusion",day)
+		if seed>0 and diffusion>0
+			let learned=agricultureScale(seed,knowledgePerSeedBp)
+			s.knowledge=IMinBJ(maximumKnowledge,s.knowledge+learned+agricultureScale(learned,diffusion))
+		var loss=agricultureScale(stored-seed,s.spoilageBp)
+		for i=0 to effectCount-1
+			let e=effects[i]
+			if e.kind=="building" and active(s,e,day)
+				loss-=agricultureScale(loss,e.secondary)
+		let taxEfficiency=rate(s,"rural_tax_efficiency",day)
+		authority.harvest(s.id,seed,equipmentConsumed,output,loss,capacity(s,day))
+		// Transfers from actual taxable market liquidity; no minted revenue.
+		authority.collectTax(s.id,owner,s.normalTax+agricultureScale(s.normalTax,taxEfficiency))
+	function fundPolicy(AgriculturePolicy p, int day)
+		let s=site(p.siteId)
+		let e=getEffect(p.contentId)
+		if authority.controller(s.id)==p.controllerId and eligible(s,e) and earned(p.controllerId,e)
+			let fee=IMaxBJ(1,agricultureScale(s.normalTax,e.upkeepBp))
+			if authority.funds(p.controllerId)>=fee
+				authority.pay(p.controllerId,s.id,fee,0)
+				p.fundedUntil=day+365
+		p.nextUpkeep=day+365
+	function advance(int day, int currentYear)
+		if authority==null or day<currentDay
+			return
+		// Process deadlines in global chronological order, including across a
+		// large inactive-map jump. Annual harvests never run before earlier fees.
+		while true
+			var due=day+1
+			for i=0 to siteCount-1
+				if sites[i].nextHarvest>0
+					due=IMinBJ(due,sites[i].nextHarvest)
+			for i=0 to policyCount-1
+				due=IMinBJ(due,policies[i].nextUpkeep)
+			if due>day
+				break
+			currentDay=due
+			year=agricultureYear(due)
+			for i=0 to policyCount-1
+				if policies[i].nextUpkeep==due
+					fundPolicy(policies[i],due)
+			for i=0 to siteCount-1
+				if sites[i].nextHarvest==due
+					settle(sites[i],due)
+					sites[i].nextHarvest+=365
+		currentDay=day
+		year=currentYear
+	function reset(int day, int currentYear)
+		for i=0 to policyCount-1
+			destroy policies[i]
+		policyCount=0
+		currentDay=day
+		year=currentYear
+		for i=0 to siteCount-1
+			sites[i].granaryDue=0
+			sites[i].nextHarvest=day+365
+			sites[i].knowledge=0
+	function inspect(string controllerId, string siteId) returns string
+		let s=site(siteId)
+		if s==null or authority==null
+			return "No agricultural storage or farming contract at this settlement."
+		var result="Agriculture: "+s.id+" [province "+s.provinceId+"] | normal annual tax "+s.normalTax.toString()+" minor currency; stored staple "+authority.stapleStock(s.id).toString()+" / "+capacity(s,currentDay).toString()+"; earned agricultural adoption "+s.knowledge.toString()+" / "+maximumKnowledge.toString()+"; unrest "+unrest(s,currentDay).toString()+" bp."
+		for i=0 to effectCount-1
+			let e=effects[i]
+			result+="\n"+e.contentId+": "+e.metric+" +"+agriculturePercent(e.bonus)+"; secondary "+agriculturePercent(e.secondary)+"; "+e.description+"; cost "+IMaxBJ(1,agricultureScale(s.normalTax,e.costBp)).toString()+" minor currency + "+e.materialCost.toString()+" "+materialName+" from the settlement warehouse; transition "+e.duration.toString()+" days; annual administration "+IMaxBJ(0,agricultureScale(s.normalTax,e.upkeepBp)).toString()+" (minimum 1 for policies); unrest "+e.unrest.toString()+" bp for "+e.unrestDays.toString()+" days (tenure: applicable local transition only). "+problem(controllerId,siteId,e.contentId)
+			var status="Inactive"
+			if active(s,e,currentDay)
+				status="Active"
+			result+=" | "+status
+			if e.kind=="building" and s.granaryDue>0
+				result+="; completion day "+s.granaryDue.toString()+" ("+IMaxBJ(0,s.granaryDue-currentDay).toString()+" days remaining)"
+			let p=policy(controllerId,s.id,e.contentId)
+			if p!=null
+				result+="; transition ends day "+(p.started+e.duration).toString()+"; next administration day "+p.nextUpkeep.toString()+"; funded until day "+p.fundedUntil.toString()
+		result+="\nEach supported 365-day harvest consumes up to "+s.seedLimit.toString()+" staple seed units, one equipment unit and "+s.laborCost.toString()+" minor currency for labor. Government actions require an earned office commission or a founded polity."
+		return result+"\nGranaries reduce stored staple spoilage; tenure improves rural tax collection; societies improve locally supported farm output. Use /agriculture SETTLEMENT EFFECT to enact; /agriculture SETTLEMENT to inspect."
+
+/** Compact nested payload; the owning trade transaction stages this before any
+ * authority mutation. Legacy trade schemas pass an empty payload: no assets. */
+public function agricultureField(string record, string separator, int index) returns string
+	var start=0
+	var field=0
+	for i=0 to StringLength(record)
+		if i==StringLength(record) or SubString(record,i,i+1)==separator
+			if field==index
+				return SubString(record,start,i)
+			field++
+			start=i+1
+	return ""
+
+function agricultureInteger(string text) returns boolean
+	if text=="" or StringLength(text)>7
+		return false
+	for i=0 to StringLength(text)-1
+		if "0123456789".indexOf(SubString(text,i,i+1))<0
+			return false
+	return I2S(S2I(text))==text
+
+class AgricultureRecord
+	string array[8] fields
+	int count=0
+	int next=0
+	function read(string saved, int start)
+		count=0
+		var fieldStart=start
+		var finish=start
+		while finish<=StringLength(saved)
+			var letter="~"
+			if finish<StringLength(saved)
+				letter=SubString(saved,finish,finish+1)
+			if letter=="," or letter=="~"
+				if count<8
+					fields[count]=SubString(saved,fieldStart,finish)
+				count++
+				fieldStart=finish+1
+			if letter=="~"
+				break
+			finish++
+		next=finish+1
+	function field(int index) returns string
+		if index<0 or index>=count or index>=8
+			return ""
+		return fields[index]
+
+public class AgricultureSnapshot
+	static function capture(AgricultureRuntime runtime) returns string
+		var result="a1,"+runtime.currentDay.toString()+","+runtime.year.toString()
+		for i=0 to runtime.siteCount-1
+			let s=runtime.sites[i]
+			result+="~s,"+s.id+","+s.granaryDue.toString()+","+s.nextHarvest.toString()+","+s.knowledge.toString()
+		for i=0 to runtime.policyCount-1
+			let p=runtime.policies[i]
+			result+="~p,"+p.controllerId+","+p.siteId+","+p.contentId+","+p.started.toString()+","+p.fundedUntil.toString()+","+p.nextUpkeep.toString()
+		return result
+	static function validate(AgricultureRuntime runtime, string saved) returns boolean
+		let record=new AgricultureRecord()
+		let valid=validateRecords(runtime,saved,record)
+		destroy record
+		return valid
+	static function validateRecords(AgricultureRuntime runtime, string saved, AgricultureRecord record) returns boolean
+		if saved==""
+			return true
+		record.read(saved,0)
+		if record.count!=3 or record.field(0)!="a1" or not agricultureInteger(record.field(1)) or not agricultureInteger(record.field(2)) or saved.endsWith("~")
+			return false
+		let day=S2I(record.field(1))
+		boolean array[1024] seenSites
+		var seenPolicies="~"
+		var policyCount=0
+		var start=record.next
+		while start<StringLength(saved)
+			record.read(saved,start)
+			if record.field(0)=="s"
+				let index=runtime.sitePosition(record.field(1))
+				if record.count!=5 or index<0 or seenSites[index]
+					return false
+				seenSites[index]=true
+				for f=2 to 4
+					if not agricultureInteger(record.field(f))
+						return false
+				if S2I(record.field(3))<=day or S2I(record.field(4))>runtime.maximumKnowledge
+					return false
+			else if record.field(0)=="p"
+				let owner=record.field(1)
+				let localId=record.field(2)
+				let e=runtime.getEffect(record.field(3))
+				let key=owner+","+localId+","+record.field(3)
+				if record.count!=7 or owner=="" or owner.indexOf(":")>=0 or owner.indexOf(";")>=0 or owner.indexOf("|")>=0 or runtime.site(localId)==null or e==null or e.kind!="policy" or seenPolicies.indexOf("~"+key+"~")>=0
+					return false
+				seenPolicies+=key+"~"
+				for f=4 to 6
+					if not agricultureInteger(record.field(f))
+						return false
+				let started=S2I(record.field(4))
+				let funded=S2I(record.field(5))
+				let nextFee=S2I(record.field(6))
+				if started>day or nextFee<=day or nextFee<started+e.duration or (nextFee-started-e.duration) mod 365!=0 or (funded!=started and (funded>nextFee or funded<started+e.duration+365 or (funded-started-e.duration) mod 365!=0))
+					return false
+				policyCount++
+				if policyCount>4096
+					return false
+			else
+				return false
+			start=record.next
+		return true
+	static function restore(AgricultureRuntime runtime, string saved, int legacyDay, int legacyYear) returns boolean
+		if not validate(runtime,saved)
+			return false
+		if saved==""
+			runtime.reset(legacyDay,legacyYear)
+			return true
+		let record=new AgricultureRecord()
+		record.read(saved,0)
+		runtime.reset(S2I(record.field(1)),S2I(record.field(2)))
+		var start=record.next
+		while start<StringLength(saved)
+			record.read(saved,start)
+			if record.field(0)=="s"
+				let s=runtime.site(record.field(1))
+				s.granaryDue=S2I(record.field(2))
+				s.nextHarvest=S2I(record.field(3))
+				s.knowledge=S2I(record.field(4))
+			else
+				let p=new AgriculturePolicy(record.field(1),record.field(2),record.field(3),S2I(record.field(4)))
+				p.fundedUntil=S2I(record.field(5))
+				p.nextUpkeep=S2I(record.field(6))
+				runtime.policies[runtime.policyCount]=p
+				runtime.policyCount++
+			start=record.next
+		destroy record
+		return true
+
+public function agricultureYear(int day) returns int
+	var year=IMaxBJ(1,day div 366)
+	while true
+		let previous=year
+		let nextStart=365*previous+previous div 4-previous div 100+previous div 400+1
+		if nextStart>day
+			return year
+		year++
+	return year
+
+public function agriculturePercent(int bp) returns string
+	let fractional=bp mod 100
+	var digits=fractional.toString()
+	if fractional<10
+		digits="0"+digits
+	return (bp div 100).toString()+"."+digits+"%"

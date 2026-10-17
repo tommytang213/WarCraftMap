@@ -1,0 +1,405 @@
+package AgricultureTests
+
+import Agriculture
+import CampaignAgriculture
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import LiveTradeAccess
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import WarcraftRpgRuntime
+import CommandRouter
+import CampaignTimeline
+import ScenarioData
+import ResearchRuntimeTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+
+
+class AgricultureOutput implements TradePresentation
+	string last=""
+	override function showMarket(player recipient, string id, string rows)
+		last=rows
+	override function showTradeResult(player recipient, string message)
+		last=message
+
+/** Runs generated typed effects through the production treasury/market/military
+ * bridge; only the native military object adapter and UI are recordings. */
+class AgricultureFixture
+	ResearchFixture research=new ResearchFixture()
+	PlayableTradeRuntime trade=new PlayableTradeRuntime()
+	MilitarySettlementRuntime military=new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock=new CampaignClock(657072,660000,657072,1.) // 1800-01-01
+	PlayableCampaignState state=new PlayableCampaignState(null,clock)
+	AgricultureOutput output=new AgricultureOutput()
+	AgricultureRuntime farm
+	AgricultureSite local
+	SettlementRuntimeState city
+	RuntimeMarket staple
+	RuntimeMarket equipment
+	TradeStore construction
+	construct()
+		configureGeneratedAgriculture(trade)
+		farm=trade.agriculture
+		local=new AgricultureSite("farm_fixture","rural_fixture",10000,1000,100,40000,1000,20,true,true,true)
+		farm.addSite(local)
+		staple=new RuntimeMarket(local.id,trade.stapleId,1000,100000,10,8)
+		equipment=new RuntimeMarket(local.id,trade.farmEquipmentId,100,1000,10,8)
+		trade.registerPersonalStore()
+		trade.markets[0]=staple
+		trade.markets[1]=equipment
+		trade.marketCount=2
+		trade.market=staple
+		trade.settlementId=local.id
+		construction=new TradeStore("local_materials",1000,0).withAccess("warehouse",local.id,true)
+		construction.contents.set(trade.constructionGoodId,100)
+		trade.storeCount=2
+		trade.stores[0]=trade.hold
+		trade.stores[1]=construction
+		trade.marketSelected=false
+		// Set an exact deterministic production quantity and genuine tax base.
+		local.normalTax=10000
+		local.baseCapacity=1000
+		local.seedLimit=100
+		local.yieldBp=40000
+		local.spoilageBp=1000
+		local.laborCost=20
+		local.tenureTransition=true
+		staple.stock=1000
+		staple.money=100000
+		equipment.stock=100
+		city=new SettlementRuntimeState(local.id,"player","test_map",'htow','hfoo',10,20,30,100,0.,0.)
+		military.registerSettlement(city)
+		military.appoint(local.id,new AdministratorState("farm_officer","Steward","Steward","player","test_map",local.id,100,50,50,5)).assertEquals("Administrator appointed.")
+		state.identity=new PlayerCampaignIdentity()
+		state.identity.startCampaign("player","test_map","test_region",local.id).assertTrue()
+		state.countries=new PlayableCountryInteractionRuntime(state.identity)
+		state.countries.registerPolityResources("player",100000,100)
+		state.countries.registerPolityResources("other",100000,100)
+		state.countries.registerRewardProfile(new GovernmentRewardProfile("player","commission","office",0,0,1,false))
+		state.countries.registerRewardProfile(new GovernmentRewardProfile("other","commission","office",0,0,1,false))
+		state.countries.granted[0]=true
+		state.countries.granted[1]=true
+		state.setMilitarySettlementRuntime(military)
+		state.setRpgRuntime(research.runtime)
+		state.agriculture=farm
+		trade.access=new LiveTradeAccess(state)
+		farm.authority=new CampaignAgricultureAuthority(state,trade,trade.stapleId,trade.farmEquipmentId,trade.constructionGoodId)
+		farm.reset(clock.campaignDay(),1800)
+		research.runtime.technologies.effects=farm
+		research.runtime.technologies.adoption=farm
+		research.runtime.researchResources=new CampaignResearchResources(state)
+		registerAgricultureCommands(research.commands,trade,output).assertEquals("")
+	function seedPrerequisites(string nodeId)
+		let node=research.runtime.technologies.get(nodeId)
+		let owner=research.runtime.researchResources.controllerId(Player(0))
+		var completions=""
+		for i=0 to node.prerequisiteCount-1
+			if not research.runtime.technologies.isUnlocked(owner,node.prerequisiteIds[i])
+				completions+="|u,"+owner+","+node.prerequisiteIds[i]
+		let before=research.runtime.captureState()
+		research.runtime.restoreState(before+completions).assertTrue()
+		research.runtime.technologies.reconstructAll()
+	function unlock(string nodeId)
+		seedPrerequisites(nodeId)
+		let owner=research.runtime.researchResources.controllerId(Player(0))
+		let index=state.countries.polityIndex(owner)
+		let before=state.countries.treasury[index]
+		let cost=research.runtime.technologies.costFor(owner,nodeId,1800,0,0)
+		research.commands.dispatch(Player(0),"/research "+nodeId).assertTrue()
+		research.output.last.assertEquals("Action completed.")
+		state.countries.treasury[index].assertEquals(before-cost)
+	function action(string contentId, boolean success)
+		let before=trade.capture()
+		let owner=research.runtime.researchResources.controllerId(Player(0))
+		let index=state.countries.polityIndex(owner)
+		let money=state.countries.treasury[index]
+		let materials=construction.quantity(trade.constructionGoodId)
+		research.commands.dispatch(Player(0),"/agriculture "+local.id+" "+contentId).assertTrue()
+		if success
+			output.last.assertEquals("Action completed.")
+		else
+			(output.last!="Action completed.").assertTrue()
+			trade.capture().assertEquals(before)
+			state.countries.treasury[index].assertEquals(money)
+			construction.quantity(trade.constructionGoodId).assertEquals(materials)
+	function allResearch()
+		unlock("agrarian_improvement")
+		unlock("agricultural_mechanization")
+		unlock("agricultural_societies")
+	function allActions()
+		action("granary",true)
+		action("land_tenure_reform",true)
+		action("enclosure",true)
+		action("progression_agricultural_societies",true)
+	function advance(int days)
+		clock.advanceTo(657072+days).assertTrue()
+		trade.refreshAgriculture()
+
+@test function registeredAgriculturalResearchAndActionsDebitOnceAndRespectPrerequisites()
+	let f=new AgricultureFixture()
+	for i=0 to f.farm.effectCount-1
+		let e=f.farm.effects[i]
+		f.action(e.contentId,false)
+		let node=f.research.runtime.technologies.get(e.nodeId)
+		f.research.commands.dispatch(Player(0),"/research "+node.id).assertTrue()
+		f.research.output.last.assertEquals("Requirements are not met here.")
+	f.allResearch()
+	let treasury=f.state.countries.treasury[0]
+	f.allActions()
+	f.state.countries.treasury[0].assertEquals(treasury-1300)
+	f.construction.quantity(f.trade.constructionGoodId).assertEquals(90)
+	for i=0 to f.farm.effectCount-1
+		let e=f.farm.effects[i]
+		f.action(e.contentId,false)
+		f.farm.bindingStatus(new ResearchUnlock(e.nodeId,e.kind,e.contentId)).assertEquals(RESEARCH_BOUND)
+		f.farm.bindingStatus(new ResearchUnlock(e.nodeId,"modifier",e.contentId)).assertEquals(RESEARCH_UNBOUND)
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1000)
+	f.advance(89)
+	f.farm.rate(f.local,"crop_output_efficiency",f.farm.currentDay).assertEquals(0)
+	f.advance(90)
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1200)
+	f.farm.rate(f.local,"crop_output_efficiency",f.farm.currentDay).assertEquals(1500)
+	f.farm.rate(f.local,"rural_tax_efficiency",f.farm.currentDay).assertEquals(200)
+	f.farm.rate(f.local,"agricultural_knowledge_diffusion",f.farm.currentDay).assertEquals(600)
+	f.state.countries.treasury[0].assertEquals(treasury-1450)
+	f.farm.unrest(f.local,657072+90).assertEquals(500)
+	f.farm.unrest(f.local,657072+730).assertEquals(0)
+
+@test function agriculturalAnnualConsumerUsesExactInputsSpoilageTaxAndEarnedDiffusion()
+	let f=new AgricultureFixture()
+	f.allResearch()
+	f.allActions()
+	f.local.baseCapacity=2000
+	f.local.seedLimit=32
+	f.advance(365)
+	// 32 seed -> 128 base + floor(128*1500/10000) - floor(128*500/10000) = 141;
+	// remaining 968 loses 96 - floor(96*1000/10000) = 87. Total 1022.
+	f.staple.stock.assertEquals(1022)
+	f.equipment.stock.assertEquals(99)
+	f.staple.money.assertEquals(89800)
+	f.local.knowledge.assertEquals(33) // 32 + floor(32*600/10000), no free completion
+	f.research.runtime.technologies.costFor("player","seed_drill",1800,0,0).assertEquals(IMaxBJ(1,f.research.runtime.technologies.cost("seed_drill",1800,0,0)-33))
+	let current=f.trade.capture()
+	f.research.runtime.technologies.reconstructAll()
+	f.research.runtime.technologies.reconstructAll()
+	f.advance(365)
+	f.trade.capture().assertEquals(current)
+	agricultureScale(2147483647,2000).assertEquals(429496729)
+
+@test function agriculturalRejectionsUseCurrentControlSupplyOfficeEquipmentAndNetwork()
+	let f=new AgricultureFixture()
+	f.allResearch()
+	f.equipment.stock=0
+	f.action("enclosure",false)
+	f.action("land_tenure_reform",false)
+	f.action("progression_agricultural_societies",false)
+	f.equipment.stock=100
+	f.local.arable=false
+	f.action("enclosure",false)
+	f.local.arable=true
+	f.local.network=false
+	f.action("progression_agricultural_societies",false)
+	f.local.network=true
+	f.city.controllerId="other"
+	f.action("granary",false)
+	f.city.controllerId="player"
+	f.city.supply=0
+	f.action("granary",false)
+	f.city.supply=100
+	f.staple.blockaded=true
+	f.action("enclosure",false)
+	f.staple.blockaded=false
+	f.military.administrators[0].administration=0
+	f.action("land_tenure_reform",false)
+	f.military.administrators[0].administration=50
+	f.construction.contents.set(f.trade.constructionGoodId,9)
+	f.action("granary",false)
+	f.construction.contents.set(f.trade.constructionGoodId,100)
+	f.state.countries.treasury[0]=99
+	f.action("land_tenure_reform",false)
+	f.state.countries.treasury[0]=100000
+	f.farm.year=1450
+	f.action("granary",false)
+	f.action("enclosure",false)
+	f.action("progression_agricultural_societies",false)
+
+@test function agriculturalSaveMigrationFailedLoadAndCaptureRetainDurableSources()
+	let f=new AgricultureFixture()
+	f.allResearch()
+	f.allActions()
+	f.advance(45)
+	let pending=f.trade.capture()
+	let pendingClock=f.clock.captureState()
+	f.trade.validate(pending).assertTrue()
+	f.trade.beginLoad()
+	f.advance(365)
+	f.trade.rollbackLoad()
+	f.clock.restoreState(pendingClock).assertTrue()
+	f.trade.capture().assertEquals(pending)
+	let checkpoint=f.trade.capture()
+	f.trade.reconstruct(checkpoint+"~p,player,missing,enclosure,1,1,1").assertFalse()
+	f.trade.capture().assertEquals(checkpoint)
+	f.advance(90)
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1200)
+	f.city.controllerId="other"
+	f.city.legalOwnerId="other"
+	f.military.administrators[0].controllerId="other"
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1000)
+	f.research.runtime.technologies.unlock("other","agrarian_improvement",1800,100000,0,0).assertFalse()
+	// An AI controller uses the same prerequisites, treasury and action rules.
+	f.state.identity.changeAllegiance("other").assertTrue()
+	let previous=f.research.runtime.captureState()
+	f.research.runtime.restoreState(previous+"|u,other,selective_breeding|u,other,scientific_societies").assertTrue()
+	f.research.commands.dispatch(Player(0),"/research agrarian_improvement").assertTrue()
+	f.research.output.last.assertEquals("Action completed.")
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1200)
+	let money=f.state.countries.treasury[1]
+	f.farm.enact("other",f.local.id,"granary").assertEquals("Already commissioned or enacted here.")
+	f.state.countries.treasury[1].assertEquals(money)
+	f.farm.rate(f.local,"crop_output_efficiency",f.farm.currentDay).assertEquals(0)
+	f.farm.enact("other",f.local.id,"land_tenure_reform").assertEquals("Action completed.")
+	// Legacy trade v4 carries no agricultural projects and never grants assets.
+	let saved=f.trade.capture()
+	let cut=StringLength(saved)-StringLength(AgricultureSnapshot.capture(f.farm))-1
+	let legacy="v4:"+SubString(saved,3,cut)
+	f.trade.reconstruct(legacy).assertTrue()
+	f.local.granaryDue.assertEquals(0)
+	f.farm.policyCount.assertEquals(0)
+	f.farm.capacity(f.local,f.farm.currentDay).assertEquals(1000)
+
+@test function agriculturalAbstractReplayMatchesActiveDaysAndDuplicatesNeverStack()
+	let active=new AgricultureFixture()
+	let inactive=new AgricultureFixture()
+	active.allResearch()
+	inactive.allResearch()
+	active.allActions()
+	inactive.allActions()
+	active.military.activateRegion("test_map")
+	inactive.military.activateRegion("another_map")
+	let layers=active.farm.get("player")
+	layers.add(new ResearchUnlock("agrarian_improvement","policy","land_tenure_reform"))
+	layers.add(new ResearchUnlock("agrarian_improvement","policy","land_tenure_reform"))
+	for day=1 to 800
+		active.advance(day)
+	inactive.advance(800)
+	active.trade.capture().assertEquals(inactive.trade.capture())
+	active.state.countries.treasury[0].assertEquals(inactive.state.countries.treasury[0])
+	active.state.countries.materialStock[0].assertEquals(inactive.state.countries.materialStock[0])
+	let saved=active.trade.capture()
+	active.trade.reconstruct(saved).assertTrue()
+	active.research.runtime.technologies.reconstructAll()
+	active.research.runtime.technologies.reconstructAll()
+	active.trade.capture().assertEquals(saved)
+
+@test function unsupportedFarmsProduceNoKnowledgeOrExtraOutputAndUnpaidUpkeepSuspends()
+	let f=new AgricultureFixture()
+	f.allResearch()
+	f.allActions()
+	f.equipment.stock=0
+	f.advance(365)
+	f.staple.stock.assertEquals(910) // 100 ordinary spoilage minus 10% granary relief
+	f.local.knowledge.assertEquals(0)
+	f.farm.rate(f.local,"crop_output_efficiency",f.farm.currentDay).assertEquals(0)
+	f.equipment.stock=100
+	f.state.countries.treasury[0]=0
+	f.advance(455)
+	f.farm.rate(f.local,"crop_output_efficiency",f.farm.currentDay).assertEquals(0)
+	let before=f.state.countries.treasury[0]
+	f.advance(455)
+	f.state.countries.treasury[0].assertEquals(before)
+
+@test function granaryConstructionConsumesDeliveredMaterialsAndTheirCostBasis()
+	let f=new AgricultureFixture()
+	f.trade.registerMarket(new RuntimeMarket("supply_port",f.trade.constructionGoodId,100,1000,10,8))
+	f.trade.controller.provenance.add(f.construction.id,f.trade.constructionGoodId,100,1000,"supply_port")
+	f.unlock("agrarian_improvement")
+	f.action("granary",true)
+	f.trade.controller.provenance.quantityIn(f.construction.id,f.trade.constructionGoodId).assertEquals(90)
+	f.trade.controller.provenance.costIn(f.construction.id,f.trade.constructionGoodId).assertEquals(900)
+	f.trade.validate(f.trade.capture()).assertTrue()
+
+@test function agriculturalLateCampaignLoadRollbackRestoresPaidProjectsResourcesAndClock()
+	let f=new LoadFixture()
+	let trade=f.extension.trade
+	let farm=trade.agriculture
+	// Neutral scenario exercising the exact same extension and campaign load
+	// transaction. Authored agriculture magnitudes/eras execute above.
+	farm.addEffect(new AgricultureEffect("printing","building","printing_house","staple_storage_capacity",2000,1000,0,0,1000,0,90,10,1))
+	farm.addEffect(new AgricultureEffect("printing","policy","crop_rotation","crop_output_efficiency",500,200,200,0,100,50,90,0,1))
+	f.rpg.technologies.get("printing").addUnlock("printing","policy","crop_rotation")
+	f.rpg.restoreState(f.rpg.captureState()+"|u,england,printing").assertTrue()
+	trade.stapleId="grain"
+	trade.farmEquipmentId="farm_equipment"
+	trade.constructionGoodId="construction_stock"
+	trade.registerMarket(new RuntimeMarket("port","farm_equipment",100,1000,10,8))
+	let construction=new TradeStore("local_construction",1000,0).withAccess("warehouse","port",true)
+	construction.contents.set("construction_stock",100)
+	trade.registerStore(construction)
+	f.military.appoint("port",new AdministratorState("steward","Steward","Steward","england","europe_west","port",100,50,50,5)).assertEquals("Administrator appointed.")
+	farm.addSite(new AgricultureSite("port","rural_fixture",1000,1000,10,40000,1000,1,true,true,true))
+	farm.authority=new CampaignAgricultureAuthority(f.campaign.state,trade,trade.stapleId,trade.farmEquipmentId,trade.constructionGoodId)
+	farm.reset(f.clock.campaignDay(),1)
+	trade.access=new LiveTradeAccess(f.campaign.state)
+	f.campaign.state.agriculture=farm
+	f.rpg.technologies.effects=farm
+	f.rpg.technologies.reconstructAll()
+	farm.enact("england","port","printing_house").assertEquals("Action completed.")
+	farm.enact("england","port","crop_rotation").assertEquals("Action completed.")
+	let candidate=f.campaign.state.captureAuthoritativeState()
+	f.clock.advanceTo(60).assertTrue()
+	let saved=trade.capture()
+	let money=f.campaign.countries.treasury[0]
+	let materials=construction.quantity("construction_stock")
+	f.ports.failParty=true
+	f.rejectAndVerify(candidate)
+	trade.capture().assertEquals(saved)
+	f.campaign.countries.treasury[0].assertEquals(money)
+	construction.quantity("construction_stock").assertEquals(materials)
+	f.ports.failParty=false
+	f.recordingTimer.expected=lastAuthorityValue(candidate,"clock")
+	// Loading and reconstructing repeatedly never charges the pending bills again.
+	f.campaign.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(money)
+	construction.quantity("construction_stock").assertEquals(materials)
+	let restored=trade.capture()
+	f.campaign.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
+	trade.capture().assertEquals(restored)
+
+@test function allFourAgriculturalOptionsHaveIdenticalControllerRulesAndOutcomes()
+	let human=new AgricultureFixture()
+	let ai=new AgricultureFixture()
+	ai.state.identity.changeAllegiance("other").assertTrue()
+	ai.city.controllerId="other"
+	ai.city.legalOwnerId="other"
+	ai.military.administrators[0].controllerId="other"
+	human.allResearch()
+	ai.allResearch()
+	human.allActions()
+	ai.allActions()
+	human.advance(365)
+	ai.advance(365)
+	human.staple.stock.assertEquals(ai.staple.stock)
+	human.staple.money.assertEquals(ai.staple.money)
+	human.equipment.stock.assertEquals(ai.equipment.stock)
+	human.construction.quantity(human.trade.constructionGoodId).assertEquals(ai.construction.quantity(ai.trade.constructionGoodId))
+	human.local.knowledge.assertEquals(ai.local.knowledge)
+	human.state.countries.treasury[0].assertEquals(ai.state.countries.treasury[1])
+	for i=0 to ai.farm.effectCount-1
+		ai.action(ai.farm.effects[i].contentId,false)
+
+@test function researchAloneNeverStartsOrganizationsAndLastToolSupportsTheSameHarvestTax()
+	let unactivated=new AgricultureFixture()
+	unactivated.allResearch()
+	unactivated.advance(365)
+	unactivated.local.knowledge.assertEquals(0)
+	unactivated.farm.policyCount.assertEquals(0)
+	unactivated.local.granaryDue.assertEquals(0)
+	let active=new AgricultureFixture()
+	active.allResearch()
+	active.allActions()
+	active.equipment.stock=1
+	active.advance(365)
+	active.equipment.stock.assertEquals(0)
+	active.staple.money.assertEquals(89800) // last tool supports this year's tax transaction

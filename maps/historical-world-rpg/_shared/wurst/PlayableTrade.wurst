@@ -1,4 +1,5 @@
 package PlayableTrade
+import Agriculture
 import CommandRouter
 import PlayableCampaignRuntime
 import CargoProvenance
@@ -7,7 +8,7 @@ import TradePricing
 import ManagementScreenPauseController
 import LiveTradeAccess
 
-public constant int LIVE_TRADE_SCHEMA_CURRENT = 4
+public constant int LIVE_TRADE_SCHEMA_CURRENT = 5
 
 /** Warcraft runtime boundary for the authoritative campaign trade state.
  * Handles and frames never own stock: adapters rebuild this model from stable
@@ -57,6 +58,7 @@ public class RuntimeMarket
 	string id
 	string goodName
 	int stock
+	int storageCapacity=2147483647
 	int money
 	int buyUnitPrice
 	int sellUnitPrice
@@ -218,6 +220,8 @@ public class PlayableTradeController
 			return "Commodity is not discovered."
 		if market.blockaded or market.occupiedByHostile
 			return "Market access is restricted."
+		if market.storageCapacity<2147483647 and quantity>market.storageCapacity-market.stock
+			return "Local staple storage capacity is insufficient."
 		let proceeds=market.quoteAmount(quantity,false)
 		if proceeds<1 or source.money>2147483647-proceeds
 			return "Trade amount is outside the currency settlement range."
@@ -362,7 +366,7 @@ function tradeInteger(string value) returns boolean
 	return true
 
 function tradePayload(string document) returns string
-	if (document.startsWith("v2:") or document.startsWith("v3:") or document.startsWith("v4:"))
+	if (document.startsWith("v2:") or document.startsWith("v3:") or (document.startsWith("v4:") or document.startsWith("v5:")))
 		return SubString(document,3,StringLength(document))
 	return document
 
@@ -406,6 +410,10 @@ function readCargoContents(CargoBalances contents,string encoded,int expected,in
 	return capacity-remaining==expected
 
 public class PlayableTradeRuntime implements CampaignRuntimeExtension
+	AgricultureRuntime agriculture=new AgricultureRuntime()
+	string stapleId=""
+	string farmEquipmentId=""
+	string constructionGoodId=""
 	LiveTradeAccess access=null
 	// Selections survive saves as views, never as cached authorization.
 	boolean marketSelected=false
@@ -511,12 +519,20 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				markets[i].productionPermille=production
 				markets[i].consumptionPermille=consumption
 				markets[i].reprice()
+	function refreshAgriculture()
+		for i=0 to agriculture.siteCount-1
+			let site=agriculture.sites[i]
+			let stock=findMarket(site.id,stapleId)
+			if stock!=null
+				stock.storageCapacity=agriculture.capacity(site,agriculture.currentDay)
 	function advanceEconomy()
 		for i=0 to marketCount-1
 			let delta=markets[i].targetStock*(markets[i].productionPermille-markets[i].consumptionPermille) div 10000
 			markets[i].stock=IMaxBJ(0,markets[i].stock+delta)
 			markets[i].reprice()
 	override function newCampaign(string startingSettlementId)
+		if access!=null
+			agriculture.reset(access.state.clock.campaignDay(),access.state.clock.campaignYear())
 		management.close()
 		marketSelected=false
 		storeSelected=false
@@ -571,7 +587,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				lotState+="~"
 			let lot=controller.provenance.lots[i]
 			lotState+=tradeSafeId(lot.storeId)+","+lot.goodId+","+lot.quantity.toString()+","+lot.cost.toString()+","+lot.origin
-		return "v"+LIVE_TRADE_SCHEMA_CURRENT.toString()+":"+settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.usedCapacity().toString()+":"+hold.money.toString()+":"+controller.legacyUnattributedCost.toString()+":"+controller.legacyUnattributedQuantity.toString()+":"+controller.legacyUnattributedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+tradeSafeId(hold.id)+":"+hold.capacity.toString()+":"+storeState+":"+market.goodName+":"+hold.contents.capture()+":"+lotState
+		return "v"+LIVE_TRADE_SCHEMA_CURRENT.toString()+":"+settlementId+":"+market.stock.toString()+":"+market.money.toString()+":"+market.buyUnitPrice.toString()+":"+market.sellUnitPrice.toString()+":"+market.previousUnitPrice.toString()+":"+hold.usedCapacity().toString()+":"+hold.money.toString()+":"+controller.legacyUnattributedCost.toString()+":"+controller.legacyUnattributedQuantity.toString()+":"+controller.legacyUnattributedOrigin+":"+progress.standing.toString()+":"+progress.realizedProfit.toString()+":"+progress.completedRouteCount.toString()+":"+nextTransaction.toString()+":"+history+":"+marketState+":"+tradeSafeId(hold.id)+":"+hold.capacity.toString()+":"+storeState+":"+market.goodName+":"+hold.contents.capture()+":"+lotState+":"+AgricultureSnapshot.capture(agriculture)
 	/** Accept the original summary plus the additive market/store encodings.
 	 * Parse every record and reference before any stock, resource or view changes. */
 	override function validate(string saved) returns boolean
@@ -580,13 +596,13 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		destroy cargo
 		return valid
 	function validateSnapshot(string saved,TradeSnapshotCargo cargo) returns boolean
-		let mixed=saved.startsWith("v4:")
+		let mixed=(saved.startsWith("v4:") or saved.startsWith("v5:"))
 		let document=tradePayload(saved)
-		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or saved.startsWith("v4:"))
+		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:")))
 		if document==""
 			return not current
 		let fields=tradeFieldCount(document,":")
-		if (current and fields!=23) or (not current and fields!=16 and fields!=17 and fields!=19 and fields!=20) or tradeField(document,0)==""
+		if (saved.startsWith("v5:") and (fields!=24 or tradeField(document,23)=="" or not AgricultureSnapshot.validate(agriculture,tradeField(document,23)))) or (current and not saved.startsWith("v5:") and fields!=23) or (not current and fields!=16 and fields!=17 and fields!=19 and fields!=20) or tradeField(document,0)==""
 			return false
 		for i=1 to 14
 			if i!=10
@@ -609,7 +625,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				finish=StringLength(states)-start
 			let row=SubString(states,start,start+finish)
 			let columns=tradeFieldCount(row,",")
-			if ((saved.startsWith("v3:") or saved.startsWith("v4:")) and columns!=15) or (not saved.startsWith("v3:") and not saved.startsWith("v4:") and columns!=11 and columns!=14)
+			if ((saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:"))) and columns!=15) or (not saved.startsWith("v3:") and not (saved.startsWith("v4:") or saved.startsWith("v5:")) and columns!=11 and columns!=14)
 				return false
 			var found=-1
 			for i=0 to marketCount-1
@@ -724,7 +740,16 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		return applyState(document)
 	function applyState(string saved) returns boolean
 		let document=tradePayload(saved)
-		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or saved.startsWith("v4:"))
+		var agricultureState=""
+		if saved.startsWith("v5:")
+			agricultureState=tradeField(document,23)
+		var day=agriculture.currentDay
+		var year=agriculture.year
+		if access!=null
+			day=access.state.clock.campaignDay()
+			year=access.state.clock.campaignYear()
+		AgricultureSnapshot.restore(agriculture,agricultureState,day,year)
+		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:")))
 		marketSelected=false
 		storeSelected=false
 		if document==""
@@ -738,7 +763,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 			markets[i].resetDefinition()
 		for i=0 to storeCount-1
 			stores[i].resetDefinition()
-			if saved.startsWith("v4:")
+			if (saved.startsWith("v4:") or saved.startsWith("v5:"))
 				// Additive definitions may create a store, never fresh currency on load.
 				stores[i].money=0
 		// Resolve stable projections before applying legacy summary fields. The
@@ -788,7 +813,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		market.sellUnitPrice=S2I(tradeField(document,4))
 		market.previousUnitPrice=S2I(tradeField(document,5))
 		hold.contents.clear()
-		if saved.startsWith("v4:")
+		if (saved.startsWith("v4:") or saved.startsWith("v5:"))
 			readCargoContents(hold.contents,tradeField(document,21),S2I(tradeField(document,6)),S2I(tradeField(document,18)),null)
 		else
 			hold.contents.set(tradeField(document,21),S2I(tradeField(document,6)))
@@ -826,7 +851,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						markets[j].technologyPermille=S2I(compactField(record,8))
 						markets[j].blockaded=compactField(record,9)=="1"
 						markets[j].occupiedByHostile=compactField(record,10)=="1"
-						if saved.startsWith("v3:") or saved.startsWith("v4:")
+						if saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:"))
 							markets[j].discovered=compactField(record,14)=="1"
 						// Fields 11-13 were added after the first live-trade save
 						// format. Empty values retain generated defaults.
@@ -849,7 +874,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 						stores[j].money=S2I(compactField(record,2))
 						stores[j].capacity=S2I(compactField(record,3))
 						stores[j].contents.clear()
-						if saved.startsWith("v4:")
+						if (saved.startsWith("v4:") or saved.startsWith("v5:"))
 							readCargoContents(stores[j].contents,compactField(record,4),S2I(compactField(record,1)),stores[j].capacity,null)
 						else
 							stores[j].contents.set(compactField(record,4),S2I(compactField(record,1)))
@@ -906,6 +931,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		storeControl=control
 		return "Selected cargo store: "+hold.id+"."
 	function exchange(player sender,string side,int quantity) returns string
+		refreshAgriculture()
 		let actor=selectedActor(sender)
 		if actor<0 or not storeSelected or findStore(hold.id)!=hold
 			return "Trade selection is unavailable. Select a local market and cargo store again."
@@ -1033,6 +1059,7 @@ public class TradeCommand implements CommandHandler
 		this.runtime=runtime
 		this.presentation=presentation
 	override function execute(player sender,string arguments)
+		runtime.refreshAgriculture()
 		let action=tradeArgument(arguments,0)
 		let first=tradeArgument(arguments,1)
 		let second=tradeArgument(arguments,2)
@@ -1099,8 +1126,32 @@ public PlayableTradeRuntime playableTradeRuntime = null
 /** Registers the reachable settlement market for new games, resumed maps and loads. */
 public function registerPlayableTrade(CommandRegistry commands,PlayableCampaignServices campaign) returns string
 	playableTradeRuntime = campaign.extension castTo PlayableTradeRuntime
+	let problem=registerAgricultureCommands(commands,playableTradeRuntime,new WarcraftTradePresentation())
+	if problem!=""
+		return problem
 	return registerPlayableTradeCommands(commands,playableTradeRuntime,new WarcraftTradePresentation())
 
 /** Production registration with replaceable output for interpreter tests. */
 public function registerPlayableTradeCommands(CommandRegistry commands,PlayableTradeRuntime runtime,TradePresentation presentation) returns string
 	return commands.register("trade","market","trade <markets [PAGE]|commodities MARKET [PAGE]|select MARKET COMMODITY|stores [PAGE]|store STORE|move SOURCE DESTINATION COMMODITY QUANTITY|inspect [PAGE]|open [PAGE]|buy QUANTITY|sell QUANTITY|close>","Manage local trade; /trade close closes it.","Markets, commodities, stores and inspect/open pause until /trade close. Listings contain only eligible local targets. Select a market/commodity and cargo store before buying or selling. Move names the commodity; omission is allowed only for a single known source commodity. Inspect lists individual contents and total capacity. Selection and transactions recheck physical presence, discovery and control. After loading, select again. Actions retain existing pause owners; other open screens and manual pause remain paused.",1,5,COMMAND_RELEASE,new TradeCommand(runtime,presentation))
+
+public class AgricultureCommand implements CommandHandler
+	PlayableTradeRuntime runtime
+	TradePresentation presentation
+	construct(PlayableTradeRuntime runtime, TradePresentation presentation)
+		this.runtime=runtime
+		this.presentation=presentation
+	override function execute(player sender, string arguments)
+		if runtime.access==null or sender!=Player(0) or not runtime.access.state.isSaveSafe()
+			presentation.showTradeResult(sender,"Agricultural management is unavailable.")
+			return
+		let owner=runtime.access.state.rpg.researchResources.controllerId(sender)
+		let id=tradeArgument(arguments,0)
+		if countArguments(arguments)==1
+			presentation.showTradeResult(sender,runtime.agriculture.inspect(owner,id))
+		else
+			presentation.showTradeResult(sender,runtime.agriculture.enact(owner,id,tradeArgument(arguments,1)))
+		runtime.refreshAgriculture()
+
+public function registerAgricultureCommands(CommandRegistry commands, PlayableTradeRuntime runtime, TradePresentation presentation) returns string
+	return commands.register("agriculture","","agriculture SETTLEMENT [EFFECT]","Inspect or enact local agricultural improvements.","Requires current control, completed research, paid materials, local administration and supported farming. Inspection shows costs and effects. Reforms are optional.",1,2,COMMAND_RELEASE,new AgricultureCommand(runtime,presentation))
