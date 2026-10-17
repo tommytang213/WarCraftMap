@@ -1,0 +1,308 @@
+package CivicGovernanceTests
+
+import CivicGovernance
+import CivicCampaignRuntime
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import ManagementScreenPauseController
+import ManagementCommandTests
+import ScenarioData
+
+class CivicTestResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return 1778
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+class CivicFixture
+	int day = 649041 // Arbitrary committed day; fixture discussion/outbreak are explicit.
+	CivicTestResources resources = new CivicTestResources()
+	CivicResearchEffects research = new CivicResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(research)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	CivicCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	string initial
+	construct()
+		let generated = new WarcraftRpgRuntime(research)
+		configureGeneratedRpg(generated)
+		rpg.technologies = generated.technologies
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		let definitions = new CivicLedger()
+		configureGeneratedCivic(definitions, research, day)
+		destroy definitions
+		military.civic.register(new CivicDistrict("district", "province", 10001, true, day, 20, day, 365, 4, "cloth", 4, 1000), day)
+		military.registerSettlement(new SettlementRuntimeState("district", "player", "europe", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
+		military.appoint("district", new AdministratorState("clerk", "Clerk", "Administrator", "player", "europe", "district", 50, 50, 40, 1))
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity("player", 10000)
+		campaign.countries.registerPolity("ai", 10000)
+		trade.registerMarket(new RuntimeMarket("district", "cloth", 1000, 100000, 10, 10))
+		trade.registerMarket(new RuntimeMarket("district", "grain", 1000, 100000, 10, 10))
+		trade.civic = military
+		trade.civicClock = clock
+		runtime = new CivicCampaignRuntime(campaign, trade, research)
+		campaign.civicRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerCivicCommands(commands, runtime).assertEquals("")
+		initial = rpg.captureState()
+	function prerequisites()
+		rpg.restoreState(initial + "|u," + resources.owner + ",professional_bureaucracy|u," + resources.owner + ",experimental_method|u," + resources.owner + ",urban_public_health").assertTrue()
+		rpg.reconcile(resources.owner)
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+	function action(string action)
+		commands.dispatch(Player(0), "/civic " + action + " district").assertTrue()
+		resources.output.startsWith("Civic action completed.").assertTrue()
+	function advance(int amount)
+		clock.advanceTo(day + amount).assertTrue()
+	function allResearch()
+		prerequisites()
+		unlock("abolitionist_public_sphere")
+		unlock("anatomy_and_medicine")
+		unlock("cadastral_survey")
+
+@test function civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills()
+	let f = new CivicFixture()
+	for i = 0 to 2
+		var id = "abolitionist_public_sphere"
+		if i == 1
+			id = "anatomy_and_medicine"
+		else if i == 2
+			id = "cadastral_survey"
+		f.commands.dispatch(Player(0), "/research " + id).assertTrue()
+		f.resources.output.assertEquals("Requirements are not met here.")
+	f.resources.balance.assertEquals(100000)
+	f.campaign.countries.treasury[0].assertEquals(10000)
+	f.allResearch()
+	f.resources.balance.assertEquals(100000 - 340 - 235 - 130)
+	f.commands.dispatch(Player(0), "/research cadastral_survey").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.action("policy")
+	f.campaign.countries.treasury[0].assertEquals(9899)
+	f.action("survey")
+	f.campaign.countries.treasury[0].assertEquals(9798)
+	f.action("response")
+	f.campaign.countries.treasury[0].assertEquals(9597)
+	f.trade.findMarket("district", "cloth").stock.assertEquals(996)
+	f.military.civic.states[0].discussion.assertEquals(0)
+	f.military.civic.states[0].surveyed.assertFalse()
+	let before = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic policy district").assertTrue()
+	f.resources.output.contains("cannot stack").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.advance(89)
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.military.civic.states[0].discussion.assertEquals(1780)
+	f.military.settlements[0].manpower.assertEquals(10000 - 89 * 3)
+	f.advance(90)
+	f.military.civic.states[0].surveyed.assertTrue()
+	f.military.civic.states[0].discussion.assertEquals(1800)
+	f.campaign.countries.treasury[0].assertEquals(9546) // ceil(10001 * 0.005)
+	f.military.settlements[0].manpower.assertEquals(10000 - 90 * 3)
+	f.military.civic.states[0].diseaseAvoided.assertEquals(90)
+	f.commands.dispatch(Player(0), "/technology").assertTrue()
+	f.resources.output.contains("+2500 bp epidemic_losses_avoided").assertTrue()
+	f.resources.output.contains("+500 bp civic_reform_diffusion").assertTrue()
+
+@test function civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically()
+	let f = new CivicFixture()
+	f.commands.dispatch(Player(0), "/civic survey district").assertTrue()
+	f.resources.output.contains("Requires earned survey").assertTrue()
+	f.allResearch()
+	let before = f.military.snapshot()
+	f.campaign.countries.treasury[0] = 100
+	f.commands.dispatch(Player(0), "/civic policy district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.campaign.countries.treasury[0] = 10000
+	let cloth = f.trade.findMarket("district", "cloth")
+	cloth.stock = 3
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	cloth.stock = 1000
+	cloth.blockaded = true
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	cloth.blockaded = false
+	f.military.settlements[0].legalOwnerId = "foreign"
+	f.commands.dispatch(Player(0), "/civic survey district").assertTrue()
+	f.resources.output.contains("lawfully controlled").assertTrue()
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.administrators[0].controllerId = "foreign"
+	f.commands.dispatch(Player(0), "/civic policy district").assertTrue()
+	f.resources.output.contains("lawfully controlled").assertTrue()
+	f.military.administrators[0].controllerId = "player"
+	f.action("response")
+	f.advance(179)
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("expired cooldown").assertTrue()
+	f.advance(180)
+	f.action("response")
+	f.advance(365)
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("active outbreak").assertTrue()
+
+@test function civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity()
+	let f = new CivicFixture()
+	f.allResearch()
+	let peer = new RuntimeTechnology("peer", "Peer source", 1450, 1)
+	peer.addUnlock("peer", "modifier", "progression_cadastral_survey")
+	f.rpg.technologies.register(peer).assertTrue()
+	f.unlock("peer")
+	f.research.rate("player", "land_tax_collection_efficiency").assertEquals(500)
+	f.research.register(new CivicEffect("modifier", "progression_cadastral_survey", "land_tax_collection_efficiency", 500))
+	f.research.rate("player", "land_tax_collection_efficiency").assertEquals(500)
+	f.research.register(new CivicEffect("modifier", "additional_survey", "land_tax_collection_efficiency", 250))
+	let second = new RuntimeTechnology("second", "Distinct source", 1450, 1)
+	second.addUnlock("second", "modifier", "additional_survey")
+	f.rpg.technologies.register(second).assertTrue()
+	f.unlock("second")
+	f.research.rate("player", "land_tax_collection_efficiency").assertEquals(750)
+	f.research.rate("ai", "land_tax_collection_efficiency").assertEquals(0)
+	f.action("survey")
+	f.advance(90)
+	let untilTax = 365 - ((f.day + 90) mod 365)
+	f.trade.findMarket("district", "cloth").money = 1
+	f.trade.findMarket("district", "grain").money = 1
+	let treasury = f.campaign.countries.treasury[0]
+	f.advance(90 + untilTax)
+	f.campaign.countries.treasury[0].assertEquals(treasury + 2)
+	f.military.civic.states[0].taxesCollected.assertEquals(2)
+	civicScale(2147483647, 500).assertEquals(107374182)
+	civicBill(2147483647, 100).assertEquals(21474837)
+	// Medicine never avoids more people than are actually exposed.
+	f.military.settlements[0].manpower = 1
+	f.military.civic.districts[0].outbreakFirstDay = f.clock.currentDay
+	f.action("response")
+	let lost = f.military.civic.states[0].diseaseLost
+	f.advance(91 + untilTax)
+	f.military.civic.states[0].diseaseLost.assertEquals(lost + 1)
+
+@test function civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay()
+	let f = new CivicFixture()
+	f.allResearch()
+	f.action("policy")
+	f.action("survey")
+	f.action("response")
+	f.advance(90)
+	let saved = f.military.snapshot()
+	let rpg = f.rpg.captureState()
+	let treasury = f.campaign.countries.treasury[0]
+	for repeat = 1 to 3
+		f.military.restore(saved, false).assertTrue()
+		f.rpg.restoreState(rpg).assertTrue()
+		f.rpg.reconcile("player")
+		f.research.rate("player", "land_tax_collection_efficiency").assertEquals(500)
+		f.military.snapshot().assertEquals(saved)
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.military.restore(saved + "|g,district,", false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Capture preserves a completed survey and cancels opt-in government actions.
+	f.military.transferSettlement("district", "ai")
+	f.military.civic.states[0].surveyed.assertTrue()
+	f.military.civic.states[0].policyOwner.assertEquals("")
+	f.research.rate("ai", "land_tax_collection_efficiency").assertEquals(0)
+	f.military.transferSettlement("district", "player")
+	f.military.civic.states[0].policyOwner.assertEquals("")
+	// v1-v9 contain no civic ledger; migration never grants completed projects.
+	let cut = saved.indexOf("|g,")
+	let legacy = "v9" + SubString(saved, 3, cut)
+	f.military.restore(legacy, false).assertTrue()
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.military.civic.states[0].policyOwner.assertEquals("")
+	f.military.civic.states[0].lastDay.assertEquals(0)
+	f.runtime.advance(f.clock.currentDay)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+
+@test function civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload()
+	let f = new CivicFixture()
+	f.allResearch()
+	f.action("response")
+	let hold = new TradeStore("hold", 10000, 10000000)
+	let controller = f.trade.tradeController()
+	let cloth = f.trade.findMarket("district", "cloth")
+	let grain = f.trade.findMarket("district", "grain")
+	controller.buy("first", cloth, hold, 500).startsWith("Bought").assertTrue()
+	controller.buy("second", grain, hold, 400).startsWith("Bought").assertTrue()
+	let saved = f.military.snapshot()
+	controller.buy("third", grain, hold, 1).contains("quarantine").assertTrue()
+	f.military.restore(saved, false).assertTrue()
+	controller.buy("fourth", grain, hold, 1).contains("quarantine").assertTrue()
+	f.advance(1)
+	controller.buy("fifth", grain, hold, 1).startsWith("Bought").assertTrue()
+	f.military.civic.states[0].tradedUnits.assertEquals(1)
+
+@test function civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic()
+	let human = new CivicFixture()
+	human.allResearch()
+	let ai = new CivicFixture()
+	ai.resources.owner = "ai"
+	ai.military.transferSettlement("district", "ai")
+	ai.military.settlements[0].legalOwnerId = "ai"
+	ai.allResearch()
+	human.action("policy")
+	human.action("survey")
+	human.action("response")
+	ai.runtime.act("ai", "policy", "district").assertEquals("")
+	ai.runtime.act("ai", "survey", "district").assertEquals("")
+	ai.runtime.act("ai", "response", "district").assertEquals("")
+	human.military.activeRegionId = "europe"
+	ai.military.activeRegionId = "unloaded"
+	for elapsed = 1 to 100
+		human.advance(elapsed)
+	ai.advance(100)
+	human.military.civic.states[0].discussion.assertEquals(ai.military.civic.states[0].discussion)
+	human.military.civic.states[0].diseaseLost.assertEquals(ai.military.civic.states[0].diseaseLost)
+	human.campaign.countries.treasury[0].assertEquals(ai.campaign.countries.treasury[1])
+	human.trade.findMarket("district", "cloth").stock.assertEquals(ai.trade.findMarket("district", "cloth").stock)
+
+@test function civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion()
+	let base = new CivicFixture()
+	base.allResearch()
+	let surveyed = new CivicFixture()
+	surveyed.allResearch()
+	surveyed.action("survey")
+	let taxDay = 365 - (base.day mod 365)
+	base.advance(taxDay)
+	surveyed.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9000)
+	surveyed.military.civic.states[0].taxesCollected.assertEquals(9450)
+	let f = new CivicFixture()
+	f.allResearch()
+	f.military.civic.districts[0].civicCenter = false
+	f.commands.dispatch(Player(0), "/civic policy district").assertTrue()
+	f.resources.output.contains("reform discussion").assertTrue()
+	f.military.civic.districts[0].civicCenter = true
+	f.military.civic.districts[0].discussionFirstDay = f.day + 1
+	f.commands.dispatch(Player(0), "/civic policy district").assertTrue()
+	f.resources.output.contains("reform discussion").assertTrue()
+	f.military.civic.districts[0].outbreakFirstDay = f.day + 1
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("active outbreak").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(10000)
+	f.military.civic.states[0].discussion.assertEquals(0)
+	f.military.civic.states[0].diseaseAvoided.assertEquals(0)

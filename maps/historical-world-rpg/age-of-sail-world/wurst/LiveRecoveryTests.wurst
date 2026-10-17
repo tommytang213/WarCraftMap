@@ -443,7 +443,7 @@ function legacyRecoveryRpg(string current) returns string
 	(hint > 0).assertTrue()
 	let rest = SubString(current, hint + 1, StringLength(current))
 	let next = rest.indexOf("|")
-	let legacy = withoutMilitarySettlementPolicy("v3" + SubString(current, 2, hint) + SubString(rest, next, StringLength(rest)))
+	let legacy = withoutMilitarySettlementPolicy("v3" + SubString(current, current.indexOf("|"), hint) + SubString(rest, next, StringLength(rest)))
 	military.restore(legacy).assertTrue()
 	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("")
 	state.recovery.refresh()

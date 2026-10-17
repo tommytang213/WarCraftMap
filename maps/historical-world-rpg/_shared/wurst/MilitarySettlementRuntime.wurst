@@ -3,6 +3,7 @@ import ScenarioSettings
 import ExactNatural
 import MilitaryTraditionLayer
 import CombatEffects
+import CivicGovernance
 
 import RuntimeProtection
 
@@ -30,7 +31,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 9
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 10
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -460,6 +461,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		DisplayTimedTextToPlayer(viewer, 0., 0., 60., heading + "\n" + body + "\nUse /management-close to resume the campaign.")
 
 public class MilitarySettlementRuntime
+	CivicLedger civic = new CivicLedger()
 	PrizeCombatAuthority prizeCombat = new PrizeEncounters()
 	MilitarySettlementAdapter adapter
 	MilitaryRuntimeCallbacks callbacks = null
@@ -500,6 +502,7 @@ public class MilitarySettlementRuntime
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
 	ondestroy
+		destroy civic
 		endRegistration()
 		for i = 0 to contributionCount - 1
 			destroy contributions[i]
@@ -1050,6 +1053,8 @@ public class MilitarySettlementRuntime
 			if forces[i].id == "core:" + settlementId or hasPrefix(forces[i].id, "garrison:" + settlementId + ":") or hasPrefix(forces[i].id, "defense:" + settlementId + ":")
 				forces[i].active = false
 				adapter.removeRepresentation(forces[i].id)
+		if state.controllerId != controllerId
+			civic.controlChanged(settlementId)
 		state.controllerId = controllerId
 		state.underAttack = false
 		state.garrisonStrength = 0
@@ -1180,6 +1185,9 @@ public class MilitarySettlementRuntime
 		for i = 0 to traditionCount - 1
 			let t = traditions[i]
 			result += "|t," + t.controllerId + "," + t.categoryId + "," + t.experience + "," + t.lifePermillePerHundredXp.toString() + "," + t.milestoneXp.toString() + "," + t.milestoneAbilityId.toString()
+		for i = 0 to civic.count - 1
+			let s = civic.states[i]
+			result += "|g," + civic.districts[i].id + "," + s.policyOwner + "," + I2S(s.policyReady) + "," + I2S(s.upkeepThrough) + "," + s.surveyOwner + "," + I2S(s.surveyReady) + "," + boolText(s.surveyed) + "," + s.responseOwner + "," + I2S(s.responseEnd) + "," + I2S(s.cooldownEnd) + "," + I2S(s.lastDay) + "," + I2S(s.discussion) + "," + I2S(s.taxesCollected) + "," + I2S(s.diseaseLost) + "," + I2S(s.diseaseAvoided) + "," + I2S(s.tradeDay) + "," + I2S(s.tradedUnits)
 		return result
 	function deadlineReal(string value) returns real
 		if legacyDeadlines
@@ -1187,6 +1195,37 @@ public class MilitarySettlementRuntime
 		return readClockReal(value)
 	function restoreSnapshotRecord(MilitarySnapshotRecord record, MilitarySettlementRuntime target) returns boolean
 		let kind = record.field(0)
+		if kind == "g"
+			let i = target.civic.index(record.field(1))
+			if record.count != 18 or i < 0 or target.civic.states[i].restored
+				return false
+			for j = 2 to 17
+				if j == 2 or j == 5 or j == 8
+					if record.field(j) != "" and not militaryOrderAtom(record.field(j))
+						return false
+				else if not exactNaturalValid(record.field(j)) or exactNaturalCompare(record.field(j), "2147483647") > 0
+					return false
+			if (record.field(7) != "0" and record.field(7) != "1") or S2I(record.field(12)) > 10000
+				return false
+			let s = target.civic.states[i]
+			s.restored = true
+			s.policyOwner = record.field(2)
+			s.policyReady = S2I(record.field(3))
+			s.upkeepThrough = S2I(record.field(4))
+			s.surveyOwner = record.field(5)
+			s.surveyReady = S2I(record.field(6))
+			s.surveyed = record.field(7) == "1"
+			s.responseOwner = record.field(8)
+			s.responseEnd = S2I(record.field(9))
+			s.cooldownEnd = S2I(record.field(10))
+			s.lastDay = S2I(record.field(11))
+			s.discussion = S2I(record.field(12))
+			s.taxesCollected = S2I(record.field(13))
+			s.diseaseLost = S2I(record.field(14))
+			s.diseaseAvoided = S2I(record.field(15))
+			s.tradeDay = S2I(record.field(16))
+			s.tradedUnits = S2I(record.field(17))
+			return (s.policyOwner == "") == (s.policyReady == 0) and (s.surveyOwner == "") == (s.surveyReady == 0) and (s.responseOwner == "") == (s.responseEnd == 0) and s.upkeepThrough >= s.policyReady and s.cooldownEnd >= s.responseEnd and (not s.surveyed or s.surveyReady > 0)
 		if kind == "k"
 			if target.legacyDeadlines or target.hasSavedGameplayClock or record.count != 2
 				return false
@@ -1348,14 +1387,16 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
 		// fresh provider or touch projections for every validation/load attempt.
+		destroy parsed.civic
+		parsed.civic = civic.fork()
 		parsed.traditionDefinitions = traditionDefinitions
 		parsed.combatBindings = combatBindings
-		parsed.legacyCombatProfiles = not candidate.startsWith("v9|")
+		parsed.legacyCombatProfiles = not candidate.startsWith("v10|") and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
 		parsed.legacyOrders = parsed.legacyTraditions and not candidate.startsWith("v6|")
@@ -1364,7 +1405,7 @@ public class MilitarySettlementRuntime
 		parsed.legacyRecovery = parsed.legacyDeadlines or candidate.startsWith("v3|")
 		parsed.legacySettlements = parsed.legacyRecovery
 		parsed.legacyMilitaryVersion4 = candidate.startsWith("v4|")
-		var records = SubString(candidate, 2, StringLength(candidate))
+		var records = SubString(candidate, candidate.indexOf("|"), StringLength(candidate))
 		if parsed.legacyConflicts
 			records = initialConflicts + records
 		let record = new MilitarySnapshotRecord()
@@ -1385,6 +1426,10 @@ public class MilitarySettlementRuntime
 		if traditionDefinitions != null and not traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)
 			parsed.dispose()
 			return null
+		for i = 0 to parsed.civic.count - 1
+			if candidate.startsWith("v10|") and not parsed.civic.states[i].restored
+				parsed.dispose()
+				return null
 		for i = 0 to parsed.conflictCount - 1
 			var attackers = 0
 			var defenders = 0
@@ -1447,6 +1492,9 @@ public class MilitarySettlementRuntime
 			destroy traditions[i]
 		for i = 0 to conflictCount - 1
 			destroy conflicts[i]
+		destroy civic
+		civic = parsed.civic
+		parsed.civic = new CivicLedger()
 		forceCount = parsed.forceCount
 		for i = 0 to forceCount - 1
 			forces[i] = parsed.forces[i]

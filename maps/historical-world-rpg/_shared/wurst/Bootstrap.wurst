@@ -16,6 +16,7 @@ import MilitaryOrderEvents
 import CampaignHandoff
 import CampaignSaveManager
 import CampaignRegistration
+import CivicCampaignRuntime
 import PlayableCampaignRuntime
 import PlayableTrade
 import CountryDiplomacyScreen
@@ -100,6 +101,7 @@ function initializeRegionalCampaign()
 	let tradeRegistrationProblem = registerPlayableTrade(commands, campaign)
 	if tradeRegistrationProblem != ""
 		error(tradeRegistrationProblem)
+	registerCivicCommands(commands, campaign.state.civicRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	registerUnstuckCommand(commands, recoveryService)
 	let rpgRegistrationProblem=registerRpgRuntimeCommands(commands,rpgRuntime)

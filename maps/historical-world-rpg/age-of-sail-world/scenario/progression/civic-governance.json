@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "metrics": ["civic_reform_diffusion", "epidemic_losses_avoided", "land_tax_collection_efficiency"],
+  "rules": {
+    "transitionDays": 90,
+    "enactmentBasisPoints": 100,
+    "upkeepBasisPoints": 50,
+    "surveyBasisPoints": 100,
+    "responseBasisPoints": 200,
+    "responseDays": 90,
+    "cooldownDays": 90,
+    "tradePenaltyBasisPoints": 1000,
+    "baseTaxBasisPoints": 9000
+  },
+  "districts": {
+    "taxSharePermille": 110,
+    "normalAnnualCapacityUnits": 12000,
+    "capitalCapacityPermille": 1500,
+    "portCapacityPermille": 1250,
+    "tradeCenterCapacityPermille": 1350,
+    "civicRoles": ["capital", "trade_center", "trade_hub", "caravan_center"],
+    "discussionFirstDate": "1770-01-01",
+    "discussionPerDay": 20,
+    "medicalGoodPreference": ["cloth", "barkcloth", "wool_cloth"],
+    "medicalUnits": 4,
+    "dailyTradeCapacityUnits": 1000
+  },
+  "outbreaks": [
+    {
+      "settlementId": "hawaii_royal_center",
+      "firstDate": "1778-01-01",
+      "durationDays": 180,
+      "diseaseLossPerDay": 4,
+      "evidenceEventId": "pacific_contact_epidemic_pressure",
+      "condition": "existing administered settlement manpower; bounded contact disease exposure, no scripted political outcome"
+    }
+  ],
+  "notes": [
+    "Each settlement is a named local tax district within its authored province. Surveying every district costs 1% of the sum of provincial normal annual tax; partial surveys improve only the paid, known local district.",
+    "Capacity factors and tax share follow economy/balance.json; capital/port/market geography retain asymmetric revenue capacities. Actual collection transfers existing market liquidity to the controlling government's treasury.",
+    "Lawful civic institutions require current legal control and a serving local administrator; discussion begins in 1770 and progresses locally. Research never emancipates anyone or changes diplomacy.",
+    "Medical cloth is existing local stock used for dressings. A district without that commodity or access cannot activate a response. No supplies are granted.",
+    "Only the authored Hawaii contact exposure creates disease losses initially; future scenarios can author additional outbreaks. Medical response never reduces combat losses."
+  ]
+}

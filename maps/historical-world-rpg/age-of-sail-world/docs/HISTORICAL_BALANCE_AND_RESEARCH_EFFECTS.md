@@ -86,3 +86,60 @@ Evaluate both 10-year opening survival and 25–50-year progression, varying pla
 - Do not touch the native launch crash evidence in issue #438/PR #455; Warcraft 3.0 native client gameplay remains unverified. Keep that separate and a priority before release.
 - Bundling four related unlock consumers into one implementation issue is preferable to four independent unintegrated PRs. The group must remain testable and small; avoid a single 220-unlock monster PR.
 - If a design value needs tuning after actual combat/economy simulation, update this versioned scenario catalogue and regenerate deterministic evidence. Avoid spawning new user decisions for ordinary tuning.
+
+## Civic governance production consumers (#512)
+
+`scenario/progression/civic-governance.json` supplies the local conditions, bills,
+calendar durations and economic calibration for the three civic consumers. The
+compiler reads their exact typed unlocks and basis points from the approved
+`gameplay-effect-design.json`; it does not change research prerequisites or costs.
+Shared `CivicGovernance` and `CivicCampaignRuntime` run the same rules for any
+controller, independently of physical map or Warcraft object survival.
+
+Use `/civic inspect DISTRICT`, where DISTRICT is a controlled settlement ID, for
+expenses, conditions, deadlines and outcomes. `/civic policy`, `/civic repeal`,
+`/civic survey` and `/civic response` take that same ID. A serving administrator
+and legal control authorize local administration. A mere occupation, regional map
+selection, nationality or technology discovery does not authorize it.
+
+* The civic policy requires a civic center and locally available discussion.
+  After the paid 90-day transition it accelerates the district's bounded civic
+  institution diffusion meter by 500 bp. Annual administration is paid in advance;
+  failure to fund renewal suspends the policy. No emancipation or diplomacy is
+  inferred from institutional discussion or progress.
+* Each settlement is a local tax district of its authored province. A paid survey
+  takes 90 days and improves only that district's collection efficiency by 500 bp.
+  Surveying the entire province costs 1% of its districts' combined normal annual
+  tax. Completed local land records survive capture; their benefit requires the
+  new controller's own entitlement. The annual levy transfers existing market
+  liquidity into the government treasury, capped by the assessed taxable capacity.
+  The default 90% collection rate becomes 94.5%, with one final integer rounding.
+* Medical response consumes government treasury and existing local cloth stock
+  for dressings. It reduces actual exposed manpower disease losses by 2500 bp
+  for 90 days, followed by 90 days of cooldown. A persisted district-wide daily
+  shipment budget drops from 1,000 to 900 stock units during response, shared by
+  purchases and sales across all commodities. Splitting transactions, changing
+  cargo stores or reloading cannot reset that budget. The initial bounded disease
+  exposure is the authored 1778 Hawaii contact outbreak; other locations require
+  additional authored outbreaks. Unavailable medical commodities and blocked
+  supply access reject activation without partial payment.
+
+Gains and avoided losses round down; positive currency bills round up. Daily
+losses describe the interval ending at each committed day, so a 90-day response
+covers exactly 90 future daily loss intervals. Tax is collected once per 365-day
+accounting year. These are campaign accounting units, not historical demographic
+estimates. Capacity factors retain the existing economy's capital, port and market
+asymmetries; this does not claim to prove relative historical national strength.
+
+Military/settlement snapshot schema **10** includes local civic projects, policy
+choice, response/cooldown, diffusion, outcome counters and shipment usage. Versions
+1–9 migrate with inactive projects and no invented past revenue or supplies. The
+first live day anchors legacy accounting. Campaign transaction rollback restores
+this ledger together with treasuries, commodities and research. Capture cancels
+policy choices, unfinished surveys and medical authority, retains completed land
+records and local cooldowns, and grants no research or assets.
+
+The three exact research-unbound release findings remain in the release audit
+until fresh integrated current-main execution, runtime and traceability evidence
+removes them. Focused interpreter execution is development evidence; it does not
+establish native client playability or resolve the unrelated #438 crash.
