@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "_shared" / "tooling"))
 from package_wurst_campaign import (  # noqa: E402
     PackagingError,
+    _write_campaign,
     _inspect_physical_map,
     _localize_runtime,
     _retain_bootstrap_dependencies,
@@ -150,6 +151,101 @@ class CampaignPackagingTests(unittest.TestCase):
         shutil.copy2(PROJECT_ROOT / "physical-maps.json", self.manifest)
         self.rewrite(lambda d: d["physicalMaps"][1].update(packagePath=d["physicalMaps"][0]["packagePath"].lower()))
         with self.assertRaisesRegex(PackagingError, "conflicting package paths"): load_campaign_config(self.manifest)
+
+    def test_project_owned_campaign_wts_is_packaged_and_checked(self):
+        source = self.project / "campaign-test.wts"
+        source.write_bytes(b"\xef\xbb\xbfSTRING 7\r\n{\r\nCampaign owned text\r\n}\r\n")
+        self.rewrite(lambda d: d["campaign"].update(wtsSource="campaign-test.wts"))
+        config = load_campaign_config(self.manifest)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            built = []
+            for physical in config.maps:
+                nested = root / (physical.id + ".w3x")
+                nested.write_bytes(physical.id.encode())
+                built.append((physical, nested))
+            campaign = root / "campaign.w3n"
+            _write_campaign(campaign, config, built)
+            inspect_campaign(config, campaign)
+            members = MpqReader(campaign).members()
+            self.assertEqual(source.read_bytes(), members["war3campaign.wts"])
+            self.assertIn(b"war3campaign.wts\r\n", members["(listfile)"])
+
+            altered = dict(members)
+            altered["war3campaign.wts"] = source.read_bytes() + b"\r\n"
+            write_mpq(campaign, altered)
+            with self.assertRaisesRegex(PackagingError, "campaign WTS"):
+                inspect_campaign(config, campaign)
+
+            missing = dict(members)
+            missing.pop("war3campaign.wts")
+            missing["(listfile)"] = missing["(listfile)"].replace(b"war3campaign.wts\r\n", b"")
+            write_mpq(campaign, missing)
+            with self.assertRaisesRegex(PackagingError, "member set"):
+                inspect_campaign(config, campaign)
+
+    def test_legacy_campaign_without_wts_remains_valid(self):
+        self.rewrite(lambda d: d["campaign"].pop("wtsSource", None))
+        config = load_campaign_config(self.manifest)
+        self.assertIsNone(config.campaign_wts_source)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            built = []
+            for physical in config.maps:
+                nested = root / (physical.id + ".w3x")
+                nested.write_bytes(physical.id.encode())
+                built.append((physical, nested))
+            campaign = root / "legacy.w3n"
+            _write_campaign(campaign, config, built)
+            inspect_campaign(config, campaign)
+            members = MpqReader(campaign).members()
+            self.assertNotIn("war3campaign.wts", members)
+            self.assertNotIn(b"war3campaign.wts", members["(listfile)"])
+
+    def test_full_campaign_member_delta_for_optional_wts(self):
+        self.rewrite(lambda d: d["campaign"].pop("wtsSource", None))
+        legacy_config = load_campaign_config(self.manifest)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            built = []
+            for physical in legacy_config.maps:
+                nested = root / (physical.id + ".w3x")
+                nested.write_bytes(physical.id.encode())
+                built.append((physical, nested))
+            self.assertEqual(17, len(built))
+            legacy = root / "legacy.w3n"
+            _write_campaign(legacy, legacy_config, built)
+            inspect_campaign(legacy_config, legacy)
+
+            self.rewrite(lambda d: d["campaign"].update(wtsSource="campaign/war3campaign.wts"))
+            with_wts_config = load_campaign_config(self.manifest)
+            with_wts = root / "with-wts.w3n"
+            _write_campaign(with_wts, with_wts_config, built)
+            inspect_campaign(with_wts_config, with_wts)
+
+            before = MpqReader(legacy).members()
+            after = MpqReader(with_wts).members()
+            self.assertEqual(set(before) | {"war3campaign.wts"}, set(after))
+            self.assertEqual(["(listfile)"], sorted(name for name in before if before[name] != after[name]))
+            self.assertEqual((self.project / "campaign/war3campaign.wts").read_bytes(), after["war3campaign.wts"])
+            self.assertEqual(17, sum(name.endswith(".w3x") for name in before))
+            self.assertEqual(legacy_config.name, with_wts_config.name)
+
+    def test_campaign_wts_source_must_stay_in_project(self):
+        self.rewrite(lambda d: d["campaign"].update(wtsSource="../outside.wts"))
+        with self.assertRaisesRegex(PackagingError, "escapes the project"):
+            load_campaign_config(self.manifest)
+
+    def test_malformed_campaign_wts_source_is_rejected(self):
+        source = self.project / "campaign-test.wts"
+        self.rewrite(lambda d: d["campaign"].update(wtsSource="campaign-test.wts"))
+        config = load_campaign_config(self.manifest)
+        for payload in (b"not WTS", b"STRING 7\n{\nunterminated",
+                        b"STRING 7\n{\na\n}\nSTRING 7\n{\nb\n}\n", b"\xff"):
+            with self.subTest(payload=payload):
+                source.write_bytes(payload)
+                with self.assertRaisesRegex(PackagingError, "campaign WTS source"):
+                    _write_campaign(self.project / "invalid.w3n", config, [])
 
     def test_generic_zip_renamed_to_w3n_is_rejected(self):
         fake_campaign = self.project / "generic.w3n"

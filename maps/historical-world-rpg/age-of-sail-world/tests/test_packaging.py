@@ -52,8 +52,11 @@ class PackagingTests(unittest.TestCase):
         output = build(self.project / "package.json", grill=str(self.fake))
         self.assertEqual(["install", "typecheck", "test", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
-            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json"))
+            names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json")); authored_preview = archive.read("war3mapMap.blp")
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)
+        self.assertIn("war3mapMap.blp", names)
+        self.assertNotIn("war3mapMap.blp.base64", names)
+        self.assertEqual(b"BLP1", authored_preview[:4])
         self.assertIn("runtime/terrain-europe.json", names)
         self.assertIn("runtime/terrain-africa.json", names)
         self.assertIn("runtime/terrain-middle_east_india.json", names)
