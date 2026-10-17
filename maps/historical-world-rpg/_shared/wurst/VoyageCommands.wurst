@@ -1,0 +1,63 @@
+package VoyageCommands
+
+import CommandRouter
+import PlayableCampaignRuntime
+import MilitarySettlementRuntime
+
+/** The same registered path is used in headless command tests and the client. */
+public class VoyageCommand implements CommandHandler
+	PlayableCampaignState state
+	CommandOutput output
+	string action
+	construct(PlayableCampaignState state, CommandOutput output, string action)
+		this.state = state
+		this.output = output
+		this.action = action
+	override function execute(player sender, string arguments)
+		if not state.isSaveSafe() or state.militarySettlements == null or state.rpg == null
+			output.show(sender, "Voyage actions are unavailable during campaign restoration or travel.")
+			return
+		let military = state.militarySettlements
+		let rpg = state.rpg
+		let resources = rpg.researchResources
+		var forceId = arguments
+		var option = ""
+		let separatorPosition = arguments.indexOf(" ")
+		if separatorPosition >= 0
+			forceId = SubString(arguments, 0, separatorPosition)
+			option = SubString(arguments, separatorPosition + 1, StringLength(arguments))
+		let controller = resources.controllerId(sender)
+		let day = state.clock.currentDay
+		var ok = false
+		if action == "start" and military.voyages != null
+			let route = military.voyages.route(option)
+			if route != null
+				ok = military.startVoyage(forceId, option, controller, day, state.knowledge.knowsRegion(route.knownRegionId))
+		else if action == "return"
+			ok = military.interruptVoyage(forceId, controller, day)
+		else if action == "kit" and military.voyages != null
+			let found = military.forceIndex(forceId)
+			if option == "remove"
+				ok = military.setNavigationEquipment(forceId, controller, false, day)
+			else if option == "install" and found >= 0
+				let vessel = military.forces[found]
+				// Equipment is a paid, idle-station operation. No remote kit grant
+				// can appear at sea or as a side effect of finishing research.
+				let price = military.voyages.equipmentMoneyCost
+				if not vessel.navigation.pending() and vessel.active and vessel.strength > 0 and resources.gold(sender) >= price
+					ok = military.setNavigationEquipment(forceId, controller, true, day)
+					if ok
+						resources.setGold(sender, resources.gold(sender) - price)
+		if ok
+			output.show(sender, "Voyage action completed.")
+		else
+			output.show(sender, "Voyage requirements are not met.")
+
+public function registerVoyageCommands(CommandRegistry commands, PlayableCampaignState state) returns string
+	var problem = commands.register("voyage", "", "voyage FORCE ROUTE", "Begin a provisioned station-return sea voyage.", "Requires an owned supported ship, a known legal circuit and the full undiscounted provisions. Travel uses campaign days. Navigation research with purchased observation equipment reduces position-finding provisions only.", 2, 2, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "start"))
+	if problem != ""
+		return problem
+	problem = commands.register("voyage-kit", "", "voyage-kit FORCE install|remove", "Purchase or remove astronomical observation equipment.", "Installation costs the authored price, requires an idle supported vessel and never follows from research. Removal grants no refund.", 2, 2, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "kit"))
+	if problem != ""
+		return problem
+	return commands.register("voyage-return", "", "voyage-return FORCE", "Interrupt a circuit and return to its original station.", "Returns unused reserved provisions. Resolved days and navigation credit survive; no destination or geographic boundary is bypassed.", 1, 1, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "return"))

@@ -111,6 +111,9 @@ class MilitaryRuntime:
         adapter: MilitaryRuntimeAdapter,
         conflict_is_active: Callable[[str, str], bool],
         tradition_runtime: Any | None = None,
+        *, voyage_catalog: Any | None = None, research_runtime: Any | None = None,
+        campaign_day: Callable[[], int] = lambda: 0,
+        known_region: Callable[[str], bool] = lambda _region: False,
     ) -> None:
         if not isinstance(world_definitions, Mapping):
             raise MilitaryError("world definitions must be an object")
@@ -118,6 +121,10 @@ class MilitaryRuntime:
         self._adapter = adapter
         self._conflict_is_active = conflict_is_active
         self._traditions = tradition_runtime
+        self._voyages = voyage_catalog
+        self._research = research_runtime
+        self._campaign_day = campaign_day
+        self._known_region = known_region
         self._polities = _index(self._world, "polities")
         self._officers = _index(self._world, "officers")
         self._zones = _index(self._world, "navigationZones")
@@ -126,6 +133,9 @@ class MilitaryRuntime:
         self._army_definitions = _index(self._world, "armies")
         self._fleet_definitions = _index(self._world, "fleets")
         self._state = self._initial_state()
+        if self._voyages is not None:
+            self._state["schemaVersion"] = 2
+            self._state["voyages"] = self._voyages.initial_state()
         self._representations: dict[str, list[Any]] = {}
 
     def _initial_state(self) -> dict[str, Any]:
@@ -199,6 +209,18 @@ class MilitaryRuntime:
         return owner, controller
 
     def validate_snapshot(self, candidate: Any) -> dict[str, Any]:
+        navigation = None
+        if self._voyages is not None and isinstance(candidate, Mapping):
+            candidate = copy.deepcopy(dict(candidate))
+            # Pure migration: old military saves had no observation equipment,
+            # pending voyages or credits. Never seed these from live authority.
+            if candidate.get("schemaVersion") == 1 and set(candidate) == {"schemaVersion", "units", "groups"}:
+                candidate["schemaVersion"] = 2
+                candidate["voyages"] = self._voyages.initial_state()
+            if candidate.get("schemaVersion") != 2:
+                raise MilitaryError("voyage military state schemaVersion must be 2")
+            navigation = self._voyages.validate(candidate.pop("voyages", None))
+            candidate["schemaVersion"] = 1
         if not isinstance(candidate, Mapping) or set(candidate) != {"schemaVersion", "units", "groups"} or candidate.get("schemaVersion") != 1:
             raise MilitaryError("military state schemaVersion must be 1 and contain only units and groups")
         raw_units, raw_groups = candidate.get("units"), candidate.get("groups")
@@ -276,7 +298,16 @@ class MilitaryRuntime:
                 "officerIds": list(self._validate_officers(raw, f"military group {ident}"))}
         if set(groups) != set(expected_groups):
             raise MilitaryError("military group state must cover scenario groups exactly")
-        return {"schemaVersion": 1, "units": [units[x] for x in sorted(units)], "groups": [groups[x] for x in sorted(groups)]}
+        result = {"schemaVersion": 1, "units": [units[x] for x in sorted(units)], "groups": [groups[x] for x in sorted(groups)]}
+        if navigation is not None:
+            for ident, progress in navigation["ships"].items():
+                unit = units[ident]
+                if unit["operationalState"]["supply"] + progress["reserved"] > 100:
+                    raise MilitaryError("voyage provision reserve exceeds vessel capacity")
+                if progress["routeId"] and (unit["kind"] != "ship" or unit["currentLocationId"] != self._voyages.ships[ident]["stationZoneId"]):
+                    raise MilitaryError("pending voyage is outside its station")
+            result.update(schemaVersion=2, voyages=navigation)
+        return result
 
     def snapshot(self) -> dict[str, Any]:
         return copy.deepcopy(self._state)
@@ -306,6 +337,76 @@ class MilitaryRuntime:
         self._state = validated
         return changed
 
+    def _voyage_pending(self, ident):
+        return bool(self._voyages and self._state["voyages"]["ships"].get(ident, {}).get("routeId"))
+
+    def _voyage_supported(self, unit):
+        ship = self._voyages.ships.get(unit["id"]) if self._voyages else None
+        return bool(ship and unit["kind"] == "ship" and unit["runtimeTemplateId"] == ship["runtimeTemplateId"]
+                    and unit["currentLocationId"] == ship["stationZoneId"] and unit["representedStrength"] > 0)
+
+    def _commit_voyages(self, candidate):
+        # Representation reconstruction is transactional too. A failed adapter
+        # keeps both old authority and its existing objects for load rollback.
+        changed = candidate != self._state
+        if changed:
+            self.restore(candidate)
+        return changed
+
+    def start_voyage(self, unit_id, route_id, controller_id):
+        unit = self._unit(unit_id)
+        if not self._voyage_supported(unit) or unit["controllerPolityId"] != controller_id:
+            raise MilitaryError("unsupported or unowned voyage vessel")
+        route = self._voyages.routes.get(route_id)
+        if route is None or not self._known_region(route["knownRegionId"]):
+            raise MilitaryError("unknown or illegal voyage circuit")
+        candidate = self.snapshot()
+        target = next(u for u in candidate["units"] if u["id"] == unit_id)
+        progress = candidate["voyages"]["ships"][unit_id]
+        target["operationalState"]["supply"] = self._voyages.start(unit_id, progress, route_id,
+            self._campaign_day(), target["operationalState"]["supply"])
+        return self._commit_voyages(candidate)
+
+    def set_navigation_equipment(self, unit_id, controller_id, equipped, money):
+        unit = self._unit(unit_id)
+        if type(equipped) is not bool or type(money) is not int or money < 0 or not self._voyage_supported(unit) or unit["controllerPolityId"] != controller_id:
+            raise MilitaryError("invalid navigation equipment request")
+        current = self._state["voyages"]["ships"][unit_id]
+        if current["equipment"] == equipped or equipped and (current["routeId"] or money < self._voyages.equipment_cost):
+            raise MilitaryError("equipment requires an idle ship and authored payment")
+        self.advance_voyages(self._campaign_day())
+        candidate = self.snapshot()
+        candidate["voyages"]["ships"][unit_id]["equipment"] = equipped
+        self._commit_voyages(candidate)
+        return money - (self._voyages.equipment_cost if equipped else 0)
+
+    def advance_voyages(self, day):
+        if self._voyages is None:
+            return False
+        candidate = self.snapshot()
+        units = {u["id"]: u for u in candidate["units"]}
+        for ident, progress in candidate["voyages"]["ships"].items():
+            if not progress["routeId"]:
+                continue
+            unit = units[ident]
+            if not self._voyage_supported(unit):
+                returned = self._voyages.interrupt(progress)
+            else:
+                earned = self._research.entitlements(unit["controllerPolityId"]) if self._research else ()
+                eligible = any(e["kind"] == self._voyages.kind and e["contentId"] == self._voyages.content for e in earned)
+                returned = self._voyages.resolve(progress, day, eligible)
+            unit["operationalState"]["supply"] += returned
+        return self._commit_voyages(candidate)
+
+    def interrupt_voyage(self, unit_id, controller_id):
+        if self._unit(unit_id)["controllerPolityId"] != controller_id or not self._voyage_pending(unit_id):
+            raise MilitaryError("no owned pending voyage")
+        self.advance_voyages(self._campaign_day())
+        candidate = self.snapshot()
+        returned = self._voyages.interrupt(candidate["voyages"]["ships"][unit_id])
+        next(u for u in candidate["units"] if u["id"] == unit_id)["operationalState"]["supply"] += returned
+        return self._commit_voyages(candidate)
+
     def set_members(self, group_id: str, member_unit_ids: list[str]) -> bool:
         candidate = self.snapshot()
         group = next((x for x in candidate["groups"] if x["id"] == group_id), None)
@@ -323,6 +424,7 @@ class MilitaryRuntime:
         return self._commit(candidate)
 
     def set_ownership(self, entity_id: str, legal_owner_polity_id: str, controller_polity_id: str) -> bool:
+        self.advance_voyages(self._campaign_day())
         candidate = self.snapshot()
         entity = next((x for key in ("units", "groups") for x in candidate[key] if x["id"] == entity_id), None)
         if entity is None:
@@ -406,6 +508,8 @@ class MilitaryRuntime:
         if isinstance(supply_cost, bool) or not isinstance(supply_cost, int) or supply_cost < 0:
             raise MilitaryError("movement supply cost must be a non-negative integer")
         for unit in targets:
+            if self._voyage_pending(unit["id"]):
+                raise MilitaryError("interrupt the voyage before ordinary movement")
             if not self._reachable(unit["kind"], unit["currentLocationId"], destination_location_id):
                 raise MilitaryError(f"military unit {unit['id']!r} cannot reach {destination_location_id!r}")
             if unit["operationalState"]["supply"] < supply_cost:
@@ -433,7 +537,7 @@ class MilitaryRuntime:
         unit["locallyRelevant"] = relevant
         validated = self.validate_snapshot(candidate)
         if relevant:
-            created = self._create_for(validated, unit_id)
+            created = [] if self._voyage_pending(unit_id) else self._create_for(validated, unit_id)
             self._state = validated
             self._representations[unit_id] = created
             if self._traditions is not None:
@@ -468,19 +572,19 @@ class MilitaryRuntime:
         for unit in self._state["units"]:
             ident = unit["id"]
             live = [handle for handle in self._representations.get(ident, []) if self._adapter.exists(handle)]
-            expected = self._templates[unit["runtimeTemplateId"]].get("activeObjectCount") if unit["locallyRelevant"] else 0
+            expected = self._templates[unit["runtimeTemplateId"]].get("activeObjectCount") if unit["locallyRelevant"] and not self._voyage_pending(ident) else 0
             if len(live) != expected:
                 for handle in live:
                     self._adapter.retire(handle)
                 self._representations.pop(ident, None)
-                if unit["locallyRelevant"]:
+                if unit["locallyRelevant"] and not self._voyage_pending(ident):
                     self._representations[ident] = self._create_for(self._state, ident)
 
     def reconstruct_representations(self) -> None:
         staged = {}
         try:
             for unit in self._state["units"]:
-                if unit["locallyRelevant"]:
+                if unit["locallyRelevant"] and not self._voyage_pending(unit["id"]):
                     staged[unit["id"]] = self._create_for(self._state, unit["id"])
         except Exception:
             for handles in staged.values():

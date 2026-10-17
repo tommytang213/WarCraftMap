@@ -1,0 +1,165 @@
+package VoyageNavigation
+
+import ResearchEntitlements
+
+/** No world IDs or balance values live here. A voyage is a scenario-defined
+ * station-return circuit; it never changes geography, knowledge or the clock. */
+public class NavigationResearchEffects implements TechnologyEffectPort
+	TechnologyEffectPort other
+	string kind
+	string contentId
+	construct(TechnologyEffectPort other, string kind, string contentId)
+		this.other = other
+		this.kind = kind
+		this.contentId = contentId
+	override function bindingStatus(ResearchUnlock definition) returns string
+		if definition.kind == kind and definition.contentId == contentId
+			return RESEARCH_BOUND
+		if other != null
+			return other.bindingStatus(definition)
+		return RESEARCH_UNBOUND
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		if other != null
+			other.replaceResearchEntitlements(result)
+		else
+			destroy result
+
+public class VoyageProgress
+	boolean equipment = false
+	string routeId = ""
+	int elapsedDays = 0
+	int lastDay = 0
+	int reserved = 0
+	int creditBasisPoints = 0
+	boolean saved = false
+	function pending() returns boolean
+		return routeId != ""
+	function interrupt() returns int
+		let released = reserved
+		routeId = ""
+		elapsedDays = 0
+		lastDay = 0
+		reserved = 0
+		return released
+	function record() returns string
+		var equipped = "0"
+		if equipment
+			equipped = "1"
+		return equipped + "," + routeId + "," + elapsedDays.toString() + "," + lastDay.toString() + "," + reserved.toString() + "," + creditBasisPoints.toString()
+
+public class VoyageRoute
+	string id
+	string mapId
+	string knownRegionId
+	int days
+	int dailyProvisions
+	int dailyPositionFindingProvisions
+	VoyageRoute next = null
+	construct(string id, string mapId, string knownRegionId, int days, int dailyProvisions, int dailyPositionFindingProvisions)
+		this.id = id
+		this.mapId = mapId
+		this.knownRegionId = knownRegionId
+		this.days = days
+		this.dailyProvisions = dailyProvisions
+		this.dailyPositionFindingProvisions = dailyPositionFindingProvisions
+
+public class VoyageShip
+	string forceId
+	int unitTypeId
+	string mapId
+	real stationX
+	real stationY
+	string routeIds
+	VoyageShip next = null
+	construct(string forceId, int unitTypeId, string mapId, real stationX, real stationY, string routeIds)
+		this.forceId = forceId
+		this.unitTypeId = unitTypeId
+		this.mapId = mapId
+		this.stationX = stationX
+		this.stationY = stationY
+		this.routeIds = routeIds
+
+public class VoyageContract
+	string kind
+	string contentId
+	int reductionBasisPoints
+	int equipmentMoneyCost
+	VoyageRoute routes = null
+	VoyageShip ships = null
+	construct(string kind, string contentId, int reductionBasisPoints, int equipmentMoneyCost)
+		this.kind = kind
+		this.contentId = contentId
+		this.reductionBasisPoints = reductionBasisPoints
+		this.equipmentMoneyCost = equipmentMoneyCost
+	function addRoute(VoyageRoute route)
+		route.next = routes
+		routes = route
+	function addShip(VoyageShip ship)
+		ship.next = ships
+		ships = ship
+	function route(string id) returns VoyageRoute
+		var route = routes
+		while route != null
+			if route.id == id
+				return route
+			route = route.next
+		return null
+	function ship(string forceId) returns VoyageShip
+		var ship = ships
+		while ship != null
+			if ship.forceId == forceId
+				return ship
+			ship = ship.next
+		return null
+	function supports(string forceId, int unitTypeId, string routeId) returns boolean
+		var ship = ships
+		while ship != null
+			if ship.forceId == forceId and ship.unitTypeId == unitTypeId and (routeId == "" or ship.routeIds.indexOf("|" + routeId + "|") >= 0)
+				return true
+			ship = ship.next
+		return false
+	function valid(VoyageProgress state) returns boolean
+		if state.elapsedDays < 0 or state.lastDay < 0 or state.lastDay > 1000000 or state.reserved < 0 or state.creditBasisPoints < 0 or state.creditBasisPoints >= 10000
+			return false
+		if not state.pending()
+			return state.elapsedDays == 0 and state.lastDay == 0 and state.reserved == 0
+		let route = route(state.routeId)
+		return route != null and state.elapsedDays < route.days and state.reserved == (route.days - state.elapsedDays) * route.dailyProvisions
+	/** Reserve the full undiscounted provisions. Research cannot legalize a
+	 * voyage that lacks provisions; eligibility is checked at resolution. */
+	function start(VoyageProgress state, VoyageRoute route, int day, int provisions) returns boolean
+		let required = route.days * route.dailyProvisions
+		if state.pending() or day < 0 or provisions < required
+			return false
+		state.routeId = route.id
+		state.elapsedDays = 0
+		state.lastDay = day
+		state.reserved = required
+		return true
+	/** Exact fixed point. Fractions survive interruption and repeated voyages;
+	 * no floating arithmetic, floor-per-callback loss or repeated-day credits. */
+	function resolve(VoyageProgress state, int day, boolean eligible) returns int
+		if not state.pending() or day < state.lastDay
+			return 0
+		let route = route(state.routeId)
+		let elapsed = IMinBJ(day - state.lastDay, route.days - state.elapsedDays)
+		state.reserved -= elapsed * route.dailyProvisions
+		state.elapsedDays += elapsed
+		state.lastDay += elapsed
+		var credit = state.creditBasisPoints
+		if eligible and state.equipment
+			credit += elapsed * route.dailyPositionFindingProvisions * reductionBasisPoints
+		let released = credit div 10000
+		state.creditBasisPoints = credit mod 10000
+		if state.elapsedDays == route.days
+			state.interrupt()
+		return released
+	ondestroy
+		while routes != null
+			let following = routes.next
+			destroy routes
+			routes = following
+		while ships != null
+			let following = ships.next
+			destroy ships
+			ships = following

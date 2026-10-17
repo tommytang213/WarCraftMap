@@ -221,6 +221,18 @@
     "quest_marker_refresh": {
       "path": "wurst/QuestNavigation.wurst",
       "signature": "function refreshMarker()"
+    },
+    "voyage_registration": {
+      "path": "wurst/VoyageCommands.wurst",
+      "signature": "public function registerVoyageCommands(CommandRegistry commands, PlayableCampaignState state) returns string"
+    },
+    "voyage_start": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function startVoyage(string forceId, string routeId, string controllerId, int day, boolean destinationKnown) returns boolean"
+    },
+    "voyage_resolve": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function resolveVoyages(int day)"
     }
   },
   "systems": {
@@ -279,7 +291,10 @@
     ],
     "technology_institutions": [
       "rpg_registration",
-      "research"
+      "research",
+      "voyage_registration",
+      "voyage_start",
+      "voyage_resolve"
     ],
     "quests_journal": [
       "rpg_registration",

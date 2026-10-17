@@ -107,11 +107,14 @@ def _audit_research_bindings():
     # gameplay consumers. Keep each missing typed consumer accountable at release.
     from combat_effect_catalog import build
     bindings = build(PROJECT)
+    from navigation_efficiency import build as navigation_contract
+    navigation, _world = navigation_contract(PROJECT)
+    bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
         f"{row['nodeId']}: {row['kind']} {row['contentId']} is unbound; no gameplay consumer")
-        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bindings.research_effects)]
+        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bound)]
 
 
 def only_unbound_research_blocks(report):

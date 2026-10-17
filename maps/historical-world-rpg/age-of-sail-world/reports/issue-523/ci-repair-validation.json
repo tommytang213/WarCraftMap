@@ -1,0 +1,47 @@
+{
+  "broadPythonRuns": "Stopped redundant broad runs; only the completed focused and automation suites are claimed.",
+  "checks": [
+    {
+      "check": "relevant-python",
+      "duration": "440.027s",
+      "logSha256": "e219a3bff8ded1cd65bb6b25c2b8e403b499f7e486e6dc96c64e70a1e8df0b0c",
+      "status": "pass",
+      "tests": 183,
+      "transcript": "ci-repair-relevant.log.gz"
+    },
+    {
+      "check": "automation",
+      "duration": "8.655s",
+      "logSha256": "3df07045bb9f4c976f7f833ce8857bd056f5d94868d0f12225feb80103e6768f",
+      "status": "pass",
+      "tests": 198,
+      "transcript": "ci-repair-automation.log.gz"
+    }
+  ],
+  "ciFailure": {
+    "job": "https://github.com/tommytang213/WarCraftMap/actions/runs/39017935986/job/117353765297",
+    "message": "runtime-acceptance report is stale"
+  },
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "frameworkConformance": "pass",
+  "fullRepositoryValidation": "deferred_to_outer_worker",
+  "generatedPayload": "pass",
+  "integrationRepair": "Recompute the runtime report with current sources at its recorded revision in source-only campaign preflight. Preserve strict post-build execution, artifact and publication gates.",
+  "nativeClient": "not_run",
+  "productionSourcePreflight": {
+    "saveFixtures": 10,
+    "status": "pass",
+    "transcript": "ci-repair-preflight.log.gz"
+  },
+  "pythonTests": 381,
+  "reports": "All three regenerated on this tested source snapshot; no remaining blocker waived.",
+  "sourceIdentity": {
+    "sourceRevision": "d756978d188d0378334c7a0b12f65dc6013620d8",
+    "sourceTreeSha256": "ed13de0b1e8ca33d41caea037e4028111603629f38549f031a6e83c9e203d62d"
+  },
+  "status": "pass",
+  "unresolvedCampaignBlockers": 238,
+  "wurstTests": 71,
+  "wurstTypecheck": "pass"
+}

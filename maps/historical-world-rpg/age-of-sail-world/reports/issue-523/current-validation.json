@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "check": "navigation",
+      "status": "pass",
+      "tests": 12,
+      "transcript": "current-navigation.log.gz"
+    },
+    {
+      "check": "core-tests",
+      "status": "pass",
+      "tests": 66,
+      "transcript": "current-core-tests.log.gz"
+    },
+    {
+      "check": "framework-tests",
+      "status": "pass",
+      "tests": 8,
+      "transcript": "current-framework-tests.log.gz"
+    },
+    {
+      "check": "release-tests",
+      "status": "pass",
+      "tests": 10,
+      "transcript": "current-release-tests.log.gz"
+    },
+    {
+      "check": "runtime-tests",
+      "status": "pass",
+      "tests": 24,
+      "transcript": "current-runtime-tests.log.gz"
+    },
+    {
+      "check": "trace-tests",
+      "status": "pass",
+      "tests": 49,
+      "transcript": "current-trace-tests.log.gz"
+    }
+  ],
+  "commands": {
+    "compiler": "pinned Docker image; default wurstuser; read-only temporary assembly; copy to container-private /tmp; grill install, typecheck, test; verify input hashes before and after",
+    "core": "PYTHONPATH=tests python3 -m unittest test_navigation test_regional_navigation test_vessel_progression test_military test_research_generation test_research_cost_contract test_release_save_compatibility -v",
+    "framework": "python3 -m unittest discover -s tests -p test_framework_conformance.py -v",
+    "navigation": "python3 -m unittest discover -s tests -p test_navigation_efficiency.py -v",
+    "release": "python3 -m unittest discover -s tests -p test_release_blocker_audit.py -v",
+    "reports": [
+      "python3 tooling/runtime_acceptance.py --write",
+      "python3 tooling/requirement_traceability_audit.py --write --check",
+      "python3 tooling/release_blocker_audit.py --write"
+    ],
+    "runtime": "python3 -m unittest discover -s tests -p test_runtime_acceptance.py -v",
+    "traceability": "python3 -m unittest discover -s tests -p test_requirement_traceability.py -v"
+  },
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "fullRepositoryValidation": "deferred_to_controller",
+  "generatedPayload": "pass",
+  "nativeClient": "not_run",
+  "pythonTests": 169,
+  "reports": "Regenerated all three on the integrated revision; remaining blockers are not waived.",
+  "sourceIdentity": {
+    "sourceRevision": "4718d772a20d94d5aa8470a85f7d634460a1e3c3",
+    "sourceTreeSha256": "f1585281f2f065f895626ebd3189877a27c908b59ebe0b4010b48f1804a07216"
+  },
+  "status": "pass",
+  "unresolvedCampaignBlockers": 238,
+  "wurstTests": 96,
+  "wurstTypecheck": "pass"
+}

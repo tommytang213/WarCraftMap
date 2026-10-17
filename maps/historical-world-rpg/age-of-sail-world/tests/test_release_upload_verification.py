@@ -148,6 +148,43 @@ class ReleaseNormalizationTests(unittest.TestCase):
 
 
 class ReleaseUploadTests(unittest.TestCase):
+    def test_source_preflight_recomputes_recorded_report_after_checkpoint(self):
+        config = release.load_release_config()
+        runtime = release.runtime_acceptance
+        recorded = runtime.audit_acceptance(revision='a' * 40)
+        resolve_path = release._source_path
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'runtime.json'
+            def source_path(value, label):
+                return path if label == 'runtimeAcceptance' else resolve_path(value, label)
+            # All real source checks and hashes run. Only unrelated downstream
+            # subprocesses/save fixtures are omitted from this preflight test.
+            with patch.object(release, '_source_path', side_effect=source_path), \
+                 patch.object(release, '_run_gate'), \
+                 patch.object(release.release_save_compatibility, 'load_manifest', return_value={'fixtures': []}), \
+                 patch.object(runtime, 'source_revision', side_effect=lambda project, explicit=None: explicit or 'f' * 40):
+                path.write_text(json.dumps(recorded))
+                self.assertEqual(recorded, release.validate_gates(config)[2])
+                self.assertFalse(recorded['candidateReady'])
+                with self.assertRaisesRegex(release.PackagingError, 'automated candidate acceptance failed'):
+                    release.require_candidate_ready(recorded)
+                variants = []
+                for key, value in (('sourceTreeSha256', '0' * 64), ('sourceRevision', None),
+                                   ('sourceRevision', 'invalid'), ('candidateReady', True)):
+                    variants.append({**recorded, key: value})
+                altered = copy.deepcopy(recorded)
+                altered['systems'][0]['stages']['releaseValidated'] = True
+                variants.append(altered)
+                for changed in variants:
+                    path.write_text(json.dumps(changed))
+                    with self.subTest(changed=changed), self.assertRaisesRegex(release.PackagingError, 'report is stale'):
+                        release.validate_gates(config)
+                path.write_text(json.dumps(recorded))
+                with patch.object(runtime, 'source_identity', return_value={
+                        'sourceRevision': 'a' * 40, 'sourceTreeSha256': '0' * 64}):
+                    with self.assertRaisesRegex(release.PackagingError, 'report is stale'):
+                        release.validate_gates(config)
+
     def test_malformed_candidate_configuration_is_rejected_without_attribute_error(self):
         original = json.loads(release.CONFIG.read_text())
         variants = ["pass", [], None]

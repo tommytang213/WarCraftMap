@@ -32,6 +32,7 @@ non-fallible projection operation; one-time grants are outside its contract.
 The fallback `UnboundResearchEffects` adapter retains these references and
 reports `unbound`. Campaign registration wraps the existing adapter with
 `CombatResearchEffects`, which binds only scenario-declared combat recipients.
+The navigation adapter independently binds the scenario-owned voyage contract.
 Other typed references and existing consumers survive that wrapper. Neither
 adapter alters food capacity, health, equipment or native abilities.
 `/technology` and `/institutions` show each identity, whether it is earned, and
@@ -84,6 +85,17 @@ points, recipient category, binding and active status. The release audit removes
 only `RESEARCH-UNBOUND-PIKE-AND-SHOT-MODIFIER-ARMY-DISCIPLINE`; other research
 consumers, maneuver, missing weapon identities and the #438 native-launch issue
 remain open. Pinned interpreter tests do not establish native Warcraft launch.
+
+Issue #523 binds `(modifier, progression_celestial_navigation)` to the
+scenario-owned [Celestial Navigation voyage contract](CELESTIAL_NAVIGATION.md).
+A purchased observation kit and current controller research reduce the
+position-finding provision allowance by 10% during the explicitly eligible
+station-return circuit. Full provisions are reserved before departure; campaign
+time, legality, equipment, geography and other progression layers remain
+independent. Military v10 saves the necessary voyage inputs, with pure legacy
+migration and the existing campaign rollback boundary. Only this research
+consumer finding is removed; weather/exploration consumers and native launch
+remain separate blockers.
 
 Issue #522 binds `(modifier, progression_cast_cannon)` to qualified heavy
 shipboard gunfire through combat catalogue v3. See

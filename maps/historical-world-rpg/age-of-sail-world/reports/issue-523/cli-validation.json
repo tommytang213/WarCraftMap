@@ -1,0 +1,53 @@
+{
+  "checkpointRegression": {
+    "implicitRevision": "ffffffffffffffffffffffffffffffffffffffff",
+    "status": "pass",
+    "transcript": "cli-checkpoint.log.gz"
+  },
+  "checks": [
+    {
+      "check": "navigation",
+      "logSha256": "dd45830c1999bfdc76dbe4c99df8faf7ef658b822d8822627f5f1d388408e1eb",
+      "status": "pass",
+      "tests": 20,
+      "transcript": "cli-navigation.log.gz"
+    },
+    {
+      "check": "traceability",
+      "logSha256": "7ff1bbdd54e57f8655c84cafef97d5e324e9091eca7371ecabb99ebde50d7b83",
+      "status": "pass",
+      "tests": 53,
+      "transcript": "cli-traceability.log.gz"
+    },
+    {
+      "check": "audits",
+      "logSha256": "36499f2cc5d47e463f2b284f6491745965ad4530ba5cd9de7bd425225bb2204a",
+      "status": "pass",
+      "tests": 34,
+      "transcript": "cli-audits.log.gz"
+    },
+    {
+      "check": "core",
+      "logSha256": "d972abb066fe0eedb0930a95634cb8f6eed8e7293446f23d6ab90e1ff73ebc56",
+      "status": "pass",
+      "tests": 82,
+      "transcript": "cli-core.log.gz"
+    }
+  ],
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "fullRepositoryValidation": "deferred_to_controller",
+  "generatedPayload": "pass",
+  "integrationRepair": "Source-only CLI --check uses the recorded revision while recomputing all current hashes and report bytes. Explicit revisions, report generation, artifact and execution checks retain their revision requirements.",
+  "nativeClient": "not_run",
+  "pythonTests": 189,
+  "reports": "All three regenerated on the current source snapshot; no remaining publication blocker waived.",
+  "sourceIdentity": {
+    "sourceRevision": "edab468c56f34c7e2ef872c92e3299f91314eb35",
+    "sourceTreeSha256": "d09ae8d3b59181a516ec51c9f8a0b47a656c8ec70ac97651d29d434f62afddf6"
+  },
+  "status": "pass",
+  "unresolvedCampaignBlockers": 238,
+  "wurstTests": 71,
+  "wurstTypecheck": "pass"
+}
