@@ -1,6 +1,8 @@
 package CampaignRegistration
 import Agriculture
 import CampaignAgriculture
+import CivicGovernance
+import CivicCampaignRuntime
 
 import ScenarioData
 import CampaignHandoff
@@ -160,6 +162,14 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.setProjectionPort(projections)
 	campaign.state.setRpgRuntime(rpg)
 	military.setRpgRuntime(rpg)
+	let civicResearch = new CivicResearchEffects(rpg.technologies.effects)
+	configureGeneratedCivic(military.civic, civicResearch, campaign.state.clock.currentDay)
+	rpg.technologies.effects = civicResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.civicRuntime = new CivicCampaignRuntime(campaign.state, trade, civicResearch)
+	trade.civic = military
+	trade.civicClock = campaign.state.clock
+	trade.tradeController()
 	configureGeneratedOrigins(campaign.origins)
 	configureGeneratedArrivals(campaign.state)
 	configureCampaignRecovery(campaign.state, new WarcraftRecoveryAdapter())

@@ -1,5 +1,6 @@
 package PlayableCampaignRuntime
 import Agriculture
+import CivicCampaignRuntime
 
 import CampaignSaveManager
 import CampaignTimeline
@@ -333,6 +334,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	function setCountryRuntime(PlayableCountryInteractionRuntime runtime)
 		countries = runtime
 		countries.setMilitaryAuthority(militarySettlements)
+	CivicCampaignRuntime civicRuntime = null
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
 		rpg.visits = knowledge
@@ -344,6 +346,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			if agriculture!=null
 				agriculture.advance(day,clock.campaignYear())
 			recoverHeroes(day)
+			if civicRuntime != null
+				civicRuntime.advance(day)
 			if militarySettlements != null
 				militarySettlements.resolveVoyages(day)
 	function recoverHeroes(int day)

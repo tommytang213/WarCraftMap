@@ -1,5 +1,8 @@
 package PlayableTrade
 import Agriculture
+import CivicGovernance
+import MilitarySettlementRuntime
+import CampaignTimeline
 import CommandRouter
 import PlayableCampaignRuntime
 import CargoProvenance
@@ -158,6 +161,15 @@ public class MerchantProgress
 		return standing>=500
 
 public class PlayableTradeController
+	MilitarySettlementRuntime civic = null
+	CampaignClock civicClock = null
+	function throughputAllowed(RuntimeMarket market, int quantity) returns boolean
+		if civic == null or civicClock == null
+			return true
+		let i = civic.settlementIndex(market.id)
+		if i < 0
+			return true
+		return civic.civic.tradeAllowed(market.id, civic.settlements[i].controllerId, civicClock.currentDay, quantity)
 	MerchantProgress progress
 	string array[4096] processed
 	int processedCount=0
@@ -178,6 +190,8 @@ public class PlayableTradeController
 		processed[processedCount]=transactionId
 		processedCount++
 	function buy(string transactionId,RuntimeMarket market,TradeStore destination,int quantity) returns string
+		if not throughputAllowed(market, quantity)
+			return "Local trade throughput limit reached; quarantine reduces daily capacity. Reduce shipment quantity or wait until tomorrow."
 		if seen(transactionId)
 			return "Transaction already processed."
 		if processedCount>=4096
@@ -207,9 +221,13 @@ public class PlayableTradeController
 		destination.contents.set(market.goodName,destination.quantity(market.goodName)+quantity)
 		destination.money-=charge
 		provenance.add(destination.id,market.goodName,quantity,charge,market.id)
+		if civic != null and civicClock != null
+			civic.civic.recordTrade(market.id, civicClock.currentDay, quantity)
 		mark(transactionId)
 		return "Bought "+quantity.toString()+" "+market.goodName+"."
 	function sell(string transactionId,RuntimeMarket market,TradeStore source,int quantity,int difficultyPermille) returns string
+		if not throughputAllowed(market, quantity)
+			return "Local trade throughput limit reached; quarantine reduces daily capacity. Reduce shipment quantity or wait until tomorrow."
 		if seen(transactionId)
 			return "Transaction already processed."
 		if processedCount>=4096
@@ -243,6 +261,8 @@ public class PlayableTradeController
 			progress.standing+=routeProfit*difficultyPermille div divisor
 			progress.completedRouteCount++
 		destroy allocation
+		if civic != null and civicClock != null
+			civic.civic.recordTrade(market.id, civicClock.currentDay, quantity)
 		mark(transactionId)
 		return "Sold "+quantity.toString()+" "+market.goodName+"; realized P/L "+profit.toString()+"."
 	function moveCargo(string transactionId,TradeStore source,TradeStore destination,int quantity) returns string
@@ -414,6 +434,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	string stapleId=""
 	string farmEquipmentId=""
 	string constructionGoodId=""
+	MilitarySettlementRuntime civic = null
+	CampaignClock civicClock = null
 	LiveTradeAccess access=null
 	// Selections survive saves as views, never as cached authorization.
 	boolean marketSelected=false
@@ -468,6 +490,10 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		rollbackState=""
 		rollbackMarket=null
 		rollbackHold=null
+	function tradeController() returns PlayableTradeController
+		controller.civic = civic
+		controller.civicClock = civicClock
+		return controller
 	function registerMarket(RuntimeMarket value)
 		value.initialProduction=value.productionPermille
 		value.initialConsumption=value.consumptionPermille
@@ -538,6 +564,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		storeSelected=false
 		progress = new MerchantProgress()
 		controller = new PlayableTradeController(progress)
+		tradeController()
 		settlementId = startingSettlementId
 		var selected=false
 		for i=0 to marketCount-1
@@ -943,9 +970,9 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		let before=controller.processedCount
 		var result=""
 		if side=="buy"
-			result=controller.buy(id,market,hold,quantity)
+			result=tradeController().buy(id,market,hold,quantity)
 		else
-			result=controller.sell(id,market,hold,quantity,1000)
+			result=tradeController().sell(id,market,hold,quantity,1000)
 		if controller.processedCount>before
 			nextTransaction++
 		return result
