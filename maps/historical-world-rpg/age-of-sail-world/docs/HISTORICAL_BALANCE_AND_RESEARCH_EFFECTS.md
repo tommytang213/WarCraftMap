@@ -190,10 +190,11 @@ name alone does not establish bayonet equipment. Swords, bows, siege, spells and
 unqualified kit receive no drill/defense substitution. All four effects and actions
 use the same legal rules for player and AI controllers.
 
-Military/settlement snapshot schema **12** adds the local arsenal policy, prepaid
+Military/settlement snapshot schema **13** adds the local arsenal policy, prepaid
 upkeep, order work, paid surcharge, serial identity, accounting day and firearm
-reload deadline. Schemas 1–11 migrate with inactive artillery projects and no
-invented past charges or deliveries. The first live day anchors legacy accounting.
+reload deadline, using distinct `h` firearm, `l` arsenal and `j` science records.
+Schema 12 science state remains authoritative during migration. Schemas 1–12
+migrate with inactive artillery projects and no invented past charges or deliveries. The first live day anchors legacy accounting.
 All fields participate in detached validation and the existing campaign rollback.
 Balance quantities remain scenario-owned; gains round down and positive bills
 round up once at the transaction boundary.
@@ -202,3 +203,67 @@ The four exact research-unbound findings from #515 remain release blockers until
 fresh current-main production execution, runtime and traceability audits remove
 them. Focused tests establish development behavior, not native client playability;
 the unrelated #438 crash remains blocked.
+## Science, weather and exploration production consumers (#514)
+
+`scenario/progression/science-exploration.json` configures the shared
+`ScienceExploration` ledger and `ScienceCampaignRuntime` resource adapter. Exact
+entitlement identities and 1000/1000/500 basis-point rates come from the approved
+design catalogue. These are future options; no research, equipment, forces or
+supplies are added to the 1450 start.
+
+Use `/science inspect SITE` to see conditions, expenses, progress and outcomes.
+`/science inspect` lists the authored sites. `/science equip SITE` commissions
+local instruments/collecting equipment for 120 treasury minor units and two
+existing cloth stock units, taking seven campaign days. This bill covers the
+commissioned tools and their cases; research never supplies them. All sites
+require lawful local administration, market access and an earned supporting
+technology/institution. Journey actors must also have the authored roster type,
+control, physical map and station position. Player and AI use the same action API.
+
+* `channel_weather_survey` uses the existing Channel station-return sea circuit,
+  compatible patrol vessel and oceanic seamanship, from 1640. Actual weather is
+  a scenario-owned deterministic five-day observation cycle with two exposed
+  days. Each exposed day risks ten supply units; a provisioned, equipped voyage
+  with barometric research avoids 1000 bp of those actual losses. Ordinary
+  provisions, navigation credit and combat statistics remain separate.
+* `isles_botanical_survey` is an explicitly authored unknown overland survey
+  circuit, available from 1600 with caravan surveys and the compatible local
+  formation. Each survey day risks two supply units. Earned botanical collecting
+  avoids 1000 bp of that hazard. Neither circuit reveals map knowledge, bypasses
+  travel boundaries or discovers secrets. Each takes ten funded survey days,
+  consumes two ordinary supply units, one treasury unit and one cloth stock unit
+  per day, and pays one additional treasury unit at departure. The actor's local
+  representation retires during the circuit and returns to its station afterward.
+* `london_scholarly_work` requires London's durable civic/market facilities and
+  the scientific societies institution, from 1660. `/science start SITE TECHNOLOGY`
+  validates the target's unchanged prerequisites and pays its full current
+  authored research gold cost from government treasury. Each funded day consumes
+  one additional treasury minor unit and one actual cloth stock unit for research
+  materials and produces 100 scholarly work units. The target requires 9000 work;
+  earned calculus adds 500 bp to generation, finishing in 86 funded days instead
+  of 90. Completion uses the existing research unlock consumer, rechecking the
+  authored cost and prerequisites. There is no firearm/artillery effect, generic
+  treasury yield or transferable invented research currency.
+
+Insufficient daily materials, money or provisions produce no work or avoided
+loss and make no partial payment. Missing days are never replayed for free after
+resupply. Compatible sources add once per typed identity in their metric bucket;
+fractions carry between funded days, with integer gains rounded down. Repeating
+commands, reconstruction or save/load cannot duplicate output. `/science stop SITE`
+cancels work without refund. Capture cancels unfinished work/commissioning;
+completed equipment survives while the new controller needs its own research,
+administration, supplies and actor access. Critical state is independent of
+Warcraft object survival and follows the same day replay on inactive maps.
+
+Military/settlement snapshot schema **12** introduced (and schema **13** retains)
+equipment commissioning, controller, target, paid research bill, committed day,
+work, fractional credit and
+actual hazard outcome counters. Versions 1–11 migrate with inactive science work
+and no invented assets or past output. Parsing stages a separate ledger, rejects
+missing/duplicate/invalid records and future committed days, and campaign load
+rollback restores science together with treasury, stock and research authority.
+
+The three exact issue #514 research-unbound release findings remain pending the
+controller's fresh integrated current-main execution/runtime/traceability audit.
+Focused development tests do not establish native client playability or resolve
+the unrelated #438 crash.

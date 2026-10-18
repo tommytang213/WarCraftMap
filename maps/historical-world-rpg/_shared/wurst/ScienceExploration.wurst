@@ -1,0 +1,222 @@
+package ScienceExploration
+
+import CivicGovernance
+import ResearchEntitlements
+import ExactNatural
+
+public function scienceControllerText(string value) returns boolean
+	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf(":") < 0
+
+/** Typed passive sources share the same set-valued research ownership model. */
+public class ScienceResearchEffects extends CivicResearchEffects
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+
+/** A bounded, authored station-return journey or scholarly facility. Equipment
+ * is commissioned locally, never granted by research. Hazard is supply lost,
+ * distinct from normal journey provisions, combat strength or map knowledge. */
+public class ScienceSite
+	string id
+	string settlementId
+	string forceId
+	string metric
+	string prerequisite
+	string good
+	int unitTypeId = 0
+	real stationX = 0.
+	real stationY = 0.
+	int firstDay
+	int equipmentCost
+	int equipmentUnits
+	int equipmentDays
+	int dailyMoney
+	int dailyUnits
+	int workRequired
+	int dailyWork
+	int dailyProvisions
+	int hazardLoss
+	int weatherPeriod
+	int weatherDays
+	construct(string id, string settlementId, string forceId, string metric, string prerequisite, string good, int firstDay, int equipmentCost, int equipmentUnits, int equipmentDays, int dailyMoney, int dailyUnits, int workRequired, int dailyWork, int dailyProvisions, int hazardLoss, int weatherPeriod, int weatherDays)
+		this.id = id
+		this.settlementId = settlementId
+		this.forceId = forceId
+		this.metric = metric
+		this.prerequisite = prerequisite
+		this.good = good
+		this.firstDay = firstDay
+		this.equipmentCost = equipmentCost
+		this.equipmentUnits = equipmentUnits
+		this.equipmentDays = equipmentDays
+		this.dailyMoney = dailyMoney
+		this.dailyUnits = dailyUnits
+		this.workRequired = workRequired
+		this.dailyWork = dailyWork
+		this.dailyProvisions = dailyProvisions
+		this.hazardLoss = hazardLoss
+		this.weatherPeriod = weatherPeriod
+		this.weatherDays = weatherDays
+	function scholarly() returns boolean
+		return forceId == ""
+	function hazard(int day) returns int
+		// Actual deterministic weather observations, not a forecast. Survey
+		// exposure occurs only on the explicitly authored unknown-route circuit.
+		if metric == "storm_attrition_reduction" and day mod weatherPeriod >= weatherDays
+			return 0
+		return hazardLoss
+
+public class ScienceState
+	boolean restored = false
+	string equipmentOwner = ""
+	int equipmentReady = 0
+	string owner = ""
+	string target = ""
+	int paid = 0
+	int lastDay = 0
+	int work = 0
+	int remainder = 0
+	int avoided = 0
+	int lost = 0
+	function stop()
+		owner = ""
+		target = ""
+		paid = 0
+		work = 0
+		// Fractional avoidance belongs to the job's controller, never capture.
+		remainder = 0
+	function record() returns string
+		return equipmentOwner + "," + I2S(equipmentReady) + "," + owner + "," + target + "," + I2S(paid) + "," + I2S(lastDay) + "," + I2S(work) + "," + I2S(remainder) + "," + I2S(avoided) + "," + I2S(lost)
+
+public interface SciencePort
+	function eligible(ScienceSite site, string owner, int day) returns boolean
+	function pay(ScienceSite site, string owner, int money, int units, int provisions) returns boolean
+	function researchCost(string owner, string target) returns int
+	function complete(string owner, string target, int paid) returns boolean
+	function busyChanged(ScienceSite site)
+
+public class ScienceLedger
+	ScienceSite array[64] sites
+	ScienceState array[64] states
+	int count = 0
+	function register(ScienceSite site)
+		sites[count] = site
+		states[count] = new ScienceState()
+		count++
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if sites[i].id == id
+				return i
+		return -1
+	function busy(string forceId) returns boolean
+		if forceId != ""
+			for i = 0 to count - 1
+				if sites[i].forceId == forceId and states[i].owner != ""
+					return true
+		return false
+	function controlChanged(string id, string owner, int day)
+		for i = 0 to count - 1
+			let d = sites[i]
+			let state = states[i]
+			if d.forceId == id or d.settlementId == id
+				state.stop()
+				let controlDay = IMaxBJ(state.lastDay, day)
+				if state.equipmentOwner != ""
+					if state.equipmentReady <= controlDay
+						state.equipmentOwner = owner
+					else
+						state.equipmentOwner = ""
+						state.equipmentReady = 0
+				state.lastDay = controlDay
+	function fork() returns ScienceLedger
+		let copy = new ScienceLedger()
+		for i = 0 to count - 1
+			copy.register(sites[i])
+		return copy
+	function action(string owner, string id, string action, string target, int day, SciencePort port) returns string
+		let i = index(id)
+		if i < 0 or owner == ""
+			return "Choose an authored science facility or survey circuit."
+		let d = sites[i]
+		let s = states[i]
+		if day < s.lastDay or day < d.firstDay or not port.eligible(d, owner, day)
+			return "Requires historical availability, lawful local control, administrator, access, institution and a compatible actor at its station."
+		if action == "stop"
+			if s.owner != owner
+				return "No active work belongs to this controller."
+			s.stop()
+			port.busyChanged(d)
+			return ""
+		if s.owner != ""
+			return "Work is already active."
+		if action == "equip"
+			if s.equipmentOwner != "" or not port.pay(d, owner, d.equipmentCost, d.equipmentUnits, 0)
+				return "Equipment already commissioned or treasury/materials unavailable."
+			s.equipmentOwner = owner
+			s.equipmentReady = day + d.equipmentDays
+			s.lastDay = day
+			return ""
+		if action != "start" or s.equipmentOwner != owner or day < s.equipmentReady
+			return "Commission and complete local equipment first; use equip, start or stop."
+		var cost = d.dailyMoney
+		if d.scholarly()
+			cost = port.researchCost(owner, target)
+			if cost <= 0
+				return "Choose an unearned technology with all authored prerequisites and a valid research bill."
+		else if target != ""
+			return "Journeys do not accept technology targets."
+		// Pay the full research bill once; daily upkeep/inputs are separate.
+		// A journey deposits its first day's administration, with no free assets.
+		if not port.pay(d, owner, cost, 0, 0)
+			return "Treasury is insufficient."
+		s.owner = owner
+		s.target = target
+		s.paid = cost
+		s.lastDay = day
+		s.work = 0
+		s.remainder = 0
+		port.busyChanged(d)
+		return ""
+	function advance(int day, ScienceResearchEffects effects, SciencePort port)
+		for i = 0 to count - 1
+			let d = sites[i]
+			let s = states[i]
+			while s.lastDay < day and s.owner != ""
+				let at = s.lastDay
+				s.lastDay++
+				let owner = s.owner
+				if not port.eligible(d, owner, at) or s.equipmentOwner != owner
+					s.stop()
+					port.busyChanged(d)
+				else
+					let rate = effects.rate(owner, d.metric)
+					let hazard = d.hazard(at)
+					let credit = hazard * IMinBJ(9999, rate) + s.remainder
+					let avoided = credit div 10000
+					var provisions = d.dailyProvisions + hazard - avoided
+					if d.scholarly()
+						provisions = 0
+					if not port.pay(d, owner, d.dailyMoney, d.dailyUnits, provisions)
+						// A missed real input suspends work without minting output.
+						// The committed day cannot be replayed by an action or load.
+						skip
+					else
+						if d.scholarly()
+							let output = exactNaturalAdd(exactNaturalMultiply(I2S(d.dailyWork), 10000 + rate), I2S(s.remainder))
+							let whole = exactNaturalNativeInt(exactNaturalDivide(output, 10000))
+							s.work += whole
+							s.remainder = S2I(SubString(output, IMaxBJ(0, StringLength(output) - 4), StringLength(output)))
+						else
+							s.work += d.dailyWork
+							s.remainder = credit mod 10000
+							s.avoided += IMinBJ(2147483647 - s.avoided, avoided)
+							s.lost += IMinBJ(2147483647 - s.lost, hazard - avoided)
+						if s.work >= d.workRequired
+							if d.scholarly()
+								port.complete(owner, s.target, s.paid)
+							s.stop()
+							port.busyChanged(d)
+			if s.owner == "" and s.equipmentOwner != ""
+				s.lastDay = IMaxBJ(s.lastDay, day)
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]

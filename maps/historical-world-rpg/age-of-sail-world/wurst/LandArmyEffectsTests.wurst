@@ -2,6 +2,7 @@ package LandArmyEffectsTests
 
 import LandArmyEffects
 import LandArmyRuntime
+import ScienceExploration
 import CivicGovernance
 import CampaignTimeline
 import PlayableCampaignRuntime
@@ -353,3 +354,50 @@ class LandFixture
 	renewal.campaign.countries.treasury[0].assertEquals(0)
 	landReloadMillis(1, 500).assertEquals(1)
 	landReloadMillis(2147483647, 500).assertEquals(2045222520)
+
+@test function combinedLandAndScienceRecordsRoundTripAndMigrateMainVersion12()
+	let f = new LandFixture()
+	f.allResearch()
+	f.action("policy")
+	f.advance(90)
+	f.action("commission")
+	let musket = f.add("musket", "european_musket_battalion", "player")
+	musket.nextFireAt = 1.285
+	f.military.science.register(new ScienceSite("study", "district", "", "research_generation_efficiency", "printing", "cloth", 0, 10, 1, 7, 1, 1, 9000, 100, 0, 0, 5, 2))
+	let science = f.military.science.states[0]
+	science.equipmentOwner = "player"
+	science.equipmentReady = f.day
+	science.owner = "player"
+	science.target = "printing"
+	science.paid = 100
+	science.lastDay = f.day + 90
+	science.work = 123
+	science.remainder = 17
+	let scienceState = science.record()
+	let scienceRecord = "|j,study," + scienceState
+	let fireRecord = "|h,musket," + clockReal(1.285)
+	let saved = f.military.snapshot()
+	saved.startsWith("v13|").assertTrue()
+	saved.contains(fireRecord).assertTrue()
+	saved.contains(scienceRecord).assertTrue()
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.military.restore(saved + fireRecord, false).assertFalse()
+	f.military.restore(saved + scienceRecord, false).assertFalse()
+	f.military.restore(saved.replace(scienceRecord, ""), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Main's v12 has science records, but no arsenal or firearm deadlines.
+	var legacy = "v12" + SubString(saved, saved.indexOf("|"), saved.indexOf("|l,")) + scienceRecord
+	legacy = legacy.replace(fireRecord, "")
+	f.military.restore(legacy, false).assertTrue()
+	f.military.science.states[0].record().assertEquals(scienceState)
+	f.arsenal().owner.assertEquals("")
+	f.arsenal().projectOwner.assertEquals("")
+	f.military.forces[f.military.forceIndex("musket")].nextFireAt.assertEquals(0.)
+	f.military.restore(legacy.replace(scienceRecord, ""), false).assertFalse()
+	f.military.restore(saved, false).assertTrue()
+	f.military.transferSettlement("district", "ai")
+	f.arsenal().owner.assertEquals("")
+	f.arsenal().projectOwner.assertEquals("")
+	f.military.science.states[0].owner.assertEquals("")
+	f.military.science.states[0].equipmentOwner.assertEquals("ai")

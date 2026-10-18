@@ -694,6 +694,14 @@
             "progression_celestial_navigation",
             "positionFindingReductionBasisPoints"
           ]
+        },
+        {
+          "path": "scenario/progression/science-exploration.json",
+          "contains": [
+            "storm_attrition_reduction",
+            "unknown_route_attrition_reduction",
+            "research_generation_efficiency"
+          ]
         }
       ],
       "headlessVerification": [
@@ -708,6 +716,13 @@
           "contains": [
             "same_condition_control",
             "test_active_abstract_callback_chunking_and_save_resume_parity"
+          ]
+        },
+        {
+          "path": "tests/test_science_exploration.py",
+          "contains": [
+            "test_exact_design_bindings_values_eras_inputs_and_actor_routes",
+            "test_invalid_conditions_bills_materials_routes_and_bindings_reject"
           ]
         }
       ],
@@ -736,6 +751,22 @@
           "contains": [
             "militarySettlements.resolveVoyages(day)"
           ]
+        },
+        {
+          "path": "wurst/ScienceExploration.wurst",
+          "contains": [
+            "function advance",
+            "effects.rate(owner, d.metric)",
+            "port.pay(d, owner, d.dailyMoney, d.dailyUnits, provisions)"
+          ]
+        },
+        {
+          "path": "wurst/ScienceCampaignRuntime.wurst",
+          "contains": [
+            "class CampaignSciencePort",
+            "campaign.rpg.research(owner, target",
+            "economy.pay(owner, d.settlementId"
+          ]
         }
       ],
       "playerEntry": [
@@ -750,6 +781,13 @@
           "contains": [
             "commands.register(\"voyage\"",
             "commands.register(\"voyage-kit\""
+          ]
+        },
+        {
+          "path": "wurst/ScienceCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"science\"",
+            "function overview"
           ]
         }
       ],
@@ -777,6 +815,14 @@
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "science.states[i].record()",
+            "parsed.science = science.fork()",
+            "science = parsed.science"
+          ]
         }
       ],
       "runtimeVerification": [
@@ -791,6 +837,14 @@
           "contains": [
             "registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl",
             "rejectedCampaignLoadRestoresVoyageReservationEquipmentAndFractionalCredit"
+          ]
+        },
+        {
+          "path": "wurst/ScienceExplorationTests.wurst",
+          "contains": [
+            "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
+            "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
+            "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
           ]
         }
       ],

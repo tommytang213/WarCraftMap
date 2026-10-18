@@ -1,0 +1,132 @@
+package ScienceCampaignRuntime
+
+import ScienceExploration
+import CampaignTimeline
+import initlater PlayableCampaignRuntime
+import MilitarySettlementRuntime
+import initlater PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+import CivicCampaignRuntime
+
+/** Resource authority is always the campaign ledger, including on inactive maps. */
+public class CampaignSciencePort implements SciencePort
+	PlayableCampaignState campaign
+	CampaignCivicEconomy economy
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		this.campaign = campaign
+		economy = new CampaignCivicEconomy(campaign, trade)
+	function localAccess(string id) returns boolean
+		for i = 0 to economy.trade.marketCount - 1
+			let market = economy.trade.markets[i]
+			if market.id == id and not market.blockaded and not market.occupiedByHostile
+				return true
+		return false
+	override function eligible(ScienceSite d, string owner, int day) returns boolean
+		if day < d.firstDay or not economy.lawful(d.settlementId) or economy.controller(d.settlementId) != owner or not localAccess(d.settlementId) or not campaign.rpg.technologies.isUnlocked(owner, d.prerequisite)
+			return false
+		if d.scholarly()
+			return true
+		let military = campaign.militarySettlements
+		let i = military.forceIndex(d.forceId)
+		let settlement = economy.settlement(d.settlementId)
+		if i < 0 or settlement == null
+			return false
+		let actor = military.forces[i]
+		var kind = FORCE_ARMY
+		if d.metric == "storm_attrition_reduction"
+			kind = FORCE_FLEET
+		return actor.controllerId == owner and actor.kind == kind and actor.unitTypeId == d.unitTypeId and actor.active and actor.strength > 0 and not actor.navigation.pending() and militaryMapMatches(actor.regionId, settlement.regionId) and (actor.x - d.stationX) * (actor.x - d.stationX) + (actor.y - d.stationY) * (actor.y - d.stationY) <= 128. * 128.
+	override function pay(ScienceSite d, string owner, int money, int units, int provisions) returns boolean
+		let military = campaign.militarySettlements
+		let i = military.forceIndex(d.forceId)
+		if provisions > 0 and (i < 0 or military.forces[i].supply < provisions)
+			return false
+		if not economy.pay(owner, d.settlementId, money, d.good, units)
+			return false
+		if provisions > 0
+			military.forces[i].supply -= provisions
+		return true
+	override function researchCost(string owner, string target) returns int
+		let research = campaign.rpg.technologies
+		let t = research.get(target)
+		if t == null or not research.validDefinition(t) or research.isUnlocked(owner, target)
+			return -1
+		for i = 0 to t.prerequisiteCount - 1
+			if not research.isUnlocked(owner, t.prerequisiteIds[i])
+				return -1
+		return research.cost(target, campaign.clock.campaignYear(), 0, 0)
+	override function complete(string owner, string target, int paid) returns boolean
+		return campaign.rpg.research(owner, target, campaign.clock.campaignYear(), paid)
+	override function busyChanged(ScienceSite d)
+		let military = campaign.militarySettlements
+		let i = military.forceIndex(d.forceId)
+		if i >= 0
+			let actor = military.forces[i]
+			actor.cancelOrder()
+			military.adapter.removeRepresentation(actor.id)
+			military.instantiate(actor)
+
+public class ScienceCampaignRuntime
+	PlayableCampaignState campaign
+	ScienceResearchEffects effects
+	CampaignSciencePort port
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, ScienceResearchEffects effects)
+		this.campaign = campaign
+		this.effects = effects
+		port = new CampaignSciencePort(campaign, trade)
+	function advance(int day)
+		campaign.militarySettlements.science.advance(day, effects, port)
+	function act(string owner, string action, string id, string target) returns string
+		if not campaign.isSaveSafe()
+			return "Science actions are unavailable during restoration or transfer."
+		if campaign.militarySettlements.orderCallbacks != null
+			campaign.militarySettlements.orderCallbacks.capture()
+		advance(campaign.clock.currentDay)
+		return campaign.militarySettlements.science.action(owner, id, action, target, campaign.clock.currentDay, port)
+	function overview(string owner, string id, string target) returns string
+		let ledger = campaign.militarySettlements.science
+		let i = ledger.index(id)
+		if i < 0
+			var choices = "Science facilities/circuits:"
+			for j = 0 to ledger.count - 1
+				choices += " " + ledger.sites[j].id
+			return choices
+		let d = ledger.sites[i]
+		let s = ledger.states[i]
+		var bill = ""
+		if d.scholarly()
+			let cost = port.researchCost(owner, target)
+			bill = "\nTarget " + target + ": research bill " + I2S(cost) + " treasury currency minor units in advance (-1 means invalid, already earned or prerequisites missing). Choose a target with /science inspect SITE TECHNOLOGY. Paid so far " + I2S(s.paid) + "."
+		return id + ": " + d.metric + " +" + I2S(effects.rate(owner, d.metric)) + " bp; available from campaign day " + I2S(d.firstDay) + ". Requires lawful administered " + d.settlementId + ", local market access, institution/technology " + d.prerequisite + ", compatible owned actor at station " + d.forceId + ".\nCommission equipment: " + I2S(d.equipmentCost) + " treasury currency minor units + " + I2S(d.equipmentUnits) + " " + d.good + "; " + I2S(d.equipmentDays) + " days. No free equipment. Ready day " + I2S(s.equipmentReady) + ". Daily upkeep: " + I2S(d.dailyMoney) + " treasury currency + " + I2S(d.dailyUnits) + " " + d.good + ". Daily journey provisions " + I2S(d.dailyProvisions) + "; exposed hazard provisions up to " + I2S(d.hazardLoss) + ". Storm observations use actual daily weather, never perfect prediction.\nWork " + I2S(s.work) + "/" + I2S(d.workRequired) + "; base output " + I2S(d.dailyWork) + " per funded day. Scholarly work pays the full authored target research cost in advance and consumes daily inputs; only earned calculus increases output. Missing inputs suspend output. Journeys are station-return surveys and reveal no map, routes or secrets. Avoided " + I2S(s.avoided) + ", lost " + I2S(s.lost) + " supply." + bill + " Capture cancels work and unfinished commissioning; completed equipment survives but research never transfers. No refund. Use /science <inspect|equip|start|stop> SITE [TECHNOLOGY]."
+
+class ScienceCommand implements CommandHandler
+	ScienceCampaignRuntime runtime
+	CommandOutput output
+	construct(ScienceCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let cut = arguments.indexOf(" ")
+		if cut < 1
+			output.show(sender, runtime.overview("", "", ""))
+			return
+		let action = SubString(arguments, 0, cut)
+		var id = SubString(arguments, cut + 1, StringLength(arguments))
+		var target = ""
+		let targetSeparator = id.indexOf(" ")
+		if targetSeparator > 0
+			target = SubString(id, targetSeparator + 1, StringLength(id))
+			id = SubString(id, 0, targetSeparator)
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			output.show(sender, runtime.overview(owner, id, target))
+		else
+			let problem = runtime.act(owner, action, id, target)
+			if problem == ""
+				output.show(sender, "Science action completed.")
+			else
+				output.show(sender, problem)
+
+public function registerScienceCommands(CommandRegistry commands, ScienceCampaignRuntime runtime) returns string
+	return commands.register("science", "", "science <inspect|equip|start|stop> SITE [TECHNOLOGY]", "Manage funded scholarship and provisioned surveys.", "Inspect historical, actor, institution and input gates, equipment bills, durations and daily upkeep. The same treasury and resource rules apply to player and AI. Research never creates equipment or reveals hidden territory.", 1, 3, COMMAND_RELEASE, new ScienceCommand(runtime, commands.output))
