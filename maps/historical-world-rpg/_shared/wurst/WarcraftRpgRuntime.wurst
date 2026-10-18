@@ -5,6 +5,7 @@ import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
+import ScienceExploration
 import CivicGovernance
 import QuestStages
 import HeroProgression
@@ -1958,6 +1959,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
 			var port = runtime.technologies.effects
+			if port instanceof ScienceResearchEffects
+				let science = port castTo ScienceResearchEffects
+				for k = 0 to science.definitionCount - 1
+					let binding = science.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires supported funded work, commissioned equipment and actual inputs. Use /science inspect SITE for conditions, expenses and duration."
+				port = science.upstream
 			if port instanceof CivicResearchEffects
 				let civic = port castTo CivicResearchEffects
 				for k = 0 to civic.definitionCount - 1

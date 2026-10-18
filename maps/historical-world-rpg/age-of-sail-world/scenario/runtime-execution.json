@@ -233,6 +233,26 @@
     "voyage_resolve": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function resolveVoyages(int day)"
+    },
+    "science_registration": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "public function registerScienceCommands(CommandRegistry commands, ScienceCampaignRuntime runtime) returns string"
+    },
+    "science_action": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string target) returns string"
+    },
+    "science_advance": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function advance(int day, ScienceResearchEffects effects, SciencePort port)"
+    },
+    "science_pay": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function pay(ScienceSite d, string owner, int money, int units, int provisions) returns boolean"
+    },
+    "science_complete": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function complete(string owner, string target, int paid) returns boolean"
     }
   },
   "systems": {
@@ -375,6 +395,13 @@
       "quest_navigation",
       "quest_map_focus",
       "quest_marker_refresh"
+    ],
+    "science_exploration": [
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_complete"
     ]
   }
 }

@@ -1,0 +1,317 @@
+package ScienceExplorationTests
+
+import ScienceExploration
+import ScienceCampaignRuntime
+import CivicGovernance
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import ManagementScreenPauseController
+import ManagementCommandTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ScenarioData
+
+class ScienceTestResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return 1778
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+class ScienceFixture
+	int day = 649041
+	ScienceTestResources resources = new ScienceTestResources()
+	ScienceResearchEffects effects = new ScienceResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	ScienceCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	construct(boolean ai, boolean active)
+		if ai
+			resources.owner = "ai"
+		let generated = new WarcraftRpgRuntime(effects)
+		configureGeneratedRpg(generated)
+		rpg.technologies = generated.technologies
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureGeneratedScience(military.science, effects)
+		military.registerSettlement(new SettlementRuntimeState("london", resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
+		military.appoint("london", new AdministratorState("clerk", "Clerk", "Administrator", resources.owner, "europe_west", "london", 50, 50, 40, 1))
+		for i = 0 to 1
+			let d = military.science.sites[i]
+			var kind = FORCE_ARMY
+			if i == 0
+				kind = FORCE_FLEET
+			military.registerForce(new RuntimeForce(d.forceId, resources.owner, "europe_west", "", kind, d.unitTypeId, 10, 1000, d.stationX, d.stationY))
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity(resources.owner, 100000)
+		trade.registerMarket(new RuntimeMarket("london", "cloth", 1000, 100000, 10, 10))
+		runtime = new ScienceCampaignRuntime(campaign, trade, effects)
+		campaign.scienceRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerScienceCommands(commands, runtime).assertEquals("")
+		if active
+			military.activateRegion("europe_west")
+		else
+			military.activateRegion("africa")
+		let owner = resources.owner
+		rpg.restoreState(rpg.captureState() + "|u," + owner + ",microscopy|u," + owner + ",overland_caravan_surveys|u," + owner + ",flintlock_drill|u," + owner + ",scientific_societies|u," + owner + ",oceanic_seamanship").assertTrue()
+		rpg.technologies.reconstructAll()
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+		let unlock = rpg.technologies.get(id).unlocks[0]
+		rpg.technologies.bindingStatus(unlock).assertEquals(RESEARCH_BOUND)
+	function allResearch()
+		unlock("barometric_measurement")
+		unlock("botanical_collecting")
+		unlock("calculus_methods")
+	function action(string verb, int site, string target)
+		commands.dispatch(Player(0), "/science " + verb + " " + military.science.sites[site].id + target).assertTrue()
+		resources.output.assertEquals("Science action completed.")
+	function equip()
+		for i = 0 to 2
+			action("equip", i, "")
+		runtime.act(resources.owner, "start", military.science.sites[0].id, "").startsWith("Commission").assertTrue()
+		clock.advanceTo(day + 7).assertTrue()
+	function advance(int offset)
+		clock.advanceTo(day + offset).assertTrue()
+
+@test function registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards()
+	let treatment = new ScienceFixture(false, true)
+	let control = new ScienceFixture(false, true)
+	treatment.allResearch()
+	treatment.equip()
+	control.equip()
+	let funds = treatment.campaign.countries.treasury[0]
+	let stock = treatment.trade.markets[0].stock
+	treatment.action("start", 0, "")
+	treatment.action("start", 1, "")
+	control.action("start", 0, "")
+	control.action("start", 1, "")
+	treatment.military.issueOrder("english_patrol_ship", "move", 0., 0.).assertFalse()
+	treatment.advance(17)
+	control.advance(17)
+	treatment.military.forces[treatment.military.forceIndex("english_patrol_ship")].supply.assertEquals(944) // 20 provisions + 36 storm loss.
+	control.military.forces[control.military.forceIndex("english_patrol_ship")].supply.assertEquals(940)
+	treatment.military.forces[treatment.military.forceIndex("english_guard_formation")].supply.assertEquals(962) // 20 provisions + 18 unknown-route loss.
+	control.military.forces[control.military.forceIndex("english_guard_formation")].supply.assertEquals(960)
+	treatment.military.forces[treatment.military.forceIndex("english_patrol_ship")].strength.assertEquals(10)
+	treatment.campaign.countries.treasury[0].assertEquals(funds - 22)
+	treatment.trade.markets[0].stock.assertEquals(stock - 20)
+	treatment.military.science.states[0].avoided.assertEquals(4)
+	treatment.military.science.states[1].avoided.assertEquals(2)
+	treatment.campaign.knowledge.snapshot().assertEquals(control.campaign.knowledge.snapshot())
+	let saved = treatment.military.snapshot()
+	treatment.advance(17)
+	treatment.rpg.technologies.reconstructAll()
+	treatment.rpg.technologies.reconstructAll()
+	treatment.military.snapshot().assertEquals(saved)
+
+@test function calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity()
+	let human = new ScienceFixture(false, true)
+	let ai = new ScienceFixture(true, false)
+	human.allResearch()
+	ai.allResearch()
+	human.equip()
+	ai.equip()
+	let cost = human.rpg.technologies.cost("electrical_experimentation", 1778, 0, 0)
+	let before = human.campaign.countries.treasury[0]
+	human.action("start", 2, " electrical_experimentation")
+	ai.action("start", 2, " electrical_experimentation")
+	human.campaign.countries.treasury[0].assertEquals(before - cost)
+	human.advance(92)
+	ai.advance(92)
+	human.military.science.states[2].work.assertEquals(8925)
+	ai.military.science.states[2].work.assertEquals(8925)
+	human.rpg.technologies.isUnlocked("player", "electrical_experimentation").assertFalse()
+	human.advance(93)
+	ai.advance(93)
+	human.rpg.technologies.isUnlocked("player", "electrical_experimentation").assertTrue()
+	ai.rpg.technologies.isUnlocked("ai", "electrical_experimentation").assertTrue()
+	human.campaign.countries.treasury[0].assertEquals(before - cost - 86)
+	human.campaign.countries.treasury[0].assertEquals(ai.campaign.countries.treasury[0])
+	human.trade.markets[0].stock.assertEquals(ai.trade.markets[0].stock)
+
+@test function unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills()
+	let f = new ScienceFixture(false, true)
+	f.equip()
+	// A target with the same authored bill/prerequisite path in both branches.
+	let target = new RuntimeTechnology("test_study", "Test study", 1450, 100)
+	f.rpg.technologies.register(target).assertTrue()
+	f.action("start", 2, " test_study")
+	f.military.science.states[2].owner.assertEquals("player")
+	f.advance(8)
+	f.military.science.states[2].owner.assertEquals("player")
+	f.military.science.states[2].work.assertEquals(100)
+	f.advance(17)
+	f.military.science.states[2].work.assertEquals(1000)
+	let funds = f.campaign.countries.treasury[0]
+	f.trade.markets[0].stock = 0
+	f.advance(18)
+	f.military.science.states[2].work.assertEquals(1000)
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	f.trade.markets[0].stock = 1000
+	f.campaign.countries.treasury[0] = 0
+	f.advance(19)
+	f.military.science.states[2].work.assertEquals(1000)
+	f.trade.markets[0].stock.assertEquals(1000)
+	f.campaign.countries.treasury[0] = funds
+	f.advance(99)
+	f.rpg.technologies.isUnlocked("player", "test_study").assertTrue()
+
+@test function scienceRejectionsCoverResearchEquipmentHistoryInstitutionRouteActorAccessAndResources()
+	let f = new ScienceFixture(false, true)
+	f.commands.dispatch(Player(0), "/research calculus_methods").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.allResearch()
+	let initial = f.military.snapshot()
+	let funds = f.campaign.countries.treasury[0]
+	f.commands.dispatch(Player(0), "/science start channel_weather_survey").assertTrue()
+	f.resources.output.startsWith("Commission").assertTrue()
+	f.commands.dispatch(Player(0), "/science equip missing").assertTrue()
+	f.military.snapshot().assertEquals(initial)
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	let site = f.military.science.sites[0]
+	site.firstDay = f.day + 1
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	site.firstDay = f.day
+	let ship = f.military.forces[f.military.forceIndex("english_patrol_ship")]
+	ship.unitTypeId = 'hfoo'
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	ship.unitTypeId = site.unitTypeId
+	ship.kind = FORCE_ARMY
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	ship.kind = FORCE_FLEET
+	ship.controllerId = "ai"
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	ship.controllerId = "player"
+	ship.x += 256.
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	ship.x -= 256.
+	f.trade.markets[0].blockaded = true
+	f.runtime.act("player", "equip", site.id, "").startsWith("Requires").assertTrue()
+	f.trade.markets[0].blockaded = false
+	f.trade.markets[0].stock = 1
+	f.runtime.act("player", "equip", site.id, "").startsWith("Equipment").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	f.trade.markets[0].stock = 1000
+	f.equip()
+	f.runtime.act("player", "equip", site.id, "").startsWith("Equipment").assertTrue()
+	f.runtime.act("player", "start", site.id, "invented_route").startsWith("Journeys").assertTrue()
+	f.runtime.act("player", "start", "london_scholarly_work", "chemical_classification").startsWith("Choose an unearned").assertTrue()
+	f.action("start", 0, "")
+	let paid = f.campaign.countries.treasury[0]
+	f.runtime.act("player", "start", site.id, "").startsWith("Work is already").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(paid)
+	ship.supply = 0
+	f.advance(8)
+	f.military.science.states[0].work.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(paid)
+
+@test function scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket()
+	let f = new ScienceFixture(false, false)
+	f.allResearch()
+	let duplicate = new RuntimeTechnology("duplicate_observations", "Duplicate observations", 1450, 1)
+	duplicate.addUnlock("duplicate_observations", "modifier", "progression_barometric_measurement")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("duplicate_observations")
+	f.effects.rate("player", "storm_attrition_reduction").assertEquals(1000)
+	let distinct = new RuntimeTechnology("independent_observations", "Independent observations", 1450, 1)
+	distinct.addUnlock("independent_observations", "modifier", "independent_weather_source")
+	f.effects.register(new CivicEffect("modifier", "independent_weather_source", "storm_attrition_reduction", 500))
+	f.rpg.technologies.register(distinct).assertTrue()
+	f.unlock("independent_observations")
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.effects.rate("player", "storm_attrition_reduction").assertEquals(1500)
+	f.effects.rate("player", "unknown_route_attrition_reduction").assertEquals(1000)
+	f.effects.rate("ai", "storm_attrition_reduction").assertEquals(0)
+	f.equip()
+	f.action("start", 0, "")
+	f.advance(17)
+	f.military.forces[f.military.forceIndex("english_patrol_ship")].supply.assertEquals(946)
+
+@test function scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact()
+	let active = new ScienceFixture(false, true)
+	let inactive = new ScienceFixture(false, false)
+	active.allResearch()
+	inactive.allResearch()
+	active.equip()
+	inactive.equip()
+	active.action("start", 1, "")
+	inactive.action("start", 1, "")
+	active.advance(10)
+	active.military.science.states[1].remainder.assertEquals(6000)
+	let saved = active.military.snapshot()
+	active.military.restore(saved).assertTrue()
+	active.military.snapshot().assertEquals(saved)
+	active.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
+	active.military.restore(saved.replace("v12|", "v13|")).assertFalse()
+	active.military.snapshot().assertEquals(saved)
+	active.military.validateSnapshot(saved, active.day + 9).assertFalse()
+	active.advance(17)
+	inactive.advance(17)
+	active.military.forces[active.military.forceIndex("english_guard_formation")].supply.assertEquals(inactive.military.forces[inactive.military.forceIndex("english_guard_formation")].supply)
+	active.military.science.states[1].record().assertEquals(inactive.military.science.states[1].record())
+	active.action("start", 1, "")
+	active.advance(20)
+	active.military.transferControl("english_guard_formation", "ai", active.day + 20)
+	active.military.science.states[1].owner.assertEquals("")
+	active.military.science.states[1].equipmentOwner.assertEquals("ai")
+	active.effects.rate("ai", "unknown_route_attrition_reduction").assertEquals(0)
+	let supply = active.military.forces[active.military.forceIndex("english_guard_formation")].supply
+	active.advance(30)
+	active.military.forces[active.military.forceIndex("english_guard_formation")].supply.assertEquals(supply)
+	// Remove the complete new-domain records to model an actual legacy snapshot.
+	var legacy = inactive.military.snapshot()
+	for i = 0 to inactive.military.science.count - 1
+		legacy = legacy.replace("|j," + inactive.military.science.sites[i].id + "," + inactive.military.science.states[i].record(), "")
+	legacy = legacy.replace("v12|", "v11|")
+	inactive.military.restore(legacy).assertTrue()
+	for i = 0 to inactive.military.science.count - 1
+		inactive.military.science.states[i].equipmentOwner.assertEquals("")
+		inactive.military.science.states[i].owner.assertEquals("")
+
+@test function failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	// Small generic scholarly fixture uses the real campaign transaction path.
+	f.military.science.register(new ScienceSite("study", "port", "", "research_generation_efficiency", "printing", "grain", 0, 10, 1, 7, 1, 1, 1000, 100, 0, 0, 5, 2))
+	let s = f.military.science.states[0]
+	s.equipmentOwner = "england"
+	s.equipmentReady = 1
+	s.lastDay = 10
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "science").assertTrue()
+	s.work = 700
+	s.owner = "england"
+	s.target = "printing"
+	s.paid = 100
+	let before = f.military.snapshot()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].work.assertEquals(0)
+	f.military.science.states[0].equipmentOwner.assertEquals("england")
