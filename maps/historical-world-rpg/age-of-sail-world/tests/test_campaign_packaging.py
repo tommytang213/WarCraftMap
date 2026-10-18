@@ -283,6 +283,36 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual([("", p) for _, p in chapters], [(text(), text()) for _ in range(2)])
         self.assertEqual(len(data), at)
 
+    def test_campaign_transition_members_use_root_basename_paths(self):
+        """Native ChangeLevel must resolve the same root archive name as W3F."""
+        config = load_campaign_config(self.manifest)
+        paths = [item.package_path for item in config.maps]
+        self.assertEqual(17, len(paths))
+        self.assertTrue(all("/" not in path and "\\" not in path for path in paths))
+        self.assertEqual("AgeOfSailWorld.w3x", paths[0])
+        self.assertEqual("EuropeCentralEast.w3x", next(x.package_path for x in config.maps
+                                                        if x.id == "europe_central_east"))
+        # The native ChangeLevel caller consumes the generated origin catalogue,
+        # so the emitted argument must match both the W3F and MPQ root names.
+        from package_wurst_campaign import campaign_origin_records, campaign_origin_configuration
+        world = validate_campaign(config)
+        origins = campaign_origin_records(world, config.maps)
+        # Position materialization is independently tested and not needed for
+        # checking this exact compiled route/filename contract.
+        for origin in origins:
+            origin["startingLocation"]["worldPosition"] = [0.0, 0.0]
+        origin_source = campaign_origin_configuration(origins, config.maps)
+        self.assertIn('controller.add("austria", "Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x",', origin_source)
+        self.assertNotIn('"Maps/EuropeCentralEast.w3x"', origin_source)
+        # W3F targets follow those exact same root names, with only the
+        # selector shown on the campaign menu.
+        chapters = [(item.chapter_title, item.package_path) for item in config.maps]
+        parsed = parse_campaign_metadata(campaign_metadata("Age of Sail: The World", "test", chapters,
+                                 visible_chapters={config.maps[0].package_path}))
+        self.assertEqual([("", item.package_path) for item in config.maps], parsed["maps"])
+        self.assertEqual([(int(item.bootstrap), item.chapter_title, item.chapter_title, item.package_path)
+                          for item in config.maps], parsed["buttons"])
+
     def test_campaign_registers_region_transitions_as_hidden_chapters(self):
         maps = [("Begin the Campaign", "Maps/AgeOfSailWorld.w3x"),
                 ("Central and Eastern Europe", "Maps/EuropeCentralEast.w3x"),
@@ -332,8 +362,8 @@ class CampaignPackagingTests(unittest.TestCase):
         campaign = MpqReader(output)
         africa_path = self.project / "africa.w3x"
         europe_path = self.project / "europe.w3x"
-        africa_path.write_bytes(campaign.read("Maps/Africa.w3x"))
-        europe_path.write_bytes(campaign.read("Maps/EuropeWest.w3x"))
+        africa_path.write_bytes(campaign.read("Africa.w3x"))
+        europe_path.write_bytes(campaign.read("EuropeWest.w3x"))
         with zipfile.ZipFile(africa_path) as africa, zipfile.ZipFile(europe_path) as europe:
             self.assertIn("physical-source-marker.txt", africa.namelist())
             self.assertNotIn("physical-source-marker.txt", europe.namelist())
@@ -591,9 +621,9 @@ class CampaignPackagingTests(unittest.TestCase):
             else:
                 self.assertIn("initializePlayableCampaignRuntime(commands, PHYSICAL_MAP_ID", lua)
         self.assertGreater(len(physical_hashes), 1, "regional maps reused placeholder terrain/pathing")
-        west_bytes = campaign.read("Maps/EuropeWest.w3x")
-        southeast_asia_bytes = campaign.read("Maps/SoutheastAsia.w3x")
-        east_asia_bytes = campaign.read("Maps/EastAsia.w3x")
+        west_bytes = campaign.read("EuropeWest.w3x")
+        southeast_asia_bytes = campaign.read("SoutheastAsia.w3x")
+        east_asia_bytes = campaign.read("EastAsia.w3x")
         local = self.project / "west.w3x"; local.write_bytes(west_bytes)
         with zipfile.ZipFile(local) as west:
             runtime = json.loads(west.read("runtime/scenario-runtime.json"))
