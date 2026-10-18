@@ -135,6 +135,13 @@ public class StartupFixture
 		for i = 0 to civic.count - 1
 			if military.settlementIndex(civic.districts[i].id) >= 0
 				retained.register(civic.districts[i], clock.currentDay)
+			else
+				// Ledger forks borrow definitions, so its destructor only releases
+				// local state. This fixture owns the generated definitions and has
+				// not forked yet: release discarded districts explicitly, too.
+				// Otherwise every startup leaks another catalogue into the shared
+				// interpreter, slowing later multi-map tests past their deadline.
+				destroy civic.districts[i]
 		military.civic = retained
 		destroy civic
 		// Keep agricultural authority aligned with the bounded settlement slice.
