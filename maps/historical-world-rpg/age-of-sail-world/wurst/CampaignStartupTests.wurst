@@ -26,13 +26,27 @@ import ManagementScreenPauseController
 
 import public FrameworkPorts
 
+/** Run every generated domain registration, but capture migration defaults only
+ * after the fixture has bounded its mutable authority. The normal registrar
+ * snapshots the entire world; immediately discarding and replacing that snapshot
+ * on every reconstruction leg wastes most of the interpreter's fixed deadline.
+ * The full-size production finalization has its own regression below. */
+class StartupCampaignServices extends PlayableCampaignServices
+	boolean fixtureBounded = false
+	construct(StartupRegionalAdapter regional, CampaignClock clock, string physicalMap, ReligionRuntime religion, StartupStorage saves, CampaignHandoff handoff, StartupPorts ports)
+		super(regional, clock, physicalMap, religion, saves, handoff, ports, ports)
+	override function finishRegistration() returns boolean
+		if not fixtureBounded
+			return false
+		return super.finishRegistration()
+
 public class StartupFixture
 	StartupStorage cache
 	StartupStorage saves
 	StartupPorts ports = new StartupPorts()
 	CampaignHandoff handoff
 	NewCampaignOriginController selector
-	PlayableCampaignServices campaign
+	StartupCampaignServices campaign
 	PlayableTradeRuntime trade
 	CampaignClock clock = configureCampaignTimeline()
 	construct(StartupStorage cache, StartupStorage saves, string physicalMap)
@@ -45,17 +59,16 @@ public class StartupFixture
 		selector = new NewCampaignOriginController(8, ports, ports.selectorIdentity)
 		selector.setObserver(handoff)
 		configureGeneratedOrigins(selector)
-		campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports, ports)
+		campaign = new StartupCampaignServices(new StartupRegionalAdapter(), clock, physicalMap, new ReligionRuntime(ports), saves, handoff, ports)
 		campaign.state.arrivalPathing = ports
 		campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
 	function register()
 		trade = registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)
-		campaign.registered.assertTrue()
 		(campaign.state.rpg.interactions.maps != null).assertTrue()
 		campaign.state.rpg.interactions.maps.loadedMap().assertEquals(campaign.physicalMapId)
 		campaign.state.rpg.interactions.maps.available().assertFalse()
 		(trade.access!=null and trade.access.state==campaign.state and trade.access.cargoActors!=null).assertTrue()
-		// Bound the authority fixture AFTER executing every production registration.
+		// Bound authority after every generated domain has been registered.
 		// The interpreter has a fixed 20-second limit per test. Catalogue-wide
 		// generation and scale are covered by the repository's separate gates.
 		(campaign.state.rpg.heroes.count > 100 and campaign.state.militarySettlements.settlementCount > 700 and trade.marketCount > 700).assertTrue()
@@ -158,7 +171,9 @@ public class StartupFixture
 				agriculture.addSite(site)
 			else
 				destroy site
+		campaign.fixtureBounded = true
 		campaign.finishRegistration().assertTrue()
+		campaign.registered.assertTrue()
 	function choose(string origin)
 		selector.choose(origin).assertTrue()
 	function start(string origin)
@@ -168,6 +183,19 @@ public class StartupFixture
 		if not started
 			print("Startup failed: " + campaign.diagnostic() + "; " + campaign.state.diagnostic())
 		started.assertTrue()
+
+@test function completeGeneratedRegistrationCapturesFullMigrationDefaults()
+	let ports = new StartupPorts()
+	let clock = configureCampaignTimeline()
+	let campaign = new PlayableCampaignServices(new StartupRegionalAdapter(), clock, "europe_west", new ReligionRuntime(ports), new StartupStorage(), new CampaignHandoff(new StartupStorage(), ports), ports, ports)
+	campaign.registerPiracyRuntime(createGeneratedPiracyRuntime())
+	registerCampaignDomains(campaign, new WarcraftRpgRuntime(ports), new MilitarySettlementRuntime(ports), ports)
+	campaign.registered.assertTrue()
+	(campaign.state.militarySettlements.settlementCount > 700).assertTrue()
+	let codec = campaign.saves.codec castTo PlayableCampaignCodec
+	codec.initialMilitary.assertEquals(campaign.state.militarySettlements.snapshot())
+	codec.initialReligion.assertEquals(campaign.state.religion.captureState())
+	codec.initialPiracy.assertEquals(campaign.state.piracy.migrationAuthority())
 
 function originLifecycle(string origin, string mapId)
 	let source = new StartupFixture(new StartupStorage(), new StartupStorage(), mapId)
