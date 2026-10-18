@@ -283,6 +283,21 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual([("", p) for _, p in chapters], [(text(), text()) for _ in range(2)])
         self.assertEqual(len(data), at)
 
+    def test_campaign_registers_region_transitions_as_hidden_chapters(self):
+        maps = [("Begin the Campaign", "Maps/AgeOfSailWorld.w3x"),
+                ("Central and Eastern Europe", "Maps/EuropeCentralEast.w3x"),
+                ("Africa", "Maps/Africa.w3x")]
+        visible = {"Maps/AgeOfSailWorld.w3x"}
+        data = campaign_metadata("Age of Sail: The World", "description", maps, visible_chapters=visible)
+        parsed = parse_campaign_metadata(data)
+        self.assertEqual([("", path) for _, path in maps], parsed["maps"])
+        self.assertEqual([(1, maps[0][0], maps[0][0], maps[0][1]),
+                          (0, maps[1][0], maps[1][0], maps[1][1]),
+                          (0, maps[2][0], maps[2][0], maps[2][1])], parsed["buttons"])
+        with self.assertRaisesRegex(ValueError, "no registered destination"):
+            campaign_metadata("Age of Sail: The World", "description", maps,
+                              visible_chapters={"Maps/Absent.w3x"})
+
     def test_old_rc2_malformed_metadata_fixture_is_rejected(self):
         fixture = Path(__file__).parent / "fixtures/malformed-rc2-war3campaign.w3f.hex"
         with self.assertRaises(ValueError):
@@ -539,7 +554,10 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual(3, metadata["version"])
         self.assertEqual(2, metadata["flags"])
         self.assertEqual(configured_maps[0]["packagePath"], metadata["buttons"][0][3])
-        self.assertEqual(1, len(metadata["buttons"]))
+        self.assertEqual(len(configured_maps), len(metadata["buttons"]))
+        self.assertEqual([(int(row.get("bootstrap", False)), row["chapterTitle"], row["chapterTitle"], row["packagePath"])
+                          for row in configured_maps], metadata["buttons"])
+        self.assertEqual(1, sum(button[0] for button in metadata["buttons"]))
         self.assertEqual(len(configured_maps), len(metadata["maps"]))
         self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
         physical_hashes = set()
