@@ -46,6 +46,9 @@ public class RecordingMilitaryAdapter implements MilitarySettlementAdapter, Comm
 		removed += stableId + "|"
 	override function changeRepresentationOwner(string stableId, player owner)
 		created += "owner:" + stableId + "|"
+	int reloadBasisPoints = 0
+	override function replaceReload(string stableId, int baseMillis, int basisPoints)
+		reloadBasisPoints = basisPoints
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		tradition = lifePermille
 		appliedAbility = milestoneAbilityId

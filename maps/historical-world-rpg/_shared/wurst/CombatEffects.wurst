@@ -179,6 +179,7 @@ public class CombatHit
 	ExactRational damage
 	boolean applied = false
 	boolean modified = false
+	int contextualDefense = 0
 	construct(string attackId, ExactRational baseDamage)
 		this.attackId = attackId
 		damage = baseDamage
@@ -374,6 +375,9 @@ public class CombatBindings
 				defenseSources.appendRating(resistance, hit.attackId, "resistance", this)
 		if defenseSources != null and defensiveCategory(categoryId)
 			defenseSources.appendRating(resistance, "", "discipline", this)
+		let contextual = new ExactRational(I2S(hit.contextualDefense), "1", "1")
+		resistance.add(contextual)
+		destroy contextual
 		resistance.nonnegative()
 		hit.modified = attack.numerator != "0" or resistance.numerator != "0"
 		let baseline = new ExactRational("10000", "1", "1")

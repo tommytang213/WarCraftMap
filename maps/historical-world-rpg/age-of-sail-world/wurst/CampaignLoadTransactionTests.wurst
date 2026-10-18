@@ -232,6 +232,8 @@ class LoadPorts implements CampaignPartyProjection, BoundaryPathing, PhysicalMap
 		if layer != null
 			traditions[forceIndex(stableId)] = layer.inspection()
 			destroy layer
+	override function replaceReload(string stableId, int baseMillis, int basisPoints)
+		skip
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		traditions[forceIndex(stableId)] = lifePermille.toString() + milestoneAbilityId.toString()
 	override function protectRepresentation(string stableId, boolean shouldProtect)
@@ -1106,3 +1108,27 @@ function legacyPirateFounding() returns string
 	f.campaign.saves.load(SAVE_SLOT_MANUAL,1).assertTrue()
 	f.ports.researchLayers.get("player").count.assertEquals(0)
 	f.ports.researchLayers.get("other").identities().assertEquals("other|printing|building|printing_house;other|printing|modifier|stock;")
+
+@test function lateLoadFailureRestoresLandArmyPolicyWorkAndFiringClock()
+	let f = new LoadFixture()
+	f.military.land.register("port", f.clock.currentDay)
+	let arsenal = f.military.land.arsenals[0]
+	arsenal.owner = "england"
+	arsenal.ready = 5
+	arsenal.upkeepThrough = 370
+	arsenal.projectOwner = "england"
+	arsenal.work = 23400
+	arsenal.serial = 1
+	arsenal.officeBillPaid = true
+	f.military.forces[f.military.forceIndex("fleet")].nextFireAt = 12.75
+	let original = f.military.snapshot()
+	arsenal.work = 45000
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	arsenal.work = 23400
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.land.arsenals[0].work.assertEquals(23400)
+	f.military.land.arsenals[0].upkeepThrough.assertEquals(370)
+	f.military.forces[f.military.forceIndex("fleet")].nextFireAt.assertEquals(12.75)

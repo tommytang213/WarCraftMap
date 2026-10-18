@@ -368,3 +368,9 @@ public function compatBenchmarkIsTerrainPathable(real x, real y, pathingtype kin
 	return IsTerrainPathable(x, y, kind)
 public function compatBenchmarkClockMilliseconds() returns real
 	return TimerGetElapsed(bj_gameStartedTimer) * 1000.
+
+// Actual primary-weapon reload interval; no damage or generic ability proxy.
+public function compatGetAttackCooldown(unit target) returns real
+	return BlzGetUnitAttackCooldown(target, 0)
+public function compatSetAttackCooldown(unit target, real seconds)
+	BlzSetUnitAttackCooldown(target, seconds, 0)

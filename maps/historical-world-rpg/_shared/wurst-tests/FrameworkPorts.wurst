@@ -214,6 +214,8 @@ public class StartupPorts implements BoundaryPathing, PhysicalMapLoader, Campaig
 	override function replaceTraditionLayer(string stableId, TraditionLayer layer)
 		if layer != null
 			destroy layer
+	override function replaceReload(string stableId, int baseMillis, int basisPoints)
+		skip
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		skip
 	override function protectRepresentation(string stableId, boolean shouldProtect)

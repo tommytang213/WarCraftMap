@@ -1,0 +1,355 @@
+package LandArmyEffectsTests
+
+import LandArmyEffects
+import LandArmyRuntime
+import CivicGovernance
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CombatEffects
+import ExactRational
+import ScenarioData
+import Wurstunit
+import ManagementScreenPauseController
+
+class LandResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	int currentYear = 1778
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return currentYear
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+class LandFixture
+	int day = 649041
+	LandResources resources = new LandResources()
+	LandResearchEffects research = new LandResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(research)
+	RecordingMilitaryAdapter adapter = new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(adapter)
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	LandArmyRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	string initial
+	construct()
+		installCampaignClock(clock)
+		configureGeneratedRpg(rpg)
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(adapter, false)
+		configureGeneratedLandArmy(military.land, research, day)
+		military.land.register("district", day)
+		military.civic.register(new CivicDistrict("district", "province", 10001, true, 0, 0, 0, 0, 0, "cloth", 1, 1000), day)
+		military.registerSettlement(new SettlementRuntimeState("district", "player", "europe", 'htow', 'hfoo', 30, 20, 1000, 1000, 0., 0.))
+		military.appoint("district", new AdministratorState("clerk", "Clerk", "Administrator", "player", "europe", "district", 50, 50, 40, 1))
+		military.combatBindings = createGeneratedCombatBindings()
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		military.rpg = rpg
+		military.landYear = clock.campaignYear()
+		research.listener = military
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity("player", 10000)
+		campaign.countries.registerPolity("ai", 10000)
+		trade.registerMarket(new RuntimeMarket("district", "arms", 1000, 100000, 10, 10))
+		runtime = new LandArmyRuntime(campaign, trade)
+		campaign.landRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerLandArmyCommands(commands, runtime).assertEquals("")
+		initial = rpg.captureState()
+	function prerequisites()
+		rpg.restoreState(initial + "|u," + resources.owner + ",pike_and_shot|u," + resources.owner + ",countermarch_fire|u," + resources.owner + ",insurance_markets|u," + resources.owner + ",campaign_bakeries|u," + resources.owner + ",cast_cannon|u," + resources.owner + ",flintlock_drill|u," + resources.owner + ",linear_tactics").assertTrue()
+		rpg.reconcile(resources.owner)
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+	function allResearch()
+		prerequisites()
+		unlock("arquebus_volley_drill")
+		unlock("artillery_offices")
+		unlock("artillery_train")
+		unlock("bayonet_system")
+	function action(string action)
+		commands.dispatch(Player(0), "/land " + action + " district").assertTrue()
+		resources.output.startsWith("Land army action completed.").assertTrue()
+	function advance(int amount)
+		clock.advanceTo(day + amount).assertTrue()
+	function arsenal() returns ArsenalState
+		return military.land.arsenals[military.land.index("district")]
+	function add(string id, string profileId, string owner) returns RuntimeForce
+		let p = military.land.profile(profileId)
+		let made = new RuntimeForce(id, owner, "europe", p.categoryId, FORCE_ARMY, p.unitTypeId, 100, 100, 0., 0.)
+		made.combatProfileId = profileId
+		military.registerForce(made)
+		return made
+
+@test function landRegisteredResearchAndOfficeActionsChargeRealInputsAndTimeline()
+	let f = new LandFixture()
+	f.commands.dispatch(Player(0), "/research arquebus_volley_drill").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.commands.dispatch(Player(0), "/research artillery_offices").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.commands.dispatch(Player(0), "/research artillery_train").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.commands.dispatch(Player(0), "/research bayonet_system").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.runtime.act("player", "policy", "district", "").contains("completed").assertTrue()
+	f.allResearch()
+	f.resources.balance.assertEquals(100000 - 108 - 152 - 333 - 288)
+	f.military.forceCount.assertEquals(1) // settlement core only; no research grants.
+	f.action("policy")
+	f.campaign.countries.treasury[0].assertEquals(9899)
+	f.arsenal().ready.assertEquals(f.day + 90)
+	f.runtime.act("player", "policy", "district", "").contains("cannot stack").assertTrue()
+	f.advance(89)
+	f.runtime.officeActive(f.arsenal(), f.day + 89).assertFalse()
+	f.advance(90)
+	f.campaign.countries.treasury[0].assertEquals(9848)
+	f.action("commission")
+	f.campaign.countries.treasury[0].assertEquals(9562) // 280 + ceil(280 * .02).
+	f.trade.findMarket("district", "arms").stock.assertEquals(970)
+	f.military.settlements[0].manpower.assertEquals(970)
+	f.military.settlements[0].supply.assertEquals(970)
+	f.military.forceIndex("artillery:district:1").assertEquals(-1)
+	f.advance(173)
+	f.arsenal().work.assertEquals(896400)
+	f.military.forceIndex("artillery:district:1").assertEquals(-1)
+	f.advance(174)
+	let i = f.military.forceIndex("artillery:district:1")
+	(i >= 0).assertTrue()
+	f.military.forces[i].strength.assertEquals(120)
+	f.military.forces[i].supply.assertEquals(30)
+	f.advance(175)
+	f.military.forceCount.assertEquals(2)
+	f.arsenal().projectOwner.assertEquals("")
+	f.commands.dispatch(Player(0), "/land inspect district").assertTrue()
+	f.resources.output.contains("procurement administration +200 bp").assertTrue()
+	f.resources.output.contains("90 workshop days").assertTrue()
+	f.commands.dispatch(Player(0), "/technology").assertTrue()
+	f.resources.output.contains("+500 bp firearm_reload_efficiency").assertTrue()
+	f.resources.output.contains("+800 bp anti_cavalry_melee_defense").assertTrue()
+
+@test function landProductionAndSupplyRejectMissingResourcesControlRoutesAndEquipment()
+	let f = new LandFixture()
+	f.allResearch()
+	let artillery = f.add("guns", "field_artillery_battery", "player")
+	let infantry = f.add("foot", "european_musket_battalion", "player")
+	f.campaign.countries.treasury[0] = 279
+	f.runtime.act("player", "commission", "district", "").contains("Insufficient").assertTrue()
+	f.military.settlements[0].manpower.assertEquals(1000)
+	f.trade.findMarket("district", "arms").stock.assertEquals(1000)
+	f.campaign.countries.treasury[0] = 10000
+	f.trade.findMarket("district", "arms").stock = 29
+	f.runtime.act("player", "commission", "district", "").contains("Insufficient").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(10000)
+	f.trade.findMarket("district", "arms").stock = 1000
+	f.military.settlements[0].manpower = 29
+	f.runtime.act("player", "commission", "district", "").contains("crew").assertTrue()
+	f.military.settlements[0].manpower = 1000
+	f.runtime.act("player", "supply", "district", "foot").contains("supplied artillery").assertTrue()
+	artillery.supply = 0
+	f.runtime.act("player", "supply", "district", "guns").contains("supplied artillery").assertTrue()
+	artillery.supply = 100
+	artillery.x = 769.
+	f.runtime.act("player", "supply", "district", "guns").contains("local route").assertTrue()
+	artillery.x = 0.
+	artillery.regionId = "africa"
+	f.runtime.act("player", "supply", "district", "guns").contains("local route").assertTrue()
+	artillery.regionId = "europe"
+	artillery.controllerId = "ai"
+	f.runtime.act("player", "supply", "district", "guns").contains("owned").assertTrue()
+	artillery.controllerId = "player"
+	f.trade.findMarket("district", "arms").blockaded = true
+	f.runtime.act("player", "supply", "district", "guns").contains("accessible").assertTrue()
+	f.trade.findMarket("district", "arms").blockaded = false
+	f.runtime.act("player", "supply", "district", "guns").assertEquals("")
+	artillery.supply.assertEquals(177) // floor(25 * 800 / 10000) = 2 less waste.
+	infantry.supply.assertEquals(100)
+	f.trade.findMarket("district", "arms").stock.assertEquals(900)
+	f.military.settlements[0].legalOwnerId = "ai"
+	f.runtime.act("player", "policy", "district", "").contains("lawfully").assertTrue()
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.landYear = 1450
+	(f.military.landKit(infantry) == null).assertTrue()
+	f.military.landYear = 1778
+	(f.military.landKit(infantry) != null).assertTrue()
+
+@test function landReloadAndBayonetAreExactEquipmentGatedAndDeduplicated()
+	let f = new LandFixture()
+	f.allResearch()
+	let musket = f.add("musket", "european_musket_battalion", "player")
+	let bayonet = f.add("bayonet", "european_late_line_infantry", "player")
+	let cavalry = f.add("horse", "sabre_cavalry", "ai")
+	f.military.setWar("player", "ai", true)
+	f.military.firearmReloadMillis(musket, 2100).assertEquals(2000)
+	f.military.firearmReloadMillis(cavalry, 2100).assertEquals(2100)
+	f.military.land.profile("european_musket_battalion").bayonet.assertFalse()
+	f.military.land.profile("european_late_line_infantry").bayonet.assertTrue()
+	for i = 0 to 3
+		f.rpg.reconcile("player")
+	f.military.firearmReloadMillis(musket, 2100).assertEquals(2000)
+	f.adapter.reloadBasisPoints.assertEquals(500) // Only the player source was reconciled.
+	let hit = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.military.applyCombatHit(hit, f.military.forceIndex("horse"), f.military.forceIndex("bayonet"), "ai", "player", true)
+	hit.damage.display().assertEquals("100")
+	f.military.applyCombatHit(hit, f.military.forceIndex("horse"), f.military.forceIndex("bayonet"), "ai", "player", true)
+	hit.damage.display().assertEquals("100")
+	let noKit = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.military.applyCombatHit(noKit, f.military.forceIndex("horse"), f.military.forceIndex("musket"), "ai", "player", true)
+	noKit.damage.display().assertEquals("108")
+	let spell = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.military.applyCombatHit(spell, f.military.forceIndex("horse"), f.military.forceIndex("bayonet"), "ai", "player", false)
+	spell.damage.display().assertEquals("108")
+	f.military.transferControl("musket", "ai")
+	f.military.firearmReloadMillis(musket, 2100).assertEquals(2100)
+	f.adapter.reloadBasisPoints.assertEquals(0)
+
+@test function landActiveAbstractReplaySnapshotMigrationAndCaptureAreIdempotent()
+	let a = new LandFixture()
+	let b = new LandFixture()
+	a.allResearch()
+	b.allResearch()
+	a.military.activateRegion("europe")
+	b.military.activateRegion("africa")
+	a.action("policy")
+	b.action("policy")
+	a.advance(90)
+	b.advance(90)
+	a.action("commission")
+	b.action("commission")
+	a.advance(120)
+	for i = 91 to 120
+		b.advance(i)
+	a.arsenal().work.assertEquals(b.arsenal().work)
+	a.campaign.countries.treasury[0].assertEquals(b.campaign.countries.treasury[0])
+	let saved = a.military.snapshot()
+	a.military.restore(saved, false).assertTrue()
+	a.military.snapshot().assertEquals(saved)
+	a.military.restore(saved + "|l,unknown,,0,0,,0,0,0,0", false).assertFalse()
+	a.military.snapshot().assertEquals(saved)
+	let cut = saved.indexOf("|l,")
+	a.military.restore(SubString(saved, 0, cut), false).assertFalse()
+	a.military.snapshot().assertEquals(saved)
+	let old = "v11" + SubString(saved, saved.indexOf("|"), cut)
+	a.military.restore(old, false).assertTrue()
+	a.arsenal().projectOwner.assertEquals("")
+	a.arsenal().owner.assertEquals("")
+	a.military.restore(saved, false).assertTrue()
+	a.advance(174)
+	b.advance(174)
+	a.military.forceCount.assertEquals(b.military.forceCount)
+	a.military.setWar("player", "ai", true)
+	a.military.capture("district", "ai", 0.).assertTrue()
+	a.arsenal().owner.assertEquals("")
+	a.arsenal().projectOwner.assertEquals("")
+	a.research.rate("ai", "artillery_production_throughput").assertEquals(0)
+
+@test function landNamedControllerSourcesAddOnceAndDoNotCrossControllers()
+	let f = new LandFixture()
+	f.allResearch()
+	f.research.register(new CivicEffect("modifier", "other_drill", "firearm_reload_efficiency", 500))
+	let layer = new ResearchEntitlements("player")
+	let drill = new ResearchUnlock("arquebus_volley_drill", "modifier", "progression_arquebus_volley_drill")
+	layer.add(drill)
+	layer.add(drill)
+	let duplicate = new ResearchUnlock("other_provenance", "modifier", "progression_arquebus_volley_drill")
+	layer.add(duplicate)
+	let other = new ResearchUnlock("other_training", "modifier", "other_drill")
+	layer.add(other)
+	f.research.replaceResearchEntitlements(layer)
+	f.research.rate("player", "firearm_reload_efficiency").assertEquals(1000)
+	f.research.rate("ai", "firearm_reload_efficiency").assertEquals(0)
+	landReloadMillis(2200, f.research.rate("player", "firearm_reload_efficiency")).assertEquals(2000)
+	destroy drill
+	destroy duplicate
+	destroy other
+
+@test function landAbstractFiringConsumesExactReloadClockAcrossReconstruction()
+	let f = new LandFixture()
+	f.allResearch()
+	let musket = f.add("musket", "european_musket_battalion", "player")
+	let target = f.add("target", "field_artillery_battery", "ai")
+	f.military.setWar("player", "ai", true)
+	let first = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(first, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	first.damage.display().assertEquals("100")
+	musket.nextFireAt.assertEquals(1.285)
+	f.military.gameplaySeconds = 1.284
+	let early = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(early, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	early.damage.display().assertEquals("0")
+	let saved = f.military.snapshot()
+	f.military.restore(saved, false).assertTrue()
+	f.military.gameplaySeconds = 1.285
+	let ready = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(ready, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	ready.damage.display().assertEquals("100")
+	f.military.forces[f.military.forceIndex("musket")].nextFireAt.assertEquals(2.57)
+
+@test function landAiUsesIdenticalLegalResearchProcurementAndWasteRules()
+	let f = new LandFixture()
+	f.resources.owner = "ai"
+	f.military.transferSettlement("district", "ai")
+	f.military.settlements[0].legalOwnerId = "ai"
+	f.military.settlements[0].manpower = 1000
+	f.military.settlements[0].supply = 1000
+	f.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "europe", "district", 50, 50, 40, 1))
+	f.allResearch()
+	f.runtime.act("ai", "policy", "district", "").assertEquals("")
+	f.campaign.countries.treasury[1].assertEquals(9899)
+	f.advance(90)
+	f.runtime.act("ai", "commission", "district", "").assertEquals("")
+	f.campaign.countries.treasury[1].assertEquals(9562)
+	let artillery = f.add("ai_guns", "field_artillery_battery", "ai")
+	f.runtime.act("ai", "supply", "district", "ai_guns").assertEquals("")
+	artillery.supply.assertEquals(177)
+	f.advance(174)
+	let i = f.military.forceIndex("artillery:district:1")
+	(i >= 0).assertTrue()
+	f.military.forces[i].controllerId.assertEquals("ai")
+
+@test function landUnfundedRenewalAndCapturedWorkCannotCreateFreeArtillery()
+	let f = new LandFixture()
+	f.runtime.act("player", "commission", "district", "").contains("technology").assertTrue()
+	f.allResearch()
+	f.action("policy")
+	f.advance(90)
+	f.action("commission")
+	let balance = f.campaign.countries.treasury[0]
+	let stock = f.trade.findMarket("district", "arms").stock
+	f.runtime.act("player", "commission", "district", "").contains("free production queue").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(balance)
+	f.trade.findMarket("district", "arms").stock.assertEquals(stock)
+	f.advance(100)
+	f.military.setWar("player", "ai", true)
+	f.military.capture("district", "ai", 0.).assertTrue()
+	f.arsenal().work.assertEquals(0)
+	f.arsenal().projectOwner.assertEquals("")
+	f.advance(200)
+	f.military.forceIndex("artillery:district:1").assertEquals(-1)
+	let renewal = new LandFixture()
+	renewal.allResearch()
+	renewal.action("policy")
+	renewal.advance(90)
+	renewal.campaign.countries.treasury[0] = 0
+	renewal.advance(455)
+	renewal.arsenal().owner.assertEquals("")
+	renewal.runtime.officeActive(renewal.arsenal(), renewal.day + 455).assertFalse()
+	renewal.campaign.countries.treasury[0].assertEquals(0)
+	landReloadMillis(1, 500).assertEquals(1)
+	landReloadMillis(2147483647, 500).assertEquals(2045222520)
