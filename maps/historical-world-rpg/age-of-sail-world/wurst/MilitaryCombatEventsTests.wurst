@@ -343,7 +343,7 @@ class CombatFixture
 	f.captureViaNatives()
 	f.natives.advance(0.0625)
 	let saved = f.runtime.snapshot()
-	saved.startsWith("v11|k,").assertTrue()
+	saved.startsWith("v12|k,").assertTrue()
 	f.runtime.restore(saved).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	f.runtime.restore(saved + "|k,0").assertFalse()
@@ -1028,7 +1028,7 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 		f.representations.traditionLayers.get("survivor").modifier("attack_basis_points").display().assertEquals("1073741824/5")
 		f.representations.traditionLayers.get("survivor").effects().assertEquals("platoon_fire")
 		let saved = f.runtime.snapshot()
-		saved.startsWith("v11|").assertTrue()
+		saved.startsWith("v12|").assertTrue()
 		f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
 		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
 		f.natives.death(victim, f.token("survivor"))
@@ -1445,7 +1445,7 @@ function milestoneDamageVector(CombatFixture f, string category, string xp, stri
 	f.runtime.restore(malformed).assertFalse()
 	f.runtime.snapshot().assertEquals(before)
 	// Literal old records remain loadable without assigning invented weapons.
-	var legacy = before.replace("v11|", "v8|")
+	var legacy = before.replace("v12|", "v8|")
 	for i = 0 to f.runtime.forceCount - 1
 		let combatForce = f.runtime.forces[i]
 		if combatForce.combatProfileId != ""
@@ -1681,7 +1681,7 @@ function disciplineVector(CombatFixture f, string xp, string expected)
 		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 		deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("20000/213")
 	// V8 military migration leaves unknown weapons; defensive category survives.
-	var legacy = saved.replace("v11|", "v8|")
+	var legacy = saved.replace("v12|", "v8|")
 	for i = 0 to f.runtime.forceCount - 1
 		let savedForce = f.runtime.forces[i]
 		if savedForce.combatProfileId != ""

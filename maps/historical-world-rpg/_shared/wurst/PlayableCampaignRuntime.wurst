@@ -1,4 +1,5 @@
 package PlayableCampaignRuntime
+import ScienceCampaignRuntime
 import CivicCampaignRuntime
 
 import CampaignSaveManager
@@ -333,6 +334,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		countries = runtime
 		countries.setMilitaryAuthority(militarySettlements)
 	CivicCampaignRuntime civicRuntime = null
+	ScienceCampaignRuntime scienceRuntime = null
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
 		rpg.visits = knowledge
@@ -342,6 +344,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	override function onCampaignDay(int day)
 		if not loading and not startupLocked and not transitionOpen
 			recoverHeroes(day)
+			if scienceRuntime != null
+				scienceRuntime.advance(day)
 			if civicRuntime != null
 				civicRuntime.advance(day)
 			if militarySettlements != null

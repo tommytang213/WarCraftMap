@@ -1,5 +1,7 @@
 package CampaignRegistration
 import CivicGovernance
+import ScienceCampaignRuntime
+import ScienceExploration
 import CivicCampaignRuntime
 
 import ScenarioData
@@ -157,6 +159,11 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.technologies.effects = civicResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.civicRuntime = new CivicCampaignRuntime(campaign.state, trade, civicResearch)
+	let scienceResearch = new ScienceResearchEffects(rpg.technologies.effects)
+	configureGeneratedScience(military.science, scienceResearch)
+	rpg.technologies.effects = scienceResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.scienceRuntime = new ScienceCampaignRuntime(campaign.state, trade, scienceResearch)
 	trade.civic = military
 	trade.civicClock = campaign.state.clock
 	trade.tradeController()
