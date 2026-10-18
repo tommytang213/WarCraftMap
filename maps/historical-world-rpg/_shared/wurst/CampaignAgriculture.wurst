@@ -1,0 +1,128 @@
+package CampaignAgriculture
+
+import Agriculture
+import PlayableCampaignRuntime
+import PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+
+/** Domain bridge over persistent military, treasury, material and market state.
+ * Scenario definitions supply commodity identities and local support limits. */
+public class CampaignAgricultureAuthority implements AgricultureAuthority
+	PlayableCampaignState state
+	PlayableTradeRuntime trade
+	string stapleId
+	string constructionGoodId
+	string equipmentId
+	construct(PlayableCampaignState state, PlayableTradeRuntime trade, string stapleId, string equipmentId, string constructionGoodId)
+		this.state=state
+		this.trade=trade
+		this.stapleId=stapleId
+		this.equipmentId=equipmentId
+		this.constructionGoodId=constructionGoodId
+	override function controller(string id) returns string
+		let index=state.militarySettlements.settlementIndex(id)
+		if index<0
+			return ""
+		return state.militarySettlements.settlements[index].controllerId
+	override function operational(string id) returns boolean
+		let index=state.militarySettlements.settlementIndex(id)
+		let stock=trade.findMarket(id,stapleId)
+		if index<0 or stock==null or stock.blockaded or stock.occupiedByHostile
+			return false
+		let city=state.militarySettlements.settlements[index]
+		if city.supply<=0 or city.occupationConflictId!="" or city.legalOwnerId!=city.controllerId
+			return false
+		let office=state.militarySettlements.administratorIndex(id)
+		return office>=0 and state.militarySettlements.administrators[office].controllerId==city.controllerId and state.militarySettlements.administrators[office].administration>0
+	override function funds(string owner) returns int
+		let index=state.countries.polityIndex(owner)
+		if index<0
+			return 0
+		return state.countries.treasury[index]
+	function materialStore(string siteId) returns TradeStore
+		for i=0 to trade.storeCount-1
+			let store=trade.stores[i]
+			if store.accessKind=="warehouse" and store.accessId==siteId
+				return store
+		return null
+	override function materials(string owner, string siteId) returns int
+		let store=materialStore(siteId)
+		if store==null or controller(siteId)!=owner
+			return 0
+		return store.quantity(constructionGoodId)
+	override function pay(string owner, string siteId, int money, int materials)
+		let index=state.countries.polityIndex(owner)
+		state.countries.treasury[index]-=money
+		if materials>0
+			let store=materialStore(siteId)
+			let used=trade.controller.provenance.consume(store.id,constructionGoodId,materials,siteId)
+			destroy used
+			store.contents.set(constructionGoodId,store.quantity(constructionGoodId)-materials)
+	override function stapleStock(string id) returns int
+		let stock=trade.findMarket(id,stapleId)
+		if stock==null
+			return 0
+		return stock.stock
+	override function equipment(string id) returns int
+		let stock=trade.findMarket(id,equipmentId)
+		if stock==null or stock.blockaded or stock.occupiedByHostile
+			return 0
+		return stock.stock
+	override function harvest(string id, int seed, int equipmentConsumed, int output, int loss, int capacity)
+		let stock=trade.findMarket(id,stapleId)
+		let equipment=trade.findMarket(id,equipmentId)
+		if equipmentConsumed>0
+			equipment.stock-=equipmentConsumed
+		// Existing overflow is preserved; only new production is limited. Neither
+		// capture nor a technology reload may destroy legitimate traded stock.
+		let remaining=IMaxBJ(0,stock.stock-seed-loss)
+		stock.stock=remaining+IMinBJ(output,IMaxBJ(0,capacity-remaining))
+		stock.reprice()
+	override function collectTax(string id, string owner, int maximum) returns int
+		let index=state.countries.polityIndex(owner)
+		let stock=trade.findMarket(id,stapleId)
+		if index<0 or stock==null
+			return 0
+		let amount=IMinBJ(maximum,IMinBJ(stock.money,2147483647-state.countries.treasury[index]))
+		stock.money-=amount
+		state.countries.treasury[index]+=amount
+		return amount
+
+/** Research and agricultural actions use the governing controller's existing
+ * treasury. Personal legacy completions remain personal, without transferring
+ * research to a new government on service/allegiance changes. */
+public class CampaignResearchResources extends WarcraftResearchResources
+	PlayableCampaignState state
+	construct(PlayableCampaignState state)
+		this.state=state
+	function governmentAuthority(player sender) returns boolean
+		if sender!=Player(0) or state.identity==null or not state.identity.hasOrigin()
+			return false
+		let owner=state.identity.allegianceId()
+		if state.piracy!=null and state.piracy.polity!=null and state.piracy.polity.id==owner
+			return true
+		for i=0 to state.countries.profileCount-1
+			if state.countries.granted[i] and state.countries.profiles[i].polityId==owner and state.countries.profiles[i].kind=="office"
+				return true
+		return false
+	override function controllerId(player sender) returns string
+		if governmentAuthority(sender)
+			return state.identity.allegianceId()
+		return super.controllerId(sender)
+	override function year() returns int
+		return state.clock.campaignYear()
+	override function gold(player sender) returns int
+		if not governmentAuthority(sender)
+			return super.gold(sender)
+		let index=state.countries.polityIndex(controllerId(sender))
+		if index<0
+			return 0
+		return state.countries.treasury[index]
+	override function setGold(player sender, int amount)
+		if not governmentAuthority(sender)
+			super.setGold(sender,amount)
+			return
+		let index=state.countries.polityIndex(controllerId(sender))
+		if index>=0
+			state.countries.treasury[index]=amount

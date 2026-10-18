@@ -1,4 +1,5 @@
 package PlayableCampaignRuntime
+import Agriculture
 import CivicCampaignRuntime
 
 import CampaignSaveManager
@@ -289,6 +290,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	WarcraftRegionalAdapter regional
 	CampaignClock clock
 	CampaignAutosaveScheduler autosaves = null
+	AgricultureRuntime agriculture = null
 	CampaignRuntimeExtension extension = null
 	PlayableCountryInteractionRuntime countries = null
 	WarcraftRpgRuntime rpg = null
@@ -341,6 +343,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		clock.subscribeDays(this)
 	override function onCampaignDay(int day)
 		if not loading and not startupLocked and not transitionOpen
+			if agriculture!=null
+				agriculture.advance(day,clock.campaignYear())
 			recoverHeroes(day)
 			if civicRuntime != null
 				civicRuntime.advance(day)
@@ -637,6 +641,13 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if extension != null and not extension.validate(lastAuthorityValue(candidate, "trade"))
 			lastDiagnostic = "trade authority is invalid"
 			return false
+		let tradeState=lastAuthorityValue(candidate,"trade")
+		if agriculture!=null and tradeState.startsWith("v5:")
+			let header=agricultureField(agricultureField(tradeState,":",24),"~",0)
+			let day=campaignClockRecordDay(lastAuthorityValue(candidate,"clock"))
+			if agricultureField(header,",",1)!=day.toString() or S2I(agricultureField(header,",",2))!=agricultureYear(day)
+				lastDiagnostic="agricultural deadlines do not match the saved campaign clock"
+				return false
 		staged = candidate
 		lastDiagnostic = ""
 		return true

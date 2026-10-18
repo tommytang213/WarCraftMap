@@ -135,8 +135,29 @@ public class StartupFixture
 		for i = 0 to civic.count - 1
 			if military.settlementIndex(civic.districts[i].id) >= 0
 				retained.register(civic.districts[i], clock.currentDay)
+			else
+				// Ledger forks borrow definitions, so its destructor only releases
+				// local state. This fixture owns the generated definitions and has
+				// not forked yet: release discarded districts explicitly, too.
+				// Otherwise every startup leaks another catalogue into the shared
+				// interpreter, slowing later multi-map tests past their deadline.
+				destroy civic.districts[i]
 		military.civic = retained
 		destroy civic
+		// Keep agricultural authority aligned with the bounded settlement slice.
+		// Full generated registration already ran above; retaining discarded
+		// sites would serialize the whole world on every startup/load assertion.
+		let agriculture = trade.agriculture
+		let siteCount = agriculture.siteCount
+		agriculture.siteCount = 0
+		FlushChildHashtable(agriculture.siteIndex, 0)
+		for i = 0 to siteCount - 1
+			let site = agriculture.sites[i]
+			agriculture.sites[i] = null
+			if military.settlementIndex(site.id) >= 0
+				agriculture.addSite(site)
+			else
+				destroy site
 		campaign.finishRegistration().assertTrue()
 	function choose(string origin)
 		selector.choose(origin).assertTrue()
@@ -593,9 +614,13 @@ function rejectedBoundCheckpoint(string failure, boolean failProjection)
 	source.campaign.startup().assertFalse()
 	let request = source.handoff.readRequest()
 	// Keep the selector binding, but populate a visibly different valid checkpoint.
+	// Simulate live time so every dated domain advances with the clock, then
+	// restore the interrupted-startup lock before exercising the retry.
+	source.campaign.state.startupLocked = false
 	source.clock.advanceTo(source.clock.startDay + 1000).assertTrue()
 	source.clock.setSpeed(1.125).assertTrue()
 	source.clock.advanceElapsed(.125).assertTrue()
+	source.campaign.state.startupLocked = true
 	let savedClock = source.clock.captureState()
 	source.campaign.state.rpg.heroes.heroes[0].level = 40
 	source.campaign.state.rpg.journal.currency = 321

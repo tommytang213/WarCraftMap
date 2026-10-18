@@ -265,7 +265,7 @@
           {
             "contains": [
               "let year=resources.year()",
-              "runtime.technologies.cost(first,year,0,0)",
+              "runtime.technologies.costFor(resources.controllerId(sender),first,year,0,0)",
               "if cost>0 and available >= cost",
               "resources.setGold(sender,available-cost)"
             ],
@@ -559,7 +559,7 @@
           {
             "contains": [
               "let year=resources.year()",
-              "runtime.technologies.cost(first,year,0,0)",
+              "runtime.technologies.costFor(resources.controllerId(sender),first,year,0,0)",
               "if cost>0 and available >= cost",
               "resources.setGold(sender,available-cost)"
             ],

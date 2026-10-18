@@ -248,7 +248,11 @@ object. Fixtures execute every generated
 registration, then bound the authority population before exercising the lifecycle to stay within
 the pinned interpreter's 20-second limit per test. No authority domain, codec step,
 registration phase or lifecycle callback is replaced. Catalogue-wide and scale
-checks remain separate repository gates. Packaging regressions also compare every
+checks remain separate repository gates. Compaction releases discarded generated
+civic district definitions explicitly: ledger forks borrow these definitions, so
+destroying a ledger releases only its local state. Keeping discarded definitions
+allocated accumulates full catalogues across tests in the shared interpreter.
+Packaging regressions also compare every
 origin's generated coordinates with its materialized settlement and check that the
 campaign chapter selects `wurst-bootstrap/Bootstrap.wurst` using the tested shared
 writer.

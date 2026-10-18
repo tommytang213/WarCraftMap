@@ -1,4 +1,6 @@
 package CampaignRegistration
+import Agriculture
+import CampaignAgriculture
 import CivicGovernance
 import CivicCampaignRuntime
 
@@ -149,6 +151,14 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.interactions.maps = new CampaignInteractionMaps(campaign.state)
 	trade.access = new LiveTradeAccess(campaign.state)
 	trade.access.cargoActors = new WarcraftTradeCargoActors(military)
+	if trade.agriculture.effectCount>0
+		trade.agriculture.authority=new CampaignAgricultureAuthority(campaign.state,trade,trade.stapleId,trade.farmEquipmentId,trade.constructionGoodId)
+		trade.agriculture.reset(campaign.state.clock.campaignDay(),campaign.state.clock.campaignYear())
+		trade.agriculture.other=rpg.technologies.effects
+		rpg.technologies.effects=trade.agriculture
+		rpg.technologies.adoption=trade.agriculture
+		rpg.researchResources=new CampaignResearchResources(campaign.state)
+		campaign.state.agriculture=trade.agriculture
 	rpg.setProjectionPort(projections)
 	campaign.state.setRpgRuntime(rpg)
 	military.setRpgRuntime(rpg)

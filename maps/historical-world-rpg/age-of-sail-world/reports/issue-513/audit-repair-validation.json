@@ -1,0 +1,95 @@
+{
+  "format": "warcraftmap_focused_implementation_validation_v1",
+  "issue": 513,
+  "scope": "Focused developer-side verification after integration. Full repository validation, packaging and current-main release execution remain controller-owned. These checks do not establish native client playability.",
+  "repair": "Reproduced audit freshness JSONDecodeError. The blocker report still hashed the source before the startup-fixture repair. Regenerated source-only blocker, runtime and traceability reports at current inputs, retaining every finding. The freshness test now surfaces stderr if stale-report exit 1 has no JSON summary. Production mechanics and execution gates are unchanged.",
+  "sourceIdentity": {
+    "sourceRevision": "197482731131e182c00cb3d51575045384a1fbb2",
+    "sourceTreeSha256": "8ca4f5e21846de4ede5f75b2702ddad3c7f0635afd76e47f16bac1888596e88a"
+  },
+  "compiler": {
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "network": "none",
+    "sourceMount": "read-only temporary assembly",
+    "buildLocation": "container-private /tmp",
+    "javaToolOptions": "-Xmx8g",
+    "dependencySource": "Existing local WurstStdlib2 cache only. No predecessor CI results or artifacts used as evidence.",
+    "dependencyTreeSha256": "02472b4c38f43281fbec8f1ede419b817e77ef179ec944093c52ff3241ae309f"
+  },
+  "wurst": {
+    "typecheck": "pass",
+    "discovered": 121,
+    "succeeded": 121,
+    "errors": [],
+    "testSuites": {
+      "wurst/AgricultureTests.wurst": 10,
+      "wurst/CampaignLoadTransactionTests.wurst": 24,
+      "wurst/CampaignStartupTests.wurst": 50,
+      "wurst/CivicGovernanceTests.wurst": 9,
+      "wurst/FrameworkConformanceTests.wurst": 1,
+      "wurst/ResearchCostTests.wurst": 3,
+      "wurst/ResearchRuntimeTests.wurst": 18,
+      "wurst/VisitKnowledgeTests.wurst": 6
+    }
+  },
+  "python": {
+    "python": {
+      "status": "pass",
+      "tests": 39
+    },
+    "release-tests": {
+      "status": "pass",
+      "tests": 10
+    },
+    "runtime-tests": {
+      "status": "pass",
+      "tests": 24
+    },
+    "traceability-tests": {
+      "status": "pass",
+      "tests": 53
+    }
+  },
+  "frameworkBoundary": "pass",
+  "sourceAuditReports": {
+    "status": "current",
+    "releaseReadiness": "blocked",
+    "retainedReleaseFindings": [
+      "release:RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY",
+      "release:RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM",
+      "release:RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE",
+      "release:RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES"
+    ]
+  },
+  "nativeCrash438": "Unchanged; unrelated and blocked.",
+  "artifacts": {
+    "audit-repair-pinned-wurst.log.gz": {
+      "uncompressedSha256": "004b60f624fe27118235351d56aba5f3c451cef5aa8a6cfda3e10dc3cc407253"
+    },
+    "audit-repair-python.log.gz": {
+      "uncompressedSha256": "d4cc16fa3f9eb1dd4ae66bb6601272579491edc74742b9a4c0cb6eb3407a2ab9"
+    },
+    "audit-repair-release-tests.log.gz": {
+      "uncompressedSha256": "599fb5b6ea78e313f5e3727843b7e846a0e6548de0954e9369d96f43803e3ca7"
+    },
+    "audit-repair-runtime-tests.log.gz": {
+      "uncompressedSha256": "abaef58ae2202dea200ec0356391ee0fbcde3ae05e1329a72d92a656c21fef2f"
+    },
+    "audit-repair-traceability-tests.log.gz": {
+      "uncompressedSha256": "9bc0338e852729a5bf5d9549c91b35d7229dc19e9f02e66c35bddaf33059ab8b"
+    },
+    "audit-repair-boundary.log.gz": {
+      "uncompressedSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    },
+    "audit-repair-inputs.sha256.gz": {
+      "uncompressedSha256": "c507cde91e7b485e20698ead902873ee51ad6e7b540070525000aacf04b53252"
+    },
+    "audit-repair-expected.json.gz": {
+      "uncompressedSha256": "ef41f564d15b18067a0135d85c66b3e3d9d11bea1540229399f3b61f6ef7293d"
+    },
+    "audit-repair-run.sh.gz": {
+      "uncompressedSha256": "dbe454b75ab9c0356fd6e5dcdefd9cefb7a09e10949ac00e9ac6f2cd9e9a9f69"
+    }
+  }
+}

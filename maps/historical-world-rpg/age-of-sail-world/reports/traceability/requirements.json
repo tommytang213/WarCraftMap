@@ -37240,7 +37240,7 @@
   ],
   "format": "warcraftmap_requirement_traceability_v1",
   "ledgerSha256": "fdd8761caaa29bebff6e898a7ff6c536d1abc6ca2da0771fb44a44dc28a8317b",
-  "mappingSha256": "3ed4b0c80bbe28c6d2116bbc73ee911b2abd333841b18fad434d1b2957b32111",
+  "mappingSha256": "51011a4e18f0ab4e5bfa44465c163ccccdff037c358ffce5d6eed6a98483eec7",
   "requirements": [
     {
       "authority": {
@@ -38443,7 +38443,7 @@
             {
               "contains": [
                 "let year=resources.year()",
-                "runtime.technologies.cost(first,year,0,0)",
+                "runtime.technologies.costFor(resources.controllerId(sender),first,year,0,0)",
                 "if cost>0 and available >= cost",
                 "resources.setGold(sender,available-cost)"
               ],
@@ -38754,7 +38754,7 @@
             {
               "contains": [
                 "let year=resources.year()",
-                "runtime.technologies.cost(first,year,0,0)",
+                "runtime.technologies.costFor(resources.controllerId(sender),first,year,0,0)",
                 "if cost>0 and available >= cost",
                 "resources.setGold(sender,available-cost)"
               ],
@@ -73790,7 +73790,7 @@
       "text": "RC build packaged"
     }
   ],
-  "sourceRevision": "c95d43bfe3f05d52988538cdbc5cd0c4f8b82a61",
-  "sourceTreeSha256": "1d3eeedafe8ef38ab195b8359b7b4e4c1793d502d034f31954060b4f25cbdcf6",
+  "sourceRevision": "78d1d0a092dc960f487e32f6b9e20addf6d516be",
+  "sourceTreeSha256": "8ca4f5e21846de4ede5f75b2702ddad3c7f0635afd76e47f16bac1888596e88a",
   "status": "fail"
 }
