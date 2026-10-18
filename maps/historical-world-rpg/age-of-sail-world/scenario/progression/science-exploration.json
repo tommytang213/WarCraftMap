@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "purpose": "Bounded paid scientific work and station-return surveys; campaign accounting units, not historical population estimates. No starting grants.",
+  "sites": [
+    {
+      "settlementId": "london",
+      "good": "cloth",
+      "equipmentCost": 120,
+      "equipmentUnits": 2,
+      "equipmentDays": 7,
+      "dailyMoney": 1,
+      "dailyUnits": 1,
+      "workRequired": 10,
+      "dailyWork": 1,
+      "dailyProvisions": 2,
+      "hazardLoss": 10,
+      "weatherPeriod": 5,
+      "weatherDays": 2,
+      "id": "channel_weather_survey",
+      "forceId": "english_patrol_ship",
+      "metric": "storm_attrition_reduction",
+      "prerequisite": "oceanic_seamanship",
+      "firstDate": "1640-01-01",
+      "stationPosition": [
+        4160,
+        -6720
+      ],
+      "capability": "observed_sea_weather",
+      "routeId": "channel_position_finding_circuit"
+    },
+    {
+      "settlementId": "london",
+      "good": "cloth",
+      "equipmentCost": 120,
+      "equipmentUnits": 2,
+      "equipmentDays": 7,
+      "dailyMoney": 1,
+      "dailyUnits": 1,
+      "workRequired": 10,
+      "dailyWork": 1,
+      "dailyProvisions": 2,
+      "hazardLoss": 2,
+      "weatherPeriod": 5,
+      "weatherDays": 2,
+      "id": "isles_botanical_survey",
+      "forceId": "english_guard_formation",
+      "metric": "unknown_route_attrition_reduction",
+      "prerequisite": "overland_caravan_surveys",
+      "firstDate": "1600-01-01",
+      "capability": "unknown_overland_survey",
+      "routeZoneIds": [
+        "atlantic_isles_land"
+      ],
+      "stationPosition": null
+    },
+    {
+      "settlementId": "london",
+      "good": "cloth",
+      "equipmentCost": 120,
+      "equipmentUnits": 2,
+      "equipmentDays": 7,
+      "dailyMoney": 1,
+      "dailyUnits": 1,
+      "workRequired": 9000,
+      "dailyWork": 100,
+      "dailyProvisions": 0,
+      "hazardLoss": 0,
+      "weatherPeriod": 5,
+      "weatherDays": 2,
+      "id": "london_scholarly_work",
+      "forceId": "",
+      "metric": "research_generation_efficiency",
+      "prerequisite": "scientific_societies",
+      "firstDate": "1660-01-01",
+      "capability": "active_scholarly_center",
+      "stationPosition": null
+    }
+  ]
+}

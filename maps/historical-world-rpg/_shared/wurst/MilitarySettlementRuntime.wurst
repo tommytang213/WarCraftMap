@@ -3,6 +3,7 @@ import ScenarioSettings
 import ExactNatural
 import MilitaryTraditionLayer
 import CombatEffects
+import ScienceExploration
 import CivicGovernance
 import VoyageNavigation
 
@@ -32,7 +33,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 11
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 12
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -466,6 +467,7 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 
 public class MilitarySettlementRuntime
 	CivicLedger civic = new CivicLedger()
+	ScienceLedger science = new ScienceLedger()
 	PrizeCombatAuthority prizeCombat = new PrizeEncounters()
 	MilitarySettlementAdapter adapter
 	MilitaryRuntimeCallbacks callbacks = null
@@ -509,6 +511,7 @@ public class MilitarySettlementRuntime
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
 	ondestroy
+		destroy science
 		destroy civic
 		endRegistration()
 		for i = 0 to contributionCount - 1
@@ -677,7 +680,7 @@ public class MilitarySettlementRuntime
 			return false
 		let vessel = forces[found]
 		let route = voyages.route(routeId)
-		if route == null or not voyageSupported(vessel, routeId) or vessel.controllerId != controllerId or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
+		if science.busy(forceId) or route == null or not voyageSupported(vessel, routeId) or vessel.controllerId != controllerId or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
 			return false
 		if orderCallbacks != null
 			orderCallbacks.capture()
@@ -712,7 +715,7 @@ public class MilitarySettlementRuntime
 	function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean
 		var command = orderId
 		let found = forceIndex(forceId)
-		if found < 0 or forces[found].navigation.pending() or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
+		if found < 0 or forces[found].navigation.pending() or science.busy(forceId) or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
 			return false
 		if orderId == "march" or orderId == "sail"
 			command = "move"
@@ -887,7 +890,7 @@ public class MilitarySettlementRuntime
 		if traditionDefinitions == null and (track < 0 or traditions[track].definition == null)
 			adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 	function instantiate(RuntimeForce runtimeForce)
-		if runtimeForce.navigation.pending() or not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
+		if science.busy(runtimeForce.id) or runtimeForce.navigation.pending() or not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
 			adapter.replaceTraditionLayer(runtimeForce.id, null)
 			return
 		let city = settlementForForce(runtimeForce)
@@ -1008,11 +1011,15 @@ public class MilitarySettlementRuntime
 			if orderCallbacks != null
 				orderCallbacks.capture()
 			suspendCallbacks()
+			let returningFromScience = science.busy(forceId)
 			if forces[found].controllerId != controllerId
+				science.controlChanged(forceId, controllerId, day)
 				forces[found].cancelOrder()
 			forces[found].controllerId = controllerId
 			forces[found].orderControllerId = controllerId
 			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, not forces[found].mobileForce()))
+			if returningFromScience and not science.busy(forceId)
+				instantiate(forces[found])
 			reconcileForceTradition(forces[found])
 			if orderCallbacks != null
 				orderCallbacks.reconstruct()
@@ -1131,6 +1138,15 @@ public class MilitarySettlementRuntime
 				adapter.removeRepresentation(forces[i].id)
 		if state.controllerId != controllerId
 			civic.controlChanged(settlementId)
+			for i = 0 to science.count - 1
+				let site = science.sites[i]
+				if site.settlementId == settlementId and science.busy(site.forceId)
+					// Return the retired actor before clearing local project state.
+					let actorIndex = forceIndex(site.forceId)
+					science.states[i].stop()
+					if actorIndex >= 0
+						instantiate(forces[actorIndex])
+			science.controlChanged(settlementId, controllerId, -1)
 		state.controllerId = controllerId
 		state.underAttack = false
 		state.garrisonStrength = 0
@@ -1266,6 +1282,8 @@ public class MilitarySettlementRuntime
 		for i = 0 to civic.count - 1
 			let s = civic.states[i]
 			result += "|g," + civic.districts[i].id + "," + s.policyOwner + "," + I2S(s.policyReady) + "," + I2S(s.upkeepThrough) + "," + s.surveyOwner + "," + I2S(s.surveyReady) + "," + boolText(s.surveyed) + "," + s.responseOwner + "," + I2S(s.responseEnd) + "," + I2S(s.cooldownEnd) + "," + I2S(s.lastDay) + "," + I2S(s.discussion) + "," + I2S(s.taxesCollected) + "," + I2S(s.diseaseLost) + "," + I2S(s.diseaseAvoided) + "," + I2S(s.tradeDay) + "," + I2S(s.tradedUnits)
+		for i = 0 to science.count - 1
+			result += "|j," + science.sites[i].id + "," + science.states[i].record()
 		return result
 	function deadlineReal(string value) returns real
 		if legacyDeadlines
@@ -1273,6 +1291,39 @@ public class MilitarySettlementRuntime
 		return readClockReal(value)
 	function restoreSnapshotRecord(MilitarySnapshotRecord record, MilitarySettlementRuntime target) returns boolean
 		let kind = record.field(0)
+		if kind == "j"
+			let i = target.science.index(record.field(1))
+			if record.count != 12 or i < 0 or target.science.states[i].restored
+				return false
+			for j = 2 to 11
+				if j == 2 or j == 4
+					if record.field(j) != "" and not scienceControllerText(record.field(j))
+						return false
+				else if j == 5
+					if record.field(j) != "" and not researchStableId(record.field(j))
+						return false
+				else if S2I(record.field(j)).toString() != record.field(j) or S2I(record.field(j)) < 0
+					return false
+			let state = target.science.states[i]
+			let site = target.science.sites[i]
+			state.equipmentOwner = record.field(2)
+			state.equipmentReady = S2I(record.field(3))
+			state.owner = record.field(4)
+			state.target = record.field(5)
+			state.paid = S2I(record.field(6))
+			state.lastDay = S2I(record.field(7))
+			state.work = S2I(record.field(8))
+			state.remainder = S2I(record.field(9))
+			state.avoided = S2I(record.field(10))
+			state.lost = S2I(record.field(11))
+			state.restored = true
+			if state.equipmentReady > 1000000 or state.lastDay > 1000000 or state.work >= site.workRequired or state.remainder >= 10000
+				return false
+			if state.equipmentOwner == "" and state.equipmentReady != 0
+				return false
+			if state.owner == ""
+				return state.target == "" and state.paid == 0 and state.work == 0 and state.remainder == 0
+			return state.owner == state.equipmentOwner and state.lastDay >= state.equipmentReady and state.paid > 0 and (site.scholarly() or state.target == "") and (not site.scholarly() or state.target != "")
 		if kind == "g"
 			let i = target.civic.index(record.field(1))
 			if record.count != 18 or i < 0 or target.civic.states[i].restored
@@ -1484,17 +1535,19 @@ public class MilitarySettlementRuntime
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
 		// fresh provider or touch projections for every validation/load attempt.
 		destroy parsed.civic
 		parsed.civic = civic.fork()
+		destroy parsed.science
+		parsed.science = science.fork()
 		parsed.traditionDefinitions = traditionDefinitions
 		parsed.combatBindings = combatBindings
 		parsed.voyages = voyages
-		parsed.legacyVoyages = not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
+		parsed.legacyVoyages = not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
 		parsed.legacyCombatProfiles = parsed.legacyVoyages and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
@@ -1526,9 +1579,21 @@ public class MilitarySettlementRuntime
 			parsed.dispose()
 			return null
 		for i = 0 to parsed.civic.count - 1
-			if (candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
+			if (candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
 				parsed.dispose()
 				return null
+		for i = 0 to parsed.science.count - 1
+			if (candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored
+				parsed.dispose()
+				return null
+		for i = 0 to parsed.science.count - 1
+			let site = parsed.science.sites[i]
+			let state = parsed.science.states[i]
+			if state.owner != "" and not site.scholarly()
+				let actorIndex = parsed.forceIndex(site.forceId)
+				if actorIndex < 0 or parsed.forces[actorIndex].navigation.pending() or parsed.forces[actorIndex].controllerId != state.owner or parsed.forces[actorIndex].unitTypeId != site.unitTypeId
+					parsed.dispose()
+					return null
 		for i = 0 to parsed.conflictCount - 1
 			var attackers = 0
 			var defenders = 0
@@ -1564,6 +1629,10 @@ public class MilitarySettlementRuntime
 			if campaignDay >= 0 and parsed.forces[i].navigation.pending() and parsed.forces[i].navigation.lastDay > campaignDay
 				parsed.dispose()
 				return false
+		for i = 0 to parsed.science.count - 1
+			if campaignDay >= 0 and parsed.science.states[i].lastDay > campaignDay
+				parsed.dispose()
+				return false
 		parsed.dispose()
 		return true
 	function restore(string candidate) returns boolean
@@ -1597,7 +1666,10 @@ public class MilitarySettlementRuntime
 			destroy traditions[i]
 		for i = 0 to conflictCount - 1
 			destroy conflicts[i]
+		destroy science
 		destroy civic
+		science = parsed.science
+		parsed.science = new ScienceLedger()
 		civic = parsed.civic
 		parsed.civic = new CivicLedger()
 		forceCount = parsed.forceCount
