@@ -596,17 +596,20 @@ def _write_campaign(output: Path, config: CampaignConfig, built: list[tuple[Phys
         "name": config.name, "bootstrapMapId": config.bootstrap_map_id,
         "maps": [{"id": item.id, "packagePath": item.package_path, "sha256": _sha(archive), "bootstrap": item.bootstrap} for item, archive in built],
     }
-    # Regional maps remain campaign members so SetNextLevel can reach them, but
-    # only the bootstrap is player-selectable. This prevents bypassing origin
-    # selection from the Custom Campaign chapter list.
+    # Warcraft campaign map-flow entries and menu buttons are separate tables.
+    # Register every playable transition destination as a hidden campaign chapter:
+    # MPQ membership alone does not guarantee the native ChangeLevel resolver
+    # treats the W3X as a valid chapter. Only the bootstrap is initially visible;
+    # showing region buttons would bypass origin selection.
     maps = [(item.chapter_title, item.package_path) for item, _ in built]
-    chapters = [(item.chapter_title, item.package_path) for item, _ in built if item.bootstrap]
+    chapters = list(maps)
+    visible_chapters = {item.package_path for item, _ in built if item.bootstrap}
     wts = _campaign_wts_bytes(config)
     member_names = ["war3campaign.w3f", "campaign-manifest.json", *(x.package_path for x, _ in built)]
     if wts is not None:
         member_names.insert(1, "war3campaign.wts")
     files = {
-        "war3campaign.w3f": campaign_metadata(config.name, config.description, maps, chapters),
+        "war3campaign.w3f": campaign_metadata(config.name, config.description, maps, chapters, visible_chapters=visible_chapters),
         "campaign-manifest.json": (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode(),
         "(listfile)": ("\r\n".join(member_names) + "\r\n").encode(),
     }
@@ -637,7 +640,7 @@ def inspect_campaign(config: CampaignConfig, archive: Path) -> None:
     if not config.name or not config.description or metadata["name"] != config.name or metadata["description"] != config.description:
         raise PackagingError("campaign inspection stage failed: campaign title or description is absent or malformed")
     expected_order = [("", path) for _, path in expected_chapters]
-    expected_buttons = [(1, item.chapter_title, item.chapter_title, item.package_path) for item in config.maps if item.bootstrap]
+    expected_buttons = [(int(item.bootstrap), item.chapter_title, item.chapter_title, item.package_path) for item in config.maps]
     if metadata["version"] != 3 or metadata["flags"] != 2 or metadata["backgroundVersion"] != 0 or metadata["maps"] != expected_order or metadata["buttons"] != expected_buttons:
         raise PackagingError("campaign inspection stage failed: chapter metadata or ordering is invalid")
     if not expected_chapters or expected_chapters[0][1] != next(x.package_path for x in config.maps if x.id == config.bootstrap_map_id):
