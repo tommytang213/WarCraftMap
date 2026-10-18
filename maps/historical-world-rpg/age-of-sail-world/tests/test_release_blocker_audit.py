@@ -159,6 +159,9 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
                                     "--source-revision", saved["sourceRevision"]], cwd=PROJECT, text=True,
                                    capture_output=True, check=False)
         self.assertEqual(1, completed.returncode, completed.stderr or completed.stdout)
+        # A stale-report GateError also exits 1. Preserve that diagnostic
+        # instead of obscuring the freshness failure with JSONDecodeError.
+        self.assertTrue(completed.stdout.strip(), completed.stderr)
         summary = json.loads(completed.stdout)
         self.assertEqual("fail", summary["status"])
         self.assertGreater(summary["unresolvedCampaignBlockers"], 0)

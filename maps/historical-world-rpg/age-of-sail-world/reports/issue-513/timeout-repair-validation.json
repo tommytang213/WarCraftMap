@@ -1,0 +1,78 @@
+{
+  "format": "warcraftmap_focused_implementation_validation_v1",
+  "issue": 513,
+  "scope": "Focused validation after current-main integration; the complete repository suite, packaged artifacts and current-revision release/runtime/traceability audits remain controller-owned. Interpreter tests and Python protocol tests do not prove native client playability.",
+  "repair": "StartupFixture compaction explicitly destroys discarded, fixture-owned civic district definitions. Ledger destruction releases local state only because production save forks borrow immutable definitions. Every production registration and complete multi-map journey still executes; no gameplay, save format, assertion or 20-second interpreter deadline changed.",
+  "sourceIdentity": {
+    "sourceRevision": "2be3ab8849a3907f56d091a66f836b968d2d7e00",
+    "sourceTreeSha256": "d291d01a6f28730926db22dea3703a5866b55d3ce9516b2cb5a035334ecf8ff6"
+  },
+  "compiler": {
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "network": "none",
+    "sourceMount": "read-only temporary assembly",
+    "buildLocation": "container-private /tmp",
+    "javaToolOptions": "-Xmx8g",
+    "dependencySource": "Existing local WurstStdlib2 toolchain cache; copied into container-private storage. No predecessor CI/artifacts used as execution evidence.",
+    "dependencyTreeSha256": "6ec490daf6706eb83cbf829a6487075dfd205db8ad73e56f69e322ad9de129d3"
+  },
+  "wurst": {
+    "typecheck": "pass",
+    "discovered": 121,
+    "succeeded": 121,
+    "errors": [],
+    "testSuites": {
+      "wurst/AgricultureTests.wurst": 10,
+      "wurst/CampaignLoadTransactionTests.wurst": 24,
+      "wurst/CampaignStartupTests.wurst": 50,
+      "wurst/CivicGovernanceTests.wurst": 9,
+      "wurst/FrameworkConformanceTests.wurst": 1,
+      "wurst/ResearchCostTests.wurst": 3,
+      "wurst/ResearchRuntimeTests.wurst": 18,
+      "wurst/VisitKnowledgeTests.wurst": 6
+    }
+  },
+  "python": {
+    "status": "pass",
+    "tests": 39,
+    "patterns": [
+      "test_agriculture_generation.py",
+      "test_civic_governance.py",
+      "test_research_cost_contract.py",
+      "test_research_gameplay_design.py",
+      "test_research_generation.py",
+      "test_release_save_compatibility.py",
+      "test_framework_conformance.py",
+      "test_visit_knowledge.py"
+    ]
+  },
+  "frameworkBoundary": "pass",
+  "retainedReleaseFindings": [
+    "release:RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY",
+    "release:RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM",
+    "release:RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE",
+    "release:RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES"
+  ],
+  "nativeCrash438": "Unchanged; unrelated and blocked.",
+  "artifacts": {
+    "timeout-repair-wurst.log.gz": {
+      "uncompressedSha256": "004b60f624fe27118235351d56aba5f3c451cef5aa8a6cfda3e10dc3cc407253"
+    },
+    "timeout-repair-expected.json.gz": {
+      "uncompressedSha256": "069ec363b0172942e6365f83fa14ffbd7309bf1d88ec23d5ac74ceaa85ed485a"
+    },
+    "timeout-repair-inputs.sha256.gz": {
+      "uncompressedSha256": "c507cde91e7b485e20698ead902873ee51ad6e7b540070525000aacf04b53252"
+    },
+    "timeout-repair-python.log.gz": {
+      "uncompressedSha256": "44ffa9de5e543d42fe7cf9746d959ea33073339880e5cf3781d92834bf800988"
+    },
+    "timeout-repair-boundary.log.gz": {
+      "uncompressedSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    },
+    "timeout-repair-run.sh.gz": {
+      "uncompressedSha256": "eca1ba72607e3ca08143f96c1691fd92548379c1fef3bf130591e2d73db581dc"
+    }
+  }
+}

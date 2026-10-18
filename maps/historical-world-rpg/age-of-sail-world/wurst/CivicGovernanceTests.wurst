@@ -14,6 +14,31 @@ import ManagementScreenPauseController
 import ManagementCommandTests
 import ScenarioData
 
+@test function civicCatalogueLookupAndStagedForkPreserveExactDistrictIdentities()
+	let ledger = new CivicLedger()
+	for i = 0 to 1021
+		ledger.register(new CivicDistrict("district_" + I2S(i), "province", 100, true, 0, 0, 0, 0, 0, "cloth", 1, 100), 12)
+	// Warcraft hashes may fold case; district identities must remain exact.
+	ledger.register(new CivicDistrict("district", "province", 100, true, 0, 0, 0, 0, 0, "cloth", 1, 100), 12)
+	ledger.register(new CivicDistrict("DISTRICT", "province", 200, true, 0, 0, 0, 0, 0, "cloth", 1, 100), 12)
+	ledger.register(ledger.districts[0], 99)
+	ledger.count.assertEquals(1024)
+	ledger.index("missing").assertEquals(-1)
+	ledger.index("district").assertEquals(1022)
+	ledger.index("DISTRICT").assertEquals(1023)
+	let staged = ledger.fork()
+	for i = 0 to ledger.count - 1
+		ledger.index(ledger.districts[i].id).assertEquals(i)
+		staged.index(ledger.districts[i].id).assertEquals(i)
+		ledger.states[i].lastDay.assertEquals(12)
+		staged.states[i].lastDay.assertEquals(0)
+	staged.states[0].discussion = 50
+	ledger.states[0].discussion.assertEquals(0)
+	destroy ledger
+	staged.index("district").assertEquals(1022)
+	staged.index("DISTRICT").assertEquals(1023)
+	destroy staged
+
 class CivicTestResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
 	int balance = 100000
